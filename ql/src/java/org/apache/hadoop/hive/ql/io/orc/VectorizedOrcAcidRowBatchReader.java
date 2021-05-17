@@ -290,8 +290,14 @@ public class VectorizedOrcAcidRowBatchReader
     try {
       // See if we can load all the relevant delete events from all the
       // delete deltas in memory...
+      ColumnizedDeleteEventRegistry.OriginalWriteIdLoader writeIdLoader;
+      if (fetchDeletedRows) {
+        writeIdLoader = new ColumnizedDeleteEventRegistry.BothWriteIdLoader();
+      } else {
+        writeIdLoader = new ColumnizedDeleteEventRegistry.OriginalWriteIdLoader();
+      }
       der = new ColumnizedDeleteEventRegistry(conf, orcSplit,
-          deleteEventReaderOptions, keyInterval, cacheTag, fetchDeletedRows);
+          deleteEventReaderOptions, keyInterval, cacheTag, writeIdLoader);
     } catch (DeleteEventsOverflowMemoryException e) {
       // If not, then create a set of hanging readers that do sort-merge to find the next smallest
       // delete event on-demand. Caps the memory consumption to (some_const * no. of readers).
@@ -1700,7 +1706,7 @@ public class VectorizedOrcAcidRowBatchReader
      * the toIndex. These fromIndex and toIndex reference the larger vector formed by
      * concatenating the correspondingly ordered rowIds.
      */
-    private final class CompressedOwid implements Comparable<CompressedOwid> {
+    private static final class CompressedOwid implements Comparable<CompressedOwid> {
       final long originalWriteId;
       final int bucketProperty;
       final int fromIndex; // inclusive
@@ -1741,29 +1747,173 @@ public class VectorizedOrcAcidRowBatchReader
      */
     private final TreeMap<DeleteRecordKey, DeleteReaderValue> sortMerger;
     private long[] rowIds;
-    private CompressedOwid[] compressedOwids;
-    private TreeMap<Integer, Long> compressedCwids;
+    private OriginalWriteIds writeIds;
     private final Boolean isEmpty;
     private final int maxEventsInMemory;
     private final OrcSplit orcSplit;
     private final boolean testMode;
-    private final boolean fetchDeletedRows;
 
+    static class OriginalWriteIds {
+      private final CompressedOwid[] compressedOwids;
+
+      OriginalWriteIds(CompressedOwid[] compressedOwids) {
+        this.compressedOwids = compressedOwids;
+      }
+
+      boolean isEmpty() {
+        return compressedOwids == null;
+      }
+
+      protected int indexOfRowId(long owid, int bucketProperty, long rowId, long[] rowIds) {
+        if (isEmpty()) {
+          return -1;
+        }
+        // To find if a given (owid, rowId) pair is deleted or not, we perform
+        // two binary searches at most. The first binary search is on the
+        // compressed owids. If a match is found, only then we do the next
+        // binary search in the larger rowId vector between the given toIndex & fromIndex.
+
+        // Check if owid is outside the range of all owids present.
+        if (owid < compressedOwids[0].originalWriteId
+                || owid > compressedOwids[compressedOwids.length - 1].originalWriteId) {
+          return -1;
+        }
+        // Create a dummy key for searching the owid/bucket in the compressed owid ranges.
+        CompressedOwid key = new CompressedOwid(owid, bucketProperty, -1, -1);
+        int pos = Arrays.binarySearch(compressedOwids, key);
+        if (pos >= 0) {
+          // Owid with the given value found! Searching now for rowId...
+          key = compressedOwids[pos]; // Retrieve the actual CompressedOwid that matched.
+          // Check if rowId is outside the range of all rowIds present for this owid.
+          if (rowId < rowIds[key.fromIndex]
+                  || rowId > rowIds[key.toIndex - 1]) {
+            return -1;
+          }
+          return Arrays.binarySearch(rowIds, key.fromIndex, key.toIndex, rowId);
+        }
+        return -1;
+      }
+
+      public void markAsDeleted(long owid, int bucketProperty, long rowId, long[] rowIds, int setBitIndex,
+                                BitSet selectedBitSet, LongColumnVector currentWriteIdVector) {
+        long currentWriteId = indexOfRowId(owid, bucketProperty, rowId, rowIds);
+        if (currentWriteId >= 0) {
+          selectedBitSet.clear(setBitIndex);
+        }
+      }
+    }
+
+    static class BothWriteIds extends OriginalWriteIds {
+      private final TreeMap<Integer, Long> compressedCwids;
+
+      BothWriteIds(CompressedOwid[] compressedOwids, TreeMap<Integer, Long> compressedCwids) {
+        super(compressedOwids);
+        this.compressedCwids = compressedCwids;
+      }
+
+      private long findCurrentWriteId(long owid, int bucketProperty, long rowId, long[] rowIds) {
+        if (isEmpty()) {
+          return -1;
+        }
+
+        int rowIdx = indexOfRowId(owid, bucketProperty, rowId, rowIds);
+        if (rowIdx < 0) {
+          return -1;
+        }
+
+        // rowId also found!
+        Map.Entry<Integer, Long> cEntry = compressedCwids.floorEntry(rowIdx);
+        return cEntry == null ? -1 : cEntry.getValue();
+      }
+
+      @Override
+      public void markAsDeleted(long owid, int bucketProperty, long rowId, long[] rowIds, int setBitIndex,
+                                BitSet selectedBitSet, LongColumnVector currentWriteIdVector) {
+        long currentWriteId = findCurrentWriteId(owid, bucketProperty, rowId, rowIds);
+        if (currentWriteId >= 0) {
+          selectedBitSet.clear(setBitIndex);
+          currentWriteIdVector.vector[setBitIndex] = currentWriteId;
+          currentWriteIdVector.isRepeating = false;
+        }
+      }
+    }
+
+    static class OriginalWriteIdLoader {
+      private final List<CompressedOwid> compressedOwids;
+      private CompressedOwid lastCo;
+
+      OriginalWriteIdLoader() {
+        this.compressedOwids = new ArrayList<>();
+        this.lastCo = null;
+      }
+
+      public void add(int index, DeleteRecordKey deleteRecordKey) {
+        long owid = deleteRecordKey.originalWriteId;
+        int bp = deleteRecordKey.bucketProperty;
+
+        if (lastCo == null || lastCo.originalWriteId != owid || lastCo.bucketProperty != bp) {
+          if (lastCo != null) {
+            lastCo.toIndex = index; // Finalize the previous record.
+          }
+          lastCo = new CompressedOwid(owid, bp, index, -1);
+          compressedOwids.add(lastCo);
+        }
+      }
+
+      public OriginalWriteIds done(int index) {
+        if (lastCo != null) {
+          lastCo.toIndex = index; // Finalize the last record.
+          lastCo = null;
+        }
+
+        return new OriginalWriteIds(compressedOwids.toArray(new CompressedOwid[0]));
+      }
+    }
+
+    static class BothWriteIdLoader extends OriginalWriteIdLoader {
+      private final TreeMap<Integer, Long> compressedCwids;
+      private long lastCwid;
+      private int lastBucketProperty;
+
+      BothWriteIdLoader() {
+        this.compressedCwids = new TreeMap<>();
+        this.lastCwid = -1;
+        this.lastBucketProperty = -1;
+      }
+
+      @Override
+      public void add(int index, DeleteRecordKey deleteRecordKey) {
+        super.add(index, deleteRecordKey);
+        long cwid = deleteRecordKey.currentWriteId;
+        int bp = deleteRecordKey.bucketProperty;
+
+        if (lastCwid != cwid || lastBucketProperty != bp) {
+          compressedCwids.put(index, cwid);
+          lastCwid = cwid;
+        }
+      }
+
+      public BothWriteIds done(int index) {
+        compressedCwids.put(index, -1L);
+        return new BothWriteIds(super.done(index).compressedOwids, compressedCwids);
+      }
+    }
 
 
     ColumnizedDeleteEventRegistry(JobConf conf, OrcSplit orcSplit,
                                   Reader.Options readerOptions,
-                                  OrcRawRecordMerger.KeyInterval keyInterval, CacheTag cacheTag, boolean fetchDeletedRows)
+                                  OrcRawRecordMerger.KeyInterval keyInterval,
+                                  CacheTag cacheTag,
+                                  OriginalWriteIdLoader writeIdLoader)
         throws IOException, DeleteEventsOverflowMemoryException {
       this.testMode = conf.getBoolean(ConfVars.HIVE_IN_TEST.varname, false);
-      this.fetchDeletedRows = fetchDeletedRows;
       int bucket = AcidUtils.parseBucketId(orcSplit.getPath());
       String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
       ValidWriteIdList validWriteIdList = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
       LOG.debug("Using ColumnizedDeleteEventRegistry");
       this.sortMerger = new TreeMap<>();
       this.rowIds = null;
-      this.compressedOwids = null;
+      this.writeIds = null;
       maxEventsInMemory = HiveConf
           .getIntVar(conf, ConfVars.HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY);
       final boolean isBucketedTable  = conf.getInt(hive_metastoreConstants.BUCKET_COUNT, 0) > 0;
@@ -1820,11 +1970,11 @@ public class VectorizedOrcAcidRowBatchReader
               }
             }
           }
-          readAllDeleteEventsFromDeleteDeltas();
+          readAllDeleteEventsFromDeleteDeltas(writeIdLoader);
           LOG.debug("Number of delete events(limit, actual)=({},{})",
               totalDeleteEventCount, size());
         }
-        isEmpty = compressedOwids == null || rowIds == null;
+        isEmpty = writeIds == null || writeIds.isEmpty() || rowIds == null;
       } catch(IOException|DeleteEventsOverflowMemoryException e) {
         close(); // close any open readers, if there was some exception during initialization.
         throw e; // rethrow the exception so that the caller can handle.
@@ -1898,7 +2048,7 @@ public class VectorizedOrcAcidRowBatchReader
      * In practice we should be filtering delete evens by min/max ROW_ID from the split.  The later
      * is also not yet implemented: HIVE-16812.
      */
-    private void readAllDeleteEventsFromDeleteDeltas()
+    private void readAllDeleteEventsFromDeleteDeltas(OriginalWriteIdLoader writeIdLoader)
         throws IOException, DeleteEventsOverflowMemoryException {
       if (sortMerger == null || sortMerger.isEmpty()) {
         return; // trivial case, nothing to read.
@@ -1910,10 +2060,6 @@ public class VectorizedOrcAcidRowBatchReader
       int index = 0;
       // We compress the owids into CompressedOwid data structure that records
       // the fromIndex(inclusive) and toIndex(exclusive) for each unique owid.
-      List<CompressedOwid> compressedOwids = new ArrayList<>();
-      compressedCwids = new TreeMap<>();
-      CompressedOwid lastCo = null;
-      long lastCwid = -1;
       while (!sortMerger.isEmpty()) {
         // The sortMerger is a heap data structure that stores a pair of
         // (deleteRecordKey, deleteReaderValue) at each node and is ordered by deleteRecordKey.
@@ -1927,22 +2073,9 @@ public class VectorizedOrcAcidRowBatchReader
         Entry<DeleteRecordKey, DeleteReaderValue> entry = sortMerger.pollFirstEntry();
         DeleteRecordKey deleteRecordKey = entry.getKey();
         DeleteReaderValue deleteReaderValue = entry.getValue();
-        long owid = deleteRecordKey.originalWriteId;
-        long cwid = deleteRecordKey.currentWriteId;
-        int bp = deleteRecordKey.bucketProperty;
         checkSize(index);
         rowIds[index] = deleteRecordKey.rowId;
-        if (lastCo == null || lastCo.originalWriteId != owid || lastCo.bucketProperty != bp) {
-          if (lastCo != null) {
-            lastCo.toIndex = index; // Finalize the previous record.
-          }
-          lastCo = new CompressedOwid(owid, bp, index, -1);
-          compressedOwids.add(lastCo);
-        }
-        if (lastCwid != cwid) {
-          compressedCwids.put(index, cwid);
-          lastCwid = cwid;
-        }
+        writeIdLoader.add(index, deleteRecordKey);
         ++index;
         if (deleteReaderValue.next(deleteRecordKey)) {
           sortMerger.put(deleteRecordKey, deleteReaderValue);
@@ -1950,52 +2083,12 @@ public class VectorizedOrcAcidRowBatchReader
           deleteReaderValue.close(); // Exhausted reading all records, close the reader.
         }
       }
-      if (lastCo != null) {
-        lastCo.toIndex = index; // Finalize the last record.
-        lastCo = null;
-      }
-      compressedCwids.put(index, -1L);
+      writeIds = writeIdLoader.done(index);
       if (rowIds.length > index) {
         rowIds = Arrays.copyOf(rowIds, index);
       }
-
-      this.compressedOwids = compressedOwids.toArray(new CompressedOwid[compressedOwids.size()]);
     }
 
-
-    private long isDeleted(long owid, int bucketProperty, long rowId) {
-      if (compressedOwids == null || rowIds == null) {
-        return -1;
-      }
-      // To find if a given (owid, rowId) pair is deleted or not, we perform
-      // two binary searches at most. The first binary search is on the
-      // compressed owids. If a match is found, only then we do the next
-      // binary search in the larger rowId vector between the given toIndex & fromIndex.
-
-      // Check if owid is outside the range of all owids present.
-      if (owid < compressedOwids[0].originalWriteId
-          || owid > compressedOwids[compressedOwids.length - 1].originalWriteId) {
-        return -1;
-      }
-      // Create a dummy key for searching the owid/bucket in the compressed owid ranges.
-      CompressedOwid key = new CompressedOwid(owid, bucketProperty, -1, -1);
-      int pos = Arrays.binarySearch(compressedOwids, key);
-      if (pos >= 0) {
-        // Owid with the given value found! Searching now for rowId...
-        key = compressedOwids[pos]; // Retrieve the actual CompressedOwid that matched.
-        // Check if rowId is outside the range of all rowIds present for this owid.
-        if (rowId < rowIds[key.fromIndex]
-            || rowId > rowIds[key.toIndex - 1]) {
-          return -1;
-        }
-        pos = Arrays.binarySearch(rowIds, key.fromIndex, key.toIndex, rowId);
-        if (pos >= 0) {  // rowId also found!
-          Map.Entry<Integer, Long> cEntry = compressedCwids.floorEntry(pos);
-          return cEntry == null ? -1 : cEntry.getValue();
-        }
-      }
-      return -1;
-    }
     /**
      * @return how many delete events are actually loaded
      */
@@ -2011,45 +2104,38 @@ public class VectorizedOrcAcidRowBatchReader
     }
     @Override
     public void findDeletedRecords(ColumnVector[] cols, int size, BitSet selectedBitSet) {
-      if (rowIds == null || compressedOwids == null) {
+      if (rowIds == null || writeIds == null || writeIds.isEmpty()) {
         return;
       }
       // Iterate through the batch and for each (owid, rowid) in the batch
       // check if it is deleted or not.
 
       long[] originalWriteIdVector =
-          cols[OrcRecordUpdater.ORIGINAL_WRITEID].isRepeating ? null
-              : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector;
+              cols[OrcRecordUpdater.ORIGINAL_WRITEID].isRepeating ? null
+                      : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector;
       long repeatedOriginalWriteId = (originalWriteIdVector != null) ? -1
-          : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector[0];
+              : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector[0];
 
       long[] bucketProperties =
-        cols[OrcRecordUpdater.BUCKET].isRepeating ? null
-          : ((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector;
+              cols[OrcRecordUpdater.BUCKET].isRepeating ? null
+                      : ((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector;
       int repeatedBucketProperty = (bucketProperties != null) ? -1
-        : (int)((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector[0];
+              : (int) ((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector[0];
 
       long[] rowIdVector =
-          ((LongColumnVector) cols[OrcRecordUpdater.ROW_ID]).vector;
+              ((LongColumnVector) cols[OrcRecordUpdater.ROW_ID]).vector;
 
       LongColumnVector currentWriteIdVector = (LongColumnVector) cols[OrcRecordUpdater.CURRENT_WRITEID];
       for (int setBitIndex = selectedBitSet.nextSetBit(0);
-          setBitIndex >= 0;
-          setBitIndex = selectedBitSet.nextSetBit(setBitIndex+1)) {
+           setBitIndex >= 0;
+           setBitIndex = selectedBitSet.nextSetBit(setBitIndex + 1)) {
         long owid = originalWriteIdVector != null ? originalWriteIdVector[setBitIndex]
-                                                    : repeatedOriginalWriteId ;
-        int bucketProperty = bucketProperties != null ? (int)bucketProperties[setBitIndex]
-          : repeatedBucketProperty;
+                : repeatedOriginalWriteId;
+        int bucketProperty = bucketProperties != null ? (int) bucketProperties[setBitIndex]
+                : repeatedBucketProperty;
         long rowId = rowIdVector[setBitIndex];
-        long currentWriteId = isDeleted(owid, bucketProperty, rowId);
-        if (currentWriteId >= 0) {
-          selectedBitSet.clear(setBitIndex);
-          if (fetchDeletedRows) {
-            currentWriteIdVector.vector[setBitIndex] = currentWriteId;
-            cols[OrcRecordUpdater.CURRENT_WRITEID].isRepeating = false;
-          }
-        }
-     }
+        writeIds.markAsDeleted(owid, bucketProperty, rowId, rowIds, setBitIndex, selectedBitSet, currentWriteIdVector);
+      }
     }
 
     @Override
