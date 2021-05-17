@@ -5453,11 +5453,20 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     long maxCsId = 0;
     try {
       stmtInt = dbConn.createStatement();
-      String query = "select MAX(\"CS_ID\") from \"PART_COL_STATS\"";
-      rsInt = stmtInt.executeQuery("select MAX(\"CS_ID\") from \"PART_COL_STATS\"");
-      LOG.debug("Going to execute query " + query);
-      if (rsInt.next()) {
-        maxCsId = rsInt.getLong(1) + 1;
+      while (maxCsId == 0) {
+        String query = "SELECT \"NEXT_VAL\" FROM \"SEQUENCE_TABLE\" WHERE \"SEQUENCE_NAME\"= "
+                + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics")
+                + " FOR UPDATE";
+        rsInt = stmtInt.executeQuery(query);
+        LOG.debug("Going to execute query " + query);
+        if (rsInt.next()) {
+          maxCsId = rsInt.getLong(1);
+        } else {
+          query = "INSERT INTO \"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\", \"NEXT_VAL\")  VALUES ( "
+                  + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics") + "," + 1
+                  + ")";
+          stmtInt.executeUpdate(query);
+        }
       }
       return maxCsId;
     } finally {
@@ -5465,10 +5474,26 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
+  private void updateMaxCSId(Connection dbConn, long maxCSId) throws SQLException {
+    Statement stmtInt = null;
+    try {
+      stmtInt = dbConn.createStatement();
+      String query = "UPDATE \"SEQUENCE_TABLE\" SET \"NEXT_VAL\" = "
+                    + maxCSId
+                    + " WHERE \"SEQUENCE_NAME\" = "
+                    + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics");
+      stmtInt.executeUpdate(query);
+      LOG.debug("Going to execute update " + query);
+    } finally {
+      closeStmt(stmtInt);
+    }
+  }
+
   private void insertIntoPartColStatTable(Map<String, PartitionInfo> statsPartInfoMap,
                                           Map<String, ColumnStatistics> newStatsMap,
                                           Connection dbConn) throws SQLException {
     PreparedStatement statement = null;
+    PreparedStatement statementDelete = null;
     long maxCsId = getMaxCSId(dbConn);
     try {
       String insert = "INSERT INTO \"PART_COL_STATS\" (\"CS_ID\", \"CAT_NAME\", \"DB_NAME\","
@@ -5478,6 +5503,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               + " \"AVG_COL_LEN\", \"MAX_COL_LEN\", \"NUM_TRUES\", \"NUM_FALSES\", \"LAST_ANALYZED\", \"ENGINE\") values "
               + "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
       statement = dbConn.prepareStatement(insert);
+
+      String delete = "DELETE FROM \"PART_COL_STATS\" where \"CAT_NAME\" = ? AND  \"DB_NAME\" = ? "
+              + " AND \"TABLE_NAME\" = ? AND \"PARTITION_NAME\" = ? AND \"COLUMN_NAME\" = ?";
+      statementDelete = dbConn.prepareStatement(delete);
+
       int numRows = 0;
       int maxNumRows = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
 
@@ -5593,21 +5623,33 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           statement.setLong(22, colStats.getStatsDesc().getLastAnalyzed());
           statement.setString(23, colStats.getEngine());
 
+          statementDelete.setString(1, catName);
+          statementDelete.setString(2, dbName);
+          statementDelete.setString(3, tableName);
+          statementDelete.setString(4, partName);
+          statementDelete.setString(5, statisticsObj.getColName());
+
           maxCsId++;
           numRows++;
           statement.addBatch();
+          statementDelete.addBatch();
           if (numRows == maxNumRows) {
+            statementDelete.executeBatch();
             statement.executeBatch();
             numRows = 0;
           }
         }
       }
 
+      updateMaxCSId(dbConn, maxCsId);
+
       if (numRows != 0) {
+        statementDelete.executeBatch();
         statement.executeBatch();
       }
     } finally {
       closeStmt(statement);
+      closeStmt(statementDelete);
     }
   }
 
@@ -5770,7 +5812,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             LOG.debug(" Executing update " + statementUpdate);
           }
         }
-        result.put(colStats.getStatsDesc().getPartName(), newParameter);
+        result.put((String) entry.getKey(), newParameter);
       }
 
       if (numInsert != 0) {

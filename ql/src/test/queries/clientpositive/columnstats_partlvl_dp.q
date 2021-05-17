@@ -70,3 +70,9 @@ describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK')
 describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') c;
 describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') d;
 
+analyze table Employee_n0 partition (employeeSalary,country) compute statistics for columns;
+
+describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') employeeName;
+describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') c;
+describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') d;
+
