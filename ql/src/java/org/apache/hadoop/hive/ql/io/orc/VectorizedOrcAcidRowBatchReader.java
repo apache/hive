@@ -119,7 +119,7 @@ public class VectorizedOrcAcidRowBatchReader
    * {@link RecordIdentifier}/{@link VirtualColumn#ROWID} information
    */
   private final StructColumnVector recordIdColumnVector;
-  private final LongColumnVector rowIsDeletedVector;
+  private final RowIsDeletedColumnVector rowIsDeletedVector;
   private final Reader.Options readerOptions;
   private final boolean isOriginal;
   /**
@@ -316,7 +316,7 @@ public class VectorizedOrcAcidRowBatchReader
     rowIdProjected = areRowIdsProjected(rbCtx);
     rowIsDeletedProjected = isVirtualColumnProjected(rbCtx, VirtualColumn.ROWISDELETED);
     if (rowIsDeletedProjected) {
-      rowIsDeletedVector = new LongColumnVector();
+      rowIsDeletedVector = new RowIsDeletedColumnVector();
     } else {
       rowIsDeletedVector = null;
     }
@@ -922,7 +922,7 @@ public class VectorizedOrcAcidRowBatchReader
       copyFromBase(value);
 
       if (rowIsDeletedProjected) {
-        Arrays.fill(rowIsDeletedVector.vector, 0);
+        rowIsDeletedVector.clear();
         int ix = rbCtx.findVirtualColumnNum(VirtualColumn.ROWISDELETED);
         value.cols[ix] = rowIsDeletedVector;
       }
@@ -992,25 +992,12 @@ public class VectorizedOrcAcidRowBatchReader
     if (rowIsDeletedProjected) {
       if (fetchDeletedRows) {
         if (notDeletedBitSet.cardinality() == vectorizedRowBatchBase.size) {
-          rowIsDeletedVector.vector[0] = 0;
-          rowIsDeletedVector.isRepeating = true;
+          rowIsDeletedVector.setAll(false);
         } else {
-          if (notDeletedBitSet.cardinality() == 0) {
-            rowIsDeletedVector.vector[0] = 1;
-            rowIsDeletedVector.isRepeating = true;
-          } else {
-            Arrays.fill(rowIsDeletedVector.vector, 1);
-            rowIsDeletedVector.isRepeating = false;
-            for (int setBitIndex = notDeletedBitSet.nextSetBit(0);
-                 setBitIndex >= 0;
-                 setBitIndex = notDeletedBitSet.nextSetBit(setBitIndex + 1)) {
-              rowIsDeletedVector.vector[setBitIndex] = 0;
-            }
-          }
+          rowIsDeletedVector.set(notDeletedBitSet);
         }
       } else {
-        rowIsDeletedVector.vector[0] = 0;
-        rowIsDeletedVector.isRepeating = true;
+        rowIsDeletedVector.setAll(false);
       }
 
       int ix = rbCtx.findVirtualColumnNum(VirtualColumn.ROWISDELETED);
@@ -2201,5 +2188,30 @@ public class VectorizedOrcAcidRowBatchReader
     columnStatsArray[OrcRecordUpdater.ROW_ID + 1]  =
         deserializeIntColumnStatistics(colStats, OrcRecordUpdater.ROW_ID + 1);
     return getKeyInterval(columnStatsArray);
+  }
+
+  private static class RowIsDeletedColumnVector extends LongColumnVector {
+    void clear() {
+      Arrays.fill(vector, 0);
+    }
+
+    void setAll(boolean deleted) {
+      vector[0] = deleted ? 1 : 0;
+      isRepeating = true;
+    }
+
+    void set(BitSet notDeletedBitSet) {
+      if (notDeletedBitSet.cardinality() == 0) {
+        setAll(true);
+      } else {
+        Arrays.fill(vector, 1);
+        isRepeating = false;
+        for (int setBitIndex = notDeletedBitSet.nextSetBit(0);
+             setBitIndex >= 0;
+             setBitIndex = notDeletedBitSet.nextSetBit(setBitIndex + 1)) {
+          vector[setBitIndex] = 0;
+        }
+      }
+    }
   }
 }
