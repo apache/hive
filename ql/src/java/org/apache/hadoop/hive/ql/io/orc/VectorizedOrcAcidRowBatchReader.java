@@ -1939,7 +1939,7 @@ public class VectorizedOrcAcidRowBatchReader
           lastCo = new CompressedOwid(owid, bp, index, -1);
           compressedOwids.add(lastCo);
         }
-        if (lastCwid != cwid/* || lastCompressedCwid.bucketProperty != bp*/) {
+        if (lastCwid != cwid) {
           compressedCwids.put(index, cwid);
           lastCwid = cwid;
         }
