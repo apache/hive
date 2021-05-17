@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.ql.metadata.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,20 +48,12 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
-import org.apache.hadoop.hive.ql.metadata.CheckConstraint;
-import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
-import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
-import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
+import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.IncrementalRebuildMode.UNKNOWN;
+import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.ALL;
 
 /**
  * Format table and index information for machine readability using
@@ -176,10 +169,37 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
           .put("MV Name", mvName)
           .put("Rewriting Enabled", rewriteEnabled)
           .put("Mode", mode)
+          .put("Incremental rebuild", formatIncrementalRebuildMode(mv))
           .build());
     }
     asJson(out, builder.put("materialized views", res).build());
   }
+
+  static String formatIncrementalRebuildMode(Table materializedView) {
+    String incrementalRebuild;
+    HiveRelOptMaterialization relOptMaterialization = HiveMaterializedViewsRegistry.get().
+            getRewritingMaterializedView(materializedView.getDbName(), materializedView.getTableName(), ALL);
+    if (relOptMaterialization == null || relOptMaterialization.getRebuildMode() == UNKNOWN) {
+      incrementalRebuild = "Unknown";
+    } else {
+      switch (relOptMaterialization.getRebuildMode()) {
+        case AVAILABLE:
+          incrementalRebuild = "Available";
+          break;
+        case INSERT_ONLY:
+          incrementalRebuild = "Available in presence of insert operations only";
+          break;
+        case NOT_AVAILABLE:
+          incrementalRebuild = "Not available";
+          break;
+        default:
+          incrementalRebuild = "Unknown";
+          break;
+      }
+    }
+    return incrementalRebuild;
+  }
+
 
   /**
    * Describe table.

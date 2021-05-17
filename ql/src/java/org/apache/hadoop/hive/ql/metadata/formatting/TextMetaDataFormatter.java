@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
+import static org.apache.hadoop.hive.ql.metadata.formatting.JsonMetaDataFormatter.formatIncrementalRebuildMode;
 
 /**
  * Format table and index information for human readability using
@@ -168,7 +169,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
     try {
       TextMetaDataTable mdt = new TextMetaDataTable();
       if (!SessionState.get().isHiveServerQuery()) {
-        mdt.addRow("# MV Name", "Rewriting Enabled", "Mode");
+        mdt.addRow("# MV Name", "Rewriting Enabled", "Mode", "Incremental rebuild");
       }
       for (Table mv : materializedViews) {
         final String mvName = mv.getTableName();
@@ -192,7 +193,9 @@ class TextMetaDataFormatter implements MetaDataFormatter {
         } else {
           mode = refreshMode;
         }
-        mdt.addRow(mvName, rewriteEnabled, mode);
+
+        String incrementalRebuild = formatIncrementalRebuildMode(mv);
+        mdt.addRow(mvName, rewriteEnabled, mode, incrementalRebuild);
       }
       // In case the query is served by HiveServer2, don't pad it with spaces,
       // as HiveServer2 output is consumed by JDBC/ODBC clients.
