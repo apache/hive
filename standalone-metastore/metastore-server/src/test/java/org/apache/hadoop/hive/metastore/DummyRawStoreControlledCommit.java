@@ -182,8 +182,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void alterCatalog(String catName, Catalog cat) throws MetaException,
-      InvalidOperationException {
+  public void alterCatalog(String catName, Catalog cat) {
     objectStore.alterCatalog(catName, cat);
   }
 

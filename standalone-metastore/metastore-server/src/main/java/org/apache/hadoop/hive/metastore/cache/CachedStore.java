@@ -1063,7 +1063,7 @@ public class CachedStore implements RawStore, Configurable {
     }
   }
 
-  @Override public void alterCatalog(String catName, Catalog cat) throws MetaException, InvalidOperationException {
+  @Override public void alterCatalog(String catName, Catalog cat) {
     rawStore.alterCatalog(catName, cat);
     // in case of event based cache update, cache will not be updated for catalog.
     if (!canUseEvents) {
