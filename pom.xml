@@ -315,18 +315,17 @@
       </dependency>
       <dependency>
         <groupId>org.apache.parquet</groupId>
-        <artifactId>parquet</artifactId>
+        <artifactId>parquet-common</artifactId>
         <version>${parquet.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.parquet</groupId>
         <artifactId>parquet-column</artifactId>
         <version>${parquet.version}</version>
-        <classifier>tests</classifier>
       </dependency>
       <dependency>
         <groupId>org.apache.parquet</groupId>
-        <artifactId>parquet-hadoop-bundle</artifactId>
+        <artifactId>parquet-hadoop</artifactId>
         <version>${parquet.version}</version>
       </dependency>
       <dependency>
