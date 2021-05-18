@@ -137,22 +137,23 @@ public final class Catalogs {
     Optional<Catalog> catalog = loadCatalog(conf, catalogName);
 
     Table cachedTable = null;
+    String queryId = conf.get(HiveConf.ConfVars.HIVEQUERYID.varname);
     if (catalog.isPresent()) {
       Preconditions.checkArgument(tableIdentifier != null, "Table identifier not set");
       if (useCache) {
-        cachedTable = TableCache.getTable(conf, catalog.get().name(), tableIdentifier);
+        cachedTable = TableCache.getTable(queryId, catalog.get().name(), tableIdentifier);
         if (cachedTable != null) {
           return cachedTable;
         }
       }
       Table table = catalog.get().loadTable(TableIdentifier.parse(tableIdentifier));
-      TableCache.addTable(conf, catalog.get().name(), tableIdentifier, table);
+      TableCache.addTable(queryId, catalog.get().name(), tableIdentifier, table);
       return table;
     }
 
     Preconditions.checkArgument(tableLocation != null, "Table location not set");
     if (useCache) {
-      cachedTable = TableCache.getTable(conf, NO_CATALOG_TYPE, tableIdentifier);
+      cachedTable = TableCache.getTable(queryId, NO_CATALOG_TYPE, tableIdentifier);
       if (cachedTable != null) {
         return cachedTable;
       }
@@ -340,29 +341,26 @@ public final class Catalogs {
         .expireAfterAccess(12, TimeUnit.HOURS).build();
     private static final Logger LOG = LoggerFactory.getLogger(TableCache.class);
 
-    public static void removeTables(Configuration conf) {
-      String queryId = conf.get(HiveConf.ConfVars.HIVEQUERYID.varname);
+    public static void removeTables(String queryId) {
       if (queryId != null && !queryId.isEmpty()) {
         Set<String> queryKeys = tableCache.asMap().keySet().stream()
             .filter(k -> k.startsWith(queryId)).collect(Collectors.toSet());
         tableCache.invalidateAll(queryKeys);
       } else {
-        LOG.warn("Query id is not present in config, therefore no Iceberg table object is removed " +
+        LOG.warn("Query id was not provided, therefore no Iceberg table object is removed " +
             "from the table cache.");
       }
     }
 
-    public static Table getTable(Configuration conf, String catalogName, String tableIdentifier) {
-      String queryId = conf.get(HiveConf.ConfVars.HIVEQUERYID.varname);
+    public static Table getTable(String queryId, String catalogName, String tableIdentifier) {
       if (queryId != null  && !queryId.isEmpty()) {
         return tableCache.getIfPresent(getKey(queryId, catalogName, tableIdentifier));
       }
       return null;
     }
 
-    public static void addTable(Configuration conf, String catalogName, String tableIdentifier, Table table) {
-      String queryId = conf.get(HiveConf.ConfVars.HIVEQUERYID.varname);
-      if (queryId != null && !queryId.isEmpty()) {
+    public static void addTable(String queryId, String catalogName, String tableIdentifier, Table table) {
+            if (queryId != null && !queryId.isEmpty()) {
         String key = getKey(queryId, catalogName, tableIdentifier);
         tableCache.put(key, table);
       }
