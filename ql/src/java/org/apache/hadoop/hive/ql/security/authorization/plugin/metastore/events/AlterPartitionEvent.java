@@ -60,7 +60,7 @@ public class AlterPartitionEvent extends HiveMetaStoreAuthorizableEvent {
     List<HivePrivilegeObject> ret   = new ArrayList<>();
     PreAlterPartitionEvent    event = (PreAlterPartitionEvent) preEventContext;
 
-    ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, event.getDbName(), event.getTableName()));
+    ret.add(getHivePrivilegeObject(event.getTable()));
 
     LOG.debug("<== AlterPartitionEvent.getInputHObjs() ret={}", ret);
 
@@ -73,7 +73,7 @@ public class AlterPartitionEvent extends HiveMetaStoreAuthorizableEvent {
     List<HivePrivilegeObject> ret   = new ArrayList<>();
     PreAlterPartitionEvent    event = (PreAlterPartitionEvent) preEventContext;
 
-    ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, event.getDbName(), event.getTableName()));
+    ret.add(getHivePrivilegeObject(event.getTable()));
 
     Partition newPartition = event.getNewPartition();
     String    newUri       = (newPartition != null) ? getSdLocation(newPartition.getSd()) : "";
