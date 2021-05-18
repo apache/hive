@@ -125,6 +125,7 @@ import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.IdPathFilter;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
@@ -1252,32 +1253,45 @@ public final class Utilities {
    * @param filename
    *          filename to extract taskid from
    */
-  private static String getPrefixedTaskIdFromFilename(String filename) {
+  static String getPrefixedTaskIdFromFilename(String filename) {
     return getTaskIdFromFilename(filename, FILE_NAME_PREFIXED_TASK_ID_REGEX);
   }
 
   private static String getTaskIdFromFilename(String filename, Pattern pattern) {
-    return getIdFromFilename(filename, pattern, 1);
+    return getIdFromFilename(filename, pattern, 1, false);
   }
 
-  private static int getAttemptIdFromFilename(String filename) {
-    String attemptStr = getIdFromFilename(filename, FILE_NAME_PREFIXED_TASK_ID_REGEX, 3);
+  static int getAttemptIdFromFilename(String filename) {
+    String attemptStr = getIdFromFilename(filename, FILE_NAME_PREFIXED_TASK_ID_REGEX, 3, true);
     return Integer.parseInt(attemptStr.substring(1));
   }
 
-  private static String getIdFromFilename(String filename, Pattern pattern, int group) {
+  private static String getIdFromFilename(String filename, Pattern pattern, int group, boolean extractAttemptId) {
     String taskId = filename;
     int dirEnd = filename.lastIndexOf(Path.SEPARATOR);
-    if (dirEnd != -1) {
+    if (dirEnd!=-1) {
       taskId = filename.substring(dirEnd + 1);
     }
 
-    Matcher m = pattern.matcher(taskId);
-    if (!m.matches()) {
-      LOG.warn("Unable to get task id from file name: {}. Using last component {}"
-          + " as task id.", filename, taskId);
+    // Spark emitted files have the format part-[number-string]-uuid.<suffix>.<optional extension>
+    // Examples: part-00026-23003837-facb-49ec-b1c4-eeda902cacf3.c000.zlib.orc, 00026-23003837 is the taskId
+    // and part-00004-c6acfdee-0c32-492e-b209-c2f1cf477770.c000, 00004-c6acfdee is the taskId
+    String strings[] = taskId.split("-");
+    if (strings.length > 6) {
+      if (extractAttemptId) {
+        // return a constant, since Spark doesn't use attemptId
+        taskId = "01";
+      } else {
+        taskId = strings[1] + "-" + strings[2];
+      }
     } else {
-      taskId = m.group(group);
+      Matcher m = pattern.matcher(taskId);
+      if (!m.matches()) {
+        LOG.warn("Unable to get task id from file name: {}. Using last component {}"
+                + " as task id.", filename, taskId);
+      } else {
+        taskId = m.group(group);
+      }
     }
     LOG.debug("TaskId for {} = {}", filename, taskId);
     return taskId;
