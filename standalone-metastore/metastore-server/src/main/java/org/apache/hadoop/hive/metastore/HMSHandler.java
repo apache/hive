@@ -6071,15 +6071,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     } catch (Exception e) { /* appears we return empty set instead of throwing an exception */ }
 
     try {
-      ret = getMS().getTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], pattern);
-      if(ret !=  null && !ret.isEmpty()) {
-        List<Table> tableInfo = new ArrayList<>();
-        tableInfo = getMS().getTableObjectsByName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], ret);
-        tableInfo = FilterUtils.filterTablesIfEnabled(isServerFilterEnabled, filterHook, tableInfo);// tableInfo object has the owner information of the table which is being passed to FilterUtils.
-        ret = new ArrayList<>();
-        for (Table tbl : tableInfo) {
-          ret.add(tbl.getTableName());
-        }
+      List<Table> tableInfo = getMS().getTableObjectsByName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], null, null, pattern);
+      tableInfo = FilterUtils.filterTablesIfEnabled(isServerFilterEnabled, filterHook, tableInfo);
+      ret = new ArrayList<>();
+      for (Table tbl : tableInfo) {
+        ret.add(tbl.getTableName());
       }
     } catch (MetaException e) {
       ex = e;
