@@ -3011,6 +3011,27 @@ public class HiveConf extends Configuration {
     HIVE_TXN_READONLY_ENABLED("hive.txn.readonly.enabled", false,
       "Enables read-only transaction classification and related optimizations"),
 
+    // Configs having to do with DeltaFilesMetricReporter, which collects lists of most recently active tables
+    // with the most number of active/obsolete deltas.
+    HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE("hive.txn.acid.metrics.max.cache.size", 100,
+        "Size of the ACID metrics cache. Only topN metrics would remain in the cache if exceeded."),
+    HIVE_TXN_ACID_METRICS_CACHE_DURATION("hive.txn.acid.metrics.cache.duration", "7200s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Maximum lifetime in seconds for an entry in the ACID metrics cache."),
+    HIVE_TXN_ACID_METRICS_REPORTING_INTERVAL("hive.txn.acid.metrics.reporting.interval", "30s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Reporting period for ACID metrics in seconds."),
+    HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD("hive.txn.acid.metrics.delta.num.threshold", 100,
+        "The minimum number of active delta files a table/partition must have in order to be included in the ACID metrics report."),
+    HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD("hive.txn.acid.metrics.obsolete.delta.num.threshold", 100,
+        "The minimum number of obsolete delta files a table/partition must have in order to be included in the ACID metrics report."),
+    HIVE_TXN_ACID_METRICS_DELTA_CHECK_THRESHOLD("hive.txn.acid.metrics.delta.check.threshold", "300s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Deltas not older than this value will not be included in the ACID metrics report."),
+    HIVE_TXN_ACID_METRICS_DELTA_PCT_THRESHOLD("hive.txn.acid.metrics.delta.pct.threshold", 0.01f,
+        "Percentage (fractional) size of the delta files relative to the base directory. Deltas smaller than this threshold " +
+        "count as small deltas. Default 0.01 = 1%.)"),
+
     /**
      * @deprecated Use MetastoreConf.TXN_TIMEOUT
      */
