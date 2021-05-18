@@ -300,6 +300,10 @@
                   <pattern>org.jboss.netty</pattern>
                   <shadedPattern>org.apache.hive.druid.org.jboss.netty</shadedPattern>
                 </relocation>
+                <relocation>
+                  <pattern>org.eclipse.jetty</pattern>
+                  <shadedPattern>org.apache.hive.druid.org.eclipse.jetty</shadedPattern>
+                </relocation>
               </relocations>
               <filters>
                 <filter>
