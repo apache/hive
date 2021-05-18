@@ -46,10 +46,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveInBetweenExpandRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.ColumnPropagationException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateInsertDeleteIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateInsertIncrementalRewritingRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregatePartitionIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinInsertDeleteIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinInsertIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
@@ -261,39 +263,59 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
         if (materialization.isSourceTablesCompacted()) {
           return calcitePreMVRewritingPlan;
         }
-        // First we need to check if it is valid to convert to MERGE/INSERT INTO.
-        // If we succeed, we modify the plan and afterwards the AST.
-        // MV should be an acid table.
-        MaterializedViewRewritingRelVisitor visitor = new MaterializedViewRewritingRelVisitor();
-        visitor.go(basePlan);
-        if (visitor.isRewritingAllowed()) {
-          if (materialization.isSourceTablesUpdateDeleteModified()) {
-            if (visitor.isContainsAggregate()) {
-              if (visitor.getCountIndex() < 0) {
-                // count(*) is necessary for determine which rows should be deleted from the view
-                // if view definition does not have it incremental rebuild can not be performed, bail out
-                return calcitePreMVRewritingPlan;
-              }
-              return toAggregateInsertDeleteIncremental(basePlan, mdProvider, executorProvider);
-            } else {
-              return toJoinInsertDeleteIncremental(
-                      basePlan, mdProvider, executorProvider, optCluster, calcitePreMVRewritingPlan);
-            }
-          } else {
-            // Trigger rewriting to remove UNION branch with MV
-            if (visitor.isContainsAggregate()) {
-              return toAggregateInsertIncremental(basePlan, mdProvider, executorProvider, optCluster, calcitePreMVRewritingPlan);
-            } else {
-              return toJoinInsertIncremental(basePlan, mdProvider, executorProvider);
-            }
-          }
-        } else if (materialization.isSourceTablesUpdateDeleteModified()) {
-          return calcitePreMVRewritingPlan;
+
+        RelNode incrementalRebuildPlan = toIncrementalRebuild(
+                basePlan, mdProvider, executorProvider, optCluster, calcitePreMVRewritingPlan, materialization);
+        if (mvRebuildMode != MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD) {
+          return incrementalRebuildPlan;
         }
+
+        return toPartitionInsertOverwrite(
+                basePlan, mdProvider, executorProvider, materialization, calcitePreMVRewritingPlan);
       }
 
       // Now we trigger some needed optimization rules again
       return applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
+    }
+
+    private RelNode toIncrementalRebuild(
+            RelNode basePlan,
+            RelMetadataProvider mdProvider,
+            RexExecutor executorProvider,
+            RelOptCluster optCluster,
+            RelNode calcitePreMVRewritingPlan,
+            HiveRelOptMaterialization materialization) {
+      // First we need to check if it is valid to convert to MERGE/INSERT INTO.
+      // If we succeed, we modify the plan and afterwards the AST.
+      // MV should be an acid table.
+      MaterializedViewRewritingRelVisitor visitor = new MaterializedViewRewritingRelVisitor();
+      visitor.go(basePlan);
+      if (visitor.isRewritingAllowed()) {
+        if (materialization.isSourceTablesUpdateDeleteModified()) {
+          if (visitor.isContainsAggregate()) {
+            if (visitor.getCountIndex() < 0) {
+              // count(*) is necessary for determine which rows should be deleted from the view
+              // if view definition does not have it incremental rebuild can not be performed, bail out
+              return calcitePreMVRewritingPlan;
+            }
+            return toAggregateInsertDeleteIncremental(basePlan, mdProvider, executorProvider);
+          } else {
+            return toJoinInsertDeleteIncremental(
+                    basePlan, mdProvider, executorProvider, optCluster, calcitePreMVRewritingPlan);
+          }
+        } else {
+          // Trigger rewriting to remove UNION branch with MV
+          if (visitor.isContainsAggregate()) {
+            return toAggregateInsertIncremental(basePlan, mdProvider, executorProvider, optCluster, calcitePreMVRewritingPlan);
+          } else {
+            return toJoinInsertIncremental(basePlan, mdProvider, executorProvider);
+          }
+        }
+      } else if (materialization.isSourceTablesUpdateDeleteModified()) {
+        return calcitePreMVRewritingPlan;
+      } else {
+        return applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
+      }
     }
 
     private RelNode toAggregateInsertDeleteIncremental(
@@ -351,6 +373,23 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       mvRebuildMode = MaterializationRebuildMode.JOIN_INSERT_REBUILD;
       return toIncrementalRebuild(
               basePlan, mdProvider, executorProvider, HiveJoinInsertIncrementalRewritingRule.INSTANCE);
+    }
+
+    private RelNode toPartitionInsertOverwrite(
+            RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider,
+            HiveRelOptMaterialization materialization, RelNode calcitePreMVRewritingPlan) {
+
+      if (materialization.isSourceTablesUpdateDeleteModified()) {
+        return calcitePreMVRewritingPlan;
+      }
+
+      RelOptHiveTable hiveTable = (RelOptHiveTable) materialization.tableRel.getTable();
+      if (!AcidUtils.isInsertOnlyTable(hiveTable.getHiveTableMD())) {
+        return applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
+      }
+
+      return toIncrementalRebuild(
+              basePlan, mdProvider, executorProvider, HiveAggregatePartitionIncrementalRewritingRule.INSTANCE);
     }
 
     private RelNode toIncrementalRebuild(
