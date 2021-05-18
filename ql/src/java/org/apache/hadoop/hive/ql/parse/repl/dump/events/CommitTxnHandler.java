@@ -22,9 +22,8 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HMSHandler;
-import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.api.GetAllWriteEventInfoRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
@@ -110,9 +109,9 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
 
   private List<WriteEventInfo> getAllWriteEventInfo(Context withinContext) throws Exception {
     String contextDbName = StringUtils.normalizeIdentifier(withinContext.replScope.getDbName());
-    RawStore rawStore = HMSHandler.getMSForConf(withinContext.hiveConf);
     List<WriteEventInfo> writeEventInfoList
-            = rawStore.getAllWriteEventInfo(eventMessage.getTxnId(), contextDbName, null);
+            = withinContext.db.getMSC().getAllWriteEventInfo(
+                new GetAllWriteEventInfoRequest(eventMessage.getTxnId(), contextDbName, null)).getWriteEventInfos();
     return ((writeEventInfoList == null)
             ? null
             : new ArrayList<>(Collections2.filter(writeEventInfoList,
