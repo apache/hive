@@ -1579,7 +1579,7 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.listTableNamesByFilter(catName, dbName, filter, maxTables);
   }
 
-  @Override public List<String> listPartitionNames(String catName, String dbName, String tblName, short maxParts) {
+  @Override public List<String> listPartitionNames(String catName, String dbName, String tblName, short maxParts) throws MetaException {
     catName = StringUtils.normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
@@ -1943,7 +1943,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public List<String> listPartitionNamesPs(String catName, String dbName, String tblName,
-      List<String> partSpecs, short maxParts) throws NoSuchObjectException {
+      List<String> partSpecs, short maxParts) throws NoSuchObjectException, MetaException {
     catName = StringUtils.normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
@@ -2023,7 +2023,7 @@ public class CachedStore implements RawStore, Configurable {
 
   // Note: ideally this should be above both CachedStore and ObjectStore.
   private Map<String, String> adjustStatsParamsForGet(Map<String, String> tableParams, Map<String, String> params,
-      long statsWriteId, String validWriteIds) throws MetaException {
+      long statsWriteId, String validWriteIds) {
     if (!TxnUtils.isTransactionalTable(tableParams)) {
       return params; // Not a txn table.
     }

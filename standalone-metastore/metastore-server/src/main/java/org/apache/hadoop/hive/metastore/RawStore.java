@@ -604,7 +604,7 @@ public interface RawStore extends Configurable {
    * @return list of partition names.
    */
   List<String> listPartitionNames(String catName, String db_name,
-      String tbl_name, short max_parts);
+      String tbl_name, short max_parts) throws MetaException;
 
   /**
    * Get a partial or complete list of names for partitions of a table.
@@ -1004,7 +1004,7 @@ public interface RawStore extends Configurable {
    */
   List<String> listPartitionNamesPs(String catName, String db_name, String tbl_name,
       List<String> part_vals, short max_parts)
-      throws NoSuchObjectException;
+      throws NoSuchObjectException, MetaException;
 
   /**
    * Lists partitions that match a given partial specification and sets their auth privileges.

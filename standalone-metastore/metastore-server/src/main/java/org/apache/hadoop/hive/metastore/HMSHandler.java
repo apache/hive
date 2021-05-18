@@ -10316,7 +10316,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ms.openTransaction();
       ms.addSerde(serde);
       success = ms.commitTransaction();
-    } catch (MetaException|AlreadyExistsException e) {
+    } catch (AlreadyExistsException e) {
       LOG.error("Caught exception creating serde", e);
       ex = e;
       throw e;

@@ -177,7 +177,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void createCatalog(Catalog cat) throws MetaException {
+  public void createCatalog(Catalog cat) {
     objectStore.createCatalog(cat);
   }
 
@@ -198,12 +198,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void dropCatalog(String catalogName) throws NoSuchObjectException, MetaException {
+  public void dropCatalog(String catalogName) throws NoSuchObjectException {
     objectStore.dropCatalog(catalogName);
   }
 
   @Override
-  public void createDatabase(Database db) throws InvalidObjectException, MetaException {
+  public void createDatabase(Database db) throws InvalidObjectException {
     objectStore.createDatabase(db);
   }
 
@@ -214,24 +214,24 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public boolean dropDatabase(String catName, String dbName)
-      throws NoSuchObjectException, MetaException {
+      throws NoSuchObjectException {
     return objectStore.dropDatabase(catName, dbName);
   }
 
   @Override
   public boolean alterDatabase(String catName, String dbName, Database db)
-      throws NoSuchObjectException, MetaException {
+      throws NoSuchObjectException {
 
     return objectStore.alterDatabase(catName, dbName, db);
   }
 
   @Override
-  public List<String> getDatabases(String catName, String pattern) throws MetaException {
+  public List<String> getDatabases(String catName, String pattern) {
     return objectStore.getDatabases(catName, pattern);
   }
 
   @Override
-  public List<String> getAllDatabases(String catName) throws MetaException {
+  public List<String> getAllDatabases(String catName) {
     return objectStore.getAllDatabases(catName);
   }
 
@@ -247,19 +247,19 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public boolean dropDataConnector(String dcName)
-      throws NoSuchObjectException, MetaException {
+      throws NoSuchObjectException {
     return objectStore.dropDataConnector(dcName);
   }
 
   @Override
   public boolean alterDataConnector(String dcName, DataConnector connector)
-      throws NoSuchObjectException, MetaException {
+      throws NoSuchObjectException {
 
     return objectStore.alterDataConnector(dcName, connector);
   }
 
   @Override
-  public List<String> getAllDataConnectorNames() throws MetaException {
+  public List<String> getAllDataConnectorNames() {
     return objectStore.getAllDataConnectorNames();
   }
 
@@ -279,25 +279,24 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public void createTable(Table tbl) throws InvalidObjectException, MetaException {
+  public void createTable(Table tbl) throws InvalidObjectException {
     objectStore.createTable(tbl);
   }
 
   @Override
   public boolean dropTable(String catName, String dbName, String tableName)
-      throws MetaException, NoSuchObjectException,
+      throws NoSuchObjectException,
       InvalidObjectException, InvalidInputException {
     return objectStore.dropTable(catName, dbName, tableName);
   }
 
   @Override
-  public Table getTable(String catName, String dbName, String tableName) throws MetaException {
+  public Table getTable(String catName, String dbName, String tableName) {
     return objectStore.getTable(catName, dbName, tableName);
   }
 
   @Override
-  public Table getTable(String catName, String dbName, String tableName, String writeIdList)
-      throws MetaException {
+  public Table getTable(String catName, String dbName, String tableName, String writeIdList) {
     return objectStore.getTable(catName, dbName, tableName, writeIdList);
   }
 
@@ -348,13 +347,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public Table alterTable(String catName, String dbName, String name, Table newTable,
       String queryValidWriteIds)
-      throws InvalidObjectException, MetaException {
+      throws InvalidObjectException {
     return objectStore.alterTable(catName, dbName, name, newTable, queryValidWriteIds);
   }
 
   @Override
-  public void updateCreationMetadata(String catName, String dbname, String tablename, CreationMetadata cm)
-      throws MetaException {
+  public void updateCreationMetadata(String catName, String dbname, String tablename, CreationMetadata cm) {
     objectStore.updateCreationMetadata(catName, dbname, tablename, cm);
   }
 
@@ -369,19 +367,18 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<Table> getAllMaterializedViewObjectsForRewriting(String catName) throws MetaException {
+  public List<Table> getAllMaterializedViewObjectsForRewriting(String catName) {
     return objectStore.getAllMaterializedViewObjectsForRewriting(catName);
   }
 
   @Override
   public List<String> getMaterializedViewsForRewriting(String catName, String dbName)
-      throws MetaException, NoSuchObjectException {
+      throws NoSuchObjectException {
     return objectStore.getMaterializedViewsForRewriting(catName, dbName);
   }
 
   @Override
-  public List<TableMeta> getTableMeta(String catName, String dbNames, String tableNames, List<String> tableTypes)
-      throws MetaException {
+  public List<TableMeta> getTableMeta(String catName, String dbNames, String tableNames, List<String> tableTypes) {
     return objectStore.getTableMeta(catName, dbNames, tableNames, tableTypes);
   }
 
@@ -483,7 +480,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public Table markPartitionForEvent(String catName, String dbName, String tblName,
       Map<String, String> partVals, PartitionEventType evtType)
-      throws MetaException, UnknownTableException, InvalidPartitionException,
+      throws UnknownTableException, InvalidPartitionException,
       UnknownPartitionException {
     return objectStore.markPartitionForEvent(catName, dbName, tblName, partVals, evtType);
   }
@@ -491,27 +488,27 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public boolean isPartitionMarkedForEvent(String catName, String dbName, String tblName,
       Map<String, String> partName, PartitionEventType evtType)
-      throws MetaException, UnknownTableException, InvalidPartitionException,
+      throws UnknownTableException, InvalidPartitionException,
       UnknownPartitionException {
     return objectStore.isPartitionMarkedForEvent(catName, dbName, tblName, partName, evtType);
   }
 
   @Override
   public boolean addRole(String rowName, String ownerName) throws InvalidObjectException,
-      MetaException, NoSuchObjectException {
+      NoSuchObjectException {
     return objectStore.addRole(rowName, ownerName);
   }
 
   @Override
   public boolean removeRole(String roleName)
-      throws MetaException, NoSuchObjectException {
+      throws NoSuchObjectException {
     return objectStore.removeRole(roleName);
   }
 
   @Override
   public boolean grantRole(Role role, String userName, PrincipalType principalType,
       String grantor, PrincipalType grantorType, boolean grantOption)
-      throws MetaException, NoSuchObjectException, InvalidObjectException {
+      throws NoSuchObjectException, InvalidObjectException {
     return objectStore.grantRole(role, userName, principalType, grantor, grantorType,
         grantOption);
   }
@@ -530,21 +527,21 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public PrincipalPrivilegeSet getDBPrivilegeSet(String catName, String dbName, String userName,
-      List<String> groupNames) throws InvalidObjectException, MetaException {
+      List<String> groupNames) throws InvalidObjectException {
     return objectStore.getDBPrivilegeSet(catName, dbName, userName, groupNames);
   }
 
   @Override
   public PrincipalPrivilegeSet getTablePrivilegeSet(String catName, String dbName, String tableName,
       String userName, List<String> groupNames)
-      throws InvalidObjectException, MetaException {
+      throws InvalidObjectException {
     return objectStore.getTablePrivilegeSet(catName, dbName, tableName, userName, groupNames);
   }
 
   @Override
   public PrincipalPrivilegeSet getPartitionPrivilegeSet(String catName, String dbName, String tableName,
       String partition, String userName, List<String> groupNames)
-      throws InvalidObjectException, MetaException {
+      throws InvalidObjectException {
     return objectStore.getPartitionPrivilegeSet(catName, dbName, tableName, partition,
         userName, groupNames);
   }
@@ -552,7 +549,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public PrincipalPrivilegeSet getColumnPrivilegeSet(String catName, String dbName, String tableName,
       String partitionName, String columnName, String userName, List<String> groupNames)
-      throws InvalidObjectException, MetaException {
+      throws InvalidObjectException {
     return objectStore.getColumnPrivilegeSet(catName, dbName, tableName, partitionName,
         columnName, userName, groupNames);
   }
@@ -764,7 +761,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
       String colName, String engine)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+      throws NoSuchObjectException, InvalidObjectException, InvalidInputException {
     return objectStore.deleteTableColumnStatistics(catName, dbName, tableName, colName, engine);
   }
 
@@ -997,17 +994,17 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public int getTableCount() throws MetaException {
+  public int getTableCount() {
     return objectStore.getTableCount();
   }
 
   @Override
-  public int getPartitionCount() throws MetaException {
+  public int getPartitionCount() {
     return objectStore.getPartitionCount();
   }
 
   @Override
-  public int getDatabaseCount() throws MetaException {
+  public int getDatabaseCount() {
     return objectStore.getDatabaseCount();
   }
 
@@ -1017,31 +1014,23 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<SQLPrimaryKey> getPrimaryKeys(String catName, String db_name, String tbl_name)
-    throws MetaException {
-    // TODO Auto-generated method stub
+  public List<SQLPrimaryKey> getPrimaryKeys(String catName, String db_name, String tbl_name) {
     return null;
   }
 
   @Override
-  public List<SQLForeignKey> getForeignKeys(String catName, String parent_db_name,
-    String parent_tbl_name, String foreign_db_name, String foreign_tbl_name)
-    throws MetaException {
-    // TODO Auto-generated method stub
+  public List<SQLForeignKey> getForeignKeys(String catName, String parent_db_name, String parent_tbl_name,
+      String foreign_db_name, String foreign_tbl_name) {
     return null;
   }
 
   @Override
-  public List<SQLUniqueConstraint> getUniqueConstraints(String catName, String db_name, String tbl_name)
-    throws MetaException {
-    // TODO Auto-generated method stub
+  public List<SQLUniqueConstraint> getUniqueConstraints(String catName, String db_name, String tbl_name) {
     return null;
   }
 
   @Override
-  public List<SQLNotNullConstraint> getNotNullConstraints(String catName, String db_name, String tbl_name)
-    throws MetaException {
-    // TODO Auto-generated method stub
+  public List<SQLNotNullConstraint> getNotNullConstraints(String catName, String db_name, String tbl_name) {
     return null;
   }
 
@@ -1053,67 +1042,52 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<SQLCheckConstraint> getCheckConstraints(String catName, String db_name, String tbl_name)
-      throws MetaException {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override public SQLAllTableConstraints getAllTableConstraints(String catName, String dbName, String tblName)
-      throws MetaException, NoSuchObjectException {
+  public List<SQLCheckConstraint> getCheckConstraints(String catName, String db_name, String tbl_name) {
     return null;
   }
 
   @Override
-  public SQLAllTableConstraints createTableWithConstraints(Table tbl, SQLAllTableConstraints constraints )
-    throws InvalidObjectException, MetaException {
-    // TODO Auto-generated method stub
+  public SQLAllTableConstraints getAllTableConstraints(String catName, String dbName, String tblName) {
+    return null;
+  }
+
+  @Override
+  public SQLAllTableConstraints createTableWithConstraints(Table tbl, SQLAllTableConstraints constraints) {
     return null;
   }
 
   @Override
   public void dropConstraint(String catName, String dbName, String tableName,
-   String constraintName, boolean missingOk) throws NoSuchObjectException {
-   // TODO Auto-generated method stub
+   String constraintName, boolean missingOk) {
   }
 
   @Override
-  public List<SQLPrimaryKey> addPrimaryKeys(List<SQLPrimaryKey> pks)
-    throws InvalidObjectException, MetaException {
+  public List<SQLPrimaryKey> addPrimaryKeys(List<SQLPrimaryKey> pks) {
     return null;
   }
 
   @Override
-  public List<SQLForeignKey> addForeignKeys(List<SQLForeignKey> fks)
-    throws InvalidObjectException, MetaException {
+  public List<SQLForeignKey> addForeignKeys(List<SQLForeignKey> fks) {
     return null;
   }
 
   @Override
-  public List<SQLUniqueConstraint> addUniqueConstraints(List<SQLUniqueConstraint> uks)
-    throws InvalidObjectException, MetaException {
-    // TODO Auto-generated method stub
+  public List<SQLUniqueConstraint> addUniqueConstraints(List<SQLUniqueConstraint> uks) {
     return null;
   }
 
   @Override
-  public List<SQLNotNullConstraint> addNotNullConstraints(List<SQLNotNullConstraint> nns)
-    throws InvalidObjectException, MetaException {
-    // TODO Auto-generated method stub
+  public List<SQLNotNullConstraint> addNotNullConstraints(List<SQLNotNullConstraint> nns) {
     return null;
   }
 
   @Override
-  public List<SQLDefaultConstraint> addDefaultConstraints(List<SQLDefaultConstraint> nns)
-      throws InvalidObjectException, MetaException {
-    // TODO Auto-generated method stub
+  public List<SQLDefaultConstraint> addDefaultConstraints(List<SQLDefaultConstraint> nns) {
     return null;
   }
 
   @Override
-  public List<SQLCheckConstraint> addCheckConstraints(List<SQLCheckConstraint> nns)
-      throws InvalidObjectException, MetaException {
-    // TODO Auto-generated method stub
+  public List<SQLCheckConstraint> addCheckConstraints(List<SQLCheckConstraint> nns) {
     return null;
   }
 
@@ -1124,7 +1098,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public void createResourcePlan(WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize)
-      throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException {
+      throws AlreadyExistsException, InvalidObjectException, NoSuchObjectException {
     objectStore.createResourcePlan(resourcePlan, copyFrom, defaultPoolSize);
   }
 
@@ -1135,27 +1109,26 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<WMResourcePlan> getAllResourcePlans(String ns) throws MetaException {
+  public List<WMResourcePlan> getAllResourcePlans(String ns) {
     return objectStore.getAllResourcePlans(ns);
   }
 
   @Override
   public WMFullResourcePlan alterResourcePlan(String name, String ns, WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
-      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
-          MetaException {
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException {
     return objectStore.alterResourcePlan(
       name, ns, resourcePlan, canActivateDisabled, canDeactivate, isReplace);
   }
 
   @Override
-  public WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException {
+  public WMFullResourcePlan getActiveResourcePlan(String ns) {
     return objectStore.getActiveResourcePlan(ns);
   }
 
   @Override
   public WMValidateResourcePlanResponse validateResourcePlan(String name, String ns)
-      throws NoSuchObjectException, InvalidObjectException, MetaException {
+      throws NoSuchObjectException, InvalidObjectException {
     return objectStore.validateResourcePlan(name, ns);
   }
 
@@ -1166,57 +1139,55 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public void createWMTrigger(WMTrigger trigger)
-      throws AlreadyExistsException, MetaException, NoSuchObjectException,
+      throws AlreadyExistsException, NoSuchObjectException,
           InvalidOperationException {
     objectStore.createWMTrigger(trigger);
   }
 
   @Override
   public void alterWMTrigger(WMTrigger trigger)
-      throws NoSuchObjectException, InvalidOperationException, MetaException {
+      throws NoSuchObjectException, InvalidOperationException {
     objectStore.alterWMTrigger(trigger);
   }
 
   @Override
   public void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
-      throws NoSuchObjectException, InvalidOperationException, MetaException {
+      throws NoSuchObjectException, InvalidOperationException {
     objectStore.dropWMTrigger(resourcePlanName, triggerName, ns);
   }
 
   @Override
   public List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName, String ns)
-      throws NoSuchObjectException, MetaException {
+      throws NoSuchObjectException {
     return objectStore.getTriggersForResourcePlan(resourcePlanName, ns);
   }
 
   @Override
   public void createPool(WMPool pool) throws AlreadyExistsException, NoSuchObjectException,
-      InvalidOperationException, MetaException {
+      InvalidOperationException {
     objectStore.createPool(pool);
   }
 
   @Override
   public void alterPool(WMNullablePool pool, String poolPath) throws AlreadyExistsException,
-      NoSuchObjectException, InvalidOperationException, MetaException {
+      NoSuchObjectException, InvalidOperationException {
     objectStore.alterPool(pool, poolPath);
   }
 
   @Override
   public void dropWMPool(String resourcePlanName, String poolPath, String ns)
-      throws NoSuchObjectException, InvalidOperationException, MetaException {
+      throws NoSuchObjectException, InvalidOperationException {
     objectStore.dropWMPool(resourcePlanName, poolPath, ns);
   }
 
   @Override
   public void createOrUpdateWMMapping(WMMapping mapping, boolean update)
-      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
-      MetaException {
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException {
     objectStore.createOrUpdateWMMapping(mapping, update);
   }
 
   @Override
-  public void dropWMMapping(WMMapping mapping)
-      throws NoSuchObjectException, InvalidOperationException, MetaException {
+  public void dropWMMapping(WMMapping mapping) throws NoSuchObjectException, InvalidOperationException {
     objectStore.dropWMMapping(mapping);
   }
 
@@ -1235,80 +1206,74 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
 
   @Override
-  public List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String catName, String dbName)
-      throws MetaException, NoSuchObjectException {
-    // TODO Auto-generated method stub
+  public List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String catName, String dbName) {
     return null;
   }
 
   @Override
-  public void createISchema(ISchema schema) throws AlreadyExistsException, MetaException,
-      NoSuchObjectException {
+  public void createISchema(ISchema schema) throws AlreadyExistsException, NoSuchObjectException {
     objectStore.createISchema(schema);
   }
 
   @Override
-  public void alterISchema(ISchemaName schemaName, ISchema newSchema) throws NoSuchObjectException,
-      MetaException {
+  public void alterISchema(ISchemaName schemaName, ISchema newSchema) throws NoSuchObjectException {
     objectStore.alterISchema(schemaName, newSchema);
   }
 
   @Override
-  public ISchema getISchema(ISchemaName schemaName) throws MetaException {
+  public ISchema getISchema(ISchemaName schemaName) {
     return objectStore.getISchema(schemaName);
   }
 
   @Override
-  public void dropISchema(ISchemaName schemaName) throws NoSuchObjectException, MetaException {
+  public void dropISchema(ISchemaName schemaName) throws NoSuchObjectException {
     objectStore.dropISchema(schemaName);
   }
 
   @Override
-  public void addSchemaVersion(SchemaVersion schemaVersion) throws
-      AlreadyExistsException, InvalidObjectException, NoSuchObjectException, MetaException {
+  public void addSchemaVersion(SchemaVersion schemaVersion)
+      throws AlreadyExistsException, InvalidObjectException, NoSuchObjectException {
     objectStore.addSchemaVersion(schemaVersion);
   }
 
   @Override
-  public void alterSchemaVersion(SchemaVersionDescriptor version, SchemaVersion newVersion) throws
-      NoSuchObjectException, MetaException {
+  public void alterSchemaVersion(SchemaVersionDescriptor version, SchemaVersion newVersion)
+      throws NoSuchObjectException {
     objectStore.alterSchemaVersion(version, newVersion);
   }
 
   @Override
-  public SchemaVersion getSchemaVersion(SchemaVersionDescriptor version) throws MetaException {
+  public SchemaVersion getSchemaVersion(SchemaVersionDescriptor version) {
     return objectStore.getSchemaVersion(version);
   }
 
   @Override
-  public SchemaVersion getLatestSchemaVersion(ISchemaName schemaName) throws MetaException {
+  public SchemaVersion getLatestSchemaVersion(ISchemaName schemaName) {
     return objectStore.getLatestSchemaVersion(schemaName);
   }
 
   @Override
-  public List<SchemaVersion> getAllSchemaVersion(ISchemaName schemaName) throws MetaException {
+  public List<SchemaVersion> getAllSchemaVersion(ISchemaName schemaName) {
     return objectStore.getAllSchemaVersion(schemaName);
   }
 
   @Override
-  public List<SchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace,
-                                                        String type) throws MetaException {
+  public List<SchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace, String type) {
     return objectStore.getSchemaVersionsByColumns(colName, colNamespace, type);
   }
 
   @Override
-  public void dropSchemaVersion(SchemaVersionDescriptor version) throws NoSuchObjectException,
-      MetaException {
+  public void dropSchemaVersion(SchemaVersionDescriptor version) throws NoSuchObjectException {
     objectStore.dropSchemaVersion(version);
   }
 
   @Override
-  public SerDeInfo getSerDeInfo(String serDeName) throws NoSuchObjectException, MetaException {
+  public SerDeInfo getSerDeInfo(String serDeName) throws NoSuchObjectException {
     return objectStore.getSerDeInfo(serDeName);
   }
 
   @Override
-  public void addSerde(SerDeInfo serde) throws AlreadyExistsException, MetaException {
+  public void addSerde(SerDeInfo serde) throws AlreadyExistsException {
     objectStore.addSerde(serde);
   }
 
@@ -1318,7 +1283,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) throws MetaException {
+  public List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) {
     return objectStore.getRuntimeStats(maxEntries, maxCreateTime);
   }
 
@@ -1338,14 +1303,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<TableName> getTableNamesWithStats() throws MetaException,
-      NoSuchObjectException {
+  public List<TableName> getTableNamesWithStats() {
     return null;
   }
 
   @Override
-  public List<TableName> getAllTableNamesForStats() throws MetaException,
-      NoSuchObjectException {
+  public List<TableName> getAllTableNamesForStats() {
     return null;
   }
 
@@ -1357,8 +1320,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public Map<String, List<String>> getPartitionColsWithStats(String catName,
-      String dbName, String tableName) throws MetaException,
-      NoSuchObjectException {
+      String dbName, String tableName) {
     return null;
   }
 
