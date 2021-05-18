@@ -9366,15 +9366,13 @@ public class ObjectStore implements RawStore, Configurable {
           String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(statsDesc.getDbName(),
                                                                       statsDesc.getTableName()),
                   mPartition.getParameters(), newParams, writeId, validWriteIds, true);
-          //if (errorMsg != null) {
-            //throw new MetaException(errorMsg);
-          //}
+          if (errorMsg != null) {
+            throw new MetaException(errorMsg);
+          }
           if (!isCurrentStatsValidForTheQuery(mPartition, validWriteIds, true)) {
             // Make sure we set the flag to invalid regardless of the current value.
             StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
             LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the partition "
-                    + statsDesc.getDbName() + "." + statsDesc.getTableName() + "." + statsDesc.getPartName());
-            throw new MetaException("Removed COLUMN_STATS_ACCURATE from the parameters of the partition "
                     + statsDesc.getDbName() + "." + statsDesc.getTableName() + "." + statsDesc.getPartName());
           }
           mPartition.setWriteId(writeId);
