@@ -815,6 +815,10 @@ class ListPackageRequest; end
 
 class Package; end
 
+class GetAllWriteEventInfoRequest; end
+
+class GetAllWriteEventInfoResponse; end
+
 class MetaException < ::Thrift::Exception; end
 
 class UnknownTableException < ::Thrift::Exception; end
@@ -7553,6 +7557,42 @@ class Package
     OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName'},
     HEADER => {:type => ::Thrift::Types::STRING, :name => 'header'},
     BODY => {:type => ::Thrift::Types::STRING, :name => 'body'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetAllWriteEventInfoRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TXNID = 1
+  DBNAME = 2
+  TABLENAME = 3
+
+  FIELDS = {
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetAllWriteEventInfoResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  WRITEEVENTINFOS = 1
+
+  FIELDS = {
+    WRITEEVENTINFOS => {:type => ::Thrift::Types::LIST, :name => 'writeEventInfos', :element => {:type => ::Thrift::Types::STRUCT, :class => ::WriteEventInfo}}
   }
 
   def struct_fields; FIELDS; end

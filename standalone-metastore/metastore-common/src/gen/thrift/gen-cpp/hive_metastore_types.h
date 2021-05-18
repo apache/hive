@@ -997,6 +997,10 @@ class ListPackageRequest;
 
 class Package;
 
+class GetAllWriteEventInfoRequest;
+
+class GetAllWriteEventInfoResponse;
+
 class MetaException;
 
 class UnknownTableException;
@@ -18192,6 +18196,102 @@ class Package : public virtual ::apache::thrift::TBase {
 void swap(Package &a, Package &b);
 
 std::ostream& operator<<(std::ostream& out, const Package& obj);
+
+typedef struct _GetAllWriteEventInfoRequest__isset {
+  _GetAllWriteEventInfoRequest__isset() : txnId(false), dbName(false), tableName(false) {}
+  bool txnId :1;
+  bool dbName :1;
+  bool tableName :1;
+} _GetAllWriteEventInfoRequest__isset;
+
+class GetAllWriteEventInfoRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  GetAllWriteEventInfoRequest(const GetAllWriteEventInfoRequest&);
+  GetAllWriteEventInfoRequest& operator=(const GetAllWriteEventInfoRequest&);
+  GetAllWriteEventInfoRequest() : txnId(0), dbName(), tableName() {
+  }
+
+  virtual ~GetAllWriteEventInfoRequest() noexcept;
+  int64_t txnId;
+  std::string dbName;
+  std::string tableName;
+
+  _GetAllWriteEventInfoRequest__isset __isset;
+
+  void __set_txnId(const int64_t val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tableName(const std::string& val);
+
+  bool operator == (const GetAllWriteEventInfoRequest & rhs) const
+  {
+    if (!(txnId == rhs.txnId))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
+      return false;
+    return true;
+  }
+  bool operator != (const GetAllWriteEventInfoRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetAllWriteEventInfoRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetAllWriteEventInfoRequest &a, GetAllWriteEventInfoRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const GetAllWriteEventInfoRequest& obj);
+
+typedef struct _GetAllWriteEventInfoResponse__isset {
+  _GetAllWriteEventInfoResponse__isset() : writeEventInfos(false) {}
+  bool writeEventInfos :1;
+} _GetAllWriteEventInfoResponse__isset;
+
+class GetAllWriteEventInfoResponse : public virtual ::apache::thrift::TBase {
+ public:
+
+  GetAllWriteEventInfoResponse(const GetAllWriteEventInfoResponse&);
+  GetAllWriteEventInfoResponse& operator=(const GetAllWriteEventInfoResponse&);
+  GetAllWriteEventInfoResponse() {
+  }
+
+  virtual ~GetAllWriteEventInfoResponse() noexcept;
+  std::vector<WriteEventInfo>  writeEventInfos;
+
+  _GetAllWriteEventInfoResponse__isset __isset;
+
+  void __set_writeEventInfos(const std::vector<WriteEventInfo> & val);
+
+  bool operator == (const GetAllWriteEventInfoResponse & rhs) const
+  {
+    if (!(writeEventInfos == rhs.writeEventInfos))
+      return false;
+    return true;
+  }
+  bool operator != (const GetAllWriteEventInfoResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetAllWriteEventInfoResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetAllWriteEventInfoResponse &a, GetAllWriteEventInfoResponse &b);
+
+std::ostream& operator<<(std::ostream& out, const GetAllWriteEventInfoResponse& obj);
 
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}

@@ -286,6 +286,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void add_package(AddPackageRequest request)')
     print('   get_all_packages(ListPackageRequest request)')
     print('  void drop_package(DropPackageRequest request)')
+    print('  GetAllWriteEventInfoResponse get_all_write_event_info(GetAllWriteEventInfoRequest request)')
     print('  string getName()')
     print('  string getVersion()')
     print('  fb_status getStatus()')
@@ -1949,6 +1950,12 @@ elif cmd == 'drop_package':
         print('drop_package requires 1 args')
         sys.exit(1)
     pp.pprint(client.drop_package(eval(args[0]),))
+
+elif cmd == 'get_all_write_event_info':
+    if len(args) != 1:
+        print('get_all_write_event_info requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_all_write_event_info(eval(args[0]),))
 
 elif cmd == 'getName':
     if len(args) != 0:

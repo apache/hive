@@ -10491,4 +10491,22 @@ public Package find_package(GetPackageRequest request) throws MetaException, NoS
       endFunction("drop_package", ex == null, ex);
     }
   }
+
+  @Override
+  public GetAllWriteEventInfoResponse get_all_write_event_info(GetAllWriteEventInfoRequest request)
+      throws MetaException {
+    startFunction("get_all_write_event_info");
+    Exception ex = null;
+    try {
+      List<WriteEventInfo> writeEventInfo = getMS().getAllWriteEventInfo(request.getTxnId(),
+          request.getDbName(), request.getTableName());
+      return new GetAllWriteEventInfoResponse(writeEventInfo);
+    } catch (Exception e) {
+      LOG.error("Caught exception", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("get_all_write_event_info", ex == null, ex);
+    }
+  }
 }
