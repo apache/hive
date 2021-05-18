@@ -1931,7 +1931,7 @@ public class Hive {
               Materialization invalidationInfo = getMSC().getMaterializationInvalidationInfo(
                   materializedViewTable.getCreationMetadata(), conf.get(ValidTxnList.VALID_TXNS_KEY));
               if (invalidationInfo == null || invalidationInfo.isSourceTablesUpdateDeleteModified() ||
-                  invalidationInfo.isSetSourceTablesCompacted()) {
+                  invalidationInfo.isSourceTablesCompacted()) {
                 // We ignore (as it did not meet the requirements), but we do not need to update it in the
                 // registry, since it is up-to-date
                 result = false;
