@@ -4321,4 +4321,6 @@ public interface IMetaStoreClient {
   List<String> listPackages(ListPackageRequest request) throws TException;
 
   void dropPackage(DropPackageRequest request) throws TException;
+
+  GetAllWriteEventInfoResponse getAllWriteEventInfo(GetAllWriteEventInfoRequest request) throws TException;
 }

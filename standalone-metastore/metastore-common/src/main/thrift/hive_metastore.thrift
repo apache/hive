@@ -2216,7 +2216,7 @@ struct GetAllWriteEventInfoRequest {
 }
 
 struct GetAllWriteEventInfoResponse {
-  1: optional list<WriteEventInfo> writeEventInfos
+  1: list<WriteEventInfo> writeEventInfos
 }
 
 // Exceptions.
