@@ -78,6 +78,7 @@ import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
@@ -122,6 +123,7 @@ import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdRequest;
 import org.apache.hadoop.hive.metastore.api.MaxAllocatedTableWriteIdResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
@@ -158,6 +160,7 @@ import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -5491,7 +5494,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   private void insertIntoPartColStatTable(Map<String, PartitionInfo> statsPartInfoMap,
                                           Map<String, ColumnStatistics> newStatsMap,
-                                          Connection dbConn) throws SQLException {
+                                          Connection dbConn) throws SQLException, MetaException, NoSuchObjectException {
     PreparedStatement statement = null;
     PreparedStatement statementDelete = null;
     long maxCsId = getMaxCSId(dbConn);
@@ -5519,115 +5522,41 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
         ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
-        String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
-        String dbName = statsDesc.getDbName();
-        String tableName = statsDesc.getTableName();
-        String partName = statsDesc.getPartName();
         long partId = statsPartInfoMap.get(entry.getKey()).partitionId;
 
         for (ColumnStatisticsObj statisticsObj : colStats.getStatsObj()) {
-          ColumnStatisticsData statsData = statisticsObj.getStatsData();
-          String columnType = statisticsObj.getColType();
-          long numNulls = 0;
-          long numDVs = 0;
-          double avgColLen = 0;
-          long maxColLen = 0;
-          long numTrues = 0;
-          long numFalses = 0;
-          byte[] bitVector;
-          Long longHighVal = null;
-          Long longLowVal = null;
-          Double doubleHighVal = null;
-          Double doubleLowVal = null;
-          String decimalHighVal = null;
-          String decimalLowVal = null;
-          if (columnType.equalsIgnoreCase("long")
-                  || columnType.equalsIgnoreCase("tinyint")
-                  || columnType.equalsIgnoreCase("smallint")
-                  || columnType.equalsIgnoreCase("int")
-                  || columnType.equalsIgnoreCase("bigint")) {
-            numNulls = statsData.getLongStats().getNumNulls();
-            numDVs = statsData.getLongStats().getNumDVs();
-            bitVector = statsData.getLongStats().getBitVectors();
-            longHighVal = statsData.getLongStats().getHighValue();
-            longLowVal = statsData.getLongStats().getLowValue();
-          } else if (columnType.equalsIgnoreCase("double")
-                  || columnType.equalsIgnoreCase("float")) {
-            numNulls = statsData.getDoubleStats().getNumNulls();
-            numDVs = statsData.getDoubleStats().getNumDVs();
-            bitVector = statsData.getDoubleStats().getBitVectors();
-            doubleHighVal = statsData.getDoubleStats().getHighValue();
-            doubleLowVal = statsData.getDoubleStats().getLowValue();
-          } else if (columnType.equalsIgnoreCase("string") || columnType.toLowerCase().startsWith("char")
-                  || columnType.toLowerCase().startsWith("varchar")) { //char(x),varchar(x) types
-            avgColLen = statsData.getStringStats().getAvgColLen();
-            maxColLen = statsData.getStringStats().getMaxColLen();
-            numNulls = statsData.getStringStats().getNumNulls();
-            numDVs = statsData.getStringStats().getNumDVs();
-            bitVector = statsData.getStringStats().getBitVectors();
-          } else if (columnType.equalsIgnoreCase("boolean")) {
-            numTrues = statsData.getBooleanStats().getNumTrues();
-            numFalses = statsData.getBooleanStats().getNumFalses();
-            numNulls = statsData.getBooleanStats().getNumNulls();
-            bitVector = statsData.getBooleanStats().getBitVectors();
-          } else if (columnType.equalsIgnoreCase("binary")) {
-            avgColLen = statsData.getBinaryStats().getAvgColLen();
-            maxColLen = statsData.getBinaryStats().getMaxColLen();
-            numNulls = statsData.getBinaryStats().getNumNulls();
-            bitVector = statsData.getBinaryStats().getBitVectors();
-          } else if (columnType.toLowerCase().startsWith("decimal")) {
-            numNulls = statsData.getDecimalStats().getNumNulls();
-            numDVs = statsData.getDecimalStats().getNumDVs();
-            bitVector = statsData.getDecimalStats().getBitVectors();
-            decimalHighVal = DecimalUtils.createJdoDecimalString(statsData.getDecimalStats().getHighValue());
-            decimalLowVal = DecimalUtils.createJdoDecimalString(statsData.getDecimalStats().getLowValue());
-          } else if (columnType.equalsIgnoreCase("date")) {
-            numNulls = statsData.getDateStats().getNumNulls();
-            numDVs = statsData.getDateStats().getNumDVs();
-            bitVector = statsData.getDateStats().getBitVectors();
-          } else if (columnType.equalsIgnoreCase("timestamp")) {
-            numNulls = statsData.getTimestampStats().getNumNulls();
-            numDVs = statsData.getTimestampStats().getNumDVs();
-            bitVector = statsData.getTimestampStats().getBitVectors();
-          } else {
-            throw new RuntimeException("Invalid datatype" + columnType);
-          }
-
-          if (sqlGenerator.getDbProduct().equals(DatabaseProduct.POSTGRESQL_NAME) && bitVector == null) {
-            // workaround for DN bug in persisting nulls in pg bytea column
-            // instead set empty bit vector with header.
-            bitVector = new byte[]{'H', 'L'};
-          }
+          MPartitionColumnStatistics mPartitionColumnStatistics = StatObjectConverter.
+                  convertToMPartitionColumnStatistics(null, statsDesc, statisticsObj, colStats.getEngine());
 
           statement.setLong(1, maxCsId);
-          statement.setString(2, catName);
-          statement.setString(3, dbName);
-          statement.setString(4, tableName);
-          statement.setString(5, partName);
-          statement.setString(6, statisticsObj.getColName());
-          statement.setString(7, statisticsObj.getColType());
+          statement.setString(2, mPartitionColumnStatistics.getCatName());
+          statement.setString(3, mPartitionColumnStatistics.getDbName());
+          statement.setString(4, mPartitionColumnStatistics.getTableName());
+          statement.setString(5, mPartitionColumnStatistics.getPartitionName());
+          statement.setString(6, mPartitionColumnStatistics.getColName());
+          statement.setString(7, mPartitionColumnStatistics.getColType());
           statement.setLong(8, partId);
-          statement.setObject(9, longLowVal);
-          statement.setObject(10, longHighVal);
-          statement.setObject(11, doubleHighVal);
-          statement.setObject(12, doubleLowVal);
-          statement.setString(13, decimalLowVal);
-          statement.setString(14, decimalHighVal);
-          statement.setLong(15, numNulls);
-          statement.setLong(16, numDVs);
-          statement.setBytes(17, bitVector);
-          statement.setDouble(18, avgColLen);
-          statement.setLong(19, maxColLen);
-          statement.setLong(20, numTrues);
-          statement.setLong(21, numFalses);
-          statement.setLong(22, colStats.getStatsDesc().getLastAnalyzed());
-          statement.setString(23, colStats.getEngine());
+          statement.setObject(9, mPartitionColumnStatistics.getLongLowValue());
+          statement.setObject(10, mPartitionColumnStatistics.getLongHighValue());
+          statement.setObject(11, mPartitionColumnStatistics.getDoubleHighValue());
+          statement.setObject(12, mPartitionColumnStatistics.getDecimalLowValue());
+          statement.setString(13, mPartitionColumnStatistics.getDecimalLowValue());
+          statement.setString(14, mPartitionColumnStatistics.getDecimalHighValue());
+          statement.setObject(15, mPartitionColumnStatistics.getNumNulls());
+          statement.setObject(16, mPartitionColumnStatistics.getNumDVs());
+          statement.setObject(17, mPartitionColumnStatistics.getBitVector());
+          statement.setObject(18, mPartitionColumnStatistics.getAvgColLen());
+          statement.setObject(19, mPartitionColumnStatistics.getMaxColLen());
+          statement.setObject(20, mPartitionColumnStatistics.getNumTrues());
+          statement.setObject(21, mPartitionColumnStatistics.getNumFalses());
+          statement.setLong(22, mPartitionColumnStatistics.getLastAnalyzed());
+          statement.setString(23, mPartitionColumnStatistics.getEngine());
 
-          statementDelete.setString(1, catName);
-          statementDelete.setString(2, dbName);
-          statementDelete.setString(3, tableName);
-          statementDelete.setString(4, partName);
-          statementDelete.setString(5, statisticsObj.getColName());
+          statementDelete.setString(1, mPartitionColumnStatistics.getCatName());
+          statementDelete.setString(2, mPartitionColumnStatistics.getDbName());
+          statementDelete.setString(3, mPartitionColumnStatistics.getTableName());
+          statementDelete.setString(4, mPartitionColumnStatistics.getPartitionName());
+          statementDelete.setString(5, mPartitionColumnStatistics.getColName());
 
           maxCsId++;
           numRows++;
@@ -5960,7 +5889,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                 + "," + validWriteIds + "," + writeId + ")");
         throw new MetaException("Unable to update Column stats for  " + quoteString(tableName)
                 + " due to: " + getMessage(e) + "; " + StringUtils.stringifyException(e));
-      } catch (InvalidObjectException e) {
+      } catch (InvalidObjectException | NoSuchObjectException e) {
+        LOG.error("Unable to update Column stats for  " + quoteString(tableName), e);
         throw new MetaException("Unable to update Column stats for  " + quoteString(tableName)
                 + " due to: "  + e.getMessage());
       } finally {
