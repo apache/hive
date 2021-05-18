@@ -10635,7 +10635,8 @@ public Package find_package(GetPackageRequest request) throws MetaException, NoS
     startFunction("get_all_write_event_info");
     Exception ex = null;
     try {
-      List<WriteEventInfo> writeEventInfo = getMS().getAllWriteEventInfo(request.getTxnId(), request.getDbName(), request.getTableName());
+      List<WriteEventInfo> writeEventInfo = getMS().getAllWriteEventInfo(request.getTxnId(),
+          request.getDbName(), request.getTableName());
       return new GetAllWriteEventInfoResponse(writeEventInfo);
     } catch (Exception e) {
       LOG.error("Caught exception", e);
