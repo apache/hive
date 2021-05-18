@@ -24,6 +24,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
 
 @InterfaceAudience.Public
 @InterfaceStability.Stable
@@ -31,14 +32,16 @@ public class PreAlterPartitionEvent extends PreEventContext {
 
   private final String dbName;
   private final String tableName;
+  private final Table table;
   private final List<String> oldPartVals;
   private final Partition newPart;
 
-  public PreAlterPartitionEvent(String dbName, String tableName, List<String> oldPartVals,
+  public PreAlterPartitionEvent(String dbName, String tableName, Table table, List<String> oldPartVals,
       Partition newPart, IHMSHandler handler) {
     super(PreEventType.ALTER_PARTITION, handler);
     this.dbName = dbName;
     this.tableName = tableName;
+    this.table = table;
     this.oldPartVals = oldPartVals;
     this.newPart = newPart;
   }
@@ -50,6 +53,8 @@ public class PreAlterPartitionEvent extends PreEventContext {
   public String getTableName() {
     return tableName;
   }
+
+  public Table getTable() { return table; }
 
   public List<String> getOldPartVals() {
     return oldPartVals;
