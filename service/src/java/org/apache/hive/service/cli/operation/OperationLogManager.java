@@ -31,9 +31,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +58,7 @@ import org.apache.hive.service.cli.session.SessionManager;
  * and investigating the problem of the operation handily for users or administrators.
  * The tree under the log location looks like:
  * - ${@link SessionManager#operationLogRootDir}_historic
- *    - thriftPort__startTime
+ *    - hostname_thriftPort_startTime
  *       - sessionId
  *          - queryId (the operation log file)
  * <p>
@@ -82,6 +84,7 @@ public class OperationLogManager {
   private final OperationManager operationManager;
   private OperationLogDirCleaner cleaner;
   private String historicParentLogDir;
+  private String serverInstance;
 
   public OperationLogManager(SessionManager sessionManager, HiveConf hiveConf) {
     this.operationManager = sessionManager.getOperationManager();
@@ -101,14 +104,26 @@ public class OperationLogManager {
     }
   }
 
+  private String getServerInstance() {
+    String hostname;
+    try {
+      hostname = ServerUtils.hostname();
+    } catch (Exception e) {
+      // A random id is given on exception
+      hostname = UUID.randomUUID().toString();
+    }
+    int serverPort = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT);
+    return hostname + "_" + serverPort;
+  }
+
   private void initHistoricOperationLogRootDir() {
     String origLogLoc = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION);
     File logLocation = new File(origLogLoc);
     historicParentLogDir = logLocation.getAbsolutePath() + HISTORIC_DIR_SUFFIX;
-    int serverPort = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT);
+    serverInstance = getServerInstance();
     String logRootDir = new StringBuilder(historicParentLogDir)
-        .append("/").append(serverPort)
-        .append("__").append(System.currentTimeMillis()).toString();
+        .append("/").append(serverInstance)
+        .append("_").append(System.currentTimeMillis()).toString();
     File operationLogRootDir = new File(logRootDir);
 
     if (operationLogRootDir.exists() && !operationLogRootDir.isDirectory()) {
@@ -293,20 +308,21 @@ public class OperationLogManager {
 
   // delete the older historic log root dirs on restart
   private void deleteElderLogRootDirs() {
-    int serverPort = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT);
     File[] children = new File(historicParentLogDir).listFiles(new FileFilter() {
       @Override
       public boolean accept(File child) {
         return child.isDirectory()
-            && child.getName().startsWith(serverPort + "__")
+            && child.getName().startsWith(serverInstance)
             && !child.getAbsolutePath().equals(historicLogRootDir);
       }
     });
 
-    if (children != null) {
-      for (File f : children) {
-        FileUtils.deleteQuietly(f);
-      }
+    if (children == null || children.length == 0) {
+      return;
+    }
+
+    for (File f : children) {
+      FileUtils.deleteQuietly(f);
     }
   }
 
