@@ -737,7 +737,11 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     }
 
     Database oldDb = getDbForTable(oldTable);
-    if (isTableRename(oldTable, newTable) && isTranslatedToExternalTable(oldTable)
+    boolean isTranslatedToExternalFollowsRenames = MetastoreConf.getBoolVar(hmsHandler.getConf(),
+        ConfVars.METASTORE_METADATA_TRANSFORMER_TRANSLATED_TO_EXTERNAL_FOLLOWS_RENAMES);
+
+    if (isTranslatedToExternalFollowsRenames && isTableRename(oldTable, newTable)
+        && isTranslatedToExternalTable(oldTable)
         && isTranslatedToExternalTable(newTable)) {
       Database newDb = getDbForTable(newTable);
       Path oldPath = TableLocationStrategy.getDefaultPath(hmsHandler, oldDb, oldTable.getTableName());
