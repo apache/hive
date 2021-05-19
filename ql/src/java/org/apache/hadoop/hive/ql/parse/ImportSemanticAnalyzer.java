@@ -486,6 +486,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
               isSkipTrash, needRecycle, copyAtLoad, dumpRoot, metricCollector);
     } else {
       copyTask = TaskFactory.get(new CopyWork(dataPath, destPath, false, dumpRoot, metricCollector, true));
+      throw new SemanticException("Test Export Code Reach in createReplImportTasks");
     }
 
     MoveWork moveWork = new MoveWork(x.getInputs(), x.getOutputs(), null, null, false,
@@ -517,7 +518,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static Task<?> loadTable(URI fromURI, ImportTableDesc tblDesc, boolean replace,
                                    ReplicationSpec replicationSpec, EximUtil.SemanticAnalyzerWrapperContext x,
                                    Long writeId, int stmtId,
-                                   String dumpRoot, ReplicationMetricCollector metricCollector) {
+                                   String dumpRoot, ReplicationMetricCollector metricCollector) throws HiveException{
     Path dataPath = new Path(fromURI.toString(), EximUtil.DATA_PATH_NAME);
 
     PathResolver resolver = new TablePathResolver(replace, writeId, stmtId, x.getHive(), x.getCtx(), tblDesc,
