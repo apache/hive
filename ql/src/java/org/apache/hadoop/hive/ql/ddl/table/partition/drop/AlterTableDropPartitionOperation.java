@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.ddl.table.partition.drop;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.common.TableName;
@@ -81,6 +82,7 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
       return;
     }
 
+    Map<String, String> dbParams = context.getDb().getDatabase(table.getDbName()).getParameters();
     for (AlterTableDropPartitionDesc.PartitionDesc partSpec : desc.getPartSpecs()) {
       List<Partition> partitions = new ArrayList<>();
       try {
@@ -88,7 +90,7 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
         // Check if that is a comeback from a checkpoint, if not call normal drop partition.
         boolean modifySinglePartition = false;
         for (Partition p : partitions) {
-          if (p != null && !replicationSpec.allowEventReplacementInto(p.getParameters())) {
+          if (p != null && !replicationSpec.allowEventReplacementInto(dbParams)) {
             modifySinglePartition = true;
             break;
           }
@@ -99,8 +101,10 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
           LOG.info("Replication calling normal drop partitions for regular partition drops {}", partitions);
           dropPartitions(true);
         } else {
-          for (Partition p : Iterables.filter(partitions, replicationSpec.allowEventReplacementInto())) {
-            context.getDb().dropPartition(table.getDbName(), table.getTableName(), p.getValues(), true);
+          for (Partition p : partitions) {
+            if (replicationSpec.allowEventReplacementInto(dbParams)) {
+              context.getDb().dropPartition(table.getDbName(), table.getTableName(), p.getValues(), true);
+            }
           }
         }
       } catch (NoSuchObjectException e) {
