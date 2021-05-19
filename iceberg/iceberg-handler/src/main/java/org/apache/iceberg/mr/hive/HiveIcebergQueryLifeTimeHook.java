@@ -27,9 +27,9 @@ import org.apache.iceberg.mr.InputFormatConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HiveIcebergCTASHook implements QueryLifeTimeHook {
+public class HiveIcebergQueryLifeTimeHook implements QueryLifeTimeHook {
 
-  private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergCTASHook.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergQueryLifeTimeHook.class);
 
   @Override
   public void beforeCompile(QueryLifeTimeHookContext ctx) {

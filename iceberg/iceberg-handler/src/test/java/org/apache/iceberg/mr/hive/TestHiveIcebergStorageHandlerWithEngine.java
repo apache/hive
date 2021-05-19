@@ -34,7 +34,6 @@ import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
-import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -43,8 +42,6 @@ import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveSchemaUtil;
-import org.apache.iceberg.mr.Catalogs;
-import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -521,7 +518,11 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testCTASFromHiveTable() {
-    Assume.assumeTrue("CTAS target table is supported only for HiveCatalog tables",
+    Assume.assumeTrue("CTAS target table is supported fully only for HiveCatalog tables." +
+        "For other catalog types, the HiveIcebergSerDe will create the target Iceberg table in the correct catalog " +
+        "using the Catalogs.createTable function, but will not register the table in HMS since those catalogs do not " +
+        "use HiveTableOperations. This means that even though the CTAS query succeeds, the user would not be able to " +
+        "query this new table from Hive, since HMS does not know about it.",
         testTableType == TestTables.TestTableType.HIVE_CATALOG);
 
     shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
@@ -540,34 +541,12 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   }
 
   @Test
-  public void testCTASFromDifferentIcebergCatalog() {
-    Assume.assumeTrue("CTAS target table is supported only for HiveCatalog tables",
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
-
-    // get source data from a different catalog
-    shell.executeStatement(String.format(
-        "CREATE TABLE source STORED BY '%s' LOCATION '%s' TBLPROPERTIES ('%s'='%s', '%s'='%s')",
-        HiveIcebergStorageHandler.class.getName(),
-        temp.getRoot().getPath() + "/default/source/",
-        InputFormatConfig.CATALOG_NAME, Catalogs.ICEBERG_HADOOP_TABLE_NAME,
-        InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)));
-    shell.executeStatement("INSERT INTO source VALUES (1, 'Mike', 'Roger'), (2, 'Linda', 'Albright')");
-
-    // CTAS into a new HiveCatalog table
-    shell.executeStatement(String.format(
-        "CREATE TABLE target STORED BY '%s' TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
-        HiveIcebergStorageHandler.class.getName(),
-        TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
-
-    List<Object[]> objects = shell.executeStatement("SELECT * FROM target ORDER BY customer_id");
-    Assert.assertEquals(2, objects.size());
-    Assert.assertArrayEquals(new Object[]{1L, "Mike", "Roger"}, objects.get(0));
-    Assert.assertArrayEquals(new Object[]{2L, "Linda", "Albright"}, objects.get(1));
-  }
-
-  @Test
   public void testCTASFailureRollback() throws IOException {
-    Assume.assumeTrue("CTAS target table is supported only for HiveCatalog tables",
+    Assume.assumeTrue("CTAS target table is supported fully only for HiveCatalog tables." +
+        "For other catalog types, the HiveIcebergSerDe will create the target Iceberg table in the correct catalog " +
+        "using the Catalogs.createTable function, but will not register the table in HMS since those catalogs do not " +
+        "use HiveTableOperations. This means that even though the CTAS query succeeds, the user would not be able to " +
+        "query this new table from Hive, since HMS does not know about it.",
         testTableType == TestTables.TestTableType.HIVE_CATALOG);
 
     // force an execution error by passing in a committer class that Tez won't be able to load

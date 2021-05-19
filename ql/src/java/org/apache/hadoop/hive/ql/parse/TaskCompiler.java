@@ -141,7 +141,7 @@ public abstract class TaskCompiler {
         directInsertCtas =
             HiveUtils.getStorageHandler(conf, pCtx.getCreateTable().getStorageHandler()).directInsertCTAS();
       } catch (HiveException e) {
-        // do nothing
+        throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
       }
     }
 
