@@ -3485,11 +3485,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RelNode constraintRel = genFilterRelNode(constraintUDF, selPair.left, outerNameToPosMap, outerRR);
 
       List<RexNode> originalInputRefs = toRexNodeList(selPair.left);
-      List<RexNode> selectedRefs = Lists.newArrayList();
-      for (int index = 0; index < selPair.right.getColumnInfos().size(); index++) {
-        selectedRefs.add(originalInputRefs.get(index));
-      }
-
+      List<RexNode> selectedRefs = originalInputRefs.subList(0, selPair.right.getColumnInfos().size());
       return new Pair<>(genSelectRelNode(selectedRefs, selPair.right, constraintRel), selPair.right);
     }
 
@@ -4090,10 +4086,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       if (obLogicalPlanGenState.getSelectOutputRR() != null) {
         List<RexNode> originalInputRefs = toRexNodeList(obLogicalPlanGenState.getSrcRel());
-        List<RexNode> selectedRefs = Lists.newArrayList();
-        for (int index = 0; index < obLogicalPlanGenState.getSelectOutputRR().getColumnInfos().size(); index++) {
-          selectedRefs.add(originalInputRefs.get(index));
-        }
+        List<RexNode> selectedRefs = originalInputRefs.subList(
+                0, obLogicalPlanGenState.getSelectOutputRR().getColumnInfos().size());
         // We need to add select since order by schema may have more columns than result schema.
         return genSelectRelNode(selectedRefs, obLogicalPlanGenState.getSelectOutputRR(), sortRel);
       } else {
