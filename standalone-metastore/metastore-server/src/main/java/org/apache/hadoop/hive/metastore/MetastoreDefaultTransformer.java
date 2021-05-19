@@ -716,7 +716,9 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
   }
 
   @Override
-  public Table transformAlterTable(Table table, List<String> processorCapabilities, String processorId) throws MetaException {
+  public Table transformAlterTable(Table oldTable, Table newTable, List<String> processorCapabilities,
+      String processorId) throws MetaException {
+    Table table = newTable;
     if (!defaultCatalog.equalsIgnoreCase(table.getCatName())) {
       LOG.debug("Table belongs to non-default catalog, skipping translation");
       return table;
@@ -738,7 +740,9 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       return false;
     }
     try {
-      Table currentTable = hmsHandler.get_table_core(alteredTable.getCatName(), alteredTable.getDbName(), alteredTable.getTableName());
+      Table currentTable =
+          hmsHandler.get_table_core(alteredTable.getCatName(), alteredTable.getDbName(), alteredTable.getTableName());
+
       if (!currentTable.isSetSd() || currentTable.getSd().getLocation() == null) {
         return false;
       }
