@@ -54,8 +54,8 @@ import org.apache.hive.service.cli.session.SessionManager;
  * Move the operation log into another log location that different from the dir created by
  * {@link HiveSessionImpl#setOperationLogSessionDir(File)},
  * this will avoid the operation log being cleaned when session/operation is closed, refer to
- * {@link HiveSessionImpl#close()}, so we can get the operation log for the optimization
- * and investigating the problem of the operation handily for users or administrators.
+ * {@link HiveSessionImpl#close()}, so we can get the operation log handy for further optimization
+ * and investigation after query completes.
  * The tree under the log location looks like:
  * - ${@link SessionManager#operationLogRootDir}_historic
  *    - hostname_thriftPort_startTime
@@ -67,10 +67,11 @@ import org.apache.hive.service.cli.session.SessionManager;
  *    - sessionId
  *       - queryId (the operation log file)
  * <p>
- * The lifecycle of the log is managed by a daemon called {@link OperationLogDirCleaner},
- * it gets all query info stored in {@link QueryInfoCache}, searches for the query info that can not be reached on the webui,
- * and removes the log. If the operation log session directory has no operation log under it and the session is dead,
- * then the OperationLogDirCleaner will try to cleanup the session log directory.
+ * The removals of the operation log and log session dir are managed by a daemon called {@link OperationLogDirCleaner},
+ * it scans through the historic log root dir for the expired operation logs, the operation log is being expired
+ * and can be removed when the operation's query info does not cached in  {@link QueryInfoCache} and cannot be found
+ * on the webui. If the log session dir has no operation logs under it and the session is closed,
+ * then the cleaner will cleanup the log session dir.
  */
 
 public class OperationLogManager {
