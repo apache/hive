@@ -68,23 +68,18 @@ public abstract class MessageFactory {
         throw new NoSuchMethodException(
             "return type is not assignable to " + MessageEncoder.class.getCanonicalName());
       } catch (NoSuchMethodException e) {
-        String message = clazz.getCanonicalName()
-            + " does not implement the required 'public static MessageEncoder getInstance()' method ";
-        LOG.error(message, e);
-        throw new IllegalArgumentException(message, e);
+        throw new IllegalArgumentException(clazz.getCanonicalName()
+            + " does not implement the required 'public static MessageEncoder getInstance()' method ", e);
       }
     }
-    String message = clazz.getCanonicalName() + " is not assignable to " + MessageEncoder.class
-        .getCanonicalName();
-    LOG.error(message);
-    throw new IllegalArgumentException(message);
+    throw new IllegalArgumentException(clazz.getCanonicalName() + " is not assignable to " + MessageEncoder.class
+        .getCanonicalName());
   }
 
   public static MessageEncoder getInstance(String messageFormat)
       throws InvocationTargetException, IllegalAccessException {
     Method methodInstance = registry.get(messageFormat);
     if (methodInstance == null) {
-      LOG.error("received incorrect MessageFormat " + messageFormat);
       throw new RuntimeException("messageFormat: " + messageFormat + " is not supported ");
     }
     return (MessageEncoder) methodInstance.invoke(null);
@@ -97,9 +92,7 @@ public abstract class MessageFactory {
       Class<?> clazzObject = MessageFactory.class.getClassLoader().loadClass(clazz);
       return (MessageEncoder) requiredMethod(clazzObject).invoke(null);
     } catch (Exception e) {
-      String message = "could not load the configured class " + clazz;
-      LOG.error(message, e);
-      throw new IllegalStateException(message, e);
+      throw new IllegalStateException("Failed to load the configured class " + clazz, e);
     }
   }
 }

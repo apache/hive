@@ -108,7 +108,7 @@ public class FileMetadataManager {
         fileId = HdfsUtils.getFileId(fs, Path.getPathWithoutSchemeAndAuthority(file).toString());
       } catch (UnsupportedOperationException ex) {
         LOG.error("Cannot cache file metadata for " + location + "; "
-            + fs.getClass().getCanonicalName() + " does not support fileId");
+            + fs.getClass().getCanonicalName() + " does not support fileId", ex);
         return;
       }
       LOG.info("Caching file metadata for " + file + " (file ID " + fileId + ")");

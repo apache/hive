@@ -140,7 +140,6 @@ public class CachedStore implements RawStore, Configurable {
 
   private static synchronized void triggerUpdateUsingEvent(RawStore rawStore) {
     if (!isCachePrewarmed.get()) {
-      LOG.error("cache update should be done only after prewarm");
       throw new RuntimeException("cache update should be done only after prewarm");
     }
     long startTime = System.nanoTime();
@@ -148,8 +147,7 @@ public class CachedStore implements RawStore, Configurable {
     try {
       lastEventId = updateUsingNotificationEvents(rawStore, lastEventId);
     } catch (Exception e) {
-      LOG.error(" cache update failed for start event id " + lastEventId + " with error ", e);
-      throw new RuntimeException(e.getMessage());
+      throw new RuntimeException("Cache update failed for start event id: " + lastEventId, e);
     } finally {
       long endTime = System.nanoTime();
       LOG.info("Time taken in updateUsingNotificationEvents for num events : " + (lastEventId - preEventId) + " = "
@@ -284,7 +282,6 @@ public class CachedStore implements RawStore, Configurable {
     for (NotificationEvent event : eventList) {
       long eventId = event.getEventId();
       if (eventId <= lastEventId) {
-        LOG.error("Event id is not valid " + lastEventId + " : " + eventId);
         throw new RuntimeException(" event id is not valid " + lastEventId + " : " + eventId);
       }
       lastEventId = eventId;
@@ -753,14 +750,14 @@ public class CachedStore implements RawStore, Configurable {
           try {
             triggerUpdateUsingEvent(rawStore);
           } catch (Exception e) {
-            LOG.error("failed to update cache using events ", e);
+            LOG.error("failed to update cache using events", e);
           }
         } else {
           // TODO: prewarm and update can probably be merged.
           try {
             update();
           } catch (Exception e) {
-            LOG.error("periodical refresh fail ", e);
+            LOG.error("periodical refresh fail", e);
           }
         }
       } else {

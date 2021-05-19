@@ -60,7 +60,7 @@ public class EventCleanerTask implements MetastoreTaskThread {
         LOG.info("Number of events deleted from event Table: "+deleteCnt);
       }
     } catch (Exception e) {
-      LOG.error("Exception while trying to delete events ", e);
+      LOG.error("Exception while trying to delete events", e);
     }
   }
 }

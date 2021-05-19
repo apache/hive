@@ -56,7 +56,7 @@ public class AcidOpenTxnsCounterService implements MetastoreTaskThread {
       }
     }
     catch (Throwable t) {
-      LOG.error("Unexpected error in thread: {}, message: {}", Thread.currentThread().getName(), t.getMessage(), t);
+      LOG.error("Unexpected error in thread: {}", Thread.currentThread().getName(), t);
     }
   }
 

@@ -378,9 +378,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           determineDatabaseProduct(dbConn);
           sqlGenerator = new SQLGenerator(dbProduct, conf);
         } catch (SQLException e) {
-          String msg = "Unable to instantiate JDBC connection pooling, " + e.getMessage();
-          LOG.error(msg);
-          throw new RuntimeException(e);
+          throw new RuntimeException("Unable to instantiate JDBC connection pooling", e);
         } finally {
           closeDbConn(dbConn);
         }
@@ -406,9 +404,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       // this helps to roll out his feature when multiple HMS is accessing the same backend DB
       useMinHistoryLevel = checkMinHistoryLevelTable(minHistoryConfig);
     } catch (MetaException e) {
-      String msg = "Error during TxnHandler startup, " + e.getMessage();
-      LOG.error(msg);
-      throw new RuntimeException(e);
+      throw new RuntimeException("Error during TxnHandler startup", e);
     }
 
     try {
@@ -416,9 +412,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               TransactionalMetaStoreEventListener.class,
                       conf, MetastoreConf.getVar(conf, ConfVars.TRANSACTIONAL_EVENT_LISTENERS));
     } catch(MetaException e) {
-      String msg = "Unable to get transaction listeners, " + e.getMessage();
-      LOG.error(msg);
-      throw new RuntimeException(e);
+      throw new RuntimeException("Unable to get transaction listeners", e);
     }
   }
 
@@ -2019,10 +2013,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                     + " failed for input txns: "
                     + getAbortedAndReadOnlyTxns(txnIds, stmt)
                     + getCommittedTxns(txnIds, stmt);
-            LOG.error(errorMsg);
 
-            throw new IllegalStateException("Write ID allocation failed on " + TableName.getDbTable(dbName, tblName)
-                    + " as not all input txns in open state or read-only");
+            throw new IllegalStateException(errorMsg);
           }
         }
 
@@ -2766,7 +2758,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         success = true;
         return new ConnectionLockIdPair(dbConn, extLockId);
       } catch (SQLException e) {
-        LOG.error("enqueueLock failed for request: {}. Exception msg: {}", rqst, getMessage(e));
+        LOG.error("enqueueLock failed for request: {} {}", rqst, getMessage(e), e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "enqueueLockWithRetry(" + rqst + ")");
         throw new MetaException("Unable to update transaction database " +
@@ -3012,7 +3004,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
         return checkLock(dbConn, extLockId, txnId, zeroWaitReadEnabled);
       } catch (SQLException e) {
-        LOG.error("checkLock failed for extLockId={}/txnId={}. Exception msg: {}", extLockId, txnId, getMessage(e));
+        LOG.error("checkLock failed for extLockId={}/txnId={}: {}", extLockId, txnId, getMessage(e), e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "checkLockWithRetry(" + extLockId + "," + txnId + ")");
         throw new MetaException("Unable to update transaction database " +
@@ -3072,7 +3064,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         //extra heartbeat is logically harmless, but ...
         return checkLock(dbConn, extLockId, lockInfo.txnId, false);
       } catch (SQLException e) {
-        LOG.error("checkLock failed for request={}. Exception msg: {}", rqst, getMessage(e));
+        LOG.error("checkLock failed for request={}: {}", rqst, getMessage(e), e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "checkLock(" + rqst + " )");
         throw new MetaException("Unable to update transaction database " +
@@ -3137,23 +3129,19 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
           LockInfo lockInfo = optLockInfo.get();
           if (isValidTxn(lockInfo.txnId)) {
-            String msg = "Unlocking locks associated with transaction not permitted.  " + lockInfo;
             //if a lock is associated with a txn we can only "unlock" if if it's in WAITING state
             // which really means that the caller wants to give up waiting for the lock
-            LOG.error(msg);
-            throw new TxnOpenException(msg);
+            throw new TxnOpenException("Unlocking locks associated with transaction not permitted:" + lockInfo);
           } else {
             //we didn't see this lock when running DELETE stmt above but now it showed up
             //so should "should never happen" happened...
-            String msg = "Found lock in unexpected state " + lockInfo;
-            LOG.error(msg);
-            throw new MetaException(msg);
+            throw new MetaException("Found lock in unexpected state " + lockInfo);
           }
         }
         LOG.debug("Successfully unlocked at least 1 lock with extLockId={}", extLockId);
         dbConn.commit();
       } catch (SQLException e) {
-        LOG.error("Unlock failed for request={}. Exception msg: {}", rqst, getMessage(e));
+        LOG.error("Unlock failed for request={}: {}", rqst, getMessage(e), e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "unlock(" + rqst + ")");
         throw new MetaException("Unable to update transaction database " +
@@ -3729,7 +3717,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
         }
       } catch (SQLException e) {
-        LOG.error("Unable to execute query " + e.getMessage());
+        LOG.error("Unable to execute query", e);
         checkRetryable(dbConn, e, "getLatestCommittedCompactionInfo");
       } finally {
         LOG.debug("Going to rollback");
@@ -4472,9 +4460,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       if (!rs.next()) throw new MetaException("No results from date query");
       return rs.getTimestamp(1).getTime();
     } catch (SQLException e) {
-      String msg = "Unable to determine current time: " + e.getMessage();
-      LOG.error(msg);
-      throw new MetaException(msg);
+      throw new MetaException("Unable to determine current time: " + e.getMessage());
     } finally {
       closeStmt(stmt);
     }
@@ -4504,14 +4490,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       String s = conn.getMetaData().getDatabaseProductName();
       dbProduct = DatabaseProduct.determineDatabaseProduct(s, conf);
       if (dbProduct.isUNDEFINED()) {
-        String msg = "Unrecognized database product name <" + s + ">";
-        LOG.error(msg);
-        throw new IllegalStateException(msg);
+        throw new IllegalStateException("Unrecognized database product name <" + s + ">");
       }
     } catch (SQLException e) {
-      String msg = "Unable to get database product name";
-      LOG.error(msg, e);
-      throw new IllegalStateException(msg, e);
+      throw new IllegalStateException("Unable to get database product name", e);
     }
   }
 
@@ -5254,7 +5236,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       LOG.error("Failed to purge timed-out locks: " + getMessage(ex), ex);
     }
     catch (Exception ex) {
-      LOG.error("Failed to purge timed-out locks: " + ex.getMessage(), ex);
+      LOG.error("Failed to purge timed-out locks", ex);
     }
   }
 
@@ -5528,7 +5510,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
   
   private static String getMessage(SQLException ex) {
-    return ex.getMessage() + " (SQLState=" + ex.getSQLState() + ", ErrorCode=" + ex.getErrorCode() + ")";
+    return "(SQLState=" + ex.getSQLState() + ", ErrorCode=" + ex.getErrorCode() + ")";
   }
   static String quoteString(String input) {
     return "'" + input + "'";
@@ -5739,7 +5721,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         if (driverName == null || driverName.equals("")) {
           String msg = "JDBC driver for transaction db not set in configuration " +
               "file, need to set " + ConfVars.CONNECTION_DRIVER.getVarname();
-          LOG.error(msg);
           throw new RuntimeException(msg);
         }
         try {

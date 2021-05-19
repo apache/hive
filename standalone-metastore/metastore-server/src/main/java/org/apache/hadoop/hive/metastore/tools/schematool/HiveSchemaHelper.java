@@ -93,8 +93,7 @@ public class HiveSchemaHelper {
     } catch (IOException | SQLException e) {
       throw new HiveMetaException("Failed to get schema version.", e);
     } catch (ClassNotFoundException e) {
-      LOG.error("Unable to find driver class", e);
-      throw new HiveMetaException("Failed to load driver", e);
+      throw new HiveMetaException("Unable to find driver class", e);
     }
   }
 

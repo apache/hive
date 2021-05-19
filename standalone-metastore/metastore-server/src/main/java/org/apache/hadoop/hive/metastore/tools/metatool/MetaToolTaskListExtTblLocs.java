@@ -463,7 +463,7 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
       removeNestedStructure(inputList);
       createOutputList(inputList, "test", "test");
     } catch (Exception e) {
-      LOG.error("MetaToolTask failed on ListExtTblLocs test: ", e);
+      LOG.error("MetaToolTask failed on ListExtTblLocs test", e);
     }
     return coverageList;
   }

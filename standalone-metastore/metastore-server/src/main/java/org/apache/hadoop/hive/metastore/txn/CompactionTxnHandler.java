@@ -151,7 +151,7 @@ class CompactionTxnHandler extends TxnHandler {
           }
         }
       } catch (SQLException e) {
-        LOG.error("Unable to connect to transaction database " + e.getMessage());
+        LOG.error("Unable to connect to transaction database", e);
         checkRetryable(dbConn, e,
             "findPotentialCompactions(maxAborted:" + abortedThreshold
                 + ", abortedTimeThreshold:" + abortedTimeThreshold + ")");
@@ -225,8 +225,7 @@ class CompactionTxnHandler extends TxnHandler {
         dbConn.rollback();
         return null;
       } catch (SQLException e) {
-        LOG.error("Unable to select next element for compaction, " + e.getMessage());
-        LOG.debug("Going to rollback");
+        LOG.error("Going to rollback. Unable to select next element for compaction", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "findNextToCompact(workerId:" + workerId + ")");
         throw new MetaException("Unable to connect to transaction database " +
@@ -260,15 +259,14 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.debug("Going to execute update <" + s + ">");
         int updCnt = stmt.executeUpdate(s);
         if (updCnt != 1) {
-          LOG.error("Unable to set cq_state=" + READY_FOR_CLEANING + " for compaction record: " + info + ". updCnt=" + updCnt);
-          LOG.debug("Going to rollback");
+          LOG.error("Going to rollback. Unable to set cq_state=" + READY_FOR_CLEANING + " for compaction record: "
+              + info + ". updCnt=" + updCnt);
           dbConn.rollback();
         }
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
-        LOG.error("Unable to update compaction queue " + e.getMessage());
-        LOG.debug("Going to rollback");
+        LOG.error("Going to rollback. Unable to update compaction queue", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "markCompacted(" + info + ")");
         throw new MetaException("Unable to connect to transaction database " +
@@ -333,8 +331,7 @@ class CompactionTxnHandler extends TxnHandler {
         }
         return rc;
       } catch (SQLException e) {
-        LOG.error("Unable to select next element for cleaning, " + e.getMessage());
-        LOG.debug("Going to rollback");
+        LOG.error("Going to rollback. Unable to select next element for cleaning", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "findReadyToClean");
         throw new MetaException("Unable to connect to transaction database " +
@@ -387,8 +384,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.debug("Going to execute update <" + s + ">");
         int updCount = pStmt.executeUpdate();
         if (updCount != 1) {
-          LOG.error("Unable to delete compaction record: " + info +  ".  Update count=" + updCount);
-          LOG.debug("Going to rollback");
+          LOG.error("Going to rollback. Unable to delete compaction record: " + info +  ".  Update count=" + updCount);
           dbConn.rollback();
         }
         // Remove entries from completed_txn_components as well, so we don't start looking there
@@ -476,8 +472,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
-        LOG.error("Unable to delete from compaction queue " + e.getMessage());
-        LOG.debug("Going to rollback");
+        LOG.error("Going to rollback. Unable to delete from compaction queue", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "markCleaned(" + info + ")");
         throw new MetaException("Unable to connect to transaction database " +
@@ -536,8 +531,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
-        LOG.error("Unable to delete from txns table " + e.getMessage());
-        LOG.debug("Going to rollback");
+        LOG.error("Going to rollback. Unable to delete from txns table", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "cleanTxnToWriteIdTable");
         throw new MetaException("Unable to connect to transaction database " +
@@ -609,8 +603,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
-        LOG.error("Unable to delete from txns table " + e.getMessage());
-        LOG.debug("Going to rollback");
+        LOG.error("Going to rollback. Unable to delete from txns table", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "cleanEmptyAbortedTxns");
         throw new MetaException("Unable to connect to transaction database " +
@@ -653,9 +646,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
-        LOG.error("Unable to change dead worker's records back to initiated state " +
-          e.getMessage());
-        LOG.debug("Going to rollback");
+        LOG.error("Going to rollback. Unable to change dead worker's records back to initiated state", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "revokeFromLocalWorkers(hostname:" + hostname +")");
         throw new MetaException("Unable to connect to transaction database " +
@@ -700,9 +691,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
-        LOG.error("Unable to change dead worker's records back to initiated state " +
-          e.getMessage());
-        LOG.debug("Going to rollback");
+        LOG.error("Going to rollback. Unable to change dead worker's records back to initiated state", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "revokeTimedoutWorkers(timeout:" + timeout + ")");
         throw new MetaException("Unable to connect to transaction database " +
@@ -1062,8 +1051,7 @@ class CompactionTxnHandler extends TxnHandler {
         return (numFailed == failedThreshold) && !needsRetry;
       }
       catch (SQLException e) {
-        LOG.error("Unable to check for failed compactions", e);
-        LOG.debug("Going to rollback");
+        LOG.error("Going to rollback. Unable to check for failed compactions", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "checkFailedCompactions(" + ci + ")");
         LOG.error("Unable to connect to transaction database", e);
@@ -1186,11 +1174,10 @@ class CompactionTxnHandler extends TxnHandler {
         closeStmt(stmt);
         dbConn.commit();
       } catch (SQLException e) {
-        LOG.warn("setHadoopJobId(" + hadoopJobId + "," + id + "):" + e.getMessage());
-        LOG.debug("Going to rollback");
+        LOG.warn("Going to rollback. setHadoopJobId(" + hadoopJobId + "," + id + ")", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "setHadoopJobId(" + hadoopJobId + "," + id + ")");
-        LOG.error("setHadoopJobId(" + hadoopJobId + "," + id + ") failed: " + e.getMessage(), e);
+        LOG.error("setHadoopJobId(" + hadoopJobId + "," + id + ")", e);
       } finally {
         close(null, stmt, dbConn);
       }

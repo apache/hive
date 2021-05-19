@@ -91,8 +91,7 @@ public class PartFilterExprUtil {
         // the best long term solution.
         return new DefaultPartitionExpressionProxy();
       }
-      LOG.error("Error loading PartitionExpressionProxy", e);
-      throw new RuntimeException("Error loading PartitionExpressionProxy: " + e.getMessage());
+      throw new RuntimeException("Error loading PartitionExpressionProxy", e);
     }
   }
 

@@ -134,9 +134,8 @@ public class HiveAlterHandler implements AlterHandler {
     // Validate bucketedColumns in new table
     List<String> bucketColumns = MetaStoreServerUtils.validateBucketColumns(newt.getSd());
     if (CollectionUtils.isNotEmpty(bucketColumns)) {
-      String errMsg = "Bucket columns - " + bucketColumns.toString() + " doesn't match with any table columns";
-      LOG.error(errMsg);
-      throw new InvalidOperationException(errMsg);
+      throw new InvalidOperationException(
+          "Bucket columns - " + bucketColumns + " doesn't match with any table columns");
     }
 
     Path srcPath = null;
@@ -289,15 +288,12 @@ public class HiveAlterHandler implements AlterHandler {
                 dataWasMoved = true;
               }
             } catch (IOException | MetaException e) {
-              LOG.error("Alter Table operation for " + dbname + "." + name + " failed.", e);
               throw new InvalidOperationException("Alter Table operation for " + dbname + "." + name +
                       " failed to move data due to: '" + getSimpleMessage(e)
                       + "' See hive log file for details.");
             }
 
             if (!HiveMetaStore.isRenameAllowed(olddb, db)) {
-              LOG.error("Alter Table operation for " + TableName.getQualified(catName, dbname, name) +
-                      "to new table = " + TableName.getQualified(catName, newDbName, newTblName) + " failed ");
               throw new MetaException("Alter table not allowed for table " +
                       TableName.getQualified(catName, dbname, name) +
                       "to new table = " + TableName.getQualified(catName, newDbName, newTblName));
@@ -480,7 +476,7 @@ public class HiveAlterHandler implements AlterHandler {
             }
           } catch (IOException e) {
             LOG.error("Failed to restore data from " + destPath + " to " + srcPath
-                +  " in alter table failure. Manual restore is needed.");
+                +  " in alter table failure. Manual restore is needed.", e);
           }
         }
       }
@@ -743,10 +739,10 @@ public class HiveAlterHandler implements AlterHandler {
             }
           } catch (MetaException me) {
             LOG.error("Failed to restore partition data from " + destPath + " to " + srcPath
-                +  " in alter partition failure. Manual restore is needed.");
+                +  " in alter partition failure. Manual restore is needed.", me);
           } catch (IOException ioe) {
             LOG.error("Failed to restore partition data from " + destPath + " to " + srcPath
-                +  " in alter partition failure. Manual restore is needed.");
+                +  " in alter partition failure. Manual restore is needed.", ioe);
           }
         }
       }

@@ -133,7 +133,7 @@ public class JsonReporter extends ScheduledReporter {
     try {
       json = jsonWriter.writeValueAsString(registry);
     } catch (JsonProcessingException e) {
-      LOG.error("Unable to convert json to string ", e);
+      LOG.error("Unable to convert json to string", e);
       return;
     }
 
@@ -160,7 +160,7 @@ public class JsonReporter extends ScheduledReporter {
       try (BufferedWriter bw = Files.newBufferedWriter(tmpFile, StandardCharsets.UTF_8)) {
         bw.write(json);
       } catch (IOException e) {
-        LOG.error("Unable to write to temp file {}" + tmpFile, e);
+        LOG.error("Unable to write to temp file {}", tmpFile, e);
         return;
       }
 
@@ -168,8 +168,7 @@ public class JsonReporter extends ScheduledReporter {
       try {
         Files.move(tmpFile, path, StandardCopyOption.ATOMIC_MOVE);
       } catch (Exception e) {
-        LOG.error("Unable to rename temp file {} to {}", tmpFile, path);
-        LOG.error("Exception during rename", e);
+        LOG.error("Exception during rename: Unable to rename temp file {} to {}", tmpFile, path, e);
       }
     } finally {
       // If something happened and we were not able to rename the temp file, attempt to remove it
@@ -178,7 +177,7 @@ public class JsonReporter extends ScheduledReporter {
         try {
           Files.delete(tmpFile);
         } catch (Exception e) {
-          LOG.error("failed to delete temporary metrics file " + tmpFile, e);
+          LOG.error("failed to delete temporary metrics file {}", tmpFile, e);
         }
       }
     }

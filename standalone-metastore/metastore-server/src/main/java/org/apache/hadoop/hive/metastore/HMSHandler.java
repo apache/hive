@@ -330,7 +330,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
       logAndAudit("Meta listeners shutdown notification completed.");
     } catch (MetaException e) {
-      LOG.error("Failed to notify meta listeners on shutdown: ", e);
+      LOG.error("Failed to notify meta listeners on shutdown", e);
     }
   }
 
@@ -530,8 +530,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       try {
         clazz = conf.getClassByName(className);
       } catch (ClassNotFoundException e) {
-        LOG.error("Unable to load class " + className, e);
-        throw new IllegalArgumentException(e);
+        throw new IllegalArgumentException("Unable to load class " + className, e);
       }
       Constructor<?> constructor;
       try {
@@ -541,8 +540,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
         transformer = (IMetaStoreMetadataTransformer) constructor.newInstance(this);
       } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-        LOG.error("Unable to create instance of class " + className, e);
-        throw new IllegalArgumentException(e);
+        throw new IllegalArgumentException("Unable to create instance of class " + className, e);
       }
     }
     dataconnectorFactory = DataConnectorProviderFactory.getInstance(this);
@@ -608,8 +606,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           filterHookClassName.trim(), true, JavaUtils.getClassLoader()).getConstructor(
           Configuration.class).newInstance(conf);
     } catch (Exception e) {
-      LOG.error(errorMsg, e);
-      throw new IllegalStateException(errorMsg + e.getMessage(), e);
+      throw new IllegalStateException(e);
     }
   }
 
@@ -1325,7 +1322,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     try {
       cat = getMS().getCatalog(db.getCatalogName());
     } catch (NoSuchObjectException e) {
-      LOG.error("No such catalog " + db.getCatalogName());
       throw new InvalidObjectException("No such catalog " + db.getCatalogName());
     }
     boolean skipAuthorization = false;
@@ -1471,8 +1467,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                 }
               });
             } catch (IOException | InterruptedException e) {
-              LOG.error(
-                  "Couldn't delete managed directory " + dbMgdPath + " after " + "it was created for database " + db.getName() + " " + e.getMessage());
+              LOG.error("Failed to delete managed directory " + dbMgdPath + " after " + "it was created for database "
+                  + db.getName(), e);
             }
           }
 
@@ -1485,8 +1481,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                 }
               });
             } catch (IOException | InterruptedException e) {
-              LOG.error("Couldn't delete external directory " + dbExtPath + " after " + "it was created for database "
-                  + db.getName() + " " + e.getMessage());
+              LOG.error("Failed to delete external directory " + dbExtPath + " after " + "it was created for database "
+                  + db.getName(), e) ;
             }
           }
         }
@@ -1850,15 +1846,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             wh.deleteDir(new Path(db.getManagedLocationUri()), true, db);
           }
         } catch (Exception e) {
-          LOG.error("Failed to delete database directory: " + db.getManagedLocationUri() +
-              " " + e.getMessage());
+          LOG.error("Failed to delete database directory: " + db.getManagedLocationUri(), e);
         }
         // Delete the data in the database's location only if it is a legacy db path?
         try {
           wh.deleteDir(new Path(db.getLocationUri()), true, db);
         } catch (Exception e) {
-          LOG.error("Failed to delete database directory: " + db.getLocationUri() +
-              " " + e.getMessage());
+          LOG.error("Failed to delete database directory: " + db.getLocationUri(), e);
         }
         // it is not a terrible thing even if the data is not deleted
       }
@@ -3132,8 +3126,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       try {
         wh.deleteDir(tablePath, true, ifPurge, db);
       } catch (Exception e) {
-        LOG.error("Failed to delete table directory: " + tablePath +
-            " " + e.getMessage());
+        LOG.error("Failed to delete table directory: " + tablePath, e);
       }
     }
   }
@@ -3170,8 +3163,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         try {
           wh.deleteDir(partPath, true, ifPurge, db);
         } catch (Exception e) {
-          LOG.error("Failed to delete partition directory: " + partPath +
-              " " + e.getMessage());
+          LOG.error("Failed to delete partition directory: " + partPath, e);
         }
       }
     }
@@ -3205,8 +3197,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         wh.deleteDir(path, true, ifPurge, shouldEnableCm);
       }
     } catch (Exception e) {
-      LOG.error("Failed to delete directory: " + path +
-          " " + e.getMessage());
+      LOG.error("Failed to delete directory: " + path, e);
     }
   }
 
@@ -5726,7 +5717,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           request.isApplyDistinct(), request.getFilter(), request.isAscending(),
           request.getPartitionOrder(), request.getMaxParts());
     } catch (NoSuchObjectException e) {
-      LOG.error(String.format("Unable to get partition for %s.%s.%s", catName, dbName, tblName), e);
+      LOG.error("Unable to get partition for `{}`.`{}`.`{}`", catName, dbName, tblName, e);
       throw new MetaException(e.getMessage());
     }
   }
@@ -6419,9 +6410,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           toReturn = defaultValue;
         }
       } catch (RuntimeException e) {
-        LOG.error(threadLocalId.get().toString() + ": "
-            + "RuntimeException thrown in get_config_value - msg: "
-            + e.getMessage() + " cause: " + e.getCause());
+        LOG.error("{}: RuntimeException thrown in get_config_value", threadLocalId.get(), e);
       }
       success = true;
       return toReturn;
@@ -8662,7 +8651,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           try {
             insertData.addToFilesAddedChecksum(ReplChangeManager.checksumFor(newPath, newPath.getFileSystem(conf)));
           } catch (IOException e) {
-            LOG.error("failed to get checksum for the file " + newPath + " with error: " + e.getMessage());
+            LOG.error("failed to get checksum for the file " + newPath, e);
             throw new TException(e.getMessage());
           }
         }

@@ -95,18 +95,15 @@ public class SchemaToolTaskCreateUser extends SchemaToolTask {
                 try {
                   stmt.execute(s.substring(0, s.length() - 1));
                 } catch (SQLException e) {
-                  LOG.error("statement <" + s.substring(0, s.length() - 2) + "> failed", e);
-                  throw new RuntimeException(e);
+                  throw new RuntimeException("statement <" + s.substring(0, s.length() - 2) + "> failed", e);
                 }
               });
         }
       }
     } catch (IOException e) {
-      LOG.error("Caught IOException trying to read modified create user script " +
+      throw new HiveMetaException("Caught IOException trying to read modified create user script " +
           createFile.getAbsolutePath(), e);
-      throw new HiveMetaException(e);
     } catch (HiveMetaException e) {
-      LOG.error("Failed to connect to RDBMS", e);
       throw e;
     } catch (SQLException e) {
       LOG.error("Got SQLException", e);

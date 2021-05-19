@@ -72,9 +72,8 @@ public class DeSerializer extends JSONMessageDeserializer {
       byte[] bytes = IOUtils.toByteArray(is);
       return new String(bytes, StandardCharsets.UTF_8);
     } catch (IOException e) {
-      LOG.error("cannot decode the stream", e);
-      LOG.debug("base64 encoded String", messageBody);
-      throw new RuntimeException("cannot decode the stream ", e);
+      LOG.debug("base64 encoded String: {}", messageBody, e);
+      throw new RuntimeException("cannot decode the stream", e);
     }
   }
 

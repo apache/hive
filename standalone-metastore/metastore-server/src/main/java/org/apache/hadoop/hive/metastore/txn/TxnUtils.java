@@ -124,8 +124,7 @@ public class TxnUtils {
       handler.setConf(conf);
       return handler;
     } catch (Exception e) {
-      LOG.error("Unable to instantiate raw store directly in fastpath mode", e);
-      throw new RuntimeException(e);
+      throw new RuntimeException("Unable to instantiate raw store directly in fastpath mode", e);
     }
   }
 
