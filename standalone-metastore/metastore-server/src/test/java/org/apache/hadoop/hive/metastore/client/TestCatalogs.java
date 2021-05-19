@@ -1,5 +1,6 @@
 package org.apache.hadoop.hive.metastore.client;
 
+import org.apache.hadoop.hive.metastore.HiveMetaRuntimeException;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -251,7 +252,7 @@ public class TestCatalogs extends MetaStoreClientTest {
     client.alterCatalog(catName, cat);
   }
 
-  @Test(expected = InvalidOperationException.class)
+  @Test(expected = HiveMetaRuntimeException.class)
   public void alterChangeName() throws TException {
     String catName = "alter_change_name";
     String location = MetaStoreTestUtils.getTestWarehouseDir(catName);

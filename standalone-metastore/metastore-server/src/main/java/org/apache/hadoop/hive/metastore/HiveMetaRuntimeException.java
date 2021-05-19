@@ -17,20 +17,29 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import com.google.errorprone.annotations.FormatMethod;
+
 /**
- * Hive Exception when the metastore's underlying storage mechanism cannot be
- * accessed.
+ * This is the root of all Hive Runtime Exceptions. If a client can reasonably
+ * be expected to recover from an exception, make it a checked exception. If a
+ * client cannot do anything to recover from the exception, make it an unchecked
+ * exception.
  */
-public class HiveMetaDataAccessException extends HiveMetaRuntimeException {
+public class HiveMetaRuntimeException extends RuntimeException {
 
   private static final long serialVersionUID = 1L;
 
-  public HiveMetaDataAccessException(String message) {
+  public HiveMetaRuntimeException(String message) {
     super(message);
   }
 
-  public HiveMetaDataAccessException(String message, Throwable cause) {
+  public HiveMetaRuntimeException(String message, Throwable cause) {
     super(message, cause);
+  }
+
+  @FormatMethod
+  public HiveMetaRuntimeException(Throwable throwable, String message, Object... args) {
+    super(String.format(message, args), throwable);
   }
 
 }
