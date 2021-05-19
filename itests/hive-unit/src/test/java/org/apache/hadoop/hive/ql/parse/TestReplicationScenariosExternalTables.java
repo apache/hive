@@ -1898,5 +1898,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     // Verify the filter config gets used for the only db level paths.
     assertFalse(fs.exists(new Path(parent1Table1_target, "file1.txt")));
     assertTrue(fs.exists(new Path(externalTablePath_target, "file1.txt")));
+
+    // Clean up the filter file.
+    new File(filterFilePath).delete();
   }
 }
