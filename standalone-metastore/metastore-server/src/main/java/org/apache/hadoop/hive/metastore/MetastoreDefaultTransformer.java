@@ -718,38 +718,30 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
   @Override
   public Table transformAlterTable(Table oldTable, Table newTable, List<String> processorCapabilities,
       String processorId) throws MetaException {
-    Table table = newTable;
-    if (!defaultCatalog.equalsIgnoreCase(table.getCatName())) {
+    if (!defaultCatalog.equalsIgnoreCase(newTable.getCatName())) {
       LOG.debug("Table belongs to non-default catalog, skipping translation");
-      return table;
+      return newTable;
     }
 
     LOG.info("Starting translation for Alter table for processor " + processorId + " with " + processorCapabilities
-        + " on table " + table.getTableName());
+        + " on table " + newTable.getTableName());
 
-    if (tableLocationChanged(table)) {
-      validateTablePaths(table);
+    if (tableLocationChanged(oldTable, newTable)) {
+      validateTablePaths(newTable);
     }
 
-    LOG.debug("Transformer returning table:" + table.toString());
-    return table;
+    LOG.debug("Transformer returning table:" + newTable.toString());
+    return newTable;
   }
 
-  private boolean tableLocationChanged(Table alteredTable) throws MetaException {
-    if (!alteredTable.isSetSd() || alteredTable.getSd().getLocation() == null) {
+  private boolean tableLocationChanged(Table oldTable, Table newTable) throws MetaException {
+    if (!newTable.isSetSd() || newTable.getSd().getLocation() == null) {
       return false;
     }
-    try {
-      Table currentTable =
-          hmsHandler.get_table_core(alteredTable.getCatName(), alteredTable.getDbName(), alteredTable.getTableName());
-
-      if (!currentTable.isSetSd() || currentTable.getSd().getLocation() == null) {
-        return false;
-      }
-      return !currentTable.getSd().getLocation().equals(alteredTable.getSd().getLocation());
-    } catch (NoSuchObjectException e) {
+    if (!oldTable.isSetSd() || oldTable.getSd().getLocation() == null) {
       return false;
     }
+    return !oldTable.getSd().getLocation().equals(newTable.getSd().getLocation());
   }
 
   /**
