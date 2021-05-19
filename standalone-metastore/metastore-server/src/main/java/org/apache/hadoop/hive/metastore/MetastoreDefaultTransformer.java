@@ -652,20 +652,9 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           newTable.setParameters(params);
           LOG.info("Modified table params are:" + params.toString());
 
-          Path location = getLocation(table);
-          if (location == null) {
+          if (getLocation(table) == null) {
             try {
-              String strategyVar =
-                  MetastoreConf.getVar(hmsHandler.getConf(), ConfVars.METASTORE_METADATA_TRANSFORMER_LOCATION_MODE);
-              TableLocationStrategy strategy = TableLocationStrategy.valueOf(strategyVar);
-              int idx = 0;
-              while (true) {
-                location = strategy.getLocation(hmsHandler, db, newTable, idx++);
-                if (!hmsHandler.getWh().isDir(location)) {
-                  break;
-                }
-              }
-              LOG.info("Using location from {} for table {}", location, table.getTableName());
+              Path location = getTranslatedToExternalTableDefaultLocation(db, newTable);
               newTable.getSd().setLocation(location.toString());
             } catch (Exception e) {
               throw new MetaException("Exception determining external table location:" + e.getMessage());
@@ -708,6 +697,22 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     return newTable;
   }
 
+  private Path getTranslatedToExternalTableDefaultLocation(Database db, Table table) throws MetaException {
+    String strategyVar =
+        MetastoreConf.getVar(hmsHandler.getConf(), ConfVars.METASTORE_METADATA_TRANSFORMER_LOCATION_MODE);
+    TableLocationStrategy strategy = TableLocationStrategy.valueOf(strategyVar);
+    int idx = 0;
+    Path location = null;
+    while (true) {
+      location = strategy.getLocation(hmsHandler, db, table, idx++);
+      if (!hmsHandler.getWh().isDir(location)) {
+        break;
+      }
+    }
+    LOG.info("Using location {} for table {}", location, table.getTableName());
+    return location;
+  }
+
   private Path getLocation(Table table) {
     if (table.isSetSd() && table.getSd().getLocation() != null) {
       return new Path(table.getSd().getLocation());
@@ -726,12 +731,42 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     LOG.info("Starting translation for Alter table for processor " + processorId + " with " + processorCapabilities
         + " on table " + newTable.getTableName());
 
+    Database db;
+    try {
+      db = hmsHandler.get_database_core(oldTable.getCatName(), oldTable.getDbName());
+    } catch (NoSuchObjectException e) {
+      throw new MetaException(
+          "Database " + oldTable.getTableName() + " for table " + oldTable.getTableName() + " could not be found");
+    }
+
+    if (isTableRename(oldTable, newTable) && isTranslatedToExternalTable(oldTable)
+        && isTranslatedToExternalTable(newTable)) {
+
+
+      Path defaultPath = TableLocationStrategy.getDefaultPath(hmsHandler, db, oldTable.getTableName());
+      if (oldTable.getSd().getLocation().equals(defaultPath.toString())) {
+        Path newLocation = getTranslatedToExternalTableDefaultLocation(db, newTable);
+        newTable.getSd().setLocation(newLocation.toString());
+      }
+    }
+
     if (tableLocationChanged(oldTable, newTable)) {
       validateTablePaths(newTable);
     }
 
     LOG.debug("Transformer returning table:" + newTable.toString());
     return newTable;
+  }
+
+  private boolean isTableRename(Table oldTable, Table newTable) {
+    return !oldTable.getTableName().equals(newTable.getTableName());
+  }
+
+  private boolean isTranslatedToExternalTable(Table table) {
+    Map<String, String> p = table.getParameters();
+    return p != null && p.get("EXTERNAL").equalsIgnoreCase("true")
+        && p.get("TRANSLATED_TO_EXTERNAL").equalsIgnoreCase("true") && table.getSd().isSetLocation();
+
   }
 
   private boolean tableLocationChanged(Table oldTable, Table newTable) throws MetaException {
