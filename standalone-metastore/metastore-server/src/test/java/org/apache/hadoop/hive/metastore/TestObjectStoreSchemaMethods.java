@@ -571,8 +571,8 @@ public class TestObjectStoreSchemaMethods {
     results = objectStore.getSchemaVersionsByColumns("alpha", null, ColumnType.STRING_TYPE_NAME); Assert.assertEquals(0, results.size());
   }
 
-  @Test(expected = MetaException.class)
-  public void schemaVersionQueryNoNameOrNamespace() throws MetaException {
+  @Test(expected = RuntimeException.class)
+  public void schemaVersionQueryNoNameOrNamespace() {
     objectStore.getSchemaVersionsByColumns(null, null, ColumnType.STRING_TYPE_NAME);
   }
 
