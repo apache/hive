@@ -1036,24 +1036,19 @@ public class CompactorMR {
         int bucket) throws IOException {
       if (deleteEventWriter == null) {
         AcidOutputFormat.Options options = new AcidOutputFormat.Options(jobConf);
-        options.inspector(inspector)
-          .writingBase(false)
-          .writingDeleteDelta(true)   // this is the option which will make it a delete writer
-          .isCompressed(jobConf.getBoolean(IS_COMPRESSED, false))
-          .tableProperties(new StringableMap(jobConf.get(TABLE_PROPS)).toProperties())
-          .reporter(reporter)
-          .minimumWriteId(jobConf.getLong(MIN_TXN, Long.MAX_VALUE))
-          .maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE))
-          .bucket(bucket)
-          .statementId(-1);//setting statementId == -1 makes compacted delta files use
+        options.inspector(inspector).writingBase(false).writingDeleteDelta(true)   // this is the option which will make it a delete writer
+            .isCompressed(jobConf.getBoolean(IS_COMPRESSED, false)).tableProperties(new StringableMap(jobConf.get(TABLE_PROPS)).toProperties()).reporter(reporter)
+            .minimumWriteId(jobConf.getLong(MIN_TXN, Long.MAX_VALUE)).maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE)).bucket(bucket)
+            .statementId(-1);//setting statementId == -1 makes compacted delta files use
         //delta_xxxx_yyyy format
 
         // Instantiate the underlying output format
         @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
-        AcidOutputFormat<WritableComparable, V> aof =
-          instantiate(AcidOutputFormat.class, jobConf.get(OUTPUT_FORMAT_CLASS_NAME));
+        AcidOutputFormat<WritableComparable, V> aof = instantiate(AcidOutputFormat.class, jobConf.get(OUTPUT_FORMAT_CLASS_NAME));
 
-        deleteEventWriter = aof.getRawRecordWriter(new Path(jobConf.get(TMP_LOCATION)), options);
+        Path rootDir = new Path(jobConf.get(TMP_LOCATION));
+        cleanupTmpLocationOnTaskRetry(options, rootDir);
+        deleteEventWriter = aof.getRawRecordWriter(rootDir, options);
       }
     }
   }
