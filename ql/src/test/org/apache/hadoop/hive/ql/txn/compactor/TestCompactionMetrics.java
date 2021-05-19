@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HMSMetricsListener;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -718,8 +719,8 @@ public class TestCompactionMetrics  extends CompactorTest {
   }
 
   @Test
-  public void textWritesToDisabledCompactionTable() throws Exception {
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS, "org.apache.hadoop.hive.metastore.HMSMetricsListener");
+  public void testWritesToDisabledCompactionTable() throws Exception {
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS, HMSMetricsListener.class.getName());
     txnHandler = TxnUtils.getTxnStore(conf);
 
     String dbName = "default";
