@@ -1028,7 +1028,18 @@ public class CompactorMR {
         AcidOutputFormat<WritableComparable, V> aof =
             instantiate(AcidOutputFormat.class, jobConf.get(OUTPUT_FORMAT_CLASS_NAME));
 
-        writer = aof.getRawRecordWriter(new Path(jobConf.get(TMP_LOCATION)), options);
+        Path rootDir = new Path(jobConf.get(TMP_LOCATION));
+        cleanupTmpLocationOnTaskRetry(options, rootDir);
+        writer = aof.getRawRecordWriter(rootDir, options);
+      }
+   }
+
+    private void cleanupTmpLocationOnTaskRetry(AcidOutputFormat.Options options, Path rootDir) throws IOException {
+      Path tmpLocation = AcidUtils.createFilename(rootDir, options);
+      FileSystem fs = tmpLocation.getFileSystem(jobConf);
+
+      if (fs.exists(tmpLocation)) {
+        fs.delete(tmpLocation, true);
       }
     }
 
