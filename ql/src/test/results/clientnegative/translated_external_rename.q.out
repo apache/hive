@@ -1,8 +1,8 @@
-PREHOOK: query: create table t (a integer)
+PREHOOK: query: create external table t (a integer)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t
-POSTHOOK: query: create table t (a integer)
+POSTHOOK: query: create external table t (a integer)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t
@@ -19,13 +19,4 @@ PREHOOK: query: alter table t rename to t2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@t
 PREHOOK: Output: default@t
-POSTHOOK: query: alter table t rename to t2
-POSTHOOK: type: ALTERTABLE_RENAME
-POSTHOOK: Input: default@t
-POSTHOOK: Output: default@t
-POSTHOOK: Output: default@t2
-PREHOOK: query: create table t (a integer)
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-#### A masked pattern was here ####
+FAILED: Execution Error, return code 40013 from org.apache.hadoop.hive.ql.ddl.DDLTask. Unable to alter table. java.lang.NullPointerException

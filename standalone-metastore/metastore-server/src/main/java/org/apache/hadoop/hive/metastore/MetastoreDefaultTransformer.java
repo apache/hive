@@ -731,20 +731,21 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     LOG.info("Starting translation for Alter table for processor " + processorId + " with " + processorCapabilities
         + " on table " + newTable.getTableName());
 
-    Database oldDb = getDbForTable(oldTable);
-
-    if (isTableRename(oldTable, newTable) && isTranslatedToExternalTable(oldTable)
-        && isTranslatedToExternalTable(newTable)) {
-      Database newDb = getDbForTable(newTable);
-      Path defaultPath = TableLocationStrategy.getDefaultPath(hmsHandler, oldDb, oldTable.getTableName());
-      if (oldTable.getSd().getLocation().equals(defaultPath.toString())) {
-        Path newLocation = getTranslatedToExternalTableDefaultLocation(newDb, newTable);
-        newTable.getSd().setLocation(newLocation.toString());
-      }
-    }
 
     if (tableLocationChanged(oldTable, newTable)) {
       validateTablePaths(newTable);
+    }
+
+    Database oldDb = getDbForTable(oldTable);
+    if (isTableRename(oldTable, newTable) && isTranslatedToExternalTable(oldTable)
+        && isTranslatedToExternalTable(newTable)) {
+      Database newDb = getDbForTable(newTable);
+      Path oldPath = TableLocationStrategy.getDefaultPath(hmsHandler, oldDb, oldTable.getTableName());
+      if (oldTable.getSd().getLocation().equals(oldPath.toString())) {
+        Path newPath = getTranslatedToExternalTableDefaultLocation(newDb, newTable);
+        newTable.getSd().setLocation(newPath.toString());
+        hmsHandler.getWh().renameDir(oldPath, newPath, ReplChangeManager.shouldEnableCm(oldDb, oldTable));
+      }
     }
 
     LOG.debug("Transformer returning table:" + newTable.toString());
@@ -767,7 +768,8 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
   private boolean isTranslatedToExternalTable(Table table) {
     Map<String, String> p = table.getParameters();
     return p != null && p.get("EXTERNAL").equalsIgnoreCase("true")
-        && p.get("TRANSLATED_TO_EXTERNAL").equalsIgnoreCase("true") && table.getSd().isSetLocation();
+        && p.get("TRANSLATED_TO_EXTERNAL").equalsIgnoreCase("true") && table.getSd() != null
+        && table.getSd().isSetLocation();
 
   }
 
@@ -928,7 +930,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
                     + table.getTableName() + ",location:" + tablePath + ",Database's managed warehouse:" + dbLocation);
           }
         } else {
-          if (FileUtils.isSubdirectory(whRootPath.toString(), tablePath.toString())) {
+          if (isExternalWarehouseSet() && FileUtils.isSubdirectory(whRootPath.toString(), tablePath.toString())) {
             throw new MetaException(
                 "An external table's location should not be located within managed warehouse root directory, table:"
                     + table.getTableName() + ",location:" + tablePath + ",managed warehouse:" + whRootPath);
@@ -947,5 +949,9 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       }
     }
     return table;
+  }
+
+  private boolean isExternalWarehouseSet() {
+    return !"".equals(hmsHandler.getConf().get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname()));
   }
 }
