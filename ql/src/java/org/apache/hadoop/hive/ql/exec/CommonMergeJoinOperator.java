@@ -589,9 +589,9 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       return compareKeysMany(comparators, k1, k2);
     } else {
       return compareKey(comparators, 0,
-          (WritableComparable) k1.get(0),
-          (WritableComparable) k2.get(0),
-          nullsafes != null ? nullsafes[0]: false);
+              k1.get(0),
+              k2.get(0),
+              nullsafes != null ? nullsafes[0]: false);
     }
   }
 
@@ -603,9 +603,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     int ret = 0;
     final int size = k1.size();
     for (int i = 0; i < size; i++) {
-      WritableComparable key_1 = (WritableComparable) k1.get(i);
-      WritableComparable key_2 = (WritableComparable) k2.get(i);
-      ret = compareKey(comparators, i, key_1, key_2,
+      ret = compareKey(comparators, i, k1.get(i), k2.get(i),
           nullsafes != null ? nullsafes[i] : false);
       if (ret != 0) {
         return ret;
@@ -616,24 +614,11 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
   @SuppressWarnings("rawtypes")
   private int compareKey(final WritableComparator comparators[], final int pos,
-      final WritableComparable key_1,
-      final WritableComparable key_2,
+      final Object key_1,
+      final Object key_2,
       final boolean nullsafe) {
-
-    if (key_1 == null && key_2 == null) {
-      if (nullsafe) {
-        return 0;
-      } else {
-        return -1;
-      }
-    } else if (key_1 == null) {
-      return nullOrdering.getNullValueOption().getCmpReturnValue();
-    } else if (key_2 == null) {
-      return -nullOrdering.getNullValueOption().getCmpReturnValue();
-    }
-
     if (comparators[pos] == null) {
-      comparators[pos] = WritableComparator.get(key_1.getClass());
+      comparators[pos] = WritableComparatorFactory.get(key_1, nullsafe, nullOrdering);
     }
     return comparators[pos].compare(key_1, key_2);
   }

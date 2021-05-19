@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import com.codahale.metrics.Gauge;
 import org.apache.commons.lang3.tuple.Pair;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Maps;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -46,6 +49,8 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
+import org.apache.tez.common.counters.TezCounters;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,12 +58,18 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.DeltaFilesMetricType.NUM_DELTAS;
+import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.DeltaFilesMetricType.NUM_SMALL_DELTAS;
+import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.DeltaFilesMetricType.NUM_OBSOLETE_DELTAS;
 import static org.apache.hadoop.hive.metastore.metrics.AcidMetricService.replaceWhitespace;
 
 public class TestCompactionMetrics  extends CompactorTest {
@@ -590,6 +601,90 @@ public class TestCompactionMetrics  extends CompactorTest {
             3, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_ABORTED_TXNS).getCount());
     Assert.assertEquals(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS + " value incorrect",
             3, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS).getCount());
+  }
+
+  @Test
+  public void testDeltaFilesMetric() throws Exception {
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, true);
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE, 2);
+
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD, 100);
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD, 100);
+    HiveConf.setTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_CACHE_DURATION, 5, TimeUnit.SECONDS);
+
+    MetricsFactory.close();
+    MetricsFactory.init(conf);
+
+    HiveConf.setTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_REPORTING_INTERVAL, 1, TimeUnit.SECONDS);
+    DeltaFilesMetricReporter.init(conf);
+
+    TezCounters tezCounters = new TezCounters();
+    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "acid/p=1").setValue(200);
+    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "acid/p=2").setValue(100);
+    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "acid/p=3").setValue(150);
+    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "acid_v2").setValue(250);
+
+    tezCounters.findCounter(NUM_DELTAS + "", "acid/p=1").setValue(150);
+    tezCounters.findCounter(NUM_DELTAS + "", "acid/p=2").setValue(100);
+    tezCounters.findCounter(NUM_DELTAS + "", "acid/p=3").setValue(250);
+    tezCounters.findCounter(NUM_DELTAS + "", "acid_v2").setValue(200);
+
+    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "acid/p=1").setValue(250);
+    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "acid/p=2").setValue(200);
+    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "acid/p=3").setValue(150);
+    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "acid_v2").setValue(100);
+
+    DeltaFilesMetricReporter.getInstance().submit(tezCounters);
+    Thread.sleep(1000);
+
+    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
+    Map<String, Gauge> gauges = metrics.getMetricRegistry().getGauges();
+
+    Assert.assertTrue(
+      equivalent(
+        new HashMap<String, String>() {{
+          put("acid_v2", "250");
+          put("acid/p=1", "200");
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS, gauges)));
+
+    Assert.assertTrue(
+      equivalent(
+        new HashMap<String, String>() {{
+          put("acid_v2", "200");
+          put("acid/p=3", "250");
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS, gauges)));
+
+    Assert.assertTrue(
+      equivalent(
+        new HashMap<String, String>() {{
+          put("acid/p=1", "250");
+          put("acid/p=2", "200");
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS, gauges)));
+
+    //time-out existing entries
+    Thread.sleep(5000);
+
+    tezCounters = new TezCounters();
+    tezCounters.findCounter(NUM_DELTAS + "", "acid/p=2").setValue(150);
+    DeltaFilesMetricReporter.getInstance().submit(tezCounters);
+    Thread.sleep(1000);
+
+    Assert.assertTrue(
+      equivalent(
+        new HashMap<String, String>() {{
+          put("acid/p=2", "150");
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS, gauges)));
+
+    DeltaFilesMetricReporter.close();
+  }
+
+  static boolean equivalent(Map<String, String> lhs, Map<String, String> rhs) {
+    return lhs.size() == rhs.size() && Maps.difference(lhs, rhs).areEqual();
+  }
+
+  static Map<String, String> gaugeToMap(String metric, Map<String, Gauge> gauges) {
+    String value = (String) gauges.get(metric).getValue();
+    return value.isEmpty()? Collections.emptyMap() : Splitter.on(',').withKeyValueSeparator("->").split(value);
   }
 
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,

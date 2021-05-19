@@ -48,7 +48,7 @@ public class HiveMetaStoreFsImpl implements MetaStoreFS {
     } catch (FileNotFoundException e) {
       return true; // ok even if there is not data
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return false;
   }

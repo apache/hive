@@ -1124,6 +1124,16 @@
                   <include>org.apache.calcite.avatica:avatica</include>
                 </includes>
               </artifactSet>
+              <filters>
+                <filter>
+                  <artifact>org.apache.calcite.avatica:avatica</artifact>
+                  <excludes>
+                    <exclude>org/slf4j/**</exclude>
+                    <exclude>META-INF/maven/org.slf4j/**</exclude>
+                    <exclude>META-INF/licenses/slf4j*/**</exclude>
+                  </excludes>
+                </filter>
+              </filters>
               <relocations>
                 <relocation>
                   <pattern>com.esotericsoftware</pattern>
