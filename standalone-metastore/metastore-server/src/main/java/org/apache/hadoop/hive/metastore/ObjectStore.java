@@ -658,7 +658,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public void alterCatalog(String catName, Catalog cat) {
     if (!cat.getName().equals(catName)) {
-      throw new HiveMetaDataAccessException("You cannot change a catalog's name");
+      throw new HiveMetaRuntimeException("You cannot change a catalog's name: " + cat.getName() + " -> " + catName);
     }
     boolean committed = false;
     try {
