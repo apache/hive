@@ -47,6 +47,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -1017,5 +1018,9 @@ public class MetaStoreUtils {
 
   public static boolean hasUnknownPartitions(PartitionsSpecByExprResult r) {
     return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions();
+  }
+
+  public static TableName getTableNameFor(Table table) {
+    return TableName.fromString(table.getTableName(), table.getCatName(), table.getDbName());
   }
 }

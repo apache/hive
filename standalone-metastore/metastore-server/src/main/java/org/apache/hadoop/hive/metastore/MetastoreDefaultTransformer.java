@@ -731,21 +731,14 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     LOG.info("Starting translation for Alter table for processor " + processorId + " with " + processorCapabilities
         + " on table " + newTable.getTableName());
 
-    Database db;
-    try {
-      db = hmsHandler.get_database_core(oldTable.getCatName(), oldTable.getDbName());
-    } catch (NoSuchObjectException e) {
-      throw new MetaException(
-          "Database " + oldTable.getTableName() + " for table " + oldTable.getTableName() + " could not be found");
-    }
+    Database oldDb = getDbForTable(oldTable);
 
     if (isTableRename(oldTable, newTable) && isTranslatedToExternalTable(oldTable)
         && isTranslatedToExternalTable(newTable)) {
-
-
-      Path defaultPath = TableLocationStrategy.getDefaultPath(hmsHandler, db, oldTable.getTableName());
+      Database newDb = getDbForTable(newTable);
+      Path defaultPath = TableLocationStrategy.getDefaultPath(hmsHandler, oldDb, oldTable.getTableName());
       if (oldTable.getSd().getLocation().equals(defaultPath.toString())) {
-        Path newLocation = getTranslatedToExternalTableDefaultLocation(db, newTable);
+        Path newLocation = getTranslatedToExternalTableDefaultLocation(newDb, newTable);
         newTable.getSd().setLocation(newLocation.toString());
       }
     }
@@ -758,8 +751,17 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     return newTable;
   }
 
+  private Database getDbForTable(Table oldTable) throws MetaException {
+    try {
+      return hmsHandler.get_database_core(oldTable.getCatName(), oldTable.getDbName());
+    } catch (NoSuchObjectException e) {
+      throw new MetaException(
+          "Database " + oldTable.getTableName() + " for table " + oldTable.getTableName() + " could not be found");
+    }
+  }
+
   private boolean isTableRename(Table oldTable, Table newTable) {
-    return !oldTable.getTableName().equals(newTable.getTableName());
+    return !MetaStoreUtils.getTableNameFor(oldTable).equals(MetaStoreUtils.getTableNameFor(newTable));
   }
 
   private boolean isTranslatedToExternalTable(Table table) {
