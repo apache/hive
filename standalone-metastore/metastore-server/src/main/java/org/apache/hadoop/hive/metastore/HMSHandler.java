@@ -6754,7 +6754,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return Warehouse.makeSpecFromName(part_name);
   }
 
-  private String lowerCaseConvertPartName(String partName) throws MetaException {
+  public static String lowerCaseConvertPartName(String partName) throws MetaException {
     if (partName == null) {
       return partName;
     }

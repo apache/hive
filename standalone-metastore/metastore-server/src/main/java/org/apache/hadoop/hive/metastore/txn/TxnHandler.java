@@ -5429,24 +5429,41 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private void cleanOldStatsFromPartColStatTable(Connection dbConn, List<Long> partIdList) throws SQLException {
-    List<String> queries = new ArrayList<>();
-    StringBuilder prefix = new StringBuilder();
-    StringBuilder suffix = new StringBuilder();
-    PreparedStatement pStmt = null;
+  private void cleanOldStatsFromPartColStatTable(Map<String, PartitionInfo> statsPartInfoMap,
+                                                 Map<String, ColumnStatistics> newStatsMap,
+                                                 Connection dbConn) throws SQLException {
+    PreparedStatement statementDelete = null;
+    int numRows = 0;
+    int maxNumRows = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
+    String delete = "DELETE FROM \"PART_COL_STATS\" where \"PART_ID\" = ? AND \"COLUMN_NAME\" = ?";
 
-    prefix.append("DELETE FROM \"PART_COL_STATS\" where ");
-    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix,
-            partIdList, "\"PART_ID\"", false, false);
-    List<String> params = Collections.emptyList();
     try {
-      for (String query : queries) {
-        pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
-        LOG.debug("Going to execute query " + query);
-        pStmt.executeUpdate();
+      statementDelete = dbConn.prepareStatement(delete);
+      for (Map.Entry entry : newStatsMap.entrySet()) {
+        // If the partition does not exist (deleted/removed by some other task), no need to update the stats.
+        if (!statsPartInfoMap.containsKey(entry.getKey())) {
+          continue;
+        }
+
+        ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
+        for (ColumnStatisticsObj statisticsObj : colStats.getStatsObj()) {
+          statementDelete.setLong(1, statsPartInfoMap.get(entry.getKey()).partitionId);
+          statementDelete.setString(2, statisticsObj.getColName());
+          numRows++;
+          statementDelete.addBatch();
+          if (numRows == maxNumRows) {
+            statementDelete.executeBatch();
+            numRows = 0;
+            LOG.info("Executed delete " + delete + " for numRows " + numRows);
+          }
+        }
+      }
+
+      if (numRows != 0) {
+        statementDelete.executeBatch();
       }
     } finally {
-      closeStmt(pStmt);
+      closeStmt(statementDelete);
     }
   }
 
@@ -5482,9 +5499,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     try {
       stmtInt = dbConn.createStatement();
       String query = "UPDATE \"SEQUENCE_TABLE\" SET \"NEXT_VAL\" = "
-                    + maxCSId
-                    + " WHERE \"SEQUENCE_NAME\" = "
-                    + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics");
+              + maxCSId
+              + " WHERE \"SEQUENCE_NAME\" = "
+              + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics");
       stmtInt.executeUpdate(query);
       LOG.debug("Going to execute update " + query);
     } finally {
@@ -5496,9 +5513,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                                           Map<String, ColumnStatistics> newStatsMap,
                                           Connection dbConn) throws SQLException, MetaException, NoSuchObjectException {
     PreparedStatement statement = null;
-    PreparedStatement statementDelete = null;
     long maxCsId = getMaxCSId(dbConn);
+
     try {
+      int numRows = 0;
+      int maxNumRows = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
+
       String insert = "INSERT INTO \"PART_COL_STATS\" (\"CS_ID\", \"CAT_NAME\", \"DB_NAME\","
               + "\"TABLE_NAME\", \"PARTITION_NAME\", \"COLUMN_NAME\", \"COLUMN_TYPE\", \"PART_ID\","
               + " \"LONG_LOW_VALUE\", \"LONG_HIGH_VALUE\", \"DOUBLE_HIGH_VALUE\", \"DOUBLE_LOW_VALUE\","
@@ -5506,13 +5526,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               + " \"AVG_COL_LEN\", \"MAX_COL_LEN\", \"NUM_TRUES\", \"NUM_FALSES\", \"LAST_ANALYZED\", \"ENGINE\") values "
               + "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
       statement = dbConn.prepareStatement(insert);
-
-      String delete = "DELETE FROM \"PART_COL_STATS\" where \"CAT_NAME\" = ? AND  \"DB_NAME\" = ? "
-              + " AND \"TABLE_NAME\" = ? AND \"PARTITION_NAME\" = ? AND \"COLUMN_NAME\" = ?";
-      statementDelete = dbConn.prepareStatement(delete);
-
-      int numRows = 0;
-      int maxNumRows = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
 
       for (Map.Entry entry : newStatsMap.entrySet()) {
         // If the partition does not exist (deleted/removed by some other task), no need to update the stats.
@@ -5539,7 +5552,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           statement.setObject(9, mPartitionColumnStatistics.getLongLowValue());
           statement.setObject(10, mPartitionColumnStatistics.getLongHighValue());
           statement.setObject(11, mPartitionColumnStatistics.getDoubleHighValue());
-          statement.setObject(12, mPartitionColumnStatistics.getDecimalLowValue());
+          statement.setObject(12, mPartitionColumnStatistics.getDoubleLowValue());
           statement.setString(13, mPartitionColumnStatistics.getDecimalLowValue());
           statement.setString(14, mPartitionColumnStatistics.getDecimalHighValue());
           statement.setObject(15, mPartitionColumnStatistics.getNumNulls());
@@ -5552,33 +5565,22 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           statement.setLong(22, mPartitionColumnStatistics.getLastAnalyzed());
           statement.setString(23, mPartitionColumnStatistics.getEngine());
 
-          statementDelete.setString(1, mPartitionColumnStatistics.getCatName());
-          statementDelete.setString(2, mPartitionColumnStatistics.getDbName());
-          statementDelete.setString(3, mPartitionColumnStatistics.getTableName());
-          statementDelete.setString(4, mPartitionColumnStatistics.getPartitionName());
-          statementDelete.setString(5, mPartitionColumnStatistics.getColName());
-
           maxCsId++;
           numRows++;
           statement.addBatch();
-          statementDelete.addBatch();
           if (numRows == maxNumRows) {
-            statementDelete.executeBatch();
             statement.executeBatch();
             numRows = 0;
           }
         }
       }
 
-      updateMaxCSId(dbConn, maxCsId);
-
       if (numRows != 0) {
-        statementDelete.executeBatch();
         statement.executeBatch();
       }
+      updateMaxCSId(dbConn, maxCsId);
     } finally {
       closeStmt(statement);
-      closeStmt(statementDelete);
     }
   }
 
@@ -5698,7 +5700,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
           LOG.debug(" Executing insert " + insert);
         } else {
-          String oldStats =partIdToParaMap.get(partId);
+          String oldStats = partIdToParaMap.get(partId);
 
           Map<String, String> oldParameter = new HashMap<>();
           oldParameter.put(COLUMN_STATS_ACCURATE, oldStats);
@@ -5787,23 +5789,31 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     StringBuilder suffix = new StringBuilder();
     PreparedStatement pStmt = null;
     ResultSet rs = null;
-
-    prefix.append("select \"PARTITIONS\".\"PART_ID\", \"PARTITIONS\".\"WRITE_ID\", \"PARTITIONS\".\"PART_NAME\" "
-            + " from \"DBS\", \"TBLS\", \"PARTITIONS\" where "
-            + " \"DBS\".\"NAME\" = ? "
-            + " and \"DBS\".\"CTLG_NAME\" = ? "
-            + " and \"TBLS\".\"TBL_NAME\" = ? and ");
-    suffix.append(" and \"DBS\".\"DB_ID\" = \"TBLS\".\"DB_ID\" and \"TBLS\".\"TBL_ID\" = \"PARTITIONS\".\"TBL_ID\"");
-    TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix, suffix,
-            partKeys, "\"PARTITIONS\".\"PART_NAME\"", false, false);
-
-    List<String> params = Arrays.asList(dbName, catName, tblName);
     Map<String, PartitionInfo> partitionInfoMap = new HashMap<>();
+
     try {
+      long tblId;
+      Statement stmt = dbConn.createStatement();
+      rs = stmt.executeQuery("select \"TBL_ID\" from \"DBS\", \"TBLS\" where \"DBS\".\"NAME\" = "
+              + quoteString(dbName) + " and \"DBS\".\"CTLG_NAME\" = " + quoteString(catName)
+              + " and \"TBLS\".\"TBL_NAME\" = " + quoteString(tblName)
+              + " and \"DBS\".\"DB_ID\" = \"TBLS\".\"DB_ID\"");
+      if (rs.next()) {
+        tblId = rs.getLong(1);
+      } else {
+        throw new RuntimeException("Invalid table name" + catName + "." + dbName + "." + tblName);
+      }
+
+      prefix.append("select \"PARTITIONS\".\"PART_ID\", \"PARTITIONS\".\"WRITE_ID\", \"PARTITIONS\".\"PART_NAME\" "
+              + " from \"PARTITIONS\" where ");
+      suffix.append(" and \"TBL_ID\" = " + tblId);
+      TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix, suffix,
+              partKeys, "\"PARTITIONS\".\"PART_NAME\"", false, false);
+
+      List<String> params = new ArrayList<>();
       for (String query : queries) {
         pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
-        LOG.debug("Going to execute query <" + query.replaceAll("\\?", "{}") + ">",
-                quoteString(dbName), quoteString(catName), quoteString(tblName));
+        LOG.debug("Going to execute query <" + query + ">");
         rs = pStmt.executeQuery();
         while (rs.next()) {
           PartitionInfo partitionInfo = new PartitionInfo(rs.getLong(1), rs.getLong(2));
@@ -5853,7 +5863,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.info("ETL_PERF done updatePartitionParamTable");
 
         LOG.info("ETL_PERF started cleanOldStatsFromPartColStatTable ");
-        //cleanOldStatsFromPartColStatTable(dbConn, partIdList);
+        cleanOldStatsFromPartColStatTable(partitionInfoMap, partColStatsMap, dbConn);
         LOG.info("ETL_PERF done cleanOldStatsFromPartColStatTable ");
 
         LOG.info("ETL_PERF started insertIntoPartColStatTable ");
