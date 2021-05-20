@@ -71,7 +71,7 @@ public class DefaultStorageHandler implements HiveStorageHandler, HiveStorageAut
   public URI getURIForAuth(Map<String, String> tableProperties) throws URISyntaxException{
     // custom storage URI by default
     try {
-      return new URI(this.getClass().getName() + "://" +
+      return new URI(this.getClass().getSimpleName() + "://" +
               HiveCustomStorageHandlerUtils.getTablePropsForCustomStorageHandler(tableProperties));
     } catch (Exception ex) {
       throw new URISyntaxException("Unsupported ex",ex.getMessage());
