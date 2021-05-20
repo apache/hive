@@ -125,7 +125,6 @@ import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.AcidUtils.IdPathFilter;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
@@ -1278,7 +1277,7 @@ public final class Utilities {
   private static String getIdFromFilename(String filename, Pattern pattern, int group, boolean extractAttemptId) {
     String taskId = filename;
     int dirEnd = filename.lastIndexOf(Path.SEPARATOR);
-    if (dirEnd!=-1) {
+    if (dirEnd != -1) {
       taskId = filename.substring(dirEnd + 1);
     }
 
@@ -1288,7 +1287,7 @@ public final class Utilities {
     // and part-00004-c6acfdee-0c32-492e-b209-c2f1cf477770.c000, 00004 is the taskId
     Matcher sparkMatcher = FILE_NAME_EMITTED_BY_SPARK_REGEX.matcher(taskId);
     if (sparkMatcher.matches()) {
-    String strings[] = taskId.split("-");
+      String strings[] = taskId.split("-");
       if (extractAttemptId) {
         // return a constant, since Spark doesn't use attemptId
         taskId = "01";
