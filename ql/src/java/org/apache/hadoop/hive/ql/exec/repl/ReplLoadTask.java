@@ -127,7 +127,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (shouldLoadAtlasMetadata()) {
         addAtlasLoadTask();
       }
-      initiateRangerDenyTask();
+      initiateRangerDenytask();
       if (shouldLoadAuthorizationMetadata()) {
         initiateAuthorizationLoadTask();
       }
@@ -165,7 +165,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_AUTHORIZATION_METADATA);
   }
 
-  private void initiateRangerDenyTask() throws SemanticException {
+  private void initiateRangerDenytask() throws SemanticException {
     if (RANGER_AUTHORIZER.equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE))) {
       String targetDbName = StringUtils.isEmpty(work.dbNameToLoadIn) ? work.getSourceDbName() : work.dbNameToLoadIn;
       LOG.info("Adding Ranger Deny Policy Task for {} ", targetDbName);

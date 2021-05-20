@@ -35,8 +35,6 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.utils.Retry;
-import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
@@ -60,15 +58,12 @@ import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Arrays;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -79,6 +74,7 @@ public class RangerRestClientImpl implements RangerRestClient {
   private static final String RANGER_REST_URL_EXPORTJSONFILE = "service/plugins/policies/exportJson";
   private static final String RANGER_REST_URL_IMPORTJSONFILE =
       "service/plugins/policies/importPoliciesFromFile";
+  private static final String RANGER_REST_URL_DELETEPOLICY = "service/public/v2/api/policy";
 
   public RangerExportPolicyList exportRangerPolicies(String sourceRangerEndpoint,
                                                      String dbName,
@@ -170,6 +166,40 @@ public class RangerRestClientImpl implements RangerRestClient {
       }
     }
     return rangerPoliciesToImport;
+  }
+
+  @Override
+  public void deleteRangerPolicy(String policyName, String baseUrl, String rangerHiveServiceName,
+                                 HiveConf hiveConf) throws Exception {
+    String finalUrl = getRangerDeleteUrl(baseUrl, policyName, rangerHiveServiceName);
+    LOG.debug("URL to delete policy on target Ranger: {}", finalUrl);
+    Retryable retryable = Retryable.builder()
+            .withHiveConf(hiveConf)
+            .withRetryOnException(Exception.class).build();
+    try {
+      retryable.executeCallable(() -> {
+        ClientResponse clientResp = null;
+        WebResource.Builder builder = getRangerResourceBuilder(finalUrl, hiveConf);
+        clientResp = builder.delete(ClientResponse.class);
+        if (clientResp != null) {
+          switch (clientResp.getStatus()) {
+            case HttpServletResponse.SC_NO_CONTENT:
+              LOG.debug("Ranger policy: {} deleted successfully", policyName);
+              break;
+            case HttpServletResponse.SC_NOT_FOUND:
+              LOG.debug("Ranger policy: {} not found.", policyName);
+              break;
+            case HttpServletResponse.SC_UNAUTHORIZED:
+              throw new Exception("Authentication Failure while communicating to Ranger admin");
+            default:
+              throw new Exception("Ranger policy deletion failed, Please refer target Ranger admin logs.");
+          }
+        }
+        return null;
+      });
+    } catch (Exception e) {
+      throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
+    }
   }
 
   @Override
@@ -269,6 +299,14 @@ public class RangerRestClientImpl implements RangerRestClient {
     uriBuilder.addParameter("updateIfExists", "true");
     uriBuilder.addParameter("polResource", dbName);
     uriBuilder.addParameter("policyMatchingAlgorithm", "matchByName");
+    return uriBuilder.build().toString();
+  }
+
+  public String getRangerDeleteUrl(String rangerUrl, String policyName, String serviceName) throws URISyntaxException {
+    URIBuilder uriBuilder = new URIBuilder(rangerUrl);
+    uriBuilder.setPath(RANGER_REST_URL_DELETEPOLICY);
+    uriBuilder.addParameter("servicename", serviceName);
+    uriBuilder.addParameter("policyname", policyName);
     return uriBuilder.build().toString();
   }
 

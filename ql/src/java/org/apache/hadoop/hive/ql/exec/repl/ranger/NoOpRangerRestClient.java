@@ -44,6 +44,11 @@ public class NoOpRangerRestClient implements RangerRestClient {
     return null;
   }
 
+  public void deleteRangerPolicy(String policyName, String baseUrl, String rangerHiveServiceName,
+                                 HiveConf hiveConf) throws Exception {
+    return;
+  }
+
   @Override
   public List<RangerPolicy> removeMultiResourcePolicies(List<RangerPolicy> rangerPolicies) {
     return null;

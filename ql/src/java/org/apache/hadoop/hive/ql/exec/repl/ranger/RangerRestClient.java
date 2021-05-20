@@ -37,6 +37,9 @@ public interface RangerRestClient {
                                               String rangerHiveServiceName,
                                               HiveConf hiveConf) throws Exception;
 
+  void deleteRangerPolicy(String policyName, String baseUrl, String rangerHiveServiceName,
+                          HiveConf hiveConf) throws Exception;
+
   List<RangerPolicy> removeMultiResourcePolicies(List<RangerPolicy> rangerPolicies);
 
   List<RangerPolicy> changeDataSet(List<RangerPolicy> rangerPolicies, String sourceDbName,
