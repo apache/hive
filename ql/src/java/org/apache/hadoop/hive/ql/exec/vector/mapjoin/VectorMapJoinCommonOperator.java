@@ -25,6 +25,8 @@ import java.util.Map.Entry;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.VectorMapJoinFastHashTableWrapper;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinFastHashTableParallel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -271,6 +273,9 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   // The small table hash table for the native vectorized map join operator.
   protected transient VectorMapJoinHashTable vectorMapJoinHashTable;
+
+  // The small table hash table for the native vectorized map join operator.
+  protected transient VectorMapJoinFastHashTableWrapper vectorMapJoinFastHashTableWrapper;
 
   protected transient long batchCounter;
   protected transient long rowCounter;
@@ -657,6 +662,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
         // map join table container.
         vectorMapJoinHashTable = VectorMapJoinOptimizedCreateHashTable.createHashTable(conf,
                 mapJoinTables[posSingleVectorMapJoinSmallTable]);
+        vectorMapJoinFastHashTableWrapper = null;
       }
       break;
 
@@ -667,6 +673,8 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
         VectorMapJoinTableContainer vectorMapJoinTableContainer =
                 (VectorMapJoinTableContainer) mapJoinTables[posSingleVectorMapJoinSmallTable];
         vectorMapJoinHashTable = vectorMapJoinTableContainer.vectorMapJoinHashTable();
+        vectorMapJoinFastHashTableWrapper = ((VectorMapJoinFastHashTableParallel)vectorMapJoinTableContainer.
+            vectorMapJoinHashTable()).getVectorMapJoinFastHashTableWrapper();
       }
       break;
     default:

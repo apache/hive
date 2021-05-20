@@ -313,7 +313,7 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
       return array[index].getValues();
     }
 
-    public void verify(VectorMapJoinFastHashTable map,
+    public void verify(VectorMapJoinFastHashTableWrapper map,
         HashTableKeyType hashTableKeyType,
         TypeInfo[] valueTypeInfos, boolean doClipping,
         boolean useExactBytes, Random random) throws IOException {
@@ -338,7 +338,7 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
           {
             Object[] keyRow = element.getKeyRow();
             Object keyObject = keyRow[0];
-            VectorMapJoinFastLongHashMap longHashMap = (VectorMapJoinFastLongHashMap) map;
+            VectorMapJoinFastLongHashMapParallel longHashMap = (VectorMapJoinFastLongHashMapParallel) map;
             hashMapResult = longHashMap.createHashMapResult();
             long longKey;
             switch (hashTableKeyType) {
@@ -370,7 +370,7 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
           {
             Object[] keyRow = element.getKeyRow();
             Object keyObject = keyRow[0];
-            VectorMapJoinFastStringHashMap stringHashMap = (VectorMapJoinFastStringHashMap) map;
+            VectorMapJoinFastStringHashMapParallel stringHashMap = (VectorMapJoinFastStringHashMapParallel) map;
             hashMapResult = stringHashMap.createHashMapResult();
             Text text = (Text) keyObject;
             byte[] bytes = text.getBytes();
@@ -384,7 +384,7 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
         case MULTI_KEY:
           {
             byte[] keyBytes = element.getKey();
-            VectorMapJoinFastMultiKeyHashMap stringHashMap = (VectorMapJoinFastMultiKeyHashMap) map;
+            VectorMapJoinFastMultiKeyHashMapParallel stringHashMap = (VectorMapJoinFastMultiKeyHashMapParallel) map;
             hashMapResult = stringHashMap.createHashMapResult();
             joinResult = stringHashMap.lookup(keyBytes, 0, keyBytes.length, hashMapResult);
             if (joinResult != JoinUtil.JoinResult.MATCH) {

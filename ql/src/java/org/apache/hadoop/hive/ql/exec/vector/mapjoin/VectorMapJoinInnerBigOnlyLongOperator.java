@@ -120,7 +120,11 @@ public class VectorMapJoinInnerBigOnlyLongOperator extends VectorMapJoinInnerBig
      * Get our Single-Column Long hash multi-set information for this specialized class.
      */
 
-    hashMultiSet = (VectorMapJoinLongHashMultiSet) vectorMapJoinHashTable;
+    if (vectorMapJoinFastHashTableWrapper != null) {
+      hashMultiSet = (VectorMapJoinLongHashMultiSet) vectorMapJoinFastHashTableWrapper;
+    } else {
+      hashMultiSet = (VectorMapJoinLongHashMultiSet) vectorMapJoinHashTable;
+    }
     useMinMax = hashMultiSet.useMinMax();
     if (useMinMax) {
       min = hashMultiSet.min();

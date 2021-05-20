@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHash
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinNonMatchedIterator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.WriteBuffers.ByteSegmentRef;
+import org.apache.hadoop.io.BytesWritable;
 
 public class VectorMapJoinOptimizedHashMap
           extends VectorMapJoinOptimizedHashTable

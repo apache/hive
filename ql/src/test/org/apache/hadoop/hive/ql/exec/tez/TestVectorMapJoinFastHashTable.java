@@ -72,7 +72,7 @@ public class TestVectorMapJoinFastHashTable {
     keyTblDesc.setProperties(new Properties());
     desc.setKeyTblDesc(keyTblDesc);
     Configuration hconf = new HiveConf();
-    VectorMapJoinFastTableContainer container = new VectorMapJoinFastTableContainer(desc, hconf, keyCount);
+    VectorMapJoinFastTableContainer container = new VectorMapJoinFastTableContainer(desc, hconf, keyCount, 4);
 
     container.setSerde(null, null);
 

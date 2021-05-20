@@ -69,10 +69,10 @@ public abstract class VectorMapJoinOptimizedHashTable
   }
 
   @Override
-  public void putRow(BytesWritable currentKey, BytesWritable currentValue)
+  public void putRow(BytesWritable currentKey, BytesWritable currentValue, long hashCode, long key)
       throws SerDeException, HiveException, IOException {
-
-    putRowInternal(currentKey, currentValue);
+    // Method only supported by FAST HashTable implementations
+    throw new RuntimeException("Not implemented");
   }
 
   @Override

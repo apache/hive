@@ -16,20 +16,25 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.persistence;
+package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.io.BytesWritable;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.Writable;
+public abstract class VectorMapJoinFastHashTableWrapper {
 
-public interface MapJoinTableContainerDirectAccess {
+  public abstract long calculateLongHashCode(long key, BytesWritable currentKey) throws HiveException, IOException;
 
-  void put(Writable currentKey, Writable currentValue) throws SerDeException, IOException;
+  public abstract long deserializeToKey(BytesWritable currentKey) throws HiveException, IOException;
 
-  long calculateLongHashCode(BytesWritable currentKey) throws HiveException, IOException, SerDeException;
+  public abstract void putRow(BytesWritable currentKey, BytesWritable currentValue, long hashCode, long key)
+      throws HiveException, IOException;
 
+  public abstract boolean containsLongKey(long currentKey);
+
+  public abstract int size();
+
+  public abstract long getEstimatedMemorySize();
 }

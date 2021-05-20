@@ -34,11 +34,11 @@ public class VectorMapJoinFastStringHashSet extends VectorMapJoinFastBytesHashSe
   private VectorMapJoinFastStringCommon stringCommon;
 
   @Override
-  public void putRow(BytesWritable currentKey, BytesWritable currentValue)
+  public synchronized void putRow(BytesWritable currentKey, BytesWritable currentValue, long hashCode, long key)
       throws HiveException, IOException {
 
     // Ignore NULL keys (HashSet not used for FULL OUTER).
-    stringCommon.adaptPutRow(this, currentKey, currentValue);
+    stringCommon.adaptPutRow(this, currentKey, currentValue, hashCode);
   }
 
   public VectorMapJoinFastStringHashSet(

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinFastHashTableParallel;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.NonMatchedSmallTableIterator;
 import org.apache.hadoop.hive.ql.exec.persistence.MatchTracker;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTable;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinTableContainer;
@@ -60,11 +60,12 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
   private final long estimatedKeyCount;
 
 
-  private final VectorMapJoinFastHashTable vectorMapJoinFastHashTable;
+  private final VectorMapJoinFastHashTableParallel vectorMapJoinFastHashTableParallel;
   private String key;
+  private int numThreads;
 
   public VectorMapJoinFastTableContainer(MapJoinDesc desc, Configuration hconf,
-      long estimatedKeyCount) throws SerDeException {
+      long estimatedKeyCount, int numThreads) throws SerDeException {
 
     this.desc = desc;
     this.hconf = hconf;
@@ -77,16 +78,17 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
     this.estimatedKeyCount = estimatedKeyCount;
 
     int newThreshold = HashMapWrapper.calculateTableSize(
-        keyCountAdj, threshold, loadFactor, estimatedKeyCount);
+        keyCountAdj, threshold, loadFactor, estimatedKeyCount > numThreads ? (estimatedKeyCount/numThreads) : estimatedKeyCount);
 
     // LOG.debug("VectorMapJoinFastTableContainer load newThreshold " + newThreshold);
 
-    vectorMapJoinFastHashTable = createHashTable(newThreshold);
+    this.numThreads = numThreads;
+    vectorMapJoinFastHashTableParallel = createHashTables(newThreshold);
   }
 
   @Override
   public VectorMapJoinHashTable vectorMapJoinHashTable() {
-    return vectorMapJoinFastHashTable;
+    return vectorMapJoinFastHashTableParallel;
   }
 
   @Override
@@ -99,7 +101,7 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
     return key;
   }
 
-  private VectorMapJoinFastHashTable createHashTable(int newThreshold) {
+  private VectorMapJoinFastHashTableParallel createHashTables(int newThreshold) {
 
     VectorMapJoinDesc vectorDesc = (VectorMapJoinDesc) desc.getVectorDesc();
     HashTableImplementationType hashTableImplementationType = vectorDesc.getHashTableImplementationType();
@@ -110,90 +112,36 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
 
     int writeBufferSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEWBSIZE);
 
-    VectorMapJoinFastHashTable hashTable = null;
-
-    switch (hashTableKeyType) {
-    case BOOLEAN:
-    case BYTE:
-    case SHORT:
-    case INT:
-    case DATE:
-    case LONG:
-      switch (hashTableKind) {
-      case HASH_MAP:
-        hashTable = new VectorMapJoinFastLongHashMap(
-            isFullOuter,
-            minMaxEnabled,
-            hashTableKeyType,
-            newThreshold, loadFactor, writeBufferSize, estimatedKeyCount, desc.getKeyTblDesc());
-        break;
-      case HASH_MULTISET:
-        hashTable = new VectorMapJoinFastLongHashMultiSet(
-            isFullOuter,
-            minMaxEnabled,
-            hashTableKeyType,
-            newThreshold, loadFactor, writeBufferSize, estimatedKeyCount, desc.getKeyTblDesc());
-        break;
-      case HASH_SET:
-        hashTable = new VectorMapJoinFastLongHashSet(
-            isFullOuter,
-            minMaxEnabled,
-            hashTableKeyType,
-            newThreshold, loadFactor, writeBufferSize, estimatedKeyCount, desc.getKeyTblDesc());
-        break;
-      }
-      break;
-
-    case STRING:
-      switch (hashTableKind) {
-      case HASH_MAP:
-        hashTable = new VectorMapJoinFastStringHashMap(
-            isFullOuter,
-            newThreshold, loadFactor, writeBufferSize, estimatedKeyCount, desc.getKeyTblDesc());
-        break;
-      case HASH_MULTISET:
-        hashTable = new VectorMapJoinFastStringHashMultiSet(
-            isFullOuter,
-            newThreshold, loadFactor, writeBufferSize, estimatedKeyCount, desc.getKeyTblDesc());
-        break;
-      case HASH_SET:
-        hashTable = new VectorMapJoinFastStringHashSet(
-            isFullOuter,
-            newThreshold, loadFactor, writeBufferSize, estimatedKeyCount, desc.getKeyTblDesc());
-        break;
-      }
-      break;
-
-    case MULTI_KEY:
-      switch (hashTableKind) {
-      case HASH_MAP:
-        hashTable = new VectorMapJoinFastMultiKeyHashMap(
-            isFullOuter,
-            newThreshold, loadFactor, writeBufferSize, estimatedKeyCount);
-        break;
-      case HASH_MULTISET:
-        hashTable = new VectorMapJoinFastMultiKeyHashMultiSet(
-            isFullOuter,
-            newThreshold, loadFactor, writeBufferSize, estimatedKeyCount);
-        break;
-      case HASH_SET:
-        hashTable = new VectorMapJoinFastMultiKeyHashSet(
-            isFullOuter,
-            newThreshold, loadFactor, writeBufferSize, estimatedKeyCount);
-        break;
-      }
-      break;
-    }
+    VectorMapJoinFastHashTableParallel hashTable = new VectorMapJoinFastHashTableParallel(hashTableKeyType,
+        hashTableKind, isFullOuter, minMaxEnabled, newThreshold, loadFactor, writeBufferSize, estimatedKeyCount,
+        desc.getKeyTblDesc(), numThreads);
 
     return hashTable;
+  }
+
+  public long calculateLongHashCode(long key, BytesWritable currentKey) throws HiveException, IOException {
+    return vectorMapJoinFastHashTableParallel.calculateLongHashCode(key, currentKey);
+  }
+
+  public long deserializeToKey(BytesWritable currentKey) throws HiveException, IOException {
+    return vectorMapJoinFastHashTableParallel.deserializeToKey(currentKey);
   }
 
   @Override
   public MapJoinKey putRow(Writable currentKey, Writable currentValue)
       throws SerDeException, HiveException, IOException {
 
+    long key = vectorMapJoinFastHashTableParallel.deserializeToKey((BytesWritable) currentKey);
+    long hashCode = vectorMapJoinFastHashTableParallel.calculateLongHashCode(key, (BytesWritable) currentKey);
     // We are not using the key and value contexts, nor do we support a MapJoinKey.
-    vectorMapJoinFastHashTable.putRow((BytesWritable) currentKey, (BytesWritable) currentValue);
+    vectorMapJoinFastHashTableParallel.putRow((BytesWritable) currentKey, (BytesWritable) currentValue, hashCode, key);
+    return null;
+  }
+
+  public MapJoinKey putRow(Writable currentKey, Writable currentValue, long hashCode, long key)
+      throws SerDeException, HiveException, IOException {
+    // We are not using the key and value contexts, nor do we support a MapJoinKey.
+    vectorMapJoinFastHashTableParallel.putRow((BytesWritable) currentKey, (BytesWritable) currentValue, hashCode, key);
     return null;
   }
 
@@ -235,14 +183,14 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
 
   @Override
   public int size() {
-    return vectorMapJoinFastHashTable.size();
+    return vectorMapJoinFastHashTableParallel.size();
   }
 
   @Override
   public long getEstimatedMemorySize() {
     JavaDataModel jdm = JavaDataModel.get();
     long size = 0;
-    size += vectorMapJoinFastHashTable.getEstimatedMemorySize();
+    size += vectorMapJoinFastHashTableParallel.getEstimatedMemorySize();
     size += (4 * jdm.primitive1());
     size += (2 * jdm.object());
     size += (jdm.primitive2());

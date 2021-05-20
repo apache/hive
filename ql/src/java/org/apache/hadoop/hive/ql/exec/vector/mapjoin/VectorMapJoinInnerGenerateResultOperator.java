@@ -112,7 +112,12 @@ public abstract class VectorMapJoinInnerGenerateResultOperator
     super.commonSetup();
 
     // Inner join specific.
-    VectorMapJoinHashMap baseHashMap = (VectorMapJoinHashMap) vectorMapJoinHashTable;
+    VectorMapJoinHashMap baseHashMap = null;
+    if (vectorMapJoinFastHashTableWrapper != null) {
+      baseHashMap = (VectorMapJoinHashMap) vectorMapJoinFastHashTableWrapper;
+    } else {
+      baseHashMap = (VectorMapJoinHashMap) vectorMapJoinHashTable;
+    }
 
     hashMapResults = new VectorMapJoinHashMapResult[VectorizedRowBatch.DEFAULT_SIZE];
     for (int i = 0; i < hashMapResults.length; i++) {

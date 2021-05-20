@@ -114,7 +114,11 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
      * Get our Single-Column String hash map information for this specialized class.
      */
 
-    hashMap = (VectorMapJoinBytesHashMap) vectorMapJoinHashTable;
+    if (vectorMapJoinFastHashTableWrapper != null) {
+      hashMap = (VectorMapJoinBytesHashMap) vectorMapJoinFastHashTableWrapper;
+    } else {
+      hashMap = (VectorMapJoinBytesHashMap) vectorMapJoinHashTable;
+    }
 
   }
 
