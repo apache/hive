@@ -1235,6 +1235,15 @@ public final class Utilities {
    */
   private static final Pattern PREFIXED_BUCKET_ID_REGEX =
       Pattern.compile("^(0*([0-9]+))_([0-9]+).*");
+
+  /**
+   * This is file format for files emitted by Spark.
+   * Spark emitted files have the format part-[number]-uuid.<suffix>.<optional extension>
+   *
+   */
+  private static final Pattern FILE_NAME_EMITTED_BY_SPARK_REGEX =
+     Pattern.compile("part-\\d+-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\.[a-f0-9]+.*");
+
   /**
    * Get the task id from the filename. It is assumed that the filename is derived from the output
    * of getTaskId
@@ -1273,16 +1282,18 @@ public final class Utilities {
       taskId = filename.substring(dirEnd + 1);
     }
 
-    // Spark emitted files have the format part-[number-string]-uuid.<suffix>.<optional extension>
-    // Examples: part-00026-23003837-facb-49ec-b1c4-eeda902cacf3.c000.zlib.orc, 00026-23003837 is the taskId
-    // and part-00004-c6acfdee-0c32-492e-b209-c2f1cf477770.c000, 00004-c6acfdee is the taskId
+
+    // Spark emitted files have the format part-[number]-uuid.<suffix>.<optional extension>
+    // Examples: part-00026-23003837-facb-49ec-b1c4-eeda902cacf3.c000.zlib.orc, 00026 is the taskId
+    // and part-00004-c6acfdee-0c32-492e-b209-c2f1cf477770.c000, 00004 is the taskId
+    Matcher sparkMatcher = FILE_NAME_EMITTED_BY_SPARK_REGEX.matcher(taskId);
+    if (sparkMatcher.matches()) {
     String strings[] = taskId.split("-");
-    if (strings.length > 6) {
       if (extractAttemptId) {
         // return a constant, since Spark doesn't use attemptId
         taskId = "01";
       } else {
-        taskId = strings[1] + "-" + strings[2];
+        taskId = strings[1];
       }
     } else {
       Matcher m = pattern.matcher(taskId);

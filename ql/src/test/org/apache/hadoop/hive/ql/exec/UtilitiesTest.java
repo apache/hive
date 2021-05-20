@@ -31,12 +31,12 @@ public class UtilitiesTest {
   @Test
   public void TestSparkEmittedFileFormat() {
 
-    Assert.assertEquals("00026-23003837", Utilities.getTaskIdFromFilename(s1));
-    Assert.assertEquals("00026-23003837", Utilities.getPrefixedTaskIdFromFilename(s1));
+    Assert.assertEquals("00026", Utilities.getTaskIdFromFilename(s1));
+    Assert.assertEquals("00026", Utilities.getPrefixedTaskIdFromFilename(s1));
     Assert.assertEquals(1, Utilities.getAttemptIdFromFilename(s1));
 
-    Assert.assertEquals("00003-c6acfdee", Utilities.getTaskIdFromFilename(s2));
-    Assert.assertEquals("00003-c6acfdee", Utilities.getPrefixedTaskIdFromFilename(s2));
+    Assert.assertEquals("00003", Utilities.getTaskIdFromFilename(s2));
+    Assert.assertEquals("00003", Utilities.getPrefixedTaskIdFromFilename(s2));
     Assert.assertEquals(1, Utilities.getAttemptIdFromFilename(s2));
 
   }
