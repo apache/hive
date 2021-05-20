@@ -1614,9 +1614,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     @Override
     public RelNode apply(RelOptCluster cluster, RelOptSchema relOptSchema, SchemaPlus rootSchema) {
-      RelNode calciteGenPlan = null;
-      RelNode calcitePreCboPlan = null;
-      RelNode calciteOptimizedPlan = null;
+      RelNode calcitePlan;
       subqueryId = -1;
 
       /*
@@ -1634,9 +1632,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 1. Gen Calcite Plan
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       try {
-        calciteGenPlan = genLogicalPlan(getQB(), true, null, null);
+        calcitePlan = genLogicalPlan(getQB(), true, null, null);
         // if it is to create view, we do not use table alias
-        resultSchema = convertRowSchemaToResultSetSchema(relToHiveRR.get(calciteGenPlan),
+        resultSchema = convertRowSchemaToResultSetSchema(relToHiveRR.get(calcitePlan),
             (forViewCreation || getQB().isMaterializedView()) ? false : HiveConf.getBoolVar(conf,
                 HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES));
       } catch (SemanticException e) {
@@ -1645,8 +1643,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Plan generation");
 
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Initial CBO Plan:\n" + RelOptUtil.toString(calcitePlan));
+      }
+
       if (isMaterializedViewRewritingByTextEnabled()) {
-        RelNode rewrittenPlan = applyMaterializedViewRewritingByText(calciteGenPlan, optCluster);
+        RelNode rewrittenPlan = applyMaterializedViewRewritingByText(calcitePlan, optCluster);
         if (rewrittenPlan != null) {
           return rewrittenPlan;
         }
@@ -1654,12 +1656,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // Create executor
       RexExecutor executorProvider = new HiveRexExecutorImpl();
-      calciteGenPlan.getCluster().getPlanner().setExecutor(executorProvider);
+      calcitePlan.getCluster().getPlanner().setExecutor(executorProvider);
 
       // We need to get the ColumnAccessInfo and viewToTableSchema for views.
       HiveRelFieldTrimmer.get()
           .trim(HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
-              calciteGenPlan, this.columnAccessInfo, this.viewProjectToTableSchema);
+              calcitePlan, this.columnAccessInfo, this.viewProjectToTableSchema);
 
       // Create and set MD provider
       HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf, HIVE_REL_NODE_CLASSES);
@@ -1667,15 +1669,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       //Remove subquery
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Plan before removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
+        LOG.debug("Plan before removing subquery:\n" + RelOptUtil.toString(calcitePlan));
       }
-      calciteGenPlan = removeSubqueries(calciteGenPlan, mdProvider.getMetadataProvider());
+      calcitePlan = removeSubqueries(calcitePlan, mdProvider.getMetadataProvider());
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Plan just after removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
+        LOG.debug("Plan after removing subquery:\n" + RelOptUtil.toString(calcitePlan));
       }
-      calciteGenPlan = HiveRelDecorrelator.decorrelateQuery(calciteGenPlan);
+      calcitePlan = HiveRelDecorrelator.decorrelateQuery(calcitePlan);
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Plan after decorrelation:\n" + RelOptUtil.toString(calciteGenPlan));
+        LOG.debug("Plan after decorrelation:\n" + RelOptUtil.toString(calcitePlan));
       }
 
       // Validate query materialization for query results caching. This check needs
@@ -1686,16 +1688,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // and on top of that we should check that it only contains operators that
       // are supported by the rewriting algorithm.
       HiveRelOptMaterializationValidator materializationValidator = new HiveRelOptMaterializationValidator();
-      materializationValidator.validate(calciteGenPlan);
+      materializationValidator.validate(calcitePlan);
       setInvalidResultCacheReason(
           materializationValidator.getResultCacheInvalidReason());
       setInvalidAutomaticRewritingMaterializationReason(
           materializationValidator.getAutomaticRewritingInvalidReason());
 
       // 2. Apply pre-join order optimizations
-      calcitePreCboPlan = applyPreJoinOrderingTransforms(calciteGenPlan,
-          mdProvider.getMetadataProvider(), executorProvider);
-
+      calcitePlan = applyPreJoinOrderingTransforms(calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan after pre-join transformations:\n" + RelOptUtil.toString(calcitePlan));
+      }
       // 3. Materialized view based rewriting
       // We disable it for CTAS and MV creation queries (trying to avoid any problem
       // due to data freshness)
@@ -1703,34 +1706,31 @@ public class CalcitePlanner extends SemanticAnalyzer {
               !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS() &&
                getQB().hasTableDefined() &&
               !forViewCreation) {
-        calcitePreCboPlan = applyMaterializedViewRewriting(planner,
-            calcitePreCboPlan, mdProvider.getMetadataProvider(), executorProvider);
+        calcitePlan =
+            applyMaterializedViewRewriting(planner, calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Plan after view-based rewriting:\n" + RelOptUtil.toString(calcitePlan));
+        }
       }
 
       // 4. Apply join order optimizations: reordering MST algorithm
       //    If join optimizations failed because of missing stats, we continue with
       //    the rest of optimizations
       if (profilesCBO.contains(ExtendedCBOProfile.JOIN_REORDERING)) {
-        calciteOptimizedPlan = applyJoinOrderingTransform(calcitePreCboPlan,
-            mdProvider.getMetadataProvider(), executorProvider);
+        calcitePlan = applyJoinOrderingTransform(calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Plan after join transformations:\n" + RelOptUtil.toString(calcitePlan));
+        }
       } else {
-        calciteOptimizedPlan = calcitePreCboPlan;
         disableSemJoinReordering = false;
       }
 
       // 5. Apply post-join order optimizations
-      calciteOptimizedPlan = applyPostJoinOrderingTransform(calciteOptimizedPlan,
-          mdProvider.getMetadataProvider(), executorProvider);
-
-      if (LOG.isDebugEnabled() && !conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
-        LOG.debug("CBO Planning details:\n");
-        LOG.debug("Original Plan:\n" + RelOptUtil.toString(calciteGenPlan));
-        LOG.debug("Plan After PPD, PartPruning, ColumnPruning:\n"
-            + RelOptUtil.toString(calcitePreCboPlan));
-        LOG.debug("Plan After Join Reordering:\n"
-            + RelOptUtil.toString(calciteOptimizedPlan, SqlExplainLevel.ALL_ATTRIBUTES));
+      calcitePlan = applyPostJoinOrderingTransform(calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan after post-join transformations:\n" + RelOptUtil.toString(calcitePlan));
       }
-      return calciteOptimizedPlan;
+      return calcitePlan;
     }
 
     /**
