@@ -26,32 +26,39 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.mr.Catalogs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IcebergTableUtil {
+
+  private static final Logger LOG = LoggerFactory.getLogger(IcebergTableUtil.class);
 
   private IcebergTableUtil() {
 
   }
 
   /**
-   * Load the iceberg table either from the {@link QueryState} or through the configured catalog.
+   * Load the iceberg table either from the {@link QueryState} or through the configured catalog. Look for the table
+   * object stored in the query state. If it's null, it means the table was not loaded yet within the same query
+   * therefore we claim it through the Catalogs API and then store it in query state.
    * @param configuration a Hadoop configuration
    * @param properties controlling properties
    * @return
    */
   static Table getTable(Configuration configuration, Properties properties) {
-    // look for the table object stored in the query state. If it's null, it means the table was not loaded yet
-    // within the same query therefore we claim it through the Catalogs API and then store it in query state.
-    QueryState queryState = (QueryState) SessionState.get()
+    QueryState queryState = SessionState.get()
         .getQueryState(configuration.get(HiveConf.ConfVars.HIVEQUERYID.varname));
     Table table = null;
+    String tableIdentifier = properties.getProperty(Catalogs.NAME);
     if (queryState != null) {
-      table = (Table) queryState.getTable(properties.getProperty(Catalogs.NAME));
+      table = (Table) queryState.getResource(tableIdentifier);
+    } else {
+      LOG.debug("QueryState is not available in SessionState. Loading {} from configured catalog.", tableIdentifier);
     }
     if (table == null) {
       table = Catalogs.loadTable(configuration, properties);
       if (queryState != null) {
-        queryState.addTable(properties.getProperty(Catalogs.NAME), table);
+        queryState.addResource(tableIdentifier, table);
       }
     }
     return table;

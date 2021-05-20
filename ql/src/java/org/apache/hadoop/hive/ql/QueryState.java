@@ -61,9 +61,9 @@ public class QueryState {
   static public final String USERID_TAG = "userid";
 
   /**
-   * map of tables involved in the query.
+   * map of resources involved in the query.
    */
-  private final Map<String, Object> tableMap = new HashMap<>();
+  private final Map<String, Object> resourceMap = new HashMap<>();
 
   /**
    * Private constructor, use QueryState.Builder instead.
@@ -147,16 +147,16 @@ public class QueryState {
     queryConf.set(TezConfiguration.TEZ_APPLICATION_TAGS, jobTag);
   }
 
-  public void addTable(String tableIdentifier, Object table) {
-    tableMap.put(tableIdentifier, table);
+  public void addResource(String resourceIdentifier, Object resource) {
+    resourceMap.put(resourceIdentifier, resource);
   }
 
-  public Object getTable(String tableIdentifier) {
-    return tableMap.get(tableIdentifier);
+  public Object getResource(String resourceIdentifier) {
+    return resourceMap.get(resourceIdentifier);
   }
 
-  public void removeTables() {
-    tableMap.clear();
+  public void removeResources() {
+    resourceMap.clear();
   }
 
   /**

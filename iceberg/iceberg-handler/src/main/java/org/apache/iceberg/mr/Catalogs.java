@@ -26,7 +26,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
@@ -101,8 +100,6 @@ public final class Catalogs {
   private static Table loadTable(Configuration conf, String tableIdentifier, String tableLocation, String catalogName) {
     Optional<Catalog> catalog = loadCatalog(conf, catalogName);
 
-    Table cachedTable = null;
-    String queryId = conf.get(HiveConf.ConfVars.HIVEQUERYID.varname);
     if (catalog.isPresent()) {
       Preconditions.checkArgument(tableIdentifier != null, "Table identifier not set");
       Table table = catalog.get().loadTable(TableIdentifier.parse(tableIdentifier));
