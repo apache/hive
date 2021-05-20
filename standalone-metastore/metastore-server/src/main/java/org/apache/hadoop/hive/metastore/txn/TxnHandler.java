@@ -5493,7 +5493,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       String regex = MetastoreConf.getVar(conf, ConfVars.TXN_RETRYABLE_SQLEX_REGEX);
       if (regex != null && !regex.isEmpty()) {
         String[] patterns = regex.split(",(?=\\S)");
-        String message = getMessage((SQLException)ex);
+        String message = ex.getMessage();
         for (String p : patterns) {
           if (Pattern.matches(p, message)) {
             return true;
