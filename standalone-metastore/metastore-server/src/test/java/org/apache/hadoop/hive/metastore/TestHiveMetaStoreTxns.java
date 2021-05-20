@@ -353,7 +353,7 @@ public class TestHiveMetaStoreTxns {
   @Test
   public void testAllocateTableWriteIdForReadOnlyTxn() throws Exception {
     thrown.expect(IllegalStateException.class);
-    thrown.expectMessage("Write ID allocation failed on db.tbl as not all input txns in open state or read-only");
+    thrown.expectMessage("Write ID allocation on db.tbl failed for input txns: {1,read-only}");
 
     long txnId = client.openTxn("me", TxnType.READ_ONLY);
     client.allocateTableWriteId(txnId, "db", "tbl");
