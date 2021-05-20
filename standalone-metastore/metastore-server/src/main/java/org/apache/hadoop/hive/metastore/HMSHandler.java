@@ -1205,7 +1205,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Exception ex = null;
     try {
       ret = getMS().getCatalogs();
-    } catch (MetaException e) {
+    } catch (Exception e) {
       ex = e;
       throw e;
     } finally {
