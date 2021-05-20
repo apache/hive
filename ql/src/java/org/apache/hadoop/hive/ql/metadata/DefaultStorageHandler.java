@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -68,8 +69,13 @@ public class DefaultStorageHandler implements HiveStorageHandler, HiveStorageAut
 
   @Override
   public URI getURIForAuth(Map<String, String> tableProperties) throws URISyntaxException{
-    // Empty URI by default
-    return new URI("");
+    // custom storage URI by default
+    try {
+      return new URI(this.getClass().getName() + "://" +
+              HiveCustomStorageHandlerUtils.getTablePropsForCustomStorageHandler(tableProperties));
+    } catch (Exception ex) {
+      throw new URISyntaxException("Unsupported ex",ex.getMessage());
+    }
   }
 
   public HiveAuthorizationProvider getAuthorizationProvider()

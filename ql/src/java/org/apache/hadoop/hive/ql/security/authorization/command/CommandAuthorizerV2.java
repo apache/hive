@@ -106,7 +106,7 @@ final class CommandAuthorizerV2 {
   }
 
   private static List<HivePrivilegeObject> getHivePrivObjects(List<? extends Entity> privObjects,
-      Map<String, List<String>> tableName2Cols, HiveOperationType hiveOpType) {
+      Map<String, List<String>> tableName2Cols, HiveOperationType hiveOpType) throws HiveException {
     List<HivePrivilegeObject> hivePrivobjs = new ArrayList<HivePrivilegeObject>();
     if (privObjects == null){
       return hivePrivobjs;
@@ -179,7 +179,7 @@ final class CommandAuthorizerV2 {
   }
 
   private static void addHivePrivObject(Entity privObject, Map<String, List<String>> tableName2Cols,
-      List<HivePrivilegeObject> hivePrivObjs, HiveOperationType hiveOpType) {
+      List<HivePrivilegeObject> hivePrivObjs, HiveOperationType hiveOpType) throws HiveException {
     HivePrivilegeObjectType privObjType = AuthorizationUtils.getHivePrivilegeObjectType(privObject.getType());
     HivePrivObjectActionType actionType = AuthorizationUtils.getActionType(privObject);
     HivePrivilegeObject hivePrivObject = null;
@@ -217,6 +217,7 @@ final class CommandAuthorizerV2 {
             }
           } catch(Exception ex) {
             LOG.error("Exception occured while getting the URI from storage handler: "+ex.getMessage(), ex);
+            throw new HiveException("Exception occured while getting the URI from storage handler: "+ex.getMessage());
           }
           hivePrivObjs.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storageuri, null, null,
                   actionType, null, table.getStorageHandler().getClass().getName(), table.getOwner(), table.getOwnerType()));
