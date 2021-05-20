@@ -145,13 +145,8 @@ public final class WriteBuffers implements RandomAccessOutput, MemoryEstimate {
 
   /** THIS METHOD IS NOT THREAD-SAFE. Use only at load time (or be mindful of thread safety). */
   public int unsafeHashCode(long offset, int length) {
-    return hashCode(offset, length, unsafeReadPos);
-  }
-
-  public int hashCode(long offset, int length, Position readPos) {
-    // If caller has not set the read position, then set it.
-    setReadPoint(offset, readPos);
-    return hashCode(length, readPos);
+    setReadPoint(offset, unsafeReadPos);
+    return hashCode(length, unsafeReadPos);
   }
 
   public int hashCode(int length, Position readPos) {

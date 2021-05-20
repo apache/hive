@@ -52,6 +52,19 @@ public class VectorMapJoinFastBytesHashKeyRef {
     return true;
   }
 
+  /**
+   * This method calculates the hash code of the key referred by the refWord. The refWord has the offset of the key
+   * in the writeBuffers. In case of smaller key, of length less than 256 bytes, the length is stored in refWord itself.
+   * For larger keys, the length is stored in the writeBuffers along with the key. The length is stored first followed
+   * by the key. So in case of big key, readPos is used to get the length first. This will set the read position
+   * to the beginning of key. Then writeBuffers.hashCode is used to get the hash code. For smaller keys, unsafeHashCode
+   * is used, which will set the read position to keyAbsoluteOffset.
+   *
+   * @param refWord The long value containing the offset of the key in writeBuffers.
+   * @param writeBuffers Buffer used for storing the keys present in the hash table.
+   * @param readPos temporary position to be used in this method.
+   * @return hash code for the key pointed to by refWord
+   */
   public static int calculateHashCode(long refWord, WriteBuffers writeBuffers,
       WriteBuffers.Position readPos) {
 
