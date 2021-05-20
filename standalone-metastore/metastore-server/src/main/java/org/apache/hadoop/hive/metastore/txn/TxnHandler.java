@@ -296,7 +296,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       "SELECT COUNT(*) FROM (SELECT COUNT(\"TXN_ID\"), \"T2W_DATABASE\", \"T2W_TABLE\" FROM \"TXN_TO_WRITE_ID\" " +
           "INNER JOIN \"TXNS\" ON \"T2W_TXNID\" = \"TXN_ID\" WHERE \"TXN_STATE\"='" + TxnStatus.ABORTED + "' " +
           "GROUP BY \"T2W_DATABASE\", \"T2W_TABLE\" HAVING COUNT(\"TXN_ID\") > ?) \"L\") \"L\" CROSS JOIN (" +
-      "SELECT ({0} - MIN(\"CQ_ENQUEUE_TIME\"))/1000 from \"COMPACTION_QUEUE\" WHERE " +
+      "SELECT ({0} - MIN(\"CQ_COMMIT_TIME\"))/1000 from \"COMPACTION_QUEUE\" WHERE " +
           "\"CQ_STATE\"=''" + Character.toString(READY_FOR_CLEANING) + "'') OLDEST_CLEAN";
 
 
@@ -3782,7 +3782,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             metrics.setLocksCount(rs.getInt(12));
             metrics.setOldestLockAge(rs.getInt(13));
             metrics.setTablesWithXAbortedTxns(rs.getInt(14));
-            metrics.setOldestLockAge(rs.getInt(15));
+            metrics.setOldestReadyForCleaningAge(rs.getInt(15));
           }
         }
         return metrics;
