@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -104,12 +105,20 @@ public class JoinCondTypeCheckProcFactory<T> extends TypeCheckProcFactory<T> {
           tblAliasCnt++;
       }
 
+      if (tblAliasCnt == 0 && ctx.getOuterRR() != null) {
+        for (RowResolver rr : ImmutableList.of(ctx.getOuterRR())) {
+          if (rr.hasTableAlias(tabName)) {
+            tblAliasCnt++;
+          }
+        }
+      }
+
       if (tblAliasCnt > 1) {
         throw new SemanticException(ASTErrorUtils.getMsg(
             ErrorMsg.AMBIGUOUS_TABLE_OR_COLUMN.getMsg(), expr));
       }
 
-      return (tblAliasCnt == 1) ? true : false;
+      return tblAliasCnt == 1;
     }
 
     private ColumnInfo getColInfo(JoinTypeCheckCtx ctx, String tabName, String colAlias,
@@ -175,7 +184,11 @@ public class JoinCondTypeCheckProcFactory<T> extends TypeCheckProcFactory<T> {
       }
       ColumnInfo newColumnInfo = new ColumnInfo(colInfo);
       newColumnInfo.setTabAlias(tableAlias);
-      return exprFactory.createColumnRefExpr(newColumnInfo, jctx.getInputRRList());
+      List<RowResolver> listRR = new ArrayList<>(jctx.getInputRRList());
+      if (jctx.getOuterRR() != null) {
+        listRR.add(jctx.getOuterRR());
+      }
+      return exprFactory.createColumnRefExpr(newColumnInfo, listRR);
     }
 
     private ColumnInfo getColInfo(JoinTypeCheckCtx ctx, String tabName, String colAlias,
@@ -191,6 +204,19 @@ public class JoinCondTypeCheckProcFactory<T> extends TypeCheckProcFactory<T> {
                 ErrorMsg.AMBIGUOUS_TABLE_OR_COLUMN.getMsg(), expr));
           }
           cInfoToRet = tmp;
+        }
+      }
+
+      if (cInfoToRet == null && ctx.getOuterRR() != null) {
+        for (RowResolver rr : ImmutableList.of(ctx.getOuterRR())) {
+          tmp = rr.get(tabName, colAlias);
+          if (tmp != null) {
+            if (cInfoToRet != null) {
+              throw new SemanticException(ASTErrorUtils.getMsg(
+                ErrorMsg.AMBIGUOUS_TABLE_OR_COLUMN.getMsg(), expr));
+            }
+            cInfoToRet = tmp;
+          }
         }
       }
 

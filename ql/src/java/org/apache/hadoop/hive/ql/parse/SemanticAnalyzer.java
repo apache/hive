@@ -12970,8 +12970,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       String[] tmp = input.reverseLookup(columnDesc.getColumn());
       // in subquery case, tmp may be from outside.
-      if (tmp[0] != null && columnDesc.getTabAlias() != null
-          && !tmp[0].equals(columnDesc.getTabAlias()) && tcCtx.getOuterRR() != null) {
+      // check if outer present && (tmp is null || tmp not null - contains tbl info)
+      if (tcCtx.getOuterRR() != null && (tmp == null || (tmp[0] != null && columnDesc.getTabAlias() != null
+          && !tmp[0].equals(columnDesc.getTabAlias())))) {
         tmp = tcCtx.getOuterRR().reverseLookup(columnDesc.getColumn());
       }
       StringBuilder replacementText = new StringBuilder();

@@ -240,6 +240,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     HepProgram program = HepProgram.builder()
             .addRuleInstance(new AdjustProjectForCountAggregateRule(false))
             .addRuleInstance(new AdjustProjectForCountAggregateRule(true))
+            .addRuleInstance(new HiveJoinExtractFilterRule(HiveJoin.class, HiveRelFactories.HIVE_BUILDER))
             .addRuleInstance(HiveFilterJoinRule.FILTER_ON_JOIN)
             .addRuleInstance(HiveFilterProjectTransposeRule.INSTANCE)
             .addRuleInstance(FLATTEN_CORRELATED_CONDITION_RULE)
