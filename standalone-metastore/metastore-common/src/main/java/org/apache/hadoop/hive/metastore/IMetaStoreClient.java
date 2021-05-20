@@ -94,6 +94,7 @@ public interface IMetaStoreClient {
    * create the directory for the catalog.
    * @throws TException general thrift exception.
    */
+  @NoReconnect
   void createCatalog(Catalog catalog)
       throws AlreadyExistsException, InvalidObjectException, MetaException, TException;
 
@@ -834,6 +835,7 @@ public interface IMetaStoreClient {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
+  @NoReconnect
   Partition appendPartition(String dbName, String tableName, List<String> partVals)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
@@ -850,6 +852,7 @@ public interface IMetaStoreClient {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
+  @NoReconnect
   Partition appendPartition(String catName, String dbName, String tableName, List<String> partVals)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
@@ -865,6 +868,7 @@ public interface IMetaStoreClient {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
+  @NoReconnect
   Partition appendPartition(String dbName, String tableName, String name)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
@@ -881,6 +885,7 @@ public interface IMetaStoreClient {
    * @throws MetaException error accessing the RDBMS
    * @throws TException thrift transport error
    */
+  @NoReconnect
   Partition appendPartition(String catName, String dbName, String tableName, String name)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
@@ -899,6 +904,7 @@ public interface IMetaStoreClient {
    * @throws TException
    *           Thrift exception
    */
+  @NoReconnect
   Partition add_partition(Partition partition)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
@@ -916,6 +922,7 @@ public interface IMetaStoreClient {
    * @throws TException
    *           Thrift exception
    */
+  @NoReconnect
   int add_partitions(List<Partition> partitions)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
@@ -928,6 +935,7 @@ public interface IMetaStoreClient {
    * @throws MetaException error accessing the RDBMS or storage.
    * @throws TException thrift transport error
    */
+  @NoReconnect
   int add_partitions_pspec(PartitionSpecProxy partitionSpec)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
@@ -939,6 +947,7 @@ public interface IMetaStoreClient {
    * @param needResults Whether the results are needed
    * @return the partitions that were added, or null if !needResults
    */
+  @NoReconnect
   List<Partition> add_partitions(
       List<Partition> partitions, boolean ifNotExists, boolean needResults)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
@@ -1778,7 +1787,7 @@ public interface IMetaStoreClient {
    * @throws TException
    * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#create_table(org.apache.hadoop.hive.metastore.api.CreateTableRequest)
    */
-
+  @NoReconnect
   void createTable(Table tbl) throws AlreadyExistsException,
       InvalidObjectException, MetaException, NoSuchObjectException, TException;
 
@@ -1790,7 +1799,7 @@ public interface IMetaStoreClient {
    * @throws NoSuchObjectException
    * @throws TException
    */
-
+  @NoReconnect
   void createTable(CreateTableRequest request) throws AlreadyExistsException,
           InvalidObjectException, MetaException, NoSuchObjectException, TException;
 
@@ -1882,6 +1891,7 @@ public interface IMetaStoreClient {
    * @throws MetaException something went wrong, usually in the RDBMS
    * @throws TException general thrift error
    */
+  @NoReconnect
   void createDatabase(Database db)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
@@ -2018,6 +2028,7 @@ public interface IMetaStoreClient {
    * @throws MetaException something went wrong, usually in the RDBMS
    * @throws TException general thrift error
    */
+  @NoReconnect
   void createDataConnector(DataConnector connector)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
@@ -2827,6 +2838,7 @@ public interface IMetaStoreClient {
    * @throws MetaException
    * @throws TException
    */
+  @NoReconnect
   boolean create_role(Role role)
       throws MetaException, TException;
 
@@ -3837,6 +3849,7 @@ public interface IMetaStoreClient {
   SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request)
       throws MetaException, NoSuchObjectException, TException;
 
+  @NoReconnect
   void createTableWithConstraints(
     org.apache.hadoop.hive.metastore.api.Table tTbl,
     List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
@@ -3977,6 +3990,7 @@ public interface IMetaStoreClient {
   void dropWMMapping(WMMapping mapping)
       throws TException;
 
+  @NoReconnect
   void createOrDropTriggerToPoolMapping(String resourcePlanName, String triggerName,
       String poolPath, boolean shouldDrop, String ns) throws AlreadyExistsException, NoSuchObjectException,
       InvalidObjectException, MetaException, TException;
@@ -3990,6 +4004,7 @@ public interface IMetaStoreClient {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
+  @NoReconnect
   void createISchema(ISchema schema) throws TException;
 
   /**
@@ -4036,6 +4051,7 @@ public interface IMetaStoreClient {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
+  @NoReconnect
   void addSchemaVersion(SchemaVersion schemaVersion) throws TException;
 
   /**
@@ -4137,6 +4153,7 @@ public interface IMetaStoreClient {
    * @throws MetaException general metastore error
    * @throws TException general thrift error
    */
+  @NoReconnect
   void addSerDe(SerDeInfo serDeInfo) throws TException;
 
   /**
