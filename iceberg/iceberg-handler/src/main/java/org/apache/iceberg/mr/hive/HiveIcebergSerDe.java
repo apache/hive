@@ -52,7 +52,6 @@ import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveSchemaUtil;
-import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.serde.objectinspector.IcebergObjectInspector;
 import org.apache.iceberg.mr.mapred.Container;
@@ -98,8 +97,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       }
     } else {
       try {
+        Table table = IcebergTableUtil.getTable(configuration, serDeProperties);
         // always prefer the original table schema if there is one
-        Table table = Catalogs.loadTable(configuration, serDeProperties);
         this.tableSchema = table.schema();
         this.partitionColumns = table.spec().fields().stream().map(PartitionField::name).collect(Collectors.toList());
         LOG.info("Using schema from existing table {}", SchemaParser.toJson(tableSchema));

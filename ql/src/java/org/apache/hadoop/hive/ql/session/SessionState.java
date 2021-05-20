@@ -349,6 +349,20 @@ public class SessionState implements ISessionAuthState{
 
   private final AtomicLong sparkSessionId = new AtomicLong();
 
+  private final Map<String, Object> queryStateMap = new HashMap<>();
+
+  public Object getQueryState(String queryId) {
+    return queryStateMap.get(queryId);
+  }
+
+  public void addQueryState(String queryId, Object queryState) {
+    queryStateMap.put(queryId, queryState);
+  }
+
+  public void removeQueryState(String queryId) {
+    queryStateMap.remove(queryId);
+  }
+
   @Override
   public HiveConf getConf() {
     return sessionConf;

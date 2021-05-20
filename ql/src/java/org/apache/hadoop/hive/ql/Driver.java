@@ -117,6 +117,7 @@ public class Driver implements IDriver {
     driverContext = new DriverContext(queryState, queryInfo, new HookRunner(queryState.getConf(), CONSOLE),
         txnManager);
     driverTxnHandler = new DriverTxnHandler(driverContext, driverState);
+    SessionState.get().addQueryState(getConf().get(HiveConf.ConfVars.HIVEQUERYID.varname), queryState);
   }
 
   @Override
@@ -212,6 +213,11 @@ public class Driver implements IDriver {
       } else {
         releaseResources();
       }
+
+      // Clean up every table object stored in the query state
+      driverContext.getQueryState().removeTables();
+      // Remove any query state reference from the session state
+      SessionState.get().removeQueryState(getConf().get(HiveConf.ConfVars.HIVEQUERYID.varname));
 
       driverState.executionFinishedWithLocking(isFinishedWithError);
     }
