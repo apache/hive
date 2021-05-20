@@ -149,7 +149,12 @@ public final class WriteBuffers implements RandomAccessOutput, MemoryEstimate {
   }
 
   public int hashCode(long offset, int length, Position readPos) {
+    // If caller has not set the read position, then set it.
     setReadPoint(offset, readPos);
+    return hashCode(length, readPos);
+  }
+
+  public int hashCode(int length, Position readPos) {
     if (isAllInOneReadBuffer(length, readPos)) {
       int result = HashCodeUtil.murmurHash(readPos.buffer, readPos.offset, length);
       readPos.offset += length;

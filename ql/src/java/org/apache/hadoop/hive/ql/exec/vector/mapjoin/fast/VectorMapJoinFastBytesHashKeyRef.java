@@ -69,12 +69,14 @@ public class VectorMapJoinFastBytesHashKeyRef {
 
       // And, if current value is big we must read it.
       actualKeyLength = writeBuffers.readVInt(readPos);
-      keyAbsoluteOffset = absoluteOffset + actualKeyLength;
+
+      // Now the read position is set to start of the key as readVInt moved the
+      // position by size of key length.
+      return writeBuffers.hashCode(actualKeyLength, readPos);
     } else {
       keyAbsoluteOffset = absoluteOffset;
+      return writeBuffers.unsafeHashCode(keyAbsoluteOffset, actualKeyLength);
     }
-
-    return writeBuffers.unsafeHashCode(keyAbsoluteOffset, actualKeyLength);
   }
 
   public static final class KeyRef {
