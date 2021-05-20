@@ -860,15 +860,11 @@ public final class ConstantPropagateProcFactory {
     RowSchema rs = parent.getSchema();
     ColumnInfo ci = rs.getColumnInfo(desc.getColumn());
     if (ci == null) {
-      if (LOG.isErrorEnabled()) {
-        LOG.error("Reverse look up of column " + desc + " error!");
-      }
+      LOG.error("Reverse look up of column " + desc + " error!");
       ci = rs.getColumnInfo(desc.getTabAlias(), desc.getColumn());
     }
     if (ci == null) {
-      if (LOG.isErrorEnabled()) {
-        LOG.error("Can't resolve " + desc.getTabAlias() + "." + desc.getColumn());
-      }
+      LOG.error("Can't resolve " + desc.getTabAlias() + "." + desc.getColumn());
       return null;
     }
     ExprNodeDesc constant = null;
@@ -980,10 +976,7 @@ public final class ConstantPropagateProcFactory {
         return new ExprNodeConstantDesc(structType,
             ObjectInspectorUtils.copyToStandardJavaObject(o, coi));
       } else if (!PrimitiveObjectInspectorUtils.isPrimitiveJavaClass(clz)) {
-        if (LOG.isErrorEnabled()) {
-          LOG.error("Unable to evaluate {}({}). Return value unrecoginizable.",
-              udf.getClass().getName(), exprs);
-        }
+        LOG.error("Unable to evaluate {}({}). Return value unrecoginizable.", udf.getClass().getName(), exprs);
         return null;
       } else {
         // fall through
@@ -995,9 +988,8 @@ public final class ConstantPropagateProcFactory {
       }
       return new ExprNodeConstantDesc(o).setFoldedFromVal(constStr);
     } catch (HiveException e) {
-      LOG.error("Evaluation function {}({}) failed in Constant Propagation Optimizer.",
-          udf.getClass().getName(), exprs);
-      throw new RuntimeException(e);
+      throw new RuntimeException(String.format("Evaluation function %s(%s) failed in Constant Propagation Optimizer",
+          udf.getClass().getName(), exprs), e);
     }
   }
 

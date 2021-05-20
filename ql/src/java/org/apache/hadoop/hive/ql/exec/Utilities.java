@@ -414,8 +414,7 @@ public final class Utilities {
       setPlanPath(conf, hiveScratchDir);
       setBaseWork(conf, name, work);
     } catch (IOException e) {
-      LOG.error("Failed to cache plan", e);
-      throw new RuntimeException(e);
+      throw new RuntimeException("Failed to cache plan", e);
     }
   }
 
@@ -528,9 +527,7 @@ public final class Utilities {
       LOG.debug("No plan file found: {}", path, fnf);
       return null;
     } catch (Exception e) {
-      String msg = "Failed to load plan: " + path;
-      LOG.error(msg, e);
-      throw new RuntimeException(msg, e);
+      throw new RuntimeException("Failed to load plan: " + path, e);
     } finally {
       SerializationUtilities.releaseKryo(kryo);
       IOUtils.closeStream(in);
@@ -645,9 +642,7 @@ public final class Utilities {
       gWorkMap.get(conf).put(planPath, w);
       return planPath;
     } catch (Exception e) {
-      String msg = "Error caching " + name;
-      LOG.error(msg, e);
-      throw new RuntimeException(msg, e);
+      throw new RuntimeException("Error caching " + name, e);
     } finally {
       SerializationUtilities.releaseKryo(kryo);
     }
@@ -1600,9 +1595,8 @@ public final class Utilities {
       try {
         future.get();
       } catch (InterruptedException | ExecutionException e) {
-        LOG.error("Error in moving files to destination", e);
         cancelTasks(futures);
-        throw new HiveException(e);
+        throw new HiveException("Error in moving files to destination", e);
       }
     }
   }
@@ -1756,11 +1750,10 @@ public final class Utilities {
           future.get();
         }
       } catch (InterruptedException | ExecutionException e) {
-        LOG.error("Exception in getting dir status", e);
         for (Future<Void> future : futures) {
           future.cancel(true);
         }
-        throw new IOException(e);
+        throw new IOException("Exception in getting dir status", e);
       }
     }
 
@@ -2180,7 +2173,7 @@ public final class Utilities {
         oneurl = new File(onestr).toURL();
       }
     } catch (Exception err) {
-      LOG.error("Bad URL {}, ignoring path", onestr);
+      LOG.warn("Bad URL {}, ignoring path", onestr);
     }
     return oneurl;
   }
@@ -3168,7 +3161,7 @@ public final class Utilities {
       } catch (SQLTransientException e) {
         if (failures >= maxRetries) {
           LOG.error("Error during JDBC connection.", e);
-          throw e;
+          throw t;
         }
         long waitTime = Utilities.getRandomWaitTime(waitWindow, failures,
             ThreadLocalRandom.current());

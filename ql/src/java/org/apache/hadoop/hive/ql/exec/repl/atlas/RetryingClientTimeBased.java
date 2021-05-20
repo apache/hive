@@ -63,7 +63,6 @@ public class RetryingClientTimeBased {
           LOG.info("There is nothing to export/import.");
           return null;
         }
-        LOG.error(func.getClass().getName(), e);
         throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(), e);
       }
     }
@@ -115,7 +114,6 @@ public class RetryingClientTimeBased {
         LOG.info("Atlas in-progress operation detected. Will pause for: {} seconds", delay);
         Thread.sleep(delay * 1000L);
       } catch (InterruptedException intEx) {
-        LOG.error("Pause wait interrupted!", intEx);
         throw new SemanticException(intEx);
       }
       return true;

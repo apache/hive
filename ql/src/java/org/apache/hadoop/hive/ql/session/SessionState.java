@@ -996,8 +996,7 @@ public class SessionState implements ISessionAuthState{
       createTableGrants = CreateTableAutomaticGrant.create(sessionConf);
 
     } catch (HiveException e) {
-      LOG.error("Error setting up authorization: " + e.getMessage(), e);
-      throw new RuntimeException(e);
+      throw new RuntimeException("Error setting up authorization", e);
     }
 
     if(LOG.isDebugEnabled()){

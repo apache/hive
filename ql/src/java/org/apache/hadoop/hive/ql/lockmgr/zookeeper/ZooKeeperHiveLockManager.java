@@ -563,8 +563,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       LOG.debug("Node " + name + " to be deleted is not empty.");
     } catch (Exception e) {
       //exceptions including InterruptException and other KeeperException
-      LOG.error("Failed to release ZooKeeper lock: ", e);
-      throw new LockException(e);
+      throw new LockException("Failed to release ZooKeeper lock", e);
     }
   }
 
@@ -731,8 +730,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       }
 
     } catch (Exception e) {
-      LOG.error("Failed to close zooKeeper client: " + e);
-      throw new LockException(e);
+      throw new LockException("Failed to close zooKeeper client", e);
     }
   }
 
@@ -802,8 +800,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
 
       return new HiveLockObject(partn, data);
     } catch (Exception e) {
-      LOG.error("Failed to create ZooKeeper object: " + e);
-      throw new LockException(e);
+      throw new LockException("Failed to create ZooKeeper object", e);
     }
   }
 

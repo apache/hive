@@ -202,11 +202,8 @@ public class SplitGrouper {
             isMinorCompaction &= AcidUtils.isCompactionTable(partitionDesc.getTableDesc().getProperties());
             if (!tableScan.getConf().isTranscationalTable() && !isMinorCompaction) {
               String splitPath = getFirstSplitPath(splits);
-              String errorMessage =
-                  "Compactor split grouping is enabled only for transactional tables. Please check the path: "
-                      + splitPath;
-              LOG.error(errorMessage);
-              throw new RuntimeException(errorMessage);
+              throw new RuntimeException("Compactor split grouping is enabled only for transactional tables. Please check the path: "
+                  + splitPath);
             }
           }
         }

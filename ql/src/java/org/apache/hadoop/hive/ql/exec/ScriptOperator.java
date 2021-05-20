@@ -430,10 +430,9 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
           inputObjInspectors[tag]);
       scriptOutWriter.write(res);
     } catch (SerDeException e) {
-      LOG.error("Error in serializing the row: " + e.getMessage());
       scriptError = e;
       serialize_error_count.set(serialize_error_count.get() + 1);
-      throw new HiveException(e);
+      throw new HiveException("Error in serializing the row", e);
     } catch (IOException e) {
       if (isBrokenPipeException(e) && allowPartialConsumption()) {
         // Give the outThread a chance to finish before marking the operator as done
@@ -453,7 +452,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         setDone(true);
         LOG.warn("Got broken pipe during write: ignoring exception and setting operator to done");
       } else {
-        LOG.error("Error in writing to script: " + e.getMessage());
+        LOG.error("Error in writing to script", e);
         if (isBrokenPipeException(e)) {
           displayBrokenPipeInfo();
         }

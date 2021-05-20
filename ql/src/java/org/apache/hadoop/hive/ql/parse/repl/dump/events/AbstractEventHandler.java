@@ -59,10 +59,8 @@ abstract class AbstractEventHandler<T extends EventMessage> implements EventHand
     try {
       deserializer = MessageFactory.getInstance(event.getMessageFormat()).getDeserializer();
     } catch (Exception e) {
-      String message =
-          "could not create appropriate messageFactory for format " + event.getMessageFormat();
-      LOG.error(message, e);
-      throw new IllegalStateException(message, e);
+      throw new IllegalStateException(
+          "Failed to create appropriate messageFactory for format " + event.getMessageFormat(), e);
     }
     eventMessage = eventMessage(event.getMessage());
     eventMessageAsJSON = eventMessageAsJSON(eventMessage);

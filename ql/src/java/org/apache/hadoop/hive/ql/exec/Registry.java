@@ -671,7 +671,7 @@ public class Registry {
       try {
         FunctionUtils.addFunctionResources(resources);
       } catch (Exception e) {
-        LOG.error("Unable to load resources for " + qualifiedName + ":" + e, e);
+        LOG.error("Unable to load resources for " + qualifiedName, e);
         return null;
       }
       ClassLoader loader = Utilities.getSessionSpecifiedClassLoader();
@@ -689,12 +689,12 @@ public class Registry {
       }
     } catch (ClassNotFoundException e) {
       // Lookup of UDf class failed
-      LOG.error("Unable to load UDF class: " + e);
       Utilities.restoreSessionSpecifiedClassLoader(prev);
 
-      throw new SemanticException("Unable to load UDF class: " + e +
-              "\nPlease ensure that the JAR file containing this class has been properly installed " +
-              "in the auxiliary directory or was added with ADD JAR command.");
+      throw new SemanticException(
+          "Unable to load UDF class. Please ensure that the JAR file containing this class has been properly installed "
+              + "in the auxiliary directory or was added with ADD JAR command.",
+          e);
     }finally {
       function.shareStateWith(ret);
     }
@@ -724,7 +724,7 @@ public class Registry {
           JavaUtils.closeClassLoader(loader);
         }
       } catch (IOException ie) {
-          LOG.error("Error in close loader: " + ie);
+          LOG.error("Error in close loader", ie);
       }
       mSessionUDFLoaders.clear();
     } finally {

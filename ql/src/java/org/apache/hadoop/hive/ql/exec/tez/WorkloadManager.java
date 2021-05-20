@@ -524,7 +524,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
           tezAmPool.replaceSession(toRestart);
           wmEvent.endEvent(toRestart);
         } catch (Exception ex) {
-          LOG.error("Failed to restart an old session; ignoring", ex);
+          LOG.warn("Failed to restart an old session; ignoring", ex);
         }
       });
     }
@@ -539,7 +539,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
           toDestroy.close(false);
           wmEvent.endEvent(toDestroy);
         } catch (Exception ex) {
-          LOG.error("Failed to close an old session; ignoring " + ex.getMessage());
+          LOG.warn("Failed to close an old session; ignoring", ex);
         }
       });
     }
@@ -552,7 +552,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         try {
           path.getFileSystem(conf).delete(path, true);
         } catch (Exception ex) {
-          LOG.error("Failed to delete an old path; ignoring " + ex.getMessage());
+          LOG.warn("Failed to delete an old path; ignoring", ex);
         }
       });
     }

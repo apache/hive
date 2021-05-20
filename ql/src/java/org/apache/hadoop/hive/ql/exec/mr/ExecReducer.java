@@ -240,8 +240,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
       } else {
-        LOG.error("Reduce failed", e);
-        throw new RuntimeException(e);
+        throw new RuntimeException("Reduce failed", e);
       }
     }
   }

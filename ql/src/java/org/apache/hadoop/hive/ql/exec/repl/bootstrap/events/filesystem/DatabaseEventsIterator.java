@@ -147,8 +147,7 @@ class DatabaseEventsIterator implements Iterator<BootstrapEvent> {
       return true;
     } catch (Exception e) {
       // may be do some retry logic here.
-      LOG.error("could not traverse the file via remote iterator " + dbLevelPath, e);
-      throw new RuntimeException(e.getMessage(), e);
+      throw new RuntimeException("Failed to traverse the file via remote iterator " + dbLevelPath, e);
     }
   }
 

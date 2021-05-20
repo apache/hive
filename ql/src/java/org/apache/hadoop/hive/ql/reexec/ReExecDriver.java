@@ -184,7 +184,7 @@ public class ReExecDriver implements IDriver {
       try {
         coreDriver.compileAndRespond(currentQuery);
       } catch (CommandProcessorException e) {
-        LOG.error("Recompilation of the query failed; this is unexpected.");
+        LOG.error("Recompilation of the query failed; this is unexpected.", e);
         // FIXME: somehow place pointers that re-execution compilation have failed; the query have been successfully compiled before?
         throw e;
       }

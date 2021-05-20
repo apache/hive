@@ -127,14 +127,12 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     try {
       tgtFs = targetPath.getFileSystem(conf);
     } catch (IOException e) {
-      LOG.error("Failed to get dest fs", e);
-      throw new HiveException(e.getMessage(), e);
+      throw new HiveException("Failed to get dest fs", e);
     }
     try {
       srcFs = sourcePath.getFileSystem(conf);
     } catch (IOException e) {
-      LOG.error("Failed to get src fs", e);
-      throw new HiveException(e.getMessage(), e);
+      throw new HiveException("Failed to get src fs", e);
     }
 
     // if source exists, rename. Otherwise, create a empty directory

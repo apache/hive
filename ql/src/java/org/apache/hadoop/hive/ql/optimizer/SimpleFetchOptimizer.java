@@ -116,11 +116,10 @@ public class SimpleFetchOptimizer extends Transform {
           pctx.setFetchTask(fetchTask);
         }
       } catch (Exception e) {
-        LOG.error("Failed to transform", e);
         if (e instanceof SemanticException) {
           throw (SemanticException) e;
         }
-        throw new SemanticException(e.getMessage(), e);
+        throw new SemanticException("Failed to transform", e);
       }
     }
     return pctx;

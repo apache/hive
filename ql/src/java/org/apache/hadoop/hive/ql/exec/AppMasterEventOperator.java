@@ -70,8 +70,7 @@ public class AppMasterEventOperator extends Operator<AppMasterEventDesc> {
     try {
       serializer.initialize(null, conf.getTable().getProperties(), null);
     } catch (SerDeException e) {
-      LOG.error("Initialization failed for serializer", e);
-      throw new HiveException(e.getMessage());
+      throw new HiveException("Initialization failed for serializer", e);
     }
     initDataBuffer(false);
   }

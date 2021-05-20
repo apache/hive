@@ -1293,7 +1293,7 @@ public class Vectorizer implements PhysicalPlanResolver {
           return ((VectorizedInputFormatInterface) inputFormat).getSupportedFeatures();
         }
       } catch (IOException e) {
-        LOG.error("Unable to instantiate {} input format class. Cannot determine vectorization support.", e);
+        LOG.warn("Unable to instantiate {} input format class. Cannot determine vectorization support.", e);
       }
       // FUTURE: Decide how to ask an input file format what vectorization features it supports.
       return null;

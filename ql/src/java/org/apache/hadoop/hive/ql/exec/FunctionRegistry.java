@@ -1197,8 +1197,7 @@ public final class FunctionRegistry {
         } catch (UDFArgumentException err) {
           // In theory this should not happen - if the original copy of the UDF had this
           // data, we should be able to set the UDF copy with this same settableData.
-          LOG.error("Unable to add settable data to UDF " + genericUDF.getClass());
-          throw new IllegalArgumentException(err);
+          throw new IllegalArgumentException("Unable to add settable data to UDF: " + genericUDF.getClass());
         }
       }
     }

@@ -241,9 +241,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
           ObjectInspectorUtils::getBucketHashCode :
           ObjectInspectorUtils::getBucketHashCodeOld;
     } catch (Exception e) {
-      String msg = "Error initializing ReduceSinkOperator: " + e.getMessage();
-      LOG.error(msg, e);
-      throw new RuntimeException(e);
+      throw new RuntimeException("Error initializing ReduceSinkOperator", e);
     }
   }
 

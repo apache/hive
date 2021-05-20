@@ -133,7 +133,7 @@ public class PTFPartition {
     try {
       elems.close();
     } catch (HiveException e) {
-      LOG.error(e.toString(), e);
+      LOG.error("Error", e);
     }
   }
 

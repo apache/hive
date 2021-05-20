@@ -62,7 +62,7 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
             return 0;
           }
         } catch (HiveException e1) {
-          LOG.error("Get database failed with exception " + e1.getMessage());
+          LOG.error("Get database failed", e1);
           return 1;
         }
     }

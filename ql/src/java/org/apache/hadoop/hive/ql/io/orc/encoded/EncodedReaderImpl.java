@@ -469,8 +469,7 @@ class EncodedReaderImpl implements EncodedReader {
         try {
           consumer.consumeData(ecb);
         } catch (InterruptedException e) {
-          LOG.error("IO thread interrupted while queueing data");
-          throw new IOException(e);
+          throw new IOException("IO thread interrupted while queueing data", e);
         }
       } else {
         LOG.warn("Nothing to read for stripe [" + stripe + "]");
@@ -608,9 +607,8 @@ class EncodedReaderImpl implements EncodedReader {
           consumer.consumeData(ecb);
           // After this, the non-initial refcounts are the responsibility of the consumer.
         } catch (InterruptedException e) {
-          LOG.error("IO thread interrupted while queueing data");
           releaseEcbRefCountsOnError(ecb);
-          throw new IOException(e);
+          throw new IOException("IO thread interrupted while queueing data", e);
         }
       }
 
@@ -740,7 +738,7 @@ class EncodedReaderImpl implements EncodedReader {
         }
       }
     } catch (Throwable t) {
-      LOG.error("Error during the cleanup of an error; ignoring", t);
+      LOG.warn("Error during the cleanup of an error; ignoring", t);
     }
   }
 
@@ -814,7 +812,7 @@ class EncodedReaderImpl implements EncodedReader {
         codec = null;
       }
     } catch (Exception ex) {
-      LOG.error("Ignoring error from codec", ex);
+      LOG.warn("Ignoring error from codec", ex);
     } finally {
       dataReader.close();
     }
@@ -1187,7 +1185,6 @@ class EncodedReaderImpl implements EncodedReader {
         if (!(current instanceof BufferChunk)) {
           String msg = "Found an unexpected " + current.getClass().getSimpleName() + ": "
               + current + " while looking at " + currentOffset;
-          LOG.error(msg);
           throw new RuntimeException(msg);
         }
         BufferChunk bc = (BufferChunk)current;
@@ -2226,7 +2223,7 @@ class EncodedReaderImpl implements EncodedReader {
             toRelease.clear();
           }
         } catch (Throwable t) {
-          LOG.error("Error during the cleanup after another error; ignoring", t);
+          LOG.warn("Error during the cleanup after another error; ignoring", t);
         }
       }
     }

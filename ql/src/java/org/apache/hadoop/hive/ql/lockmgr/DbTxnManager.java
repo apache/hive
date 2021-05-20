@@ -191,11 +191,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   IMetaStoreClient getMS() throws LockException {
     try {
       return Hive.get(conf).getMSC();
-    }
-    catch(HiveException|MetaException e) {
-      String msg = "Unable to reach Hive Metastore: " + e.getMessage();
-      LOG.error(msg, e);
-      throw new LockException(e);
+    } catch (HiveException | MetaException e) {
+      throw new LockException("Unable to reach Hive Metastore", e);
     }
   }
 
@@ -508,10 +505,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       LOG.error("Metastore could not find " + JavaUtils.txnIdToString(rqst.getTxnid()));
       throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(rqst.getTxnid()));
     } catch (TxnAbortedException e) {
-      LockException le = new LockException(e, ErrorMsg.TXN_ABORTED,
-              JavaUtils.txnIdToString(rqst.getTxnid()), e.getMessage());
-      LOG.error(le.getMessage());
-      throw le;
+      throw new LockException(e, ErrorMsg.TXN_ABORTED, JavaUtils.txnIdToString(rqst.getTxnid()), e.getMessage());
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     } finally {
@@ -542,9 +536,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       LOG.error("Metastore could not find " + JavaUtils.txnIdToString(txnId));
       throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(txnId));
     } catch (TxnAbortedException e) {
-      LockException le = new LockException(e, ErrorMsg.TXN_ABORTED, JavaUtils.txnIdToString(txnId), e.getMessage());
-      LOG.error(le.getMessage());
-      throw le;
+      throw new LockException(e, ErrorMsg.TXN_ABORTED, JavaUtils.txnIdToString(txnId), e.getMessage());
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
           e);
@@ -561,9 +553,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       LOG.error("Metastore could not find " + JavaUtils.txnIdToString(srcTxnId));
       throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(srcTxnId));
     } catch (TxnAbortedException e) {
-      LockException le = new LockException(e, ErrorMsg.TXN_ABORTED, JavaUtils.txnIdToString(srcTxnId), e.getMessage());
-      LOG.error(le.getMessage());
-      throw le;
+      throw new LockException(e, ErrorMsg.TXN_ABORTED, JavaUtils.txnIdToString(srcTxnId), e.getMessage());
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }
@@ -654,9 +644,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         LOG.error("Unable to find transaction " + JavaUtils.txnIdToString(txnId));
         throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(txnId));
       } catch (TxnAbortedException e) {
-        LockException le = new LockException(e, ErrorMsg.TXN_ABORTED, JavaUtils.txnIdToString(txnId), e.getMessage());
-        LOG.error(le.getMessage());
-        throw le;
+        throw new LockException(e, ErrorMsg.TXN_ABORTED, JavaUtils.txnIdToString(txnId), e.getMessage());
       } catch (TException e) {
         throw new LockException(
             ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg() + "(" + JavaUtils.txnIdToString(txnId)
@@ -891,8 +879,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         lockMgr.close();
       }
     } catch (Exception e) {
-      LOG.error("Caught exception " + e.getClass().getName() + " with message <" + e.getMessage()
-      + ">, swallowing as there is nothing we can do with it.");
+      LOG.warn("Caught exception, swallowing as there is nothing we can do with it.", e);
       // Not much we can do about it here.
     }
   }
@@ -1101,7 +1088,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         lockException = e;
       } catch (Throwable t) {
         String errorMsg = "Failed trying to heartbeat queryId=" + queryId + ", currentUser: "
-            + currentUser + ": " + t.getMessage();
+            + currentUser;
         LOG.error(errorMsg, t);
         lockException = new LockException(errorMsg, t);
       }
@@ -1143,8 +1130,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       try {
         refreshed = txnMgr.heartbeatMaterializationRebuildLock(dbName, tableName, txnId);
       } catch (LockException e) {
-        LOG.error("Failed trying to acquire lock", e);
-        throw new RuntimeException(e);
+        throw new RuntimeException("Failed trying to acquire lock", e);
       }
       if (!refreshed) {
         // We could not heartbeat the lock, i.e., the operation has finished,

@@ -186,8 +186,7 @@ public class OrcFileMergeOperator extends
       }
     } catch (Throwable e) {
       exception = true;
-      LOG.error("Closing operator..Exception: " + ExceptionUtils.getStackTrace(e));
-      throw new HiveException(e);
+      throw new HiveException("Failed while closing operator", e);
     } finally {
       if (exception) {
         closeOp(true);

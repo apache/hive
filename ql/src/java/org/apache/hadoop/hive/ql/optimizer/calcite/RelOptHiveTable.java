@@ -501,10 +501,8 @@ public class RelOptHiveTable implements RelOptTable {
           partColIndxsThatRqrStats.add(pi);
         } else {
           noColsMissingStats.getAndIncrement();
-          String logMsg = "Unable to find Column Index: " + pi + ", in "
-              + hiveTblMetadata.getCompleteName();
-          LOG.error(logMsg);
-          throw new RuntimeException(logMsg);
+          throw new RuntimeException(
+              "Unable to find Column Index: " + pi + ", in " + hiveTblMetadata.getCompleteName());
         }
       }
     }
@@ -574,9 +572,7 @@ public class RelOptHiveTable implements RelOptTable {
             }
           }
         } catch (HiveException e) {
-          String logMsg = "Collecting stats for table: " + hiveTblMetadata.getTableName() + " failed.";
-          LOG.error(logMsg, e);
-          throw new RuntimeException(logMsg, e);
+          throw new RuntimeException("Collecting stats for table: " + hiveTblMetadata.getTableName() + " failed", e);
         }
       } else {
         // 2.2 Obtain col stats for partitioned table.

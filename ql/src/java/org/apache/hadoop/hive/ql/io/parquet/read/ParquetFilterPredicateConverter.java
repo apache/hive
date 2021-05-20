@@ -142,8 +142,7 @@ public class ParquetFilterPredicateConverter {
                 columnType);
       }
     } catch (Exception e) {
-      LOG.error("fail to build predicate filter leaf with errors" + e, e);
-      throw e;
+      throw new Exception("Fail to build predicate filter leaf with errors", e);
     }
   }
 

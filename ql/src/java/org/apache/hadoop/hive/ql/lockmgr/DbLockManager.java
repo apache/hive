@@ -194,9 +194,8 @@ public final class DbLockManager implements HiveLockManager{
       ShowLocksOperation.dumpLockInfo(os, rsp);
       os.flush();
       LOG.info(baos.toString());
-    }
-    catch(IOException ex) {
-      LOG.error("Dumping lock info for " + preamble + " failed: " + ex.getMessage(), ex);
+    } catch (IOException ex) {
+      LOG.error("Dumping lock info for " + preamble, ex);
     }
   }
   /**
@@ -236,11 +235,11 @@ public final class DbLockManager implements HiveLockManager{
       //if metastore has no record of this lock, it most likely timed out; either way
       //there is no point tracking it here any longer
       removed = locks.remove(hiveLock);
-      LOG.error("Metastore could find no record of lock " + JavaUtils.lockIdToString(lockId));
+      LOG.error("Metastore could find no record of lock " + JavaUtils.lockIdToString(lockId), e);
       throw new LockException(e, ErrorMsg.LOCK_NO_SUCH_LOCK, JavaUtils.lockIdToString(lockId));
     } catch (TxnOpenException e) {
       throw new RuntimeException("Attempt to unlock lock " + JavaUtils.lockIdToString(lockId) +
-          "associated with an open transaction, " + e.getMessage(), e);
+          "associated with an open transaction", e);
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
           e);

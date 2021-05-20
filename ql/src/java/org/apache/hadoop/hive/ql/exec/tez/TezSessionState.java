@@ -985,8 +985,7 @@ public class TezSessionState {
         try {
           dir.getFileSystem(conf).delete(dir, true);
         } catch (Exception ex) {
-          LOG.error("Failed to delete the old resources directory "
-              + dir + "; ignoring " + ex.getLocalizedMessage());
+          LOG.error("Failed to delete the old resources directory " + dir + "; ignoring", ex);
         }
         dir = null;
       }

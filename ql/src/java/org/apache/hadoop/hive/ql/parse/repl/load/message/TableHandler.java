@@ -124,8 +124,7 @@ public class TableHandler extends AbstractMessageHandler {
           && TableType.EXTERNAL_TABLE.equals(Enum.valueOf(TableType.class, tableType));
       return new Tuple(isExternalTable, writeId);
     } catch (Exception e) {
-      LOG.error("failed to determine if the table associated with the event is external or not", e);
-      throw new SemanticException(e);
+      throw new SemanticException("Failed to determine if the table associated with the event is external or not", e);
     }
   }
 

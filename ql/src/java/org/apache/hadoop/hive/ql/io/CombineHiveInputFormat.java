@@ -531,9 +531,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
           }
         }
       } catch (Exception e) {
-        LOG.error("Error checking non-combinable path", e);
         perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
-        throw new IOException(e);
+        throw new IOException("Error checking non-combinable path", e);
       }
     }
 

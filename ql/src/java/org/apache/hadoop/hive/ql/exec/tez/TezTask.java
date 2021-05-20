@@ -290,8 +290,7 @@ public class TezTask extends Task<TezWork> {
             sessionRef.value.returnToSessionManager();
           }
         } catch (Exception e) {
-          LOG.error("Failed to return session: {} to pool", session, e);
-          throw e;
+          throw new Exception("Failed to return session to pool: " + session, e);
         }
 
         if (!conf.getVar(HiveConf.ConfVars.TEZ_SESSION_EVENTS_SUMMARY).equalsIgnoreCase("none") &&

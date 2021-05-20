@@ -1976,8 +1976,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       try {
         targetTable = getTableObjectByName(fullTableName);
       } catch (HiveException ex) {
-        LOG.error("Error processing HiveParser.TOK_DESTINATION: " + ex.getMessage(), ex);
-        throw new SemanticException(ex);
+        throw new SemanticException("Error processing HiveParser.TOK_DESTINATION", ex);
       }
       if(targetTable == null) {
         throw new SemanticException(generateErrorMessage(ast,
@@ -2076,11 +2075,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     } catch (HiveException e) {
-      LOG.error("Failed to get Materialization Metadata", e);
       if (e instanceof SemanticException) {
         throw (SemanticException)e;
       }
-      throw new SemanticException(e.getMessage(), e);
+      throw new SemanticException("Failed to get Materialization Metadata", e);
     }
   }
 

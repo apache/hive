@@ -100,9 +100,7 @@ public class DataWritableWriter {
         try {
           messageWriter = createMessageWriter(record.getObjectInspector(), schema);
         } catch (RuntimeException e) {
-          String errorMessage = "Parquet record is malformed: " + e.getMessage();
-          LOG.error(errorMessage, e);
-          throw new RuntimeException(errorMessage, e);
+          throw new RuntimeException("Parquet record is malformed", e);
         }
       }
 

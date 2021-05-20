@@ -60,8 +60,7 @@ public abstract class AbstractFunctionAnalyzer extends BaseSemanticAnalyzer {
         functionName = qualifiedNameParts[1];
         database = getDatabase(databaseName);
       } catch (HiveException e) {
-        LOG.error("Failed to get database ", e);
-        throw new SemanticException(e);
+        throw new SemanticException("Failed to get database", e);
       }
     }
     if (database != null) {

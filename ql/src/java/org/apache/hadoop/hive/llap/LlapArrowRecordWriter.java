@@ -64,8 +64,7 @@ public class LlapArrowRecordWriter<K extends Writable, V extends Writable>
       rootVector.close();
       //bytesLeaked should always be 0
       long bytesLeaked = allocator.getAllocatedMemory();
-      if(bytesLeaked != 0) {
-        LOG.error("Arrow memory leaked bytes: {}", bytesLeaked);
+      if (bytesLeaked != 0) {
         throw new IllegalStateException("Arrow memory leaked bytes:" + bytesLeaked);
       }
       allocator.close();

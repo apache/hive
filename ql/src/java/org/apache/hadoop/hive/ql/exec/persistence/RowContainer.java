@@ -331,7 +331,6 @@ public class RowContainer<ROW extends List<Object>>
       this.numFlushedBlocks++;
     } catch (Exception e) {
       clearRows();
-      LOG.error(e.toString(), e);
       if ( e instanceof HiveException ) {
         throw (HiveException) e;
       }
@@ -395,11 +394,10 @@ public class RowContainer<ROW extends List<Object>>
       this.readBlockSize = i;
       return this.readBlockSize > 0;
     } catch (Exception e) {
-      LOG.error(e.getMessage(), e);
       try {
         this.clearRows();
       } catch (HiveException e1) {
-        LOG.error(e.getMessage(), e);
+        LOG.error("Failed to clear rows", e);
       }
       throw new HiveException(e);
     }
@@ -445,7 +443,6 @@ public class RowContainer<ROW extends List<Object>>
         rr.close();
       }
     } catch (Exception e) {
-      LOG.error(e.toString());
       throw new HiveException(e);
     } finally {
       rw = null;
@@ -545,7 +542,6 @@ public class RowContainer<ROW extends List<Object>>
           false, tblDesc.getProperties(), reporter);
     } catch (Exception e) {
       clearRows();
-      LOG.error(e.toString(), e);
       throw new HiveException(e);
     }
 

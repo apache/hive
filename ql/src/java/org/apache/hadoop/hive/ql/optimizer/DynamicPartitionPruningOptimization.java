@@ -694,7 +694,6 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
       aggs.add(max);
       aggs.add(bloomFilter);
     } catch (SemanticException e) {
-      LOG.error("Error creating min/max aggregations on key", e);
       throw new IllegalStateException("Error creating min/max aggregations on key", e);
     }
 
@@ -803,7 +802,6 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
       aggsFinal.add(max);
       aggsFinal.add(bloomFilter);
     } catch (SemanticException e) {
-      LOG.error("Error creating min/max aggregations on key", e);
       throw new IllegalStateException("Error creating min/max aggregations on key", e);
     }
 

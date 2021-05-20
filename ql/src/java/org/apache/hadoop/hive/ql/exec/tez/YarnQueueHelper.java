@@ -159,8 +159,7 @@ public class YarnQueueHelper {
       String diag = obj.getString("diagnostics");
       return diag == null ? "" : diag;
     } catch (JSONException ex) {
-      LOG.error("Couldn't parse " + jsonStr, ex);
-      throw ex;
+      throw new IOException("Failed to parse: " + jsonStr, ex);
     }
 
   }

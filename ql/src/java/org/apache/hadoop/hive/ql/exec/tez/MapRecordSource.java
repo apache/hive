@@ -95,9 +95,8 @@ public class MapRecordSource implements RecordSource {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
       } else {
-        LOG.error("Failed to process row", e);
         closeReader();
-        throw new RuntimeException(e);
+        throw new RuntimeException("Failed to process row", e);
       }
     }
     return true; // give me more

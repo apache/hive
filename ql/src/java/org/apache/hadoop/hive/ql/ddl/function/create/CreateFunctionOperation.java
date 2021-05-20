@@ -161,8 +161,7 @@ public class CreateFunctionOperation extends DDLOperation<CreateFunctionDesc> {
       } catch (HiveException e) {
         throw e;
       } catch (Exception e) {
-        LOG.error("Exception caught in checkLocalFunctionResources", e);
-        throw new HiveException(e);
+        throw new HiveException("Exception caught in checkLocalFunctionResources", e);
       }
     }
   }

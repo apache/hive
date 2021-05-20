@@ -135,8 +135,7 @@ public final class PartitionUtils {
         try {
           parts = db.getPartitions(table, partitionSpec);
         } catch (HiveException e) {
-          LOG.error("Got HiveException during obtaining list of partitions", e);
-          throw new SemanticException(e.getMessage(), e);
+          throw new SemanticException("Got HiveException during obtaining list of partitions", e);
         }
       } else {
         parts = new ArrayList<Partition>();
@@ -147,7 +146,7 @@ public final class PartitionUtils {
           }
         } catch (HiveException e) {
           LOG.debug("Wrong specification", e);
-          throw new SemanticException(e.getMessage(), e);
+          throw new SemanticException("Wrong specification", e);
         }
       }
       for (Partition p : parts) {

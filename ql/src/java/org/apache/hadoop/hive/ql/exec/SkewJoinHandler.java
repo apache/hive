@@ -141,7 +141,7 @@ public class SkewJoinHandler {
         serializer.initialize(null, tblDesc.get(alias).getProperties(), null);
         tblSerializers.put((byte) i, serializer);
       } catch (SerDeException e) {
-        LOG.error("Skewjoin will be disabled due to " + e.getMessage(), e);
+        LOG.error("Problem loading serializer, Skewjoin will now be disabled", e);
         joinOp.handleSkewJoin = false;
         break;
       }

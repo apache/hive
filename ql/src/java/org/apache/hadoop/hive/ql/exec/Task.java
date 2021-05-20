@@ -188,8 +188,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
       // The conf object in HMS client is always different from the one used here.
       return Hive.get(conf);
     } catch (HiveException e) {
-      LOG.error("Failed to get Hive", e);
-      throw new RuntimeException(e);
+      throw new RuntimeException("Failed to get Hive", e);
     }
   }
 

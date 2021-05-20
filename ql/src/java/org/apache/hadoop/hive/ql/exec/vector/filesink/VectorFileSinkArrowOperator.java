@@ -117,8 +117,7 @@ public class VectorFileSinkArrowOperator extends TerminalOperator<FileSinkDesc>
       //Initialize an Arrow serializer
       converter = new Serializer(hconf, attemptId, typeInfos, fieldNames);
     } catch (Exception e) {
-      LOG.error("Unable to initialize VectorFileSinkArrowOperator");
-      throw new RuntimeException(e);
+      throw new RuntimeException("Unable to initialize VectorFileSinkArrowOperator", e);
     }
   }
 
@@ -137,8 +136,7 @@ public class VectorFileSinkArrowOperator extends TerminalOperator<FileSinkDesc>
       recordWriter.write(null, writable);
       this.wroteData = true;
     } catch(Exception e) {
-      LOG.error("Failed to convert VectorizedRowBatch to Arrow batch");
-      throw new RuntimeException(e);
+      throw new RuntimeException("Failed to convert VectorizedRowBatch to Arrow batch", e);
     }
   }
 
@@ -154,15 +152,13 @@ public class VectorFileSinkArrowOperator extends TerminalOperator<FileSinkDesc>
         recordWriter.write(null, writable);
       }
     } catch(Exception e) {
-      LOG.error("Failed to write Arrow stream schema");
-      throw new RuntimeException(e);
+      throw new RuntimeException("Failed to write Arrow stream schema", e);
     } finally {
       try {
         //Close the recordWriter with null Reporter
         recordWriter.close(null);
       } catch(Exception e) {
-        LOG.error("Failed to close Arrow stream");
-        throw new RuntimeException(e);
+        throw new RuntimeException("Failed to close Arrow stream", e);
       }
     }
   }

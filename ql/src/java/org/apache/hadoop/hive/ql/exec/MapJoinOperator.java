@@ -595,10 +595,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         }
       }
     } catch (Exception e) {
-      String msg = "Unexpected exception from "
-          + this.getClass().getSimpleName() + " : " + e.getMessage();
-      LOG.error(msg, e);
-      throw new HiveException(msg, e);
+      throw new HiveException("Unexpected exception from " + this.getClass().getSimpleName(), e);
     }
   }
 
@@ -815,10 +812,9 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
               try {
                 continueProcess(i);     // Re-process spilled data
               } catch (KryoException ke) {
-                LOG.error("Processing the spilled data failed due to Kryo error!");
-                LOG.error("Cleaning up all spilled data!");
+                LOG.warn("Cleaning up all spilled data");
                 cleanupGraceHashJoin();
-                throw new HiveException(ke);
+                throw new HiveException("Processing the spilled data failed due to Kryo error", ke);
               } catch (Exception e) {
                 throw new HiveException(e);
               }

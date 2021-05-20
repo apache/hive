@@ -102,7 +102,6 @@ public class PTFRowContainer<Row extends List<Object>> extends RowContainer<Row>
         blockInfos.add(blkInfo);
       } catch(IOException e) {
         clearRows();
-        LOG.error(e.toString(), e);
         throw new HiveException(e);
       }
     }
@@ -211,7 +210,6 @@ public class PTFRowContainer<Row extends List<Object>> extends RowContainer<Row>
 
     } catch(Exception e) {
       clearRows();
-      LOG.error(e.toString(), e);
       if ( e instanceof HiveException ) {
         throw (HiveException) e;
       }

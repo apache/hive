@@ -270,7 +270,6 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
               String msg = "Hash table loading exceeded memory limits for input: " + inputName +
                 " numEntries: " + numEntries + " estimatedMemoryUsage: " + estMemUsage +
                 " effectiveThreshold: " + effectiveThreshold + " memoryMonitorInfo: " + memoryMonitorInfo;
-              LOG.error(msg);
               throw new MapJoinMemoryExhaustionError(msg);
             } else {
               if (LOG.isInfoEnabled()) {
