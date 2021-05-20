@@ -1287,11 +1287,11 @@ public final class Utilities {
     // and part-00004-c6acfdee-0c32-492e-b209-c2f1cf477770.c000, 00004 is the taskId
     Matcher sparkMatcher = FILE_NAME_EMITTED_BY_SPARK_REGEX.matcher(taskId);
     if (sparkMatcher.matches()) {
-      String strings[] = sparkMatcher.group(0).split("-");
       if (extractAttemptId) {
         // return a constant, since Spark doesn't use attemptId
         taskId = "01";
       } else {
+        String strings[] = sparkMatcher.group(0).split("-");
         taskId = strings[1];
       }
     } else {
