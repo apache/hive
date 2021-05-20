@@ -39,6 +39,7 @@ import java.sql.Connection;
 
 /**
  * Report metrics of metadata added, deleted by this Hive Metastore.
+ * The listener is only attached when the metrics are enabled.
  */
 public class HMSMetricsListener extends MetaStoreEventListener {
 
