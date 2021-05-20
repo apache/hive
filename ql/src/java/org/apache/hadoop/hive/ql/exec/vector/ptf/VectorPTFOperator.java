@@ -492,18 +492,12 @@ public class VectorPTFOperator extends Operator<PTFDesc>
             .orElseGet(() -> evaluator.inputColumnNum);
 
         if (evaluator.inputVecExpr != null) {
-          evaluator.inputVecExpr.inputColumnNum = IntStream.range(0, bufferedColumnMap.length)
-              .filter(j -> bufferedColumnMap[j] == evaluator.inputVecExpr.inputColumnNum)
-              .findFirst().orElseGet(() -> evaluator.inputVecExpr.inputColumnNum);
-
-          evaluator.inputVecExpr.inputColumnNum2 = IntStream.range(0, bufferedColumnMap.length)
-              .filter(j -> bufferedColumnMap[j] == evaluator.inputVecExpr.inputColumnNum2)
-              .findFirst().orElseGet(() -> evaluator.inputVecExpr.inputColumnNum2);
-
-          evaluator.inputVecExpr.inputColumnNum3 = IntStream.range(0, bufferedColumnMap.length)
-              .filter(j -> bufferedColumnMap[j] == evaluator.inputVecExpr.inputColumnNum3)
-              .findFirst().orElseGet(() -> evaluator.inputVecExpr.inputColumnNum3);
-
+          for (int j = 0; j <  evaluator.inputVecExpr.inputColumnNum.length; j++){
+            final int jj = j; // need a final in stream filter
+            evaluator.inputVecExpr.inputColumnNum[jj] = IntStream.range(0, bufferedColumnMap.length)
+                .filter(k -> bufferedColumnMap[k] == evaluator.inputVecExpr.inputColumnNum[jj])
+                .findFirst().orElseGet(() -> evaluator.inputVecExpr.inputColumnNum[jj]);
+          }
           evaluator.inputVecExpr.outputColumnNum = IntStream.range(0, bufferedColumnMap.length)
               .filter(j -> bufferedColumnMap[j] == evaluator.inputVecExpr.outputColumnNum)
               .findFirst().orElseGet(() -> evaluator.inputVecExpr.outputColumnNum);
