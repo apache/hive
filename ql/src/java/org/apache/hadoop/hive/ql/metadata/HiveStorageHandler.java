@@ -233,4 +233,13 @@ public interface HiveStorageHandler extends Configurable {
   default boolean directInsertCTAS() {
     return false;
   }
+
+  /**
+   * XXX
+   *
+   * @return whether direct insert CTAS is required
+   */
+  default boolean alwaysUnpartitioned() {
+    return false;
+  }
 }

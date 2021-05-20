@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -115,7 +116,6 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         // create table for CTAS
         if (e instanceof NoSuchTableException &&
             Boolean.parseBoolean(serDeProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTAS))) {
-          LOG.info("Creating table {} for CTAS with schema: {}", serDeProperties.get(Catalogs.NAME), tableSchema);
           createTableForCTAS(configuration, serDeProperties);
         }
       }
@@ -151,7 +151,21 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   private void createTableForCTAS(Configuration configuration, Properties serDeProperties) {
     serDeProperties.setProperty(TableProperties.ENGINE_HIVE_ENABLED, "true");
     serDeProperties.setProperty(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(tableSchema));
+
+    // build partition spec if any
+    // TODO: for multiple partitions (also test for that)
+    if (configuration.get(configuration.get("hive.query.id") + ".partition.name") != null) {
+      PartitionSpec spec = HiveSchemaUtil.spec(tableSchema, Collections.singletonList(new FieldSchema(
+          configuration.get(configuration.get("hive.query.id") + ".partition.name"),
+          configuration.get(configuration.get("hive.query.id") + ".partition.type"), null)));
+      serDeProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
+    }
+
+    // create CTAS table
+    LOG.info("Creating table {} for CTAS with schema: {}, and spec: {}",
+        serDeProperties.get(Catalogs.NAME), tableSchema, serDeProperties.get(InputFormatConfig.PARTITION_SPEC));
     Catalogs.createTable(configuration, serDeProperties);
+
     // set these in the global conf so that we can rollback the table in the lifecycle hook in case of failures
     String queryId = configuration.get(HiveConf.ConfVars.HIVEQUERYID.varname);
     configuration.set(String.format(InputFormatConfig.IS_CTAS_QUERY_TEMPLATE, queryId), "true");

@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
@@ -59,7 +58,6 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -153,8 +151,8 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
 
-  @Rule
-  public Timeout timeout = new Timeout(400_000, TimeUnit.MILLISECONDS);
+//  @Rule
+//  public Timeout timeout = new Timeout(400_000, TimeUnit.MILLISECONDS);
 
   @BeforeClass
   public static void beforeClass() {
@@ -538,6 +536,35 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     Assert.assertEquals(2, objects.size());
     Assert.assertArrayEquals(new Object[]{1L, "Mike", "HR"}, objects.get(0));
     Assert.assertArrayEquals(new Object[]{2L, "Linda", "Finance"}, objects.get(1));
+  }
+
+  @Test
+  public void testCTASPartitioned() {
+    Assume.assumeTrue("CTAS target table is supported fully only for HiveCatalog tables." +
+        "For other catalog types, the HiveIcebergSerDe will create the target Iceberg table in the correct catalog " +
+        "using the Catalogs.createTable function, but will not register the table in HMS since those catalogs do not " +
+        "use HiveTableOperations. This means that even though the CTAS query succeeds, the user would not be able to " +
+        "query this new table from Hive, since HMS does not know about it.",
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
+    shell.executeStatement("INSERT INTO source VALUES (1, 'Mike', 'HR'), (2, 'Linda', 'Finance')");
+
+    String partitionField = "dept";
+    shell.executeStatement(String.format(
+        "CREATE TABLE target PARTITIONED BY (%s) STORED BY '%s' TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
+        partitionField,
+        HiveIcebergStorageHandler.class.getName(),
+        TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
+
+    List<Object[]> objects = shell.executeStatement("SELECT * FROM target ORDER BY id");
+    Assert.assertEquals(2, objects.size());
+    Assert.assertArrayEquals(new Object[]{1L, "Mike", "HR"}, objects.get(0));
+    Assert.assertArrayEquals(new Object[]{2L, "Linda", "Finance"}, objects.get(1));
+
+    Table table = testTables.loadTable(TableIdentifier.of("default", "target"));
+    Assert.assertEquals(1, table.spec().fields().size());
+    Assert.assertEquals(partitionField, table.spec().fields().get(0).name());
   }
 
   @Test

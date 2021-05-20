@@ -7956,6 +7956,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (numNonPartitionedCols <= 0) {
       throw new SemanticException("Too many partition columns declared");
     }
+
+    boolean allowPartitionCols = false;
+    if (tableDesc != null && tableDesc.getStorageHandler() != null) {
+      try {
+        allowPartitionCols = !HiveUtils.getStorageHandler(conf, tableDesc.getStorageHandler()).alwaysUnpartitioned();
+      } catch (HiveException e) {
+        throw new SemanticException("Unable to load storage handler: " + e.getMessage());
+      }
+    }
+
     for (ColumnInfo colInfo : colInfos) {
       String[] nm = inputRR.reverseLookup(colInfo.getInternalName());
 
@@ -7980,10 +7990,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         col.setType(typeName);
         int idx = partitionColumnNames.indexOf(colName);
-        if (idx >= 0) {
+        if (idx >= 0 && allowPartitionCols) {
           partColInfos.put(idx, Pair.of(col, colInfo));
           isPartitionCol = true;
         } else {
+          // if partition cols are not allowed for non-native table - we still want to record the partition info
+          if (idx >= 0) {
+            conf.set(conf.get("hive.query.id") + ".partition.name", col.getName());
+            conf.set(conf.get("hive.query.id") + ".partition.type", col.getType());
+          }
           if (sortColumnNames != null) {
             idx = sortColumnNames.indexOf(colName);
             if (idx >= 0) {
@@ -8031,7 +8046,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     }
 
-    if (partColInfos.size() != partitionColumnNames.size()) {
+    if (allowPartitionCols && partColInfos.size() != partitionColumnNames.size()) {
       throw new SemanticException("Table declaration contains partition columns that are not present " +
         "in query result schema. " +
         "Query columns: " + allColumns + ". " +
@@ -8050,6 +8065,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           "in query result schema. " +
           "Query columns: " + allColumns + ". " +
           "Organization columns: " + distributeColumnNames);
+    }
+
+    if (!allowPartitionCols) {
+      partitionColumnNames.clear();
     }
 
     // FileSinkColInfos comprise nonPartCols followed by partCols
