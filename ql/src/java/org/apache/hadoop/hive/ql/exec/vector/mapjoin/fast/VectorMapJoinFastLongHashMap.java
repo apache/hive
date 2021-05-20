@@ -22,9 +22,6 @@ import java.io.IOException;
 
 import org.apache.hadoop.hive.common.MemoryEstimate;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.util.JavaDataModel;
-// import org.slf4j.Logger;
-// import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.persistence.MatchTracker;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMapResult;
@@ -54,7 +51,7 @@ public class VectorMapJoinFastLongHashMap
 
   private long fullOuterNullKeyValueRef;
 
-  private static class NonMatchedLongHashMapIterator extends VectorMapJoinFastNonMatchedIterator {
+  public static class NonMatchedLongHashMapIterator extends VectorMapJoinFastNonMatchedIterator {
 
     private VectorMapJoinFastLongHashMap hashMap;
 
@@ -67,7 +64,7 @@ public class VectorMapJoinFastLongHashMap
 
     private VectorMapJoinFastValueStore.HashMapResult nonMatchedHashMapResult;
 
-    NonMatchedLongHashMapIterator(MatchTracker matchTracker,
+    public NonMatchedLongHashMapIterator(MatchTracker matchTracker,
         VectorMapJoinFastLongHashMap hashMap) {
       super(matchTracker);
       this.hashMap = hashMap;
@@ -142,10 +139,10 @@ public class VectorMapJoinFastLongHashMap
   }
 
   @Override
-  public void putRow(BytesWritable currentKey, BytesWritable currentValue)
+  public void putRow(long hashCode, BytesWritable currentKey, BytesWritable currentValue)
       throws HiveException, IOException {
 
-    if (!adaptPutRow(currentKey, currentValue)) {
+    if (!adaptPutRow(hashCode, currentKey, currentValue)) {
 
       // Ignore NULL keys, except for FULL OUTER.
       if (isFullOuter) {
@@ -170,7 +167,8 @@ public class VectorMapJoinFastLongHashMap
       testValueBytesWritable = new BytesWritable();
     }
     testValueBytesWritable.set(currentValue, 0, currentValue.length);
-    add(currentKey, testValueBytesWritable);
+    long hashCode = HashCodeUtil.calculateLongHashCode(currentKey);
+    add(hashCode, currentKey, testValueBytesWritable);
   }
 
   @Override

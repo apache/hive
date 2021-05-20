@@ -24,20 +24,13 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.exec.JoinUtil;
-import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMap;
-import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinLongHashMap;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinLongHashTable;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeserializeRead;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.common.util.HashCodeUtil;
-import org.apache.tez.runtime.library.api.KeyValueReader;
-
-import com.google.common.annotations.VisibleForTesting;
 
 /*
  * An single long value map optimized for vector map join.
@@ -71,7 +64,8 @@ public abstract class VectorMapJoinFastLongHashTable
     return max;
   }
 
-  public boolean adaptPutRow(BytesWritable currentKey, BytesWritable currentValue) throws HiveException, IOException {
+  public boolean adaptPutRow(long hashCode, BytesWritable currentKey, BytesWritable currentValue)
+      throws HiveException, IOException {
     byte[] keyBytes = currentKey.getBytes();
     int keyLength = currentKey.getLength();
     keyBinarySortableDeserializeRead.set(keyBytes, 0, keyLength);
@@ -80,30 +74,23 @@ public abstract class VectorMapJoinFastLongHashTable
         return false;
       }
     } catch (Exception e) {
-      throw new HiveException(
-          "\nDeserializeRead details: " +
-              keyBinarySortableDeserializeRead.getDetailedReadPositionString() +
-          "\nException: " + e.toString());
+      throw new HiveException("DeserializeRead details: " +
+          keyBinarySortableDeserializeRead.getDetailedReadPositionString(), e);
     }
-
-    long key = VectorMapJoinFastLongHashUtil.deserializeLongKey(
-                            keyBinarySortableDeserializeRead, hashTableKeyType);
-
-    add(key, currentValue);
+    long key = VectorMapJoinFastLongHashUtil.deserializeLongKey(keyBinarySortableDeserializeRead, hashTableKeyType);
+    add(hashCode, key, currentValue);
     return true;
   }
 
   protected abstract void assignSlot(int slot, long key, boolean isNewKey, BytesWritable currentValue);
 
-  public void add(long key, BytesWritable currentValue) {
+  public void add(long hashCode, long key, BytesWritable currentValue) {
 
     if (checkResize()) {
       expandAndRehash();
     }
 
-    long hashCode = HashCodeUtil.calculateLongHashCode(key);
-    int intHashCode = (int) hashCode;
-    int slot = (intHashCode & logicalHashBucketMask);
+    int slot = ((int) hashCode & logicalHashBucketMask);
     long probeSlot = slot;
     int i = 0;
     boolean isNewKey;

@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 
 public class TestVectorMapJoinFastHashTable {
 
+  // TODO HIVE-25145
   long keyCount = 15_000_000;
 
   private static final Logger LOG = LoggerFactory.getLogger(TestVectorMapJoinFastHashTable.class.getName());
@@ -72,7 +73,7 @@ public class TestVectorMapJoinFastHashTable {
     keyTblDesc.setProperties(new Properties());
     desc.setKeyTblDesc(keyTblDesc);
     Configuration hconf = new HiveConf();
-    VectorMapJoinFastTableContainer container = new VectorMapJoinFastTableContainer(desc, hconf, keyCount);
+    VectorMapJoinFastTableContainer container = new VectorMapJoinFastTableContainer(desc, hconf, keyCount, 1);
 
     container.setSerde(null, null);
 
