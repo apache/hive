@@ -54,7 +54,7 @@ public class PreAlterPartitionEvent extends PreEventContext {
     return tableName;
   }
 
-  public Table getTable() {return table;}
+  public Table getTable() { return table; }
 
   public List<String> getOldPartVals() {
     return oldPartVals;
