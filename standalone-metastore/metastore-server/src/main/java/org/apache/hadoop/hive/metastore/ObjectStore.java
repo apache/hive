@@ -691,7 +691,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> getCatalogs() throws MetaException {
+  public List<String> getCatalogs() {
     LOG.debug("Fetching all catalog names");
     boolean commited = false;
     List<String> catalogs = null;

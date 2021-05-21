@@ -292,7 +292,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         TxnStatus.OPEN + "' AND \"TXN_TYPE\" != "+ TxnType.REPL_CREATED.getValue() +") \"T\" CROSS JOIN (" +
       "SELECT COUNT(*), MIN(\"TXN_ID\"), ({0} - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"='" +
         TxnStatus.ABORTED + "') \"A\" CROSS JOIN (" +
-      "SELECT COUNT(*), ({0} - MIN(\"HL_ACQUIRED_AT\"))/1000 FROM \"HIVE_LOCKS\") \"HL\"";
+      "SELECT COUNT(*), ({0} - MIN(\"HL_ACQUIRED_AT\"))/1000 FROM \"HIVE_LOCKS\") \"HL\" CROSS JOIN (" +
+      "SELECT COUNT(*) FROM (SELECT COUNT(\"TXN_ID\"), \"T2W_DATABASE\", \"T2W_TABLE\" FROM \"TXN_TO_WRITE_ID\" " +
+          "INNER JOIN \"TXNS\" ON \"T2W_TXNID\" = \"TXN_ID\" WHERE \"TXN_STATE\"='" + TxnStatus.ABORTED + "' " +
+          "GROUP BY \"T2W_DATABASE\", \"T2W_TABLE\" HAVING COUNT(\"TXN_ID\") > ?) \"L\") \"L\"";
+
 
 
   protected List<TransactionalMetaStoreEventListener> transactionalListeners;
@@ -681,8 +685,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
     List<PreparedStatement> insertPreparedStmts = null;
     TxnType txnType = rqst.isSetTxn_type() ? rqst.getTxn_type() : TxnType.DEFAULT;
+    boolean isReplayedReplTxn = txnType == TxnType.REPL_CREATED;
+    boolean isHiveReplTxn = rqst.isSetReplPolicy() && txnType == TxnType.DEFAULT;
     try {
-      if (rqst.isSetReplPolicy()) {
+      if (isReplayedReplTxn) {
+        assert rqst.isSetReplPolicy();
         List<Long> targetTxnIdList = getTargetTxnIdList(rqst.getReplPolicy(), rqst.getReplSrcTxnIds(), dbConn);
 
         if (!targetTxnIdList.isEmpty()) {
@@ -694,7 +701,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                   rqst.getReplPolicy() + " and Source transaction id : " + rqst.getReplSrcTxnIds().toString());
           return targetTxnIdList;
         }
-        txnType = TxnType.REPL_CREATED;
       }
 
       long minOpenTxnId = 0;
@@ -744,7 +750,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
       addTxnToMinHistoryLevel(dbConn, txnIds, minOpenTxnId);
 
-      if (rqst.isSetReplPolicy()) {
+      if (isReplayedReplTxn) {
         List<String> rowsRepl = new ArrayList<>(numTxns);
         List<String> params = Collections.singletonList(rqst.getReplPolicy());
         List<List<String>> paramsList = new ArrayList<>(numTxns);
@@ -761,7 +767,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
       }
 
-      if (transactionalListeners != null) {
+      if (transactionalListeners != null && !isHiveReplTxn) {
         MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
                 EventMessage.EventType.OPEN_TXN, new OpenTxnEvent(txnIds, txnType), dbConn, sqlGenerator);
       }
@@ -968,6 +974,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   public void abortTxn(AbortTxnRequest rqst) throws NoSuchTxnException, MetaException, TxnAbortedException {
     long txnid = rqst.getTxnid();
     long sourceTxnId = -1;
+    boolean isReplayedReplTxn = TxnType.REPL_CREATED.equals(rqst.getTxn_type());
+    boolean isHiveReplTxn = rqst.isSetReplPolicy() && TxnType.DEFAULT.equals(rqst.getTxn_type());
     try {
       Connection dbConn = null;
       Statement stmt = null;
@@ -976,7 +984,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
 
-        if (rqst.isSetReplPolicy()) {
+        if (isReplayedReplTxn) {
+          assert (rqst.isSetReplPolicy());
           sourceTxnId = rqst.getTxnid();
           List<Long> targetTxnIds = getTargetTxnIdList(rqst.getReplPolicy(),
                   Collections.singletonList(sourceTxnId), dbConn);
@@ -995,7 +1004,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         if (!txnType.isPresent()) {
           TxnStatus status = findTxnState(txnid, stmt);
           if (status == TxnStatus.ABORTED) {
-            if (rqst.isSetReplPolicy()) {
+            if (isReplayedReplTxn) {
               // in case of replication, idempotent is taken care by getTargetTxnId
               LOG.warn("Invalid state ABORTED for transactions started using replication replay task");
               deleteReplTxnMapEntry(dbConn, sourceTxnId, rqst.getReplPolicy());
@@ -1008,11 +1017,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
         abortTxns(dbConn, Collections.singletonList(txnid), true);
 
-        if (rqst.isSetReplPolicy()) {
+        if (isReplayedReplTxn) {
           deleteReplTxnMapEntry(dbConn, sourceTxnId, rqst.getReplPolicy());
         }
 
-        if (transactionalListeners != null) {
+        if (transactionalListeners != null && !isHiveReplTxn) {
           MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
                   EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnid, txnType.get()), dbConn, sqlGenerator);
         }
@@ -1288,7 +1297,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     char isUpdateDelete = 'N';
     long txnid = rqst.getTxnid();
     long sourceTxnId = -1;
-
+    boolean isReplayedReplTxn = TxnType.REPL_CREATED.equals(rqst.getTxn_type());
+    boolean isHiveReplTxn = rqst.isSetReplPolicy() && TxnType.DEFAULT.equals(rqst.getTxn_type());
     try {
       Connection dbConn = null;
       Statement stmt = null;
@@ -1302,7 +1312,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           updateReplId(dbConn, rqst.getReplLastIdInfo());
         }
 
-        if (rqst.isSetReplPolicy()) {
+        if (isReplayedReplTxn) {
+          assert (rqst.isSetReplPolicy());
           sourceTxnId = rqst.getTxnid();
           List<Long> targetTxnIds = getTargetTxnIdList(rqst.getReplPolicy(),
                   Collections.singletonList(sourceTxnId), dbConn);
@@ -1328,7 +1339,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           //if here, txn was not found (in expected state)
           TxnStatus actualTxnStatus = findTxnState(txnid, stmt);
           if (actualTxnStatus == TxnStatus.COMMITTED) {
-            if (rqst.isSetReplPolicy()) {
+            if (isReplayedReplTxn) {
               // in case of replication, idempotent is taken care by getTargetTxnId
               LOG.warn("Invalid state COMMITTED for transactions started using replication replay task");
             }
@@ -1347,7 +1358,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         long tempCommitId = generateTemporaryId();
         if (txnType.get() != TxnType.READ_ONLY
-                && !rqst.isSetReplPolicy()
+                && !isReplayedReplTxn
                 && isUpdateOrDelete(stmt, conflictSQLSuffix)) {
 
           isUpdateDelete = 'Y';
@@ -1428,9 +1439,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           assert true;
         }
 
-        if (txnType.get() != TxnType.READ_ONLY && !rqst.isSetReplPolicy()) {
+        if (txnType.get() != TxnType.READ_ONLY && !isReplayedReplTxn) {
           moveTxnComponentsToCompleted(stmt, txnid, isUpdateDelete);
-        } else if (rqst.isSetReplPolicy()) {
+        } else if (isReplayedReplTxn) {
           if (rqst.isSetWriteEventInfos()) {
             String sql = String.format(COMPL_TXN_COMPONENTS_INSERT_QUERY, txnid, quoteChar(isUpdateDelete));
             try (PreparedStatement pstmt = dbConn.prepareStatement(sql)) {
@@ -1462,7 +1473,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           updateKeyValueAssociatedWithTxn(rqst, stmt);
         }
 
-        createCommitNotificationEvent(dbConn, txnid , txnType);
+        if (!isHiveReplTxn) {
+          createCommitNotificationEvent(dbConn, txnid , txnType);
+        }
 
         LOG.debug("Going to commit");
         dbConn.commit();
@@ -3744,29 +3757,30 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   public MetricsInfo getMetricsInfo() throws MetaException {
     Connection dbConn = null;
-    Statement stmt = null;
     try {
       MetricsInfo metrics = new MetricsInfo();
       String s = MessageFormat.format(SELECT_METRICS_INFO_QUERY, getEpochFn(dbProduct));
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        stmt = dbConn.createStatement();
-
-        ResultSet rs = stmt.executeQuery(s);
-        if (rs.next()) {
-          metrics.setTxnToWriteIdCount(rs.getInt(1));
-          metrics.setCompletedTxnsCount(rs.getInt(2));
-          metrics.setOpenReplTxnsCount(rs.getInt(3));
-          metrics.setOldestOpenReplTxnId(rs.getInt(4));
-          metrics.setOldestOpenReplTxnAge(rs.getInt(5));
-          metrics.setOpenNonReplTxnsCount(rs.getInt(6));
-          metrics.setOldestOpenNonReplTxnId(rs.getInt(7));
-          metrics.setOldestOpenNonReplTxnAge(rs.getInt(8));
-          metrics.setAbortedTxnsCount(rs.getInt(9));
-          metrics.setOldestAbortedTxnId(rs.getInt(10));
-          metrics.setOldestAbortedTxnAge(rs.getInt(11));
-          metrics.setLocksCount(rs.getInt(12));
-          metrics.setOldestLockAge(rs.getInt(13));
+        try(PreparedStatement pstmt = dbConn.prepareStatement(s)){
+          pstmt.setInt(1, MetastoreConf.getIntVar(conf, ConfVars.METASTORE_ACIDMETRICS_TABLES_WITH_ABORTED_TXNS_THRESHOLD));
+          ResultSet rs = pstmt.executeQuery();
+          if (rs.next()) {
+            metrics.setTxnToWriteIdCount(rs.getInt(1));
+            metrics.setCompletedTxnsCount(rs.getInt(2));
+            metrics.setOpenReplTxnsCount(rs.getInt(3));
+            metrics.setOldestOpenReplTxnId(rs.getInt(4));
+            metrics.setOldestOpenReplTxnAge(rs.getInt(5));
+            metrics.setOpenNonReplTxnsCount(rs.getInt(6));
+            metrics.setOldestOpenNonReplTxnId(rs.getInt(7));
+            metrics.setOldestOpenNonReplTxnAge(rs.getInt(8));
+            metrics.setAbortedTxnsCount(rs.getInt(9));
+            metrics.setOldestAbortedTxnId(rs.getInt(10));
+            metrics.setOldestAbortedTxnAge(rs.getInt(11));
+            metrics.setLocksCount(rs.getInt(12));
+            metrics.setOldestLockAge(rs.getInt(13));
+            metrics.setTablesWithXAbortedTxns(rs.getInt(14));
+          }
         }
         return metrics;
       } catch (SQLException e) {
@@ -3774,7 +3788,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         checkRetryable(dbConn, e, "getMetricsInfo");
         throw new MetaException("Unable to execute getMetricsInfo() " + StringUtils.stringifyException(e));
       } finally {
-        closeStmt(stmt);
         closeDbConn(dbConn);
       }
     } catch (RetryException e) {

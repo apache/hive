@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HMSMetricsListener;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -43,12 +44,14 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.apache.tez.common.counters.TezCounters;
 import org.junit.Assert;
@@ -63,8 +66,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.DeltaFilesMetricType.NUM_DELTAS;
@@ -685,6 +691,51 @@ public class TestCompactionMetrics  extends CompactorTest {
   static Map<String, String> gaugeToMap(String metric, Map<String, Gauge> gauges) {
     String value = (String) gauges.get(metric).getValue();
     return value.isEmpty()? Collections.emptyMap() : Splitter.on(',').withKeyValueSeparator("->").split(value);
+  }
+
+  @Test
+  public void testTablesWithXAbortedTxns() throws Exception {
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_TABLES_WITH_ABORTED_TXNS_THRESHOLD, 14);
+
+    String dbName = "default";
+    String tblName1 = "table1";
+    String tblName2 = "table2";
+    String tblName3 = "table3";
+    Table t1 = newTable(dbName, tblName1, false);
+    Table t2 = newTable(dbName, tblName2, false);
+    Table t3 = newTable(dbName, tblName3, false);
+    Set<Long> abort1 = LongStream.range(1, 16).boxed().collect(Collectors.toSet());
+    Set<Long> abort2 = LongStream.range(21, 31).boxed().collect(Collectors.toSet());
+    Set<Long> abort3 = LongStream.range(41, 61).boxed().collect(Collectors.toSet());
+
+    burnThroughTransactions(t1.getDbName(), t1.getTableName(), 20, null, abort1);
+    burnThroughTransactions(t2.getDbName(), t2.getTableName(), 20, null, abort2);
+    burnThroughTransactions(t3.getDbName(), t3.getTableName(), 30, null, abort3);
+
+    runAcidMetricService();
+
+    Assert.assertEquals(MetricsConstants.TABLES_WITH_X_ABORTED_TXNS + " value incorrect",
+        2, Metrics.getOrCreateGauge(MetricsConstants.TABLES_WITH_X_ABORTED_TXNS).intValue());
+  }
+
+  @Test
+  public void testWritesToDisabledCompactionTable() throws Exception {
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS, HMSMetricsListener.class.getName());
+    txnHandler = TxnUtils.getTxnStore(conf);
+
+    String dbName = "default";
+
+    Map<String, String> params = new HashMap<>();
+    params.put(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT, "true");
+    Table disabledTbl = newTable(dbName, "comp_disabled", false, params);
+    burnThroughTransactions(disabledTbl.getDbName(), disabledTbl.getTableName(), 1, null, null);
+    burnThroughTransactions(disabledTbl.getDbName(), disabledTbl.getTableName(), 1, null, new HashSet<>(Arrays.asList(2L)));
+
+    Table enabledTbl = newTable(dbName, "comp_enabled", false);
+    burnThroughTransactions(enabledTbl.getDbName(), enabledTbl.getTableName(), 1, null, null);
+
+    Assert.assertEquals(MetricsConstants.WRITES_TO_DISABLED_COMPACTION_TABLE + " value incorrect",
+        2, Metrics.getOrCreateGauge(MetricsConstants.WRITES_TO_DISABLED_COMPACTION_TABLE).intValue());
   }
 
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,

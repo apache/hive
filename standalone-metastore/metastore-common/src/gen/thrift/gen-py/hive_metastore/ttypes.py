@@ -11926,13 +11926,15 @@ class AbortTxnRequest(object):
     Attributes:
      - txnid
      - replPolicy
+     - txn_type
 
     """
 
 
-    def __init__(self, txnid=None, replPolicy=None,):
+    def __init__(self, txnid=None, replPolicy=None, txn_type=None,):
         self.txnid = txnid
         self.replPolicy = replPolicy
+        self.txn_type = txn_type
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -11953,6 +11955,11 @@ class AbortTxnRequest(object):
                     self.replPolicy = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.I32:
+                    self.txn_type = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -11970,6 +11977,10 @@ class AbortTxnRequest(object):
         if self.replPolicy is not None:
             oprot.writeFieldBegin('replPolicy', TType.STRING, 2)
             oprot.writeString(self.replPolicy.encode('utf-8') if sys.version_info[0] == 2 else self.replPolicy)
+            oprot.writeFieldEnd()
+        if self.txn_type is not None:
+            oprot.writeFieldBegin('txn_type', TType.I32, 3)
+            oprot.writeI32(self.txn_type)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -12396,17 +12407,19 @@ class CommitTxnRequest(object):
      - replLastIdInfo
      - keyValue
      - exclWriteEnabled
+     - txn_type
 
     """
 
 
-    def __init__(self, txnid=None, replPolicy=None, writeEventInfos=None, replLastIdInfo=None, keyValue=None, exclWriteEnabled=True,):
+    def __init__(self, txnid=None, replPolicy=None, writeEventInfos=None, replLastIdInfo=None, keyValue=None, exclWriteEnabled=True, txn_type=None,):
         self.txnid = txnid
         self.replPolicy = replPolicy
         self.writeEventInfos = writeEventInfos
         self.replLastIdInfo = replLastIdInfo
         self.keyValue = keyValue
         self.exclWriteEnabled = exclWriteEnabled
+        self.txn_type = txn_type
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -12455,6 +12468,11 @@ class CommitTxnRequest(object):
                     self.exclWriteEnabled = iprot.readBool()
                 else:
                     iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.I32:
+                    self.txn_type = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -12491,6 +12509,10 @@ class CommitTxnRequest(object):
         if self.exclWriteEnabled is not None:
             oprot.writeFieldBegin('exclWriteEnabled', TType.BOOL, 6)
             oprot.writeBool(self.exclWriteEnabled)
+            oprot.writeFieldEnd()
+        if self.txn_type is not None:
+            oprot.writeFieldBegin('txn_type', TType.I32, 7)
+            oprot.writeI32(self.txn_type)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -28993,6 +29015,7 @@ AbortTxnRequest.thrift_spec = (
     None,  # 0
     (1, TType.I64, 'txnid', None, None, ),  # 1
     (2, TType.STRING, 'replPolicy', 'UTF8', None, ),  # 2
+    (3, TType.I32, 'txn_type', None, None, ),  # 3
 )
 all_structs.append(AbortTxnsRequest)
 AbortTxnsRequest.thrift_spec = (
@@ -29035,6 +29058,7 @@ CommitTxnRequest.thrift_spec = (
     (4, TType.STRUCT, 'replLastIdInfo', [ReplLastIdInfo, None], None, ),  # 4
     (5, TType.STRUCT, 'keyValue', [CommitTxnKeyValue, None], None, ),  # 5
     (6, TType.BOOL, 'exclWriteEnabled', None, True, ),  # 6
+    (7, TType.I32, 'txn_type', None, None, ),  # 7
 )
 all_structs.append(ReplTblWriteIdStateRequest)
 ReplTblWriteIdStateRequest.thrift_spec = (
