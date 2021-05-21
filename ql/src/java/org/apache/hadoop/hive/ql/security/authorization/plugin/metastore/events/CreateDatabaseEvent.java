@@ -57,9 +57,7 @@ public class CreateDatabaseEvent extends HiveMetaStoreAuthorizableEvent {
   private List<HivePrivilegeObject> getInputHObjs() { return Collections.emptyList(); }
 
   private List<HivePrivilegeObject> getOutputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> CreateDatabaseEvent.getOutputHObjs()");
-    }
+    LOG.debug("==> CreateDatabaseEvent.getOutputHObjs()");
 
     List<HivePrivilegeObject> ret      = new ArrayList<>();
     PreCreateDatabaseEvent    event    = (PreCreateDatabaseEvent) preEventContext;
@@ -74,9 +72,7 @@ public class CreateDatabaseEvent extends HiveMetaStoreAuthorizableEvent {
 
       COMMAND_STR = buildCommandString(COMMAND_STR, database);
 
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("<== CreateDatabaseEvent.getOutputHObjs(): ret=" + ret);
-      }
+      LOG.debug("<== CreateDatabaseEvent.getOutputHObjs(): ret={}", ret);
     }
 
     return ret;

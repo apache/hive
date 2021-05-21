@@ -552,9 +552,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       return;
     }
 
-    if (LOG.isInfoEnabled()) {
-      LOG.info("ORC pushdown predicate: " + sarg);
-    }
+    LOG.info("ORC pushdown predicate: " + sarg);
     options.searchArgument(sarg, getSargColumnNames(
         neededColumnNames.split(","), types, options.getInclude(), isOriginal));
   }
@@ -727,10 +725,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           boolean useExternalCache = HiveConf.getBoolVar(
               conf, HiveConf.ConfVars.HIVE_ORC_MS_FOOTER_CACHE_ENABLED);
           if (useExternalCache) {
-            if (LOG.isDebugEnabled()) {
-              LOG.debug(
-                "Turning off hive.orc.splits.ms.footer.cache.enabled since it is not fully supported yet");
-            }
+            LOG.debug("Turning off hive.orc.splits.ms.footer.cache.enabled since it is not fully supported yet");
             useExternalCache = false;
           }
           if (localCache == null) {
@@ -1120,9 +1115,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           }
           if (BlobStorageUtils.isBlobStorageFileSystem(conf, fs)) {
             final long splitSize = HiveConf.getLongVar(conf, HiveConf.ConfVars.HIVE_ORC_BLOB_STORAGE_SPLIT_SIZE);
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Blob storage detected for BI split strategy. Splitting files at boundary {}..", splitSize);
-            }
+            LOG.debug("Blob storage detected for BI split strategy. Splitting files at boundary {}..", splitSize);
             long start;
             for (start = 0; start < logicalLen; start = start + splitSize) {
               OrcSplit orcSplit = new OrcSplit(fileStatus.getPath(), fileKey, start,
@@ -1738,9 +1731,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
   static List<OrcSplit> generateSplitsInfo(Configuration conf, Context context)
       throws IOException {
-    if (LOG.isInfoEnabled()) {
-      LOG.info("ORC pushdown predicate: " + context.sarg);
-    }
+    LOG.info("ORC pushdown predicate: " + context.sarg);
     boolean useFileIdsConfig = HiveConf.getBoolVar(
         conf, ConfVars.HIVE_ORC_INCLUDE_FILE_ID_IN_SPLITS);
     // Sharing this state assumes splits will succeed or fail to get it together (same FS).
@@ -1834,9 +1825,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             allowSyntheticFileIds);
 
         for (SplitStrategy<?> splitStrategy : splitStrategies) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Split strategy: {}", splitStrategy);
-          }
+          LOG.debug("Split strategy: {}", splitStrategy);
 
           // Hack note - different split strategies return differently typed lists, yay Java.
           // This works purely by magic, because we know which strategy produces which type.

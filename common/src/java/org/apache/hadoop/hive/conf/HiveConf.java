@@ -6145,9 +6145,7 @@ public class HiveConf extends Configuration {
   public String getLogIdVar(String defaultValue) {
     String retval = getVar(ConfVars.HIVE_LOG_TRACE_ID);
     if (StringUtils.EMPTY.equals(retval)) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Using the default value passed in for log id: {}", defaultValue);
-      }
+      LOG.debug("Using the default value passed in for log id: {}", defaultValue);
       retval = defaultValue;
     }
     if (retval.length() > LOG_PREFIX_LENGTH) {

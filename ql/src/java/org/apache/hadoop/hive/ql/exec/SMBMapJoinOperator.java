@@ -536,9 +536,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     BucketMatcher bucketMatcher = ReflectionUtil.newInstance(bucketMatcherCls, null);
 
     getExecContext().setFileId(bucketMatcherCxt.createFileId(currentInputPath.toString()));
-    if (LOG.isInfoEnabled()) {
-      LOG.info("set task id: " + getExecContext().getFileId());
-    }
+    LOG.info("set task id: " + getExecContext().getFileId());
 
     bucketMatcher.setAliasBucketFileNameMapping(bucketMatcherCxt
         .getAliasBucketFileNameMapping());
@@ -762,9 +760,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       }
       Integer current = top();
       if (current == null) {
-        if (LOG.isInfoEnabled()) {
-          LOG.info("MergeQueue forwarded " + counter + " rows");
-        }
+        LOG.info("MergeQueue forwarded " + counter + " rows");
         return null;
       }
       counter++;

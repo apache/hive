@@ -95,9 +95,7 @@ public class SparkHashTableSinkOperator
           || mapJoinTables[tag] == null) {
         LOG.debug("mapJoinTable is null");
       } else if (abort) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Aborting, skip dumping side-table for tag: " + tag);
-        }
+        LOG.debug("Aborting, skip dumping side-table for tag: {}", tag);
       } else {
         String method = PerfLogger.SPARK_FLUSH_HASHTABLE + getName();
         perfLogger.perfLogBegin(CLASS_NAME, method);

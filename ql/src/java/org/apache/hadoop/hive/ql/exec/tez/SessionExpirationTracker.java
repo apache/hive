@@ -65,10 +65,9 @@ class SessionExpirationTracker {
     this.sessionLifetimeMs = sessionLifetimeMs;
     this.sessionLifetimeJitterMs = sessionLifetimeJitterMs;
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Session expiration is enabled; session lifetime is "
-          + sessionLifetimeMs + " + [0, " + sessionLifetimeJitterMs + ") ms");
-    }
+    LOG.debug("Session expiration is enabled; session lifetime is {} [0, {})ms", sessionLifetimeMs,
+        sessionLifetimeJitterMs);
+
     expirationQueue = new PriorityBlockingQueue<>(11, new Comparator<TezSessionPoolSession>() {
       @Override
       public int compare(TezSessionPoolSession o1, TezSessionPoolSession o2) {
@@ -134,9 +133,7 @@ class SessionExpirationTracker {
         while (true) {
           // Restart the sessions until one of them refuses to restart.
           nextToExpire = expirationQueue.take();
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Seeing if we can expire [" + nextToExpire + "]");
-          }
+          LOG.debug("Seeing if we can expire [{}]", nextToExpire);
           try {
             if (!nextToExpire.tryExpire(false)) break;
           } catch (Exception e) {
@@ -162,9 +159,7 @@ class SessionExpirationTracker {
             // Add some margin to the wait to avoid rechecking close to the boundary.
             long timeToWaitMs = (nextToExpire.getExpirationNs() - System.nanoTime()) / 1000000L;
             timeToWaitMs = Math.max(1, timeToWaitMs + 10);
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Waiting for ~" + timeToWaitMs + "ms to expire [" + nextToExpire + "]");
-            }
+            LOG.debug("Waiting for ~{}ms to expire [{}]", timeToWaitMs, nextToExpire);
             expirationQueue.wait(timeToWaitMs);
           } else if (LOG.isDebugEnabled()) {
             // Don't wait if empty - go to take() above, that will wait for us.
@@ -198,9 +193,7 @@ class SessionExpirationTracker {
   public void addToExpirationQueue(TezSessionPoolSession session) {
     long jitterModMs = (long)(sessionLifetimeJitterMs * rdm.nextFloat());
     session.setExpirationNs(System.nanoTime() + (sessionLifetimeMs + jitterModMs) * 1000000L);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Adding a pool session [" + this + "] to expiration queue");
-    }
+    LOG.debug("Adding a pool session [{}] to expiration queue", this);
     // Expiration queue is synchronized and notified upon when adding elements. Without jitter, we
     // wouldn't need this, and could simple look at the first element and sleep for the wait time.
     // However, when many things are added at once, it may happen that we will see the one that

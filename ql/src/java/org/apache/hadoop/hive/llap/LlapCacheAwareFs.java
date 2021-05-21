@@ -74,9 +74,7 @@ public class LlapCacheAwareFs extends FileSystem {
   }
 
   public static void unregisterFile(Path cachePath) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Unregistering " + cachePath);
-    }
+    LOG.debug("Unregistering {}", cachePath);
     files.remove(extractSplitId(cachePath));
   }
 
