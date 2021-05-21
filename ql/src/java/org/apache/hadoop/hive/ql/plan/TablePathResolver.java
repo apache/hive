@@ -48,8 +48,8 @@ public class TablePathResolver implements PathResolver {
   private boolean isCalculated = false;
   private Table table;
 
-  public TablePathResolver(boolean replace, Long writeId, int stmtId, Hive hive, Context ctx, ImportTableDesc tblDesc,
-      boolean inReplScope) {
+  public TablePathResolver(boolean replace, Path tgtPath, Long writeId, int stmtId, Hive hive, Context ctx,
+      ImportTableDesc tblDesc, boolean inReplScope) {
     this.replace = replace;
     this.writeId = writeId;
     this.stmtId = stmtId;
@@ -57,7 +57,7 @@ public class TablePathResolver implements PathResolver {
     this.ctx = ctx;
     this.tblDesc = tblDesc;
     this.inReplScope = inReplScope;
-    tgtPath = tblDesc == null ? null : new Path(tblDesc.getLocation());
+    this.tgtPath = tgtPath;
   }
 
   private void calculateValues() throws HiveException {
