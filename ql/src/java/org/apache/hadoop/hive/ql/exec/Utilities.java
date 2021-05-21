@@ -3160,8 +3160,7 @@ public final class Utilities {
         return conn;
       } catch (SQLTransientException e) {
         if (failures >= maxRetries) {
-          LOG.error("Error during JDBC connection.", e);
-          throw t;
+          throw e;
         }
         long waitTime = Utilities.getRandomWaitTime(waitWindow, failures,
             ThreadLocalRandom.current());
