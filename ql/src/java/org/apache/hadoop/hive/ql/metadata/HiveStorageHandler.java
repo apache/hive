@@ -218,4 +218,19 @@ public interface HiveStorageHandler extends Configurable {
   default boolean canProvideBasicStatistics() {
     return false;
   }
+
+  /**
+   * Check if CTAS operations should behave in a direct-insert manner (i.e. no move task).
+   *
+   * If true, the compiler will not include the table creation task and move task into the execution plan.
+   * Instead, it's the responsibility of storage handler/serde to create the table during the compilation phase.
+   * Please note that the atomicity of the operation will suffer in this case, i.e. the created table might become
+   * exposed, depending on the implementation, before the CTAS operations finishes.
+   * Rollback (e.g. dropping the table) is also the responsibility of the storage handler in case of failures.
+   *
+   * @return whether direct insert CTAS is required
+   */
+  default boolean directInsertCTAS() {
+    return false;
+  }
 }
