@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HMSMetricsListener;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -43,12 +44,14 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.apache.tez.common.counters.TezCounters;
 import org.junit.Assert;
@@ -715,7 +718,25 @@ public class TestCompactionMetrics  extends CompactorTest {
         2, Metrics.getOrCreateGauge(MetricsConstants.TABLES_WITH_X_ABORTED_TXNS).intValue());
   }
 
+  @Test
+  public void testWritesToDisabledCompactionTable() throws Exception {
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS, HMSMetricsListener.class.getName());
+    txnHandler = TxnUtils.getTxnStore(conf);
 
+    String dbName = "default";
+
+    Map<String, String> params = new HashMap<>();
+    params.put(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT, "true");
+    Table disabledTbl = newTable(dbName, "comp_disabled", false, params);
+    burnThroughTransactions(disabledTbl.getDbName(), disabledTbl.getTableName(), 1, null, null);
+    burnThroughTransactions(disabledTbl.getDbName(), disabledTbl.getTableName(), 1, null, new HashSet<>(Arrays.asList(2L)));
+
+    Table enabledTbl = newTable(dbName, "comp_enabled", false);
+    burnThroughTransactions(enabledTbl.getDbName(), enabledTbl.getTableName(), 1, null, null);
+
+    Assert.assertEquals(MetricsConstants.WRITES_TO_DISABLED_COMPACTION_TABLE + " value incorrect",
+        2, Metrics.getOrCreateGauge(MetricsConstants.WRITES_TO_DISABLED_COMPACTION_TABLE).intValue());
+  }
 
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
       CompactionType type, String state) {
