@@ -82,4 +82,6 @@ public class MetricsConstants {
   public static final String TOTAL_PARTITIONS = "total_count_partitions";
 
   public static final String TABLES_WITH_X_ABORTED_TXNS = "tables_with_x_aborted_transactions";
+
+  public static final String WRITES_TO_DISABLED_COMPACTION_TABLE = "num_writes_to_disabled_compaction_table";
 }
