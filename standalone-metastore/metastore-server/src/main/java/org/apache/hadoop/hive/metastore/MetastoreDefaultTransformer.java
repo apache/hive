@@ -771,8 +771,9 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
 
   private boolean isTranslatedToExternalTable(Table table) {
     Map<String, String> p = table.getParameters();
-    return p != null && p.get("EXTERNAL").equalsIgnoreCase("true")
-        && p.get("TRANSLATED_TO_EXTERNAL").equalsIgnoreCase("true") && table.getSd() != null
+    ;
+    return p != null && MetaStoreUtils.isPropertyTrue(p, "EXTERNAL")
+        && MetaStoreUtils.isPropertyTrue(p, "TRANSLATED_TO_EXTERNAL") && table.getSd() != null
         && table.getSd().isSetLocation();
 
   }
