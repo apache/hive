@@ -1,0 +1,41 @@
+PREHOOK: query: create table test_limit_offset (id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_limit_offset
+POSTHOOK: query: create table test_limit_offset (id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_limit_offset
+PREHOOK: query: insert into test_limit_offset values(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13),(14),(15),(16)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_limit_offset
+POSTHOOK: query: insert into test_limit_offset values(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13),(14),(15),(16)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_limit_offset
+POSTHOOK: Lineage: test_limit_offset.id SCRIPT []
+PREHOOK: query: create table test_limit_offset2 as select * from test_limit_offset limit 5 offset 2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@test_limit_offset
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_limit_offset2
+POSTHOOK: query: create table test_limit_offset2 as select * from test_limit_offset limit 5 offset 2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@test_limit_offset
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_limit_offset2
+POSTHOOK: Lineage: test_limit_offset2.id SIMPLE [(test_limit_offset)test_limit_offset.FieldSchema(name:id, type:int, comment:null), ]
+PREHOOK: query: select * from test_limit_offset2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_limit_offset2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_limit_offset2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_limit_offset2
+#### A masked pattern was here ####
+7
+6
+5
+4
+3
