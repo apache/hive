@@ -19,7 +19,7 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-import jodd.datetime.JDateTime;
+import jodd.time.JulianDate;
 
 /**
  * Utilities for converting from java.sql.Timestamp to parquet timestamp.
@@ -63,9 +63,10 @@ public class NanoTimeUtils {
      if (calendar.get(Calendar.ERA) == GregorianCalendar.BC) {
        year = 1 - year;
      }
-     JDateTime jDateTime = new JDateTime(year,
+       JulianDate jDateTime;
+       jDateTime = JulianDate.of(year,
        calendar.get(Calendar.MONTH) + 1,  //java calendar index starting at 1.
-       calendar.get(Calendar.DAY_OF_MONTH));
+        calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0, 0);
      int days = jDateTime.getJulianDayNumber();
 
      long hour = calendar.get(Calendar.HOUR_OF_DAY);
@@ -90,11 +91,12 @@ public class NanoTimeUtils {
        julianDay--;
      }
 
-     JDateTime jDateTime = new JDateTime((double) julianDay);
+     JulianDate jDateTime;
+     jDateTime = JulianDate.of((double) julianDay);
      Calendar calendar = getCalendar(skipConversion);
-     calendar.set(Calendar.YEAR, jDateTime.getYear());
-     calendar.set(Calendar.MONTH, jDateTime.getMonth() - 1); //java calendar index starting at 1.
-     calendar.set(Calendar.DAY_OF_MONTH, jDateTime.getDay());
+     calendar.set(Calendar.YEAR, jDateTime.toLocalDateTime().getYear());
+     calendar.set(Calendar.MONTH, jDateTime.toLocalDateTime().getMonth().getValue() - 1); //java calendar index starting at 1.
+     calendar.set(Calendar.DAY_OF_MONTH, jDateTime.toLocalDateTime().getDayOfMonth());
 
      int hour = (int) (remainder / (NANOS_PER_HOUR));
      remainder = remainder % (NANOS_PER_HOUR);
