@@ -7765,6 +7765,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               .getMsg(destinationPath.toUri().toString()));
         }
       }
+
+      // For normal, non-direct insert CTAS cases, the TaskCompiler#patchUpAfterCTASorMaterializedView
+      // adds a DDL table creation task to the execution plan. Once that's done, the SemanticAnalyzer later appends a
+      // PreInsertTableDesc hook to this DDL task. However, for direct insert CTAS this table creation task is not
+      // added to the plan, therefore we need to add the PreInsertTableDesc to the plan here manually to ensure that the
+      // HiveMetaHook#commitInsertTable is called
+      if (qb.isCTAS() && tableDesc != null && tableDesc.getStorageHandler() != null) {
+        try {
+          if (HiveUtils.getStorageHandler(conf, tableDesc.getStorageHandler()).directInsertCTAS()) {
+            createPreInsertDesc(destinationTable, false);
+          }
+        } catch (HiveException e) {
+          throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
+        }
+      }
       break;
     }
     default:

@@ -30,6 +30,8 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -46,7 +48,9 @@ import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -108,6 +112,12 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         this.tableSchema = hiveSchemaOrThrow(serDeProperties, e, autoConversion);
         // This is only for table creation, it is ok to have an empty partition column list
         this.partitionColumns = ImmutableList.of();
+        // create table for CTAS
+        if (e instanceof NoSuchTableException &&
+            Boolean.parseBoolean(serDeProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTAS))) {
+          LOG.info("Creating table {} for CTAS with schema: {}", serDeProperties.get(Catalogs.NAME), tableSchema);
+          createTableForCTAS(configuration, serDeProperties);
+        }
       }
     }
 
@@ -136,6 +146,17 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     } catch (Exception e) {
       throw new SerDeException(e);
     }
+  }
+
+  private void createTableForCTAS(Configuration configuration, Properties serDeProperties) {
+    serDeProperties.setProperty(TableProperties.ENGINE_HIVE_ENABLED, "true");
+    serDeProperties.setProperty(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(tableSchema));
+    Catalogs.createTable(configuration, serDeProperties);
+    // set these in the global conf so that we can rollback the table in the lifecycle hook in case of failures
+    String queryId = configuration.get(HiveConf.ConfVars.HIVEQUERYID.varname);
+    configuration.set(String.format(InputFormatConfig.IS_CTAS_QUERY_TEMPLATE, queryId), "true");
+    configuration.set(String.format(InputFormatConfig.CTAS_TABLE_NAME_TEMPLATE, queryId),
+        serDeProperties.getProperty(Catalogs.NAME));
   }
 
   private void assertNotVectorizedTez(Configuration configuration) {

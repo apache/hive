@@ -107,6 +107,7 @@ public class TezTask extends Task<TezWork> {
 
   private static final String CLASS_NAME = TezTask.class.getName();
   private static final String JOB_ID_TEMPLATE = "job_%s%d_%s";
+  private static final String ICEBERG_TABLE_LOCATION = "iceberg.mr.table.location";
   private static transient Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final String TEZ_MEMORY_RESERVE_FRACTION = "tez.task.scale.memory.reserve-fraction";
@@ -365,7 +366,7 @@ public class TezTask extends Task<TezWork> {
           .filter(name -> name.endsWith("HiveIcebergNoJobCommitter")).isPresent();
       // we should only consider jobs with Iceberg output committer and a data sink
       if (hasIcebergCommitter && !vertex.getDataSinks().isEmpty()) {
-        String tableLocationRoot = jobConf.get("location");
+        String tableLocationRoot = jobConf.get(ICEBERG_TABLE_LOCATION);
         if (tableLocationRoot != null) {
           VertexStatus status = dagClient.getVertexStatus(vertex.getName(), EnumSet.of(StatusGetOpts.GET_COUNTERS));
           Path path = new Path(tableLocationRoot + "/temp");
