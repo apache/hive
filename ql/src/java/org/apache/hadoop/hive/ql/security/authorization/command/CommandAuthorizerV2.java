@@ -212,7 +212,7 @@ final class CommandAuthorizerV2 {
               storageuri = authorizationHandler.getURIForAuth(tableProperties).toString();
             } else {
               //Custom storage handler that has not implemented the HiveStorageAuthorizationHandler
-              storageuri = table.getStorageHandler().getClass().getSimpleName()+"://"+
+              storageuri = table.getStorageHandler().getClass().getSimpleName().toLowerCase() + "://" +
                       HiveCustomStorageHandlerUtils.getTablePropsForCustomStorageHandler(tableProperties);
             }
           } catch(Exception ex) {

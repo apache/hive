@@ -125,7 +125,7 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
           storageUri = authorizationHandler.getURIForAuth(tableProperties).toString();
         } else {
           //Custom storage handler that has not implemented the getURIForAuth()
-          storageUri = hiveStorageHandler.getClass().getName()+"://"+
+          storageUri = hiveStorageHandler.getClass().getSimpleName().toLowerCase() + "://" +
                   HiveCustomStorageHandlerUtils.getTablePropsForCustomStorageHandler(tableProperties);
         }
       } catch(Exception ex) {
