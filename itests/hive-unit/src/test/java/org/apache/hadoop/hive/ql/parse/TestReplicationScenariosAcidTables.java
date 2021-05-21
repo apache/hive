@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -60,7 +61,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Collections;
 import java.util.Map;
 
 
@@ -139,6 +139,43 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   }
 
   @Test
+  public void testReplOperationsNotCapturedInNotificationLog() throws Throwable {
+    //Perform empty bootstrap dump and load
+    primary.dump(primaryDbName);
+    replica.run("REPL LOAD " + primaryDbName + " INTO " + replicatedDbName);
+    //Perform empty incremental dump and load so that all db level properties are altered.
+    primary.dump(primaryDbName);
+    replica.run("REPL LOAD " + primaryDbName + " INTO " + replicatedDbName);
+
+    long lastEventId = primary.getCurrentNotificationEventId().getEventId();
+    WarehouseInstance.Tuple incDump = primary.dump(primaryDbName);
+    assert primary.getNoOfEventsDumped(incDump.dumpLocation, conf) == 0;
+    long currentEventId = primary.getCurrentNotificationEventId().getEventId();
+    assert lastEventId == currentEventId;
+    lastEventId = replica.getCurrentNotificationEventId().getEventId();
+    replica.run("REPL LOAD " + primaryDbName + " INTO " + replicatedDbName);
+    currentEventId = replica.getCurrentNotificationEventId().getEventId();
+    //This iteration of repl load will have only one event i.e ALTER_DATABASE to update repl.last.id for the target db.
+    assert currentEventId == lastEventId + 1;
+
+    primary.run("ALTER DATABASE " + primaryDbName +
+            " SET DBPROPERTIES('" + ReplConst.TARGET_OF_REPLICATION + "'='true')");
+    lastEventId = primary.getCurrentNotificationEventId().getEventId();
+    primary.dumpFailure(primaryDbName);
+    currentEventId = primary.getCurrentNotificationEventId().getEventId();
+    assert lastEventId == currentEventId;
+
+    primary.run("ALTER DATABASE " + primaryDbName +
+            " SET DBPROPERTIES('" + ReplConst.TARGET_OF_REPLICATION + "'='')");
+    primary.dump(primaryDbName);
+    replica.run("DROP DATABASE " + replicatedDbName);
+    lastEventId = replica.getCurrentNotificationEventId().getEventId();
+    replica.loadFailure(replicatedDbName, primaryDbName);
+    currentEventId = replica.getCurrentNotificationEventId().getEventId();
+    assert lastEventId == currentEventId;
+  }
+
+  @Test
   public void testAcidTablesBootstrap() throws Throwable {
     // Bootstrap
     WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null);
@@ -175,7 +212,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     long currentLoadNotificationID = fetchNotificationIDFromDump(new Path(bootstrapDump.dumpLocation));
     long currentNotificationID = replica.getCurrentNotificationEventId().getEventId();
     assertTrue(currentLoadNotificationID > previousLoadNotificationID);
-    assertTrue(currentNotificationID > currentLoadNotificationID);
+    assertTrue(currentNotificationID == currentLoadNotificationID);
     previousLoadNotificationID = currentLoadNotificationID;
     WarehouseInstance.Tuple incrementalDump1 = primary.run("insert into t1 values (1)")
             .dump(primaryDbName);
@@ -184,7 +221,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     currentLoadNotificationID = fetchNotificationIDFromDump(new Path(incrementalDump1.dumpLocation));
     currentNotificationID = replica.getCurrentNotificationEventId().getEventId();
     assertTrue(currentLoadNotificationID > previousLoadNotificationID);
-    assertTrue(currentNotificationID > currentLoadNotificationID);
+    assertTrue(currentNotificationID == currentLoadNotificationID);
   }
 
   private long fetchNotificationIDFromDump(Path dumpLocation) throws Exception {
@@ -809,7 +846,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             primary.dump(primaryDbName);
 
     long lastReplId = Long.parseLong(bootStrapDump.lastReplicationId);
-    primary.testEventCounts(primaryDbName, lastReplId, null, null, 22);
+    primary.testEventCounts(primaryDbName, lastReplId, null, null, 16);
 
     // Test load
     replica.load(replicatedDbName, primaryDbName)
@@ -918,8 +955,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("repl status " + replicatedDbName)
             .verifyResult("null")
             .run("show tables like t2")
-            .verifyResults(new String[] { })
-            .verifyReplTargetProperty(replicatedDbName);
+            .verifyResults(new String[] { });
 
     // Verify if no create table on t1. Only table t2 should  be created in retry.
     callerVerifier = new BehaviourInjection<CallerArguments, Boolean>() {
@@ -1630,8 +1666,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("insert into t2 values (100)")
             .dump(primaryDbName, dumpClause);
 
-    int eventCount = Integer.parseInt(incrementalDump1.lastReplicationId)
-            - Integer.parseInt(bootstrapDump.lastReplicationId);
+    int eventCount = primary.getNoOfEventsDumped(incrementalDump1.dumpLocation, conf);
     assertEquals(eventCount, 5);
 
     replica.load(replicatedDbName, primaryDbName)
@@ -1645,9 +1680,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     WarehouseInstance.Tuple incrementalDump2 = primary.run("use " + primaryDbName)
             .dump(primaryDbName, dumpClause);
 
-    eventCount = Integer.parseInt(incrementalDump2.lastReplicationId)
-            - Integer.parseInt(incrementalDump1.lastReplicationId);
-    assertTrue(eventCount > 5);
+    eventCount = primary.getNoOfEventsDumped(incrementalDump2.dumpLocation, conf);
+    assertTrue(eventCount > 5 && eventCount < 1000);
 
     replica.load(replicatedDbName, primaryDbName)
             .run("select * from " + replicatedDbName + ".t1")

@@ -16,8 +16,7 @@ public class PostgreSQLConnectorProvider extends AbstractJDBCConnectorProvider {
   private static final String DRIVER_CLASS = "org.postgresql.Driver".intern();
 
   public PostgreSQLConnectorProvider(String dbName, DataConnector dataConn) {
-    super(dbName, dataConn);
-    driverClassName = DRIVER_CLASS;
+    super(dbName, dataConn, DRIVER_CLASS);
   }
 
   /**

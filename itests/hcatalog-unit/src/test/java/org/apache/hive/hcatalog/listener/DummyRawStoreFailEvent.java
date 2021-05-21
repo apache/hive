@@ -191,7 +191,7 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> getCatalogs() throws MetaException {
+  public List<String> getCatalogs() {
     return objectStore.getCatalogs();
   }
 

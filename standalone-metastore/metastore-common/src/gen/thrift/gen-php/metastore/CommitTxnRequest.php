@@ -58,6 +58,11 @@ class CommitTxnRequest
             'isRequired' => false,
             'type' => TType::BOOL,
         ),
+        7 => array(
+            'var' => 'txn_type',
+            'isRequired' => false,
+            'type' => TType::I32,
+        ),
     );
 
     /**
@@ -84,6 +89,10 @@ class CommitTxnRequest
      * @var bool
      */
     public $exclWriteEnabled = true;
+    /**
+     * @var int
+     */
+    public $txn_type = null;
 
     public function __construct($vals = null)
     {
@@ -105,6 +114,9 @@ class CommitTxnRequest
             }
             if (isset($vals['exclWriteEnabled'])) {
                 $this->exclWriteEnabled = $vals['exclWriteEnabled'];
+            }
+            if (isset($vals['txn_type'])) {
+                $this->txn_type = $vals['txn_type'];
             }
         }
     }
@@ -182,6 +194,13 @@ class CommitTxnRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 7:
+                    if ($ftype == TType::I32) {
+                        $xfer += $input->readI32($this->txn_type);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -237,6 +256,11 @@ class CommitTxnRequest
         if ($this->exclWriteEnabled !== null) {
             $xfer += $output->writeFieldBegin('exclWriteEnabled', TType::BOOL, 6);
             $xfer += $output->writeBool($this->exclWriteEnabled);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->txn_type !== null) {
+            $xfer += $output->writeFieldBegin('txn_type', TType::I32, 7);
+            $xfer += $output->writeI32($this->txn_type);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

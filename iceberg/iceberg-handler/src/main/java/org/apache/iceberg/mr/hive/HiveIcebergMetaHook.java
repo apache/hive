@@ -297,6 +297,9 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
           "Table location not set");
     }
 
+    // Remove null values from hms table properties
+    hmsTable.getParameters().entrySet().removeIf(e -> e.getKey() == null || e.getValue() == null);
+
     // Remove creation related properties
     PARAMETERS_TO_REMOVE.forEach(hmsTable.getParameters()::remove);
   }
@@ -315,10 +318,10 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   private static Properties getCatalogProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     Properties properties = new Properties();
 
-    hmsTable.getParameters().forEach((key, value) -> {
+    hmsTable.getParameters().entrySet().stream().filter(e -> e.getKey() != null && e.getValue() != null).forEach(e -> {
       // translate key names between HMS and Iceberg where needed
-      String icebergKey = HiveTableOperations.translateToIcebergProp(key);
-      properties.put(icebergKey, value);
+      String icebergKey = HiveTableOperations.translateToIcebergProp(e.getKey());
+      properties.put(icebergKey, e.getValue());
     });
 
     if (properties.get(Catalogs.LOCATION) == null &&

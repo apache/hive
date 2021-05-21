@@ -175,9 +175,8 @@ public interface RawStore extends Configurable {
   /**
    * Get all the catalogs.
    * @return list of names of all catalogs in the system
-   * @throws MetaException if something goes wrong, usually in reading from the database.
    */
-  List<String> getCatalogs() throws MetaException;
+  List<String> getCatalogs();
 
   /**
    * Drop a catalog.  The catalog must be empty.

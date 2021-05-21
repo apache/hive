@@ -1666,12 +1666,14 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     appender.reset();
 
     // Perform incremental dump & load.
-    primary.run("create table c (i int)")
+    primary.run("use " + primaryDbName)
+        .run("create table c (i int)")
         .run("insert into c values (10),(11)")
         .run("insert into a values (5),(6)")
         .run("insert into b values (9),(10)").dump(primaryDbName, withClause);
 
     replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName)
         .run("select i From c")
         .verifyResults(new String[] {"10", "11"});
 

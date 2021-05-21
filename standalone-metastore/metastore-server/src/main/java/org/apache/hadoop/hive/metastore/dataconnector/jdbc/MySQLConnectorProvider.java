@@ -18,8 +18,7 @@ public class MySQLConnectorProvider extends AbstractJDBCConnectorProvider {
   private static final String DRIVER_CLASS = "com.mysql.jdbc.Driver".intern();
 
   public MySQLConnectorProvider(String dbName, DataConnector dataConn) {
-    super(dbName, dataConn);
-    driverClassName = DRIVER_CLASS;
+    super(dbName, dataConn, DRIVER_CLASS);
   }
 
   /**
