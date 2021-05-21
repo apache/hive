@@ -611,5 +611,8 @@ public interface TxnStore extends Configurable {
                                           IHMSHandler handler,
                                           List<MetaStoreEventListener> listeners,
                                           Table tbl,
+                                          long csId,
                                           String validWriteIds, long writeId) throws MetaException;
+
+  long getNextCSIdForMPartitionColumnStatistics(long numStats) throws MetaException;
 }

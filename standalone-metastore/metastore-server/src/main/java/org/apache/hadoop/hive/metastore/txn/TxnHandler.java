@@ -5454,7 +5454,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           if (numRows == maxNumRows) {
             statementDelete.executeBatch();
             numRows = 0;
-            LOG.info("Executed delete " + delete + " for numRows " + numRows);
+            LOG.debug("Executed delete " + delete + " for numRows " + numRows);
           }
         }
       }
@@ -5467,53 +5467,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private long getMaxCSId(Connection dbConn) throws SQLException {
-    Statement stmtInt = null;
-    ResultSet rsInt = null;
-    long maxCsId = 0;
-    try {
-      stmtInt = dbConn.createStatement();
-      while (maxCsId == 0) {
-        String query = "SELECT \"NEXT_VAL\" FROM \"SEQUENCE_TABLE\" WHERE \"SEQUENCE_NAME\"= "
-                + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics")
-                + " FOR UPDATE";
-        rsInt = stmtInt.executeQuery(query);
-        LOG.debug("Going to execute query " + query);
-        if (rsInt.next()) {
-          maxCsId = rsInt.getLong(1);
-        } else {
-          query = "INSERT INTO \"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\", \"NEXT_VAL\")  VALUES ( "
-                  + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics") + "," + 1
-                  + ")";
-          stmtInt.executeUpdate(query);
-        }
-      }
-      return maxCsId;
-    } finally {
-      close(rsInt, stmtInt, null);
-    }
-  }
-
-  private void updateMaxCSId(Connection dbConn, long maxCSId) throws SQLException {
-    Statement stmtInt = null;
-    try {
-      stmtInt = dbConn.createStatement();
-      String query = "UPDATE \"SEQUENCE_TABLE\" SET \"NEXT_VAL\" = "
-              + maxCSId
-              + " WHERE \"SEQUENCE_NAME\" = "
-              + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics");
-      stmtInt.executeUpdate(query);
-      LOG.debug("Going to execute update " + query);
-    } finally {
-      closeStmt(stmtInt);
-    }
-  }
-
   private void insertIntoPartColStatTable(Map<String, PartitionInfo> statsPartInfoMap,
-                                          Map<String, ColumnStatistics> newStatsMap,
+                                          Map<String, ColumnStatistics> newStatsMap, long maxCsId,
                                           Connection dbConn) throws SQLException, MetaException, NoSuchObjectException {
     PreparedStatement statement = null;
-    long maxCsId = getMaxCSId(dbConn);
 
     try {
       int numRows = 0;
@@ -5578,7 +5535,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       if (numRows != 0) {
         statement.executeBatch();
       }
-      updateMaxCSId(dbConn, maxCsId);
     } finally {
       closeStmt(statement);
     }
@@ -5781,8 +5737,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private Map<String, PartitionInfo> getPartitionInfo(Connection dbConn, String catName,
-                                                      String dbName, String tblName,
+  private Map<String, PartitionInfo> getPartitionInfo(Connection dbConn, long tblId,
                                                       List<String> partKeys) throws SQLException {
     List<String> queries = new ArrayList<>();
     StringBuilder prefix = new StringBuilder();
@@ -5792,23 +5747,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     Map<String, PartitionInfo> partitionInfoMap = new HashMap<>();
 
     try {
-      long tblId;
-      Statement stmt = dbConn.createStatement();
-      rs = stmt.executeQuery("select \"TBL_ID\" from \"DBS\", \"TBLS\" where \"DBS\".\"NAME\" = "
-              + quoteString(dbName) + " and \"DBS\".\"CTLG_NAME\" = " + quoteString(catName)
-              + " and \"TBLS\".\"TBL_NAME\" = " + quoteString(tblName)
-              + " and \"DBS\".\"DB_ID\" = \"TBLS\".\"DB_ID\"");
-      if (rs.next()) {
-        tblId = rs.getLong(1);
-      } else {
-        throw new RuntimeException("Invalid table name" + catName + "." + dbName + "." + tblName);
-      }
-
-      prefix.append("select \"PARTITIONS\".\"PART_ID\", \"PARTITIONS\".\"WRITE_ID\", \"PARTITIONS\".\"PART_NAME\" "
-              + " from \"PARTITIONS\" where ");
+      prefix.append("select \"PART_ID\", \"WRITE_ID\", \"PART_NAME\"  from \"PARTITIONS\" where ");
       suffix.append(" and \"TBL_ID\" = " + tblId);
       TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix, suffix,
-              partKeys, "\"PARTITIONS\".\"PART_NAME\"", false, false);
+              partKeys, "\"PART_NAME\"", true, false);
 
       List<String> params = new ArrayList<>();
       for (String query : queries) {
@@ -5830,7 +5772,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   public boolean updatePartitionColumnStatistics(Map<String, ColumnStatistics> partColStatsMap,
                                                  IHMSHandler handler,
                                                  List<MetaStoreEventListener> listeners,
-                                                 Table tbl,
+                                                 Table tbl, long csId,
                                                  String validWriteIds, long writeId) throws MetaException {
     Connection dbConn = null;
     String catName = tbl.getCatName();
@@ -5849,7 +5791,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         List<String> partNames = partColStatsMap.keySet().stream().map(
                 e -> quoteString(e)).collect(Collectors.toList()
         );
-        Map<String, PartitionInfo> partitionInfoMap = getPartitionInfo(dbConn, catName, dbName, tableName, partNames);
+        Map<String, PartitionInfo> partitionInfoMap = getPartitionInfo(dbConn, tbl.getId(), partNames);
         LOG.info("ETL_PERF done getPartitionInfo");
 
         List<Long> partIdList = partitionInfoMap.values().stream().map(
@@ -5867,7 +5809,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.info("ETL_PERF done cleanOldStatsFromPartColStatTable ");
 
         LOG.info("ETL_PERF started insertIntoPartColStatTable ");
-        insertIntoPartColStatTable(partitionInfoMap, partColStatsMap, dbConn);
+        insertIntoPartColStatTable(partitionInfoMap, partColStatsMap, csId, dbConn);
         LOG.info("ETL_PERF done insertIntoPartColStatTable ");
 
         LOG.info("ETL_PERF started notifyEventWithDirectSql");
@@ -5895,7 +5837,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         return true;
       } catch (SQLException e) {
         checkRetryable(dbConn, e, "updatePartitionColumnStatistics(" + partColStatsMap + "," + listeners
-                + "," + tbl
+                + "," + tbl + "," + csId
                 + "," + validWriteIds + "," + writeId + ")");
         throw new MetaException("Unable to update Column stats for  " + quoteString(tableName)
                 + " due to: " + getMessage(e) + "; " + StringUtils.stringifyException(e));
@@ -5912,7 +5854,61 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.info("ETL_PERF done updatePartitionColumnStatisticsEx");
       }
     } catch (RetryException ex) {
-      return updatePartitionColumnStatistics(partColStatsMap, handler, listeners, tbl, validWriteIds, writeId);
+      return updatePartitionColumnStatistics(partColStatsMap, handler, listeners, tbl, csId, validWriteIds, writeId);
+    }
+  }
+
+  @Override
+  public long getNextCSIdForMPartitionColumnStatistics(long numStats) throws MetaException {
+    LOG.info("ETL_PERF start getNextCSIdForMPartitionColumnStatistics");
+    Statement stmtInt = null;
+    ResultSet rsInt = null;
+    long maxCsId = 0;
+    boolean committed = false;
+    Connection dbConn = null;
+
+    try {
+      lockInternal();
+      dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolMutex);
+      stmtInt = dbConn.createStatement();
+      while (maxCsId == 0) {
+        String query = "SELECT \"NEXT_VAL\" FROM \"SEQUENCE_TABLE\" WHERE \"SEQUENCE_NAME\"= "
+                + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics")
+                + " FOR UPDATE";
+        rsInt = stmtInt.executeQuery(query);
+        LOG.debug("Going to execute query " + query);
+        if (rsInt.next()) {
+          maxCsId = rsInt.getLong(1);
+        } else {
+          query = "INSERT INTO \"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\", \"NEXT_VAL\")  VALUES ( "
+                  + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics") + "," + 1
+                  + ")";
+          stmtInt.executeUpdate(query);
+        }
+      }
+
+      long nextMaxCsId = maxCsId + numStats + 1;
+      closeStmt(stmtInt);
+
+      stmtInt = dbConn.createStatement();
+      String query = "UPDATE \"SEQUENCE_TABLE\" SET \"NEXT_VAL\" = "
+              + nextMaxCsId
+              + " WHERE \"SEQUENCE_NAME\" = "
+              + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics");
+      stmtInt.executeUpdate(query);
+      dbConn.commit();
+      committed = true;
+      return maxCsId;
+    } catch (SQLException e) {
+      throw new MetaException("Unable to getNextCSIdForMPartitionColumnStatistics  "
+              + " due to: " + getMessage(e) + "; " + StringUtils.stringifyException(e));
+    } finally {
+      if (!committed) {
+        rollbackDBConn(dbConn);
+      }
+      close(rsInt, stmtInt, dbConn);
+      unlockInternal();
+      LOG.info("ETL_PERF done getNextCSIdForMPartitionColumnStatistics");
     }
   }
 

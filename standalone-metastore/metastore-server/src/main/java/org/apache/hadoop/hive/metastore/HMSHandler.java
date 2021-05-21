@@ -7053,24 +7053,35 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String dbName = tbl.getDbName();
     String tableName = tbl.getTableName();
 
-    startFunction("updatePartitionColStatsInBatch", ":  db=" + dbName  + " table=" + tableName);
+    startFunction("updatePartitionColStatsInBatch", ":  db=" + dbName + " table=" + tableName);
 
     Map<String, ColumnStatistics> newStatsMap = new HashMap<>();
-    for (Map.Entry entry : statsMap.entrySet()) {
-      ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
-      normalizeColStatsInput(colStats);
-      assert catalogName.equalsIgnoreCase(colStats.getStatsDesc().getCatName());
-      assert dbName.equalsIgnoreCase(colStats.getStatsDesc().getDbName());
-      assert tableName.equalsIgnoreCase(colStats.getStatsDesc().getTableName());
-      newStatsMap.put((String) entry.getKey(), colStats);
-    }
-
-    boolean ret = false;
+    long numStats = 0;
     try {
-      ret = getTxnHandler().updatePartitionColumnStatistics(newStatsMap, this,
-              listeners, tbl, validWriteIds, writeId);
+      for (Map.Entry entry : statsMap.entrySet()) {
+        ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
+        normalizeColStatsInput(colStats);
+        assert catalogName.equalsIgnoreCase(colStats.getStatsDesc().getCatName());
+        assert dbName.equalsIgnoreCase(colStats.getStatsDesc().getDbName());
+        assert tableName.equalsIgnoreCase(colStats.getStatsDesc().getTableName());
+        newStatsMap.put((String) entry.getKey(), colStats);
+        numStats += colStats.getStatsObjSize();
+
+        if (newStatsMap.size() == 1000) {
+          long csId = getTxnHandler().getNextCSIdForMPartitionColumnStatistics(numStats);
+          getTxnHandler().updatePartitionColumnStatistics(newStatsMap, this,
+                  listeners, tbl, csId, validWriteIds, writeId);
+          newStatsMap.clear();
+          numStats = 0;
+        }
+      }
+      if (numStats != 0) {
+        long csId = getTxnHandler().getNextCSIdForMPartitionColumnStatistics(numStats);
+        getTxnHandler().updatePartitionColumnStatistics(newStatsMap, this,
+                listeners, tbl, csId, validWriteIds, writeId);
+      }
     } finally {
-      endFunction("updatePartitionColStatsInBatch", ret != false, null, tableName);
+      endFunction("updatePartitionColStatsInBatch", true, null, tableName);
     }
     return true;
   }
