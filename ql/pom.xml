@@ -389,7 +389,7 @@
     </dependency>
     <dependency>
       <groupId>org.jodd</groupId>
-      <artifactId>jodd-core</artifactId>
+      <artifactId>jodd-util</artifactId>
       <version>${jodd.version}</version>
     </dependency>
     <dependency>
@@ -1118,7 +1118,7 @@
                   <include>javax.jdo:jdo-api</include>
                   <include>commons-lang:commons-lang</include>
                   <include>org.apache.commons:commons-lang3</include>
-                  <include>org.jodd:jodd-core</include>
+                  <include>org.jodd:jodd-util</include>
                   <include>com.tdunning:json</include>
                   <include>org.apache.avro:avro</include>
                   <include>org.apache.avro:avro-mapred</include>

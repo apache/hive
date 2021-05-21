@@ -21,9 +21,9 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hadoop.hive.common.type.Timestamp;
+import jodd.time.JulianDate;
 
-import jodd.datetime.JDateTime;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 
 /**
@@ -65,34 +65,35 @@ public class NanoTimeUtils {
    * converted to NanoTime.
    * (See TimestampDataWriter#write for current Hive writing procedure.)
    */
-   public static NanoTime getNanoTime(Timestamp ts, boolean skipConversion, ZoneId timeZoneId) {
-     if (skipConversion) {
-       timeZoneId = ZoneOffset.UTC;
-     } else if (timeZoneId == null) {
-       timeZoneId = TimeZone.getDefault().toZoneId();
-     }
-     ts = TimestampTZUtil.convertTimestampToZone(ts, timeZoneId, ZoneOffset.UTC);
+  public static NanoTime getNanoTime(Timestamp ts, boolean skipConversion, ZoneId timeZoneId) {
+    if (skipConversion) {
+      timeZoneId = ZoneOffset.UTC;
+    } else if (timeZoneId == null) {
+      timeZoneId = TimeZone.getDefault().toZoneId();
+    }
+    ts = TimestampTZUtil.convertTimestampToZone(ts, timeZoneId, ZoneOffset.UTC);
 
-     Calendar calendar = getGMTCalendar();
-     calendar.setTimeInMillis(ts.toEpochMilli());
-     int year = calendar.get(Calendar.YEAR);
-     if (calendar.get(Calendar.ERA) == GregorianCalendar.BC) {
-       year = 1 - year;
-     }
-     JDateTime jDateTime = new JDateTime(year,
-       calendar.get(Calendar.MONTH) + 1,  //java calendar index starting at 1.
-       calendar.get(Calendar.DAY_OF_MONTH));
-     int days = jDateTime.getJulianDayNumber();
+    Calendar calendar = getGMTCalendar();
+    calendar.setTimeInMillis(ts.toEpochMilli());
+    int year = calendar.get(Calendar.YEAR);
+    if (calendar.get(Calendar.ERA) == GregorianCalendar.BC) {
+      year = 1 - year;
+    }
+    JulianDate jDateTime;
+    jDateTime = JulianDate.of(year,
+        calendar.get(Calendar.MONTH) + 1,  //java calendar index starting at 1.
+        calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0, 0);
+    int days = jDateTime.getJulianDayNumber();
 
-     long hour = calendar.get(Calendar.HOUR_OF_DAY);
-     long minute = calendar.get(Calendar.MINUTE);
-     long second = calendar.get(Calendar.SECOND);
-     long nanos = ts.getNanos();
-     long nanosOfDay = nanos + NANOS_PER_SECOND * second + NANOS_PER_MINUTE * minute +
-         NANOS_PER_HOUR * hour;
+    long hour = calendar.get(Calendar.HOUR_OF_DAY);
+    long minute = calendar.get(Calendar.MINUTE);
+    long second = calendar.get(Calendar.SECOND);
+    long nanos = ts.getNanos();
+    long nanosOfDay = nanos + NANOS_PER_SECOND * second + NANOS_PER_MINUTE * minute +
+        NANOS_PER_HOUR * hour;
 
-     return new NanoTime(days, nanosOfDay);
-   }
+    return new NanoTime(days, nanosOfDay);
+  }
 
   public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion) {
     return getTimestamp(nt, skipConversion, null, false);
@@ -131,11 +132,12 @@ public class NanoTimeUtils {
       julianDay--;
     }
 
-    JDateTime jDateTime = new JDateTime((double) julianDay);
+    JulianDate jDateTime;
+    jDateTime = JulianDate.of((double) julianDay);
     Calendar calendar = getGMTCalendar();
-    calendar.set(Calendar.YEAR, jDateTime.getYear());
-    calendar.set(Calendar.MONTH, jDateTime.getMonth() - 1); //java calendar index starting at 1.
-    calendar.set(Calendar.DAY_OF_MONTH, jDateTime.getDay());
+    calendar.set(Calendar.YEAR, jDateTime.toLocalDateTime().getYear());
+    calendar.set(Calendar.MONTH, jDateTime.toLocalDateTime().getMonth().getValue() - 1); //java calendar index starting at 1.
+    calendar.set(Calendar.DAY_OF_MONTH, jDateTime.toLocalDateTime().getDayOfMonth());
 
     int hour = (int) (remainder / (NANOS_PER_HOUR));
     remainder = remainder % (NANOS_PER_HOUR);
