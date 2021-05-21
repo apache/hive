@@ -1692,7 +1692,7 @@ public class TestTxnHandler {
     int numTxn = 50000;
     String[] output = TestTxnDbUtil.queryToString(conf, "SELECT MAX(\"TXN_ID\") + 1 FROM \"TXNS\"").split("\n");
     long startTxnId = Long.parseLong(output[1].trim());
-    txnHandler.setOpenTxnTimeOutMillis(30000);
+    txnHandler.setOpenTxnTimeOutMillis(60000);
     List<Long> txnList = replOpenTxnForTest(startTxnId, numTxn, "default.*");
     txnHandler.setOpenTxnTimeOutMillis(1000);
     assert(txnList.size() == numTxn);
