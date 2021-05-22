@@ -86,7 +86,7 @@ public class TablePathResolver implements PathResolver {
           the archive.  MoveTask is optimized to do a 'rename' if files are on the same FileSystem.
           So setting 'loadPath' this way will make
           {@link Hive#loadTable(Path, String, LoadTableDesc.LoadFileType, boolean, boolean, boolean,
-          boolean, Long, int)}
+          boolean, Long, int, boolean, boolean)}
           skip the unnecessary file (rename) operation but it will perform other things.
          */
         loadPath = tgtPath;
