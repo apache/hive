@@ -80,6 +80,15 @@ public class TablePathResolver implements PathResolver {
       if (AcidUtils.isTransactionalTable(table)) {
         String mmSubdir = replace ? AcidUtils.baseDir(writeId) : AcidUtils.deltaSubdir(writeId, writeId, stmtId);
         destPath = new Path(tgtPath, mmSubdir);
+        /*
+          CopyTask will copy files from the 'archive' to a delta_x_x in the table/partition
+          directory, i.e. the final destination for these files.  This has to be a copy to preserve
+          the archive.  MoveTask is optimized to do a 'rename' if files are on the same FileSystem.
+          So setting 'loadPath' this way will make
+          {@link Hive#loadTable(Path, String, LoadTableDesc.LoadFileType, boolean, boolean, boolean,
+          boolean, Long, int)}
+          skip the unnecessary file (rename) operation but it will perform other things.
+         */
         loadPath = tgtPath;
         loadFileType = LoadTableDesc.LoadFileType.KEEP_EXISTING;
       } else {
