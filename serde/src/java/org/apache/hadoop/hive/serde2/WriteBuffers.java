@@ -145,11 +145,11 @@ public final class WriteBuffers implements RandomAccessOutput, MemoryEstimate {
 
   /** THIS METHOD IS NOT THREAD-SAFE. Use only at load time (or be mindful of thread safety). */
   public int unsafeHashCode(long offset, int length) {
-    return hashCode(offset, length, unsafeReadPos);
+    setReadPoint(offset, unsafeReadPos);
+    return hashCode(length, unsafeReadPos);
   }
 
-  public int hashCode(long offset, int length, Position readPos) {
-    setReadPoint(offset, readPos);
+  public int hashCode(int length, Position readPos) {
     if (isAllInOneReadBuffer(length, readPos)) {
       int result = HashCodeUtil.murmurHash(readPos.buffer, readPos.offset, length);
       readPos.offset += length;
