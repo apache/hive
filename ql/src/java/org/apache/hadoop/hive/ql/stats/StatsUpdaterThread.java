@@ -23,6 +23,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,12 +52,14 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.StatsUpdateMode;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -93,6 +97,8 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
   // Worker threads stuff
   private BlockingQueue<AnalyzeWork> workQueue;
   private Thread[] workers;
+
+  private Set<String> dbsBeingFailedOver;
 
   @Override
   public void setConf(Configuration conf) {
@@ -143,6 +149,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     txnHandler = TxnUtils.getTxnStore(conf);
     rs = RawStoreProxy.getProxy(conf, conf,
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.RAW_STORE_IMPL), threadId);
+    dbsBeingFailedOver = new HashSet<>();
     for (int i = 0; i < workers.length; ++i) {
       workers[i] = new Thread(new WorkerRunnable(conf, user));
       workers[i].setDaemon(true);
@@ -155,6 +162,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     LOG.info("Stats updater thread started");
     startWorkers();
     while (!stop.get()) {
+      dbsBeingFailedOver.clear();
       boolean hadUpdates = runOneIteration();
       try {
         Thread.sleep(hadUpdates ? 0 : noUpdatesWaitMs);
@@ -187,9 +195,10 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     }
     LOG.debug("Processing {}", fullTableNames);
     boolean hadUpdates = false;
+    Map<String, Boolean> dbsToSkip = new HashMap<>();
     for (TableName fullTableName : fullTableNames) {
       try {
-        List<AnalyzeWork> commands = processOneTable(fullTableName);
+        List<AnalyzeWork> commands = processOneTable(fullTableName, dbsToSkip);
         hadUpdates = hadUpdates || commands != null;
         if (commands != null) {
           for (AnalyzeWork req : commands) {
@@ -210,26 +219,31 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     }
   }
 
-  private List<AnalyzeWork> processOneTable(TableName fullTableName)
+  private List<AnalyzeWork> processOneTable(TableName fullTableName, Map<String, Boolean> dbsToSkip)
       throws MetaException, NoSuchTxnException, NoSuchObjectException {
     if (isAnalyzeTableInProgress(fullTableName)) return null;
     String cat = fullTableName.getCat(), db = fullTableName.getDb(), tbl = fullTableName.getTable();
+    String dbName = MetaStoreUtils.prependCatalogToDbName(cat,db, conf);
+    if (!dbsToSkip.containsKey(dbName)) {
+      Database database = rs.getDatabase(cat, db);
+      dbsToSkip.put(dbName, ReplUtils.isTargetOfReplication(database)
+              || MetaStoreUtils.isDbBeingFailedOver(database));
+    }
+    // If the table is being replicated into,
+    // 1. the stats are also replicated from the source, so we don't need those to be calculated on the target again
+    // 2. updating stats requires a writeId to be created. Hence writeIds on source and target can get out of sync
+    // when stats are updated. That can cause consistency issues.
+
+    if (dbsToSkip.get(dbName)) {
+      LOG.debug("Skipping table {}", tbl);
+      return null;
+    }
     Table table = rs.getTable(cat, db, tbl);
     LOG.debug("Processing table {}", table);
 
     // Check if the table should be skipped.
     String skipParam = table.getParameters().get(SKIP_STATS_AUTOUPDATE_PROPERTY);
     if ("true".equalsIgnoreCase(skipParam)) return null;
-
-    // If the table is being replicated into,
-    // 1. the stats are also replicated from the source, so we don't need those to be calculated
-    //    on the target again
-    // 2. updating stats requires a writeId to be created. Hence writeIds on source and target
-    //    can get out of sync when stats are updated. That can cause consistency issues.
-    if (ReplUtils.isTargetOfReplication(rs.getDatabase(cat, db))) {
-      LOG.debug("Skipping table {} since it is being replicated into", table);
-      return null;
-    }
 
     // Note: ideally we should take a lock here to pretend to be a real reader.
     //       For now, this check is going to have race potential; it may run a spurious analyze.
@@ -625,6 +639,16 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     }
     String cmd = null;
     try {
+      TableName tb = req.tableName;
+      String dbName = MetaStoreUtils.prependCatalogToDbName(tb.getCat(),tb.getDb(), conf);
+      if (dbsBeingFailedOver.contains(dbName)
+              || MetaStoreUtils.isDbBeingFailedOver(rs.getDatabase(tb.getCat(), tb.getDb()))) {
+        if (!dbsBeingFailedOver.contains(dbName)) {
+          dbsBeingFailedOver.add(dbName);
+        }
+        LOG.debug("Skipping table {}", tb.getTable());
+        return true;
+      }
       cmd = req.buildCommand();
       LOG.debug("Running {} based on {}", cmd, req);
       if (doWait) {

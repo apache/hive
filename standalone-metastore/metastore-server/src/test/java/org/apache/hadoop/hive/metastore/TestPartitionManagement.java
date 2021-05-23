@@ -380,6 +380,16 @@ public class TestPartitionManagement {
     runPartitionManagementTask(conf);
     partitions = client.listPartitions(dbName, tableName, (short) -1);
     assertEquals(5, partitions.size());
+
+    fs.mkdirs(new Path(tablePath, "state=MG/dt=2021-28-05"));
+    assertEquals(6, fs.listStatus(tablePath).length);
+    Database db = client.getDatabase(table.getDbName());
+    //PartitionManagementTask would not run for the database which is being failed over.
+    db.putToParameters(ReplConst.REPL_FAILOVER_ENABLED, ReplConst.TRUE);
+    client.alterDatabase(dbName, db);
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(5, partitions.size());
   }
 
   @Test
@@ -524,6 +534,18 @@ public class TestPartitionManagement {
     runPartitionManagementTask(conf);
     partitions = client.listPartitions(dbName, tableName, (short) -1);
     assertEquals(5, partitions.size());
+
+    Database db = client.getDatabase(table.getDbName());
+    db.putToParameters(ReplConst.REPL_FAILOVER_ENABLED, ReplConst.TRUE);
+    client.alterDatabase(table.getDbName(), db);
+    // PartitionManagementTask would not do anything because the db is being failed over.
+    Thread.sleep(30 * 1000);
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(5, partitions.size());
+
+    db.putToParameters(ReplConst.REPL_FAILOVER_ENABLED, "");
+    client.alterDatabase(table.getDbName(), db);
 
     // after 30s all partitions should have been gone
     Thread.sleep(30 * 1000);

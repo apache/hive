@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.TimeValidator;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,11 +135,21 @@ public class PartitionManagementTask implements MetastoreTaskThread {
         LOG.info("Looking for tables using catalog: {} dbPattern: {} tablePattern: {} found: {}", catalogName,
           dbPattern, tablePattern, foundTableMetas.size());
 
+        Map<String, Boolean> databasesToSkip = new HashMap<>();
+
         for (TableMeta tableMeta : foundTableMetas) {
           try {
+            String dbName = MetaStoreUtils.prependCatalogToDbName(tableMeta.getCatName(), tableMeta.getDbName(), conf);
+            if (!databasesToSkip.containsKey(dbName)) {
+              Database db = msc.getDatabase(tableMeta.getCatName(), tableMeta.getDbName());
+              databasesToSkip.put(dbName, isTargetOfReplication(db) || MetaStoreUtils.isDbBeingFailedOver(db));
+            }
+            if (databasesToSkip.get(dbName)) {
+              LOG.info("Skipping table : {}", tableMeta.getTableName());
+              continue;
+            }
             Table table = msc.getTable(tableMeta.getCatName(), tableMeta.getDbName(), tableMeta.getTableName());
-            Database db = msc.getDatabase(table.getCatName(), table.getDbName());
-            if (partitionDiscoveryEnabled(table.getParameters()) && !isTargetOfReplication(db)) {
+            if (partitionDiscoveryEnabled(table.getParameters())) {
               candidateTables.add(table);
             }
           } catch (NoSuchObjectException e) {
@@ -161,6 +173,8 @@ public class PartitionManagementTask implements MetastoreTaskThread {
         LOG.info("Found {} candidate tables for partition discovery", candidateTables.size());
         setupMsckPathInvalidation();
         Configuration msckConf = Msck.getMsckConf(conf);
+        databasesToSkip.clear();
+        Set<String> dbsBeingFailedOver = new HashSet<>();
         for (Table table : candidateTables) {
           qualifiedTableName = Warehouse.getCatalogQualifiedTableName(table);
           long retentionSeconds = getRetentionPeriodInSeconds(table);
@@ -169,7 +183,8 @@ public class PartitionManagementTask implements MetastoreTaskThread {
           // this always runs in 'sync' mode where partitions can be added and dropped
           MsckInfo msckInfo = new MsckInfo(table.getCatName(), table.getDbName(), table.getTableName(),
             null, null, true, true, true, retentionSeconds);
-          executorService.submit(new MsckThread(msckInfo, msckConf, qualifiedTableName, countDownLatch));
+          executorService.submit(new MsckThread(msckInfo, msckConf, qualifiedTableName,
+                  countDownLatch, dbsBeingFailedOver, msc));
         }
         countDownLatch.await();
         executorService.shutdownNow();
@@ -222,17 +237,31 @@ public class PartitionManagementTask implements MetastoreTaskThread {
     private Configuration conf;
     private String qualifiedTableName;
     private CountDownLatch countDownLatch;
+    private Set<String> dbsBeingFailedOver;
+    private IMetaStoreClient msc;
 
-    MsckThread(MsckInfo msckInfo, Configuration conf, String qualifiedTableName, CountDownLatch countDownLatch) {
+    MsckThread(MsckInfo msckInfo, Configuration conf, String qualifiedTableName,
+               CountDownLatch countDownLatch, Set<String> dbsBeingFailedOver, IMetaStoreClient msc) {
       this.msckInfo = msckInfo;
       this.conf = conf;
       this.qualifiedTableName = qualifiedTableName;
       this.countDownLatch = countDownLatch;
+      this.dbsBeingFailedOver = dbsBeingFailedOver;
+      this.msc = msc;
     }
 
     @Override
     public void run() {
       try {
+        String dbName = MetaStoreUtils.prependCatalogToDbName(msckInfo.getCatalogName(), msckInfo.getDbName(), conf);
+        if (dbsBeingFailedOver.contains(dbName) ||
+                MetaStoreUtils.isDbBeingFailedOver(msc.getDatabase(msckInfo.getCatalogName(), msckInfo.getDbName()))) {
+          if (!dbsBeingFailedOver.contains(dbName)) {
+            dbsBeingFailedOver.add(dbName);
+          }
+          LOG.info("Skipping table: {} " + msckInfo.getTableName());
+          return;
+        }
         Msck msck = new Msck( true, true);
         msck.init(conf);
         msck.repair(msckInfo);
