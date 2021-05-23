@@ -66,8 +66,8 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
-import org.apache.hadoop.hive.ql.plan.PathResolver;
-import org.apache.hadoop.hive.ql.plan.TablePathResolver;
+import org.apache.hadoop.hive.ql.plan.DeferredWorkHelper;
+import org.apache.hadoop.hive.ql.plan.DeferredWorkHelperImpl;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -89,8 +89,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-
 
 /**
  * ImportSemanticAnalyzer.
@@ -433,7 +431,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
                                    String dumpRoot, ReplicationMetricCollector metricCollector) throws HiveException{
     Path dataPath = new Path(fromURI.toString(), EximUtil.DATA_PATH_NAME);
 
-    PathResolver resolver = new TablePathResolver(replace, tgtPath, writeId, stmtId, x.getHive(), x.getCtx(), tblDesc,
+    DeferredWorkHelper
+        resolver = new DeferredWorkHelperImpl(replace, tgtPath, writeId, stmtId, x.getHive(), x.getCtx(), tblDesc,
         replicationSpec.isInReplicationScope());
 
     Task<?> copyTask;
@@ -446,7 +445,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       copyTask = TaskFactory.get(new CopyWork(dataPath, null, false, dumpRoot, metricCollector, true));
     }
-    copyTask.setPathResolver(resolver);
+    copyTask.setDeferredWorkHelper(resolver);
 
     MoveWork moveWork = new MoveWork(x.getInputs(), x.getOutputs(), null, null, false,
         dumpRoot, metricCollector, true);
@@ -454,7 +453,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     //if Importing into existing table, FileFormat is checked by
     // ImportSemanticAnalzyer.checked checkTable()
     Task<?> loadTableTask = TaskFactory.get(moveWork, x.getConf());
-    loadTableTask.setPathResolver(resolver);
+    loadTableTask.setDeferredWorkHelper(resolver);
     copyTask.addDependentTask(loadTableTask);
     x.getTasks().add(copyTask);
     return loadTableTask;

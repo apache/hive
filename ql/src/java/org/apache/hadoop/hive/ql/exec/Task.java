@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.PathResolver;
+import org.apache.hadoop.hive.ql.plan.DeferredWorkHelper;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.mapreduce.MRJobConfig;
@@ -69,7 +69,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected List<Task<?>> backupChildrenTasks = new ArrayList<Task<?>>();
   protected static transient Logger LOG = LoggerFactory.getLogger(Task.class);
   protected int taskTag;
-  protected PathResolver pathResolver;
+  protected DeferredWorkHelper deferredWorkHelper;
   private boolean isLocalMode =false;
 
   public static final int NO_TAG = 0;
@@ -639,12 +639,12 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     this.fetchSource = fetchSource;
   }
 
-  public PathResolver getPathResolver() {
-    return pathResolver;
+  public DeferredWorkHelper getDeferredWorkHelper() {
+    return deferredWorkHelper;
   }
 
-  public void setPathResolver(PathResolver pathResolver) {
-    this.pathResolver = pathResolver;
+  public void setDeferredWorkHelper(DeferredWorkHelper deferredWorkHelper) {
+    this.deferredWorkHelper = deferredWorkHelper;
   }
 
   @Override

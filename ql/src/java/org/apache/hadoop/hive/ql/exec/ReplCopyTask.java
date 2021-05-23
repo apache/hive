@@ -170,8 +170,8 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
   }
 
   private void setupWork() throws HiveException {
-    if (null != getPathResolver()) {
-      getPathResolver().setupWork(work);
+    if (null != getDeferredWorkHelper()) {
+      getDeferredWorkHelper().setupWork(work);
     }
   }
 

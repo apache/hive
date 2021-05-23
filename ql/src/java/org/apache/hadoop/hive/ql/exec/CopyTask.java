@@ -64,8 +64,8 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
   }
 
   private void setupWork() throws HiveException {
-    if (null != getPathResolver()) {
-      getPathResolver().setupWork(work);
+    if (null != getDeferredWorkHelper()) {
+      getDeferredWorkHelper().setupWork(work);
     }
   }
 

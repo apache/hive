@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import java.util.Collections;
 import java.util.TreeMap;
 
-public class TablePathResolver implements PathResolver {
+public class DeferredWorkHelperImpl implements DeferredWorkHelper {
   private final boolean inReplScope;
   private final boolean replace;
   private final Long writeId;
@@ -48,7 +48,7 @@ public class TablePathResolver implements PathResolver {
   private boolean isCalculated = false;
   private Table table;
 
-  public TablePathResolver(boolean replace, Path tgtPath, Long writeId, int stmtId, Hive hive, Context ctx,
+  public DeferredWorkHelperImpl(boolean replace, Path tgtPath, Long writeId, int stmtId, Hive hive, Context ctx,
       ImportTableDesc tblDesc, boolean inReplScope) {
     this.replace = replace;
     this.writeId = writeId;
@@ -60,7 +60,7 @@ public class TablePathResolver implements PathResolver {
     this.tgtPath = tgtPath;
   }
 
-  private void calculateValues() throws HiveException {
+  private void deferredEvaluate() throws HiveException {
     if (!isCalculated) {
       table = ImportSemanticAnalyzer.tableIfExists(tblDesc, hive);
       if (table == null) {
@@ -105,12 +105,12 @@ public class TablePathResolver implements PathResolver {
   }
 
   @Override public void setupWork(CopyWork copyWork) throws HiveException {
-    calculateValues();
+    deferredEvaluate();
     copyWork.setToPath(new Path[] { destPath });
   }
 
   @Override public void setupWork(ReplCopyWork replCopyWork) throws HiveException {
-    calculateValues();
+    deferredEvaluate();
     replCopyWork.setToPath(new Path[] { destPath });
     if (replace) {
       replCopyWork.setDeleteDestIfExist(true);
@@ -120,7 +120,7 @@ public class TablePathResolver implements PathResolver {
   }
 
   @Override public void setupWork(MoveWork moveWork) throws HiveException {
-    calculateValues();
+    deferredEvaluate();
 
     if (inReplScope && AcidUtils.isTransactionalTable(table)) {
       LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(

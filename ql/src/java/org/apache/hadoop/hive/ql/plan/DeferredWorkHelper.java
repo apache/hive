@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
-public interface PathResolver {
+public interface DeferredWorkHelper {
   void setupWork(CopyWork copyWork) throws HiveException;
   void setupWork(ReplCopyWork replCopyWork) throws HiveException;
   void setupWork(MoveWork moveWork) throws HiveException;
