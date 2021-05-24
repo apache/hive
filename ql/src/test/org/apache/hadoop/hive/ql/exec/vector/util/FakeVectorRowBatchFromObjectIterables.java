@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.util;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,7 +36,6 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hdfs.DFSUtil;
 
 /**
  * Test helper class that creates vectorized execution batches from arbitrary type iterables.
@@ -124,7 +125,12 @@ public class FakeVectorRowBatchFromObjectIterables extends FakeVectorRowBatchBas
               Object value) {
             BytesColumnVector bcv = (BytesColumnVector) columnVector;
             String s = (String) value;
-            byte[] bytes = DFSUtil.string2Bytes(s);
+            byte[] bytes = new byte[0];
+            try {
+              bytes = s.getBytes(StandardCharsets.UTF_8);
+            } catch (UnsupportedEncodingException e) {
+              throw new RuntimeException(e);
+            }
             bcv.vector[row] = bytes;
             bcv.start[row] = 0;
             bcv.length[row] = bytes.length;

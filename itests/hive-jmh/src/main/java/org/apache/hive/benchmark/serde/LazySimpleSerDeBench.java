@@ -15,12 +15,12 @@ package org.apache.hive.benchmark.serde;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hadoop.hdfs.DFSUtil;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyByte;
 import org.apache.hadoop.hive.serde2.lazy.LazyDate;
@@ -125,8 +125,14 @@ public class LazySimpleSerDeBench {
       for (int i = 0; i < sizes.length / 2; i++) {
         int p = r.nextInt(max);
         int n = -1 * (p - 1);
-        byte[] ps = DFSUtil.string2Bytes(String.format("%d", p));
-        byte[] ns = DFSUtil.string2Bytes(String.format("%d", n));
+        byte[] ps = new byte[0];
+        byte[] ns = new byte[0];
+        try {
+          ps = String.format("%d", p).getBytes(StandardCharsets.UTF_8);
+          ns = String.format("%d", n).getBytes(StandardCharsets.UTF_8);
+        } catch (UnsupportedEncodingException e) {
+          throw new RuntimeException(e);
+        }
         sizes[2 * i] = ps.length;
         sizes[2 * i + 1] = ns.length;
         offsets[2 * i] = len;
@@ -498,7 +504,12 @@ public class LazySimpleSerDeBench {
       for (int i = 0; i < DEFAULT_DATA_SIZE; i++) {
         // -ve dates are also valid dates - the dates are within 1959 to 2027
         Date dt = new Date(base + (Math.abs(r.nextLong()) % (Integer.MAX_VALUE*1000L)));
-        byte[] ds = DFSUtil.string2Bytes(dt.toString());
+        byte[] ds = new byte[0];
+        try {
+          ds = dt.toString().getBytes(StandardCharsets.UTF_8);
+        } catch (UnsupportedEncodingException e) {
+          throw new RuntimeException(e);
+        }
         sizes[i] = ds.length;
         offsets[i] = len;
         len += ds.length;
@@ -581,7 +592,12 @@ public class LazySimpleSerDeBench {
       for (int i = 0; i < DEFAULT_DATA_SIZE; i++) {
         // -ve dates are also valid Timestamps - dates are within 1959 to 2027
         Date dt = new Date(base + (Math.abs(r.nextLong()) % (Integer.MAX_VALUE * 1000L)));
-        byte[] ds = DFSUtil.string2Bytes(String.format("%s 00:00:01", dt.toString()));
+        byte[] ds = new byte[0];
+        try {
+          ds = String.format("%s 00:00:01", dt.toString()).getBytes(StandardCharsets.UTF_8);
+        } catch (UnsupportedEncodingException e) {
+          throw new RuntimeException(e);
+        }
         sizes[i] = ds.length;
         offsets[i] = len;
         len += ds.length;

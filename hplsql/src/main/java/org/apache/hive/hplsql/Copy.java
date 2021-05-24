@@ -21,6 +21,8 @@ package org.apache.hive.hplsql;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -34,7 +36,6 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hdfs.DFSUtil;
 import org.apache.hive.hplsql.executor.QueryExecutor;
 import org.apache.hive.hplsql.executor.QueryResult;
 
@@ -179,9 +180,16 @@ public class Copy {
     else {
       filename = ctx.copy_target().getText();
     }
-    byte[] del = DFSUtil.string2Bytes(delimiter);
-    byte[] rowdel = DFSUtil.string2Bytes("\n");
-    byte[] nullstr = DFSUtil.string2Bytes("NULL");
+    byte[] del = new byte[0];
+    byte[] rowdel = new byte[0];
+    byte[] nullstr = new byte[0];
+    try {
+      del = delimiter.getBytes(StandardCharsets.UTF_8);
+      rowdel = "\n".getBytes(StandardCharsets.UTF_8);
+      nullstr = "NULL".getBytes(StandardCharsets.UTF_8);
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
     int cols = query.columnCount();
     int rows = 0;
     long bytes = 0;
@@ -234,7 +242,12 @@ public class Copy {
             if (sqlInsert) {
               col = Utils.quoteString(col);
             }
-            byte[] b = DFSUtil.string2Bytes(col);
+            byte[] b = new byte[0];
+            try {
+              b = col.getBytes(StandardCharsets.UTF_8);
+            } catch (UnsupportedEncodingException e) {
+              throw new RuntimeException(e);
+            }
             out.write(b);
             bytes += b.length;
           }
