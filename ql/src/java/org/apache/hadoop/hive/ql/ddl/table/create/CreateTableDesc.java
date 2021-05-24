@@ -851,11 +851,6 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     if (isExternal()) {
       tbl.setProperty("EXTERNAL", "TRUE");
       tbl.setTableType(TableType.EXTERNAL_TABLE);
-      // only add if user have not explicit set it (user explicitly disabled for example in which case don't flip it)
-      if (tbl.isPartitioned() && tbl.getProperty(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY) == null) {
-        // partition discovery is on by default if undefined
-        tbl.setProperty(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
-      }
     }
 
     // If the sorted columns is a superset of bucketed columns, store this fact.

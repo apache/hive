@@ -1014,6 +1014,7 @@ struct OpenTxnsResponse {
 struct AbortTxnRequest {
     1: required i64 txnid,
     2: optional string replPolicy,
+    3: optional TxnType txn_type,
 }
 
 struct AbortTxnsRequest {
@@ -1053,7 +1054,8 @@ struct CommitTxnRequest {
     4: optional ReplLastIdInfo replLastIdInfo,
     // An optional key/value to store atomically with the transaction
     5: optional CommitTxnKeyValue keyValue,
-    6: optional bool exclWriteEnabled = true
+    6: optional bool exclWriteEnabled = true,
+    7: optional TxnType txn_type,
 }
 
 struct ReplTblWriteIdStateRequest {
@@ -2958,11 +2960,11 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   GetOpenTxnsResponse get_open_txns_req(1: GetOpenTxnsRequest getOpenTxnsRequest)
 
   void create_stored_procedure(1: StoredProcedure proc) throws(1:NoSuchObjectException o1, 2:MetaException o2)
-  StoredProcedure get_stored_procedure(1: StoredProcedureRequest request) throws (1:MetaException o1)
+  StoredProcedure get_stored_procedure(1: StoredProcedureRequest request) throws (1:MetaException o1, 2:NoSuchObjectException o2)
   void drop_stored_procedure(1: StoredProcedureRequest request) throws (1:MetaException o1)
   list<string> get_all_stored_procedures(1: ListStoredProcedureRequest request) throws (1:MetaException o1)
 
-  Package find_package(1: GetPackageRequest request) throws (1:MetaException o1)
+  Package find_package(1: GetPackageRequest request) throws (1:MetaException o1, 2:NoSuchObjectException o2)
   void add_package(1: AddPackageRequest request) throws (1:MetaException o1)
   list<string> get_all_packages(1: ListPackageRequest request) throws (1:MetaException o1)
   void drop_package(1: DropPackageRequest request) throws (1:MetaException o1)

@@ -109,9 +109,7 @@ public class ParseDriver {
    */
   public ParseResult parse(String command, Configuration configuration)
       throws ParseException {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Parsing command: " + command);
-    }
+    LOG.debug("Parsing command: {}", command);
 
     GenericHiveLexer lexer = GenericHiveLexer.of(command, configuration);
     TokenRewriteStream tokens = new TokenRewriteStream(lexer);

@@ -29,7 +29,7 @@
     <properties>
         <hive.path.to.root>..</hive.path.to.root>
         <path.to.iceberg.root>.</path.to.iceberg.root>
-        <iceberg-api.version>0.11.0</iceberg-api.version>
+        <iceberg.version>0.11.0</iceberg.version>
         <kryo-shaded.version>4.0.2</kryo-shaded.version>
         <iceberg.mockito-core.version>1.10.19</iceberg.mockito-core.version>
         <iceberg.avro.version>1.9.2</iceberg.avro.version>
@@ -43,6 +43,7 @@
     <modules>
         <module>patched-iceberg-api</module>
         <module>patched-iceberg-core</module>
+        <module>iceberg-shading</module>
         <module>iceberg-catalog</module>
         <module>iceberg-handler</module>
     </modules>
@@ -51,38 +52,54 @@
         <dependencies>
             <dependency>
                 <groupId>org.apache.iceberg</groupId>
+                <artifactId>patched-iceberg-api</artifactId>
+                <version>patched-${iceberg.version}-${project.parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.iceberg</groupId>
+                <artifactId>patched-iceberg-core</artifactId>
+                <version>patched-${iceberg.version}-${project.parent.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.iceberg</groupId>
                 <artifactId>iceberg-api</artifactId>
-                <version>patched-${iceberg-api.version}-${project.parent.version}</version>
+                <version>${iceberg.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.iceberg</groupId>
                 <artifactId>iceberg-core</artifactId>
-                <version>patched-${iceberg-api.version}-${project.parent.version}</version>
+                <version>${iceberg.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.iceberg</groupId>
                 <artifactId>iceberg-hive-metastore</artifactId>
-                <version>${iceberg-api.version}</version>
+                <version>${iceberg.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.iceberg</groupId>
                 <artifactId>iceberg-data</artifactId>
-                <version>${iceberg-api.version}</version>
+                <version>${iceberg.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.iceberg</groupId>
                 <artifactId>iceberg-parquet</artifactId>
-                <version>${iceberg-api.version}</version>
+                <version>${iceberg.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.iceberg</groupId>
                 <artifactId>iceberg-orc</artifactId>
-                <version>${iceberg-api.version}</version>
+                <version>${iceberg.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.hive</groupId>
                 <artifactId>hive-iceberg-catalog</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-iceberg-shading</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -100,16 +117,8 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                     <exclusion>
-                        <groupId>com.google.protobuf</groupId>
-                        <artifactId>protobuf-java</artifactId>
-                    </exclusion>
-                    <exclusion>
                         <groupId>org.apache.avro</groupId>
                         <artifactId>avro</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.calcite.avatica</groupId>
-                        <artifactId>*</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.hive</groupId>

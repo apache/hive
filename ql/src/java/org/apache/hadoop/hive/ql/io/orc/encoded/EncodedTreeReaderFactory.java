@@ -2297,9 +2297,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       vectors = batch.getColumnVectors(columnIndex);
     } else {
       // A struct column can have a null child column
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Batch has no data for " + columnIndex + ": " + batch);
-      }
+      LOG.debug("Batch has no data for {}: {}", columnIndex, batch);
       return null;
     }
 

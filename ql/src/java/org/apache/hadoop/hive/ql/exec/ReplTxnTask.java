@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -33,7 +34,6 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import java.util.List;
-import org.apache.hadoop.hive.common.ValidTxnList;
 
 /**
  * ReplTxnTask.
@@ -53,17 +53,6 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
     String tableName = work.getTableName();
     ReplicationSpec replicationSpec = work.getReplicationSpec();
     if ((tableName != null) && (replicationSpec != null)) {
-      Table tbl;
-      try {
-        tbl = Hive.get().getTable(work.getDbName(), tableName);
-        if (!replicationSpec.allowReplacementInto(tbl.getParameters())) {
-          // if the event is already replayed, then no need to replay it again.
-          LOG.debug("ReplTxnTask: Event is skipped as it is already replayed. Event Id: " +
-                  replicationSpec.getReplicationState() + "Event Type: " + work.getOperationType());
-          return 0;
-        }
-      } catch (InvalidTableException e) {
-        // In scenarios like import to mm tables, the alloc write id event is generated before create table event.
         try {
           Database database = Hive.get().getDatabase(work.getDbName());
           if (!replicationSpec.allowReplacementInto(database.getParameters())) {
@@ -76,10 +65,6 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
           LOG.error("Get database failed with exception " + e1.getMessage());
           return 1;
         }
-      } catch (HiveException e) {
-        LOG.error("Get table failed with exception " + e.getMessage());
-        return 1;
-      }
     }
 
     try {
@@ -106,6 +91,7 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
         CommitTxnRequest commitTxnRequest = new CommitTxnRequest(txnId);
         commitTxnRequest.setReplPolicy(work.getReplPolicy());
         commitTxnRequest.setWriteEventInfos(work.getWriteEventInfos());
+        commitTxnRequest.setTxn_type(TxnType.REPL_CREATED);
         txnManager.replCommitTxn(commitTxnRequest);
         LOG.info("Replayed CommitTxn Event for replPolicy: " + replPolicy + " with srcTxn: " + txnId +
             "WriteEventInfos: " + work.getWriteEventInfos());

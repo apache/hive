@@ -45,3 +45,17 @@ explain select * from part where p_size is not distinct from 2;
 select * from part where p_size is not distinct from 2;
 
 
+-- insert
+create table t2(c0 boolean, c1 float );
+insert into t2(c0) values (not (0.379 is not distinct from 641));
+insert into t2(c0,c1) values (not (0.379 is not distinct from 641), 0.2);
+
+select * from t2;
+
+
+create table if not exists t0(c0 boolean unique disable novalidate, c1 float, c2 boolean);
+insert into t0(c2, c1, c0)
+values (0.4144825 is distinct from 0.6828972,
+        0.14, true);
+
+select * from t0;

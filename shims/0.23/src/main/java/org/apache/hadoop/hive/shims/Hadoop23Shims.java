@@ -60,6 +60,7 @@ import org.apache.hadoop.fs.TrashPolicy;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.hdfs.DFSUtilClient;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.MiniDFSNNTopology;
@@ -71,6 +72,7 @@ import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicyInfo;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
+import org.apache.hadoop.hdfs.protocol.SnapshotDiffReportListing;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.ipc.CallerContext;
 import org.apache.hadoop.mapred.ClusterStatus;
@@ -97,6 +99,7 @@ import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.util.KerberosName;
 import org.apache.hadoop.tools.DistCp;
+import org.apache.hadoop.tools.DistCpConstants;
 import org.apache.hadoop.tools.DistCpOptions;
 import org.apache.hadoop.tools.DistCpOptions.FileAttribute;
 import org.apache.hadoop.util.Progressable;
@@ -411,14 +414,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       conf.setInt(YarnConfiguration.YARN_MINICLUSTER_NM_PMEM_MB, 512);
       conf.setInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, 128);
       conf.setInt(YarnConfiguration.RM_SCHEDULER_MAXIMUM_ALLOCATION_MB, 512);
-      // Overrides values from the hive/tez-site.
-      conf.setInt("hive.tez.container.size", 128);
-      conf.setInt(TezConfiguration.TEZ_AM_RESOURCE_MEMORY_MB, 128);
-      conf.setInt(TezConfiguration.TEZ_TASK_RESOURCE_MEMORY_MB, 128);
-      conf.setInt(TezRuntimeConfiguration.TEZ_RUNTIME_IO_SORT_MB, 24);
-      conf.setInt(TezRuntimeConfiguration.TEZ_RUNTIME_UNORDERED_OUTPUT_BUFFER_SIZE_MB, 10);
-      conf.setFloat(TezRuntimeConfiguration.TEZ_RUNTIME_SHUFFLE_FETCH_BUFFER_PERCENT, 0.4f);
-      conf.setInt(TezConfiguration.TEZ_COUNTERS_MAX, 1024);
+
       conf.set("fs.defaultFS", nameNode);
       conf.set("tez.am.log.level", "DEBUG");
       conf.set(MRJobConfig.MR_AM_STAGING_DIR, "/apps_staging_dir");
@@ -448,16 +444,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     @Override
     public void setupConfiguration(Configuration conf) {
       Configuration config = mr.getConfig();
-      for (Map.Entry<String, String> pair: config) {
+      for (Map.Entry<String, String> pair : config) {
         conf.set(pair.getKey(), pair.getValue());
       }
-      // Overrides values from the hive/tez-site.
-      conf.setInt("hive.tez.container.size", 128);
-      conf.setInt(TezConfiguration.TEZ_AM_RESOURCE_MEMORY_MB, 128);
-      conf.setInt(TezConfiguration.TEZ_TASK_RESOURCE_MEMORY_MB, 128);
-      conf.setInt(TezRuntimeConfiguration.TEZ_RUNTIME_IO_SORT_MB, 24);
-      conf.setInt(TezRuntimeConfiguration.TEZ_RUNTIME_UNORDERED_OUTPUT_BUFFER_SIZE_MB, 10);
-      conf.setFloat(TezRuntimeConfiguration.TEZ_RUNTIME_SHUFFLE_FETCH_BUFFER_PERCENT, 0.4f);
       if (isLlap) {
         conf.set("hive.llap.execution.mode", "all");
       }
@@ -1116,6 +1105,18 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   List<String> constructDistCpParams(List<Path> srcPaths, Path dst, Configuration conf) {
     // -update and -delete are mandatory options for directory copy to work.
     // -pbx is default preserve options if user doesn't pass any.
+    List<String> params = constructDistCpDefaultParams(conf);
+    if (!params.contains("-delete")) {
+      params.add("-delete");
+    }
+    for (Path src : srcPaths) {
+      params.add(src.toString());
+    }
+    params.add(dst.toString());
+    return params;
+  }
+
+  private List<String> constructDistCpDefaultParams(Configuration conf) {
     List<String> params = new ArrayList<String>();
     boolean needToAddPreserveOption = true;
     for (Map.Entry<String,String> entry : conf.getPropsWithPrefix(DISTCP_OPTIONS_PREFIX).entrySet()){
@@ -1135,12 +1136,41 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     if (!params.contains("-update")) {
       params.add("-update");
     }
-    if (!params.contains("-delete")) {
-      params.add("-delete");
+    return params;
+  }
+
+  /**
+   * Constructs the params to be passed for using snapshot based replication
+   * @param srcPaths source paths
+   * @param dst destination
+   * @param sourceSnap starting snapshot
+   * @param destSnap end snapshot
+   * @param conf hive configuration
+   * @param diff -diff or -rdiff
+   * @return
+   */
+  List<String> constructDistCpWithSnapshotParams(List<Path> srcPaths, Path dst, String sourceSnap, String destSnap,
+      Configuration conf, String diff) {
+    // Get the default distcp params
+    List<String> params = constructDistCpDefaultParams(conf);
+    if (params.contains("-delete")) {
+      params.remove("-delete");
     }
+
+    // Add distCp snapshot diff parameters.
+
+    // Add -diff or -rdiff
+    params.add(diff);
+    // Add the starting snapshot.
+    params.add(sourceSnap);
+    // Add the second snapshot
+    params.add(destSnap);
+
+    // Add the source paths.
     for (Path src : srcPaths) {
       params.add(src.toString());
     }
+    // Add the target path.
     params.add(dst.toString());
     return params;
   }
@@ -1184,7 +1214,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         return false;
       }
     } catch (Exception e) {
-      throw new IOException("Cannot execute DistCp process: " + e, e);
+      throw new IOException("Cannot execute DistCp process: ", e);
     } finally {
       // Set the job id from distCp conf to the callers configuration.
       if (distcp != null) {
@@ -1194,6 +1224,111 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         }
       }
       conf.setBoolean("mapred.mapper.new-api", false);
+    }
+  }
+
+  @Override
+  public boolean runDistCpWithSnapshots(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst,
+      boolean overwriteTarget, Configuration conf)
+      throws IOException {
+    DistCpOptions options =
+        new DistCpOptions.Builder(srcPaths, dst).withSyncFolder(true).withUseDiff(oldSnapshot, newSnapshot)
+        .preserve(FileAttribute.BLOCKSIZE).preserve(FileAttribute.XATTR).build();
+
+    List<String> params = constructDistCpWithSnapshotParams(srcPaths, dst, oldSnapshot, newSnapshot, conf, "-diff");
+    try {
+      conf.setBoolean("mapred.mapper.new-api", true);
+      DistCp distcp = new DistCp(conf, options);
+      int returnCode = distcp.run(params.toArray(new String[0]));
+      if (returnCode == 0) {
+        return true;
+      } else if (returnCode == DistCpConstants.INVALID_ARGUMENT) {
+        // Handling FileNotFoundException, if source got deleted, in that case we don't want to copy either, So it is
+        // like a success case, we didn't had anything to copy and we copied nothing, so, we need not to fail.
+        LOG.warn("Copy failed with INVALID_ARGUMENT for source: {} to target: {} snapshot1: {} snapshot2: {} "
+            + "params: {}", srcPaths, dst, oldSnapshot, newSnapshot, params);
+        return true;
+      } else if (returnCode == DistCpConstants.UNKNOWN_ERROR && overwriteTarget) {
+        // Check if this error is due to target modified.
+        if (shouldRdiff(dst, conf, oldSnapshot, overwriteTarget)) {
+          LOG.warn("Copy failed due to target modified. Attempting to restore back the target. source: {} target: {} "
+              + "snapshot: {}", srcPaths, dst, oldSnapshot);
+          List<String> rParams = constructDistCpWithSnapshotParams(srcPaths, dst, ".", oldSnapshot, conf, "-rdiff");
+          DistCp rDistcp = new DistCp(conf, options);
+          returnCode = rDistcp.run(rParams.toArray(new String[0]));
+          if (returnCode == 0) {
+            LOG.info("Target restored to previous state.  source: {} target: {} snapshot: {}. Reattempting to copy.",
+                srcPaths, dst, oldSnapshot);
+            dst.getFileSystem(conf).deleteSnapshot(dst, oldSnapshot);
+            dst.getFileSystem(conf).createSnapshot(dst, oldSnapshot);
+            returnCode = distcp.run(params.toArray(new String[0]));
+            if (returnCode == 0) {
+              return true;
+            } else {
+              LOG.error("Copy failed with after target restore for source: {} to target: {} snapshot1: {} snapshot2: "
+                  + "{} params: {}. Return code: {}", srcPaths, dst, oldSnapshot, newSnapshot, params, returnCode);
+              return false;
+            }
+          }
+        }
+      }
+    } catch (Exception e) {
+      throw new IOException("Cannot execute DistCp process: ", e);
+    } finally {
+      conf.setBoolean("mapred.mapper.new-api", false);
+    }
+    return false;
+  }
+
+  /**
+   * Checks wether reverse diff on the snapshot should be performed or not.
+   * @param p path where snapshot exists.
+   * @param conf the hive configuration.
+   * @param snapshot the name of snapshot.
+   * @param overwriteTarget whether overwriting target is enabled.
+   * @return true, if we need to do rdiff.
+   */
+  private static boolean shouldRdiff(Path p, Configuration conf, String snapshot, boolean overwriteTarget) throws Exception {
+    // Using the configuration in string form since hive-shims doesn't have a dependency on hive-common.
+    boolean targetModified = false;
+    try {
+      DistributedFileSystem dfs = (DistributedFileSystem) p.getFileSystem(conf);
+      // Check if the target got modified
+      SnapshotDiffReportListing snapshotDiff = dfs.getClient()
+          .getSnapshotDiffReportListing(p.toUri().getPath(), snapshot, "", DFSUtilClient.EMPTY_BYTES, -1);
+
+      // If there is even a single entry in these list, we can conclude that the target is modified, and we need to
+      // do a reverse diff.
+      if (snapshotDiff.getCreateList() != null && !snapshotDiff.getCreateList().isEmpty()) {
+        targetModified = true;
+      }
+      if (snapshotDiff.getModifyList() != null && !snapshotDiff.getModifyList().isEmpty()) {
+        targetModified = true;
+      }
+      if (snapshotDiff.getDeleteList() != null && !snapshotDiff.getDeleteList().isEmpty()) {
+        targetModified = true;
+      }
+    } catch (Exception e) {
+      LOG.error("Failed to compute snapshot diff for path: {} and snapshot: {}", p, snapshot);
+    }
+    if (targetModified && !overwriteTarget) {
+      throw new Exception(
+          "The target modified during snapshot based data copy for path: " + p + " and snapshot: " + snapshot);
+    }
+    return targetModified;
+  }
+
+  public boolean runDistCpWithSnapshotsAs(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst,
+      boolean overwriteTarget, UserGroupInformation proxyUser, Configuration conf) throws IOException {
+    try {
+      return proxyUser.doAs(new PrivilegedExceptionAction<Boolean>() {
+        @Override
+        public Boolean run() throws Exception {
+          return runDistCpWithSnapshots(oldSnapshot, newSnapshot, srcPaths, dst, overwriteTarget, conf);
+        }
+      });
+    } catch (InterruptedException e) {
+      throw new IOException(e);
     }
   }
 

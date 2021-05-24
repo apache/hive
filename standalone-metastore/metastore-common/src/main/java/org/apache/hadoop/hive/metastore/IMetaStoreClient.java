@@ -635,7 +635,7 @@ public interface IMetaStoreClient {
 
   /**
    * Get a table object in the default catalog.
-   *
+   * @deprecated use getTable(GetTableRequest getTableRequest)
    * @param dbName
    *          The database the table is located in.
    * @param tableName
@@ -648,12 +648,13 @@ public interface IMetaStoreClient {
    * @throws NoSuchObjectException
    *           In case the table wasn't found.
    */
+  @Deprecated
   Table getTable(String dbName, String tableName) throws MetaException,
       TException, NoSuchObjectException;
 
   /**
    * Get a table object in the default catalog.
-   *
+   * @deprecated use getTable(GetTableRequest getTableRequest)
    * @param dbName
    *          The database the table is located in.
    * @param tableName
@@ -669,11 +670,13 @@ public interface IMetaStoreClient {
    * @throws NoSuchObjectException
    *           In case the table wasn't found.
    */
+  @Deprecated
   Table getTable(String dbName, String tableName, boolean getColumnStats, String engine) throws MetaException,
           TException, NoSuchObjectException;
 
   /**
    * Get a table object.
+   * @deprecated use getTable(GetTableRequest getTableRequest)
    * @param catName catalog the table is in.
    * @param dbName database the table is in.
    * @param tableName table name.
@@ -681,10 +684,12 @@ public interface IMetaStoreClient {
    * @throws MetaException Something went wrong, usually in the RDBMS.
    * @throws TException general thrift error.
    */
+  @Deprecated
   Table getTable(String catName, String dbName, String tableName) throws MetaException, TException;
 
   /**
    * Get a table object.
+   * @deprecated use getTable(GetTableRequest getTableRequest)
    * @param catName catalog the table is in.
    * @param dbName database the table is in.
    * @param tableName table name.
@@ -693,11 +698,13 @@ public interface IMetaStoreClient {
    * @throws MetaException Something went wrong, usually in the RDBMS.
    * @throws TException general thrift error.
    */
+  @Deprecated
   Table getTable(String catName, String dbName, String tableName,
                         String validWriteIdList) throws TException;
 
   /**
    * Get a table object.
+   * @deprecated use getTable(GetTableRequest getTableRequest)
    * @param catName catalog the table is in.
    * @param dbName database the table is in.
    * @param tableName table name.
@@ -708,8 +715,23 @@ public interface IMetaStoreClient {
    * @throws MetaException Something went wrong, usually in the RDBMS.
    * @throws TException general thrift error.
    */
+  @Deprecated
   Table getTable(String catName, String dbName, String tableName,
                  String validWriteIdList, boolean getColumnStats, String engine) throws TException;
+
+  /**
+   *
+   * @param getTableRequest request object to query a table in HMS
+   * @return An object representing the table.
+   * @throws MetaException
+   *           Could not fetch the table
+   * @throws TException
+   *           A thrift communication error occurred
+   * @throws NoSuchObjectException
+   *           In case the table wasn't found.
+   */
+  Table getTable(GetTableRequest getTableRequest) throws MetaException, TException, NoSuchObjectException;
+
 
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
@@ -3156,14 +3178,19 @@ public interface IMetaStoreClient {
   long openTxn(String user, TxnType txnType) throws TException;
 
   /**
-   * Initiate a transaction at the target cluster.
-   * @param replPolicy The replication policy to uniquely identify the source cluster.
-   * @param srcTxnIds The list of transaction ids at the source cluster
-   * @param user The user who has fired the repl load command.
+   * Initiate a repl replayed or hive replication transaction (dump/load).
+   * @param replPolicy Contains replication policy to uniquely identify the source cluster in case of repl replayed txns
+   *                   or database under replication name for hive replication txns
+   * @param srcTxnIds The list of transaction ids at the source cluster in case of repl replayed transactions
+   *                 or null in case of hive replication transactions.
+   * @param user The user who has fired the command.
+   *
+   * @param txnType Type of transaction to open: REPL_CREATED for repl replayed transactions
+   *                                             DEFAULT for hive replication transactions.
    * @return transaction identifiers
    * @throws TException
    */
-  List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user) throws TException;
+  List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user, TxnType txnType) throws TException;
 
   /**
    * Initiate a batch of transactions.  It is not guaranteed that the
@@ -3206,14 +3233,18 @@ public interface IMetaStoreClient {
   /**
    * Rollback a transaction.  This will also unlock any locks associated with
    * this transaction.
-   * @param srcTxnid id of transaction at source while is rolled back and to be replicated.
-   * @param replPolicy the replication policy to identify the source cluster
+   * @param srcTxnid id of transaction at source while is rolled back and to be replicated
+   *                 or null in case of hive replication transactions
+   * @param replPolicy Contains replication policy to uniquely identify the source cluster in case of repl replayed txns
+   *                   or database under replication name for hive replication txns
+   * @param txnType Type of transaction to Rollback: REPL_CREATED for repl replayed transactions
+    *                                                DEFAULT for hive replication transactions.
    * @throws NoSuchTxnException if the requested transaction does not exist.
    * Note that this can result from the transaction having timed out and been
    * deleted.
    * @throws TException
    */
-  void replRollbackTxn(long srcTxnid, String replPolicy) throws NoSuchTxnException, TException;
+  void replRollbackTxn(long srcTxnid, String replPolicy, TxnType txnType) throws NoSuchTxnException, TException;
 
   /**
    * Commit a transaction.  This will also unlock any locks associated with

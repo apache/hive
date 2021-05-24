@@ -392,7 +392,8 @@ public class SqlFunctionConverter {
       registerFunction("istrue", SqlStdOperatorTable.IS_TRUE, hToken(HiveParser.Identifier, "istrue"));
       registerFunction("isnotfalse", SqlStdOperatorTable.IS_NOT_FALSE, hToken(HiveParser.Identifier, "isnotfalse"));
       registerFunction("isfalse", SqlStdOperatorTable.IS_FALSE, hToken(HiveParser.Identifier, "isfalse"));
-      registerFunction("<=>", SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, hToken(HiveParser.EQUAL_NS, "<=>"));
+      registerFunction("is_not_distinct_from", SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, hToken(HiveParser.EQUAL_NS, "<=>"));
+      registerDuplicateFunction("<=>", SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, hToken(HiveParser.EQUAL_NS, "<=>"));
       registerFunction("when", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
       registerDuplicateFunction("case", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
       registerFunction("coalesce", SqlStdOperatorTable.COALESCE, hToken(HiveParser.Identifier, "coalesce"));
@@ -566,12 +567,6 @@ public class SqlFunctionConverter {
       boolean deterministic, boolean runtimeConstant)
       throws CalciteSemanticException {
 
-    if (hiveUdfName != null && hiveUdfName.trim().equals("<=>")) {
-      // We can create Calcite IS_DISTINCT_FROM operator for this. But since our
-      // join reordering algo cant handle this anyway there is no advantage of
-      // this.So, bail out for now.
-      throw new CalciteSemanticException("<=> is not yet supported for cbo.", UnsupportedFeature.Less_than_equal_greater_than);
-    }
     SqlOperator calciteOp;
     CalciteUDFInfo uInf = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
     switch (hiveUdfName) {

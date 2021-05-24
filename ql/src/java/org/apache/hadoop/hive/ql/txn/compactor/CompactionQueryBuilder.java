@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ddl.table.create.show.ShowCreateTableOperation;
+import org.apache.hadoop.hive.ql.exec.DDLPlanUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -518,7 +519,7 @@ class CompactionQueryBuilder {
         .append(HiveStringUtils.escapeHiveCommand(serdeInfo.getSerializationLib())).append("'");
     // WITH SERDEPROPERTIES
     if (!serdeParams.isEmpty()) {
-      ShowCreateTableOperation.appendSerdeParams(query, serdeParams);
+      DDLPlanUtils.appendSerdeParams(query, serdeParams);
     }
     query.append("STORED AS INPUTFORMAT '")
         .append(HiveStringUtils.escapeHiveCommand(storageDescriptor.getInputFormat())).append("'")

@@ -52,6 +52,8 @@ public class InputFormatConfig {
   public static final String CATALOG = "iceberg.mr.catalog";
   public static final String HADOOP_CATALOG_WAREHOUSE_LOCATION = "iceberg.mr.catalog.hadoop.warehouse.location";
   public static final String CATALOG_LOADER_CLASS = "iceberg.mr.catalog.loader.class";
+  public static final String IS_CTAS_QUERY_TEMPLATE = "%s.iceberg.mr.is.ctas";
+  public static final String CTAS_TABLE_NAME_TEMPLATE = "%s.iceberg.mr.ctas.table.name";
   public static final String SELECTED_COLUMNS = "iceberg.mr.selected.columns";
   public static final String EXTERNAL_TABLE_PURGE = "external.table.purge";
 
@@ -61,6 +63,7 @@ public class InputFormatConfig {
   public static final String COMMIT_FILE_THREAD_POOL_SIZE = "iceberg.mr.commit.file.thread.pool.size";
   public static final int COMMIT_FILE_THREAD_POOL_SIZE_DEFAULT = 10;
   public static final String WRITE_TARGET_FILE_SIZE = "iceberg.mr.write.target.file.size";
+  public static final String IS_OVERWRITE = "iceberg.mr.write.is.overwrite";
 
   public static final String CASE_SENSITIVE = "iceberg.mr.case.sensitive";
   public static final boolean CASE_SENSITIVE_DEFAULT = true;

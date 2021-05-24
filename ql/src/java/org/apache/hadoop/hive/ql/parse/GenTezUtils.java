@@ -484,6 +484,12 @@ public class GenTezUtils {
     List<ExprNodeDesc> keys = work.getEventSourcePartKeyExprMap().get(sourceName);
     keys.add(eventDesc.getPartKey());
 
+    // store the partition pruning predicate in map-work, have at least a list of nulls if none applicable
+    if (!work.getEventSourcePredicateExprMap().containsKey(sourceName)) {
+      work.getEventSourcePredicateExprMap().put(sourceName, new LinkedList<ExprNodeDesc>());
+    }
+    List<ExprNodeDesc> predicates = work.getEventSourcePredicateExprMap().get(sourceName);
+    predicates.add(eventDesc.getPredicate());
   }
 
   /**
@@ -885,9 +891,7 @@ public class GenTezUtils {
         int result = defaultTinyBufferSize == -1 ?
             (int) Math.ceil((double) groupByOperator.getStatistics().getDataSize() / 1E6) :
             defaultTinyBufferSize;
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Buffer size for output from operator {} can be set to {}Mb", rsOp, result);
-        }
+        LOG.debug("Buffer size for output from operator {} can be set to {}Mb", rsOp, result);
         return result;
       }
     }

@@ -177,9 +177,8 @@ public interface RawStore extends Configurable {
   /**
    * Get all the catalogs.
    * @return list of names of all catalogs in the system
-   * @throws MetaException if something goes wrong, usually in reading from the database.
    */
-  List<String> getCatalogs() throws MetaException;
+  List<String> getCatalogs();
 
   /**
    * Drop a catalog.  The catalog must be empty.
@@ -341,6 +340,19 @@ public interface RawStore extends Configurable {
    */
   Table getTable(String catalogName, String dbName, String tableName,
                  String writeIdList) throws MetaException;
+
+  /**
+   * Get a table object.
+   * @param catalogName catalog the table is in.
+   * @param dbName database the table is in.
+   * @param tableName table name.
+   * @param writeIdList string format of valid writeId transaction list
+   * @return table object, or null if no such table exists (wow it would be nice if we either
+   * consistently returned null or consistently threw NoSuchObjectException).
+   * @throws MetaException something went wrong in the RDBMS
+   */
+  Table getTable(String catalogName, String dbName, String tableName,
+      String writeIdList, long tableId) throws MetaException;
 
   /**
    * Add a partition.

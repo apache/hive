@@ -381,6 +381,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("=", GenericUDFOPEqual.class);
     system.registerGenericUDF("==", GenericUDFOPEqual.class);
     system.registerGenericUDF("<=>", GenericUDFOPEqualNS.class);
+    system.registerGenericUDF("is_not_distinct_from", GenericUDFOPEqualNS.class);
     system.registerGenericUDF("!=", GenericUDFOPNotEqual.class);
     system.registerGenericUDF("<>", GenericUDFOPNotEqual.class);
     system.registerGenericUDF("<", GenericUDFOPLessThan.class);
@@ -1089,9 +1090,7 @@ public final class FunctionRegistry {
 
   public static GenericUDAFResolver getGenericUDAFResolver(String functionName)
       throws SemanticException {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Looking up GenericUDAF: " + functionName);
-    }
+    LOG.debug("Looking up GenericUDAF: {}", functionName);
     FunctionInfo finfo = getFunctionInfo(functionName);
     if (finfo == null) {
       return null;

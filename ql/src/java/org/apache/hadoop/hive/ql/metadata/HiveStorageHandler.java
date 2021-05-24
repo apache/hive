@@ -179,11 +179,13 @@ public interface HiveStorageHandler extends Configurable {
   /**
    * Test if the storage handler allows the push-down of join filter predicate to prune further the splits.
    *
+   * @param table The table to filter.
    * @param syntheticFilterPredicate Join filter predicate.
    * @return true if supports dynamic split pruning for the given predicate.
    */
 
-  default boolean addDynamicSplitPruningEdge(ExprNodeDesc syntheticFilterPredicate) {
+  default boolean addDynamicSplitPruningEdge(org.apache.hadoop.hive.ql.metadata.Table table,
+      ExprNodeDesc syntheticFilterPredicate) {
     return false;
   }
 
@@ -214,6 +216,21 @@ public interface HiveStorageHandler extends Configurable {
    * @return true if the storage handler can supply the basic statistics
    */
   default boolean canProvideBasicStatistics() {
+    return false;
+  }
+
+  /**
+   * Check if CTAS operations should behave in a direct-insert manner (i.e. no move task).
+   *
+   * If true, the compiler will not include the table creation task and move task into the execution plan.
+   * Instead, it's the responsibility of storage handler/serde to create the table during the compilation phase.
+   * Please note that the atomicity of the operation will suffer in this case, i.e. the created table might become
+   * exposed, depending on the implementation, before the CTAS operations finishes.
+   * Rollback (e.g. dropping the table) is also the responsibility of the storage handler in case of failures.
+   *
+   * @return whether direct insert CTAS is required
+   */
+  default boolean directInsertCTAS() {
     return false;
   }
 }

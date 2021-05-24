@@ -23,21 +23,31 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
@@ -53,8 +63,12 @@ import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.SerializationUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, HiveStorageHandler {
+  private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergStorageHandler.class);
+
   private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String TABLE_NAME_SEPARATOR = "..";
 
@@ -147,6 +161,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
+  public boolean directInsertCTAS() {
+    return true;
+  }
+
+  @Override
   public Configuration getConf() {
     return conf;
   }
@@ -205,6 +224,41 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       stats.put(StatsSetupConst.TOTAL_SIZE, "0");
     }
     return stats;
+  }
+
+  public boolean addDynamicSplitPruningEdge(org.apache.hadoop.hive.ql.metadata.Table table,
+      ExprNodeDesc syntheticFilterPredicate) {
+    try {
+      Collection<String> partitionColumns = ((HiveIcebergSerDe) table.getDeserializer()).partitionColumns();
+      if (partitionColumns.size() > 0) {
+        // The filter predicate contains ExprNodeDynamicListDesc object(s) for places where we will substitute
+        // dynamic values later during execution. For Example:
+        // GenericUDFIn(Column[ss_sold_date_sk], RS[5] <-- This is an ExprNodeDynamicListDesc)
+        //
+        // We would like to check if we will be able to convert these expressions to Iceberg filters when the
+        // actual values will be available, so in this check we replace the ExprNodeDynamicListDesc with dummy
+        // values and check whether the conversion will be possible or not.
+        ExprNodeDesc clone = syntheticFilterPredicate.clone();
+
+        String filterColumn = collectColumnAndReplaceDummyValues(clone, null);
+
+        // If the filter is for a partition column then it could be worthwhile to try dynamic partition pruning
+        if (partitionColumns.contains(filterColumn)) {
+          // Check if we can convert the expression to a valid Iceberg filter
+          SearchArgument sarg = ConvertAstToSearchArg.create(conf, (ExprNodeGenericFuncDesc) clone);
+          HiveIcebergFilterFactory.generateFilterExpression(sarg);
+          LOG.debug("Found Iceberg partition column to prune with predicate {}", syntheticFilterPredicate);
+          return true;
+        }
+      }
+    } catch (UnsupportedOperationException uoe) {
+      // If we can not convert the filter, we do not prune
+      LOG.debug("Unsupported predicate {}", syntheticFilterPredicate, uoe);
+    }
+
+    // There is nothing to prune, or we could not use the filter
+    LOG.debug("Not found Iceberg partition columns to prune with predicate {}", syntheticFilterPredicate);
+    return false;
   }
 
   /**
@@ -287,5 +341,79 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // save schema into table props as well to avoid repeatedly hitting the HMS during serde initializations
     // this is an exception to the interface documentation, but it's a safe operation to add this property
     props.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
+  }
+
+  /**
+   * Recursively replaces the ExprNodeDynamicListDesc nodes by a dummy ExprNodeConstantDesc so we can test if we can
+   * convert the predicate to an Iceberg predicate when pruning the partitions later. Also collects the column names
+   * in the filter.
+   * <p>
+   * Please make sure that it is ok to change the input node (clone if needed)
+   * @param node The node we are traversing
+   * @param foundColumn The column we already found
+   */
+  private String collectColumnAndReplaceDummyValues(ExprNodeDesc node, String foundColumn) {
+    String column = foundColumn;
+    List<ExprNodeDesc> children = node.getChildren();
+    if (children != null && !children.isEmpty()) {
+      ListIterator<ExprNodeDesc> iterator = children.listIterator();
+      while (iterator.hasNext()) {
+        ExprNodeDesc child = iterator.next();
+        if (child instanceof ExprNodeDynamicListDesc) {
+          Object dummy;
+          switch (((PrimitiveTypeInfo) child.getTypeInfo()).getPrimitiveCategory()) {
+            case INT:
+            case SHORT:
+              dummy = 1;
+              break;
+            case LONG:
+              dummy = 1L;
+              break;
+            case TIMESTAMP:
+            case TIMESTAMPLOCALTZ:
+              dummy = new Timestamp();
+              break;
+            case CHAR:
+            case VARCHAR:
+            case STRING:
+              dummy = "1";
+              break;
+            case DOUBLE:
+            case FLOAT:
+            case DECIMAL:
+              dummy = 1.1;
+              break;
+            case DATE:
+              dummy = new Date();
+              break;
+            case BOOLEAN:
+              dummy = true;
+              break;
+            default:
+              throw new UnsupportedOperationException("Not supported primitive type in partition pruning: " +
+                  child.getTypeInfo());
+          }
+
+          iterator.set(new ExprNodeConstantDesc(child.getTypeInfo(), dummy));
+        } else {
+          String newColumn;
+          if (child instanceof ExprNodeColumnDesc) {
+            newColumn = ((ExprNodeColumnDesc) child).getColumn();
+          } else {
+            newColumn = collectColumnAndReplaceDummyValues(child, column);
+          }
+
+          if (column != null && newColumn != null && !newColumn.equals(column)) {
+            throw new UnsupportedOperationException("Partition pruning does not support filtering for more columns");
+          }
+
+          if (column == null) {
+            column = newColumn;
+          }
+        }
+      }
+    }
+
+    return column;
   }
 }

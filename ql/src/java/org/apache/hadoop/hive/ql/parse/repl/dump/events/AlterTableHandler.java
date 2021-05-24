@@ -85,8 +85,8 @@ class AlterTableHandler extends AbstractEventHandler<AlterTableMessage> {
 
   private Scenario scenarioType(org.apache.hadoop.hive.metastore.api.Table before,
       org.apache.hadoop.hive.metastore.api.Table after) {
-    if (before.getDbName().equals(after.getDbName())
-        && before.getTableName().equals(after.getTableName())) {
+    if (before.getDbName().equalsIgnoreCase(after.getDbName())
+        && before.getTableName().equalsIgnoreCase(after.getTableName())) {
       return isTruncateOp ? Scenario.TRUNCATE : Scenario.ALTER;
     } else {
       return Scenario.RENAME;

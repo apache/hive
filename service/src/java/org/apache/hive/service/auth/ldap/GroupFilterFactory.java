@@ -143,10 +143,7 @@ public final class GroupFilterFactory implements FilterFactory {
           }
         } catch (NamingException e) {
           LOG.warn("Cannot match user and group", e);
-          if (LOG.isDebugEnabled()) {
-            String msg = String.format("Cannot match user '%s' and group '%s'", user, groupDn);
-            LOG.debug(msg, e);
-          }
+          LOG.debug("Cannot match user '{}' and group '{}'", user, groupDn, e);
         }
       }
       throw new AuthenticationException(String.format(

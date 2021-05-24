@@ -155,9 +155,7 @@ public class RedundantDynamicPruningConditionsRemoval extends Transform {
                 break;
               }
             }
-            if (LOG.isInfoEnabled()) {
-              LOG.info("Dynamic pruning condition removed: " + child);
-            }
+            LOG.info("Dynamic pruning condition removed: " + child);
           }
         }
       }

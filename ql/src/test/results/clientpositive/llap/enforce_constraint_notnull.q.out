@@ -3450,34 +3450,34 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_uami_n1
-                  filterExpr: ((de) IN (109.23, 119.23) and enforce_constraint(vc is not null)) (type: boolean)
+                  filterExpr: (de) IN (109.23, 119.23) (type: boolean)
                   Statistics: Num rows: 1002 Data size: 225450 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((de) IN (109.23, 119.23) and enforce_constraint(vc is not null)) (type: boolean)
-                    Statistics: Num rows: 3 Data size: 675 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: (de) IN (109.23, 119.23) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 1350 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), i (type: int), vc (type: varchar(128))
                       outputColumnNames: _col0, _col1, _col3
-                      Statistics: Num rows: 3 Data size: 567 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 6 Data size: 1134 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                        Statistics: Num rows: 3 Data size: 567 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: int), _col3 (type: varchar(128))
+                        Statistics: Num rows: 6 Data size: 1806 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int), 3.14 (type: decimal(5,2)), _col3 (type: varchar(128))
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), 3.14 (type: decimal(5,2)), VALUE._col1 (type: varchar(128))
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), VALUE._col1 (type: decimal(5,2)), VALUE._col2 (type: varchar(128))
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 3 Data size: 567 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 6 Data size: 1806 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 3 Data size: 903 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 6 Data size: 1806 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -3549,34 +3549,34 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_uami_n1
-                  filterExpr: ((de = 3.14) and enforce_constraint((i is not null and vc is not null))) (type: boolean)
+                  filterExpr: (de = 3.14) (type: boolean)
                   Statistics: Num rows: 1002 Data size: 225450 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((de = 3.14) and enforce_constraint((i is not null and vc is not null))) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 225 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: (de = 3.14) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 675 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), i (type: int), vc (type: varchar(128))
                       outputColumnNames: _col0, _col1, _col3
-                      Statistics: Num rows: 1 Data size: 189 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 567 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                        Statistics: Num rows: 1 Data size: 189 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: int), _col3 (type: varchar(128))
+                        Statistics: Num rows: 3 Data size: 903 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int), 3.14 (type: decimal(5,2)), _col3 (type: varchar(128))
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), 3.14 (type: decimal(5,2)), VALUE._col1 (type: varchar(128))
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), VALUE._col1 (type: decimal(5,2)), VALUE._col2 (type: varchar(128))
                 outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 189 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3 Data size: 903 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 301 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3 Data size: 903 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -4522,7 +4522,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: int), _col3 (type: string)
+                        value expressions: _col1 (type: int), '1' (type: string), _col3 (type: string)
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -4593,24 +4593,18 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), '1' (type: string), VALUE._col1 (type: string)
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: enforce_constraint(_col1 is not null) (type: boolean)
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col1 (type: int), '1' (type: string), _col3 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                          name: default.masking_test_n4
-                      Write Type: UPDATE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.masking_test_n4
+                  Write Type: UPDATE
 
   Stage: Stage-4
     Dependency Collection
@@ -4805,7 +4799,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: int), _col3 (type: string)
+                        value expressions: _col1 (type: int), '1' (type: string), _col3 (type: string)
                   Filter Operator
                     predicate: (_col5 = _col1) (type: boolean)
                     Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
@@ -4897,24 +4891,18 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), '1' (type: string), VALUE._col1 (type: string)
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: enforce_constraint(_col1 is not null) (type: boolean)
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col1 (type: int), '1' (type: string), _col3 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                          name: default.masking_test_n4
-                      Write Type: UPDATE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.masking_test_n4
+                  Write Type: UPDATE
         Reducer 7 
             Execution mode: llap
             Reduce Operator Tree:
@@ -5411,7 +5399,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                         Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: int), _col3 (type: string)
+                        value expressions: _col1 (type: int), '1' (type: string), _col3 (type: string)
                   Filter Operator
                     predicate: (_col5 = _col1) (type: boolean)
                     Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
@@ -5487,24 +5475,18 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), '1' (type: string), VALUE._col1 (type: string)
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                Filter Operator
-                  predicate: enforce_constraint(_col1 is not null) (type: boolean)
+                File Output Operator
+                  compressed: false
                   Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col1 (type: int), '1' (type: string), _col3 (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                          name: default.masking_test_n4
-                      Write Type: UPDATE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.masking_test_n4
+                  Write Type: UPDATE
         Reducer 6 
             Execution mode: llap
             Reduce Operator Tree:

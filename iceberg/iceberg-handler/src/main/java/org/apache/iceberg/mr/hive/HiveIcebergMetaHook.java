@@ -22,6 +22,7 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
@@ -53,6 +54,7 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableMetadataParser;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.UpdateProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveSchemaUtil;
@@ -61,6 +63,7 @@ import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
+import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.slf4j.Logger;
@@ -238,9 +241,9 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   }
 
   @Override
-  public void commitAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable,
+  public void commitAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context,
       PartitionSpecProxy partitionSpecProxy) throws MetaException {
-    super.commitAlterTable(hmsTable, partitionSpecProxy);
+    super.commitAlterTable(hmsTable, context, partitionSpecProxy);
     if (canMigrateHiveTable) {
       catalogProperties = getCatalogProperties(hmsTable);
       catalogProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(preAlterTableProperties.schema));
@@ -251,6 +254,21 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
       }
       HiveTableUtil.importFiles(preAlterTableProperties.tableLocation, preAlterTableProperties.format,
           partitionSpecProxy, preAlterTableProperties.partitionKeys, catalogProperties, conf);
+    } else {
+      Map<String, String> contextProperties = context.getProperties();
+      if (contextProperties.containsKey(ALTER_TABLE_OPERATION_TYPE) &&
+          allowedAlterTypes.contains(contextProperties.get(ALTER_TABLE_OPERATION_TYPE))) {
+        Map<String, String> hmsTableParameters = hmsTable.getParameters();
+        Splitter splitter = Splitter.on(PROPERTIES_SEPARATOR);
+        UpdateProperties icebergUpdateProperties = icebergTable.updateProperties();
+        if (contextProperties.containsKey(SET_PROPERTIES)) {
+          splitter.splitToList(contextProperties.get(SET_PROPERTIES))
+              .forEach(k -> icebergUpdateProperties.set(k, hmsTableParameters.get(k)));
+        } else if (contextProperties.containsKey(UNSET_PROPERTIES)) {
+          splitter.splitToList(contextProperties.get(UNSET_PROPERTIES)).forEach(icebergUpdateProperties::remove);
+        }
+        icebergUpdateProperties.commit();
+      }
     }
   }
 
@@ -279,6 +297,9 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
           "Table location not set");
     }
 
+    // Remove null values from hms table properties
+    hmsTable.getParameters().entrySet().removeIf(e -> e.getKey() == null || e.getValue() == null);
+
     // Remove creation related properties
     PARAMETERS_TO_REMOVE.forEach(hmsTable.getParameters()::remove);
   }
@@ -297,10 +318,10 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   private static Properties getCatalogProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     Properties properties = new Properties();
 
-    hmsTable.getParameters().forEach((key, value) -> {
+    hmsTable.getParameters().entrySet().stream().filter(e -> e.getKey() != null && e.getValue() != null).forEach(e -> {
       // translate key names between HMS and Iceberg where needed
-      String icebergKey = HiveTableOperations.translateToIcebergProp(key);
-      properties.put(icebergKey, value);
+      String icebergKey = HiveTableOperations.translateToIcebergProp(e.getKey());
+      properties.put(icebergKey, e.getValue());
     });
 
     if (properties.get(Catalogs.LOCATION) == null &&
@@ -367,7 +388,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   public void commitInsertTable(org.apache.hadoop.hive.metastore.api.Table table, boolean overwrite)
       throws MetaException {
     String tableName = TableIdentifier.of(table.getDbName(), table.getTableName()).toString();
-    JobContext jobContext = getJobContextForCommitOrAbort(tableName);
+    JobContext jobContext = getJobContextForCommitOrAbort(tableName, overwrite);
     boolean failure = false;
     try {
       OutputCommitter committer = new HiveIcebergOutputCommitter();
@@ -389,7 +410,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   public void rollbackInsertTable(org.apache.hadoop.hive.metastore.api.Table table, boolean overwrite)
       throws MetaException {
     String tableName = TableIdentifier.of(table.getDbName(), table.getTableName()).toString();
-    JobContext jobContext = getJobContextForCommitOrAbort(tableName);
+    JobContext jobContext = getJobContextForCommitOrAbort(tableName, overwrite);
     OutputCommitter committer = new HiveIcebergOutputCommitter();
     try {
       LOG.info("rollbackInsertTable: Aborting job for jobID: {} and table: {}", jobContext.getJobID(), tableName);
@@ -410,11 +431,10 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
     conf.unset(InputFormatConfig.OUTPUT_TABLES);
   }
 
-  private JobContext getJobContextForCommitOrAbort(String tableName) {
+  private JobContext getJobContextForCommitOrAbort(String tableName, boolean overwrite) {
     JobConf jobConf = new JobConf(conf);
     JobID jobID = JobID.forName(jobConf.get(TezTask.HIVE_TEZ_COMMIT_JOB_ID_PREFIX + tableName));
-    int numTasks = conf.getInt(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX + tableName, -1);
-    jobConf.setNumReduceTasks(numTasks);
+    jobConf.setBoolean(InputFormatConfig.IS_OVERWRITE, overwrite);
 
     // we should only commit this current table because
     // for multi-table inserts, this hook method will be called sequentially for each target table

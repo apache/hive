@@ -108,9 +108,8 @@ public final class LlapHiveUtils {
    */
   public static MapWork findMapWork(JobConf job) {
     String inputName = job.get(Utilities.INPUT_NAME, null);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Initializing for input " + inputName);
-    }
+    LOG.debug("Initializing for input {}", inputName);
+
     String prefixes = job.get(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES);
     if (prefixes != null && !StringUtils.isBlank(prefixes)) {
       // Currently SMB is broken, so we cannot check if it's  compatible with IO elevator.

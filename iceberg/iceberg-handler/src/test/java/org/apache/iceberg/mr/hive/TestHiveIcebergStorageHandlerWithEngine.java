@@ -31,13 +31,16 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
@@ -151,7 +154,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   public TemporaryFolder temp = new TemporaryFolder();
 
   @Rule
-  public Timeout timeout = new Timeout(200_000, TimeUnit.MILLISECONDS);
+  public Timeout timeout = new Timeout(400_000, TimeUnit.MILLISECONDS);
 
   @BeforeClass
   public static void beforeClass() {
@@ -293,7 +296,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     Assert.assertArrayEquals(new Object[] {102L, 1L, 33.33d}, rows.get(2));
   }
 
-  @Test(timeout = 100000)
+  @Test
   public void testJoinTablesSupportedTypes() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
@@ -316,7 +319,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     }
   }
 
-  @Test(timeout = 100000)
+  @Test
   public void testSelectDistinctFromTable() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
@@ -339,6 +342,59 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   }
 
   @Test
+  public void testPartitionPruning() throws IOException {
+    Schema salesSchema = new Schema(
+        required(1, "ss_item_sk", Types.IntegerType.get()),
+        required(2, "ss_sold_date_sk", Types.IntegerType.get()));
+
+    PartitionSpec salesSpec =
+        PartitionSpec.builderFor(salesSchema).identity("ss_sold_date_sk").build();
+
+    Schema dimSchema = new Schema(
+        required(1, "d_date_sk", Types.IntegerType.get()),
+        required(2, "d_moy", Types.IntegerType.get()));
+
+    List<Record> salesRecords = TestHelper.RecordsBuilder.newInstance(salesSchema)
+                                    .add(51, 5)
+                                    .add(61, 6)
+                                    .add(71, 7)
+                                    .add(81, 8)
+                                    .add(91, 9)
+                                    .build();
+    List<Record> dimRecords = TestHelper.RecordsBuilder.newInstance(salesSchema)
+                                    .add(1, 10)
+                                    .add(2, 20)
+                                    .add(3, 30)
+                                    .add(4, 40)
+                                    .add(5, 50)
+                                    .build();
+
+    Table salesTable = testTables.createTable(shell, "x1_store_sales", salesSchema, salesSpec, fileFormat, null);
+
+    PartitionKey partitionKey = new PartitionKey(salesSpec, salesSchema);
+    for (Record r : salesRecords) {
+      partitionKey.partition(r);
+      testTables.appendIcebergTable(shell.getHiveConf(), salesTable, fileFormat, partitionKey, ImmutableList.of(r));
+    }
+    testTables.createTable(shell, "x1_date_dim", dimSchema, fileFormat, dimRecords);
+
+    String query = "select s.ss_item_sk from x1_store_sales s, x1_date_dim d " +
+                       "where s.ss_sold_date_sk=d.d_date_sk*2 and d.d_moy=30";
+
+    // Check the query results
+    List<Object[]> rows = shell.executeStatement(query);
+
+    Assert.assertEquals(1, rows.size());
+    Assert.assertArrayEquals(new Object[] {61}, rows.get(0));
+
+    // Check if Dynamic Partitioning is used
+    Assert.assertTrue(shell.executeStatement("explain " + query).stream()
+                          .filter(a -> ((String) a[0]).contains("Dynamic Partitioning Event Operator"))
+                          .findAny()
+                          .isPresent());
+  }
+
+  @Test
   public void testInsert() throws IOException {
     Table table = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, ImmutableList.of());
@@ -357,7 +413,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     HiveIcebergTestUtils.validateData(table, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 0);
   }
 
-  @Test(timeout = 100000)
+  @Test
   public void testInsertSupportedTypes() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
@@ -396,6 +452,119 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     List<Record> records = new ArrayList<>(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     records.addAll(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     HiveIcebergTestUtils.validateData(table, records, 0);
+  }
+
+  @Test
+  public void testInsertOverwriteNonPartitionedTable() throws IOException {
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, ImmutableList.of());
+
+    // IOW overwrites the whole table (empty target table)
+    testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    shell.executeStatement("INSERT OVERWRITE TABLE target SELECT * FROM source");
+
+    HiveIcebergTestUtils.validateData(table, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 0);
+
+    // IOW overwrites the whole table (non-empty target table)
+    List<Record> newRecords = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(0L, "Mike", "Taylor")
+        .add(1L, "Christy", "Hubert")
+        .build();
+    shell.executeStatement(testTables.getInsertQuery(newRecords, target, true));
+
+    HiveIcebergTestUtils.validateData(table, newRecords, 0);
+
+    // IOW empty result set -> clears the target table
+    shell.executeStatement("INSERT OVERWRITE TABLE target SELECT * FROM source WHERE FALSE");
+
+    HiveIcebergTestUtils.validateData(table, ImmutableList.of(), 0);
+  }
+
+  @Test
+  public void testInsertOverwritePartitionedTable() throws IOException {
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .identity("last_name").build();
+    Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, ImmutableList.of());
+
+    // IOW into empty target table -> whole source result set is inserted
+    List<Record> expected = new ArrayList<>(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    expected.add(TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(8L, "Sue", "Green").build().get(0)); // add one more to 'Green' so we have a partition w/ multiple records
+    shell.executeStatement(testTables.getInsertQuery(expected, target, true));
+
+    HiveIcebergTestUtils.validateData(table, expected, 0);
+
+    // IOW into non-empty target table -> only the affected partitions are overwritten
+    List<Record> newRecords = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(0L, "Mike", "Brown") // overwritten
+        .add(1L, "Christy", "Green") // overwritten (partition has this single record now)
+        .add(3L, "Bill", "Purple") // appended (new partition)
+        .build();
+    shell.executeStatement(testTables.getInsertQuery(newRecords, target, true));
+
+    expected = new ArrayList<>(newRecords);
+    expected.add(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.get(2)); // existing, untouched partition ('Pink')
+    HiveIcebergTestUtils.validateData(table, expected, 0);
+
+    // IOW empty source result set -> has no effect on partitioned table
+    shell.executeStatement("INSERT OVERWRITE TABLE target SELECT * FROM target WHERE FALSE");
+
+    HiveIcebergTestUtils.validateData(table, expected, 0);
+  }
+
+  @Test
+  public void testCTASFromHiveTable() {
+    Assume.assumeTrue("CTAS target table is supported fully only for HiveCatalog tables." +
+        "For other catalog types, the HiveIcebergSerDe will create the target Iceberg table in the correct catalog " +
+        "using the Catalogs.createTable function, but will not register the table in HMS since those catalogs do not " +
+        "use HiveTableOperations. This means that even though the CTAS query succeeds, the user would not be able to " +
+        "query this new table from Hive, since HMS does not know about it.",
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
+    shell.executeStatement("INSERT INTO source VALUES (1, 'Mike', 'HR'), (2, 'Linda', 'Finance')");
+
+    shell.executeStatement(String.format(
+        "CREATE TABLE target STORED BY '%s' %s TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
+        HiveIcebergStorageHandler.class.getName(),
+        testTables.locationForCreateTableSQL(TableIdentifier.of("default", "target")),
+        TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
+
+    List<Object[]> objects = shell.executeStatement("SELECT * FROM target ORDER BY id");
+    Assert.assertEquals(2, objects.size());
+    Assert.assertArrayEquals(new Object[]{1L, "Mike", "HR"}, objects.get(0));
+    Assert.assertArrayEquals(new Object[]{2L, "Linda", "Finance"}, objects.get(1));
+  }
+
+  @Test
+  public void testCTASFailureRollback() throws IOException {
+    Assume.assumeTrue("CTAS target table is supported fully only for HiveCatalog tables." +
+        "For other catalog types, the HiveIcebergSerDe will create the target Iceberg table in the correct catalog " +
+        "using the Catalogs.createTable function, but will not register the table in HMS since those catalogs do not " +
+        "use HiveTableOperations. This means that even though the CTAS query succeeds, the user would not be able to " +
+        "query this new table from Hive, since HMS does not know about it.",
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    // force an execution error by passing in a committer class that Tez won't be able to load
+    shell.setHiveSessionValue("hive.tez.mapreduce.output.committer.class", "org.apache.NotExistingClass");
+
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+
+    try {
+      shell.executeStatement(String.format("CREATE TABLE target STORED BY '%s' AS SELECT * FROM source",
+          HiveIcebergStorageHandler.class.getName()));
+    } catch (Exception e) {
+      // expected error
+    }
+
+    // CTAS table should have been dropped by the lifecycle hook
+    Assert.assertThrows(NoSuchTableException.class, () -> testTables.loadTable(target));
   }
 
   /**
@@ -716,6 +885,22 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     Assert.assertEquals(1, results.size());
     Assert.assertEquals(10L, results.get(0)[0]);
     Assert.assertEquals("Linda", results.get(0)[1]);
+  }
+
+  @Test
+  public void testInsertEmptyResultSet() throws IOException {
+    Table source = testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, ImmutableList.of());
+    Table target = testTables.createTable(shell, "target", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, ImmutableList.of());
+
+    shell.executeStatement("INSERT INTO target SELECT * FROM source");
+    HiveIcebergTestUtils.validateData(target, ImmutableList.of(), 0);
+
+    testTables.appendIcebergTable(shell.getHiveConf(), source, fileFormat, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    shell.executeStatement("INSERT INTO target SELECT * FROM source WHERE first_name = 'Nobody'");
+    HiveIcebergTestUtils.validateData(target, ImmutableList.of(), 0);
   }
 
   @Test

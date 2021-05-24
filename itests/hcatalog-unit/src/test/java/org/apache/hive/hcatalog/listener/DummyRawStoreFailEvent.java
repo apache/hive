@@ -192,7 +192,7 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> getCatalogs() throws MetaException {
+  public List<String> getCatalogs() {
     return objectStore.getCatalogs();
   }
 
@@ -320,6 +320,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public Table getTable(String catName, String dbName, String tableName,
                         String writeIdList) throws MetaException {
     return objectStore.getTable(catName, dbName, tableName, writeIdList);
+  }
+
+  @Override
+  public Table getTable(String catalogName, String dbName, String tableName, String writeIdList, long tableId)
+      throws MetaException {
+    return objectStore.getTable(catalogName, dbName, tableName, writeIdList, tableId);
   }
 
   @Override

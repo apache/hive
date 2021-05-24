@@ -454,6 +454,10 @@ public class MetastoreConf {
         "hive.metastore.acidmetrics.check.interval", 300,
         TimeUnit.SECONDS,
         "Time in seconds between acid related metric collection runs."),
+    METASTORE_ACIDMETRICS_TABLES_WITH_ABORTED_TXNS_THRESHOLD("metastore.acidmetrics.table.aborted.txns.threshold",
+        "hive.metastore.acidmetrics.table.aborted.txns.threshold", 1500,
+        "The acid metrics system will collect the number of tables which have a large number of aborted transactions." +
+            "This parameter controls the minimum number of aborted transaction required so that a table will be counted."),
     COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", false,
         "Whether to run the initiator and cleaner threads on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
@@ -1247,7 +1251,7 @@ public class MetastoreConf {
             " If org.apache.hive.hcatalog.listener.DbNotificationListener is configured along with other transactional event" +
             " listener implementation classes, make sure org.apache.hive.hcatalog.listener.DbNotificationListener is placed at" +
             " the end of the list."),
-    TRUNCATE_ACID_USE_BASE("metastore.acid.truncate.usebase", "hive.metastore.acid.truncate.usebase", true,
+    TRUNCATE_ACID_USE_BASE("metastore.acid.truncate.usebase", "hive.metastore.acid.truncate.usebase", false,
         "If enabled, truncate for transactional tables will not delete the data directories,\n" +
         "rather create a new base directory with no datafiles."),
     TRY_DIRECT_SQL("metastore.try.direct.sql", "hive.metastore.try.direct.sql", true,

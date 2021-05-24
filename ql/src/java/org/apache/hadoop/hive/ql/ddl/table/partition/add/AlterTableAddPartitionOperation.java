@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table.partition.add;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -172,12 +173,12 @@ public class AlterTableAddPartitionOperation extends DDLOperation<AlterTableAddP
     List<Partition> partitionsToAdd = new ArrayList<>();
     List<Partition> partitionsToAlter = new ArrayList<>();
     List<String> partitionNames = new ArrayList<>();
-    for (Partition partition : partitions){
+    Map<String, String> dbParams = context.getDb().getDatabase(desc.getDbName()).getParameters();
+    for (Partition partition : partitions) {
       partitionNames.add(getPartitionName(table, partition));
       try {
         Partition p = context.getDb().getPartition(table, desc.getDbName(), desc.getTableName(), partition.getValues());
-        if (desc.getReplicationSpec().allowReplacementInto(p.getParameters())){
-          ReplicationSpec.copyLastReplId(p.getParameters(), partition.getParameters());
+        if (desc.getReplicationSpec().allowReplacementInto(dbParams)) {
           partitionsToAlter.add(partition);
         } // else ptn already exists, but we do nothing with it.
       } catch (HiveException e){

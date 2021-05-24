@@ -4918,10 +4918,10 @@ public final class Utilities {
    * Logs the class paths of the job class loader and the thread context class loader to the passed logger.
    * Checks both loaders if getURLs method is available; if not, prints a message about this (instead of the class path)
    *
-   * Note: all messages will always be logged with INFO log level.
+   * Note: all messages will always be logged with DEBUG log level.
    */
   public static void tryLoggingClassPaths(JobConf job, Logger logger) {
-    if (logger != null && logger.isInfoEnabled()) {
+    if (logger != null && logger.isDebugEnabled()) {
       tryToLogClassPath("conf", job.getClassLoader(), logger);
       tryToLogClassPath("thread", Thread.currentThread().getContextClassLoader(), logger);
     }
@@ -4929,9 +4929,9 @@ public final class Utilities {
 
   private static void tryToLogClassPath(String prefix, ClassLoader loader, Logger logger) {
     if(loader instanceof URLClassLoader) {
-      logger.info("{} class path = {}", prefix, Arrays.asList(((URLClassLoader) loader).getURLs()).toString());
+      logger.debug("{} class path = {}", prefix, Arrays.asList(((URLClassLoader) loader).getURLs()).toString());
     } else {
-      logger.info("{} class path = unavailable for {}", prefix,
+      logger.debug("{} class path = unavailable for {}", prefix,
           loader == null ? "null" : loader.getClass().getSimpleName());
     }
   }
