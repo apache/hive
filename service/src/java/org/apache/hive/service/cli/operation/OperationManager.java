@@ -51,12 +51,9 @@ import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.OperationState;
 import org.apache.hive.service.cli.OperationStatus;
-import org.apache.hive.service.cli.ProgressMonitorStatusMapper;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
-import org.apache.hive.service.cli.SparkProgressMonitorStatusMapper;
 import org.apache.hive.service.cli.TableSchema;
-import org.apache.hive.service.cli.TezProgressMonitorStatusMapper;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -473,19 +470,4 @@ public class OperationManager extends AbstractService {
     }
     return false;
   }
-
-  public ProgressMonitorStatusMapper getProgressMonitorStatusMapper(OperationHandle operationHandle)
-      throws HiveSQLException {
-    Operation operation = getOperation(operationHandle);
-    String engine = HiveConf.getVar(operation.queryState.getConf(),
-        HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
-    ProgressMonitorStatusMapper mapper = ProgressMonitorStatusMapper.DEFAULT;
-    if ("tez".equals(engine)) {
-      mapper = new TezProgressMonitorStatusMapper();
-    } else if ("spark".equals(engine)) {
-      mapper = new SparkProgressMonitorStatusMapper();
-    }
-    return mapper;
-  }
-
 }
