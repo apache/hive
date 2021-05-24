@@ -17,24 +17,20 @@
  */
 package org.apache.hadoop.hive.llap.metrics;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.util.Optional;
 import java.util.UUID;
+
+import org.apache.hadoop.hive.common.ServerUtils;
 
 /**
  * Utility methods for metrics system.
  */
 public class MetricsUtils {
-  private static final String LOCALHOST = "localhost";
   public static final String METRICS_PROCESS_NAME = "LlapDaemon";
 
 
   public static String getHostName() {
-    try {
-      return InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      return LOCALHOST;
-    }
+    return ServerUtils.hostname(Optional.of("localhost"));
   }
 
   public static String getUUID() {

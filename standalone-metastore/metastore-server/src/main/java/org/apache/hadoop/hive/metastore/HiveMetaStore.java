@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
 import org.apache.hadoop.hive.metastore.utils.CommonCliOptions;
+import org.apache.hadoop.hive.metastore.utils.InetUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.LogUtils;
 import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
@@ -40,7 +41,6 @@ import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ShutdownHookManager;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.thrift.TProcessor;
@@ -59,13 +59,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -580,7 +580,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     if (msHost != null && !msHost.trim().isEmpty()) {
       return msHost.trim();
     } else {
-      return InetAddress.getLocalHost().getHostName();
+      return InetUtils.hostname();
     }
   }
 
@@ -815,10 +815,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    * @return hostname
    */
   private static String getHostname() {
-    try {
-      return "" + InetAddress.getLocalHost();
-    } catch(UnknownHostException uhe) {
-      return "" + uhe;
-    }
+    return InetUtils.hostname(Optional.of("unknown"));
   }
 }

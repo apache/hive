@@ -22,8 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 public class JavaUtils {
   public static final Logger LOG = LoggerFactory.getLogger(JavaUtils.class);
@@ -98,18 +96,6 @@ public class JavaUtils {
       return theClass.newInstance();
     } catch (InstantiationException|IllegalAccessException e) {
       throw new RuntimeException("Unable to instantiate " + theClass.getName(), e);
-    }
-  }
-
-  /**
-   * @return name of current host
-   */
-  public static String hostname() {
-    try {
-      return InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      LOG.error("Unable to resolve my host name " + e.getMessage());
-      throw new RuntimeException(e);
     }
   }
 

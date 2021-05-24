@@ -24,7 +24,6 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
@@ -237,6 +236,7 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.InetUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -290,21 +290,9 @@ public class ObjectStore implements RawStore, Configurable {
   public static final String TRUSTSTORE_PASSWORD_KEY = "javax.net.ssl.trustStorePassword";
   public static final String TRUSTSTORE_TYPE_KEY = "javax.net.ssl.trustStoreType";
 
-  private static final String HOSTNAME;
-  private static final String USER;
+  private static final String HOSTNAME = InetUtils.hostname(Optional.of("UNKNOWN"));
+  private static final String USER = Optional.ofNullable(System.getenv("USER")).orElse("UNKNOWN");
   private static final String JDO_PARAM = ":param";
-  static {
-    String hostname = "UNKNOWN";
-    try {
-      InetAddress clientAddr = InetAddress.getLocalHost();
-      hostname = clientAddr.getHostAddress();
-    } catch (IOException e) {
-    }
-    HOSTNAME = hostname;
-    String user = System.getenv("USER");
-    USER = org.apache.commons.lang3.StringUtils.defaultString(user, "UNKNOWN");
-  }
-
 
   private boolean isInitialized = false;
   private PersistenceManager pm = null;

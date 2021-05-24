@@ -19,9 +19,8 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.utils.InetUtils;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -60,11 +59,7 @@ public class LockRequestBuilder {
       throw new RuntimeException("Cannot build a lock without giving a user");
     }
     trie.addLocksToRequest(req);
-    try {
-      req.setHostname(InetAddress.getLocalHost().getHostName());
-    } catch (UnknownHostException e) {
-      throw new RuntimeException("Unable to determine our local host!");
-    }
+    req.setHostname(InetUtils.hostname());
     return req;
   }
 

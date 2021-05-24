@@ -28,9 +28,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.net.InetAddress;
 import java.net.URI;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -44,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -73,6 +72,7 @@ import org.apache.hadoop.hive.metastore.utils.FilterUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.metastore.utils.InetUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
@@ -184,11 +184,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if ((MetastoreConf.get(conf, "hive.metastore.client.capabilities")) != null) {
       String[] capabilities = MetastoreConf.get(conf, "hive.metastore.client.capabilities").split(",");
       setProcessorCapabilities(capabilities);
-      String hostName = "unknown";
-      try {
-        hostName = InetAddress.getLocalHost().getCanonicalHostName();
-      } catch (UnknownHostException ue) {
-      }
+      String hostName = InetUtils.canonicalHostName(Optional.of("unknown"));
       setProcessorIdentifier("HMSClient-" + "@" + hostName);
     }
 
@@ -3836,13 +3832,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   private OpenTxnsResponse openTxnsIntr(String user, int numTxns, String replPolicy,
                                         List<Long> srcTxnIds, TxnType txnType) throws TException {
-    String hostname;
-    try {
-      hostname = InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      LOG.error("Unable to resolve my host name " + e.getMessage());
-      throw new RuntimeException(e);
-    }
+    String hostname = InetUtils.hostname();
     OpenTxnRequest rqst = new OpenTxnRequest(numTxns, user, hostname);
     if (replPolicy != null) {
       rqst.setReplPolicy(replPolicy);
@@ -3920,14 +3910,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       throw new RuntimeException(e);
     }
 
-    String hostName;
-    try {
-      hostName = InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      LOG.error("Unable to resolve my host name " + e.getMessage());
-      throw new RuntimeException(e);
-    }
-
+    String hostName = InetUtils.hostname();
     ReplTblWriteIdStateRequest rqst
             = new ReplTblWriteIdStateRequest(validWriteIdList, user, hostName, dbName, tableName);
     if (partNames != null) {
@@ -4064,7 +4047,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     cr.setType(type);
     cr.setProperties(tblproperties);
-    cr.setInitiatorId(JavaUtils.hostname() + "-manual");
+    cr.setInitiatorId(InetUtils.hostname() + "-manual");
     cr.setInitiatorVersion(HiveMetaStoreClient.class.getPackage().getImplementationVersion());
     return client.compact2(cr);
   }

@@ -19,13 +19,12 @@ package org.apache.hadoop.hive.llap.daemon.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.service.AbstractService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -58,8 +57,8 @@ public class LlapLoadGeneratorService extends AbstractService {
   }
 
   @Override
-  protected void serviceStart() throws UnknownHostException {
-    String localHostName = InetAddress.getLocalHost().getHostName();
+  protected void serviceStart() {
+    String localHostName = ServerUtils.hostname();
     LOG.debug("Local hostname is: {}", localHostName);
     for (String hostName : victimsHostName) {
       if (hostName.equalsIgnoreCase(localHostName)) {
