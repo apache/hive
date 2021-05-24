@@ -40,9 +40,9 @@ public final class ExceptionHandler {
    * Throws if the input e is the instance of the class clz
    */
   public <T extends Exception> ExceptionHandler
-      throwIfInstance(Class<T> clz) throws T {
-    if (clz.isInstance(e)) {
-      throw clz.cast(e);
+      throwIfInstance(Class<T> t) throws T {
+    if (t.isInstance(e)) {
+      throw t.cast(e);
     }
     return this;
   }
@@ -51,9 +51,9 @@ public final class ExceptionHandler {
    * Throws if the input e is the instance of the class clzt or  class clze in order
    */
   public <T extends Exception, E extends Exception> ExceptionHandler
-      throwIfInstance(Class<T> clzt, Class<E> clze) throws T, E {
-    throwIfInstance(clzt);
-    throwIfInstance(clze);
+      throwIfInstance(Class<T> t, Class<E> e) throws T, E {
+    throwIfInstance(t);
+    throwIfInstance(e);
     return this;
   }
 
@@ -61,10 +61,10 @@ public final class ExceptionHandler {
    * Throws if the input e is the instance of the class clzt or  clze or clzc in order
    */
   public <T extends Exception, E extends Exception, C extends Exception> ExceptionHandler
-      throwIfInstance(Class<T> clzt, Class<E> clze, Class<C> clzc) throws T, E, C {
-    throwIfInstance(clzt);
-    throwIfInstance(clze);
-    throwIfInstance(clzc);
+      throwIfInstance(Class<T> t, Class<E> e, Class<C> c) throws T, E, C {
+    throwIfInstance(t);
+    throwIfInstance(e);
+    throwIfInstance(c);
     return this;
   }
 
@@ -92,9 +92,9 @@ public final class ExceptionHandler {
   /**
    * Converts the input e if it is the instance of classes to MetaException with the given message
    */
-  public ExceptionHandler convertToMetaExceptionIfInstance(String message, Class<?>... classes)
+  public ExceptionHandler convertToMetaExIfInstance(String message, Class<?>... classes)
       throws MetaException {
-    if (classes != null || classes.length > 0) {
+    if (classes != null && classes.length > 0) {
       for (Class<?> clz : classes) {
         if (clz.isInstance(e)) {
           // throw the exception if matches
