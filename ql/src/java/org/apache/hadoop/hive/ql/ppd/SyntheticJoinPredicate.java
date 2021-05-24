@@ -264,9 +264,7 @@ public class SyntheticJoinPredicate extends Transform {
               ExprNodeGenericFuncDesc.newInstance(FunctionRegistry.getFunctionInfo(getFuncText(funcDesc.getFuncText(), srcPos)).getGenericUDF(), funcArgs);
 
             // TODO : deduplicate the code below.
-            if (LOG.isDebugEnabled()) {
-              LOG.debug(" Non-Equi Join Predicate " + funcExpr);
-            }
+            LOG.debug(" Non-Equi Join Predicate {}", funcExpr);
 
             List<ExprNodeDesc> andArgs = new ArrayList<>();
             if (syntheticExpr != null) {

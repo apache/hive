@@ -70,9 +70,7 @@ public final class CompileLock implements AutoCloseable {
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Interrupted Exception ignored", e);
-      }
+      LOG.debug("Interrupted Exception ignored", e);
       return failedToAquire();
     }
 
@@ -89,9 +87,7 @@ public final class CompileLock implements AutoCloseable {
         }
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Interrupted Exception ignored", e);
-        }
+        LOG.debug("Interrupted Exception ignored", e);
         return failedToAquire();
       }
     } else {

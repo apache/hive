@@ -216,6 +216,9 @@ public class TestHiveShell {
     // enables vectorization on Tez
     hiveConf.set("tez.mrreader.config.update.properties", "hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids");
 
+    // set lifecycle hooks
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS, HiveIcebergQueryLifeTimeHook.class.getName());
+
     return hiveConf;
   }
 }

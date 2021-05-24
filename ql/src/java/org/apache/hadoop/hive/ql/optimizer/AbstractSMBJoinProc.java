@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.plan.DummyStoreDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
@@ -270,6 +271,11 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
     // get all join columns from join keys
     List<String> joinCols = toColumns(keys);
     if (joinCols == null || joinCols.isEmpty()) {
+      return false;
+    }
+
+    if (!MapJoinDesc.isSupportedComplexType(keys)) {
+      //TODO : https://issues.apache.org/jira/browse/HIVE-25042
       return false;
     }
 

@@ -123,17 +123,13 @@ public class MetaStoreUtils {
   };
 
   /**
-   * Catches exceptions that can't be handled and bundles them to MetaException
+   * Catches exceptions that cannot be handled and wraps them in MetaException.
    *
    * @param e exception to wrap.
    * @throws MetaException wrapper for the exception
    */
-  public static void logAndThrowMetaException(Exception e) throws MetaException {
-    String exInfo = "Got exception: " + e.getClass().getName() + " "
-        + e.getMessage();
-    LOG.error(exInfo, e);
-    LOG.error("Converting exception to MetaException");
-    throw new MetaException(exInfo);
+  public static void throwMetaException(Exception e) throws MetaException {
+    throw new MetaException("Got exception: " + e.getClass().getName() + " " + e.getMessage());
   }
 
   public static String encodeTableName(String name) {
@@ -1021,5 +1017,19 @@ public class MetaStoreUtils {
 
   public static boolean hasUnknownPartitions(PartitionsSpecByExprResult r) {
     return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions();
+  }
+
+  /**
+   * Because TABLE_NO_AUTO_COMPACT was originally assumed to be NO_AUTO_COMPACT and then was moved
+   * to no_auto_compact, we need to check it in both cases.
+   */
+  public static boolean isNoAutoCompactSet(Map<String, String> parameters) {
+    String noAutoCompact =
+            parameters.get(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT);
+    if (noAutoCompact == null) {
+      noAutoCompact =
+              parameters.get(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT.toUpperCase());
+    }
+    return noAutoCompact != null && noAutoCompact.equalsIgnoreCase("true");
   }
 }

@@ -55,9 +55,7 @@ public class TriggerValidatorRunnable implements Runnable {
           for (Trigger currentTrigger : triggers) {
             String desiredCounter = currentTrigger.getExpression().getCounterLimit().getName();
             // there could be interval where desired counter value is not populated by the time we make this check
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Validating trigger: {} against currentCounters: {}", currentTrigger, currentCounters);
-            }
+            LOG.debug("Validating trigger: {} against currentCounters: {}", currentTrigger, currentCounters);
             if (currentCounters.containsKey(desiredCounter)) {
               long currentCounterValue = currentCounters.get(desiredCounter);
               if (currentTrigger.apply(currentCounterValue)) {

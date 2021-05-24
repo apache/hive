@@ -55,9 +55,7 @@ public class DropPartitionEvent extends HiveMetaStoreAuthorizableEvent {
   }
 
   private List<HivePrivilegeObject> getInputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> DropPartitionEvent.getInputHObjs()");
-    }
+    LOG.debug("==> DropPartitionEvent.getInputHObjs()");
 
     List<HivePrivilegeObject> ret   = new ArrayList<>();
     PreDropPartitionEvent     event = (PreDropPartitionEvent) preEventContext;
@@ -67,9 +65,7 @@ public class DropPartitionEvent extends HiveMetaStoreAuthorizableEvent {
 
     COMMAND_STR = buildCommandString(COMMAND_STR,table);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("<== DropPartitionEvent.getInputHObjs(): ret=" + ret);
-    }
+    LOG.debug("<== DropPartitionEvent.getInputHObjs(): ret={}", ret);
 
     return ret;
   }

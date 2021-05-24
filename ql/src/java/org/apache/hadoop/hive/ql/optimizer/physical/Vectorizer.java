@@ -2594,7 +2594,9 @@ public class Vectorizer implements PhysicalPlanResolver {
       return false;
     }
     List<ExprNodeDesc> keyExprs = desc.getKeys().get(posBigTable);
-    if (!validateExprNodeDesc(keyExprs, "Key")) {
+    if (!validateExprNodeDescNoComplex(keyExprs, "Key")) {
+      // Vectorization for join keys of complex type is not supported.
+      // https://issues.apache.org/jira/browse/HIVE-24989
       return false;
     }
     List<ExprNodeDesc> valueExprs = desc.getExprs().get(posBigTable);
