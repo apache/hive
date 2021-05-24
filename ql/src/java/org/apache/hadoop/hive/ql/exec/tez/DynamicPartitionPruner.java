@@ -320,15 +320,11 @@ public class DynamicPartitionPruner {
       }
 
       Object partValue = converter.convert(partValueString);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Converted partition value: " + partValue + " original (" + partValueString + ")");
-      }
+      LOG.debug("Converted partition value: {} original ({})", partValue, partValueString);
 
       row[0] = partValue;
       partValue = eval.evaluate(row);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("part key expr applied: " + partValue);
-      }
+      LOG.debug("part key expr applied: {}", partValue);
 
       if (!values.contains(partValue) && (!mustKeepOnePartition || work.getPathToPartitionInfo().size() > 1)) {
         LOG.info("Pruning path: " + p);
@@ -482,9 +478,8 @@ public class DynamicPartitionPruner {
             Object value = info.soi.getStructFieldData(row, info.field);
             value = ObjectInspectorUtils.copyToStandardObject(value, info.fieldInspector);
 
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Adding: " + value + " to list of required partitions");
-            }
+            LOG.debug("Adding: {} to list of required partitions", value);
+
             info.values.add(value);
           }
         }

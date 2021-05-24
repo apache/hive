@@ -312,9 +312,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     MemoryBufferOrBuffers footerData = (cacheKey == null || metadataCache == null) ? null
         : metadataCache.getFileMetadata(cacheKey);
     if (footerData != null) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Found the footer in cache for " + cacheKey);
-      }
+      LOG.info("Found the footer in cache for " + cacheKey);
       try {
         return ParquetFileReader.readFooter(new ParquetFooterInputFromCache(footerData), filter);
       } finally {
@@ -337,9 +335,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       stream.seek(footerLengthIndex);
       int footerLength = BytesUtils.readIntLittleEndian(stream);
       stream.seek(footerLengthIndex - footerLength);
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Caching the footer of length " + footerLength + " for " + cacheKey);
-      }
+      LOG.info("Caching the footer of length " + footerLength + " for " + cacheKey);
       // Note: we don't pass in isStopped here - this is not on an IO thread.
       footerData = metadataCache.putFileMetadata(cacheKey, footerLength, stream, tag, null);
       try {

@@ -634,9 +634,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
     if(!isTxnOpen() && locks.isEmpty()) {
       // No locks, no txn, we outta here.
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("No need to send heartbeat as there is no transaction and no locks.");
-      }
+      LOG.debug("No need to send heartbeat as there is no transaction and no locks.");
       return;
     }
     for (HiveLock lock : locks) {

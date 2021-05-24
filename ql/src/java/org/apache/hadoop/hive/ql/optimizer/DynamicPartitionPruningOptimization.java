@@ -479,10 +479,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     // we also need the expr for the partitioned table
     ExprNodeDesc partKey = ctx.parent.getChildren().get(0);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("key expr: " + key);
-      LOG.debug("partition key expr: " + partKey);
-    }
+    LOG.debug("key expr: {}; partition key expr: {}", key, partKey);
 
     List<ExprNodeDesc> keyExprs = new ArrayList<ExprNodeDesc>();
     keyExprs.add(key);
