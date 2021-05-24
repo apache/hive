@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.util;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -125,12 +124,7 @@ public class FakeVectorRowBatchFromObjectIterables extends FakeVectorRowBatchBas
               Object value) {
             BytesColumnVector bcv = (BytesColumnVector) columnVector;
             String s = (String) value;
-            byte[] bytes = new byte[0];
-            try {
-              bytes = s.getBytes(StandardCharsets.UTF_8);
-            } catch (UnsupportedEncodingException e) {
-              throw new RuntimeException(e);
-            }
+            byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
             bcv.vector[row] = bytes;
             bcv.start[row] = 0;
             bcv.length[row] = bytes.length;

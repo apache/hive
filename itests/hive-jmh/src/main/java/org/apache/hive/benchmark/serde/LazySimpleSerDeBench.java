@@ -15,7 +15,6 @@ package org.apache.hive.benchmark.serde;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Random;
@@ -125,14 +124,8 @@ public class LazySimpleSerDeBench {
       for (int i = 0; i < sizes.length / 2; i++) {
         int p = r.nextInt(max);
         int n = -1 * (p - 1);
-        byte[] ps = new byte[0];
-        byte[] ns = new byte[0];
-        try {
-          ps = String.format("%d", p).getBytes(StandardCharsets.UTF_8);
-          ns = String.format("%d", n).getBytes(StandardCharsets.UTF_8);
-        } catch (UnsupportedEncodingException e) {
-          throw new RuntimeException(e);
-        }
+        byte[] ps = String.format("%d", p).getBytes(StandardCharsets.UTF_8);
+        byte[] ns = String.format("%d", n).getBytes(StandardCharsets.UTF_8);
         sizes[2 * i] = ps.length;
         sizes[2 * i + 1] = ns.length;
         offsets[2 * i] = len;
@@ -504,12 +497,7 @@ public class LazySimpleSerDeBench {
       for (int i = 0; i < DEFAULT_DATA_SIZE; i++) {
         // -ve dates are also valid dates - the dates are within 1959 to 2027
         Date dt = new Date(base + (Math.abs(r.nextLong()) % (Integer.MAX_VALUE*1000L)));
-        byte[] ds = new byte[0];
-        try {
-          ds = dt.toString().getBytes(StandardCharsets.UTF_8);
-        } catch (UnsupportedEncodingException e) {
-          throw new RuntimeException(e);
-        }
+        byte[] ds = dt.toString().getBytes(StandardCharsets.UTF_8);
         sizes[i] = ds.length;
         offsets[i] = len;
         len += ds.length;
@@ -592,12 +580,7 @@ public class LazySimpleSerDeBench {
       for (int i = 0; i < DEFAULT_DATA_SIZE; i++) {
         // -ve dates are also valid Timestamps - dates are within 1959 to 2027
         Date dt = new Date(base + (Math.abs(r.nextLong()) % (Integer.MAX_VALUE * 1000L)));
-        byte[] ds = new byte[0];
-        try {
-          ds = String.format("%s 00:00:01", dt.toString()).getBytes(StandardCharsets.UTF_8);
-        } catch (UnsupportedEncodingException e) {
-          throw new RuntimeException(e);
-        }
+        byte[] ds = String.format("%s 00:00:01", dt.toString()).getBytes(StandardCharsets.UTF_8);
         sizes[i] = ds.length;
         offsets[i] = len;
         len += ds.length;

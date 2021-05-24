@@ -21,7 +21,6 @@ package org.apache.hive.hplsql;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.math.RoundingMode;
 import java.sql.Connection;
@@ -180,16 +179,9 @@ public class Copy {
     else {
       filename = ctx.copy_target().getText();
     }
-    byte[] del = new byte[0];
-    byte[] rowdel = new byte[0];
-    byte[] nullstr = new byte[0];
-    try {
-      del = delimiter.getBytes(StandardCharsets.UTF_8);
-      rowdel = "\n".getBytes(StandardCharsets.UTF_8);
-      nullstr = "NULL".getBytes(StandardCharsets.UTF_8);
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException(e);
-    }
+    byte[] del = delimiter.getBytes(StandardCharsets.UTF_8);
+    byte[] rowdel = "\n".getBytes(StandardCharsets.UTF_8);
+    byte[] nullstr = "NULL".getBytes(StandardCharsets.UTF_8);
     int cols = query.columnCount();
     int rows = 0;
     long bytes = 0;
@@ -242,12 +234,7 @@ public class Copy {
             if (sqlInsert) {
               col = Utils.quoteString(col);
             }
-            byte[] b = new byte[0];
-            try {
-              b = col.getBytes(StandardCharsets.UTF_8);
-            } catch (UnsupportedEncodingException e) {
-              throw new RuntimeException(e);
-            }
+            byte[] b = col.getBytes(StandardCharsets.UTF_8);
             out.write(b);
             bytes += b.length;
           }
