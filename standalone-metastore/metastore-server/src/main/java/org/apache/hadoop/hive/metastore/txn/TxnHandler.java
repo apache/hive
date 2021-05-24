@@ -5604,9 +5604,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     Map<String, Map<String, String>> result = new HashMap<>();
     Statement stmtInt = null;
 
-    LOG.info("ETL_PERF started getParamValues ");
     Map<Long, String> partIdToParaMap = getParamValues(dbConn, partIdList);
-    LOG.info("ETL_PERF done getParamValues ");
 
     String insert = "INSERT INTO \"PARTITION_PARAMS\" (\"PART_ID\", \"PARAM_KEY\", \"PARAM_VALUE\") "
             + "VALUES( ? , 'COLUMN_STATS_ACCURATE'  , ? )";
@@ -5715,9 +5713,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
 
       if (isAcidTable) {
-        LOG.info("ETL_PERF started updateWriteIdForPartitions ");
         updateWriteIdForPartitions(dbConn, writeId, partIdList);
-        LOG.info("ETL_PERF done updateWriteIdForPartitions ");
       }
       return result;
     } finally {
@@ -5780,39 +5776,29 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     String tableName = tbl.getTableName();
     boolean isAcidTable = TxnUtils.isAcidTable(tbl);
 
-    LOG.info("ETL_PERF started updatePartitionColumnStatistics");
     boolean committed = false;
     try {
       try {
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolMutex);
 
-        LOG.info("ETL_PERF started getPartitionInfo");
         List<String> partNames = partColStatsMap.keySet().stream().map(
                 e -> quoteString(e)).collect(Collectors.toList()
         );
         Map<String, PartitionInfo> partitionInfoMap = getPartitionInfo(dbConn, tbl.getId(), partNames);
-        LOG.info("ETL_PERF done getPartitionInfo");
 
         List<Long> partIdList = partitionInfoMap.values().stream().map(
                 e -> e.partitionId).collect(Collectors.toList()
         );
 
-        LOG.info("ETL_PERF started updatePartitionParamTable");
         Map<String, Map<String, String>> result =
                 updatePartitionParamTable(dbConn, partitionInfoMap, partColStatsMap,
                         partIdList, validWriteIds, writeId, isAcidTable);
-        LOG.info("ETL_PERF done updatePartitionParamTable");
 
-        LOG.info("ETL_PERF started cleanOldStatsFromPartColStatTable ");
         cleanOldStatsFromPartColStatTable(partitionInfoMap, partColStatsMap, dbConn);
-        LOG.info("ETL_PERF done cleanOldStatsFromPartColStatTable ");
 
-        LOG.info("ETL_PERF started insertIntoPartColStatTable ");
         insertIntoPartColStatTable(partitionInfoMap, partColStatsMap, csId, dbConn);
-        LOG.info("ETL_PERF done insertIntoPartColStatTable ");
 
-        LOG.info("ETL_PERF started notifyEventWithDirectSql");
         for (Map.Entry entry : result.entrySet()) {
           Map<String, String> parameters = (Map<String, String>) entry.getValue();
           ColumnStatistics colStats = partColStatsMap.get(entry.getKey());
@@ -5831,7 +5817,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                             tbl, writeId, handler));
           }
         }
-        LOG.info("ETL_PERF done notifyEventWithDirectSql result size " + result.size());
         dbConn.commit();
         committed = true;
         return true;
@@ -5851,7 +5836,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
         closeDbConn(dbConn);
         unlockInternal();
-        LOG.info("ETL_PERF done updatePartitionColumnStatisticsEx");
       }
     } catch (RetryException ex) {
       return updatePartitionColumnStatistics(partColStatsMap, handler, listeners, tbl, csId, validWriteIds, writeId);
@@ -5860,7 +5844,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   @Override
   public long getNextCSIdForMPartitionColumnStatistics(long numStats) throws MetaException {
-    LOG.info("ETL_PERF start getNextCSIdForMPartitionColumnStatistics");
     Statement stmtInt = null;
     ResultSet rsInt = null;
     long maxCsId = 0;
@@ -5908,7 +5891,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
       close(rsInt, stmtInt, dbConn);
       unlockInternal();
-      LOG.info("ETL_PERF done getNextCSIdForMPartitionColumnStatistics");
     }
   }
 
