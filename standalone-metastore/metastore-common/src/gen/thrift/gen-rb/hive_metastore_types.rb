@@ -3594,16 +3594,21 @@ class AbortTxnRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TXNID = 1
   REPLPOLICY = 2
+  TXN_TYPE = 3
 
   FIELDS = {
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'},
-    REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true}
+    REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true},
+    TXN_TYPE => {:type => ::Thrift::Types::I32, :name => 'txn_type', :optional => true, :enum_class => ::TxnType}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnid is unset!') unless @txnid
+    unless @txn_type.nil? || ::TxnType::VALID_VALUES.include?(@txn_type)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field txn_type!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -3715,6 +3720,7 @@ class CommitTxnRequest
   REPLLASTIDINFO = 4
   KEYVALUE = 5
   EXCLWRITEENABLED = 6
+  TXN_TYPE = 7
 
   FIELDS = {
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'},
@@ -3722,13 +3728,17 @@ class CommitTxnRequest
     WRITEEVENTINFOS => {:type => ::Thrift::Types::LIST, :name => 'writeEventInfos', :element => {:type => ::Thrift::Types::STRUCT, :class => ::WriteEventInfo}, :optional => true},
     REPLLASTIDINFO => {:type => ::Thrift::Types::STRUCT, :name => 'replLastIdInfo', :class => ::ReplLastIdInfo, :optional => true},
     KEYVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'keyValue', :class => ::CommitTxnKeyValue, :optional => true},
-    EXCLWRITEENABLED => {:type => ::Thrift::Types::BOOL, :name => 'exclWriteEnabled', :default => true, :optional => true}
+    EXCLWRITEENABLED => {:type => ::Thrift::Types::BOOL, :name => 'exclWriteEnabled', :default => true, :optional => true},
+    TXN_TYPE => {:type => ::Thrift::Types::I32, :name => 'txn_type', :optional => true, :enum_class => ::TxnType}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnid is unset!') unless @txnid
+    unless @txn_type.nil? || ::TxnType::VALID_VALUES.include?(@txn_type)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field txn_type!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self

@@ -319,9 +319,7 @@ public class GenTezWork implements SemanticNodeProcessor {
     // This is where we cut the tree as described above. We also remember that
     // we might have to connect parent work with this work later.
     for (Operator<?> parent : new ArrayList<Operator<?>>(root.getParentOperators())) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Removing " + parent + " as parent from " + root);
-      }
+      LOG.debug("Removing {} as parent from {}", parent, root);
       context.leafOperatorToFollowingWork.remove(parent);
       context.leafOperatorToFollowingWork.put(parent, work);
       root.removeParent(parent);

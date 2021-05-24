@@ -8,10 +8,11 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 2 (BROADCAST_EDGE)
-        Map 3 <- Reducer 10 (BROADCAST_EDGE), Reducer 11 (BROADCAST_EDGE), Reducer 11 (BROADCAST_EDGE)
+        Map 3 <- Reducer 10 (BROADCAST_EDGE), Reducer 11 (BROADCAST_EDGE)
         Map 5 <- Map 3 (BROADCAST_EDGE), Reducer 4 (BROADCAST_EDGE)
         Reducer 10 <- Map 9 (CUSTOM_SIMPLE_EDGE)
         Reducer 11 <- Map 9 (CUSTOM_SIMPLE_EDGE)
+        Reducer 12 <- Reducer 11 (CUSTOM_SIMPLE_EDGE)
         Reducer 4 <- Map 3 (SIMPLE_EDGE)
         Reducer 6 <- Map 5 (SIMPLE_EDGE), Map 9 (BROADCAST_EDGE)
         Reducer 7 <- Map 1 (BROADCAST_EDGE), Map 5 (SIMPLE_EDGE), Map 9 (BROADCAST_EDGE), Reducer 6 (BROADCAST_EDGE)
@@ -294,6 +295,15 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+        Reducer 12 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
                 Reduce Output Operator
                   null sort order: 
                   sort order: 

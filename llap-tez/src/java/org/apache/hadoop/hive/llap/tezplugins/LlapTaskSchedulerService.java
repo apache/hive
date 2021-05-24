@@ -1382,10 +1382,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   @Override
   public Object deallocateContainer(ContainerId containerId) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Ignoring deallocateContainer for containerId: {}",
-          containerId);
-    }
+    LOG.debug("Ignoring deallocateContainer for containerId: {}", containerId);
     // Containers are not being tracked for re-use.
     // This is safe to ignore since a deallocate task will come in.
     return null;
@@ -1549,10 +1546,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
 
     NodeInfo randomNode = nodesWithFreeSlots.get(random.nextInt(nodesWithFreeSlots.size()));
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Assigning {} when looking for any host, from #hosts={}, requestedHosts=null",
-        randomNode.toShortString(), nodesWithFreeSlots.size());
-    }
+    LOG.info("Assigning {} when looking for any host, from #hosts={}, requestedHosts=null", randomNode.toShortString(),
+        nodesWithFreeSlots.size());
     return new SelectHostResult(randomNode);
   }
 
@@ -1604,11 +1599,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           metrics.setDisabledNodeCount(disabledNodesQueue.size());
         }
       } else {
-        if (LOG.isInfoEnabled()) {
-          LOG.info(
-              "Not re-enabling node: {}, since it is not present in the RegistryActiveNodeList",
-              nodeInfo.toShortString());
-        }
+        LOG.info("Not re-enabling node: {}, since it is not present in the RegistryActiveNodeList",
+            nodeInfo.toShortString());
       }
     } finally {
       writeLock.unlock();
@@ -1681,9 +1673,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       if (metrics != null) {
         metrics.incrPendingTasksCount();
       }
-      if (LOG.isInfoEnabled()) {
-        LOG.info("PendingTasksInfo={}", constructPendingTaskCountsLogMessage());
-      }
+      LOG.info("PendingTasksInfo={}", constructPendingTaskCountsLogMessage());
     } finally {
       writeLock.unlock();
     }
@@ -1897,9 +1887,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           taskInfo.triedAssigningTask();
           ScheduleResult scheduleResult = scheduleTask(taskInfo, availabilityPair, downgradedTask);
           // Note: we must handle downgradedTask after this. We do it at the end, outside the lock.
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("ScheduleResult for Task: {} = {}", taskInfo, scheduleResult);
-          }
+          LOG.debug("ScheduleResult for Task: {} = {}", taskInfo, scheduleResult);
           if (scheduleResult == ScheduleResult.SCHEDULED) {
             taskIter.remove();
           } else {
@@ -2716,11 +2704,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       if (delayTime > blacklistConf.maxDelay) {
         delayTime = blacklistConf.maxDelay;
       }
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Disabling instance {} for {} milli-seconds. commFailure={}",
-            toShortString(),
-            delayTime, commFailure);
-      }
+      LOG.info("Disabling instance {} for {} milli-seconds. commFailure={}", toShortString(), delayTime, commFailure);
       expireTimeMillis = currentTime + delayTime;
       numSuccessfulTasksAtLastBlacklist = numSuccessfulTasks;
     }

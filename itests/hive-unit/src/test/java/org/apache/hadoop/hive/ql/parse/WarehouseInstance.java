@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
+import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
@@ -63,6 +64,7 @@ import org.codehaus.plexus.util.ExceptionUtils;
 import org.slf4j.Logger;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -458,16 +460,9 @@ public class WarehouseInstance implements Closeable {
     assertTrue(props.containsKey(ReplConst.REPL_TARGET_TABLE_PROPERTY));
   }
 
-
-  public WarehouseInstance verifyReplTargetProperty(String dbName, List<String> tblNames) throws Exception {
-    for (String tblName : tblNames) {
-      verifyReplTargetProperty(getTable(dbName, tblName).getParameters());
-    }
-    return this;
-  }
-
   public WarehouseInstance verifyReplTargetProperty(String dbName) throws Exception {
-    return verifyReplTargetProperty(dbName, getAllTables(dbName));
+    verifyReplTargetProperty(getDatabase(dbName).getParameters());
+    return this;
   }
 
   public Database getDatabase(String dbName) throws Exception {
@@ -476,6 +471,12 @@ public class WarehouseInstance implements Closeable {
     } catch (NoSuchObjectException e) {
       return null;
     }
+  }
+
+  public int getNoOfEventsDumped(String dumpLocation, HiveConf conf) throws Throwable {
+    IncrementalLoadEventsIterator itr = new IncrementalLoadEventsIterator(
+            dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR, conf);
+    return itr.getNumEvents();
   }
 
   public List<String> getAllTables(String dbName) throws Exception {

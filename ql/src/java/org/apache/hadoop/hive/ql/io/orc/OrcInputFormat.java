@@ -30,6 +30,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,6 +96,8 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
+import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.DeltaFilesMetricType;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -125,7 +128,6 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.Ref;
 import org.apache.orc.ColumnStatistics;
 import org.apache.orc.FileFormatException;
-import org.apache.orc.OrcConf;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcProto.Footer;
 import org.apache.orc.OrcUtils;
@@ -550,9 +552,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       return;
     }
 
-    if (LOG.isInfoEnabled()) {
-      LOG.info("ORC pushdown predicate: " + sarg);
-    }
+    LOG.info("ORC pushdown predicate: " + sarg);
     options.searchArgument(sarg, getSargColumnNames(
         neededColumnNames.split(","), types, options.getInclude(), isOriginal));
   }
@@ -725,10 +725,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           boolean useExternalCache = HiveConf.getBoolVar(
               conf, HiveConf.ConfVars.HIVE_ORC_MS_FOOTER_CACHE_ENABLED);
           if (useExternalCache) {
-            if (LOG.isDebugEnabled()) {
-              LOG.debug(
-                "Turning off hive.orc.splits.ms.footer.cache.enabled since it is not fully supported yet");
-            }
+            LOG.debug("Turning off hive.orc.splits.ms.footer.cache.enabled since it is not fully supported yet");
             useExternalCache = false;
           }
           if (localCache == null) {
@@ -1118,9 +1115,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           }
           if (BlobStorageUtils.isBlobStorageFileSystem(conf, fs)) {
             final long splitSize = HiveConf.getLongVar(conf, HiveConf.ConfVars.HIVE_ORC_BLOB_STORAGE_SPLIT_SIZE);
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Blob storage detected for BI split strategy. Splitting files at boundary {}..", splitSize);
-            }
+            LOG.debug("Blob storage detected for BI split strategy. Splitting files at boundary {}..", splitSize);
             long start;
             for (start = 0; start < logicalLen; start = start + splitSize) {
               OrcSplit orcSplit = new OrcSplit(fileStatus.getPath(), fileKey, start,
@@ -1736,9 +1731,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
   static List<OrcSplit> generateSplitsInfo(Configuration conf, Context context)
       throws IOException {
-    if (LOG.isInfoEnabled()) {
-      LOG.info("ORC pushdown predicate: " + context.sarg);
-    }
+    LOG.info("ORC pushdown predicate: " + context.sarg);
     boolean useFileIdsConfig = HiveConf.getBoolVar(
         conf, ConfVars.HIVE_ORC_INCLUDE_FILE_ID_IN_SPLITS);
     // Sharing this state assumes splits will succeed or fail to get it together (same FS).
@@ -1781,6 +1774,12 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         " reader schema " + (readerSchema == null ? "NULL" : readerSchema.toString()) +
         " ACID scan property " + isAcidTableScan);
     }
+    boolean metricsEnabled = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED);
+    long checkThresholdInSec = HiveConf.getTimeVar(conf,
+        HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_CHECK_THRESHOLD, TimeUnit.SECONDS);
+    float deltaPctThreshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_PCT_THRESHOLD);
+
+    EnumMap<DeltaFilesMetricType, Map<String, Integer>> deltaFilesStats = new EnumMap<>(DeltaFilesMetricType.class);
 
     // complete path futures and schedule split generation
     try {
@@ -1807,6 +1806,10 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           continue;
         }
 
+        if (metricsEnabled && directory instanceof AcidDirectory) {
+          DeltaFilesMetricReporter.mergeDeltaFilesStats((AcidDirectory) directory, checkThresholdInSec,
+              deltaPctThreshold, deltaFilesStats);
+        }
         // We have received a new directory information, make split strategies.
         --resultsLeft;
         if (directory.getFiles().isEmpty()) {
@@ -1822,9 +1825,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             allowSyntheticFileIds);
 
         for (SplitStrategy<?> splitStrategy : splitStrategies) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Split strategy: {}", splitStrategy);
-          }
+          LOG.debug("Split strategy: {}", splitStrategy);
 
           // Hack note - different split strategies return differently typed lists, yay Java.
           // This works purely by magic, because we know which strategy produces which type.
@@ -1838,6 +1839,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           }
         }
       }
+      DeltaFilesMetricReporter.addAcidMetricsToConfObj(deltaFilesStats, conf);
 
       // Run the last combined strategy, if any.
       if (combinedCtx != null && combinedCtx.combined != null) {
@@ -1946,6 +1948,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
     List<OrcSplit> result = generateSplitsInfo(conf,
         new Context(conf, numSplits, createExternalCaches()));
+    DeltaFilesMetricReporter.backPropagateAcidMetrics(job, conf);
+
     long end = System.currentTimeMillis();
     LOG.info("getSplits finished (#splits: {}). duration: {} ms", result.size(), (end - start));
     return result.toArray(new InputSplit[result.size()]);

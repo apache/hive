@@ -194,9 +194,7 @@ public class TezJobMonitor {
           if (mergedCounters != null && desiredCounters != null && !desiredCounters.isEmpty()) {
             Map<String, Long> currentCounters = getCounterValues(mergedCounters, vertexNames, vertexProgressMap,
               desiredCounters, done);
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Requested DAG status. checkInterval: {}. currentCounters: {}", checkInterval, currentCounters);
-            }
+            LOG.debug("Requested DAG status. checkInterval: {}. currentCounters: {}", checkInterval, currentCounters);
             wmContext.setCurrentCounters(currentCounters);
           }
         }

@@ -390,6 +390,13 @@ public class Hive {
     return getInternal(c, false, true, doRegisterAllFns);
   }
 
+  /**
+   * Same as {@link #get(HiveConf)}, except that it does not register all functions.
+   */
+  public static Hive getWithoutRegisterFns(HiveConf c) throws HiveException {
+    return getInternal(c, false, false, false);
+  }
+
   private static Hive getInternal(HiveConf c, boolean needsRefresh, boolean isFastCheck,
       boolean doRegisterAllFns) throws HiveException {
     Hive db = hiveDB.get();
@@ -1924,7 +1931,7 @@ public class Hive {
               Materialization invalidationInfo = getMSC().getMaterializationInvalidationInfo(
                   materializedViewTable.getCreationMetadata(), conf.get(ValidTxnList.VALID_TXNS_KEY));
               if (invalidationInfo == null || invalidationInfo.isSourceTablesUpdateDeleteModified() ||
-                  invalidationInfo.isSetSourceTablesCompacted()) {
+                  invalidationInfo.isSourceTablesCompacted()) {
                 // We ignore (as it did not meet the requirements), but we do not need to update it in the
                 // registry, since it is up-to-date
                 result = false;
@@ -2519,7 +2526,7 @@ public class Hive {
           // base_x.  (there is Insert Overwrite and Load Data Overwrite)
           boolean isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
           boolean needRecycle = !tbl.isTemporary()
-                  && ReplChangeManager.shouldEnableCm(Hive.get().getDatabase(tbl.getDbName()), tbl.getTTable());
+		   && ReplChangeManager.shouldEnableCm(Hive.get().getDatabase(tbl.getDbName()), tbl.getTTable());
           replaceFiles(tbl.getPath(), loadPath, destPath, oldPartPath, getConf(), isSrcLocal,
               isSkipTrash, newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle, isManaged, isInsertOverwrite);
         } else {
@@ -3202,7 +3209,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         //for fullAcid we don't want to delete any files even for OVERWRITE see HIVE-14988/HIVE-17361
         boolean isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
         boolean needRecycle = !tbl.isTemporary()
-                && ReplChangeManager.shouldEnableCm(Hive.get().getDatabase(tbl.getDbName()), tbl.getTTable());
+                && ReplChangeManager.shouldEnableCm(getDatabase(tbl.getDbName()), tbl.getTTable());
         replaceFiles(tblPath, loadPath, destPath, tblPath, conf, isSrcLocal, isSkipTrash,
             newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle, isManaged, isInsertOverwrite);
       } else {

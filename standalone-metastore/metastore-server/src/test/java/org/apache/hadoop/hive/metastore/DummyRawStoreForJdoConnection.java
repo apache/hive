@@ -197,7 +197,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public List<String> getCatalogs() throws MetaException {
+  public List<String> getCatalogs() {
     return null;
   }
 

@@ -3675,36 +3675,6 @@ public class TestReplicationScenarios {
         "DROP TABLE " + dbName + ".ptned_rn",
             replDbName);
 
-    // DB-level REPL LOADs testing done, now moving on to table level repl loads.
-    // In each of these cases, the table-level repl.last.id must move forward, but the
-    // db-level last.repl.id must not.
-
-    lastReplDumpId = verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId,
-        "CREATE TABLE " + dbName + ".ptned2(a string) partitioned by (b int) STORED AS TEXTFILE",
-            replDbName);
-    lastReplDumpId = verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId,
-        "ALTER TABLE " + dbName + ".ptned2 ADD PARTITION (b=1)",
-            replDbName);
-    lastReplDumpId = verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId,
-        "ALTER TABLE " + dbName + ".ptned2 PARTITION (b=1) RENAME TO PARTITION (b=11)",
-            replDbName);
-    lastReplDumpId = verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId,
-        "ALTER TABLE " + dbName + ".ptned2 SET TBLPROPERTIES ('blah'='foo')",
-            replDbName);
-    // Note : Not testing table rename because table rename replication is not supported for table-level repl.
-    verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId,
-        "ALTER TABLE " + dbName + ".ptned2 DROP PARTITION (b=11)",
-            replDbName);
-
-    // TODO : currently not testing the following scenarios:
-    //   a) Multi-db wh-level REPL LOAD - need to add that
-    //   b) Insert into tables - quite a few cases need to be enumerated there, including dyn adds.
-
   }
 
   @Test
@@ -4816,7 +4786,7 @@ public class TestReplicationScenarios {
     if (fs.exists(dumpPath)) {
       FileStatus[] statuses = fs.listStatus(dumpPath);
       if (statuses.length > 0) {
-        return new Path(statuses[0].getPath(), NON_RECOVERABLE_MARKER.toString());
+        return new Path(statuses[statuses.length -1].getPath(), NON_RECOVERABLE_MARKER.toString());
       }
     }
     return null;

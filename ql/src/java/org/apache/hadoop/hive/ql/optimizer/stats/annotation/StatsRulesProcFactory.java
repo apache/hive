@@ -1443,9 +1443,7 @@ public class StatsRulesProcFactory {
         // check if map side aggregation is possible or not based on column stats
         hashAgg = checkMapSideAggregation(gop, colStats, conf);
 
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("STATS-" + gop.toString() + " hashAgg: " + hashAgg);
-        }
+        LOG.debug("STATS-{} hashAgg: {}", gop, hashAgg);
 
         stats = parentStats.clone();
         stats.setColumnStats(colStats);

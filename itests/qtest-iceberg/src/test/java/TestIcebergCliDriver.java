@@ -16,8 +16,6 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.cli;
-
 import java.io.File;
 import java.util.List;
 import org.apache.hadoop.hive.cli.control.CliAdapter;
