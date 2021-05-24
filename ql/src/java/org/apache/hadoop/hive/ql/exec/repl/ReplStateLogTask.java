@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 
@@ -39,11 +38,10 @@ public class ReplStateLogTask extends Task<ReplStateLogWork> implements Serializ
   public int execute() {
     try {
       work.replStateLog();
-    } catch (Exception e) {
+    } catch (SemanticException e) {
       LOG.error("Exception while logging metrics ", e);
       setException(e);
-      return ReplUtils.handleException(true, e, work.getDumpDirectory(), work.getMetricCollector(),
-              getName(), conf);
+      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
     return 0;
   }

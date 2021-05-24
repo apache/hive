@@ -23,15 +23,12 @@ import org.apache.atlas.AtlasClientV2;
 import org.apache.atlas.AtlasException;
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Builder for AtlasRestClient.
@@ -43,8 +40,6 @@ public class AtlasRestClientBuilder {
   private static final String ATLAS_PROPERTY_REST_ADDRESS = "atlas.rest.address";
   private static final String ATLAS_PROPERTY_AUTH_KERBEROS = "atlas.authentication.method.kerberos";
   private static final String URL_SEPERATOR = ",";
-  public static final String ATLAS_PROPERTY_CONNECT_TIMEOUT_IN_MS = "atlas.client.connectTimeoutMSecs";
-  public static final String ATLAS_PROPERTY_READ_TIMEOUT_IN_MS = "atlas.client.readTimeoutMSecs";
 
   private UserGroupInformation userGroupInformation;
   protected String incomingUrl;
@@ -63,19 +58,18 @@ public class AtlasRestClientBuilder {
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)) {
       return new NoOpAtlasRestClient();
     }
-    return create(conf);
+    return create();
   }
 
-  private AtlasRestClient create(HiveConf conf) throws SemanticException {
+  private AtlasRestClient create() throws SemanticException {
     if (baseUrls == null || baseUrls.length == 0) {
-      throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format("baseUrls is not set.",
-        ReplUtils.REPL_ATLAS_SERVICE));
+      throw new SemanticException("baseUrls is not set.");
     }
     setUGInfo();
-    initializeAtlasApplicationProperties(conf);
+    initializeAtlasApplicationProperties();
     AtlasClientV2 clientV2 = new AtlasClientV2(this.userGroupInformation,
             this.userGroupInformation.getShortUserName(), baseUrls);
-    return new AtlasRestClientImpl(clientV2, conf);
+    return new AtlasRestClientImpl(clientV2);
   }
 
   private AtlasRestClientBuilder setUGInfo() throws SemanticException {
@@ -88,21 +82,16 @@ public class AtlasRestClientBuilder {
     return this;
   }
 
-  private void initializeAtlasApplicationProperties(HiveConf conf) throws SemanticException {
+  private void initializeAtlasApplicationProperties() throws SemanticException {
     try {
       Properties props = new Properties();
-      props.setProperty(ATLAS_PROPERTY_CONNECT_TIMEOUT_IN_MS, String.valueOf(
-              conf.getTimeVar(HiveConf.ConfVars.REPL_EXTERNAL_CLIENT_CONNECT_TIMEOUT, TimeUnit.MILLISECONDS)));
-      props.setProperty(ATLAS_PROPERTY_READ_TIMEOUT_IN_MS, String.valueOf(
-              conf.getTimeVar(HiveConf.ConfVars.REPL_ATLAS_CLIENT_READ_TIMEOUT, TimeUnit.MILLISECONDS)));
       props.setProperty(ATLAS_PROPERTY_CLIENT_HA_RETRIES_KEY, "1");
       props.setProperty(ATLAS_PROPERTY_CLIENT_HA_SLEEP_INTERVAL_MS_KEY, "0");
       props.setProperty(ATLAS_PROPERTY_REST_ADDRESS, incomingUrl);
       props.setProperty(ATLAS_PROPERTY_AUTH_KERBEROS, "true");
       ApplicationProperties.set(ConfigurationConverter.getConfiguration(props));
     } catch (AtlasException e) {
-      throw new SemanticException(ErrorMsg.REPL_INVALID_INTERNAL_CONFIG_FOR_SERVICE.format(e.getMessage(),
-        ReplUtils.REPL_ATLAS_SERVICE), e);
+      throw new SemanticException(e);
     }
   }
 }

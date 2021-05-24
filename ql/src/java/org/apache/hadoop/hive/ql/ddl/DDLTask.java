@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.reflections.Reflections;
@@ -68,7 +67,6 @@ public final class DDLTask extends Task<DDLWork> implements Serializable {
       return 0;
     }
 
-    DDLOperation ddlOperation = null;
     try {
       DDLDesc ddlDesc = work.getDDLDesc();
 
@@ -78,18 +76,14 @@ public final class DDLTask extends Task<DDLWork> implements Serializable {
         Class<? extends DDLOperation> ddlOpertaionClass = DESC_TO_OPARATION.get(ddlDesc.getClass());
         Constructor<? extends DDLOperation> constructor =
             ddlOpertaionClass.getConstructor(DDLOperationContext.class, ddlDesc.getClass());
-        ddlOperation = constructor.newInstance(ddlOperationContext, ddlDesc);
+        DDLOperation ddlOperation = constructor.newInstance(ddlOperationContext, ddlDesc);
         return ddlOperation.execute();
       } else {
         throw new IllegalArgumentException("Unknown DDL request: " + ddlDesc.getClass());
       }
     } catch (Throwable e) {
       failed(e);
-      if(ddlOperation != null) {
-        LOG.error("DDLTask failed, DDL Operation: " + ddlOperation.getClass().toString(), e);
-      }
-      return ReplUtils.handleException(work.isReplication(), e, work.getDumpDirectory(),
-                                       work.getMetricCollector(), getName(), conf); 
+      return 1;
     }
   }
 

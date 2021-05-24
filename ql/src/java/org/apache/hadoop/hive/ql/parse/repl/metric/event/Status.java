@@ -24,6 +24,5 @@ package org.apache.hadoop.hive.ql.parse.repl.metric.event;
 public enum Status {
   SUCCESS,
   FAILED,
-  IN_PROGRESS,
-  FAILED_ADMIN
+  IN_PROGRESS
 }

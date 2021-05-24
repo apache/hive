@@ -2,7 +2,6 @@ set hive.mapred.mode=nonstrict;
 set hive.test.mode=true;
 set hive.test.mode.prefix=;
 set hive.test.mode.nosamplelist=replsrc,repldst,repldst_md;
-set hive.repl.run.data.copy.tasks.on.target=false;
 
 drop table if exists replsrc;
 drop table if exists repldst;

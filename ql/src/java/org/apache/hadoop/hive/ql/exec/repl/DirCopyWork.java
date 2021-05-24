@@ -18,8 +18,6 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.repl.util.StringConvertibleObject;
-import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import java.io.Serializable;
 
@@ -29,22 +27,12 @@ import java.io.Serializable;
 @Explain(displayName = "HDFS Copy Operator", explainLevels = { Explain.Level.USER,
         Explain.Level.DEFAULT,
         Explain.Level.EXTENDED })
-public class DirCopyWork implements Serializable, StringConvertibleObject {
-  public static final String URI_SEPARATOR = "#";
+public class DirCopyWork implements Serializable {
   private static final long serialVersionUID = 1L;
-  private String tableName;
-  private Path fullyQualifiedSourcePath;
-  private Path fullyQualifiedTargetPath;
-  private String dumpDirectory;
-  private transient ReplicationMetricCollector metricCollector;
+  private final Path fullyQualifiedSourcePath;
+  private final Path fullyQualifiedTargetPath;
 
-  public DirCopyWork(ReplicationMetricCollector metricCollector, String dumpDirectory) {
-    this.metricCollector = metricCollector;
-    this.dumpDirectory = dumpDirectory;
-  }
-
-  public DirCopyWork(String tableName, Path fullyQualifiedSourcePath, Path fullyQualifiedTargetPath) {
-    this.tableName = tableName;
+  public DirCopyWork(Path fullyQualifiedSourcePath, Path fullyQualifiedTargetPath) {
     this.fullyQualifiedSourcePath = fullyQualifiedSourcePath;
     this.fullyQualifiedTargetPath = fullyQualifiedTargetPath;
   }
@@ -62,31 +50,5 @@ public class DirCopyWork implements Serializable, StringConvertibleObject {
 
   public Path getFullyQualifiedTargetPath() {
     return fullyQualifiedTargetPath;
-  }
-
-  public ReplicationMetricCollector getMetricCollector() {
-    return metricCollector;
-  }
-
-  public String getDumpDirectory() {
-    return dumpDirectory;
-  }
-
-  @Override
-  public String convertToString() {
-    StringBuilder objInStr = new StringBuilder();
-    objInStr.append(fullyQualifiedSourcePath)
-            .append(URI_SEPARATOR)
-            .append(fullyQualifiedTargetPath)
-            .append(URI_SEPARATOR)
-            .append(tableName);
-    return objInStr.toString();
-  }
-
-  @Override
-  public void loadFromString(String objectInStr) {
-    String paths[] = objectInStr.split(URI_SEPARATOR);
-    this.fullyQualifiedSourcePath = new Path(paths[0]);
-    this.fullyQualifiedTargetPath = new Path(paths[1]);
   }
 }

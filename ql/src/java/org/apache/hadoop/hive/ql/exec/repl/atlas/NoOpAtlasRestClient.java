@@ -22,7 +22,6 @@ import org.apache.atlas.model.impexp.AtlasExportRequest;
 import org.apache.atlas.model.impexp.AtlasImportRequest;
 import org.apache.atlas.model.impexp.AtlasImportResult;
 import org.apache.atlas.model.impexp.AtlasServer;
-import org.apache.hadoop.hive.conf.HiveConf;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -43,7 +42,7 @@ public class NoOpAtlasRestClient implements AtlasRestClient {
     return new AtlasImportResult(request, "", "", "", 0L);
   }
 
-  public AtlasServer getServer(String endpoint, HiveConf conf) {
+  public AtlasServer getServer(String endpoint) {
     return new AtlasServer();
   }
 
@@ -52,7 +51,7 @@ public class NoOpAtlasRestClient implements AtlasRestClient {
     return UUID.randomUUID().toString();
   }
 
-  public boolean getStatus(HiveConf conf) {
+  public boolean getStatus() {
     return true;
   }
 }

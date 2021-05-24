@@ -828,8 +828,6 @@ class ReplicationMetricList;
 
 class GetReplicationMetricsRequest;
 
-class GetOpenTxnsRequest;
-
 class MetaException;
 
 class UnknownTableException;
@@ -9168,12 +9166,11 @@ inline std::ostream& operator<<(std::ostream& out, const UnlockRequest& obj)
 }
 
 typedef struct _ShowLocksRequest__isset {
-  _ShowLocksRequest__isset() : dbname(false), tablename(false), partname(false), isExtended(true), txnid(false) {}
+  _ShowLocksRequest__isset() : dbname(false), tablename(false), partname(false), isExtended(true) {}
   bool dbname :1;
   bool tablename :1;
   bool partname :1;
   bool isExtended :1;
-  bool txnid :1;
 } _ShowLocksRequest__isset;
 
 class ShowLocksRequest {
@@ -9181,7 +9178,7 @@ class ShowLocksRequest {
 
   ShowLocksRequest(const ShowLocksRequest&);
   ShowLocksRequest& operator=(const ShowLocksRequest&);
-  ShowLocksRequest() : dbname(), tablename(), partname(), isExtended(false), txnid(0) {
+  ShowLocksRequest() : dbname(), tablename(), partname(), isExtended(false) {
   }
 
   virtual ~ShowLocksRequest() throw();
@@ -9189,7 +9186,6 @@ class ShowLocksRequest {
   std::string tablename;
   std::string partname;
   bool isExtended;
-  int64_t txnid;
 
   _ShowLocksRequest__isset __isset;
 
@@ -9200,8 +9196,6 @@ class ShowLocksRequest {
   void __set_partname(const std::string& val);
 
   void __set_isExtended(const bool val);
-
-  void __set_txnid(const int64_t val);
 
   bool operator == (const ShowLocksRequest & rhs) const
   {
@@ -9220,10 +9214,6 @@ class ShowLocksRequest {
     if (__isset.isExtended != rhs.__isset.isExtended)
       return false;
     else if (__isset.isExtended && !(isExtended == rhs.isExtended))
-      return false;
-    if (__isset.txnid != rhs.__isset.txnid)
-      return false;
-    else if (__isset.txnid && !(txnid == rhs.txnid))
       return false;
     return true;
   }
@@ -17272,54 +17262,6 @@ class GetReplicationMetricsRequest {
 void swap(GetReplicationMetricsRequest &a, GetReplicationMetricsRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const GetReplicationMetricsRequest& obj)
-{
-  obj.printTo(out);
-  return out;
-}
-
-typedef struct _GetOpenTxnsRequest__isset {
-  _GetOpenTxnsRequest__isset() : excludeTxnTypes(false) {}
-  bool excludeTxnTypes :1;
-} _GetOpenTxnsRequest__isset;
-
-class GetOpenTxnsRequest {
- public:
-
-  GetOpenTxnsRequest(const GetOpenTxnsRequest&);
-  GetOpenTxnsRequest& operator=(const GetOpenTxnsRequest&);
-  GetOpenTxnsRequest() {
-  }
-
-  virtual ~GetOpenTxnsRequest() throw();
-  std::vector<TxnType::type>  excludeTxnTypes;
-
-  _GetOpenTxnsRequest__isset __isset;
-
-  void __set_excludeTxnTypes(const std::vector<TxnType::type> & val);
-
-  bool operator == (const GetOpenTxnsRequest & rhs) const
-  {
-    if (__isset.excludeTxnTypes != rhs.__isset.excludeTxnTypes)
-      return false;
-    else if (__isset.excludeTxnTypes && !(excludeTxnTypes == rhs.excludeTxnTypes))
-      return false;
-    return true;
-  }
-  bool operator != (const GetOpenTxnsRequest &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const GetOpenTxnsRequest & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(GetOpenTxnsRequest &a, GetOpenTxnsRequest &b);
-
-inline std::ostream& operator<<(std::ostream& out, const GetOpenTxnsRequest& obj)
 {
   obj.printTo(out);
   return out;

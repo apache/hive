@@ -38,16 +38,16 @@ public class TruncateTableHandler extends AbstractMessageHandler {
 
     TruncateTableDesc truncateTableDesc = new TruncateTableDesc(tName, null, context.eventOnlyReplicationSpec());
     truncateTableDesc.setWriteId(msg.getWriteId());
-    Task<DDLWork> truncateTableTask = TaskFactory.get(new DDLWork(readEntitySet, writeEntitySet,
-                truncateTableDesc, true, context.getDumpDirectory(),
-                context.getMetricCollector()), context.hiveConf);
+    Task<DDLWork> truncateTableTask = TaskFactory.get(
+        new DDLWork(readEntitySet, writeEntitySet, truncateTableDesc), context.hiveConf);
 
     context.log.debug("Added truncate tbl task : {}:{}:{}", truncateTableTask.getId(),
         truncateTableDesc.getTableName(), truncateTableDesc.getWriteId());
     updatedMetadata.set(context.dmd.getEventTo().toString(), tName.getDb(), tName.getTable(), null);
 
     try {
-      return ReplUtils.addChildTask(truncateTableTask);
+      return ReplUtils.addOpenTxnTaskForMigration(tName.getDb(), tName.getTable(),
+              context.hiveConf, updatedMetadata, truncateTableTask, msg.getTableObjBefore());
     } catch (Exception e) {
       throw new SemanticException(e.getMessage());
     }

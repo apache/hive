@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 
 import org.apache.hadoop.conf.Configuration;
@@ -27,19 +26,16 @@ import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.permission.AclEntry;
-import org.apache.hadoop.fs.permission.AclStatus;
-import static org.apache.hadoop.fs.permission.AclEntryScope.ACCESS;
-import static org.apache.hadoop.fs.permission.AclEntryType.GROUP;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager.RecycleType;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.utils.EncryptionZoneUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hdfs.DFSTestUtil;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.ipc.RemoteException;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
@@ -47,7 +43,6 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -70,6 +65,7 @@ public class TestMetaStoreMultipleEncryptionZones {
     private static MiniDFSCluster miniDFSCluster;
     private static String cmroot;
     private static FileSystem fs;
+    private static HadoopShims.HdfsEncryptionShim shimCm;
     private static String cmrootEncrypted;
     private static String jksFile = System.getProperty("java.io.tmpdir") + "/test.jks";
     private static String cmrootFallBack;
@@ -79,7 +75,6 @@ public class TestMetaStoreMultipleEncryptionZones {
         //Create secure cluster
         conf = new Configuration();
         conf.set("hadoop.security.key.provider.path", "jceks://file" + jksFile);
-        conf.set("dfs.namenode.acls.enabled", "true");
         miniDFSCluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
         DFSTestUtil.createKey("test_key_cm", miniDFSCluster, conf);
         DFSTestUtil.createKey("test_key_db", miniDFSCluster, conf);
@@ -97,6 +92,8 @@ public class TestMetaStoreMultipleEncryptionZones {
         hiveConf.set(HiveConf.ConfVars.REPLCMENCRYPTEDDIR.varname, cmrootEncrypted);
         hiveConf.set(HiveConf.ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.varname, cmrootFallBack);
         initReplChangeManager();
+        //Create cm in encrypted zone
+        shimCm = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
 
         try {
             client = new HiveMetaStoreClient(hiveConf);
@@ -159,7 +156,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         Path dirDb1 = new Path(warehouse.getWhRoot(), dbName1 +".db");
         warehouseFs.delete(dirDb1, true);
         warehouseFs.mkdirs(dirDb1);
-        EncryptionZoneUtils.createEncryptionZone(dirDb1, "test_key_db", conf);
+        shimCm.createEncryptionZone(dirDb1, "test_key_db");
         Path dirTbl1 = new Path(dirDb1, tblName1);
         warehouseFs.mkdirs(dirTbl1);
         Path part11 = new Path(dirTbl1, "part1");
@@ -168,7 +165,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         Path dirDb2 = new Path(warehouse.getWhRoot(), dbName2 +".db");
         warehouseFs.delete(dirDb2, true);
         warehouseFs.mkdirs(dirDb2);
-        EncryptionZoneUtils.createEncryptionZone(dirDb2, "test_key_cm", conf);
+        shimCm.createEncryptionZone(dirDb2, "test_key_cm");
         Path dirTbl2 = new Path(dirDb2, tblName2);
         warehouseFs.mkdirs(dirTbl2);
         Path part12 = new Path(dirTbl2, "part1");
@@ -277,13 +274,13 @@ public class TestMetaStoreMultipleEncryptionZones {
         warehouseFs.mkdirs(dirDb);
         Path dirTbl1 = new Path(dirDb, tblName1);
         warehouseFs.mkdirs(dirTbl1);
-        EncryptionZoneUtils.createEncryptionZone(dirTbl1, "test_key_db", conf);
+        shimCm.createEncryptionZone(dirTbl1, "test_key_db");
         Path part11 = new Path(dirTbl1, "part1");
         createFile(part11, "testClearer11");
 
         Path dirTbl2 = new Path(dirDb, tblName2);
         warehouseFs.mkdirs(dirTbl2);
-        EncryptionZoneUtils.createEncryptionZone(dirTbl2, "test_key_cm", conf);
+        shimCm.createEncryptionZone(dirTbl2, "test_key_cm");
         Path part12 = new Path(dirTbl2, "part1");
         createFile(part12, "testClearer12");
 
@@ -353,7 +350,7 @@ public class TestMetaStoreMultipleEncryptionZones {
 
         Path dirDb1 = new Path(warehouse.getWhRoot(), dbName1 +".db");
         warehouseFs.mkdirs(dirDb1);
-        EncryptionZoneUtils.createEncryptionZone(dirDb1, "test_key_db", conf);
+        shimCm.createEncryptionZone(dirDb1, "test_key_db");
         Path dirTbl1 = new Path(dirDb1, tblName1);
         warehouseFs.mkdirs(dirTbl1);
         Path part11 = new Path(dirTbl1, "part1");
@@ -361,7 +358,7 @@ public class TestMetaStoreMultipleEncryptionZones {
 
         Path dirDb2 = new Path(warehouse.getWhRoot(), dbName2 +".db");
         warehouseFs.mkdirs(dirDb2);
-        EncryptionZoneUtils.createEncryptionZone(dirDb2, "test_key_db", conf);
+        shimCm.createEncryptionZone(dirDb2, "test_key_db");
         Path dirTbl2 = new Path(dirDb2, tblName2);
         warehouseFs.mkdirs(dirTbl2);
         Path part12 = new Path(dirTbl2, "part1");
@@ -468,7 +465,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         Path dirDb = new Path(warehouse.getWhRoot(), dbName +".db");
         warehouseFs.delete(dirDb, true);
         warehouseFs.mkdirs(dirDb);
-        EncryptionZoneUtils.createEncryptionZone(dirDb, "test_key_db", conf);
+        shimCm.createEncryptionZone(dirDb, "test_key_db");
         Path dirTbl1 = new Path(dirDb, tblName1);
         warehouseFs.mkdirs(dirTbl1);
         Path part11 = new Path(dirTbl1, "part1");
@@ -617,7 +614,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         Path dirDb = new Path(warehouse.getWhRoot(), dbName +".db");
         warehouseFs.delete(dirDb, true);
         warehouseFs.mkdirs(dirDb);
-        EncryptionZoneUtils.createEncryptionZone(dirDb, "test_key_db", conf);
+        shimCm.createEncryptionZone(dirDb, "test_key_db");
         Path dirTbl1 = new Path(dirDb, tblName1);
         warehouseFs.mkdirs(dirTbl1);
         Path part11 = new Path(dirTbl1, "part1");
@@ -710,13 +707,13 @@ public class TestMetaStoreMultipleEncryptionZones {
         warehouseFs.mkdirs(dirDb);
         Path dirTbl1 = new Path(dirDb, tblName1);
         warehouseFs.mkdirs(dirTbl1);
-        EncryptionZoneUtils.createEncryptionZone(dirTbl1, "test_key_db", conf);
+        shimCm.createEncryptionZone(dirTbl1, "test_key_db");
         Path part11 = new Path(dirTbl1, "part1");
         createFile(part11, "testClearer11");
 
         Path dirTbl2 = new Path(dirDb, tblName2);
         warehouseFs.mkdirs(dirTbl2);
-        EncryptionZoneUtils.createEncryptionZone(dirTbl2, "test_key_db", conf);
+        shimCm.createEncryptionZone(dirTbl2, "test_key_db");
         Path part12 = new Path(dirTbl2, "part1");
         createFile(part12, "testClearer12");
 
@@ -802,13 +799,13 @@ public class TestMetaStoreMultipleEncryptionZones {
         warehouseFs.mkdirs(dirDb);
         Path dirTbl1 = new Path(dirDb, tblName1);
         warehouseFs.mkdirs(dirTbl1);
-        EncryptionZoneUtils.createEncryptionZone(dirTbl1, "test_key_db", conf);
+        shimCm.createEncryptionZone(dirTbl1, "test_key_db");
         Path part11 = new Path(dirTbl1, "part1");
         createFile(part11, "testClearer11");
 
         Path dirTbl2 = new Path(dirDb, tblName2);
         warehouseFs.mkdirs(dirTbl2);
-        EncryptionZoneUtils.createEncryptionZone(dirTbl2, "test_key_cm", conf);
+        shimCm.createEncryptionZone(dirTbl2, "test_key_cm");
         Path part12 = new Path(dirTbl2, "part1");
         createFile(part12, "testClearer12");
 
@@ -933,7 +930,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         Path dirDb1 = new Path(warehouse.getWhRoot(), dbName1 +".db");
         warehouseFs.delete(dirDb1, true);
         warehouseFs.mkdirs(dirDb1);
-        EncryptionZoneUtils.createEncryptionZone(dirDb1, "test_key_db", conf);
+        shimCm.createEncryptionZone(dirDb1, "test_key_db");
         Path dirTbl1 = new Path(dirDb1, tblName1);
         warehouseFs.mkdirs(dirTbl1);
         Path part11 = new Path(dirTbl1, "part1");
@@ -942,7 +939,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         Path dirDb2 = new Path(warehouse.getWhRoot(), dbName2 +".db");
         warehouseFs.delete(dirDb2, true);
         warehouseFs.mkdirs(dirDb2);
-        EncryptionZoneUtils.createEncryptionZone(dirDb2, "test_key_db", conf);
+        shimCm.createEncryptionZone(dirDb2, "test_key_db");
         Path dirTbl2 = new Path(dirDb2, tblName2);
         warehouseFs.mkdirs(dirTbl2);
         Path part12 = new Path(dirTbl2, "part1");
@@ -1023,7 +1020,7 @@ public class TestMetaStoreMultipleEncryptionZones {
 
         Path dirDb1 = new Path(warehouse.getWhRoot(), dbName1 +".db");
         warehouseFs.mkdirs(dirDb1);
-        EncryptionZoneUtils.createEncryptionZone(dirDb1, "test_key_db", conf);
+        shimCm.createEncryptionZone(dirDb1, "test_key_db");
         Path dirTbl1 = new Path(dirDb1, tblName1);
         warehouseFs.mkdirs(dirTbl1);
         Path part11 = new Path(dirTbl1, "part1");
@@ -1031,7 +1028,7 @@ public class TestMetaStoreMultipleEncryptionZones {
 
         Path dirDb2 = new Path(warehouse.getWhRoot(), dbName2 +".db");
         warehouseFs.mkdirs(dirDb2);
-        EncryptionZoneUtils.createEncryptionZone(dirDb2, "test_key_db", conf);
+        shimCm.createEncryptionZone(dirDb2, "test_key_db");
         Path dirTbl2 = new Path(dirDb2, tblName2);
         warehouseFs.mkdirs(dirTbl2);
         Path part12 = new Path(dirTbl2, "part1");
@@ -1128,7 +1125,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         Path dirDb = new Path(warehouse.getWhRoot(), dbName +".db");
         warehouseFs.delete(dirDb, true);
         warehouseFs.mkdirs(dirDb);
-        EncryptionZoneUtils.createEncryptionZone(dirDb, "test_key_db", conf);
+        shimCm.createEncryptionZone(dirDb, "test_key_db");
         Path dirTbl1 = new Path(dirDb, tblName1);
         warehouseFs.mkdirs(dirTbl1);
         Path part11 = new Path(dirTbl1, "part1");
@@ -1236,7 +1233,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         warehouseFs.mkdirs(dirDb);
         Path dirTbl1 = new Path(dirDb, "tbl1");
         warehouseFs.mkdirs(dirTbl1);
-        EncryptionZoneUtils.createEncryptionZone(dirTbl1, "test_key_db", conf);
+        shimCm.createEncryptionZone(dirTbl1, "test_key_db");
         Path part11 = new Path(dirTbl1, "part1");
         createFile(part11, "testClearer11");
 
@@ -1265,6 +1262,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         FileSystem cmfs = new Path(cmrootCmClearer).getFileSystem(hiveConfCmClearer);
         cmfs.mkdirs(warehouseCmClearer.getWhRoot());
 
+        HadoopShims.HdfsEncryptionShim shimCmEncrypted = ShimLoader.getHadoopShims().createHdfsEncryptionShim(cmfs, conf);
 
         FileSystem fsWarehouse = warehouseCmClearer.getWhRoot().getFileSystem(hiveConfCmClearer);
         long now = System.currentTimeMillis();
@@ -1273,7 +1271,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         fsWarehouse.mkdirs(dirDb);
         Path dirTbl1 = new Path(dirDb, "tbl1");
         fsWarehouse.mkdirs(dirTbl1);
-        EncryptionZoneUtils.createEncryptionZone(dirTbl1, "test_key_db", conf);
+        shimCmEncrypted.createEncryptionZone(dirTbl1, "test_key_db");
         Path part11 = new Path(dirTbl1, "part1");
         createFile(part11, "testClearer11");
         String fileChksum11 = ReplChangeManager.checksumFor(part11, fsWarehouse);
@@ -1282,7 +1280,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         String fileChksum12 = ReplChangeManager.checksumFor(part12, fsWarehouse);
         Path dirTbl2 = new Path(dirDb, "tbl2");
         fsWarehouse.mkdirs(dirTbl2);
-        EncryptionZoneUtils.createEncryptionZone(dirTbl2, "test_key_db", conf);
+        shimCmEncrypted.createEncryptionZone(dirTbl2, "test_key_db");
         Path part21 = new Path(dirTbl2, "part1");
         createFile(part21, "testClearer21");
         String fileChksum21 = ReplChangeManager.checksumFor(part21, fsWarehouse);
@@ -1291,7 +1289,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         String fileChksum22 = ReplChangeManager.checksumFor(part22, fsWarehouse);
         Path dirTbl3 = new Path(dirDb, "tbl3");
         fsWarehouse.mkdirs(dirTbl3);
-        EncryptionZoneUtils.createEncryptionZone(dirTbl3, "test_key_cm", conf);
+        shimCmEncrypted.createEncryptionZone(dirTbl3, "test_key_cm");
         Path part31 = new Path(dirTbl3, "part1");
         createFile(part31, "testClearer31");
         String fileChksum31 = ReplChangeManager.checksumFor(part31, fsWarehouse);
@@ -1317,17 +1315,17 @@ public class TestMetaStoreMultipleEncryptionZones {
                 ReplChangeManager.getInstance(conf).getCmRoot(part32).toString())));
 
         fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfCmClearer, part11.getName(), fileChksum11,
-          ReplChangeManager.getInstance(conf).getCmRoot(part11).toString()),
-          now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
+                ReplChangeManager.getInstance(conf).getCmRoot(part11).toString()),
+                now - 86400*1000*2, now - 86400*1000*2);
         fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfCmClearer, part21.getName(), fileChksum21,
-          ReplChangeManager.getInstance(conf).getCmRoot(part21).toString()),
-          now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
+                ReplChangeManager.getInstance(conf).getCmRoot(part21).toString()),
+                now - 86400*1000*2, now - 86400*1000*2);
         fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfCmClearer, part31.getName(), fileChksum31,
-          ReplChangeManager.getInstance(conf).getCmRoot(part31).toString()),
-          now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
+                ReplChangeManager.getInstance(conf).getCmRoot(part31).toString()),
+                now - 86400*1000*2, now - 86400*1000*2);
         fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfCmClearer, part32.getName(), fileChksum32,
-          ReplChangeManager.getInstance(conf).getCmRoot(part32).toString()),
-          now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
+                ReplChangeManager.getInstance(conf).getCmRoot(part32).toString()),
+                now - 86400*1000*2, now - 86400*1000*2);
 
         ReplChangeManager.scheduleCMClearer(hiveConfCmClearer);
 
@@ -1358,148 +1356,6 @@ public class TestMetaStoreMultipleEncryptionZones {
     }
 
     @Test
-    public void testCmRootAclPermissions() throws Exception {
-        HiveConf hiveConfAclPermissions = new HiveConf(TestReplChangeManager.class);
-        hiveConfAclPermissions.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
-        hiveConfAclPermissions.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
-        hiveConfAclPermissions.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
-                "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
-                        + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
-
-        String cmRootAclPermissions = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmRootAclPermissions";
-        hiveConfAclPermissions.set(HiveConf.ConfVars.REPLCMDIR.varname, cmRootAclPermissions);
-        Warehouse warehouseCmPermissions = new Warehouse(hiveConfAclPermissions);
-        FileSystem cmfs = new Path(cmRootAclPermissions).getFileSystem(hiveConfAclPermissions);
-        cmfs.mkdirs(warehouseCmPermissions.getWhRoot());
-
-        FileSystem fsWarehouse = warehouseCmPermissions.getWhRoot().getFileSystem(hiveConfAclPermissions);
-        //change the group of warehouse for testing
-        Path warehouse = new Path(hiveConfAclPermissions.get(HiveConf.ConfVars.METASTOREWAREHOUSE.varname));
-        fsWarehouse.setOwner(warehouse, null, "testgroup");
-
-        long now = System.currentTimeMillis();
-        Path dirDb = new Path(warehouseCmPermissions.getWhRoot(), "db_perm");
-        fsWarehouse.delete(dirDb, true);
-        fsWarehouse.mkdirs(dirDb);
-        Path dirTbl1 = new Path(dirDb, "tbl1");
-        fsWarehouse.mkdirs(dirTbl1);
-        EncryptionZoneUtils.createEncryptionZone(dirTbl1, "test_key_db", conf);
-        Path part11 = new Path(dirTbl1, "part1");
-        createFile(part11, "testClearer11");
-        String fileChksum11 = ReplChangeManager.checksumFor(part11, fsWarehouse);
-        Path part12 = new Path(dirTbl1, "part2");
-        createFile(part12, "testClearer12");
-        String fileChksum12 = ReplChangeManager.checksumFor(part12, fsWarehouse);
-        Path dirTbl2 = new Path(dirDb, "tbl2");
-        fsWarehouse.mkdirs(dirTbl2);
-        EncryptionZoneUtils.createEncryptionZone(dirTbl2, "test_key_db", conf);
-        Path part21 = new Path(dirTbl2, "part1");
-        createFile(part21, "testClearer21");
-        String fileChksum21 = ReplChangeManager.checksumFor(part21, fsWarehouse);
-        Path part22 = new Path(dirTbl2, "part2");
-        createFile(part22, "testClearer22");
-        String fileChksum22 = ReplChangeManager.checksumFor(part22, fsWarehouse);
-        Path dirTbl3 = new Path(dirDb, "tbl3");
-        fsWarehouse.mkdirs(dirTbl3);
-        EncryptionZoneUtils.createEncryptionZone(dirTbl3, "test_key_cm", conf);
-        Path part31 = new Path(dirTbl3, "part1");
-        createFile(part31, "testClearer31");
-        String fileChksum31 = ReplChangeManager.checksumFor(part31, fsWarehouse);
-        Path part32 = new Path(dirTbl3, "part2");
-        createFile(part32, "testClearer32");
-        String fileChksum32 = ReplChangeManager.checksumFor(part32, fsWarehouse);
-
-        final UserGroupInformation proxyUserUgi =
-                UserGroupInformation.createUserForTesting("impala", new String[] {"testgroup"});
-
-        fsWarehouse.setOwner(dirDb, "impala", "default");
-        fsWarehouse.setOwner(dirTbl1, "impala", "default");
-        fsWarehouse.setOwner(dirTbl2, "impala", "default");
-        fsWarehouse.setOwner(dirTbl3, "impala", "default");
-        fsWarehouse.setOwner(part11, "impala", "default");
-        fsWarehouse.setOwner(part12, "impala", "default");
-        fsWarehouse.setOwner(part21, "impala", "default");
-        fsWarehouse.setOwner(part22, "impala", "default");
-        fsWarehouse.setOwner(part31, "impala", "default");
-        fsWarehouse.setOwner(part32, "impala", "default");
-
-        proxyUserUgi.doAs((PrivilegedExceptionAction<Void>) () -> {
-            try {
-                //impala doesn't have access but it belongs to a group which has access through acl.
-                ReplChangeManager.getInstance(hiveConfAclPermissions).recycle(dirTbl1, RecycleType.MOVE, false);
-                ReplChangeManager.getInstance(hiveConfAclPermissions).recycle(dirTbl2, RecycleType.MOVE, false);
-                ReplChangeManager.getInstance(hiveConfAclPermissions).recycle(dirTbl3, RecycleType.MOVE, true);
-            } catch (Exception e) {
-                Assert.fail();
-            }
-            return null;
-        });
-
-        String cmEncrypted = hiveConf.get(HiveConf.ConfVars.REPLCMENCRYPTEDDIR.varname, cmrootEncrypted);
-        AclStatus aclStatus = fsWarehouse.getAclStatus(new Path(dirTbl1 + Path.SEPARATOR + cmEncrypted));
-        AclStatus aclStatus2 = fsWarehouse.getAclStatus(new Path(dirTbl2 + Path.SEPARATOR + cmEncrypted));
-        AclStatus aclStatus3 = fsWarehouse.getAclStatus(new Path(dirTbl3 + Path.SEPARATOR + cmEncrypted));
-        AclEntry expectedAcl = new AclEntry.Builder().setScope(ACCESS).setType(GROUP).setName("testgroup").
-                setPermission(fsWarehouse.getFileStatus(warehouse).getPermission().getGroupAction()).build();
-        Assert.assertTrue(aclStatus.getEntries().contains(expectedAcl));
-        Assert.assertTrue(aclStatus2.getEntries().contains(expectedAcl));
-        Assert.assertTrue(aclStatus3.getEntries().contains(expectedAcl));
-
-        assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part11.getName(), fileChksum11,
-                ReplChangeManager.getInstance(conf).getCmRoot(part11).toString())));
-        assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part12.getName(), fileChksum12,
-                ReplChangeManager.getInstance(conf).getCmRoot(part12).toString())));
-        assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part21.getName(), fileChksum21,
-                ReplChangeManager.getInstance(conf).getCmRoot(part21).toString())));
-        assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part22.getName(), fileChksum22,
-                ReplChangeManager.getInstance(conf).getCmRoot(part22).toString())));
-        assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part31.getName(), fileChksum31,
-                ReplChangeManager.getInstance(conf).getCmRoot(part31).toString())));
-        assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part32.getName(), fileChksum32,
-                ReplChangeManager.getInstance(conf).getCmRoot(part32).toString())));
-
-        fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfAclPermissions, part11.getName(), fileChksum11,
-                ReplChangeManager.getInstance(conf).getCmRoot(part11).toString()),
-                now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
-        fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfAclPermissions, part21.getName(), fileChksum21,
-                ReplChangeManager.getInstance(conf).getCmRoot(part21).toString()),
-                now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
-        fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfAclPermissions, part31.getName(), fileChksum31,
-                ReplChangeManager.getInstance(conf).getCmRoot(part31).toString()),
-                now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
-        fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfAclPermissions, part32.getName(), fileChksum32,
-                ReplChangeManager.getInstance(conf).getCmRoot(part32).toString()),
-                now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
-
-        ReplChangeManager.scheduleCMClearer(hiveConfAclPermissions);
-
-        long start = System.currentTimeMillis();
-        long end;
-        boolean cleared = false;
-        do {
-            Thread.sleep(200);
-            end = System.currentTimeMillis();
-            if (end - start > 5000) {
-                Assert.fail("timeout, cmroot has not been cleared");
-            }
-            if (!fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part11.getName(), fileChksum11,
-                    ReplChangeManager.getInstance(conf).getCmRoot(part11).toString())) &&
-                    fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part12.getName(), fileChksum12,
-                            ReplChangeManager.getInstance(conf).getCmRoot(part12).toString())) &&
-                    !fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part21.getName(), fileChksum21,
-                            ReplChangeManager.getInstance(conf).getCmRoot(part21).toString())) &&
-                    fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part22.getName(), fileChksum22,
-                            ReplChangeManager.getInstance(conf).getCmRoot(part22).toString())) &&
-                    !fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part31.getName(), fileChksum31,
-                            ReplChangeManager.getInstance(conf).getCmRoot(part31).toString())) &&
-                    !fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part32.getName(), fileChksum32,
-                            ReplChangeManager.getInstance(conf).getCmRoot(part32).toString()))) {
-                cleared = true;
-            }
-        } while (!cleared);
-    }
-
-    @Test
     public void testCmrootEncrypted() throws Exception {
         HiveConf encryptedHiveConf = new HiveConf(TestReplChangeManager.class);
         encryptedHiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
@@ -1508,14 +1364,13 @@ public class TestMetaStoreMultipleEncryptionZones {
                 "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
                         + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
 
-        String cmrootdirEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmrootDirEncrypted";
+        String cmrootdirEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmroot";
         encryptedHiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, cmrootdirEncrypted);
-        FileSystem cmrootdirEncryptedFs = new Path(cmrootdirEncrypted).getFileSystem(hiveConf);
-        cmrootdirEncryptedFs.mkdirs(new Path(cmrootdirEncrypted));
         encryptedHiveConf.set(HiveConf.ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.varname, cmrootFallBack);
 
         //Create cm in encrypted zone
-        EncryptionZoneUtils.createEncryptionZone(new Path(cmrootdirEncrypted), "test_key_db", conf);
+        HadoopShims.HdfsEncryptionShim shimCmEncrypted = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
+        shimCmEncrypted.createEncryptionZone(new Path(cmrootdirEncrypted), "test_key_db");
         ReplChangeManager.resetReplChangeManagerInstance();
         Warehouse warehouseEncrypted = new Warehouse(encryptedHiveConf);
         FileSystem warehouseFsEncrypted = warehouseEncrypted.getWhRoot().getFileSystem(encryptedHiveConf);
@@ -1527,7 +1382,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         warehouseFsEncrypted.mkdirs(dirDb);
         Path dirTbl1 = new Path(dirDb, "tbl1");
         warehouseFsEncrypted.mkdirs(dirTbl1);
-        EncryptionZoneUtils.createEncryptionZone(dirTbl1, "test_key_db", conf);
+        shimCmEncrypted.createEncryptionZone(dirTbl1, "test_key_db");
         Path part11 = new Path(dirTbl1, "part1");
         createFile(part11, "testClearer11");
 
@@ -1555,86 +1410,9 @@ public class TestMetaStoreMultipleEncryptionZones {
             exceptionThrown = true;
         }
         assertFalse(exceptionThrown);
-        cmrootdirEncryptedFs.delete(new Path(cmrootdirEncrypted), true);
         ReplChangeManager.resetReplChangeManagerInstance();
         initReplChangeManager();
     }
-
-    @Test
-    public void testCmrootFallbackEncrypted() throws Exception {
-        HiveConf encryptedHiveConf = new HiveConf(TestReplChangeManager.class);
-        encryptedHiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
-        encryptedHiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
-        encryptedHiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
-          "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
-            + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
-        String cmrootdirEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmrootIsEncrypted";
-        String cmRootFallbackEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
-          + "/cmrootFallbackEncrypted";
-        FileSystem cmrootdirEncryptedFs = new Path(cmrootdirEncrypted).getFileSystem(encryptedHiveConf);
-        try {
-            cmrootdirEncryptedFs.mkdirs(new Path(cmrootdirEncrypted));
-            cmrootdirEncryptedFs.mkdirs(new Path(cmRootFallbackEncrypted));
-            encryptedHiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, cmrootdirEncrypted);
-            encryptedHiveConf.set(HiveConf.ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.varname, cmRootFallbackEncrypted);
-
-            //Create cm in encrypted zone
-            EncryptionZoneUtils.createEncryptionZone(new Path(cmrootdirEncrypted), "test_key_db", conf);
-            EncryptionZoneUtils.createEncryptionZone(new Path(cmRootFallbackEncrypted), "test_key_db", conf);
-            ReplChangeManager.resetReplChangeManagerInstance();
-            boolean exceptionThrown = false;
-            try {
-                new Warehouse(encryptedHiveConf);
-            } catch (MetaException e) {
-                exceptionThrown = true;
-                assertTrue(e.getMessage().contains("should not be encrypted"));
-            }
-            assertTrue(exceptionThrown);
-        } finally {
-            cmrootdirEncryptedFs.delete(new Path(cmrootdirEncrypted), true);
-            cmrootdirEncryptedFs.delete(new Path(cmRootFallbackEncrypted), true);
-            ReplChangeManager.resetReplChangeManagerInstance();
-            initReplChangeManager();
-        }
-    }
-
-    @Test
-    public void testCmrootFallbackRelative() throws Exception {
-        HiveConf encryptedHiveConf = new HiveConf(TestReplChangeManager.class);
-        encryptedHiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
-        encryptedHiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
-        encryptedHiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
-          "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
-            + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
-        String cmrootdirEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmrootIsEncrypted";
-        String cmRootFallbackEncrypted = "cmrootFallbackEncrypted";
-        FileSystem cmrootdirEncryptedFs = new Path(cmrootdirEncrypted).getFileSystem(encryptedHiveConf);
-        try {
-            cmrootdirEncryptedFs.mkdirs(new Path(cmrootdirEncrypted));
-            cmrootdirEncryptedFs.mkdirs(new Path(cmRootFallbackEncrypted));
-            encryptedHiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, cmrootdirEncrypted);
-            encryptedHiveConf.set(HiveConf.ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.varname, cmRootFallbackEncrypted);
-
-            //Create cm in encrypted zone
-            EncryptionZoneUtils.createEncryptionZone(new Path(cmrootdirEncrypted), "test_key_db", conf);
-
-            ReplChangeManager.resetReplChangeManagerInstance();
-            boolean exceptionThrown = false;
-            try {
-                new Warehouse(encryptedHiveConf);
-            } catch (MetaException e) {
-                exceptionThrown = true;
-                assertTrue(e.getMessage().contains("should be absolute"));
-            }
-            assertTrue(exceptionThrown);
-        } finally {
-            cmrootdirEncryptedFs.delete(new Path(cmrootdirEncrypted), true);
-            cmrootdirEncryptedFs.delete(new Path(cmRootFallbackEncrypted), true);
-            ReplChangeManager.resetReplChangeManagerInstance();
-            initReplChangeManager();
-        }
-    }
-
 
 
     private void createFile(Path path, String content) throws IOException {

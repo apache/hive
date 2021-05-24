@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import javax.annotation.Nullable;
+import java.text.Collator;
 import java.util.Map;
 
 /**
@@ -46,14 +47,12 @@ public class ReplicationSpec {
   //TxnIds snapshot
   private String validTxnList = null;
   private Type specType = Type.DEFAULT; // DEFAULT means REPL_LOAD or BOOTSTRAP_DUMP or EXPORT
+  private boolean isMigratingToTxnTable = false;
+  private boolean isMigratingToExternalTable = false;
   private boolean needDupCopyCheck = false;
   //Determine if replication is done using repl or export-import
   private boolean isRepl = false;
   private boolean isMetadataOnlyForExternalTables = false;
-
-  public void setInReplicationScope(boolean inReplicationScope) {
-    isInReplicationScope = inReplicationScope;
-  }
 
   // Key definitions related to replication.
   public enum KEY {
@@ -123,7 +122,7 @@ public class ReplicationSpec {
   public ReplicationSpec(boolean isInReplicationScope, boolean isMetadataOnly,
                          String eventReplicationState, String currentReplicationState,
                          boolean isNoop, boolean isReplace) {
-    this.setInReplicationScope(isInReplicationScope);
+    this.isInReplicationScope = isInReplicationScope;
     this.isMetadataOnly = isMetadataOnly;
     this.eventId = eventReplicationState;
     this.currStateId = currentReplicationState;
@@ -134,15 +133,15 @@ public class ReplicationSpec {
 
   public ReplicationSpec(Function<String, String> keyFetcher) {
     String scope = keyFetcher.apply(ReplicationSpec.KEY.REPL_SCOPE.toString());
-    this.setInReplicationScope(false);
+    this.isInReplicationScope = false;
     this.isMetadataOnly = false;
     this.specType = Type.DEFAULT;
     if (scope != null) {
       if (scope.equalsIgnoreCase("metadata")) {
         this.isMetadataOnly = true;
-        this.setInReplicationScope(true);
+        this.isInReplicationScope = true;
       } else if (scope.equalsIgnoreCase("all")) {
-        this.setInReplicationScope(true);
+        this.isInReplicationScope = true;
       }
     }
     this.eventId = keyFetcher.apply(ReplicationSpec.KEY.EVENT_ID.toString());
@@ -228,7 +227,7 @@ public class ReplicationSpec {
 
   private void init(ASTNode node){
     // -> ^(TOK_REPLICATION $replId $isMetadataOnly)
-    setInReplicationScope(true);
+    isInReplicationScope = true;
     eventId = PlanUtils.stripQuotes(node.getChild(0).getText());
     if ((node.getChildCount() > 1)
             && node.getChild(1).getText().toLowerCase().equals("metadata")) {
@@ -402,6 +401,20 @@ public class ReplicationSpec {
     }
   }
 
+  public boolean isMigratingToTxnTable() {
+    return isMigratingToTxnTable;
+  }
+  public void setMigratingToTxnTable() {
+    isMigratingToTxnTable = true;
+  }
+
+  public boolean isMigratingToExternalTable() {
+    return isMigratingToExternalTable;
+  }
+
+  public void setMigratingToExternalTable() {
+    isMigratingToExternalTable = true;
+  }
 
   public static void copyLastReplId(Map<String, String> srcParameter, Map<String, String> destParameter) {
     String lastReplId = srcParameter.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());

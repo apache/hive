@@ -571,22 +571,14 @@ public class HiveConf extends Configuration {
     REPLCMENCRYPTEDDIR("hive.repl.cm.encryptionzone.rootdir", ".cmroot",
             "Root dir for ChangeManager if encryption zones are enabled, used for deleted files."),
     REPLCMFALLBACKNONENCRYPTEDDIR("hive.repl.cm.nonencryptionzone.rootdir",
-            "",
+            "/user/${system:user.name}/cmroot/",
             "Root dir for ChangeManager for non encrypted paths if hive.repl.cmrootdir is encrypted."),
-    REPLCMRETIAN("hive.repl.cm.retain","10d",
-        new TimeValidator(TimeUnit.DAYS),
+    REPLCMRETIAN("hive.repl.cm.retain","24h",
+        new TimeValidator(TimeUnit.HOURS),
         "Time to retain removed files in cmrootdir."),
     REPLCMINTERVAL("hive.repl.cm.interval","3600s",
         new TimeValidator(TimeUnit.SECONDS),
         "Inteval for cmroot cleanup thread."),
-    REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE("hive.repl.ha.datapath.replace.remote.nameservice", false,
-            "When HDFS is HA enabled and both source and target clusters are configured with same nameservice name," +
-                    "enable this flag and provide a new unique logical name for representing the remote cluster " +
-                    "nameservice using config " + "'hive.repl.ha.datapath.replace.remote.nameservice.name'."),
-    REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE_NAME("hive.repl.ha.datapath.replace.remote.nameservice.name", null,
-            "When HDFS is HA enabled and both source and target clusters are configured with same nameservice name, " +
-                    "use this config to provide a unique logical name for nameservice on the remote cluster (should " +
-                    "be different from nameservice name on the local cluster)"),
     REPL_FUNCTIONS_ROOT_DIR("hive.repl.replica.functions.root.dir","/user/${system:user.name}/repl/functions/",
         "Root directory on the replica warehouse where the repl sub-system will store jars from the primary warehouse"),
     REPL_APPROX_MAX_LOAD_TASKS("hive.repl.approx.max.load.tasks", 10000,
@@ -596,26 +588,17 @@ public class HiveConf extends Configuration {
             + "task increment that would cross the specified limit."),
     REPL_PARTITIONS_DUMP_PARALLELISM("hive.repl.partitions.dump.parallelism",100,
         "Number of threads that will be used to dump partition data information during repl dump."),
-    REPL_RUN_DATA_COPY_TASKS_ON_TARGET("hive.repl.run.data.copy.tasks.on.target", true,
-            "Indicates whether replication should run data copy tasks during repl load operation."),
+    REPL_DUMPDIR_CLEAN_FREQ("hive.repl.dumpdir.clean.freq", "0s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Frequency at which timer task runs to purge expired dump dirs."),
+    REPL_DUMPDIR_TTL("hive.repl.dumpdir.ttl", "7d",
+        new TimeValidator(TimeUnit.DAYS),
+        "TTL of dump dirs before cleanup."),
     REPL_DUMP_METADATA_ONLY("hive.repl.dump.metadata.only", false,
         "Indicates whether replication dump only metadata information or data + metadata. \n"
           + "This config makes hive.repl.include.external.tables config ineffective."),
-    REPL_RETAIN_PREV_DUMP_DIR("hive.repl.retain.prev.dump.dir", false,
-            "If this is set to false, then all previously used dump-directories will be deleted after repl-dump. " +
-             "If true, a number of latest dump-directories specified by hive.repl.retain.prev.dump.dir.count will be retained"),
-    REPL_RETAIN_PREV_DUMP_DIR_COUNT("hive.repl.retain.prev.dump.dir.count", 3,
-            "Indicates maximium number of latest previously used dump-directories which would be retained when " +
-             "hive.repl.retain.prev.dump.dir is set to true"),
-    REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET("hive.repl.retain.custom.db.locations.on.target", true,
-            "Indicates if source database has custom warehouse locations, whether that should be retained on target as well"),
-    REPL_INCLUDE_MATERIALIZED_VIEWS("hive.repl.include.materialized.views", false,
-            "Indicates whether replication of materialized views is enabled."),
-    REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY("hive.repl.dump.skip.immutable.data.copy", false,
-        "Indicates whether replication dump can skip copyTask and refer to  \n"
-            + " original path instead. This would retain all table and partition meta"),
     REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE("hive.repl.dump.metadata.only.for.external.table",
-            true,
+            false,
             "Indicates whether external table replication dump only metadata information or data + metadata"),
     REPL_BOOTSTRAP_ACID_TABLES("hive.repl.bootstrap.acid.tables", false,
         "Indicates if repl dump should bootstrap the information about ACID tables along with \n"
@@ -628,16 +611,11 @@ public class HiveConf extends Configuration {
         "Indicates the timeout for all transactions which are opened before triggering bootstrap REPL DUMP. "
             + "If these open transactions are not closed within the timeout value, then REPL DUMP will "
             + "forcefully abort those transactions and continue with bootstrap dump."),
-    REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT("hive.repl.bootstrap.dump.abort.write.txn.after.timeout",
-      true,
-      "Indicates whether to abort write transactions belonging to the db under replication while doing a" +
-        " bootstrap dump after the timeout configured by hive.repl.bootstrap.dump.open.txn.timeout. If set to false," +
-        " bootstrap dump will fail."),
     //https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html#Running_as_the_superuser
     REPL_ADD_RAW_RESERVED_NAMESPACE("hive.repl.add.raw.reserved.namespace", false,
         "For TDE with same encryption keys on source and target, allow Distcp super user to access \n"
             + "the raw bytes from filesystem without decrypting on source and then encrypting on target."),
-    REPL_INCLUDE_EXTERNAL_TABLES("hive.repl.include.external.tables", true,
+    REPL_INCLUDE_EXTERNAL_TABLES("hive.repl.include.external.tables", false,
         "Indicates if repl dump should include information about external tables. It should be \n"
           + "used in conjunction with 'hive.repl.dump.metadata.only' set to false. if 'hive.repl.dump.metadata.only' \n"
           + " is set to true then this config parameter has no effect as external table meta data is flushed \n"
@@ -651,15 +629,22 @@ public class HiveConf extends Configuration {
           + "'hive.repl.include.external.tables' when sets to true. If 'hive.repl.include.external.tables' is \n"
           + "set to false, then this config parameter has no effect. It should be set to true only once for \n"
           + "incremental repl dump on each existing replication policy after enabling external tables replication."),
-    REPL_EXTERNAL_TABLE_BASE_DIR("hive.repl.replica.external.table.base.dir", null,
-        "This is the fully qualified base directory on the target/replica warehouse under which data for "
+    REPL_ENABLE_MOVE_OPTIMIZATION("hive.repl.enable.move.optimization", false,
+          "If its set to true, REPL LOAD copies data files directly to the target table/partition location \n"
+          + "instead of copying to staging directory first and then move to target location. This optimizes \n"
+          + " the REPL LOAD on object data stores such as S3 or WASB where creating a directory and move \n"
+          + " files are costly operations. In file system like HDFS where move operation is atomic, this \n"
+          + " optimization should not be enabled as it may lead to inconsistent data read for non acid tables."),
+    REPL_MOVE_OPTIMIZED_FILE_SCHEMES("hive.repl.move.optimized.scheme", "s3a, wasb",
+        "Comma separated list of schemes for which move optimization will be enabled during repl load. \n"
+        + "This configuration overrides the value set using REPL_ENABLE_MOVE_OPTIMIZATION for the given schemes. \n"
+        + " Schemes of the file system which does not support atomic move (rename) can be specified here to \n "
+        + " speed up the repl load operation. In file system like HDFS where move operation is atomic, this \n"
+        + " optimization should not be enabled as it may lead to inconsistent data read for non acid tables."),
+    REPL_EXTERNAL_TABLE_BASE_DIR("hive.repl.replica.external.table.base.dir", "/",
+        "This is the base directory on the target/replica warehouse under which data for "
             + "external tables is stored. This is relative base path and hence prefixed to the source "
             + "external table path on target cluster."),
-    REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK("hive.repl.external.warehouse.single.copy.task",
-        false, "Should create single copy task for all the external tables "
-        + "within the database default location for external tables, Would require more memory "
-        + "for preparing the initial listing, Should be used if the memory "
-        + "requirements can be fulfilled."),
     REPL_INCLUDE_AUTHORIZATION_METADATA("hive.repl.include.authorization.metadata", false,
             "This configuration will enable security and authorization related metadata along "
                     + "with the hive data and metadata replication. "),
@@ -673,57 +658,16 @@ public class HiveConf extends Configuration {
       true,
       "This configuration will add a deny policy on the target database for all users except hive"
         + " to avoid any update to the target database"),
-    REPL_RANGER_CLIENT_READ_TIMEOUT("hive.repl.ranger.client.read.timeout", "300s",
-            new TimeValidator(TimeUnit.SECONDS), "Ranger client read timeout for Ranger REST API calls."),
     REPL_INCLUDE_ATLAS_METADATA("hive.repl.include.atlas.metadata", false,
             "Indicates if Atlas metadata should be replicated along with Hive data and metadata or not."),
     REPL_ATLAS_ENDPOINT("hive.repl.atlas.endpoint", null,
             "Atlas endpoint of the current cluster hive database is getting replicated from/to."),
     REPL_ATLAS_REPLICATED_TO_DB("hive.repl.atlas.replicatedto", null,
             "Target hive database name Atlas metadata of source hive database is being replicated to."),
-    REPL_ATLAS_CLIENT_READ_TIMEOUT("hive.repl.atlas.client.read.timeout", "7200s",
-            new TimeValidator(TimeUnit.SECONDS), "Atlas client read timeout for Atlas REST API calls."),
-    REPL_EXTERNAL_CLIENT_CONNECT_TIMEOUT("hive.repl.external.client.connect.timeout", "10s",
-            new TimeValidator(TimeUnit.SECONDS), "Client connect timeout for REST API calls to external service."),
     REPL_SOURCE_CLUSTER_NAME("hive.repl.source.cluster.name", null,
             "Name of the source cluster for the replication."),
     REPL_TARGET_CLUSTER_NAME("hive.repl.target.cluster.name", null,
             "Name of the target cluster for the replication."),
-    REPL_RETRY_INTIAL_DELAY("hive.repl.retry.initial.delay", "60s",
-      new TimeValidator(TimeUnit.SECONDS),
-      "Initial Delay before retry starts."),
-    REPL_RETRY_BACKOFF_COEFFICIENT("hive.repl.retry.backoff.coefficient", 1.2f,
-      "The backoff coefficient for exponential retry delay between retries. " +
-        "Previous Delay * Backoff Coefficient will determine the next retry interval"),
-    REPL_RETRY_JITTER("hive.repl.retry.jitter", "30s", new TimeValidator(TimeUnit.SECONDS),
-      "A random jitter to be applied to avoid all retries happening at the same time."),
-    REPL_RETRY_MAX_DELAY_BETWEEN_RETRIES("hive.repl.retry.max.delay.between.retries", "60m",
-      new TimeValidator(TimeUnit.MINUTES),
-      "Maximum allowed retry delay in minutes after including exponential backoff. " +
-        "If this limit is reached, retry will continue with this retry duration."),
-    REPL_RETRY_TOTAL_DURATION("hive.repl.retry.total.duration", "24h",
-      new TimeValidator(TimeUnit.HOURS),
-      "Total allowed retry duration in hours inclusive of all retries. Once this is exhausted, " +
-        "the policy instance will be marked as failed and will need manual intervention to restart."),
-    REPL_COPY_FILE_LIST_ITERATOR_RETRY("hive.repl.copy.file.list.iterator.retry", true,
-            "Determines whether writes happen with retry upon encountering filesystem errors for data-copy \n"
-            + "iterator files. It should be disabled when we do not want retry on a per-line basis while writing \n"
-            + "to the files and in cases when flushing capabilities are not available on the stream. If disabled, then retry \n"
-            + "is only attempted during file creation, not for errors encountered while writing entries."),
-    REPL_LOAD_PARTITIONS_BATCH_SIZE("hive.repl.load.partitions.batch.size", 10000,
-      "Provide the maximum number of partitions of a table that will be batched together during  \n"
-        + "repl load. All the partitions in a batch will make a single metastore call to update the metadata. \n"
-        + "The data for these partitions will be copied before copying the metadata batch. "),
-    REPL_LOAD_PARTITIONS_WITH_DATA_COPY_BATCH_SIZE("hive.repl.load.partitions.with.data.copy.batch.size",1000,
-      "Provide the maximum number of partitions of a table that will be batched together during  \n"
-        + "repl load. All the partitions in a batch will make a single metastore call to update the metadata. \n"
-        + "The data for these partitions will be copied before copying the metadata batch. "),
-    REPL_PARALLEL_COPY_TASKS("hive.repl.parallel.copy.tasks",100,
-      "Provide the maximum number of parallel copy operation(distcp or regular copy) launched for a table  \n"
-        + "or partition. This will create at max 100 threads which will run copy in parallel for the data files at \n"
-        + " table or partition level. If hive.exec.parallel \n"
-        + "is set to true then max worker threads created for copy can be hive.exec.parallel.thread.number(determines \n"
-        + "number of copy tasks in parallel) * hive.repl.parallel.copy.tasks "),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
@@ -1378,8 +1322,7 @@ public class HiveConf extends Configuration {
     @Deprecated
     METASTORE_EVENT_DB_LISTENER_TTL("hive.metastore.event.db.listener.timetolive", "86400s",
         new TimeValidator(TimeUnit.SECONDS),
-        "time after which events will be removed from the database listener queue when repl.cm.enabled \n" +
-         "is set to false. When repl.cm.enabled is set to true, repl.event.db.listener.timetolive is used instead"),
+        "time after which events will be removed from the database listener queue"),
 
     /**
      * @deprecated Use MetastoreConf.EVENT_DB_NOTIFICATION_API_AUTH

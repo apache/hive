@@ -25,7 +25,6 @@ import org.apache.atlas.model.instance.AtlasObjectId;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasReplInfo;
@@ -33,14 +32,12 @@ import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRequestBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRestClient;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRestClientBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.log.AtlasDumpLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.hadoop.yarn.webapp.hamlet2.Hamlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +45,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -83,7 +79,6 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
   @Override
   public int execute() {
     try {
-      SecurityUtils.reloginExpiringKeytabUser();
       AtlasReplInfo atlasReplInfo = createAtlasReplInfo();
       LOG.info("Dumping Atlas metadata of srcDb: {}, for TgtDb: {} to staging location:",
               atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(), atlasReplInfo.getStagingDir());
@@ -98,34 +93,22 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
       AtlasRequestBuilder atlasRequestBuilder = new AtlasRequestBuilder();
       String entityGuid = checkHiveEntityGuid(atlasRequestBuilder, atlasReplInfo.getSrcCluster(),
               atlasReplInfo.getSrcDB());
+      long currentModifiedTime = getCurrentTimestamp(atlasReplInfo, entityGuid);
       long numBytesWritten = dumpAtlasMetaData(atlasRequestBuilder, atlasReplInfo);
       LOG.debug("Finished dumping atlas metadata, total:{} bytes written", numBytesWritten);
-      long currentModifiedTime = getCurrentTimestamp(atlasReplInfo, entityGuid);
       createDumpMetadata(atlasReplInfo, currentModifiedTime);
       replLogger.endLog(0L);
       work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS);
       return 0;
-    } catch (RuntimeException e) {
-      LOG.error("RuntimeException while dumping atlas metadata", e);
-      setException(e);
-      try{
-        ReplUtils.handleException(true, e, work.getStagingDir().getParent().toString(), work.getMetricCollector(),
-                getName(), conf);
-      } catch (Exception ex){
-        LOG.error("Failed to collect replication metrics: ", ex);
-      }
-      throw e;
     } catch (Exception e) {
       LOG.error("Exception while dumping atlas metadata", e);
       setException(e);
-      int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
-      try{
-        return ReplUtils.handleException(true, e, work.getStagingDir().getParent().toString(), work.getMetricCollector(),
-                getName(), conf);
-      } catch (Exception ex) {
-        LOG.error("Failed to collect replication metrics: ", ex);
-        return errorCode;
+      try {
+        work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
+      } catch (SemanticException ex) {
+        LOG.error("Failed to collect Metrics ", ex);
       }
+      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
   }
 
@@ -138,7 +121,7 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
     String srcCluster = ReplUtils.getNonEmpty(HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, conf, errorFormat);
     String tgtCluster = ReplUtils.getNonEmpty(HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, conf, errorFormat);
     AtlasReplInfo atlasReplInfo = new AtlasReplInfo(endpoint, work.getSrcDB(), tgtDB, srcCluster,
-            tgtCluster, work.getStagingDir(), work.getTableListPath(), conf);
+            tgtCluster, work.getStagingDir(), conf);
     atlasReplInfo.setSrcFsUri(conf.get(ReplUtils.DEFAULT_FS_CONFIG));
     long lastTimeStamp = work.isBootstrap() ? 0L : lastStoredTimeStamp();
     atlasReplInfo.setTimeStamp(lastTimeStamp);
@@ -147,43 +130,31 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
 
   private long lastStoredTimeStamp() throws SemanticException {
     Path prevMetadataPath = new Path(work.getPrevAtlasDumpDir(), EximUtil.METADATA_NAME);
-    Retryable retryable = Retryable.builder()
-      .withHiveConf(conf)
-      .withRetryOnException(IOException.class)
-      .withFailOnException(FileNotFoundException.class).build();
+    BufferedReader br = null;
     try {
-      return retryable.executeCallable(() -> {
-        BufferedReader br = null;
+      FileSystem fs = prevMetadataPath.getFileSystem(conf);
+      br = new BufferedReader(new InputStreamReader(fs.open(prevMetadataPath), Charset.defaultCharset()));
+      String line = br.readLine();
+      if (line == null) {
+        throw new SemanticException("Could not read lastStoredTimeStamp from atlas metadata file");
+      }
+      String[] lineContents = line.split("\t", 5);
+      return Long.parseLong(lineContents[1]);
+    } catch (Exception ex) {
+      throw new SemanticException(ex);
+    } finally {
+      if (br != null) {
         try {
-          FileSystem fs = prevMetadataPath.getFileSystem(conf);
-          br = new BufferedReader(new InputStreamReader(fs.open(prevMetadataPath), Charset.defaultCharset()));
-          String line = br.readLine();
-          if (line == null) {
-            throw new SemanticException(ErrorMsg.REPL_INVALID_INTERNAL_CONFIG_FOR_SERVICE
-              .format("Could not read lastStoredTimeStamp from atlas metadata file",
-                ReplUtils.REPL_ATLAS_SERVICE));
-          }
-          String[] lineContents = line.split("\t", 5);
-          return Long.parseLong(lineContents[1]);
-        } finally {
-          if (br != null) {
-            try {
-              br.close();
-            } catch (IOException e) {
-              //Do nothing
-            }
-          }
+          br.close();
+        } catch (IOException e) {
+          throw new SemanticException(e);
         }
-      });
-    } catch (SemanticException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
+      }
     }
   }
 
   private long getCurrentTimestamp(AtlasReplInfo atlasReplInfo, String entityGuid) throws SemanticException {
-    AtlasServer atlasServer = atlasRestClient.getServer(atlasReplInfo.getSrcCluster(), conf);
+    AtlasServer atlasServer = atlasRestClient.getServer(atlasReplInfo.getSrcCluster());
     long ret = (atlasServer == null || atlasServer.getAdditionalInfoRepl(entityGuid) == null)
             ? 0L : (long) atlasServer.getAdditionalInfoRepl(entityGuid);
     LOG.debug("Current timestamp is: {}", ret);
@@ -195,25 +166,22 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
     InputStream inputStream = null;
     long numBytesWritten = 0L;
     try {
-      AtlasExportRequest exportRequest = atlasRequestBuilder.createExportRequest(atlasReplInfo);
+      AtlasExportRequest exportRequest = atlasRequestBuilder.createExportRequest(atlasReplInfo,
+              atlasReplInfo.getSrcCluster());
       inputStream = atlasRestClient.exportData(exportRequest);
-      if (inputStream == null) {
-        LOG.info("There is no Atlas metadata to be exported");
-      } else {
-        FileSystem fs = atlasReplInfo.getStagingDir().getFileSystem(atlasReplInfo.getConf());
-        Path exportFilePath = new Path(atlasReplInfo.getStagingDir(), ReplUtils.REPL_ATLAS_EXPORT_FILE_NAME);
-        numBytesWritten = Utils.writeFile(fs, exportFilePath, inputStream, conf);
-      }
+      FileSystem fs = atlasReplInfo.getStagingDir().getFileSystem(atlasReplInfo.getConf());
+      Path exportFilePath = new Path(atlasReplInfo.getStagingDir(), ReplUtils.REPL_ATLAS_EXPORT_FILE_NAME);
+      numBytesWritten = Utils.writeFile(fs, exportFilePath, inputStream);
     } catch (SemanticException ex) {
       throw ex;
     } catch (Exception ex) {
-      throw new SemanticException(ex.getMessage(), ex);
+      throw new SemanticException(ex);
     } finally {
       if (inputStream != null) {
         try {
           inputStream.close();
         } catch (IOException e) {
-          //Do nothing
+          throw new SemanticException(e);
         }
       }
     }
@@ -226,14 +194,12 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
     AtlasObjectId objectId = atlasRequestBuilder.getItemToExport(clusterName, srcDb);
     Set<Map.Entry<String, Object>> entries = objectId.getUniqueAttributes().entrySet();
     if (entries == null || entries.isEmpty()) {
-      throw new SemanticException(ErrorMsg.REPL_INVALID_INTERNAL_CONFIG_FOR_SERVICE.format("Could find " +
-        "entries in objectId for:" + clusterName, ReplUtils.REPL_ATLAS_SERVICE));
+      throw new SemanticException("Could find entries in objectId for:" + clusterName);
     }
     Map.Entry<String, Object> item = entries.iterator().next();
     String guid = atlasRestClient.getEntityGuid(objectId.getTypeName(), item.getKey(), (String) item.getValue());
     if (guid == null || guid.isEmpty()) {
-      throw new SemanticException(ErrorMsg.REPL_INVALID_INTERNAL_CONFIG_FOR_SERVICE
-        .format("Entity not found:" + objectId, ReplUtils.REPL_ATLAS_SERVICE));
+      throw new SemanticException("Entity not found:" + objectId);
     }
     return guid;
   }

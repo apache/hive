@@ -127,9 +127,6 @@ public class TestObjectStore {
   public void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
-    // Events that get cleaned happen in batches of 1 to exercise batching code
-    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS, 1L);
-
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
     objectStore = new ObjectStore();
@@ -880,7 +877,8 @@ public class TestObjectStore {
     Assert.assertEquals(0, eventResponse.getEventsSize());
 
     // Verify that cleanNotificationEvents() cleans up all old notifications
-    objectStore.cleanNotificationEvents(0);
+    Thread.sleep(1);
+    objectStore.cleanNotificationEvents(1);
     eventResponse = objectStore.getNextNotification(new NotificationEventRequest());
     Assert.assertEquals(0, eventResponse.getEventsSize());
   }

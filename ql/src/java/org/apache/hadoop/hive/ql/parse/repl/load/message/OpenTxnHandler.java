@@ -44,8 +44,7 @@ public class OpenTxnHandler extends AbstractMessageHandler {
 
     Task<ReplTxnWork> openTxnTask = TaskFactory.get(
         new ReplTxnWork(HiveUtils.getReplPolicy(context.dbName), context.dbName, null,
-                msg.getTxnIds(), ReplTxnWork.OperationType.REPL_OPEN_TXN, context.eventOnlyReplicationSpec(),
-                context.getDumpDirectory(), context.getMetricCollector()),
+                msg.getTxnIds(), ReplTxnWork.OperationType.REPL_OPEN_TXN, context.eventOnlyReplicationSpec()),
         context.hiveConf
     );
 

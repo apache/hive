@@ -38,7 +38,7 @@ import java.util.List;
 public class DumpMetaData {
   // wrapper class for reading and writing metadata about a dump
   // responsible for _dumpmetadata files
-  public static final String DUMP_METADATA = "_dumpmetadata";
+  private static final String DUMP_METADATA = "_dumpmetadata";
   private static final Logger LOG = LoggerFactory.getLogger(DumpMetaData.class);
 
   private DumpType dumpType;
@@ -52,7 +52,6 @@ public class DumpMetaData {
   private final Path dumpFile;
   private final HiveConf hiveConf;
   private Long dumpExecutionId;
-  private boolean replScopeModified = false;
 
   public DumpMetaData(Path dumpRoot, HiveConf hiveConf) {
     this.hiveConf = hiveConf;
@@ -62,18 +61,16 @@ public class DumpMetaData {
   public DumpMetaData(Path dumpRoot, DumpType lvl, Long eventFrom, Long eventTo, Path cmRoot,
       HiveConf hiveConf) {
     this(dumpRoot, hiveConf);
-    setDump(lvl, eventFrom, eventTo, cmRoot, 0L, false);
+    setDump(lvl, eventFrom, eventTo, cmRoot, 0L);
   }
 
-  public void setDump(DumpType lvl, Long eventFrom, Long eventTo, Path cmRoot, Long dumpExecutionId,
-                      boolean replScopeModified) {
+  public void setDump(DumpType lvl, Long eventFrom, Long eventTo, Path cmRoot, Long dumpExecutionId) {
     this.dumpType = lvl;
     this.eventFrom = eventFrom;
     this.eventTo = eventTo;
     this.cmRoot = cmRoot;
     this.initialized = true;
     this.dumpExecutionId = dumpExecutionId;
-    this.replScopeModified = replScopeModified;
   }
 
   public void setPayload(String payload) {
@@ -82,10 +79,6 @@ public class DumpMetaData {
 
   public void setReplScope(ReplScope replScope) {
     this.replScope = replScope;
-  }
-
-  public void setDumpType(DumpType dumpType) {
-    this.dumpType = dumpType;
   }
 
   private void readReplScope(String line) throws IOException {
@@ -124,14 +117,10 @@ public class DumpMetaData {
       br = new BufferedReader(new InputStreamReader(fs.open(dumpFile)));
       String line;
       if ((line = br.readLine()) != null) {
-        String[] lineContents = line.split("\t", 7);
-        setDump(lineContents[0].equals(Utilities.nullStringOutput) ? null : DumpType.valueOf(lineContents[0]),
-          lineContents[1].equals(Utilities.nullStringOutput) ? null : Long.valueOf(lineContents[1]),
-          lineContents[2].equals(Utilities.nullStringOutput) ? null :  Long.valueOf(lineContents[2]),
-          lineContents[3].equals(Utilities.nullStringOutput) ? null : new Path(lineContents[3]),
-          lineContents[4].equals(Utilities.nullStringOutput) ? null : Long.valueOf(lineContents[4]),
-          (lineContents.length < 7 || lineContents[6].equals(Utilities.nullStringOutput)) ?
-                        Boolean.valueOf(false) : Boolean.valueOf(lineContents[6]));
+        String[] lineContents = line.split("\t", 6);
+        setDump(DumpType.valueOf(lineContents[0]), Long.valueOf(lineContents[1]),
+            Long.valueOf(lineContents[2]),
+            new Path(lineContents[3]), Long.valueOf(lineContents[4]));
         setPayload(lineContents[5].equals(Utilities.nullStringOutput) ? null : lineContents[5]);
       } else {
         throw new IOException(
@@ -176,21 +165,12 @@ public class DumpMetaData {
     return dumpExecutionId;
   }
 
-  public boolean isReplScopeModified() throws SemanticException {
-    initializeIfNot();
-    return replScopeModified;
-  }
-
   public ReplScope getReplScope() throws SemanticException {
     initializeIfNot();
     return replScope;
   }
   public Path getDumpFilePath() {
     return dumpFile;
-  }
-
-  public static String getDmdFileName() {
-    return DUMP_METADATA;
   }
 
   public boolean isIncrementalDump() throws SemanticException {
@@ -204,7 +184,7 @@ public class DumpMetaData {
     }
   }
 
-  public List<String> prepareReplScopeValues() {
+  private List<String> prepareReplScopeValues() {
     assert(replScope != null);
 
     List<String> values = new ArrayList<>();
@@ -230,13 +210,12 @@ public class DumpMetaData {
     List<List<String>> listValues = new ArrayList<>();
     listValues.add(
         Arrays.asList(
-            dumpType != null ? dumpType.toString() : null,
-            eventFrom != null ? eventFrom.toString() : null,
-            eventTo != null ? eventTo.toString() : null,
-            cmRoot != null ? cmRoot.toString() : null,
-            dumpExecutionId != null ? dumpExecutionId.toString() : null,
-            payload,
-            String.valueOf(replScopeModified))
+            dumpType.toString(),
+            eventFrom.toString(),
+            eventTo.toString(),
+            cmRoot.toString(),
+            dumpExecutionId.toString(),
+            payload)
     );
     if (replScope != null) {
       listValues.add(prepareReplScopeValues());

@@ -67,13 +67,11 @@ public class TableHandler extends AbstractMessageHandler {
 
       // REPL LOAD is not partition level. It is always DB or table level. So, passing null for partition specs.
       if (TableType.VIRTUAL_VIEW.name().equals(rv.getTable().getTableType())) {
-        importTasks.add(ReplLoadTask.createViewTask(rv, context.dbName, context.hiveConf,
-                context.getDumpDirectory(), context.getMetricCollector()));
+        importTasks.add(ReplLoadTask.createViewTask(rv, context.dbName, context.hiveConf));
       } else {
         ImportSemanticAnalyzer.prepareImport(false, isLocationSet, isExternal, false,
             (context.precursor != null), parsedLocation, null, context.dbName,
-            null, context.location, x, updatedMetadata, context.getTxnMgr(), tuple.writeId, rv,
-                context.getDumpDirectory(), context.getMetricCollector());
+            null, context.location, x, updatedMetadata, context.getTxnMgr(), tuple.writeId, rv);
       }
 
       Task<?> openTxnTask = x.getOpenTxnTask();

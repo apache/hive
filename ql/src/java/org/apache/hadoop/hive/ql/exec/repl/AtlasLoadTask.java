@@ -24,17 +24,14 @@ import org.apache.atlas.model.impexp.AtlasImportResult;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasReplInfo;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRequestBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRestClientBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.AtlasLoadLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -50,7 +47,6 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 /**
  * Atlas Metadata Replication Load Task.
@@ -72,7 +68,6 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
   @Override
   public int execute() {
     try {
-      SecurityUtils.reloginExpiringKeytabUser();
       AtlasReplInfo atlasReplInfo  = createAtlasReplInfo();
       Map<String, Long> metricMap = new HashMap<>();
       metricMap.put(ReplUtils.MetricName.ENTITIES.name(), 0L);
@@ -88,28 +83,15 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
       LOG.info("Atlas entities import count {}", importCount);
       work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS);
       return 0;
-    } catch (RuntimeException e) {
-      LOG.error("RuntimeException while loading atlas metadata", e);
-      setException(e);
-      try{
-        ReplUtils.handleException(true, e, work.getStagingDir().getParent().toString(), work.getMetricCollector(),
-                getName(), conf);
-      } catch (Exception ex){
-        LOG.error("Failed to collect replication metrics: ", ex);
-      }
-      throw e;
     } catch (Exception e) {
       LOG.error("Exception while loading atlas metadata", e);
       setException(e);
-      int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
-      try{
-        return ReplUtils.handleException(true, e, work.getStagingDir().getParent().toString(), work.getMetricCollector(),
-                getName(), conf);
+      try {
+        work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
+      } catch (SemanticException ex) {
+        LOG.error("Failed to collect Metrics ", ex);
       }
-      catch (Exception ex){
-        LOG.error("Failed to collect replication metrics: ", ex);
-        return errorCode;
-      }
+      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
   }
 
@@ -129,30 +111,26 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
 
   private String getStoredFsUri(Path atlasDumpDir) throws SemanticException {
     Path metadataPath = new Path(atlasDumpDir, EximUtil.METADATA_NAME);
-    Retryable retryable = Retryable.builder()
-      .withHiveConf(conf)
-      .withRetryOnException(IOException.class).build();
+    BufferedReader br = null;
     try {
-      return retryable.executeCallable(() -> {
-        BufferedReader br = null;
+      FileSystem fs = metadataPath.getFileSystem(conf);
+      br = new BufferedReader(new InputStreamReader(fs.open(metadataPath), Charset.defaultCharset()));
+      String line = br.readLine();
+      if (line == null) {
+        throw new SemanticException("Could not read stored src FS Uri from atlas metadata file");
+      }
+      String[] lineContents = line.split("\t", 5);
+      return lineContents[0];
+    } catch (Exception ex) {
+      throw new SemanticException(ex);
+    } finally {
+      if (br != null) {
         try {
-          FileSystem fs = metadataPath.getFileSystem(conf);
-          br = new BufferedReader(new InputStreamReader(fs.open(metadataPath), Charset.defaultCharset()));
-          String line = br.readLine();
-          if (line == null) {
-            throw new SemanticException(ErrorMsg.REPL_INVALID_INTERNAL_CONFIG_FOR_SERVICE.format("Could not read stored " +
-              "src FS Uri from atlas metadata file", ReplUtils.REPL_ATLAS_SERVICE));
-          }
-          String[] lineContents = line.split("\t", 5);
-          return lineContents[0];
-        } finally {
-          if (br != null) {
-            br.close();
-          }
+          br.close();
+        } catch (IOException e) {
+          throw new SemanticException(e);
         }
-      });
-    } catch (Exception e) {
-      throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
+      }
     }
   }
 

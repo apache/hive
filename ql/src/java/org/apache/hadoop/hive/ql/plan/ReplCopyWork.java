@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
@@ -58,13 +57,11 @@ public class ReplCopyWork extends CopyWork {
 
   private String distCpDoAsUser = null;
 
+  private boolean copyToMigratedTxnTable;
+
   private boolean checkDuplicateCopy = false;
 
   private boolean overWrite = false;
-
-  private String dumpDirectory;
-
-  private transient ReplicationMetricCollector metricCollector;
 
   public ReplCopyWork(final Path srcPath, final Path destPath, boolean errorOnSrcEmpty) {
     super(srcPath, destPath, errorOnSrcEmpty);
@@ -75,13 +72,6 @@ public class ReplCopyWork extends CopyWork {
     this.overWrite = overWrite;
   }
 
-  public ReplCopyWork(final Path srcPath, final Path destPath, boolean errorOnSrcEmpty, boolean overWrite,
-                      String dumpDirectory, ReplicationMetricCollector metricCollector) {
-    this(srcPath, destPath, errorOnSrcEmpty);
-    this.overWrite = overWrite;
-    this.dumpDirectory = dumpDirectory;
-    this.metricCollector = metricCollector;
-  }
   public void setReadSrcAsFilesList(boolean readSrcAsFilesList) {
     this.readSrcAsFilesList = readSrcAsFilesList;
   }
@@ -122,6 +112,14 @@ public class ReplCopyWork extends CopyWork {
     this.isAutoPurge = isAutoPurge;
   }
 
+  public boolean isCopyToMigratedTxnTable() {
+    return copyToMigratedTxnTable;
+  }
+
+  public void setCopyToMigratedTxnTable(boolean copyToMigratedTxnTable) {
+    this.copyToMigratedTxnTable = copyToMigratedTxnTable;
+  }
+
   public boolean isNeedCheckDuplicateCopy() {
     return checkDuplicateCopy;
   }
@@ -129,10 +127,6 @@ public class ReplCopyWork extends CopyWork {
   public void setCheckDuplicateCopy(boolean flag) {
     checkDuplicateCopy = flag;
   }
-
-  public ReplicationMetricCollector getMetricCollector() { return metricCollector; }
-
-  public String getDumpDirectory() { return dumpDirectory; }
 
   public boolean isOverWrite() {
     return overWrite;

@@ -51,8 +51,7 @@ public class DropTableHandler extends AbstractMessageHandler {
         true, true, context.eventOnlyReplicationSpec(), false
     );
     Task<DDLWork> dropTableTask = TaskFactory.get(
-        new DDLWork(readEntitySet, writeEntitySet, dropTableDesc, true,
-                context.getDumpDirectory(), context.getMetricCollector()), context.hiveConf
+        new DDLWork(readEntitySet, writeEntitySet, dropTableDesc), context.hiveConf
     );
     context.log.debug(
         "Added drop tbl task : {}:{}", dropTableTask.getId(), dropTableDesc.getTableName()

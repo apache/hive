@@ -33,9 +33,6 @@ import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
 import org.apache.hadoop.hive.shims.Utils;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -101,8 +98,6 @@ public class TestStatsReplicationScenarios {
     Map<String, String> additionalOverrides = new HashMap<String, String>() {{
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
         put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
-        put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
-        put(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET.varname, "false");
       }};
     Map<String, String> replicatedOverrides = new HashMap<>();
 
@@ -347,13 +342,7 @@ public class TestStatsReplicationScenarios {
         failIncrementalLoad();
       }
     }
-    
-    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
-    Path nonRecoverablePath = TestReplicationScenarios.getNonRecoverablePath(baseDumpDir, primaryDbName, primary.hiveConf);
-    if(nonRecoverablePath != null){
-      baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
-    }
-    
+
     // Load, possibly a retry
     replica.load(replicatedDbName, primaryDbName);
 
@@ -676,7 +665,7 @@ public class TestStatsReplicationScenarios {
     lastReplicationId = dumpLoadVerify(tableNames, lastReplicationId, parallelBootstrap,
             metadataOnly, false);
   }
-  
+
   @Test
   public void testNonParallelBootstrapLoad() throws Throwable {
     LOG.info("Testing " + testName.getClass().getName() + "." + testName.getMethodName());

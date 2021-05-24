@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.create.show;
 
-import java.util.Map.Entry;
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
@@ -46,20 +43,15 @@ public class ShowCreateTableAnalyzer extends BaseSemanticAnalyzer {
   public void analyzeInternal(ASTNode root) throws SemanticException {
     ctx.setResFile(ctx.getLocalTmpPath());
 
-    Entry<String, String> tableIdentifier = getDbTableNamePair((ASTNode) root.getChild(0));
-    Table table = getTable(tableIdentifier.getKey(), tableIdentifier.getValue(), true);
+    String tableName = getUnescapedName((ASTNode)root.getChild(0));
+    Table tab = getTable(tableName);
+    inputs.add(new ReadEntity(tab));
 
-    inputs.add(new ReadEntity(table));
-
-    // If no DB was specified in statement, do not include it in the final output
-    ShowCreateTableDesc desc = new ShowCreateTableDesc(table.getDbName(), table.getTableName(),
-        ctx.getResFile().toString(), StringUtils.isBlank(tableIdentifier.getKey()));
-
+    ShowCreateTableDesc desc = new ShowCreateTableDesc(tableName, ctx.getResFile().toString());
     Task<DDLWork> task = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
-    task.setFetchSource(true);
-
     rootTasks.add(task);
 
+    task.setFetchSource(true);
     setFetchTask(createFetchTask(ShowCreateTableDesc.SCHEMA));
   }
 }

@@ -21,29 +21,21 @@ import com.google.common.primitives.Ints;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
-import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
-import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.UncheckedIOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 @Explain(displayName = "Replication Dump Operator", explainLevels = { Explain.Level.USER,
     Explain.Level.DEFAULT,
@@ -52,23 +44,20 @@ public class ReplDumpWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(ReplDumpWork.class);
   final ReplScope replScope;
-  ReplScope oldReplScope;
+  final ReplScope oldReplScope;
   final String dbNameOrPattern, astRepresentationForErrorMsg, resultTempPath;
   Long eventFrom;
   Long eventTo;
-  private boolean isBootstrap;
   private static String testInjectDumpDir = null;
   private static boolean testInjectDumpDirAutoIncrement = false;
   static boolean testDeletePreviousDumpMetaPath = false;
   private Integer maxEventLimit;
-  private transient Iterator<String> externalTblCopyPathIterator;
-  private transient Iterator<String> managedTblCopyPathIterator;
-  private transient Iterator<EximUtil.DataCopyPath>  functionCopyPathIterator;
+  private transient Iterator<DirCopyWork> dirCopyIterator;
+  private transient Iterator<EximUtil.ManagedTableCopyPath> managedTableCopyPathIterator;
   private Path currentDumpPath;
   private List<String> resultValues;
   private boolean shouldOverwrite;
   private transient ReplicationMetricCollector metricCollector;
-  private ReplicationSpec replicationSpec;
 
   public static void injectNextDumpDirForTest(String dumpDir) {
     injectNextDumpDirForTest(dumpDir, false);
@@ -93,10 +82,11 @@ public class ReplDumpWork implements Serializable {
     testDeletePreviousDumpMetaPath = failDeleteDumpMeta;
   }
 
-  public ReplDumpWork(ReplScope replScope,
+  public ReplDumpWork(ReplScope replScope, ReplScope oldReplScope,
                       String astRepresentationForErrorMsg,
                       String resultTempPath) {
     this.replScope = replScope;
+    this.oldReplScope = oldReplScope;
     this.dbNameOrPattern = replScope.getDbName();
     this.astRepresentationForErrorMsg = astRepresentationForErrorMsg;
     this.resultTempPath = resultTempPath;
@@ -104,10 +94,6 @@ public class ReplDumpWork implements Serializable {
 
   void setEventFrom(long eventId) {
     eventFrom = eventId;
-  }
-
-  void setOldReplScope(ReplScope replScope) {
-    oldReplScope = replScope;
   }
 
   int maxEventLimit() throws Exception {
@@ -143,35 +129,22 @@ public class ReplDumpWork implements Serializable {
     }
   }
 
-  void setBootstrap(boolean bootstrap) {
-    isBootstrap = bootstrap;
-  }
-
-  public void setExternalTblCopyPathIterator(Iterator<String> externalTblCopyPathIterator) {
-    if (this.externalTblCopyPathIterator != null) {
-      throw new IllegalStateException("External table copy path iterator has already been initialized");
+  public void setDirCopyIterator(Iterator<DirCopyWork> dirCopyIterator) {
+    if (this.dirCopyIterator != null) {
+      throw new IllegalStateException("Dir Copy iterator has already been initialized");
     }
-    this.externalTblCopyPathIterator = externalTblCopyPathIterator;
+    this.dirCopyIterator = dirCopyIterator;
   }
 
-  public void setManagedTableCopyPathIterator(Iterator<String> managedTblCopyPathIterator) {
-    if (this.managedTblCopyPathIterator != null) {
+  public void setManagedTableCopyPathIterator(Iterator<EximUtil.ManagedTableCopyPath> managedTableCopyPathIterator) {
+    if (this.managedTableCopyPathIterator != null) {
       throw new IllegalStateException("Managed table copy path iterator has already been initialized");
     }
-    this.managedTblCopyPathIterator = managedTblCopyPathIterator;
+    this.managedTableCopyPathIterator = managedTableCopyPathIterator;
   }
 
-  public void setFunctionCopyPathIterator(Iterator<EximUtil.DataCopyPath> functionCopyPathIterator) {
-    if (this.functionCopyPathIterator != null) {
-      throw new IllegalStateException("Function copy path iterator has already been initialized");
-    }
-    this.functionCopyPathIterator = functionCopyPathIterator;
-  }
-
-  public boolean dataCopyIteratorsInitialized() {
-    return externalTblCopyPathIterator != null
-            || managedTblCopyPathIterator != null
-            || functionCopyPathIterator != null;
+  public boolean tableDataCopyIteratorsInitialized() {
+    return dirCopyIterator != null || managedTableCopyPathIterator != null;
   }
 
   public Path getCurrentDumpPath() {
@@ -190,103 +163,28 @@ public class ReplDumpWork implements Serializable {
     this.resultValues = resultValues;
   }
 
-  public List<Task<?>> externalTableCopyTasks(TaskTracker tracker, HiveConf conf) throws IOException {
-    if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY)) {
-      return Collections.emptyList();
-    }
+  public List<Task<?>> externalTableCopyTasks(TaskTracker tracker, HiveConf conf) {
     List<Task<?>> tasks = new ArrayList<>();
-    Retryable retryable = Retryable.builder()
-            .withHiveConf(conf)
-            .withRetryOnException(UncheckedIOException.class).build();
-    try {
-      retryable.executeCallable((Callable<Void>) ()-> {
-        try{
-          int numEntriesToSkip = tasks == null ? 0 : tasks.size();
-          while (externalTblCopyPathIterator.hasNext() &&  tracker.canAddMoreTasks()) {
-            if(numEntriesToSkip > 0) {
-              //skip tasks added in previous attempts of this retryable block
-              externalTblCopyPathIterator.next();
-              numEntriesToSkip--;
-              continue;
-            }
-            DirCopyWork dirCopyWork = new DirCopyWork(metricCollector, currentDumpPath.toString());
-            dirCopyWork.loadFromString(externalTblCopyPathIterator.next());
-            Task<DirCopyWork> task = TaskFactory.get(dirCopyWork, conf);
-            tasks.add(task);
-            tracker.addTask(task);
-            LOG.debug("added task for {}", dirCopyWork);
-          }
-        } catch (UncheckedIOException e) {
-          LOG.error("Reading entry for data copy failed for external tables, attempting retry.", e);
-          throw e;
-        }
-        return null;
-      });
-    } catch (Exception e) {
-      throw new IOException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()));
+    while (dirCopyIterator.hasNext() && tracker.canAddMoreTasks()) {
+      DirCopyWork dirCopyWork = dirCopyIterator.next();
+      Task<DirCopyWork> task = TaskFactory.get(dirCopyWork, conf);
+      tasks.add(task);
+      tracker.addTask(task);
+      LOG.debug("added task for {}", dirCopyWork);
     }
     return tasks;
   }
 
-  public List<Task<?>> managedTableCopyTasks(TaskTracker tracker, HiveConf conf) throws IOException {
-    if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY)) {
-      return Collections.emptyList();
-    }
+  public List<Task<?>> managedTableCopyTasks(TaskTracker tracker, HiveConf conf) {
     List<Task<?>> tasks = new ArrayList<>();
-    Retryable retryable = Retryable.builder()
-            .withHiveConf(conf)
-            .withRetryOnException(UncheckedIOException.class).build();
-    try {
-      retryable.executeCallable((Callable<Void>) ()-> {
-        try{
-          int numEntriesToSkip = tasks == null ? 0 : tasks.size();
-          while (managedTblCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
-            if(numEntriesToSkip > 0) {
-              //skip tasks added in previous attempts of this retryable block
-              managedTblCopyPathIterator.next();
-              numEntriesToSkip--;
-              continue;
-            }
-            ReplicationSpec replSpec = new ReplicationSpec();
-            replSpec.setIsReplace(true);
-            replSpec.setInReplicationScope(true);
-            EximUtil.DataCopyPath managedTableCopyPath = new EximUtil.DataCopyPath(replSpec);
-            managedTableCopyPath.loadFromString(managedTblCopyPathIterator.next());
-            //If its incremental, in checkpointing case, dump dir may exist. We will delete the event dir.
-            //In case of bootstrap checkpointing we will not delete the entire dir and just do a sync
-            Task<?> copyTask = ReplCopyTask.getDumpCopyTask(
-                    managedTableCopyPath.getReplicationSpec(), managedTableCopyPath.getSrcPath(),
-                    managedTableCopyPath.getTargetPath(), conf, false, shouldOverwrite, !isBootstrap,
-                    getCurrentDumpPath().toString(), getMetricCollector());
-            tasks.add(copyTask);
-            tracker.addTask(copyTask);
-            LOG.debug("added task for {}", managedTableCopyPath);
-          }
-        } catch (UncheckedIOException e) {
-          LOG.error("Reading entry for data copy failed for managed tables, attempting retry.", e);
-          throw e;
-        }
-        return null;
-      });
-    } catch (Exception e) {
-      throw new IOException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()));
-    }
-    return tasks;
-  }
-
-  public List<Task<?>> functionsBinariesCopyTasks(TaskTracker tracker, HiveConf conf) {
-    List<Task<?>> tasks = new ArrayList<>();
-    if (functionCopyPathIterator != null) {
-      while (functionCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
-        EximUtil.DataCopyPath binaryCopyPath = functionCopyPathIterator.next();
-        Task<?> copyTask = ReplCopyTask.getDumpCopyTask(
-                binaryCopyPath.getReplicationSpec(), binaryCopyPath.getSrcPath(), binaryCopyPath.getTargetPath(), conf,
-          getCurrentDumpPath().toString(), getMetricCollector()
-        );
-        tasks.add(copyTask);
-        tracker.addTask(copyTask);
-        LOG.debug("added task for {}", binaryCopyPath);
-      }
+    while (managedTableCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
+      EximUtil.ManagedTableCopyPath managedTableCopyPath = managedTableCopyPathIterator.next();
+      Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
+              managedTableCopyPath.getReplicationSpec(), managedTableCopyPath.getSrcPath(),
+              managedTableCopyPath.getTargetPath(), conf, false, shouldOverwrite);
+      tasks.add(copyTask);
+      tracker.addTask(copyTask);
+      LOG.debug("added task for {}", managedTableCopyPath);
     }
     return tasks;
   }
@@ -301,13 +199,5 @@ public class ReplDumpWork implements Serializable {
 
   public void setMetricCollector(ReplicationMetricCollector metricCollector) {
     this.metricCollector = metricCollector;
-  }
-
-  public ReplicationSpec getReplicationSpec() {
-    return replicationSpec;
-  }
-
-  public void setReplicationSpec(ReplicationSpec replicationSpec) {
-    this.replicationSpec = replicationSpec;
   }
 }

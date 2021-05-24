@@ -58,10 +58,6 @@ public class CommandProcessorException extends Exception {
   public int getResponseCode() {
     return responseCode;
   }
-  
-  public String getCauseMessage() {
-    return getCause() == null ? "" : getCause().getMessage();
-  }
 
   public int getErrorCode() {
     return hiveErrorCode;

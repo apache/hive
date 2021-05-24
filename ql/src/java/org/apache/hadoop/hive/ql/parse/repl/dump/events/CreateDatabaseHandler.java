@@ -40,7 +40,7 @@ class CreateDatabaseHandler extends AbstractEventHandler<CreateDatabaseMessage> 
     Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
     FileSystem fileSystem = metaDataPath.getFileSystem(withinContext.hiveConf);
     EximUtil.createDbExportDump(fileSystem, metaDataPath, eventMessage.getDatabaseObject(),
-        withinContext.replicationSpec, withinContext.hiveConf);
+        withinContext.replicationSpec);
     withinContext.createDmd(this).write();
   }
 

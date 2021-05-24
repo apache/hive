@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -47,12 +48,17 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Base64;
 import java.util.List;
 import java.util.Collections;
 
+import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Reader;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_MOVE_OPTIMIZED_FILE_SCHEMES;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPLACE;
@@ -65,6 +71,7 @@ import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_TABLES;
 public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   // Replication Scope
   private ReplScope replScope = new ReplScope();
+  private ReplScope oldReplScope = null;
 
   // Source DB Name for REPL LOAD
   private String sourceDbNameOrPattern;
@@ -142,6 +149,34 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  private void setOldReplPolicy(Tree oldReplPolicyTree) throws HiveException {
+    oldReplScope = new ReplScope();
+    int childCount = oldReplPolicyTree.getChildCount();
+
+    // First child is DB name and optional second child is tables list.
+    assert(childCount <= 2);
+
+    // First child is always the DB name. So set it.
+    oldReplScope.setDbName(oldReplPolicyTree.getChild(0).getText());
+    LOG.info("Old ReplScope: Set DB Name: {}", oldReplScope.getDbName());
+    if (!oldReplScope.getDbName().equalsIgnoreCase(replScope.getDbName())) {
+      LOG.error("DB name {} cannot be replaced to {} in the replication policy.",
+              oldReplScope.getDbName(), replScope.getDbName());
+      throw new SemanticException("DB name cannot be replaced in the replication policy.");
+    }
+
+    // If the old policy is just <db_name>, then tables list won't be there.
+    if (childCount <= 1) {
+      return;
+    }
+
+    // Traverse the children which can be either just include tables list or both include
+    // and exclude tables lists.
+    Tree oldPolicyTablesListNode = oldReplPolicyTree.getChild(1);
+    assert(oldPolicyTablesListNode.getType() == TOK_REPL_TABLES);
+    setReplDumpTablesList(oldPolicyTablesListNode, oldReplScope);
+  }
+
   private void initReplDump(ASTNode ast) throws HiveException {
     int numChildren = ast.getChildCount();
     boolean isMetaDataOnly = false;
@@ -167,6 +202,9 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       case TOK_REPL_TABLES:
         setReplDumpTablesList(currNode, replScope);
         break;
+      case TOK_REPLACE:
+        setOldReplPolicy(currNode);
+        break;
       default:
         throw new SemanticException("Unrecognized token " + currNode.getType() + " in REPL DUMP statement.");
       }
@@ -177,9 +215,10 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
       Database database = db.getDatabase(dbName);
       if (database != null) {
-        if (ReplUtils.isTargetOfReplication(database)) {
-          LOG.error("Cannot dump database " + dbNameOrPattern + " as it is a target of replication (repl.target.for)");
-          throw new SemanticException(ErrorMsg.REPL_DATABASE_IS_TARGET_OF_REPLICATION.getMsg());
+        if (!isMetaDataOnly && !ReplChangeManager.isSourceOfReplication(database)) {
+          LOG.error("Cannot dump database " + dbNameOrPattern +
+                  " as it is not a source of replication (repl.source.for)");
+          throw new SemanticException(ErrorMsg.REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION.getMsg());
         }
       } else {
         throw new SemanticException("Cannot dump database " + dbNameOrPattern + " as it does not exist");
@@ -200,6 +239,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       Task<ReplDumpWork> replDumpWorkTask = TaskFactory
           .get(new ReplDumpWork(
               replScope,
+              oldReplScope,
               ASTErrorUtils.getMsg(ErrorMsg.INVALID_PATH.getMsg(), ast),
               ctx.getResFile().toUri().toString()
       ), conf);
@@ -219,6 +259,29 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.warn("Error during analyzeReplDump", e);
       throw new SemanticException(e);
     }
+  }
+
+  private boolean ifEnableMoveOptimization(Path filePath, org.apache.hadoop.conf.Configuration conf) throws Exception {
+    if (filePath == null) {
+      throw new HiveException("filePath cannot be null");
+    }
+
+    URI uri = filePath.toUri();
+    String scheme = uri.getScheme();
+    scheme = StringUtils.isBlank(scheme) ? FileSystem.get(uri, conf).getScheme() : scheme;
+    if (StringUtils.isBlank(scheme)) {
+      throw new HiveException("Cannot get valid scheme for " + filePath);
+    }
+
+    LOG.info("scheme is " + scheme);
+
+    String[] schmeList = conf.get(REPL_MOVE_OPTIMIZED_FILE_SCHEMES.varname).toLowerCase().split(",");
+    for (String schemeIter : schmeList) {
+      if (schemeIter.trim().equalsIgnoreCase(scheme.trim())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // REPL LOAD
@@ -297,6 +360,19 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     try {
       assert(sourceDbNameOrPattern != null);
       Path loadPath = getCurrentLoadPath();
+
+      // Ths config is set to make sure that in case of s3 replication, move is skipped.
+      try {
+        Warehouse wh = new Warehouse(conf);
+        Path filePath = wh.getWhRoot();
+        if (ifEnableMoveOptimization(filePath, conf)) {
+          conf.setBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION, true);
+          LOG.info(" Set move optimization to true for warehouse " + filePath.toString());
+        }
+      } catch (Exception e) {
+        throw new SemanticException(e.getMessage(), e);
+      }
+
       // Now, the dumped path can be one of three things:
       // a) It can be a db dump, in which case we expect a set of dirs, each with a
       // db name, and with a _metadata file in each, and table dirs inside that.
@@ -313,10 +389,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       // tells us what is inside that dumpdir.
 
       //If repl status of target is greater than dumps, don't do anything as the load for the latest dump is done
-      if (ReplUtils.failedWithNonRecoverableError(ReplUtils.getLatestDumpPath(ReplUtils
-        .getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase()), conf), conf)) {
-        throw new Exception(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getMsg());
-      }
       if (loadPath != null) {
         DumpMetaData dmd = new DumpMetaData(loadPath, conf);
 
@@ -333,7 +405,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
                 dmd.getReplScope(),
                 queryState.getLineageState(), evDump, dmd.getEventTo(), dmd.getDumpExecutionId(),
             initMetricCollection(!evDump, loadPath.toString(), replScope.getDbName(),
-              dmd.getDumpExecutionId()), dmd.isReplScopeModified());
+              dmd.getDumpExecutionId()));
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
       } else {
         LOG.warn("Previous Dump Already Loaded");
@@ -356,7 +428,9 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private Path getCurrentLoadPath() throws IOException, SemanticException {
-    Path loadPathBase = ReplUtils.getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase());
+    Path loadPathBase = new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
+            Base64.getEncoder().encodeToString(sourceDbNameOrPattern.toLowerCase()
+                    .getBytes(StandardCharsets.UTF_8.name())));
     final FileSystem fs = loadPathBase.getFileSystem(conf);
     // Make fully qualified path for further use.
     loadPathBase = fs.makeQualified(loadPathBase);

@@ -20,75 +20,41 @@ package org.apache.hadoop.hive.ql.exec.repl.atlas;
 
 import com.sun.jersey.api.client.UniformInterfaceException;
 import org.apache.atlas.AtlasServiceException;
-import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Random;
 import java.util.concurrent.Callable;
 
 /**
  * Implement retry logic for service calls.
  */
-public class RetryingClientTimeBased {
-  private static final long MINIMUM_DELAY_IN_SEC = 60;
-  private static final Logger LOG = LoggerFactory.getLogger(RetryingClientTimeBased.class);
+public class RetryingClient {
+  private static final Logger LOG = LoggerFactory.getLogger(RetryingClient.class);
+  private static final int PAUSE_DURATION_INCREMENT_IN_MINUTES_DEFAULT = (30 * 1000);
+  private static final int RETRY_COUNT_DEFAULT = 5;
   private static final String ERROR_MESSAGE_NO_ENTITIES = "no entities to create/update";
   private static final String ERROR_MESSAGE_IN_PROGRESS = "import or export is in progress";
   private static final String ATLAS_ERROR_CODE_IMPORT_EMPTY_ZIP = "empty ZIP file";
-  protected long totalDurationInSeconds;
-  protected long initialDelayInSeconds;
-  protected long maxRetryDelayInSeconds;
-  protected double backOff;
-  protected int maxJitterInSeconds;
+  private static final int MAX_RETY_COUNT = RETRY_COUNT_DEFAULT;
+  private static final int PAUSE_DURATION_INCREMENT_IN_MS = PAUSE_DURATION_INCREMENT_IN_MINUTES_DEFAULT;
 
-  protected <T> T invokeWithRetry(Callable<T> func) throws SemanticException {
-    long startTime = System.currentTimeMillis();
-    long delay = this.initialDelayInSeconds;
-    while (true) {
+  protected <T> T invokeWithRetry(Callable<T> func, T defaultReturnValue) throws Exception {
+    for (int currentRetryCount = 1; currentRetryCount <= MAX_RETY_COUNT; currentRetryCount++) {
       try {
         LOG.debug("Retrying method: {}", func.getClass().getName(), null);
         return func.call();
       } catch (Exception e) {
-        if (processImportExportLockException(e, delay)) {
-          //retry case. compute next sleep time
-          delay = getNextDelay(delay);
-          if (elapsedTimeInSeconds(startTime) + delay > this.totalDurationInSeconds) {
-            throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(), e);
-          }
+        if (processImportExportLockException(e, currentRetryCount)) {
           continue;
         }
         if (processInvalidParameterException(e)) {
-          LOG.info("There is nothing to export/import.");
           return null;
         }
         LOG.error(func.getClass().getName(), e);
-        throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(), e);
+        throw new Exception(e);
       }
     }
-  }
-
-  private long getNextDelay(long currentDelay) {
-    if (currentDelay <= 0) { // in case initial delay was set to 0.
-      currentDelay = MINIMUM_DELAY_IN_SEC;
-    }
-
-    currentDelay *= this.backOff;
-    if (this.maxJitterInSeconds > 0) {
-      currentDelay += new Random().nextInt(this.maxJitterInSeconds);
-    }
-
-    if (currentDelay > this.maxRetryDelayInSeconds) {
-      currentDelay = this.maxRetryDelayInSeconds;
-    }
-
-    return  currentDelay;
-  }
-
-
-  private long elapsedTimeInSeconds(long fromTimeMillis) {
-    return (System.currentTimeMillis() - fromTimeMillis)/ 1000;
+    return defaultReturnValue;
   }
 
   private boolean processInvalidParameterException(Exception e) {
@@ -105,18 +71,19 @@ public class RetryingClientTimeBased {
             || e.getMessage().contains(ATLAS_ERROR_CODE_IMPORT_EMPTY_ZIP));
   }
 
-  private boolean processImportExportLockException(Exception e, long delay) throws SemanticException {
+  private boolean processImportExportLockException(Exception e, int currentRetryCount) throws Exception {
     if (!(e instanceof AtlasServiceException)) {
       return false;
     }
     String excMessage = e.getMessage() == null ? "" : e.getMessage();
     if (excMessage.contains(ERROR_MESSAGE_IN_PROGRESS)) {
       try {
-        LOG.info("Atlas in-progress operation detected. Will pause for: {} seconds", delay);
-        Thread.sleep(delay * 1000L);
+        int pauseDuration = PAUSE_DURATION_INCREMENT_IN_MS * currentRetryCount;
+        LOG.info("Atlas in-progress operation detected. Will pause for: {} ms", pauseDuration);
+        Thread.sleep(pauseDuration);
       } catch (InterruptedException intEx) {
         LOG.error("Pause wait interrupted!", intEx);
-        throw new SemanticException(intEx);
+        throw new Exception(intEx);
       }
       return true;
     }

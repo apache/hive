@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.mapred.TextInputFormat;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -480,9 +479,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   public boolean isNeedSkipHeaderFooters() {
     boolean rtn = false;
-    if (tableMetadata != null && tableMetadata.getTTable() != null
-        && TextInputFormat.class
-        .isAssignableFrom(tableMetadata.getInputFormatClass())) {
+    if (tableMetadata != null && tableMetadata.getTTable() != null) {
       Map<String, String> params = tableMetadata.getTTable().getParameters();
       if (params != null) {
         String skipHVal = params.get(serdeConstants.HEADER_COUNT);

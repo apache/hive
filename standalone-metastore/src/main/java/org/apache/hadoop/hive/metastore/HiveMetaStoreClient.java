@@ -732,11 +732,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       if (null != client) {
         client.shutdown();
-        if ((transport == null) || !transport.isOpen()) {
-          final int newCount = connCount.decrementAndGet();
-          LOG.info("Closed a connection to metastore, current connections: {}",
-                  newCount);
-        }
       }
     } catch (TException e) {
       LOG.debug("Unable to shutdown metastore client. Will try closing transport directly.", e);
@@ -3429,31 +3424,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public GetOpenTxnsResponse getOpenTxns() throws TException {
-    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
-    getOpenTxnsRequest.setExcludeTxnTypes(Arrays.asList(TxnType.READ_ONLY));
-    return client.get_open_txns_req(getOpenTxnsRequest);
+    return client.get_open_txns();
   }
 
   @Override
   public ValidTxnList getValidTxns() throws TException {
-    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
-    getOpenTxnsRequest.setExcludeTxnTypes(Arrays.asList(TxnType.READ_ONLY));
-    return TxnUtils.createValidReadTxnList(client.get_open_txns_req(getOpenTxnsRequest), 0);
+    return TxnUtils.createValidReadTxnList(client.get_open_txns(), 0);
   }
 
   @Override
   public ValidTxnList getValidTxns(long currentTxn) throws TException {
-    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
-    getOpenTxnsRequest.setExcludeTxnTypes(Arrays.asList(TxnType.READ_ONLY));
-    return TxnUtils.createValidReadTxnList(client.get_open_txns_req(getOpenTxnsRequest), currentTxn);
-  }
-
-  @Override
-  public ValidTxnList getValidTxns(long currentTxn, List<TxnType> excludeTxnTypes) throws TException {
-    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
-    getOpenTxnsRequest.setExcludeTxnTypes(excludeTxnTypes);
-    return TxnUtils.createValidReadTxnList(client.get_open_txns_req(getOpenTxnsRequest),
-      currentTxn);
+    return TxnUtils.createValidReadTxnList(client.get_open_txns(), currentTxn);
   }
 
   @Override

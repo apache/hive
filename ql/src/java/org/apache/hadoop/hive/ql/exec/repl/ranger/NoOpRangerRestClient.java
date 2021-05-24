@@ -31,16 +31,14 @@ public class NoOpRangerRestClient implements RangerRestClient {
 
   @Override
   public RangerExportPolicyList exportRangerPolicies(String sourceRangerEndpoint,
-                                                     String dbName, String rangerHiveServiceName,
-                                                     HiveConf hiveConf) {
+                                                     String dbName, String rangerHiveServiceName) {
     return new RangerExportPolicyList();
   }
 
   @Override
   public RangerExportPolicyList importRangerPolicies(RangerExportPolicyList rangerExportPolicyList, String dbName,
                                                      String baseUrl,
-                                                     String rangerHiveServiceName,
-                                                     HiveConf hiveConf) throws Exception {
+                                                     String rangerHiveServiceName) throws Exception {
     return null;
   }
 
@@ -67,7 +65,7 @@ public class NoOpRangerRestClient implements RangerRestClient {
   }
 
   @Override
-  public boolean checkConnection(String url, HiveConf hiveConf) throws Exception {
+  public boolean checkConnection(String url) throws Exception {
     return true;
   }
 

@@ -56,7 +56,6 @@ public class LoadFunction {
   private final FunctionEvent event;
   private final String dbNameToLoadIn;
   private final TaskTracker tracker;
-  String dumpDirectory;
   private final ReplicationMetricCollector metricCollector;
 
   public LoadFunction(Context context, ReplLogger replLogger, FunctionEvent event,
@@ -69,21 +68,9 @@ public class LoadFunction {
     this.metricCollector = metricCollector;
   }
 
-  public LoadFunction(Context context, ReplLogger replLogger, FunctionEvent event,
-                      String dbNameToLoadIn, TaskTracker existingTracker,
-                      String dumpDirectory, ReplicationMetricCollector metricCollector) {
-    this.context = context;
-    this.replLogger = replLogger;
-    this.event = event;
-    this.dbNameToLoadIn = dbNameToLoadIn;
-    this.tracker = new TaskTracker(existingTracker);
-    this.dumpDirectory = dumpDirectory;
-    this.metricCollector = metricCollector;
-  }
-
   private void createFunctionReplLogTask(List<Task<? extends Serializable>> functionTasks,
                                          String functionName) {
-    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, functionName, dumpDirectory, metricCollector);
+    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, functionName, metricCollector);
     Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, context.hiveConf);
     DAGTraversal.traverse(functionTasks, new AddDependencyToLeaves(replLogTask));
   }
@@ -101,7 +88,7 @@ public class LoadFunction {
       List<Task<? extends Serializable>> tasks = handler.handle(
           new MessageHandler.Context(
               dbNameToLoadIn, fromPath.toString(), null, null, context.hiveConf,
-              context.hiveDb, context.nestedContext, LOG, dumpDirectory, metricCollector)
+              context.hiveDb, context.nestedContext, LOG)
       );
       createFunctionReplLogTask(tasks, handler.getFunctionName());
       tasks.forEach(tracker::addTask);

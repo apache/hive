@@ -22,7 +22,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClient;
@@ -33,7 +32,6 @@ import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
-import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.RangerLoadLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -84,28 +82,19 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
       LOG.info("Importing Ranger Metadata");
       RangerExportPolicyList rangerExportPolicyList = null;
       List<RangerPolicy> rangerPolicies = null;
-      SecurityUtils.reloginExpiringKeytabUser();
       if (rangerRestClient == null) {
         rangerRestClient = getRangerRestClient();
       }
       URL url = work.getRangerConfigResource();
       if (url == null) {
-        throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE
-          .format("Ranger configuration is not valid "
-            + ReplUtils.RANGER_CONFIGURATION_RESOURCE_NAME, ReplUtils.REPL_RANGER_SERVICE));
+        throw new SemanticException("Ranger configuration is not valid "
+          + ReplUtils.RANGER_CONFIGURATION_RESOURCE_NAME);
       }
       conf.addResource(url);
       String rangerHiveServiceName = conf.get(ReplUtils.RANGER_HIVE_SERVICE_NAME);
       String rangerEndpoint = conf.get(ReplUtils.RANGER_REST_URL);
-      if (StringUtils.isEmpty(rangerEndpoint)) {
-        throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE
-          .format("Ranger endpoint is not valid "
-            + rangerEndpoint, ReplUtils.REPL_RANGER_SERVICE));
-      }
-      if (!rangerRestClient.checkConnection(rangerEndpoint, conf)) {
-        throw new SemanticException(ErrorMsg.REPL_EXTERNAL_SERVICE_CONNECTION_ERROR.format(ReplUtils
-            .REPL_RANGER_SERVICE,
-          "Ranger endpoint is not valid " + rangerEndpoint));
+      if (StringUtils.isEmpty(rangerEndpoint) || !rangerRestClient.checkConnection(rangerEndpoint)) {
+        throw new SemanticException("Ranger endpoint is not valid " + rangerEndpoint);
       }
       if (work.getCurrentDumpPath() != null) {
         LOG.info("Importing Ranger Metadata from {} ", work.getCurrentDumpPath());
@@ -143,7 +132,7 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
         }
         rangerExportPolicyList.setPolicies(updatedRangerPolicies);
         rangerRestClient.importRangerPolicies(rangerExportPolicyList, work.getTargetDbName(), rangerEndpoint,
-                rangerHiveServiceName, conf);
+                rangerHiveServiceName);
         LOG.info("Number of ranger policies imported {}", rangerExportPolicyList.getListSize());
         importCount = rangerExportPolicyList.getListSize();
         work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.POLICIES.name(), importCount);
@@ -152,27 +141,15 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
       }
       work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS);
       return 0;
-    } catch (RuntimeException e) {
-      LOG.error("Runtime Excepton during RangerLoad", e);
-      setException(e);
-      try{
-        ReplUtils.handleException(true, e, work.getCurrentDumpPath().getParent().toString(), work.getMetricCollector(),
-                getName(), conf);
-      } catch (Exception ex){
-        LOG.error("Failed to collect replication metrics: ", ex);
-      }
-      throw e;
     } catch (Exception e) {
-      LOG.error("RangerLoad Failed", e);
-      int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+      LOG.error("Failed", e);
       setException(e);
-      try{
-        return ReplUtils.handleException(true, e, work.getCurrentDumpPath().getParent().toString(), work.getMetricCollector(),
-                getName(), conf);
-      } catch (Exception ex){
-        LOG.error("Failed to collect replication metrics: ", ex);
-        return errorCode;
+      try {
+        work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
+      } catch (SemanticException ex) {
+        LOG.error("Failed to collect Metrics", ex);
       }
+      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     }
   }
 

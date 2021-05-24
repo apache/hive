@@ -920,10 +920,6 @@
             <groupId>io.netty</groupId>
             <artifactId>netty</artifactId>
           </exclusion>
-            <exclusion>
-              <groupId>io.netty</groupId>
-              <artifactId>netty-all</artifactId>
-            </exclusion>
         </exclusions>
      </dependency>
       <dependency>
@@ -943,10 +939,6 @@
             <groupId>io.netty</groupId>
             <artifactId>netty</artifactId>
           </exclusion>
-           <exclusion>
-             <groupId>io.netty</groupId>
-             <artifactId>netty-all</artifactId>
-           </exclusion>
         </exclusions>
      </dependency>
       <dependency>
@@ -964,10 +956,6 @@
           </exclusion>
            <exclusion>
              <groupId>io.netty</groupId>
-             <artifactId>netty-all</artifactId>
-           </exclusion>
-           <exclusion>
-             <groupId>io.netty</groupId>
              <artifactId>netty</artifactId>
            </exclusion>
         </exclusions>
@@ -976,12 +964,6 @@
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-minikdc</artifactId>
         <version>${hadoop.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
@@ -1012,12 +994,6 @@
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-yarn-server-web-proxy</artifactId>
         <version>${hadoop.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hbase</groupId>
