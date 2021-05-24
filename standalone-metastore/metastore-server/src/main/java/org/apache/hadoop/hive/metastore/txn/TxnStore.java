@@ -606,7 +606,6 @@ public interface TxnStore extends Configurable {
    * Update the statistics for the given partitions. Add the notification logs also.
    * @return true if successful, false otherwise.
    */
-  @RetrySemantics.Idempotent
   boolean updatePartitionColumnStatistics(Map<String, ColumnStatistics> newStatsMap,
                                           IHMSHandler handler,
                                           List<MetaStoreEventListener> listeners,
@@ -614,5 +613,9 @@ public interface TxnStore extends Configurable {
                                           long csId,
                                           String validWriteIds, long writeId) throws MetaException;
 
+  /**
+   * Gets the next CS id from sequence MPartitionColumnStatistics and increment the CS id by numStats.
+   * @return The CD id before update.
+   */
   long getNextCSIdForMPartitionColumnStatistics(long numStats) throws MetaException;
 }

@@ -7057,6 +7057,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     Map<String, ColumnStatistics> newStatsMap = new HashMap<>();
     long numStats = 0;
+    long numStatsMax = 1;//MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
     try {
       for (Map.Entry entry : statsMap.entrySet()) {
         ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
@@ -7067,7 +7068,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         newStatsMap.put((String) entry.getKey(), colStats);
         numStats += colStats.getStatsObjSize();
 
-        if (newStatsMap.size() == 1000) {
+        if (newStatsMap.size() >= numStatsMax) {
           long csId = getTxnHandler().getNextCSIdForMPartitionColumnStatistics(numStats);
           getTxnHandler().updatePartitionColumnStatistics(newStatsMap, this,
                   listeners, tbl, csId, validWriteIds, writeId);
