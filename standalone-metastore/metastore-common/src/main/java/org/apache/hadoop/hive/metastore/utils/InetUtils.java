@@ -24,7 +24,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * ServerUtils (specific to HiveServer version 1)
+ * Utility functions around the Java InetAddress class.
  */
 public class InetUtils {
 
@@ -60,7 +60,7 @@ public class InetUtils {
   }
 
   /**
-   * @return address of current address
+   * @return address of current host
    */
   public static String hostAddress() {
     try {
