@@ -36,12 +36,13 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
  */
 public class TruncDateFromTimestamp extends VectorExpression {
   private static final long serialVersionUID = 1L;
+  private final String fmt;
   protected int colNum;
-  protected String fmt;
 
   public TruncDateFromTimestamp() {
     super();
-    colNum = -1;
+    this.colNum = -1;
+    this.fmt = "";
   }
 
   public TruncDateFromTimestamp(int colNum, byte[] fmt, int outputColumnNum) {
@@ -147,18 +148,29 @@ public class TruncDateFromTimestamp extends VectorExpression {
   }
 
   protected void processDate(BytesColumnVector outV, int i, Date date) {
-    if ("MONTH".equals(fmt) || "MON".equals(fmt) || "MM".equals(fmt)) {
+    switch (fmt) {
+    case "YEAR":
+    case "YYYY":
+    case "YY":
+      date.setMonth(1);
+      /* fall through */
+    case "MONTH":
+    case "MON":
+    case "MM":
       date.setDayOfMonth(1);
-    } else if ("QUARTER".equals(fmt) || "Q".equals(fmt)) {
+      break;
+    case "QUARTER":
+    case "Q":
       int month = date.getMonth() - 1;
       int quarter = month / 3;
       int monthToSet = quarter * 3 + 1;
       date.setMonth(monthToSet);
       date.setDayOfMonth(1);
-    } else if ("YEAR".equals(fmt) || "YYYY".equals(fmt) || "YY".equals(fmt)) {
-      date.setMonth(1);
-      date.setDayOfMonth(1);
+      break;
+    default:
+      break;
     }
+
     byte[] bytes = date.toString().getBytes(StandardCharsets.UTF_8);
     outV.setVal(i, bytes, 0, bytes.length);
   }
