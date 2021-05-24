@@ -18,25 +18,20 @@
 
 package org.apache.hadoop.hive.ql.cache.results;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,18 +41,19 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import javax.annotation.concurrent.GuardedBy;
+
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -65,7 +61,6 @@ import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.events.EventConsumer;
@@ -74,9 +69,14 @@ import org.apache.hadoop.hive.ql.parse.TableAccessInfo;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hive.common.util.TxnIdUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * A class to handle management and lookup of cached Hive query results.
@@ -86,12 +86,11 @@ public final class QueryResultsCache {
   private static final Logger LOG = LoggerFactory.getLogger(QueryResultsCache.class);
 
   public static class LookupInfo {
-    private String queryText;
-    private Supplier<ValidTxnWriteIdList> txnWriteIdListProvider;
+    private final String queryText;
+    private final Supplier<ValidTxnWriteIdList> txnWriteIdListProvider;
 
     public LookupInfo(String queryText, Supplier<ValidTxnWriteIdList> txnWriteIdListProvider) {
-      super();
-      this.queryText = queryText;
+      this.queryText = Objects.requireNonNull(queryText);
       this.txnWriteIdListProvider = txnWriteIdListProvider;
     }
 
@@ -229,10 +228,6 @@ public final class QueryResultsCache {
       return added;
     }
 
-    private int numReaders() {
-      return readers.get();
-    }
-
     private void invalidate() {
       LOG.info("Invalidating cache entry: {}", this);
       CacheEntryStatus prevStatus = setStatus(CacheEntryStatus.INVALID);
@@ -292,12 +287,12 @@ public final class QueryResultsCache {
 
     /**
      * Wait for the cache entry to go from PENDING to VALID status.
+     *
      * @return true if the cache entry successfully changed to VALID status,
      *         false if the status changes from PENDING to INVALID
      */
     public boolean waitForValidStatus() {
       LOG.info("Waiting on pending cacheEntry: {}", this);
-      long timeout = 1000;
 
       long startTime = System.nanoTime();
       long endTime;
@@ -319,9 +314,8 @@ public final class QueryResultsCache {
             // Status has not changed, continue waiting.
             break;
           }
-
           synchronized (this) {
-            this.wait(timeout);
+            this.wait();
           }
         } catch (InterruptedException err) {
           Thread.currentThread().interrupt();
@@ -338,15 +332,16 @@ public final class QueryResultsCache {
   }
 
   // Allow lookup by query string
-  private final Map<String, Set<CacheEntry>> queryMap = new HashMap<String, Set<CacheEntry>>();
+  private final Multimap<String, CacheEntry> queryMap = ArrayListMultimap.create();
 
-  // LRU. Could also implement LRU as a doubly linked list if CacheEntry keeps its node.
-  // Use synchronized map since even read actions cause the lru to get updated.
-  private final Map<CacheEntry, CacheEntry> lru = Collections.synchronizedMap(
-      new LinkedHashMap<CacheEntry, CacheEntry>(INITIAL_LRU_SIZE, LRU_LOAD_FACTOR, true));
+  // LRU - This linked list defines the iteration ordering, which is normally
+  // the order in which keys were inserted into the map (insertion-order). Note
+  // that insertion order is not affected if a value is re-inserted into the set.
+  @GuardedBy("cacheLock")
+  private final Set<CacheEntry> lru = new LinkedHashSet<>();
 
   // Lookup of cache entries by table used in the query, for cache invalidation.
-  private final Map<String, Set<CacheEntry>> tableToEntryMap = new HashMap<>();
+  private final Multimap<String, CacheEntry> tableToEntryMap = ArrayListMultimap.create();
 
   private final HiveConf conf;
   private Path cacheDirPath;
@@ -355,7 +350,9 @@ public final class QueryResultsCache {
   private long maxCacheSize;
   private long maxEntrySize;
   private long maxEntryLifetime;
-  private ReadWriteLock rwLock = new ReentrantReadWriteLock();
+  private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
+  private final Lock cacheReadLock = cacheLock.readLock();
+  private final Lock cacheWriteLock = cacheLock.writeLock();
   private ScheduledFuture<?> invalidationPollFuture;
 
   private QueryResultsCache(HiveConf configuration) throws IOException {
@@ -426,14 +423,13 @@ public final class QueryResultsCache {
 
     boolean foundPending = false;
     // Cannot entries while we currently hold read lock, so keep track of them to delete later.
-    Set<CacheEntry> entriesToRemove = new HashSet<CacheEntry>();
-    Lock readLock = rwLock.readLock();
+    Set<CacheEntry> entriesToRemove = new HashSet<>();
+    cacheReadLock.lock();
     try {
       // Note: ReentrantReadWriteLock deos not allow upgrading a read lock to a write lock.
       // Care must be taken while under read lock, to make sure we do not perform any actions
       // which attempt to take a write lock.
-      readLock.lock();
-      Set<CacheEntry> candidates = queryMap.get(request.queryText);
+      Collection<CacheEntry> candidates = queryMap.get(request.queryText);
       if (candidates != null) {
         CacheEntry pendingResult = null;
         for (CacheEntry candidate : candidates) {
@@ -453,13 +449,9 @@ public final class QueryResultsCache {
           result = pendingResult;
           foundPending = true;
         }
-
-        if (result != null) {
-          lru.get(result);  // Update LRU
-        }
       }
     } finally {
-      readLock.unlock();
+      cacheReadLock.unlock();
     }
 
     // Now that we have exited read lock it is safe to remove any invalid entries.
@@ -493,20 +485,17 @@ public final class QueryResultsCache {
     addedEntry.queryInfo = queryInfo;
     addedEntry.txnWriteIdList = txnWriteIdList;
 
-    Lock writeLock = rwLock.writeLock();
+    cacheWriteLock.lock();
     try {
-      writeLock.lock();
-
       LOG.info("Adding placeholder cache entry for query '{}'", queryText);
 
       // Add the entry to the cache structures while under write lock.
-      addToEntryMap(queryMap, queryText, addedEntry);
-      lru.put(addedEntry, addedEntry);
+      queryMap.put(queryText, addedEntry);
+      lru.add(addedEntry);
       // Index of entries by table usage.
-      addedEntry.getTableNames()
-          .forEach(tableName -> addToEntryMap(tableToEntryMap, tableName, addedEntry));
+      addedEntry.getTableNames().forEach(tableName -> tableToEntryMap.put(tableName, addedEntry));
     } finally {
-      writeLock.unlock();
+      cacheWriteLock.unlock();
     }
 
     return addedEntry;
@@ -523,7 +512,6 @@ public final class QueryResultsCache {
    */
   public boolean setEntryValid(CacheEntry cacheEntry, FetchWork fetchWork) {
     Path queryResultsPath = null;
-    Path cachedResultsPath = null;
 
     try {
       // if we are here file sink op should have created files to fetch from
@@ -601,15 +589,11 @@ public final class QueryResultsCache {
   }
 
   public void clear() {
-    Lock writeLock = rwLock.writeLock();
+    cacheWriteLock.lock();
     try {
-      writeLock.lock();
       LOG.info("Clearing the results cache");
-      CacheEntry[] allEntries = null;
-      synchronized (lru) {
-        allEntries = lru.keySet().toArray(EMPTY_CACHEENTRY_ARRAY);
-      }
-      for (CacheEntry entry : allEntries) {
+      Collection<CacheEntry> keys = new ArrayList<>(lru);
+      for (CacheEntry entry : keys) {
         try {
           removeEntry(entry);
         } catch (Exception err) {
@@ -617,17 +601,16 @@ public final class QueryResultsCache {
         }
       }
     } finally {
-      writeLock.unlock();
+      cacheWriteLock.unlock();
     }
   }
 
   public long getSize() {
-    Lock readLock = rwLock.readLock();
+    cacheReadLock.lock();
     try {
-      readLock.lock();
       return cacheSize;
     } finally {
-      readLock.unlock();
+      cacheReadLock.unlock();
     }
   }
 
@@ -635,10 +618,10 @@ public final class QueryResultsCache {
     LOG.debug("Table changed: {}.{}, at {}", dbName, tableName, updateTime);
     // Invalidate all cache entries using this table.
     List<CacheEntry> entriesToInvalidate = null;
-    rwLock.writeLock().lock();
+    cacheWriteLock.lock();
     try {
       String key = (dbName.toLowerCase() + "." + tableName.toLowerCase());
-      Set<CacheEntry> entriesForTable = tableToEntryMap.get(key);
+      Collection<CacheEntry> entriesForTable = tableToEntryMap.get(key);
       if (entriesForTable != null) {
         // Possible concurrent modification issues if we try to remove cache entries while
         // traversing the cache structures. Save the entries to remove in a separate list.
@@ -653,13 +636,9 @@ public final class QueryResultsCache {
         }
       }
     } finally {
-      rwLock.writeLock().unlock();
+      cacheWriteLock.unlock();
     }
   }
-
-  private static final int INITIAL_LRU_SIZE = 16;
-  private static final float LRU_LOAD_FACTOR = 0.75f;
-  private static final CacheEntry[] EMPTY_CACHEENTRY_ARRAY = {};
 
   /**
    * Check that the cache entry matches the lookupInfo.
@@ -726,33 +705,25 @@ public final class QueryResultsCache {
 
   public void removeEntry(CacheEntry entry) {
     entry.invalidate();
-    rwLock.writeLock().lock();
+    cacheWriteLock.lock();
     try {
       removeFromLookup(entry);
       lru.remove(entry);
       // Should the cache size be updated here, or after the result data has actually been deleted?
       cacheSize -= entry.size;
     } finally {
-      rwLock.writeLock().unlock();
+      cacheWriteLock.unlock();
     }
   }
 
   private void removeFromLookup(CacheEntry entry) {
     String queryString = entry.getQueryText();
-    if (!removeFromEntryMap(queryMap, queryString, entry)) {
+    if (!queryMap.remove(queryString, entry)) {
       LOG.warn("Attempted to remove entry but it was not in the cache: {}", entry);
     }
 
     // Remove this entry from the table usage mappings.
-    entry.getTableNames()
-        .forEach(tableName -> removeFromEntryMap(tableToEntryMap, tableName, entry));
-  }
-
-  private void calculateEntrySize(CacheEntry entry, FetchWork fetchWork) throws IOException {
-    Path queryResultsPath = fetchWork.getTblDir();
-    FileSystem resultsFs = queryResultsPath.getFileSystem(conf);
-    ContentSummary cs = resultsFs.getContentSummary(queryResultsPath);
-    entry.size = cs.getLength();
+    entry.getTableNames().forEach(tableName -> tableToEntryMap.remove(tableName, entry));
   }
 
   /**
@@ -782,15 +753,16 @@ public final class QueryResultsCache {
   }
 
   private CacheEntry findEntryToRemove() {
-    // Entries should be in LRU order in the keyset iterator.
-    Set<CacheEntry> entries = lru.keySet();
-    synchronized (lru) {
-      for (CacheEntry removalCandidate : entries) {
-        if (removalCandidate.getStatus() != CacheEntryStatus.VALID) {
-          continue;
+    cacheReadLock.lock();
+    try {
+      // Entries should be in LRU order in the keyset iterator
+      for (CacheEntry removalCandidate : lru) {
+        if (removalCandidate.getStatus() == CacheEntryStatus.VALID) {
+          return removalCandidate;
         }
-        return removalCandidate;
       }
+    } finally {
+      cacheReadLock.unlock();
     }
     return null;
   }
@@ -814,35 +786,9 @@ public final class QueryResultsCache {
       }
     }
 
-    LOG.info("Could not free enough space for cache entry for query: [{}] withe size {}",
+    LOG.info("Could not free enough space for cache entry for query: [{}] with size {}",
         entry.getQueryText(), size);
     return false;
-  }
-
-  private static void addToEntryMap(Map<String, Set<CacheEntry>> entryMap,
-      String key, CacheEntry entry) {
-    Set<CacheEntry> entriesForKey = entryMap.get(key);
-    if (entriesForKey == null) {
-      entriesForKey = new HashSet<CacheEntry>();
-      entryMap.put(key, entriesForKey);
-    }
-    entriesForKey.add(entry);
-  }
-
-  private static boolean removeFromEntryMap(Map<String, Set<CacheEntry>> entryMap,
-      String key, CacheEntry entry) {
-    Set<CacheEntry> entries = entryMap.get(key);
-    if (entries == null) {
-      return false;
-    }
-    boolean deleted = entries.remove(entry);
-    if (!deleted) {
-      return false;
-    }
-    if (entries.isEmpty()) {
-      entryMap.remove(key);
-    }
-    return true;
   }
 
   @VisibleForTesting
@@ -860,15 +806,10 @@ public final class QueryResultsCache {
     }
   }
 
-  private static ScheduledExecutorService invalidationExecutor = null;
-  private static ExecutorService deletionExecutor = null;
-
-  static {
-    ThreadFactory threadFactory =
-        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("QueryResultsCache %d").build();
-    invalidationExecutor = Executors.newSingleThreadScheduledExecutor(threadFactory);
-    deletionExecutor = Executors.newSingleThreadExecutor(threadFactory);
-  }
+  private static ScheduledExecutorService invalidationExecutor = Executors.newSingleThreadScheduledExecutor(
+      new ThreadFactoryBuilder().setDaemon(true).setNameFormat("QueryCacheInvalidator %d").build());
+  private static ExecutorService deletionExecutor = Executors.newSingleThreadScheduledExecutor(
+      new ThreadFactoryBuilder().setDaemon(true).setNameFormat("QueryCacheDeletor %d").build());
 
   private void scheduleEntryInvalidation(final CacheEntry entry) {
     if (maxEntryLifetime >= 0) {
@@ -885,8 +826,6 @@ public final class QueryResultsCache {
 
   private static void cleanupEntry(final CacheEntry entry) {
     Preconditions.checkState(entry.getStatus() == CacheEntryStatus.INVALID);
-    final HiveConf conf = getInstance().conf;
-
     if (entry.cachedResultsPath != null &&
         !getInstance().zeroRowsPath.equals(entry.cachedResultsPath)) {
       deletionExecutor.execute(new Runnable() {
