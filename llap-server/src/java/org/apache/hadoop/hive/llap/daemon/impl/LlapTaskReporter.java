@@ -292,16 +292,12 @@ public class LlapTaskReporter implements TaskReporterInterface {
       int maxEvents = Math.min(maxEventsToGet, task.getMaxEventsToHandle());
       TezHeartbeatRequest request = new TezHeartbeatRequest(requestId, events, fromPreRoutedEventId,
           containerIdStr, task.getTaskAttemptID(), fromEventId, maxEvents);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Sending heartbeat to AM, request=" + request);
-      }
+      LOG.debug("Sending heartbeat to AM, request={}", request);
 
       maybeLogCounters();
 
       TezHeartbeatResponse response = umbilical.heartbeat(request);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Received heartbeat response from AM, response=" + response);
-      }
+      LOG.debug("Received heartbeat response from AM, response={}", response);
 
       if (response.shouldDie()) {
         LOG.info("Received should die response from AM: {}", task.getTaskAttemptID());

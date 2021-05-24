@@ -8534,10 +8534,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         limitDesc, new RowSchema(inputRR.getColumnInfos()), input),
         inputRR);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Created LimitOperator Plan for clause: " + dest
-          + " row schema: " + inputRR.toString());
-    }
+    LOG.debug("Created LimitOperator Plan for clause: {} row schema: {}", dest, inputRR);
 
     return limitMap;
   }
@@ -13642,10 +13639,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         } catch (FileNotFoundException nfe) {
           //we will create the folder if it does not exist.
         } catch (IOException ioE) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Exception when validate folder ",ioE);
-          }
-
+          LOG.debug("Exception when validate folder", ioE);
         }
       }
       if (!CollectionUtils.isEmpty(partCols)) {

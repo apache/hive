@@ -58,9 +58,7 @@ public class CookieSigner {
     }
     String signature = getSignature(str);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Signature generated for " + str + " is " + signature);
-    }
+    LOG.debug("Signature generated for {} is {}", str, signature);
     return str + SIGNATURE + signature;
   }
 
@@ -78,9 +76,7 @@ public class CookieSigner {
     String rawValue = signedStr.substring(0, index);
     String currentSignature = getSignature(rawValue);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Signature generated for " + rawValue + " inside verify is " + currentSignature);
-    }
+    LOG.debug("Signature generated for {} inside verify is {}", rawValue, currentSignature);
     if (!MessageDigest.isEqual(originalSignature.getBytes(), currentSignature.getBytes())) {
       throw new IllegalArgumentException("Invalid sign, original = " + originalSignature +
         " current = " + currentSignature);

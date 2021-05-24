@@ -440,9 +440,8 @@ public class SplitGrouper {
       retval = true;
     }
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Adding split " + path + " to src new group? " + retval);
-    }
+    LOG.debug("Adding split {} to src new group? {}", path, retval);
+
     return retval;
   }
 
