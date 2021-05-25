@@ -33,6 +33,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
@@ -237,6 +238,36 @@ public class TestHiveIcebergStorageHandlerNoScan {
           testTables.loadTable(identifier);
         }
     );
+  }
+
+  @Test
+  public void testCreateTableStoredByIceberg() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    String query = String.format("CREATE EXTERNAL TABLE customers (customer_id BIGINT, first_name STRING, last_name " +
+        "STRING) STORED BY %s %s TBLPROPERTIES ('%s'='%s')",
+        "ICEBERG",
+        testTables.locationForCreateTableSQL(identifier),
+        InputFormatConfig.CATALOG_NAME,
+        Catalogs.ICEBERG_DEFAULT_CATALOG_NAME);
+    shell.executeStatement(query);
+    Assert.assertNotNull(testTables.loadTable(identifier));
+  }
+
+  @Test
+  public void testCreateTableStoredByIcebergWithSerdeProperties() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    String query = String.format("CREATE EXTERNAL TABLE customers (customer_id BIGINT, first_name STRING, last_name " +
+            "STRING) STORED BY %s WITH SERDEPROPERTIES('%s'='%s') %s TBLPROPERTIES ('%s'='%s')",
+        "ICEBERG",
+        TableProperties.DEFAULT_FILE_FORMAT,
+        "orc",
+        testTables.locationForCreateTableSQL(identifier),
+        InputFormatConfig.CATALOG_NAME,
+        Catalogs.ICEBERG_DEFAULT_CATALOG_NAME);
+    shell.executeStatement(query);
+    Table table = testTables.loadTable(identifier);
+    Assert.assertNotNull(table);
+    Assert.assertEquals("orc", table.properties().get(TableProperties.DEFAULT_FILE_FORMAT));
   }
 
   @Test
@@ -587,6 +618,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     expectedIcebergProperties.put("custom_property", "initial_val");
     expectedIcebergProperties.put("EXTERNAL", "TRUE");
     expectedIcebergProperties.put("storage_handler", HiveIcebergStorageHandler.class.getName());
+    expectedIcebergProperties.put(serdeConstants.SERIALIZATION_FORMAT, "1");
 
     // Check the HMS table parameters
     org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "customers");
@@ -606,7 +638,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     Assert.assertEquals(expectedIcebergProperties, icebergTable.properties());
 
     if (Catalogs.hiveCatalog(shell.getHiveConf(), tableProperties)) {
-      Assert.assertEquals(10, hmsParams.size());
+      Assert.assertEquals(11, hmsParams.size());
       Assert.assertEquals("initial_val", hmsParams.get("custom_property"));
       Assert.assertEquals("TRUE", hmsParams.get(InputFormatConfig.EXTERNAL_TABLE_PURGE));
       Assert.assertEquals("TRUE", hmsParams.get("EXTERNAL"));
@@ -620,6 +652,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
       Assert.assertNull(hmsParams.get(BaseMetastoreTableOperations.PREVIOUS_METADATA_LOCATION_PROP));
       Assert.assertNotNull(hmsParams.get(hive_metastoreConstants.DDL_TIME));
       Assert.assertNotNull(hmsParams.get(InputFormatConfig.PARTITION_SPEC));
+      Assert.assertNotNull(hmsParams.get(serdeConstants.SERIALIZATION_FORMAT));
     } else {
       Assert.assertEquals(8, hmsParams.size());
       Assert.assertNull(hmsParams.get(TableProperties.ENGINE_HIVE_ENABLED));
@@ -644,7 +677,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     if (Catalogs.hiveCatalog(shell.getHiveConf(), tableProperties)) {
-      Assert.assertEquals(13, hmsParams.size()); // 2 newly-added properties + previous_metadata_location prop
+      Assert.assertEquals(14, hmsParams.size()); // 2 newly-added properties + previous_metadata_location prop
       Assert.assertEquals("true", hmsParams.get("new_prop_1"));
       Assert.assertEquals("false", hmsParams.get("new_prop_2"));
       Assert.assertEquals("new_val", hmsParams.get("custom_property"));

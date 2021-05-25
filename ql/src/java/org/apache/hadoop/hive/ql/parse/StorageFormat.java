@@ -42,6 +42,19 @@ public class StorageFormat {
   private String serde;
   private final Map<String, String> serdeProps;
 
+  private enum StorageHandlerTypes {
+    ICEBERG("\'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler\'");
+
+    private final String className;
+    StorageHandlerTypes(String className) {
+      this.className = className;
+    }
+
+    public String className() {
+      return className;
+    }
+  }
+
   public StorageFormat(Configuration conf) {
     this.conf = conf;
     this.serdeProps = new HashMap<String, String>();
@@ -66,7 +79,7 @@ public class StorageFormat {
       }
       break;
     case HiveParser.TOK_STORAGEHANDLER:
-      storageHandler = ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(child.getChild(0).getText()));
+      storageHandler = processStorageHandler(child.getChild(0).getText());
       if (child.getChildCount() == 2) {
         BaseSemanticAnalyzer.readProps(
           (ASTNode) (child.getChild(1).getChild(0)),
@@ -91,6 +104,14 @@ public class StorageFormat {
       return false;
     }
     return true;
+  }
+
+  private String processStorageHandler(String name) throws SemanticException {
+    if (StorageHandlerTypes.ICEBERG.name().equalsIgnoreCase(name)) {
+      name = StorageHandlerTypes.ICEBERG.className();
+    }
+
+    return ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(name));
   }
 
   protected void processStorageFormat(String name) throws SemanticException {
