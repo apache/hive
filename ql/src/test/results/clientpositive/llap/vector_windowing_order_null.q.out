@@ -160,6 +160,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorStreamingLongSum]
                       functionInputExpressions: [col 2:bigint]
@@ -331,6 +332,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorStreamingDoubleSum]
                       functionInputExpressions: [col 2:float]
@@ -465,7 +467,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: sum only CURRENT ROW end frame is supported for RANGE
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -601,7 +603,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: avg only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: avg UNBOUNDED end frame is required for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -778,6 +780,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumLong
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorLongSum]
                       functionInputExpressions: [col 2:int]
@@ -952,6 +955,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumDouble
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDoubleSum]
                       functionInputExpressions: [col 2:double]
@@ -1121,6 +1125,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDoubleAvg]
                       functionInputExpressions: [col 2:double]
@@ -1290,6 +1295,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDoubleAvg]
                       functionInputExpressions: [col 2:double]

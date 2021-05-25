@@ -29,26 +29,18 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
  * This class performs OR expression on two input columns and stores,
  * the boolean output in a separate output column. The boolean values
  * are supposed to be represented as 0/1 in a long vector.
+ * The first input column field is reused from VectorExpression.
  */
 public class ColOrCol extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private final int colNum1;
-  private final int colNum2;
-
   public ColOrCol(int colNum1, int colNum2, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum1 = colNum1;
-    this.colNum2 = colNum2;
+    super(colNum1, colNum2, outputColumnNum);
   }
 
   public ColOrCol() {
     super();
-
-    // Dummy final assignments.
-    colNum1 = -1;
-    colNum2 = -1;
   }
 
   @Override
@@ -58,8 +50,8 @@ public class ColOrCol extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[colNum1];
-    LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[colNum2];
+    LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[inputColumnNum[0]];
+    LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[inputColumnNum[1]];
     doEvaluate(batch, inputColVector1, inputColVector2);
   }
 
@@ -306,7 +298,7 @@ public class ColOrCol extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum1) + ", " + getColumnParamString(1, colNum2);
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getColumnParamString(1, inputColumnNum[1]);
   }
 
   @Override

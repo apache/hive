@@ -37,23 +37,20 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 public class TruncDateFromTimestamp extends VectorExpression {
   private static final long serialVersionUID = 1L;
   private final String fmt;
-  protected int colNum;
+
+  public TruncDateFromTimestamp(int colNum, byte[] fmt, int outputColumnNum) {
+    super(colNum, outputColumnNum);
+    this.fmt = new String(fmt, StandardCharsets.UTF_8);
+  }
 
   public TruncDateFromTimestamp() {
     super();
-    this.colNum = -1;
     this.fmt = "";
-  }
-
-  public TruncDateFromTimestamp(int colNum, byte[] fmt, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum = colNum;
-    this.fmt = new String(fmt, StandardCharsets.UTF_8);
   }
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", format " + fmt;
+    return "col " + inputColumnNum[0] + ", format " + fmt;
   }
 
   @Override
@@ -63,7 +60,7 @@ public class TruncDateFromTimestamp extends VectorExpression {
       this.evaluateChildren(batch);
     }
 
-    ColumnVector inputColVector = batch.cols[colNum];
+    ColumnVector inputColVector = batch.cols[inputColumnNum[0]];
     BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumnNum];
 
     int[] sel = batch.selected;

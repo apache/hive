@@ -39,8 +39,6 @@ import java.util.Arrays;
 public class VectorUDFDateDiffScalarCol extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private final int colNum;
-
   private long longValue;
   private Timestamp timestampValue = null;
   private byte[] stringValue;
@@ -52,8 +50,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
   private int baseDate;
 
   public VectorUDFDateDiffScalarCol(Object object, int colNum, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum = colNum;
+    super(colNum, outputColumnNum);
 
     if (object instanceof Long) {
       this.longValue = (Long) object;
@@ -68,9 +65,6 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
 
   public VectorUDFDateDiffScalarCol() {
     super();
-
-    // Dummy final assignments.
-    colNum = -1;
   }
 
   @Override
@@ -81,7 +75,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
     }
 
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
-    ColumnVector inputCol = batch.cols[this.colNum];
+    ColumnVector inputCol = batch.cols[this.inputColumnNum[0]];
     /* every line below this is identical for evaluateLong & evaluateString */
     final int n = inputCol.isRepeating ? 1 : batch.size;
     int[] sel = batch.selected;
@@ -368,7 +362,7 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return "val " + stringValue + ", " + getColumnParamString(1, colNum);
+    return "val " + stringValue + ", " + getColumnParamString(1, inputColumnNum[0]);
   }
 
   @Override
