@@ -13875,6 +13875,32 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
+    processScheduledQueryPolicies(info);
+  }
+
+  private void processScheduledQueryPolicies(ScheduledQueryProgressInfo info) {
+    if (info.getState() != QueryState.FAILED && info.getState() != QueryState.TIMED_OUT) {
+      return;
+    }
+    boolean commited = false;
+    try {
+      openTransaction();
+
+      MScheduledExecution lastExecution = pm.getObjectById(MScheduledExecution.class, info.getScheduledExecutionId());
+
+      Query query = pm.newQuery(MScheduledExecution.class);
+      query.setFilter("schedule = currentSchedule");
+      query.setOrdering("scheduledExecutionId descending");
+      query.declareParameters("MScheduledQuery currentSchedule");
+      query.execute(lastExecution.getScheduledQuery());
+
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+
   }
 
   /**
