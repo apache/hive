@@ -23,15 +23,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -56,7 +52,6 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SnapshotSummary;
@@ -165,36 +160,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       }
     }
     try {
-      addDependencyJars(jobConf, HiveIcebergStorageHandler.class);
+      Utilities.addDependencyJars(jobConf, HiveIcebergStorageHandler.class);
     } catch (IOException e) {
       Throwables.propagate(e);
     }
-  }
-
-  // Copied from the KuduStorageHandler :)
-  private static void addDependencyJars(Configuration conf, Class<?>... classes)
-      throws IOException {
-    FileSystem localFs = FileSystem.getLocal(conf);
-    Set<String> jars = new HashSet<>(conf.getStringCollection("tmpjars"));
-    for (Class<?> clazz : classes) {
-      if (clazz == null) {
-        continue;
-      }
-      final String path = Utilities.jarFinderGetJar(clazz);
-      if (path == null) {
-        throw new RuntimeException("Could not find jar for class " + clazz +
-            " in order to ship it to the cluster.");
-      }
-      if (!localFs.exists(new Path(path))) {
-        throw new RuntimeException("Could not validate jar file " + path + " for class " + clazz);
-      }
-      jars.add(path);
-    }
-    if (jars.isEmpty()) {
-      return;
-    }
-    // noinspection ToArrayCallWithZeroLengthArrayArgument
-    conf.set("tmpjars", StringUtils.arrayToString(jars.toArray(new String[jars.size()])));
   }
 
   @Override
