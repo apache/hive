@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConf.Runtime;
 import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
 import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
@@ -739,7 +740,9 @@ public class HiveServer2 extends CompositeService {
       }
     }
 
-    if (hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+    if (hiveConf.getRuntime() == Runtime.TEZ ||
+        // Impala Unified Analytics with ETL isolation requires setting up tez session pools
+        (hiveConf.getRuntime() == Runtime.IMPALA && hiveConf.getVar(ConfVars.HIVE_ETL_EXECUTION_ENGINE).equals("tez"))) {
       if (!activePassiveHA) {
         LOG.info("HS2 interactive HA not enabled. Starting tez sessions..");
         try {

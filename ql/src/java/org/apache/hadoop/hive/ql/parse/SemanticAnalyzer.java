@@ -12841,6 +12841,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  void setETLEngine() {
+    String etlEngine = conf.getVar(ConfVars.HIVE_ETL_EXECUTION_ENGINE);
+    if (!etlEngine.isEmpty()) {
+       LOG.info("Switching execution engine to {} from {} for ETL execution",
+           etlEngine, conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE));
+       conf.setVar(ConfVars.HIVE_EXECUTION_ENGINE, etlEngine);
+    }
+  }
+
   void analyzeInternal(ASTNode ast, PlannerContextFactory pcf) throws SemanticException {
     LOG.info("Starting Semantic Analysis");
     // 1. Generate Resolved Parse tree from syntax tree
@@ -12892,6 +12901,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       astForMasking = (ASTNode) ParseDriver.adaptor.dupTree(ast);
     } else {
       astForMasking = ast;
+    }
+
+    if (qb.isCTAS() || qb.getParseInfo().hasInsertTables() || qb.isMaterializedView()) {
+      setETLEngine();
     }
 
     // 2. Gen OP Tree from resolved Parse Tree

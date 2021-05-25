@@ -60,6 +60,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
           "MergeSemanticAnalyzer");
     }
     ctx.setOperation(Context.Operation.MERGE);
+    setETLEngine();
     analyzeMerge(tree);
   }
 

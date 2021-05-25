@@ -1,0 +1,1723 @@
+PREHOOK: query: create table emps_hive (
+  empid int,
+  deptno int,
+  name varchar(256),
+  salary float,
+  commission int)
+stored as parquet TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emps_hive
+POSTHOOK: query: create table emps_hive (
+  empid int,
+  deptno int,
+  name varchar(256),
+  salary float,
+  commission int)
+stored as parquet TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emps_hive
+PREHOOK: query: create table depts_hive (
+  deptno int,
+  name varchar(256),
+  locationid int)
+stored as parquet TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@depts_hive
+POSTHOOK: query: create table depts_hive (
+  deptno int,
+  name varchar(256),
+  locationid int)
+stored as parquet TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@depts_hive
+HMS CALL get_table_req FOR emps_hive
+PREHOOK: query: alter table emps_hive add constraint pk1 primary key (empid) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table emps_hive add constraint pk1 primary key (empid) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+HMS CALL get_table_req FOR depts_hive
+PREHOOK: query: alter table depts_hive add constraint pk2 primary key (deptno) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table depts_hive add constraint pk2 primary key (deptno) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+HMS CALL get_table_req FOR emps_hive
+PREHOOK: query: alter table emps_hive add constraint fk1 foreign key (deptno) references depts_hive(deptno) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table emps_hive add constraint fk1 foreign key (deptno) references depts_hive(deptno) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+HMS CALL get_table_req FOR emps_hive
+HMS CALL get_table_req FOR depts_hive
+HMS CALL get_foreign_keys FOR emps_hive
+HMS CALL get_foreign_keys FOR depts_hive
+PREHOOK: query: explain
+select empid, depts_hive.deptno from emps_hive
+join depts_hive using (deptno) where depts_hive.deptno > cast(ltrim('10') as integer)
+group by empid, depts_hive.deptno
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts_hive
+PREHOOK: Input: default@emps_hive
+PREHOOK: Output: streaming
+POSTHOOK: query: explain
+select empid, depts_hive.deptno from emps_hive
+join depts_hive using (deptno) where depts_hive.deptno > cast(ltrim('10') as integer)
+group by empid, depts_hive.deptno
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts_hive
+POSTHOOK: Input: default@emps_hive
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=20.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: default.emps_hive.empid, default.depts_hive.deptno
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  04:EXCHANGE [UNPARTITIONED]
+     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=0,2 row-size=12B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=1.95MB mem-reservation=1.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=04, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  02:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.emps_hive.deptno = default.depts_hive.deptno
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2 row-size=12B cardinality=0
+  |  in pipelines: 00(GETNEXT), 01(OPEN)
+  |
+  |--03:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=2 row-size=4B cardinality=0
+  |     in pipelines: 01(GETNEXT)
+  |
+  00:SCAN HDFS [default.emps_hive, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.emps_hive.deptno > casttoint(ltrim('10'))
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.emps_hive.deptno > casttoint(ltrim('10'))
+     file formats: [PARQUET]
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=8B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=03, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  01:SCAN HDFS [default.depts_hive, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.depts_hive.deptno > casttoint(ltrim('10'))
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.depts_hive.deptno > casttoint(ltrim('10'))
+     file formats: [PARQUET]
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=4B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+HMS CALL get_table_req FOR tab1_hive
+HMS CALL get_table_req FOR emps_hive
+HMS CALL get_table_req FOR depts_hive
+HMS CALL get_table_req FOR tab1_hive
+PREHOOK: query: explain
+create table tab1_hive
+stored as parquet TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select empid, depts_hive.deptno from emps_hive
+join depts_hive using (deptno) where depts_hive.deptno > cast(ltrim('10') as integer)
+group by empid, depts_hive.deptno
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@depts_hive
+PREHOOK: Input: default@emps_hive
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab1_hive
+POSTHOOK: query: explain
+create table tab1_hive
+stored as parquet TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select empid, depts_hive.deptno from emps_hive
+join depts_hive using (deptno) where depts_hive.deptno > cast(ltrim('10') as integer)
+group by empid, depts_hive.deptno
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@depts_hive
+POSTHOOK: Input: default@emps_hive
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab1_hive
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-0, Stage-2
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: emps_hive
+                  filterExpr: (deptno > 10) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (deptno > 10) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: empid (type: int), deptno (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: int)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: int)
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int)
+            Execution mode: vectorized
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: depts_hive
+                  filterExpr: (deptno > 10) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (deptno > 10) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: deptno (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col2
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int), _col2 (type: int)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+                        serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+                        name: default.tab1_hive
+                    Write Type: INSERT
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: int)
+                    outputColumnNames: col1, col2
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: min(col1), max(col1), count(1), count(col1), compute_bit_vector_hll(col1), min(col2), max(col2), count(col2), compute_bit_vector_hll(col2)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+    Create Table
+      columns: empid int, deptno int
+      name: default.tab1_hive
+      input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+      output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+      serde name: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+      table properties:
+        transactional true
+        transactional_properties insert_only
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: empid, deptno
+          Column Types: int, int
+          Table: default.tab1_hive
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: hdfs://### HDFS PATH ###
+
+PREHOOK: query: create table tab1_hive (
+  empid int,
+  deptno int
+)
+stored as parquet TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab1_hive
+POSTHOOK: query: create table tab1_hive (
+  empid int,
+  deptno int
+)
+stored as parquet TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab1_hive
+HMS CALL get_table_req FOR emps_hive
+HMS CALL get_table_req FOR tab1_hive
+HMS CALL get_table_req FOR depts_hive
+PREHOOK: query: explain
+insert into tab1_hive
+select empid, deptno
+from emps_hive
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_hive
+PREHOOK: Output: default@tab1_hive
+POSTHOOK: query: explain
+insert into tab1_hive
+select empid, deptno
+from emps_hive
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_hive
+POSTHOOK: Output: default@tab1_hive
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: emps_hive
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: empid (type: int), deptno (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+                          serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+                          name: default.tab1_hive
+                      Write Type: INSERT
+                    Select Operator
+                      expressions: _col0 (type: int), _col1 (type: int)
+                      outputColumnNames: empid, deptno
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: min(empid), max(empid), count(1), count(empid), compute_bit_vector_hll(empid), min(deptno), max(deptno), count(deptno), compute_bit_vector_hll(deptno)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                        Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+              output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+              name: default.tab1_hive
+          Write Type: INSERT
+          micromanaged table: true
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: empid, deptno
+          Column Types: int, int
+          Table: default.tab1_hive
+
+HMS CALL get_table_req FOR tab1_hive
+HMS CALL get_table_req FOR depts_hive
+HMS CALL get_foreign_keys FOR tab1_hive
+PREHOOK: query: explain
+select empid, depts_hive.deptno from tab1_hive
+join depts_hive using (deptno) where depts_hive.deptno > cast(ltrim('10') as integer)
+group by empid, depts_hive.deptno
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts_hive
+PREHOOK: Input: default@tab1_hive
+PREHOOK: Output: streaming
+POSTHOOK: query: explain
+select empid, depts_hive.deptno from tab1_hive
+join depts_hive using (deptno) where depts_hive.deptno > cast(ltrim('10') as integer)
+group by empid, depts_hive.deptno
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts_hive
+POSTHOOK: Input: default@tab1_hive
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F03:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: default.tab1_hive.empid, default.depts_hive.deptno
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  07:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=4 row-size=8B cardinality=0
+     in pipelines: 06(GETNEXT)
+
+F02:PLAN FRAGMENT [HASH(default.tab1_hive.empid,default.depts_hive.deptno)] hosts=1 instances=1
+Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=07, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  06:AGGREGATE [FINALIZE]
+  |  group by: default.tab1_hive.empid, default.depts_hive.deptno
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=4 row-size=8B cardinality=0
+  |  in pipelines: 06(GETNEXT), 00(OPEN)
+  |
+  05:EXCHANGE [HASH(default.tab1_hive.empid,default.depts_hive.deptno)]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=4 row-size=8B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=129.95MB mem-reservation=35.94MB thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=05, HASH(default.tab1_hive.empid,default.depts_hive.deptno)]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  03:AGGREGATE [STREAMING]
+  |  group by: default.tab1_hive.empid, default.depts_hive.deptno
+  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=4 row-size=8B cardinality=0
+  |  in pipelines: 00(GETNEXT)
+  |
+  02:HASH JOIN [INNER JOIN, BROADCAST]
+  |  hash predicates: default.tab1_hive.deptno = default.depts_hive.deptno
+  |  fk/pk conjuncts: assumed fk/pk
+  |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
+  |  tuple-ids=0,2 row-size=12B cardinality=0
+  |  in pipelines: 00(GETNEXT), 01(OPEN)
+  |
+  |--04:EXCHANGE [BROADCAST]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=2 row-size=4B cardinality=0
+  |     in pipelines: 01(GETNEXT)
+  |
+  00:SCAN HDFS [default.tab1_hive, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.tab1_hive.deptno > casttoint(ltrim('10'))
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.tab1_hive.deptno > casttoint(ltrim('10'))
+     file formats: [PARQUET]
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=8B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=04, BROADCAST]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  01:SCAN HDFS [default.depts_hive, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     predicates: default.depts_hive.deptno > casttoint(ltrim('10'))
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     parquet statistics predicates: default.depts_hive.deptno > casttoint(ltrim('10'))
+     file formats: [PARQUET]
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=4B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+HMS CALL get_table_req FOR emps_hive
+HMS CALL get_table_req FOR tab1_hive
+HMS CALL get_table_req FOR depts_hive
+PREHOOK: query: explain
+insert into tab1_hive
+select empid, deptno
+from emps_hive
+limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_hive
+PREHOOK: Output: default@tab1_hive
+POSTHOOK: query: explain
+insert into tab1_hive
+select empid, deptno
+from emps_hive
+limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_hive
+POSTHOOK: Output: default@tab1_hive
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: emps_hive
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: empid (type: int), deptno (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Limit
+                      Number of rows: 10
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.1
+                        value expressions: _col0 (type: int), _col1 (type: int)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+                        serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+                        name: default.tab1_hive
+                    Write Type: INSERT
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: int)
+                    outputColumnNames: empid, deptno
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: min(empid), max(empid), count(1), count(empid), compute_bit_vector_hll(empid), min(deptno), max(deptno), count(deptno), compute_bit_vector_hll(deptno)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                      Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+              output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+              name: default.tab1_hive
+          Write Type: INSERT
+          micromanaged table: true
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: empid, deptno
+          Column Types: int, int
+          Table: default.tab1_hive
+
+PREHOOK: query: create table tab1_hive_part (
+  empid int,
+  deptno int
+)
+PARTITIONED BY (partcol string)
+stored as parquet TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab1_hive_part
+POSTHOOK: query: create table tab1_hive_part (
+  empid int,
+  deptno int
+)
+PARTITIONED BY (partcol string)
+stored as parquet TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab1_hive_part
+HMS CALL get_table_req FOR emps_hive
+HMS CALL get_table_req FOR tab1_hive_part
+HMS CALL get_table_req FOR depts_hive
+PREHOOK: query: explain
+insert into tab1_hive_part
+select empid, deptno, name
+from emps_hive
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_hive
+PREHOOK: Output: default@tab1_hive_part
+POSTHOOK: query: explain
+insert into tab1_hive_part
+select empid, deptno, name
+from emps_hive
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_hive
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: emps_hive
+                  Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: empid (type: int), deptno (type: int), name (type: varchar(256))
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+                          serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+                          name: default.tab1_hive_part
+                      Write Type: INSERT
+                    Select Operator
+                      expressions: _col0 (type: int), _col1 (type: int), CAST( _col2 AS STRING) (type: string)
+                      outputColumnNames: empid, deptno, partcol
+                      Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: min(empid), max(empid), count(1), count(empid), compute_bit_vector_hll(empid), min(deptno), max(deptno), count(deptno), compute_bit_vector_hll(deptno)
+                        keys: partcol (type: string)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                        Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          null sort order: a
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col1) (type: bigint), UDFToLong(_col2) (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), _col0 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                  Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            partcol 
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+              output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+              name: default.tab1_hive_part
+          Write Type: INSERT
+          micromanaged table: true
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: empid, deptno
+          Column Types: int, int
+          Table: default.tab1_hive_part
+
+HMS CALL get_table_req FOR emps_hive
+HMS CALL get_table_req FOR tab1_hive_part
+HMS CALL get_table_req FOR depts_hive
+PREHOOK: query: explain
+insert into tab1_hive_part
+select empid, deptno, name
+from emps_hive
+limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_hive
+PREHOOK: Output: default@tab1_hive_part
+POSTHOOK: query: explain
+insert into tab1_hive_part
+select empid, deptno, name
+from emps_hive
+limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_hive
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: emps_hive
+                  Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: empid (type: int), deptno (type: int), name (type: varchar(256))
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                    Limit
+                      Number of rows: 10
+                      Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.1
+                        value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: varchar(256))
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: varchar(256))
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+                        serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+                        name: default.tab1_hive_part
+                    Write Type: INSERT
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: int), CAST( _col2 AS STRING) (type: string)
+                    outputColumnNames: empid, deptno, partcol
+                    Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: min(empid), max(empid), count(1), count(empid), compute_bit_vector_hll(empid), min(deptno), max(deptno), count(deptno), compute_bit_vector_hll(deptno)
+                      keys: partcol (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                      Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col1) (type: bigint), UDFToLong(_col2) (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), _col0 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                  Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 348 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            partcol 
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+              output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+              name: default.tab1_hive_part
+          Write Type: INSERT
+          micromanaged table: true
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: empid, deptno
+          Column Types: int, int
+          Table: default.tab1_hive_part
+
+PREHOOK: query: CREATE TABLE test_dest(i int, s string) STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_dest
+POSTHOOK: query: CREATE TABLE test_dest(i int, s string) STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_dest
+PREHOOK: query: CREATE TABLE test_updates(i int, s string) STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_updates
+POSTHOOK: query: CREATE TABLE test_updates(i int, s string) STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_updates
+HMS CALL get_table_req FOR test_dest
+HMS CALL get_table_req FOR merge_tmp_table
+HMS CALL get_table_req FOR test_updates
+HMS CALL get_foreign_keys FOR test_dest
+HMS CALL get_foreign_keys FOR test_updates
+PREHOOK: query: EXPLAIN MERGE INTO test_dest USING test_updates ON test_dest.i = test_updates.i
+WHEN MATCHED THEN UPDATE
+SET s = test_updates.s
+WHEN NOT MATCHED THEN INSERT
+VALUES (test_updates.i, test_updates.s)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_dest
+PREHOOK: Input: default@test_updates
+PREHOOK: Output: default@merge_tmp_table
+PREHOOK: Output: default@test_dest
+PREHOOK: Output: default@test_dest
+POSTHOOK: query: EXPLAIN MERGE INTO test_dest USING test_updates ON test_dest.i = test_updates.i
+WHEN MATCHED THEN UPDATE
+SET s = test_updates.s
+WHEN NOT MATCHED THEN INSERT
+VALUES (test_updates.i, test_updates.s)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_dest
+POSTHOOK: Input: default@test_updates
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@test_dest
+POSTHOOK: Output: default@test_dest
+STAGE DEPENDENCIES:
+  Stage-3 is a root stage
+  Stage-4 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-4
+  Stage-5 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-4
+  Stage-6 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-4
+  Stage-7 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-3
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_updates
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: i (type: int), s (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: string)
+            Execution mode: vectorized
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: test_dest
+                  filterExpr: i is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: i is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: i (type: int), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: string), _col3 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col2 (type: int), _col0 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: _col2 is null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col3 (type: int), _col0 (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                            name: default.test_dest
+                        Write Type: INSERT
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: string)
+                        outputColumnNames: i, s
+                        Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: min(i), max(i), count(1), count(i), compute_bit_vector_hll(i), max(length(s)), avg(COALESCE(length(s),0)), count(s), compute_bit_vector_hll(s)
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                          Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
+                  Filter Operator
+                    predicate: (_col2 = _col3) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col1 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col2 (type: int), _col0 (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                        Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: int), _col2 (type: string)
+                  Filter Operator
+                    predicate: (_col2 = _col3) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col1 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      outputColumnNames: _col1
+                      Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        keys: _col1 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                          null sort order: a
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                          Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col5,0)) (type: bigint), COALESCE(_col6,0) (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 4 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), VALUE._col1 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.test_dest
+                  Write Type: UPDATE
+        Reducer 5 
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: (_col1 > 1L) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: cardinality_violation(_col0) (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 206 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.merge_tmp_table
+
+  Stage: Stage-4
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.test_dest
+          Write Type: INSERT
+
+  Stage: Stage-5
+    Stats Work
+      Basic Stats Work:
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.test_dest
+          Write Type: UPDATE
+
+  Stage: Stage-6
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: i, s
+          Column Types: int, string
+          Table: default.test_dest
+
+  Stage: Stage-2
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.merge_tmp_table
+
+  Stage: Stage-7
+    Stats Work
+      Basic Stats Work:
+
+HMS CALL get_table_req FOR tab1_hive
+PREHOOK: query: EXPLAIN SELECT * from tab1_hive
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1_hive
+PREHOOK: Output: streaming
+POSTHOOK: query: EXPLAIN SELECT * from tab1_hive
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1_hive
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: default.tab1_hive.empid, default.tab1_hive.deptno
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  01:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=8B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=01, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  00:SCAN HDFS [default.tab1_hive, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=8B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+HMS CALL get_table_req FOR test_mv_dest
+HMS CALL get_table_req FOR test_dest
+HMS CALL get_table_req FOR test_mv_dest
+HMS CALL get_table_req FOR test_mv_dest
+PREHOOK: query: EXPLAIN CREATE MATERIALIZED VIEW test_mv_dest AS SELECT i FROM test_dest WHERE s IS NOT NULL
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@test_dest
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_mv_dest
+POSTHOOK: query: EXPLAIN CREATE MATERIALIZED VIEW test_mv_dest AS SELECT i FROM test_dest WHERE s IS NOT NULL
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@test_dest
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_mv_dest
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-0, Stage-2
+  Stage-3 depends on stages: Stage-4
+  Stage-5 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_dest
+                  filterExpr: s is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: s is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: i (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                            name: default.test_mv_dest
+                      Select Operator
+                        expressions: _col0 (type: int)
+                        outputColumnNames: col1
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: min(col1), max(col1), count(1), count(col1), compute_bit_vector_hll(col1)
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                          Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+    Create View
+      columns: i int
+      table properties:
+        materializedview.engine tez
+      expanded text: SELECT `test_dest`.`i` FROM `default`.`test_dest` WHERE `test_dest`.`s` IS NOT NULL
+      name: default.test_mv_dest
+      original text: SELECT i FROM test_dest WHERE s IS NOT NULL
+      rewrite enabled: true
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: i
+          Column Types: int
+          Table: default.test_mv_dest
+
+  Stage: Stage-5
+    Materialized View Update
+      name: default.test_mv_dest
+      retrieve and include: true
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: hdfs://### HDFS PATH ###
+
+HMS CALL get_table_req FOR test_dest
+PREHOOK: query: EXPLAIN UPDATE test_dest SET i = 3 WHERE i = 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_dest
+PREHOOK: Output: default@test_dest
+POSTHOOK: query: EXPLAIN UPDATE test_dest SET i = 3 WHERE i = 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_dest
+POSTHOOK: Output: default@test_dest
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_dest
+                  filterExpr: (i = 4) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (i = 4) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), s (type: string)
+                      outputColumnNames: _col0, _col2
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col2 (type: string)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), 3 (type: int), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.test_dest
+                  Write Type: UPDATE
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.test_dest
+          Write Type: UPDATE
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+
+HMS CALL get_table_req FOR tab1_hive
+PREHOOK: query: EXPLAIN SELECT * from tab1_hive
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1_hive
+PREHOOK: Output: streaming
+POSTHOOK: query: EXPLAIN SELECT * from tab1_hive
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1_hive
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: default.tab1_hive.empid, default.tab1_hive.deptno
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  01:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=8B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=01, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  00:SCAN HDFS [default.tab1_hive, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=8B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+HMS CALL get_table_req FOR test_dest
+PREHOOK: query: EXPLAIN DELETE FROM test_dest WHERE i = 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_dest
+PREHOOK: Output: default@test_dest
+POSTHOOK: query: EXPLAIN DELETE FROM test_dest WHERE i = 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_dest
+POSTHOOK: Output: default@test_dest
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_dest
+                  filterExpr: (i = 4) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (i = 4) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.test_dest
+                  Write Type: DELETE
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.test_dest
+          Write Type: DELETE
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+
+HMS CALL get_table_req FOR tab1_hive
+PREHOOK: query: EXPLAIN SELECT * from tab1_hive
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1_hive
+PREHOOK: Output: streaming
+POSTHOOK: query: EXPLAIN SELECT * from tab1_hive
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1_hive
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: default.tab1_hive.empid, default.tab1_hive.deptno
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  01:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=8B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=01, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  00:SCAN HDFS [default.tab1_hive, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     file formats: [PARQUET]
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=8B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+HMS CALL get_table_req FOR tab1_hive
+PREHOOK: query: drop table tab1_hive
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tab1_hive
+PREHOOK: Output: default@tab1_hive
+HMS CALL get_table_req FOR tab1_hive
+HMS CALL get_table_req FOR tab1_hive
+POSTHOOK: query: drop table tab1_hive
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tab1_hive
+POSTHOOK: Output: default@tab1_hive
+HMS CALL get_table_req FOR tab1_hive_part
+PREHOOK: query: drop table tab1_hive_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tab1_hive_part
+PREHOOK: Output: default@tab1_hive_part
+HMS CALL get_table_req FOR tab1_hive_part
+HMS CALL get_table_req FOR tab1_hive_part
+POSTHOOK: query: drop table tab1_hive_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tab1_hive_part
+POSTHOOK: Output: default@tab1_hive_part
+HMS CALL get_table_req FOR emps_hive
+PREHOOK: query: drop table emps_hive
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@emps_hive
+PREHOOK: Output: default@emps_hive
+HMS CALL get_table_req FOR emps_hive
+HMS CALL get_table_req FOR emps_hive
+POSTHOOK: query: drop table emps_hive
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@emps_hive
+POSTHOOK: Output: default@emps_hive
+HMS CALL get_table_req FOR depts_hive
+PREHOOK: query: drop table depts_hive
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@depts_hive
+PREHOOK: Output: default@depts_hive
+HMS CALL get_table_req FOR depts_hive
+HMS CALL get_table_req FOR depts_hive
+POSTHOOK: query: drop table depts_hive
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@depts_hive
+POSTHOOK: Output: default@depts_hive
+HMS CALL get_table_req FOR test_dest
+PREHOOK: query: drop table test_dest
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_dest
+PREHOOK: Output: default@test_dest
+HMS CALL get_table_req FOR test_dest
+HMS CALL get_table_req FOR test_dest
+POSTHOOK: query: drop table test_dest
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_dest
+POSTHOOK: Output: default@test_dest
+HMS CALL get_table_req FOR test_updates
+PREHOOK: query: drop table test_updates
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_updates
+PREHOOK: Output: default@test_updates
+HMS CALL get_table_req FOR test_updates
+HMS CALL get_table_req FOR test_updates
+POSTHOOK: query: drop table test_updates
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_updates
+POSTHOOK: Output: default@test_updates
