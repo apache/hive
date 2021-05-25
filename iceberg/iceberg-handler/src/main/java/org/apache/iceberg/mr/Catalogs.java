@@ -97,13 +97,13 @@ public final class Catalogs {
             props.getProperty(InputFormatConfig.CATALOG_NAME));
   }
 
-  private static Table loadTable(Configuration conf, String tableIdentifier, String tableLocation, String catalogName) {
+  private static Table loadTable(Configuration conf, String tableIdentifier, String tableLocation,
+                                 String catalogName) {
     Optional<Catalog> catalog = loadCatalog(conf, catalogName);
 
     if (catalog.isPresent()) {
       Preconditions.checkArgument(tableIdentifier != null, "Table identifier not set");
-      Table table = catalog.get().loadTable(TableIdentifier.parse(tableIdentifier));
-      return table;
+      return catalog.get().loadTable(TableIdentifier.parse(tableIdentifier));
     }
 
     Preconditions.checkArgument(tableLocation != null, "Table location not set");

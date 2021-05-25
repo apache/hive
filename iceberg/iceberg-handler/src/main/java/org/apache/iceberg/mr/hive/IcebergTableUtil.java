@@ -43,24 +43,30 @@ public class IcebergTableUtil {
    * therefore we claim it through the Catalogs API and then store it in query state.
    * @param configuration a Hadoop configuration
    * @param properties controlling properties
-   * @return
+   * @return an Iceberg table
    */
   static Table getTable(Configuration configuration, Properties properties) {
-    QueryState queryState = SessionState.get()
-        .getQueryState(configuration.get(HiveConf.ConfVars.HIVEQUERYID.varname));
     Table table = null;
+    QueryState queryState = null;
     String tableIdentifier = properties.getProperty(Catalogs.NAME);
-    if (queryState != null) {
-      table = (Table) queryState.getResource(tableIdentifier);
+    if (SessionState.get() != null) {
+      queryState = SessionState.get().getQueryState(configuration.get(HiveConf.ConfVars.HIVEQUERYID.varname));
+      if (queryState != null) {
+        table = (Table) queryState.getResource(tableIdentifier);
+      } else {
+        LOG.debug("QueryState is not available in SessionState. Loading {} from configured catalog.", tableIdentifier);
+      }
     } else {
-      LOG.debug("QueryState is not available in SessionState. Loading {} from configured catalog.", tableIdentifier);
+      LOG.debug("SessionState is not available. Loading {} from configured catalog.", tableIdentifier);
     }
+
     if (table == null) {
       table = Catalogs.loadTable(configuration, properties);
       if (queryState != null) {
         queryState.addResource(tableIdentifier, table);
       }
     }
+
     return table;
   }
 }
