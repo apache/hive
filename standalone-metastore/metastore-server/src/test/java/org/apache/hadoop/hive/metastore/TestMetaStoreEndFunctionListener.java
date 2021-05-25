@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -28,6 +29,8 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -110,7 +113,8 @@ public class TestMetaStoreEndFunctionListener {
     e = context.getException();
     assertTrue((e!=null));
     assertTrue((e instanceof NoSuchObjectException));
-    assertEquals(context.getInputTableName(), unknownTable);
+    String catalog = MetaStoreUtils.getDefaultCatalog(conf);
+    assertEquals(context.getInputTableName(), TableName.getQualified(catalog, dbName, unknownTable));
 
     try {
       msc.getPartition("hive3524", tblName, "b=2012");
@@ -125,7 +129,7 @@ public class TestMetaStoreEndFunctionListener {
     e = context.getException();
     assertTrue((e!=null));
     assertTrue((e instanceof NoSuchObjectException));
-    assertEquals(context.getInputTableName(), tblName);
+    assertEquals(context.getInputTableName(), TableName.getQualified(catalog, "hive3524", tblName));
     try {
       msc.dropTable(dbName, unknownTable);
     } catch (Exception e4) {
@@ -139,7 +143,7 @@ public class TestMetaStoreEndFunctionListener {
     e = context.getException();
     assertTrue((e!=null));
     assertTrue((e instanceof NoSuchObjectException));
-    assertEquals(context.getInputTableName(), "UnknownTable");
+    assertEquals(context.getInputTableName(), TableName.getQualified(catalog, dbName, "UnknownTable"));
 
   }
 
