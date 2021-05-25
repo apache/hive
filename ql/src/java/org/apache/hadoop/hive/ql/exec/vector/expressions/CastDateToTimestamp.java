@@ -30,18 +30,12 @@ import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 public class CastDateToTimestamp extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-
   public CastDateToTimestamp(int colNum, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum = colNum;
+    super(colNum, outputColumnNum);
   }
 
   public CastDateToTimestamp() {
     super();
-
-    // Dummy final assignments.
-    colNum = -1;
   }
 
   private void setDays(TimestampColumnVector timestampColVector, long[] vector, int elementNum) {
@@ -56,7 +50,7 @@ public class CastDateToTimestamp extends VectorExpression {
       this.evaluateChildren(batch);
     }
 
-    LongColumnVector inputColVector = (LongColumnVector) batch.cols[colNum];
+    LongColumnVector inputColVector = (LongColumnVector) batch.cols[inputColumnNum[0]];
     TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
@@ -141,7 +135,7 @@ public class CastDateToTimestamp extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

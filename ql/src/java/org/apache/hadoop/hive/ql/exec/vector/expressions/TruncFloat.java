@@ -34,23 +34,20 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
  */
 public class TruncFloat extends VectorExpression {
   private static final long serialVersionUID = 1L;
-  protected int colNum;
   protected int scale;
 
   public TruncFloat() {
     super();
-    colNum = -1;
   }
 
   public TruncFloat(int colNum, int scale, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum = colNum;
+    super(colNum, outputColumnNum);
     this.scale = scale;
   }
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", scale " + scale;
+    return "col " + inputColumnNum[0] + ", scale " + scale;
   }
 
   @Override
@@ -59,7 +56,7 @@ public class TruncFloat extends VectorExpression {
       this.evaluateChildren(batch);
     }
 
-    ColumnVector inputColVector = batch.cols[colNum];
+    ColumnVector inputColVector = batch.cols[inputColumnNum[0]];
     ColumnVector outputColVector = batch.cols[outputColumnNum];
 
     int[] sel = batch.selected;

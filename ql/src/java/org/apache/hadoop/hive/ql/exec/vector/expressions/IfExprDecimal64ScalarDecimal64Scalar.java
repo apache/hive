@@ -52,7 +52,7 @@ public class IfExprDecimal64ScalarDecimal64Scalar extends IfExprLongScalarLongSc
     HiveDecimalWritable writable2 = new HiveDecimalWritable();
     writable2.deserialize64(arg3Scalar, decimalTypeInfo2.scale());
     return
-        getColumnParamString(0, arg1Column) +
+        getColumnParamString(0, inputColumnNum[0]) +
         ", decimal64Val1 " + arg2Scalar + ", decimalVal1 " + writable1.toString() +
         ", decimal64Val2 " + arg3Scalar + ", decimalVal2 " + writable2.toString();
   }

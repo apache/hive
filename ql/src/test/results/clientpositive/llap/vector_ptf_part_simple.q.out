@@ -247,6 +247,7 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isStar: true
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRowNumber, VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorDoubleFirstValue, VectorPTFEvaluatorCount, VectorPTFEvaluatorCountStar]
                       functionInputExpressions: [null, col 0:string, col 0:string, col 2:double, col 2:double, null]
@@ -257,6 +258,7 @@ STAGE PLANS:
                       orderExpressions: [col 0:string]
                       outputColumns: [3, 4, 5, 6, 7, 8, 0, 1, 2]
                       outputTypes: [int, int, int, double, bigint, bigint, string, string, double]
+                      partitionExpressions: [col 0:string]
                       streamingColumns: [3, 4, 5, 6]
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -324,6 +326,7 @@ STAGE PLANS:
                               window function: GenericUDAFFirstValueEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDoubleFirstValue]
                       functionInputExpressions: [col 8:double]
@@ -334,6 +337,7 @@ STAGE PLANS:
                       orderExpressions: [col 0:string]
                       outputColumns: [9, 1, 2, 3, 4, 5, 6, 0, 7, 8]
                       outputTypes: [double, int, int, int, double, bigint, bigint, string, string, double]
+                      partitionExpressions: [col 0:string]
                       streamingColumns: [9]
                   Statistics: Num rows: 40 Data size: 10504 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -1058,6 +1062,7 @@ STAGE PLANS:
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                               isStar: true
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRowNumber, VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorDoubleFirstValue, VectorPTFEvaluatorDoubleLastValue, VectorPTFEvaluatorCount, VectorPTFEvaluatorCountStar]
                       functionInputExpressions: [null, col 1:string, col 1:string, col 2:double, col 2:double, col 2:double, null]
@@ -1796,6 +1801,7 @@ STAGE PLANS:
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                               isStar: true
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRowNumber, VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorDoubleFirstValue, VectorPTFEvaluatorDoubleLastValue, VectorPTFEvaluatorCount, VectorPTFEvaluatorCountStar]
                       functionInputExpressions: [null, col 1:string, col 1:string, col 3:double, col 3:double, col 3:double, null]
@@ -2508,6 +2514,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDoubleSum, VectorPTFEvaluatorDoubleMin, VectorPTFEvaluatorDoubleMax, VectorPTFEvaluatorDoubleAvg]
                       functionInputExpressions: [col 2:double, col 2:double, col 2:double, col 2:double]
@@ -2518,6 +2525,7 @@ STAGE PLANS:
                       orderExpressions: [col 0:string]
                       outputColumns: [3, 4, 5, 6, 0, 1, 2]
                       outputTypes: [double, double, double, double, string, string, double]
+                      partitionExpressions: [col 0:string]
                       streamingColumns: []
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -2741,6 +2749,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDoubleSum, VectorPTFEvaluatorDoubleMin, VectorPTFEvaluatorDoubleMax, VectorPTFEvaluatorDoubleAvg]
                       functionInputExpressions: [col 2:double, col 2:double, col 2:double, col 2:double]
@@ -2751,6 +2760,7 @@ STAGE PLANS:
                       orderExpressions: [col 0:string]
                       outputColumns: [3, 4, 5, 6, 0, 1, 2]
                       outputTypes: [double, double, double, double, string, string, double]
+                      partitionExpressions: [col 0:string]
                       streamingColumns: []
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -2974,6 +2984,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorStreamingDoubleSum, VectorPTFEvaluatorStreamingDoubleMin, VectorPTFEvaluatorStreamingDoubleMax, VectorPTFEvaluatorStreamingDoubleAvg]
                       functionInputExpressions: [col 2:double, col 2:double, col 2:double, col 2:double]
@@ -2984,6 +2995,7 @@ STAGE PLANS:
                       orderExpressions: [col 0:string]
                       outputColumns: [3, 4, 5, 6, 0, 1, 2]
                       outputTypes: [double, double, double, double, string, string, double]
+                      partitionExpressions: [col 0:string]
                       streamingColumns: [3, 4, 5, 6]
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -3208,6 +3220,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDoubleSum, VectorPTFEvaluatorDoubleMin, VectorPTFEvaluatorDoubleMax, VectorPTFEvaluatorDoubleAvg]
                       functionInputExpressions: [col 2:double, col 2:double, col 2:double, col 2:double]
@@ -3443,6 +3456,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDoubleSum, VectorPTFEvaluatorDoubleMin, VectorPTFEvaluatorDoubleMax, VectorPTFEvaluatorDoubleAvg]
                       functionInputExpressions: [col 2:double, col 2:double, col 2:double, col 2:double]
@@ -3678,6 +3692,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorStreamingDoubleSum, VectorPTFEvaluatorStreamingDoubleMin, VectorPTFEvaluatorStreamingDoubleMax, VectorPTFEvaluatorStreamingDoubleAvg]
                       functionInputExpressions: [col 2:double, col 2:double, col 2:double, col 2:double]
@@ -3914,6 +3929,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDoubleSum, VectorPTFEvaluatorDoubleMin, VectorPTFEvaluatorDoubleMax, VectorPTFEvaluatorDoubleAvg]
                       functionInputExpressions: [col 3:double, col 3:double, col 3:double, col 3:double]
@@ -4150,6 +4166,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDoubleSum, VectorPTFEvaluatorDoubleMin, VectorPTFEvaluatorDoubleMax, VectorPTFEvaluatorDoubleAvg]
                       functionInputExpressions: [col 3:double, col 3:double, col 3:double, col 3:double]
@@ -4386,6 +4403,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorStreamingDoubleSum, VectorPTFEvaluatorStreamingDoubleMin, VectorPTFEvaluatorStreamingDoubleMax, VectorPTFEvaluatorStreamingDoubleAvg]
                       functionInputExpressions: [col 3:double, col 3:double, col 3:double, col 3:double]
@@ -4662,6 +4680,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDecimal
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDecimalSum, VectorPTFEvaluatorDecimalMin, VectorPTFEvaluatorDecimalMax, VectorPTFEvaluatorDecimalAvg]
                       functionInputExpressions: [col 2:decimal(38,18), col 2:decimal(38,18), col 2:decimal(38,18), col 2:decimal(38,18)]
@@ -4672,6 +4691,7 @@ STAGE PLANS:
                       orderExpressions: [col 0:string]
                       outputColumns: [3, 4, 5, 6, 0, 1, 2]
                       outputTypes: [decimal(38,18), decimal(38,18), decimal(38,18), decimal(38,18), string, string, decimal(38,18)]
+                      partitionExpressions: [col 0:string]
                       streamingColumns: []
                   Statistics: Num rows: 40 Data size: 12944 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -4896,6 +4916,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDecimal
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDecimalSum, VectorPTFEvaluatorDecimalMin, VectorPTFEvaluatorDecimalMax, VectorPTFEvaluatorDecimalAvg]
                       functionInputExpressions: [col 2:decimal(38,18), col 2:decimal(38,18), col 2:decimal(38,18), col 2:decimal(38,18)]
@@ -5150,6 +5171,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorLongSum, VectorPTFEvaluatorLongMin, VectorPTFEvaluatorLongMax, VectorPTFEvaluatorLongAvg]
                       functionInputExpressions: [col 2:bigint, col 2:bigint, col 2:bigint, col 2:bigint]
@@ -5160,6 +5182,7 @@ STAGE PLANS:
                       orderExpressions: [col 0:string]
                       outputColumns: [3, 4, 5, 6, 0, 1, 2]
                       outputTypes: [bigint, bigint, bigint, double, string, string, bigint]
+                      partitionExpressions: [col 0:string]
                       streamingColumns: []
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -5384,6 +5407,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorLongSum, VectorPTFEvaluatorLongMin, VectorPTFEvaluatorLongMax, VectorPTFEvaluatorLongAvg]
                       functionInputExpressions: [col 2:bigint, col 2:bigint, col 2:bigint, col 2:bigint]
@@ -5595,6 +5619,7 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRank]
                       functionInputExpressions: [col 0:string]
@@ -5605,6 +5630,7 @@ STAGE PLANS:
                       orderExpressions: [col 0:string]
                       outputColumns: [2, 0, 1]
                       outputTypes: [int, string, double]
+                      partitionExpressions: [col 0:string]
                       streamingColumns: [2]
                   Statistics: Num rows: 40 Data size: 4216 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -5800,6 +5826,7 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRank]
                       functionInputExpressions: [col 1:string]
@@ -5975,7 +6002,7 @@ STAGE PLANS:
                     dataColumnCount: 4
                     dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:timestamp, VALUE._col0:string, VALUE._col1:double
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, timestamp, timestamp]
+                    scratchColumnTypeNames: [bigint, bigint, timestamp, timestamp, bigint, timestamp, timestamp]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col1 (type: double)
@@ -6006,6 +6033,7 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRank]
                       functionInputExpressions: [col 0:string]
@@ -6013,9 +6041,10 @@ STAGE PLANS:
                       keyInputColumns: [0]
                       native: true
                       nonKeyInputColumns: [2, 3]
-                      orderExpressions: [col 0:string, IfExprColumnNull(col 5:boolean, col 6:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 5:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00) -> 6:timestamp) -> 7:timestamp]
+                      orderExpressions: [col 0:string, IfExprColumnNull(col 8:boolean, col 9:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 8:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00) -> 9:timestamp) -> 10:timestamp]
                       outputColumns: [4, 0, 2, 3]
                       outputTypes: [int, string, string, double]
+                      partitionExpressions: [col 0:string, IfExprColumnNull(col 5:boolean, col 6:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 5:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00) -> 6:timestamp) -> 7:timestamp]
                       streamingColumns: [4]
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -6212,6 +6241,7 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRank]
                       functionInputExpressions: [col 2:string]
@@ -6547,6 +6577,7 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRank]
                       functionInputExpressions: [col 0:string]
@@ -6557,6 +6588,7 @@ STAGE PLANS:
                       orderExpressions: [col 0:string]
                       outputColumns: [2, 0, 1]
                       outputTypes: [int, string, double]
+                      partitionExpressions: [col 0:string]
                       streamingColumns: [2]
                   Statistics: Num rows: 40 Data size: 4216 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -6752,6 +6784,7 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRank]
                       functionInputExpressions: [col 1:string]
@@ -6959,6 +6992,7 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRank]
                       functionInputExpressions: [col 2:string]
@@ -7134,7 +7168,7 @@ STAGE PLANS:
                     dataColumnCount: 4
                     dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:timestamp, VALUE._col0:string, VALUE._col1:double
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, timestamp, timestamp]
+                    scratchColumnTypeNames: [bigint, bigint, timestamp, timestamp, bigint, timestamp, timestamp]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col1 (type: double)
@@ -7165,6 +7199,7 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRank]
                       functionInputExpressions: [col 0:string]
@@ -7172,9 +7207,10 @@ STAGE PLANS:
                       keyInputColumns: [0]
                       native: true
                       nonKeyInputColumns: [2, 3]
-                      orderExpressions: [col 0:string, IfExprColumnNull(col 5:boolean, col 6:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 5:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00) -> 6:timestamp) -> 7:timestamp]
+                      orderExpressions: [col 0:string, IfExprColumnNull(col 8:boolean, col 9:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 8:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00) -> 9:timestamp) -> 10:timestamp]
                       outputColumns: [4, 0, 2, 3]
                       outputTypes: [int, string, string, double]
+                      partitionExpressions: [col 0:string, IfExprColumnNull(col 5:boolean, col 6:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 5:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00) -> 6:timestamp) -> 7:timestamp]
                       streamingColumns: [4]
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator

@@ -33,18 +33,13 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 public abstract class FuncDecimalToTimestamp extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
-  private final int inputColumn;
 
   public FuncDecimalToTimestamp(int inputColumn, int outputColumnNum) {
-    super(outputColumnNum);
-    this.inputColumn = inputColumn;
+    super(inputColumn, outputColumnNum);
   }
 
   public FuncDecimalToTimestamp() {
     super();
-
-    // Dummy final assignments.
-    inputColumn = -1;
   }
 
   abstract protected void func(TimestampColumnVector outputColVector, DecimalColumnVector inputColVector, int i);
@@ -56,7 +51,7 @@ public abstract class FuncDecimalToTimestamp extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[inputColumn];
+    DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     int n = batch.size;
     TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumnNum];
@@ -142,7 +137,7 @@ public abstract class FuncDecimalToTimestamp extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumn);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override
