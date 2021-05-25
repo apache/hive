@@ -36,6 +36,7 @@ public class MetricsInfo {
   private int locksCount;
   private int oldestLockAge;
   private int tablesWithXAbortedTxns;
+  private int oldestReadyForCleaningAge;
 
   public int getTxnToWriteIdCount() {
     return txnToWriteIdCount;
@@ -147,5 +148,13 @@ public class MetricsInfo {
 
   public void setTablesWithXAbortedTxns(int tablesWithXAbortedTxns) {
     this.tablesWithXAbortedTxns = tablesWithXAbortedTxns;
+  }
+
+  public int getOldestReadyForCleaningAge() {
+    return oldestReadyForCleaningAge;
+  }
+
+  public void setOldestReadyForCleaningAge(int oldestReadyForCleaningAge) {
+    this.oldestReadyForCleaningAge = oldestReadyForCleaningAge;
   }
 }

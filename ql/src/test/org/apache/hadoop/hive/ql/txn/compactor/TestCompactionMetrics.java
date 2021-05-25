@@ -186,6 +186,43 @@ public class TestCompactionMetrics  extends CompactorTest {
   }
 
   @Test
+  public void testOldestReadyForCleaningAge() throws Exception {
+    conf.setIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA, 1);
+
+    long oldStart = System.currentTimeMillis();
+    Table old = newTable("default", "old_rfc", true);
+    Partition oldP = newPartition(old, "part");
+    addBaseFile(old, oldP, 20L, 20);
+    addDeltaFile(old, oldP, 21L, 22L, 2);
+    addDeltaFile(old, oldP, 23L, 24L, 2);
+    burnThroughTransactions("default", "old_rfc", 25);
+    CompactionRequest rqst = new CompactionRequest("default", "old_rfc", CompactionType.MINOR);
+    rqst.setPartitionname("ds=part");
+    txnHandler.compact(rqst);
+    startWorker();
+
+    long youngStart = System.currentTimeMillis();
+    Table young = newTable("default", "young_rfc", true);
+    Partition youngP = newPartition(young, "part");
+    addBaseFile(young, youngP, 20L, 20);
+    addDeltaFile(young, youngP, 21L, 22L, 2);
+    addDeltaFile(young, youngP, 23L, 24L, 2);
+    burnThroughTransactions("default", "young_rfc", 25);
+    rqst = new CompactionRequest("default", "young_rfc", CompactionType.MINOR);
+    rqst.setPartitionname("ds=part");
+    txnHandler.compact(rqst);
+    startWorker();
+
+    runAcidMetricService();
+    long oldDiff = (System.currentTimeMillis() - oldStart)/1000;
+    long youngDiff = (System.currentTimeMillis() - youngStart)/1000;
+
+    long threshold = 1000;
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_READY_FOR_CLEANING_AGE).intValue() <= oldDiff + threshold);
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_READY_FOR_CLEANING_AGE).intValue() >= youngDiff);
+  }
+
+  @Test
   public void  testInitiatorNoFailure() throws Exception {
     startInitiator();
     Pair<AtomicInteger, AtomicInteger> ratio =
