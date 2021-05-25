@@ -28,9 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -115,7 +117,6 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         // create table for CTAS
         if (e instanceof NoSuchTableException &&
             Boolean.parseBoolean(serDeProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTAS))) {
-          LOG.info("Creating table {} for CTAS with schema: {}", serDeProperties.get(Catalogs.NAME), tableSchema);
           createTableForCTAS(configuration, serDeProperties);
         }
       }
@@ -151,7 +152,23 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   private void createTableForCTAS(Configuration configuration, Properties serDeProperties) {
     serDeProperties.setProperty(TableProperties.ENGINE_HIVE_ENABLED, "true");
     serDeProperties.setProperty(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(tableSchema));
+
+    // build partition spec, if any
+    if (serDeProperties.getProperty(serdeConstants.LIST_PARTITION_COLUMNS) != null) {
+      String[] partCols = serDeProperties.getProperty(serdeConstants.LIST_PARTITION_COLUMNS).split(",");
+      String[] partColTypes = serDeProperties.getProperty(serdeConstants.LIST_PARTITION_COLUMN_TYPES).split(":");
+      List<FieldSchema> fieldSchemas = IntStream.range(0, partCols.length)
+          .mapToObj(i -> new FieldSchema(partCols[i], partColTypes[i], null))
+          .collect(Collectors.toList());
+      PartitionSpec spec = HiveSchemaUtil.spec(tableSchema, fieldSchemas);
+      serDeProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
+    }
+
+    // create CTAS table
+    LOG.info("Creating table {} for CTAS with schema: {}, and spec: {}",
+        serDeProperties.get(Catalogs.NAME), tableSchema, serDeProperties.get(InputFormatConfig.PARTITION_SPEC));
     Catalogs.createTable(configuration, serDeProperties);
+
     // set these in the global conf so that we can rollback the table in the lifecycle hook in case of failures
     String queryId = configuration.get(HiveConf.ConfVars.HIVEQUERYID.varname);
     configuration.set(String.format(InputFormatConfig.IS_CTAS_QUERY_TEMPLATE, queryId), "true");
@@ -218,7 +235,15 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       throws SerDeException {
     // Read the configuration parameters
     String columnNames = serDeProperties.getProperty(serdeConstants.LIST_COLUMNS);
+    // add partition columns to schema as well, if any
+    if (serDeProperties.getProperty(serdeConstants.LIST_PARTITION_COLUMNS) != null) {
+      columnNames = columnNames + "," + serDeProperties.getProperty(serdeConstants.LIST_PARTITION_COLUMNS);
+    }
     String columnTypes = serDeProperties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    // add partition column types to schema as well, if any
+    if (serDeProperties.getProperty(serdeConstants.LIST_PARTITION_COLUMN_TYPES) != null) {
+      columnTypes = columnTypes + ":" + serDeProperties.getProperty(serdeConstants.LIST_PARTITION_COLUMN_TYPES);
+    }
     // No constant for column comments and column comments delimiter.
     String columnComments = serDeProperties.getProperty(LIST_COLUMN_COMMENT);
     String columnNameDelimiter = serDeProperties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ?

@@ -644,6 +644,43 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   }
 
   @Test
+  public void testCTASPartitionedFromHiveTable() throws TException, InterruptedException {
+    Assume.assumeTrue("CTAS target table is supported fully only for HiveCatalog tables." +
+        "For other catalog types, the HiveIcebergSerDe will create the target Iceberg table in the correct catalog " +
+        "using the Catalogs.createTable function, but will not register the table in HMS since those catalogs do not " +
+        "use HiveTableOperations. This means that even though the CTAS query succeeds, the user would not be able to " +
+        "query this new table from Hive, since HMS does not know about it.",
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
+    shell.executeStatement("INSERT INTO source VALUES (1, 'Mike', 'HR'), (2, 'Linda', 'Finance')");
+
+    shell.executeStatement(String.format(
+        "CREATE TABLE target PARTITIONED BY (dept, name) " +
+        "STORED BY '%s' TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
+        HiveIcebergStorageHandler.class.getName(),
+        TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
+
+    // check table can be read back correctly
+    List<Object[]> objects = shell.executeStatement("SELECT * FROM target ORDER BY id");
+    Assert.assertEquals(2, objects.size());
+    Assert.assertArrayEquals(new Object[]{1L, "HR", "Mike"}, objects.get(0));
+    Assert.assertArrayEquals(new Object[]{2L, "Finance", "Linda"}, objects.get(1));
+
+    // check HMS table has been created correctly (no partition cols, props pushed down)
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "target");
+    Assert.assertEquals(3, hmsTable.getSd().getColsSize());
+    Assert.assertTrue(hmsTable.getPartitionKeys().isEmpty());
+    Assert.assertEquals(fileFormat.toString(), hmsTable.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT));
+
+    // check Iceberg table has correct partition spec
+    Table table = testTables.loadTable(TableIdentifier.of("default", "target"));
+    Assert.assertEquals(2, table.spec().fields().size());
+    Assert.assertEquals("dept", table.spec().fields().get(0).name());
+    Assert.assertEquals("name", table.spec().fields().get(1).name());
+  }
+
+  @Test
   public void testCTASFailureRollback() throws IOException {
     Assume.assumeTrue("CTAS target table is supported fully only for HiveCatalog tables." +
         "For other catalog types, the HiveIcebergSerDe will create the target Iceberg table in the correct catalog " +
@@ -659,15 +696,18 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
-    try {
-      shell.executeStatement(String.format("CREATE TABLE target STORED BY '%s' AS SELECT * FROM source",
-          HiveIcebergStorageHandler.class.getName()));
-    } catch (Exception e) {
-      // expected error
-    }
+    String[] partitioningSchemes = {"" /* unpartitioned */, "PARTITIONED BY (dept)"};
+    for (String partitioning : partitioningSchemes) {
+      try {
+        shell.executeStatement(String.format("CREATE TABLE target %s STORED BY '%s' AS SELECT * FROM source",
+            partitioning, HiveIcebergStorageHandler.class.getName()));
+      } catch (Exception e) {
+        // expected error
+      }
 
-    // CTAS table should have been dropped by the lifecycle hook
-    Assert.assertThrows(NoSuchTableException.class, () -> testTables.loadTable(target));
+      // CTAS table should have been dropped by the lifecycle hook
+      Assert.assertThrows(NoSuchTableException.class, () -> testTables.loadTable(target));
+    }
   }
 
   /**
