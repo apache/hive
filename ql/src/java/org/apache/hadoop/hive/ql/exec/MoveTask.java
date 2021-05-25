@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -397,17 +398,6 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
         checkFileFormats(db, tbd, table);
 
-        // for transactional table if write id is not set during replication from a cluster with STRICT_MANAGED set
-        // to false then set it now.
-        if (tbd.getWriteId() <= 0 && AcidUtils.isTransactionalTable(table.getParameters())) {
-          Long writeId = ReplUtils.getMigrationCurrentTblWriteId(conf);
-          if (writeId == null) {
-            throw new HiveException("MoveTask : Write id is not set in the config by open txn task for migration");
-          }
-          tbd.setWriteId(writeId);
-          tbd.setStmtId(context.getHiveTxnManager().getStmtIdAndIncrement());
-        }
-
         boolean isFullAcidOp = work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID
             && !tbd.isMmTable(); //it seems that LoadTableDesc has Operation.INSERT only for CTAS...
 
@@ -480,14 +470,17 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           console.printInfo("\n", StringUtils.stringifyException(he),false);
         }
       }
-
       setException(he);
+      errorCode = ReplUtils.handleException(work.isReplication(), he, work.getDumpDirectory(),
+                                            work.getMetricCollector(), getName(), conf);
       return errorCode;
     } catch (Exception e) {
       console.printError("Failed with exception " + e.getMessage(), "\n"
           + StringUtils.stringifyException(e));
       setException(e);
-      return (1);
+      LOG.error("MoveTask failed", e);
+      return ReplUtils.handleException(work.isReplication(), e, work.getDumpDirectory(), work.getMetricCollector(),
+                                       getName(), conf);
     }
   }
 

@@ -31,6 +31,7 @@ public class Stage {
   private long startTime;
   private long endTime;
   private Map<String, Metric> metrics = new HashMap<>();
+  private String errorLogPath;
 
   public Stage() {
 
@@ -50,6 +51,7 @@ public class Stage {
     for (Metric metric : stage.metrics.values()) {
       this.metrics.put(metric.getName(), new Metric(metric));
     }
+    this.errorLogPath = stage.errorLogPath;
   }
 
   public String getName() {
@@ -95,5 +97,13 @@ public class Stage {
 
   public List<Metric> getMetrics() {
     return new ArrayList<>(metrics.values());
+  }
+
+  public String getErrorLogPath() {
+    return errorLogPath;
+  }
+
+  public void setErrorLogPath(String errorLogPath) {
+    this.errorLogPath = errorLogPath;
   }
 }

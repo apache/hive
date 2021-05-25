@@ -540,8 +540,9 @@ public class MetastoreConf {
         "org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder",
         "Factory class for making encoding and decoding messages in the events generated."),
     EVENT_DB_LISTENER_TTL("metastore.event.db.listener.timetolive",
-        "hive.metastore.event.db.listener.timetolive", 86400, TimeUnit.SECONDS,
-        "time after which events will be removed from the database listener queue"),
+        "hive.metastore.event.db.listener.timetolive", 1, TimeUnit.DAYS,
+        "time after which events will be removed from the database listener queue when repl.cm.enabled \n" +
+         "is set to false. When set to true, the conf repl.event.db.listener.timetolive is used instead."),
     EVENT_CLEAN_MAX_EVENTS("metastore.event.db.clean.maxevents",
             "hive.metastore.event.db.clean.maxevents", 10000,
             "Limit on number events to be cleaned at a time in metastore cleanNotificationEvents " +
@@ -900,9 +901,9 @@ public class MetastoreConf {
     REPLCMENCRYPTEDDIR("metastore.repl.cm.encryptionzone.rootdir", "hive.repl.cm.encryptionzone.rootdir", ".cmroot",
             "Root dir for ChangeManager if encryption zones are enabled, used for deleted files."),
     REPLCMFALLBACKNONENCRYPTEDDIR("metastore.repl.cm.nonencryptionzone.rootdir",
-            "hive.repl.cm.nonencryptionzone.rootdir", "/user/${system:user.name}/cmroot/",
+            "hive.repl.cm.nonencryptionzone.rootdir", "",
             "Root dir for ChangeManager for non encrypted paths if hive.repl.cmrootdir is encrypted."),
-    REPLCMRETIAN("metastore.repl.cm.retain", "hive.repl.cm.retain",  24, TimeUnit.HOURS,
+    REPLCMRETIAN("metastore.repl.cm.retain", "hive.repl.cm.retain",  24 * 10, TimeUnit.HOURS,
         "Time to retain removed files in cmrootdir."),
     REPLCMINTERVAL("metastore.repl.cm.interval", "hive.repl.cm.interval", 3600, TimeUnit.SECONDS,
         "Inteval for cmroot cleanup thread."),
@@ -918,6 +919,10 @@ public class MetastoreConf {
         "hive.exec.copyfile.maxsize", 32L * 1024 * 1024 /*32M*/,
         "Maximum file size (in bytes) that Hive uses to do single HDFS copies between directories." +
             "Distributed copies (distcp) will be used instead for bigger files so that copies can be done faster."),
+    REPL_EVENT_DB_LISTENER_TTL("metastore.repl.event.db.listener.timetolive",
+            "hive.repl.event.db.listener.timetolive", 10, TimeUnit.DAYS,
+            "time after which events will be removed from the database listener queue when repl.cm.enabled \n" +
+                    "is set to true. When set to false, the conf event.db.listener.timetolive is used instead."),
     REPL_METRICS_CACHE_MAXSIZE("metastore.repl.metrics.cache.maxsize",
       "hive.repl.metrics.cache.maxsize", 10000 /*10000 rows */,
       "Maximum in memory cache size to collect replication metrics. The metrics will be pushed to persistent"
@@ -1027,7 +1032,6 @@ public class MetastoreConf {
             + " quoted table names.\nThe default value is true."),
     TASK_THREADS_ALWAYS("metastore.task.threads.always", "metastore.task.threads.always",
         EventCleanerTask.class.getName() + "," + RuntimeStatsCleanerTask.class.getName() + "," +
-          "org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask" + "," +
             "org.apache.hadoop.hive.metastore.HiveProtoEventsCleanerTask" + ","
             + "org.apache.hadoop.hive.metastore.ScheduledQueryExecutionsMaintTask" + ","
             + "org.apache.hadoop.hive.metastore.ReplicationMetricsMaintTask",
@@ -1135,8 +1139,11 @@ public class MetastoreConf {
             "Can notification events from notification log table be used for updating the metastore cache."),
     TRANSACTIONAL_EVENT_LISTENERS("metastore.transactional.event.listeners",
         "hive.metastore.transactional.event.listeners", "",
-        "A comma separated list of Java classes that implement the org.apache.riven.MetaStoreEventListener" +
-            " interface. Both the metastore event and corresponding listener method will be invoked in the same JDO transaction."),
+        "A comma separated list of Java classes that implement the org.apache.riven.MetaStoreEventListener" + 
+            " interface. Both the metastore event and corresponding listener method will be invoked in the same JDO transaction." +
+            " If org.apache.hive.hcatalog.listener.DbNotificationListener is configured along with other transactional event" +
+            " listener implementation classes, make sure org.apache.hive.hcatalog.listener.DbNotificationListener is placed at" +
+            " the end of the list."),
     TRUNCATE_ACID_USE_BASE("metastore.acid.truncate.usebase", "hive.metastore.acid.truncate.usebase", false,
         "If enabled, truncate for transactional tables will not delete the data directories,\n" +
             "rather create a new base directory with no datafiles."),

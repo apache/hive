@@ -3367,12 +3367,14 @@ class ShowLocksRequest
   TABLENAME = 2
   PARTNAME = 3
   ISEXTENDED = 4
+  TXNID = 5
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname', :optional => true},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename', :optional => true},
     PARTNAME => {:type => ::Thrift::Types::STRING, :name => 'partname', :optional => true},
-    ISEXTENDED => {:type => ::Thrift::Types::BOOL, :name => 'isExtended', :default => false, :optional => true}
+    ISEXTENDED => {:type => ::Thrift::Types::BOOL, :name => 'isExtended', :default => false, :optional => true},
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -6338,6 +6340,22 @@ class GetReplicationMetricsRequest
     SCHEDULEDEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'scheduledExecutionId', :optional => true},
     POLICY => {:type => ::Thrift::Types::STRING, :name => 'policy', :optional => true},
     DUMPEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'dumpExecutionId', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetOpenTxnsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  EXCLUDETXNTYPES = 1
+
+  FIELDS = {
+    EXCLUDETXNTYPES => {:type => ::Thrift::Types::LIST, :name => 'excludeTxnTypes', :element => {:type => ::Thrift::Types::I32, :enum_class => ::TxnType}, :optional => true}
   }
 
   def struct_fields; FIELDS; end

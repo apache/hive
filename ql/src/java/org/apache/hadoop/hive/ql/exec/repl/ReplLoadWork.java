@@ -22,26 +22,39 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.DatabaseEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.ConstraintEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadEventsIterator;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.Callable;
 
 @Explain(displayName = "Replication Load Operator", explainLevels = { Explain.Level.USER,
     Explain.Level.DEFAULT,
     Explain.Level.EXTENDED })
 public class ReplLoadWork implements Serializable {
+  private static final Logger LOG = LoggerFactory.getLogger(ReplLoadWork.class);
   final String dbNameToLoadIn;
   final ReplScope currentReplScope;
   final String dumpDirectory;
@@ -49,6 +62,7 @@ public class ReplLoadWork implements Serializable {
   private String sourceDbName;
   private Long dumpExecutionId;
   private final transient ReplicationMetricCollector metricCollector;
+  final boolean replScopeModified;
 
   private final ConstraintEventsIterator constraintsIterator;
   private int loadTaskRunCount = 0;
@@ -56,6 +70,7 @@ public class ReplLoadWork implements Serializable {
   private final transient BootstrapEventsIterator bootstrapIterator;
   private transient IncrementalLoadTasksBuilder incrementalLoadTasksBuilder;
   private transient Task<? extends Serializable> rootTask;
+  private Iterator<String> externalTableDataCopyItr;
 
   /*
   these are sessionState objects that are copied over to work to allow for parallel execution.
@@ -68,7 +83,8 @@ public class ReplLoadWork implements Serializable {
                       String sourceDbName, String dbNameToLoadIn, ReplScope currentReplScope,
                       LineageState lineageState, boolean isIncrementalDump, Long eventTo,
                       Long dumpExecutionId,
-                      ReplicationMetricCollector metricCollector) throws IOException, SemanticException {
+                      ReplicationMetricCollector metricCollector,
+                      boolean replScopeModified) throws IOException, SemanticException {
     sessionStateLineageState = lineageState;
     this.dumpDirectory = dumpDirectory;
     this.dbNameToLoadIn = dbNameToLoadIn;
@@ -76,6 +92,7 @@ public class ReplLoadWork implements Serializable {
     this.sourceDbName = sourceDbName;
     this.dumpExecutionId = dumpExecutionId;
     this.metricCollector = metricCollector;
+    this.replScopeModified = replScopeModified;
 
 
     // If DB name is changed during REPL LOAD, then set it instead of referring to source DB name.
@@ -153,6 +170,10 @@ public class ReplLoadWork implements Serializable {
     return rootTask;
   }
 
+  public String getDumpDirectory() {
+    return dumpDirectory;
+  }
+
   public void setRootTask(Task<? extends Serializable> rootTask) {
     this.rootTask = rootTask;
   }
@@ -175,5 +196,52 @@ public class ReplLoadWork implements Serializable {
 
   public Long getDumpExecutionId() {
     return dumpExecutionId;
+  }
+
+  public List<Task<?>> externalTableCopyTasks(TaskTracker tracker, HiveConf conf) throws IOException {
+    if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY)) {
+      return Collections.emptyList();
+    }
+    List<Task<?>> tasks = new ArrayList<>();
+    Retryable retryable = Retryable.builder()
+            .withHiveConf(conf)
+            .withRetryOnException(UncheckedIOException.class).build();
+    try {
+      retryable.executeCallable((Callable<Void>) ()-> {
+        try{
+          int numEntriesToSkip = tasks == null ? 0 : tasks.size();
+          while (externalTableDataCopyItr.hasNext() && tracker.canAddMoreTasks()) {
+            if(numEntriesToSkip > 0) {
+              //skip entries added in the previous attempts of this retryable block
+              externalTableDataCopyItr.next();
+              numEntriesToSkip--;
+              continue;
+            }
+            DirCopyWork dirCopyWork = new DirCopyWork(metricCollector, (new Path(dumpDirectory).getParent()).toString());
+            dirCopyWork.loadFromString(externalTableDataCopyItr.next());
+            Task<DirCopyWork> task = TaskFactory.get(dirCopyWork, conf);
+            tasks.add(task);
+            tracker.addTask(task);
+            LOG.debug("Added task for {}", dirCopyWork);
+          }
+        } catch (UncheckedIOException e) {
+          LOG.error("Reading entry for data copy failed for external tables, attempting retry.", e);
+          throw e;
+        }
+        return null;
+      });
+    } catch (Exception e) {
+      throw new IOException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()));
+    }
+    LOG.info("Added total {} tasks for external table locations copy.", tasks.size());
+    return tasks;
+  }
+
+  public Iterator<String> getExternalTableDataCopyItr() {
+    return externalTableDataCopyItr;
+  }
+
+  public void setExternalTableDataCopyItr(Iterator<String> externalTableDataCopyItr) {
+    this.externalTableDataCopyItr = externalTableDataCopyItr;
   }
 }

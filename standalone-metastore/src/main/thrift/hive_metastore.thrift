@@ -29,7 +29,7 @@ namespace php metastore
 namespace cpp Apache.Hadoop.Hive
 
 const string DDL_TIME = "transient_lastDdlTime"
-const string HMS_API = "1.2.6"
+const string HMS_API = "1.2.7"
 const byte ACCESSTYPE_NONE       = 1;
 const byte ACCESSTYPE_READONLY   = 2;
 const byte ACCESSTYPE_WRITEONLY  = 4;
@@ -1140,6 +1140,7 @@ struct ShowLocksRequest {
     2: optional string tablename,
     3: optional string partname,
     4: optional bool isExtended=false,
+    5: optional i64 txnid,
 }
 
 struct ShowLocksResponseElement {
@@ -2071,6 +2072,10 @@ struct GetReplicationMetricsRequest {
   3: optional i64 dumpExecutionId
 }
 
+struct GetOpenTxnsRequest {
+  1: optional list<TxnType> excludeTxnTypes;
+}
+
 // Exceptions.
 
 exception MetaException {
@@ -2644,6 +2649,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   // Transaction and lock management calls
   // Get just list of open transactions
+  // Deprecated use get_open_txns_req
   GetOpenTxnsResponse get_open_txns()
   // Get list of open transactions with state (open, aborted)
   GetOpenTxnsInfoResponse get_open_txns_info()
@@ -2800,7 +2806,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   void add_replication_metrics(1: ReplicationMetricList replicationMetricList) throws(1:MetaException o1)
   ReplicationMetricList get_replication_metrics(1: GetReplicationMetricsRequest rqst) throws(1:MetaException o1)
-
+  GetOpenTxnsResponse get_open_txns_req(1: GetOpenTxnsRequest getOpenTxnsRequest)
   }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

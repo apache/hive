@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField TABLENAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tablename", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField PARTNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("partname", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField IS_EXTENDED_FIELD_DESC = new org.apache.thrift.protocol.TField("isExtended", org.apache.thrift.protocol.TType.BOOL, (short)4);
+  private static final org.apache.thrift.protocol.TField TXNID_FIELD_DESC = new org.apache.thrift.protocol.TField("txnid", org.apache.thrift.protocol.TType.I64, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -53,13 +54,15 @@ import org.slf4j.LoggerFactory;
   private String tablename; // optional
   private String partname; // optional
   private boolean isExtended; // optional
+  private long txnid; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     DBNAME((short)1, "dbname"),
     TABLENAME((short)2, "tablename"),
     PARTNAME((short)3, "partname"),
-    IS_EXTENDED((short)4, "isExtended");
+    IS_EXTENDED((short)4, "isExtended"),
+    TXNID((short)5, "txnid");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -82,6 +85,8 @@ import org.slf4j.LoggerFactory;
           return PARTNAME;
         case 4: // IS_EXTENDED
           return IS_EXTENDED;
+        case 5: // TXNID
+          return TXNID;
         default:
           return null;
       }
@@ -123,8 +128,9 @@ import org.slf4j.LoggerFactory;
 
   // isset id assignments
   private static final int __ISEXTENDED_ISSET_ID = 0;
+  private static final int __TXNID_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.DBNAME,_Fields.TABLENAME,_Fields.PARTNAME,_Fields.IS_EXTENDED};
+  private static final _Fields optionals[] = {_Fields.DBNAME,_Fields.TABLENAME,_Fields.PARTNAME,_Fields.IS_EXTENDED,_Fields.TXNID};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -136,6 +142,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.IS_EXTENDED, new org.apache.thrift.meta_data.FieldMetaData("isExtended", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.TXNID, new org.apache.thrift.meta_data.FieldMetaData("txnid", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ShowLocksRequest.class, metaDataMap);
   }
@@ -160,6 +168,7 @@ import org.slf4j.LoggerFactory;
       this.partname = other.partname;
     }
     this.isExtended = other.isExtended;
+    this.txnid = other.txnid;
   }
 
   public ShowLocksRequest deepCopy() {
@@ -173,6 +182,8 @@ import org.slf4j.LoggerFactory;
     this.partname = null;
     this.isExtended = false;
 
+    setTxnidIsSet(false);
+    this.txnid = 0;
   }
 
   public String getDbname() {
@@ -266,6 +277,28 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISEXTENDED_ISSET_ID, value);
   }
 
+  public long getTxnid() {
+    return this.txnid;
+  }
+
+  public void setTxnid(long txnid) {
+    this.txnid = txnid;
+    setTxnidIsSet(true);
+  }
+
+  public void unsetTxnid() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __TXNID_ISSET_ID);
+  }
+
+  /** Returns true if field txnid is set (has been assigned a value) and false otherwise */
+  public boolean isSetTxnid() {
+    return EncodingUtils.testBit(__isset_bitfield, __TXNID_ISSET_ID);
+  }
+
+  public void setTxnidIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __TXNID_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case DBNAME:
@@ -300,6 +333,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case TXNID:
+      if (value == null) {
+        unsetTxnid();
+      } else {
+        setTxnid((Long)value);
+      }
+      break;
+
     }
   }
 
@@ -316,6 +357,9 @@ import org.slf4j.LoggerFactory;
 
     case IS_EXTENDED:
       return isIsExtended();
+
+    case TXNID:
+      return getTxnid();
 
     }
     throw new IllegalStateException();
@@ -336,6 +380,8 @@ import org.slf4j.LoggerFactory;
       return isSetPartname();
     case IS_EXTENDED:
       return isSetIsExtended();
+    case TXNID:
+      return isSetTxnid();
     }
     throw new IllegalStateException();
   }
@@ -389,6 +435,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_txnid = true && this.isSetTxnid();
+    boolean that_present_txnid = true && that.isSetTxnid();
+    if (this_present_txnid || that_present_txnid) {
+      if (!(this_present_txnid && that_present_txnid))
+        return false;
+      if (this.txnid != that.txnid)
+        return false;
+    }
+
     return true;
   }
 
@@ -415,6 +470,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_isExtended);
     if (present_isExtended)
       list.add(isExtended);
+
+    boolean present_txnid = true && (isSetTxnid());
+    list.add(present_txnid);
+    if (present_txnid)
+      list.add(txnid);
 
     return list.hashCode();
   }
@@ -463,6 +523,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetIsExtended()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isExtended, other.isExtended);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetTxnid()).compareTo(other.isSetTxnid());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTxnid()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.txnid, other.txnid);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -520,6 +590,12 @@ import org.slf4j.LoggerFactory;
       if (!first) sb.append(", ");
       sb.append("isExtended:");
       sb.append(this.isExtended);
+      first = false;
+    }
+    if (isSetTxnid()) {
+      if (!first) sb.append(", ");
+      sb.append("txnid:");
+      sb.append(this.txnid);
       first = false;
     }
     sb.append(")");
@@ -599,6 +675,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // TXNID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.txnid = iprot.readI64();
+              struct.setTxnidIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -638,6 +722,11 @@ import org.slf4j.LoggerFactory;
         oprot.writeBool(struct.isExtended);
         oprot.writeFieldEnd();
       }
+      if (struct.isSetTxnid()) {
+        oprot.writeFieldBegin(TXNID_FIELD_DESC);
+        oprot.writeI64(struct.txnid);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -668,7 +757,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetIsExtended()) {
         optionals.set(3);
       }
-      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetTxnid()) {
+        optionals.set(4);
+      }
+      oprot.writeBitSet(optionals, 5);
       if (struct.isSetDbname()) {
         oprot.writeString(struct.dbname);
       }
@@ -681,12 +773,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetIsExtended()) {
         oprot.writeBool(struct.isExtended);
       }
+      if (struct.isSetTxnid()) {
+        oprot.writeI64(struct.txnid);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, ShowLocksRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(4);
+      BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
         struct.dbname = iprot.readString();
         struct.setDbnameIsSet(true);
@@ -702,6 +797,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(3)) {
         struct.isExtended = iprot.readBool();
         struct.setIsExtendedIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.txnid = iprot.readI64();
+        struct.setTxnidIsSet(true);
       }
     }
   }

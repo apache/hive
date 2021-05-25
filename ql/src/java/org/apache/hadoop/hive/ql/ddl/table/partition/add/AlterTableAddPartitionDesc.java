@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.ddl.table.partition.add;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +66,26 @@ public class AlterTableAddPartitionDesc implements DDLDescWithWriteId, Serializa
     ColumnStatistics colStats = null;
     long writeId = -1;
 
+    public PartitionDesc(Map<String, String> partSpec,
+                         String location, Map<String, String> partParams, String inputFormat, String outputFormat,
+                         int numBuckets, List<FieldSchema> cols, String serializationLib,
+                         Map<String, String> serdeParams, List<String> bucketCols, List<Order> sortCols,
+                         ColumnStatistics colStats, long writeId) {
+      this.partSpec = partSpec;
+      this.location = location;
+      this.partParams = partParams;
+      this.inputFormat = inputFormat;
+      this.outputFormat = outputFormat;
+      this.numBuckets = numBuckets;
+      this.cols = cols;
+      this.serializationLib = serializationLib;
+      this.serdeParams = serdeParams;
+      this.bucketCols = bucketCols;
+      this.sortCols = sortCols;
+      this.colStats = colStats;
+      this.writeId = writeId;
+    }
+
     public Map<String, String> getPartSpec() {
       return partSpec;
     }
@@ -82,6 +103,12 @@ public class AlterTableAddPartitionDesc implements DDLDescWithWriteId, Serializa
 
     public Map<String, String> getPartParams() {
       return partParams;
+    }
+
+    public void addPartParams(Map<String, String> partParams) {
+      if (this.partParams != null) {
+        this.partParams.putAll(partParams);
+      }
     }
 
     public void setPartParams(Map<String, String> partParams) {
@@ -204,6 +231,14 @@ public class AlterTableAddPartitionDesc implements DDLDescWithWriteId, Serializa
     this.tableName = tableName;
     this.ifNotExists = true;
     addPartition(partSpec, location, params);
+  }
+
+  public AlterTableAddPartitionDesc(String dbName, String tableName, boolean ifNotExists,
+                                    List<PartitionDesc> partitions) {
+    this.dbName = dbName;
+    this.tableName = tableName;
+    this.ifNotExists = ifNotExists;
+    this.partitions = partitions;
   }
 
   public void addPartition(Map<String, String> partSpec, String location) {

@@ -78,8 +78,8 @@ public class AlterDatabaseHandler extends AbstractMessageHandler {
             newDb.getOwnerType()), context.eventOnlyReplicationSpec());
       }
 
-      Task<DDLWork> alterDbTask = TaskFactory.get(
-          new DDLWork(readEntitySet, writeEntitySet, alterDbDesc), context.hiveConf);
+      Task<DDLWork> alterDbTask = TaskFactory.get(new DDLWork(readEntitySet, writeEntitySet,
+                       alterDbDesc, true, context.getDumpDirectory(), context.getMetricCollector()), context.hiveConf);
       context.log.debug("Added alter database task : {}:{}",
               alterDbTask.getId(), actualDbName);
 

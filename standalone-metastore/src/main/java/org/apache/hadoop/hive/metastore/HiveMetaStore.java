@@ -571,9 +571,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       listeners = MetaStoreUtils.getMetaStoreListeners(MetaStoreEventListener.class, conf,
           MetastoreConf.getVar(conf, ConfVars.EVENT_LISTENERS));
       listeners.add(new SessionPropertiesListener(conf));
-      listeners.add(new AcidEventListener(conf));
-      transactionalListeners = MetaStoreUtils.getMetaStoreListeners(TransactionalMetaStoreEventListener.class,
-          conf, MetastoreConf.getVar(conf, ConfVars.TRANSACTIONAL_EVENT_LISTENERS));
+      transactionalListeners = new ArrayList() {{
+        add(new AcidEventListener(conf));
+      }};
+      transactionalListeners.addAll(MetaStoreUtils.getMetaStoreListeners(
+              TransactionalMetaStoreEventListener.class, conf,
+              MetastoreConf.getVar(conf, ConfVars.TRANSACTIONAL_EVENT_LISTENERS)));
       if (Metrics.getRegistry() != null) {
         listeners.add(new HMSMetricsListener(conf));
       }
@@ -3037,27 +3040,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      */
     private void deleteTableData(Path tablePath, boolean ifPurge, boolean shouldEnableCm) {
       if (tablePath != null) {
-        try {
-          if (shouldEnableCm) {
-            //Don't delete cmdir if its inside the table path
-            FileStatus[] statuses = tablePath.getFileSystem(conf).listStatus(tablePath,
-                    ReplChangeManager.CMROOT_PATH_FILTER);
-            for (final FileStatus status : statuses) {
-              wh.deleteDir(status.getPath(), true, ifPurge, shouldEnableCm);
-            }
-            //Check if table directory is empty, delete it
-            FileStatus[] statusWithoutFilter = tablePath.getFileSystem(conf).listStatus(tablePath);
-            if (statusWithoutFilter.length == 0) {
-              wh.deleteDir(tablePath, true, ifPurge, shouldEnableCm);
-            }
-          } else {
-            //If no cm delete the complete table directory
-            wh.deleteDir(tablePath, true, ifPurge, shouldEnableCm);
-          }
-        } catch (Exception e) {
-          LOG.error("Failed to delete table directory: " + tablePath +
-                  " " + e.getMessage());
-        }
+        deleteDataExcludeCmroot(tablePath, ifPurge, shouldEnableCm);
       }
     }
 
@@ -3114,6 +3097,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             LOG.error("Failed to delete partition directory: " + partPath +
                     " " + e.getMessage());
           }
+          deleteDataExcludeCmroot(partPath, ifPurge, shouldEnableCm);
         }
       }
     }
@@ -3137,6 +3121,39 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                 " " + e.getMessage());
           }
         }
+      }
+    }
+
+    /**
+     * Delete data from path excluding cmdir
+     * and for each that fails logs an error.
+     *
+     * @param path
+     * @param ifPurge completely purge the partition (skipping trash) while
+     *                removing data from warehouse
+     * @param shouldEnableCm If cm should be enabled
+     */
+    private void deleteDataExcludeCmroot(Path path, boolean ifPurge, boolean shouldEnableCm) {
+      try {
+        if (shouldEnableCm) {
+          //Don't delete cmdir if its inside the partition path
+          FileStatus[] statuses = path.getFileSystem(conf).listStatus(path,
+                  ReplChangeManager.CMROOT_PATH_FILTER);
+          for (final FileStatus status : statuses) {
+            wh.deleteDir(status.getPath(), true, ifPurge, shouldEnableCm);
+          }
+          //Check if table directory is empty, delete it
+          FileStatus[] statusWithoutFilter = path.getFileSystem(conf).listStatus(path);
+          if (statusWithoutFilter.length == 0) {
+            wh.deleteDir(path, true, ifPurge, shouldEnableCm);
+          }
+        } else {
+          //If no cm delete the complete table directory
+          wh.deleteDir(path, true, ifPurge, shouldEnableCm);
+        }
+      } catch (Exception e) {
+        LOG.error("Failed to delete directory: " + path +
+                " " + e.getMessage());
       }
     }
 
@@ -8371,6 +8388,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public GetOpenTxnsResponse get_open_txns() throws TException {
       return getTxnHandler().getOpenTxns();
+    }
+
+    @Override
+    public GetOpenTxnsResponse get_open_txns_req(GetOpenTxnsRequest getOpenTxnsRequest) throws TException {
+      return getTxnHandler().getOpenTxns(getOpenTxnsRequest.getExcludeTxnTypes());
     }
 
     // Transaction and locking methods

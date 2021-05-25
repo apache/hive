@@ -390,7 +390,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.ReadOnly
   public GetOpenTxnsResponse getOpenTxns() throws MetaException {
-    return getOpenTxnsList(false).toOpenTxnsResponse();
+    return getOpenTxnsList(false).toOpenTxnsResponse(Arrays.asList(TxnType.READ_ONLY));
+  }
+
+  @Override
+  @RetrySemantics.ReadOnly
+  public GetOpenTxnsResponse getOpenTxns(List<TxnType> excludeTxnTypes) throws MetaException {
+    return getOpenTxnsList(false).toOpenTxnsResponse(excludeTxnTypes);
   }
 
   private OpenTxnList getOpenTxnsList(boolean infoFields) throws MetaException {
@@ -2878,6 +2884,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
           filter.append("\"HL_PARTITION\"=?");
           params.add(partName);
+        }
+        if (rqst.isSetTxnid()) {
+          if (filter.length() > 0) {
+            filter.append(" and ");
+          }
+          filter.append("\"HL_TXNID\"=" + rqst.getTxnid());
         }
         String whereClause = filter.toString();
 

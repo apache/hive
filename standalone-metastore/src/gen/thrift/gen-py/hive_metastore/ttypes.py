@@ -15193,6 +15193,7 @@ class ShowLocksRequest:
    - tablename
    - partname
    - isExtended
+   - txnid
   """
 
   thrift_spec = (
@@ -15201,13 +15202,15 @@ class ShowLocksRequest:
     (2, TType.STRING, 'tablename', None, None, ), # 2
     (3, TType.STRING, 'partname', None, None, ), # 3
     (4, TType.BOOL, 'isExtended', None, False, ), # 4
+    (5, TType.I64, 'txnid', None, None, ), # 5
   )
 
-  def __init__(self, dbname=None, tablename=None, partname=None, isExtended=thrift_spec[4][4],):
+  def __init__(self, dbname=None, tablename=None, partname=None, isExtended=thrift_spec[4][4], txnid=None,):
     self.dbname = dbname
     self.tablename = tablename
     self.partname = partname
     self.isExtended = isExtended
+    self.txnid = txnid
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -15238,6 +15241,11 @@ class ShowLocksRequest:
           self.isExtended = iprot.readBool()
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.I64:
+          self.txnid = iprot.readI64()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -15264,6 +15272,10 @@ class ShowLocksRequest:
       oprot.writeFieldBegin('isExtended', TType.BOOL, 4)
       oprot.writeBool(self.isExtended)
       oprot.writeFieldEnd()
+    if self.txnid is not None:
+      oprot.writeFieldBegin('txnid', TType.I64, 5)
+      oprot.writeI64(self.txnid)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -15277,6 +15289,7 @@ class ShowLocksRequest:
     value = (value * 31) ^ hash(self.tablename)
     value = (value * 31) ^ hash(self.partname)
     value = (value * 31) ^ hash(self.isExtended)
+    value = (value * 31) ^ hash(self.txnid)
     return value
 
   def __repr__(self):
@@ -28555,6 +28568,79 @@ class GetReplicationMetricsRequest:
     value = (value * 31) ^ hash(self.scheduledExecutionId)
     value = (value * 31) ^ hash(self.policy)
     value = (value * 31) ^ hash(self.dumpExecutionId)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class GetOpenTxnsRequest:
+  """
+  Attributes:
+   - excludeTxnTypes
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.LIST, 'excludeTxnTypes', (TType.I32,None), None, ), # 1
+  )
+
+  def __init__(self, excludeTxnTypes=None,):
+    self.excludeTxnTypes = excludeTxnTypes
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.LIST:
+          self.excludeTxnTypes = []
+          (_etype1150, _size1147) = iprot.readListBegin()
+          for _i1151 in xrange(_size1147):
+            _elem1152 = iprot.readI32()
+            self.excludeTxnTypes.append(_elem1152)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('GetOpenTxnsRequest')
+    if self.excludeTxnTypes is not None:
+      oprot.writeFieldBegin('excludeTxnTypes', TType.LIST, 1)
+      oprot.writeListBegin(TType.I32, len(self.excludeTxnTypes))
+      for iter1153 in self.excludeTxnTypes:
+        oprot.writeI32(iter1153)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.excludeTxnTypes)
     return value
 
   def __repr__(self):

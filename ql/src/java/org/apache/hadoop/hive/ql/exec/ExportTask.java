@@ -52,7 +52,7 @@ public class ExportTask extends Task<ExportWork> implements Serializable {
       work.acidPostProcess(db);
       TableExport tableExport = new TableExport(exportPaths, work.getTableSpec(),
           work.getReplicationSpec(), db, null, conf, work.getMmContext());
-      tableExport.write(true);
+      tableExport.write(true, null, false);
     } catch (Exception e) {
       LOG.error("failed", e);
       setException(e);

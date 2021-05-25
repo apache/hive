@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.slf4j.Logger;
 
 import java.io.Serializable;
@@ -54,6 +55,8 @@ public interface MessageHandler {
     final Hive db;
     final org.apache.hadoop.hive.ql.Context nestedContext;
     final Logger log;
+    String dumpDirectory;
+    private transient ReplicationMetricCollector metricCollector;
 
     public Context(String dbName, String location,
         Task<? extends Serializable> precursor, DumpMetaData dmd, HiveConf hiveConf,
@@ -68,6 +71,22 @@ public interface MessageHandler {
       this.log = log;
     }
 
+    public Context(String dbName, String location,
+                   Task<?> precursor, DumpMetaData dmd, HiveConf hiveConf,
+                   Hive db, org.apache.hadoop.hive.ql.Context nestedContext, Logger log,
+                   String dumpDirectory, ReplicationMetricCollector metricCollector) {
+      this.dbName = dbName;
+      this.location = location;
+      this.precursor = precursor;
+      this.dmd = dmd;
+      this.hiveConf = hiveConf;
+      this.db = db;
+      this.nestedContext = nestedContext;
+      this.log = log;
+      this.dumpDirectory = dumpDirectory;
+      this.metricCollector = metricCollector;
+    }
+
     public Context(Context other, String dbName) {
       this.dbName = dbName;
       this.location = other.location;
@@ -77,6 +96,19 @@ public interface MessageHandler {
       this.db = other.db;
       this.nestedContext = other.nestedContext;
       this.log = other.log;
+    }
+
+    public Context(Context other, String dbName, String dumpDirectory, ReplicationMetricCollector metricCollector) {
+      this.dbName = dbName;
+      this.location = other.location;
+      this.precursor = other.precursor;
+      this.dmd = other.dmd;
+      this.hiveConf = other.hiveConf;
+      this.db = other.db;
+      this.nestedContext = other.nestedContext;
+      this.log = other.log;
+      this.dumpDirectory = dumpDirectory;
+      this.metricCollector = metricCollector;
     }
 
     public boolean isDbNameEmpty() {
@@ -94,6 +126,14 @@ public interface MessageHandler {
 
     public org.apache.hadoop.hive.ql.Context getNestedContext() {
       return nestedContext;
+    }
+
+    public String getDumpDirectory() {
+      return dumpDirectory;
+    }
+
+    public ReplicationMetricCollector getMetricCollector() {
+      return metricCollector;
     }
 
     public HiveTxnManager getTxnMgr() {

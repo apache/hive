@@ -69,7 +69,6 @@ import org.slf4j.LoggerFactory;
 public final class FileUtils {
   private static final Logger LOG = LoggerFactory.getLogger(FileUtils.class.getName());
   private static final Random random = new Random();
-  public static final int MAX_IO_ERROR_RETRY = 5;
   public static final int IO_ERROR_SLEEP_TIME = 100;
 
   public static final PathFilter HIDDEN_FILES_PATH_FILTER = new PathFilter() {

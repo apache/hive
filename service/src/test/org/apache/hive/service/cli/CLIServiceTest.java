@@ -244,7 +244,7 @@ public abstract class CLIServiceTest {
     opStatus = runAsyncAndWait(sessionHandle, queryString, confOverlay, OperationState.ERROR, longPollingTimeout);
     // sqlState, errorCode should be set
     assertEquals(opStatus.getOperationException().getSQLState(), "08S01");
-    assertEquals(opStatus.getOperationException().getErrorCode(), 1);
+    assertEquals(opStatus.getOperationException().getErrorCode(), 40000);
     /**
      * Execute an async query with default config
      */

@@ -15,22 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
-import org.junit.BeforeClass;
+package org.apache.hadoop.hive.ql.exec.repl.util;
 
-import java.util.Collections;
-import java.util.HashMap;
+public interface StringConvertibleObject {
 
-@org.junit.Ignore("flaky")
-public class TestReplTableMigrationWithJsonFormat extends TestReplicationWithTableMigration {
-  @BeforeClass
-  public static void classLevelSetup() throws Exception {
-    HashMap<String, String> overrides = new HashMap<>();
-    overrides.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
-            JSONMessageEncoder.class.getCanonicalName());
-    internalBeforeClassSetup(overrides);
-  }
+  public String convertToString ();
+
+  public void loadFromString (String objectInStr);
 }

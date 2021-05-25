@@ -74,14 +74,6 @@ public class AlterTableRenamePartitionOperation extends DDLOperation<AlterTableR
     Partition part = context.getDb().getPartition(tbl, oldPartSpec, false);
     part.setValues(desc.getNewPartSpec());
     long writeId = desc.getWriteId();
-    if (desc.getReplicationSpec() != null
-            && desc.getReplicationSpec().isMigratingToTxnTable()) {
-      Long tmpWriteId = ReplUtils.getMigrationCurrentTblWriteId(context.getConf());
-      if (tmpWriteId == null) {
-        throw new HiveException("DDLTask : Write id is not set in the config by open txn task for migration");
-      }
-      writeId = tmpWriteId;
-    }
     context.getDb().renamePartition(tbl, oldPartSpec, part, writeId);
     Partition newPart = context.getDb().getPartition(tbl, desc.getNewPartSpec(), false);
     context.getWork().getInputs().add(new ReadEntity(oldPart));

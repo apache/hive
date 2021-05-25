@@ -595,6 +595,9 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     try {
       if (null != client) {
         client.shutdown();
+        if ((transport == null) || !transport.isOpen()) {
+          LOG.info("Closed a connection to metastore, current connections: " + connCount.decrementAndGet());
+        }
       }
     } catch (TException e) {
       LOG.debug("Unable to shutdown metastore client. Will try closing transport directly.", e);
@@ -2267,17 +2270,31 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public GetOpenTxnsResponse getOpenTxns() throws TException {
-    return client.get_open_txns();
+    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
+    getOpenTxnsRequest.setExcludeTxnTypes(Arrays.asList(TxnType.READ_ONLY));
+    return client.get_open_txns_req(getOpenTxnsRequest);
   }
 
   @Override
   public ValidTxnList getValidTxns() throws TException {
-    return TxnUtils.createValidReadTxnList(client.get_open_txns(), 0);
+    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
+    getOpenTxnsRequest.setExcludeTxnTypes(Arrays.asList(TxnType.READ_ONLY));
+    return TxnUtils.createValidReadTxnList(client.get_open_txns_req(getOpenTxnsRequest), 0);
   }
 
   @Override
   public ValidTxnList getValidTxns(long currentTxn) throws TException {
-    return TxnUtils.createValidReadTxnList(client.get_open_txns(), currentTxn);
+    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
+    getOpenTxnsRequest.setExcludeTxnTypes(Arrays.asList(TxnType.READ_ONLY));
+    return TxnUtils.createValidReadTxnList(client.get_open_txns_req(getOpenTxnsRequest), currentTxn);
+  }
+
+  @Override
+  public ValidTxnList getValidTxns(long currentTxn, List<TxnType> excludeTxnTypes) throws TException {
+    GetOpenTxnsRequest getOpenTxnsRequest = new GetOpenTxnsRequest();
+    getOpenTxnsRequest.setExcludeTxnTypes(excludeTxnTypes);
+    return TxnUtils.createValidReadTxnList(client.get_open_txns_req(getOpenTxnsRequest),
+      currentTxn);
   }
 
   @Override

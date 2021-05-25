@@ -23,14 +23,17 @@ import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetrics;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.Retry;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -126,18 +129,16 @@ public class MetricSink {
           }
           metricList.setReplicationMetricList(replicationMetricsList);
           // write metrics and retry if fails
-          Retry<Void> retriable = new Retry<Void>(Exception.class) {
-            @Override
-            public Void execute() throws Exception {
-              //write
-              if (metricList.getReplicationMetricListSize() > 0) {
-                LOG.debug("Persisting metrics to DB {} ", metricList.getReplicationMetricListSize());
-                Hive.get(conf).getMSC().addReplicationMetrics(metricList);
-              }
-              return null;
+          Retryable retryable = Retryable.builder()
+            .withHiveConf(conf)
+            .withRetryOnException(Exception.class).build();
+          retryable.executeCallable((Callable<Void>) () -> {
+            if (metricList.getReplicationMetricListSize() > 0) {
+              LOG.debug("Persisting metrics to DB {} ", metricList.getReplicationMetricListSize());
+              Hive.get(conf).getMSC().addReplicationMetrics(metricList);
             }
-          };
-          retriable.run();
+            return null;
+          });
         } else {
           LOG.debug("No Metrics to Update ");
         }

@@ -119,6 +119,10 @@ public class MetaStoreTestUtils {
     return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
   }
 
+  public static int startMetaStoreWithRetry(Configuration conf, boolean keepWarehousePath) throws Exception {
+    return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf, false, keepWarehousePath, false);
+  }
+
   public static int startMetaStoreWithRetry(Configuration conf, boolean keepJdbcUri,
                                             boolean keepWarehousePath)
       throws Exception {

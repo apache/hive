@@ -18,7 +18,7 @@ PREHOOK: Input: tmpdb@tmp1
 POSTHOOK: query: show create table tmpdb.tmp1
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: tmpdb@tmp1
-CREATE TEMPORARY TABLE `tmpdb.tmp1`(
+CREATE TEMPORARY TABLE `tmpdb`.`tmp1`(
   `c1` string, 
   `c2` string)
 ROW FORMAT SERDE 

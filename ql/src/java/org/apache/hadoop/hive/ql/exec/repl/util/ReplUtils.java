@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl.util;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.repl.ReplConst;
@@ -25,6 +27,7 @@ import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
@@ -34,34 +37,44 @@ import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetProperti
 import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
+import org.apache.hadoop.hive.ql.parse.repl.dump.metric.BootstrapDumpMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.dump.metric.IncrementalDumpMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.load.metric.IncrementalLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
-import org.apache.hadoop.hive.ql.plan.ReplTxnWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
-import org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
 import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Base64;
 
-import static org.apache.hadoop.hive.ql.util.HiveStrictManagedMigration.TableMigrationOption.MANAGED;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
 
 public class ReplUtils {
 
@@ -72,6 +85,10 @@ public class ReplUtils {
   // write id allocated in the current execution context which will be passed through config to be used by different
   // tasks.
   public static final String REPL_CURRENT_TBL_WRITE_ID = "hive.repl.current.table.write.id";
+
+  public static final String REPL_IS_CUSTOM_DB_LOC = "hive.repl.is.custom.db.loc";
+
+  public static final String REPL_IS_CUSTOM_DB_MANAGEDLOC = "hive.repl.is.custom.db.managedloc";
 
   public static final String FUNCTIONS_ROOT_DIR_NAME = "_functions";
   public static final String CONSTRAINTS_ROOT_DIR_NAME = "_constraints";
@@ -94,9 +111,6 @@ public class ReplUtils {
   // Config for hadoop default file system.
   public static final String DEFAULT_FS_CONFIG = "fs.defaultFS";
 
-  // Cluster name separator, used when the cluster name contains data center name as well, e.g. dc$mycluster1.
-  public static final String CLUSTER_NAME_SEPARATOR = "$";
-
 
   // Name of the directory which stores the list of tables included in the policy in case of table level replication.
   // One file per database, named after the db name. The directory is not created for db level replication.
@@ -112,14 +126,6 @@ public class ReplUtils {
 
   public static final String RANGER_CONFIGURATION_RESOURCE_NAME = "ranger-hive-security.xml";
 
-  // Migrating to transactional tables in bootstrap load phase.
-  // It is enough to copy all the original files under base_1 dir and so write-id is hardcoded to 1.
-  public static final Long REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID = 1L;
-
-  // we keep the statement id as 0 so that the base directory is created with 0 and is easy to find out during
-  // duplicate check. Note : Stmt id is not used for base directory now, but to avoid misuse later, its maintained.
-  public static final int REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID = 0;
-
   // Configuration to enable/disable dumping ACID tables. Used only for testing and shouldn't be
   // seen in production or in case of tests other than the ones where it's required.
   public static final String REPL_DUMP_INCLUDE_ACID_TABLES = "hive.repl.dump.include.acid.tables";
@@ -129,6 +135,17 @@ public class ReplUtils {
 
   // Reserved number of items to accommodate operational files in the dump root dir.
   public static final int RESERVED_DIR_ITEMS_COUNT = 10;
+
+  public static final String TARGET_OF_REPLICATION = "repl.target.for";
+
+  // Service name for hive.
+  public static final String REPL_HIVE_SERVICE = "hive";
+
+  // Service name for ranger.
+  public static final String REPL_RANGER_SERVICE = "ranger";
+
+  // Service name for atlas.
+  public static final String REPL_ATLAS_SERVICE = "atlas";
 
   /**
    * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.
@@ -143,6 +160,8 @@ public class ReplUtils {
   public enum MetricName {
     TABLES, FUNCTIONS, EVENTS, POLICIES, ENTITIES
   }
+
+  private static transient Logger LOG = LoggerFactory.getLogger(ReplUtils.class);
 
   public static Map<Integer, List<ExprNodeGenericFuncDesc>> genPartSpecs(
           Table table, List<Map<String, String>> partitions) throws SemanticException {
@@ -186,6 +205,17 @@ public class ReplUtils {
     return TaskFactory.get(replLogWork, conf);
   }
 
+  public static Task<?> getTableReplLogTask(ImportTableDesc tableDesc, ReplLogger replLogger, HiveConf conf,
+                                            ReplicationMetricCollector metricCollector,
+                                            String dumpRoot)
+          throws SemanticException {
+    TableType tableType = tableDesc.isExternal() ? TableType.EXTERNAL_TABLE : tableDesc.tableType();
+    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, metricCollector,
+            tableDesc.getTableName(), tableType, dumpRoot);
+    return TaskFactory.get(replLogWork, conf);
+  }
+
+
   public static Task<?> getTableCheckpointTask(ImportTableDesc tableDesc, HashMap<String, String> partSpec,
                                                String dumpRoot, HiveConf conf) throws SemanticException {
     HashMap<String, String> mapProp = new HashMap<>();
@@ -195,6 +225,19 @@ public class ReplUtils {
     AlterTableSetPropertiesDesc alterTblDesc =  new AlterTableSetPropertiesDesc(tName, partSpec, null, false,
         mapProp, false, false, null);
     return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), alterTblDesc), conf);
+  }
+
+  public static Task<?> getTableCheckpointTask(ImportTableDesc tableDesc, HashMap<String, String> partSpec,
+                                               String dumpRoot, ReplicationMetricCollector metricCollector,
+                                               HiveConf conf) throws SemanticException {
+    HashMap<String, String> mapProp = new HashMap<>();
+    mapProp.put(REPL_CHECKPOINT_KEY, dumpRoot);
+
+    final TableName tName = TableName.fromString(tableDesc.getTableName(), null, tableDesc.getDatabaseName());
+    AlterTableSetPropertiesDesc alterTblDesc =  new AlterTableSetPropertiesDesc(tName, partSpec, null, false,
+            mapProp, false, false, null);
+    return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), alterTblDesc,
+            true, (new Path(dumpRoot)).getParent().toString(), metricCollector), conf);
   }
 
   public static boolean replCkptStatus(String dbName, Map<String, String> props, String dumpRoot)
@@ -210,56 +253,31 @@ public class ReplUtils {
     return false;
   }
 
-  public static String getNonEmpty(String configParam, HiveConf hiveConf, String errorMsgFormat)
-          throws SemanticException {
-    String val = hiveConf.get(configParam);
-    if (StringUtils.isEmpty(val)) {
-      throw new SemanticException(String.format(errorMsgFormat, configParam));
-    }
-    return val;
-  }
-
-  public static boolean isTableMigratingToTransactional(HiveConf conf,
-                                                 org.apache.hadoop.hive.metastore.api.Table tableObj)
-  throws TException, IOException {
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES) &&
-            !AcidUtils.isTransactionalTable(tableObj) &&
-            TableType.valueOf(tableObj.getTableType()) == TableType.MANAGED_TABLE) {
-      //TODO : isPathOwnByHive is hard coded to true, need to get it from repl dump metadata.
-      HiveStrictManagedMigration.TableMigrationOption migrationOption =
-              HiveStrictManagedMigration.determineMigrationTypeAutomatically(tableObj, TableType.MANAGED_TABLE,
-                      null, conf, null, true);
-      return migrationOption == MANAGED;
+  public static boolean isTargetOfReplication(Database db) {
+    assert (db != null);
+    Map<String, String> m = db.getParameters();
+    if ((m != null) && (m.containsKey(TARGET_OF_REPLICATION))) {
+      return !StringUtils.isEmpty(m.get(TARGET_OF_REPLICATION));
     }
     return false;
   }
 
-  private static void addOpenTxnTaskForMigration(String actualDbName, String actualTblName,
-                                            HiveConf conf,
-                                         UpdatedMetaDataTracker updatedMetaDataTracker,
-                                         List<Task<? extends Serializable>> taskList,
-                                         Task<? extends Serializable> childTask) {
-    Task<? extends Serializable> replTxnTask = TaskFactory.get(new ReplTxnWork(actualDbName, actualTblName,
-            ReplTxnWork.OperationType.REPL_MIGRATION_OPEN_TXN), conf);
-    replTxnTask.addDependentTask(childTask);
-    updatedMetaDataTracker.setNeedCommitTxn(true);
-    taskList.add(replTxnTask);
+  public static String getNonEmpty(String configParam, HiveConf hiveConf, String errorMsgFormat)
+          throws SemanticException {
+    String val = hiveConf.get(configParam);
+    if (StringUtils.isEmpty(val)) {
+      throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format(String.format(
+        errorMsgFormat, configParam), ReplUtils.REPL_ATLAS_SERVICE));
+    }
+    return val;
   }
 
-  public static List<Task<? extends Serializable>> addOpenTxnTaskForMigration(String actualDbName,
-                                                                  String actualTblName, HiveConf conf,
-                                                                  UpdatedMetaDataTracker updatedMetaDataTracker,
-                                                                  Task<? extends Serializable> childTask,
-                                                                  org.apache.hadoop.hive.metastore.api.Table tableObj)
-          throws IOException, TException {
-    List<Task<? extends Serializable>> taskList = new ArrayList<>();
+  public static List<Task<?>> addChildTask(Task<?> childTask) {
+    List<Task<?>> taskList = new ArrayList<>();
     taskList.add(childTask);
-    if (isTableMigratingToTransactional(conf, tableObj) && updatedMetaDataTracker != null) {
-      addOpenTxnTaskForMigration(actualDbName, actualTblName, conf, updatedMetaDataTracker,
-              taskList, childTask);
-    }
     return taskList;
   }
+
 
   public static List<Task<? extends Serializable>> addTasksForLoadingColStats(ColumnStatistics colStats,
                                                                               HiveConf conf,
@@ -268,22 +286,31 @@ public class ReplUtils {
                                                                               long writeId)
           throws IOException, TException {
     List<Task<? extends Serializable>> taskList = new ArrayList<>();
-    boolean isMigratingToTxn = ReplUtils.isTableMigratingToTransactional(conf, tableObj);
-    ColumnStatsUpdateWork work = new ColumnStatsUpdateWork(colStats, isMigratingToTxn);
+    ColumnStatsUpdateWork work = new ColumnStatsUpdateWork(colStats);
     work.setWriteId(writeId);
     Task<?> task = TaskFactory.get(work, conf);
     taskList.add(task);
-    // If the table is going to be migrated to a transactional table we will need to open
-    // and commit a transaction to associate a valid writeId with the statistics.
-    if (isMigratingToTxn) {
-      ReplUtils.addOpenTxnTaskForMigration(colStats.getStatsDesc().getDbName(),
-              colStats.getStatsDesc().getTableName(), conf, updatedMetadata, taskList,
-              task);
-    }
-
     return taskList;
 
   }
+
+  public static List<Task<?>> addTasksForLoadingColStats(ColumnStatistics colStats,
+                                                         HiveConf conf,
+                                                         UpdatedMetaDataTracker updatedMetadata,
+                                                         org.apache.hadoop.hive.metastore.api.Table tableObj,
+                                                         long writeId,
+                                                         String nonRecoverableMarkPath,
+                                                         ReplicationMetricCollector metricCollector)
+          throws IOException, TException {
+    List<Task<?>> taskList = new ArrayList<>();
+    ColumnStatsUpdateWork work = new ColumnStatsUpdateWork(colStats, nonRecoverableMarkPath, metricCollector, true);
+    work.setWriteId(writeId);
+    Task<?> task = TaskFactory.get(work, conf);
+    taskList.add(task);
+    return taskList;
+
+  }
+
   // Path filters to filter only events (directories) excluding "_bootstrap"
   public static PathFilter getEventsDirectoryFilter(final FileSystem fs) {
     return p -> {
@@ -306,6 +333,52 @@ public class ReplUtils {
         throw new RuntimeException(e);
       }
     };
+  }
+
+  public static int handleException(boolean isReplication, Throwable e, String nonRecoverablePath,
+                                    ReplicationMetricCollector metricCollector, String stageName, HiveConf conf){
+    int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+    if(isReplication){
+      try {
+        if (nonRecoverablePath != null) {
+          final int recoverableLimit = ErrorMsg.GENERIC_ERROR.getErrorCode();
+          String metricStage = getMetricStageName(stageName, metricCollector);
+          if(errorCode > recoverableLimit){
+            Path nonRecoverableMarker = new Path(new Path(nonRecoverablePath), ReplAck.NON_RECOVERABLE_MARKER.toString());
+            Utils.writeStackTrace(e, nonRecoverableMarker, conf);
+            metricCollector.reportStageEnd(metricStage, Status.FAILED_ADMIN, nonRecoverableMarker.toString());
+          }
+          else {
+            metricCollector.reportStageEnd(metricStage, Status.FAILED);
+          }
+        }
+      } catch (Exception ex) {
+        LOG.error("Failed to collect Metrics ", ex);
+      }
+    }
+    return errorCode;
+  }
+
+  private static String getMetricStageName(String stageName, ReplicationMetricCollector metricCollector) {
+    if( stageName == "REPL_DUMP" || stageName == "REPL_LOAD" || stageName == "ATLAS_DUMP" || stageName == "ATLAS_LOAD"
+            || stageName == "RANGER_DUMP" || stageName == "RANGER_LOAD"){
+      return stageName;
+    }
+    if(isDumpMetricCollector(metricCollector)){
+        return "REPL_DUMP";
+    } else {
+      return "REPL_LOAD";
+    }
+  }
+
+  private static boolean isDumpMetricCollector(ReplicationMetricCollector metricCollector) {
+    return metricCollector instanceof BootstrapDumpMetricCollector || 
+            metricCollector instanceof IncrementalDumpMetricCollector;
+  }
+
+  private static boolean isLoadMetricCollector(ReplicationMetricCollector metricCollector) {
+    return metricCollector instanceof BootstrapLoadMetricCollector ||
+            metricCollector instanceof IncrementalLoadMetricCollector;
   }
 
   public static boolean isFirstIncPending(Map<String, String> parameters) {
@@ -335,15 +408,51 @@ public class ReplUtils {
     return true;
   }
 
-  public static Long getMigrationCurrentTblWriteId(HiveConf conf) {
-    String writeIdString = conf.get(ReplUtils.REPL_CURRENT_TBL_WRITE_ID);
-    if (writeIdString == null) {
-      return null;
-    }
-    return Long.parseLong(writeIdString);
-  }
-
   public static boolean tableIncludedInReplScope(ReplScope replScope, String tableName) {
     return ((replScope == null) || replScope.tableIncludedInReplScope(tableName));
+  }
+
+  public static boolean failedWithNonRecoverableError(Path dumpRoot, HiveConf conf) throws SemanticException {
+    if (dumpRoot == null) {
+      return false;
+    }
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(conf)
+      .withRetryOnException(IOException.class).build();
+    try {
+      return retryable.executeCallable(() -> {
+        FileSystem fs = dumpRoot.getFileSystem(conf);
+        if (fs.exists(new Path(dumpRoot, NON_RECOVERABLE_MARKER.toString()))) {
+          return true;
+        }
+        return false;
+      });
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  public static Path getEncodedDumpRootPath(HiveConf conf, String dbname) throws UnsupportedEncodingException {
+    return new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
+      Base64.getEncoder().encodeToString(dbname
+        .getBytes(StandardCharsets.UTF_8.name())));
+  }
+
+  public static Path getLatestDumpPath(Path dumpRoot, HiveConf conf) throws IOException {
+    FileSystem fs = dumpRoot.getFileSystem(conf);
+    if (fs.exists(dumpRoot)) {
+      FileStatus[] statuses = fs.listStatus(dumpRoot);
+      if (statuses.length > 0) {
+        FileStatus latestValidStatus = statuses[0];
+        for (FileStatus status : statuses) {
+          LOG.info("Evaluating previous dump dir path:{}", status.getPath());
+          if (status.getModificationTime() > latestValidStatus.getModificationTime()) {
+            latestValidStatus = status;
+          }
+        }
+        return latestValidStatus.getPath();
+      }
+    }
+    return null;
   }
 }

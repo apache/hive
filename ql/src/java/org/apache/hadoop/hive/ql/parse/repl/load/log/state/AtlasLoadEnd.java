@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.log.state;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import org.codehaus.jackson.annotate.JsonProperty;
 

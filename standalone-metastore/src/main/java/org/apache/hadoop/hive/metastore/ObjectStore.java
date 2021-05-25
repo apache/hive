@@ -34,6 +34,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -49,6 +50,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Optional;
@@ -9630,6 +9632,10 @@ public class ObjectStore implements RawStore, Configurable {
   public List<ColumnStatistics> getPartitionColumnStatistics(String catName, String dbName, String tableName,
       List<String> partNames, List<String> colNames, String engine) throws MetaException, NoSuchObjectException {
     // Note: this will get stats without verifying ACID.
+    if (CollectionUtils.isEmpty(partNames) || CollectionUtils.isEmpty(colNames)) {
+      LOG.debug("PartNames and/or ColNames are empty");
+      return Collections.emptyList();
+    }
     return getPartitionColumnStatisticsInternal(
         catName, dbName, tableName, partNames, colNames, engine, true, true);
   }
@@ -9640,8 +9646,9 @@ public class ObjectStore implements RawStore, Configurable {
       List<String> partNames, List<String> colNames,
       String engine, String writeIdList)
       throws MetaException, NoSuchObjectException {
-    if (partNames == null && partNames.isEmpty()) {
-      return null;
+    if (CollectionUtils.isEmpty(partNames) || CollectionUtils.isEmpty(colNames)) {
+      LOG.debug("PartNames and/or ColNames are empty");
+      return Collections.emptyList();
     }
     List<ColumnStatistics> allStats = getPartitionColumnStatisticsInternal(
         catName, dbName, tableName, partNames, colNames, engine, true, true);
@@ -10942,46 +10949,90 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void cleanNotificationEvents(int olderThan) {
-    boolean commited = false;
+    final int eventBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS);
+
+    final long ageSec = olderThan;
+    final Instant now = Instant.now();
+
+    final int tooOld = Math.toIntExact(now.getEpochSecond() - ageSec);
+
+    final Optional<Integer> batchSize = (eventBatchSize > 0) ? Optional.of(eventBatchSize) : Optional.empty();
+
+    final long start = System.nanoTime();
+    int deleteCount = doCleanNotificationEvents(tooOld, batchSize);
+
+    if (deleteCount == 0) {
+      LOG.info("No Notification events found to be cleaned with eventTime < {}", tooOld);
+    } else {
+      int batchCount = 0;
+      do {
+        batchCount = doCleanNotificationEvents(tooOld, batchSize);
+        deleteCount += batchCount;
+      } while (batchCount > 0);
+    }
+
+    final long finish = System.nanoTime();
+
+    LOG.info("Deleted {} notification events older than epoch:{} in {}ms", deleteCount, tooOld,
+        TimeUnit.NANOSECONDS.toMillis(finish - start));
+  }
+
+  private int doCleanNotificationEvents(final int ageSec, final Optional<Integer> batchSize) {
+    final Transaction tx = pm.currentTransaction();
+    int eventsCount = 0;
     Query query = null;
     try {
-      openTransaction();
-      long tmp = System.currentTimeMillis() / 1000 - olderThan;
-      int tooOld = (tmp > Integer.MAX_VALUE) ? 0 : (int) tmp;
-      query = pm.newQuery(MNotificationLog.class, "eventTime < tooOld");
+      tx.begin();
+      query = pm.newQuery(MNotificationLog.class, "eventTime <= tooOld");
       query.declareParameters("java.lang.Integer tooOld");
-
-      int max_events = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS);
-      max_events = max_events > 0 ? max_events : Integer.MAX_VALUE;
-      query.setRange(0, max_events);
       query.setOrdering("eventId ascending");
+      if (batchSize.isPresent()) {
+        query.setRange(0, batchSize.get());
+      }
+      List<MNotificationLog> events = (List) query.execute(ageSec);
+      if (CollectionUtils.isNotEmpty(events)) {
+        eventsCount = events.size();
 
-      List<MNotificationLog> toBeRemoved = (List) query.execute(tooOld);
-      if (toBeRemoved == null || toBeRemoved.size() == 0) {
-        LOG.info("No events found to be cleaned with eventTime < {}.", tooOld);
-      } else {
-        NotificationEvent firstEvent = translateDbToThrift(toBeRemoved.get(0));
-        long minEventId = firstEvent.getEventId();
-        long minEventTime = firstEvent.getEventTime();
-        long maxEventId = minEventId;
-        long maxEventTime = minEventTime;
-        if (toBeRemoved.size() > 1) {
-          NotificationEvent lastEvent =
-                  translateDbToThrift(toBeRemoved.get(toBeRemoved.size() - 1));
-          maxEventId = lastEvent.getEventId();
-          maxEventTime = lastEvent.getEventTime();
+        if (LOG.isDebugEnabled()) {
+          int minEventTime, maxEventTime;
+          long minEventId, maxEventId;
+          Iterator<MNotificationLog> iter = events.iterator();
+          MNotificationLog firstNotification = iter.next();
+
+          minEventTime = maxEventTime = firstNotification.getEventTime();
+          minEventId = maxEventId = firstNotification.getEventId();
+
+          while (iter.hasNext()) {
+            MNotificationLog notification = iter.next();
+            minEventTime = Math.min(minEventTime, notification.getEventTime());
+            maxEventTime = Math.max(maxEventTime, notification.getEventTime());
+            minEventId = Math.min(minEventId, notification.getEventId());
+            maxEventId = Math.max(maxEventId, notification.getEventId());
+          }
+
+          LOG.debug(
+              "Remove notification batch of {} events with eventTime < {}, min eventId {}, max eventId {}, min eventTime {}, max eventTime {}",
+              eventsCount, ageSec, minEventId, maxEventId, minEventTime, maxEventTime);
         }
-        LOG.info("Cleaned {} events with eventTime < {}, minimum eventId {} (with eventTime {}) " +
-                        "and maximum eventId {} (with eventTime {})",
-                toBeRemoved.size(), tooOld, minEventId, minEventTime, maxEventId, maxEventTime);
+        pm.deletePersistentAll(events);
       }
-      if (CollectionUtils.isNotEmpty(toBeRemoved)) {
-        pm.deletePersistentAll(toBeRemoved);
-      }
-      commited = commitTransaction();
+      tx.commit();
+    } catch (Exception e) {
+      LOG.error("Unable to delete batch of notification events", e);
+      eventsCount = 0;
     } finally {
-      rollbackAndCleanup(commited, query);
+      try {
+        if (tx.isActive()) {
+          tx.rollback();
+        }
+      } finally {
+        // Adding this custom block as current version of the JDO doesn't have Query.close() available at runtime.
+        if (query != null) {
+          query.closeAll();
+        }
+      }
     }
+    return eventsCount;
   }
 
   @Override
@@ -13588,7 +13639,7 @@ public class ObjectStore implements RawStore, Configurable {
         execution.setExecutorQueryId(info.getExecutorQueryId());
       }
       if (info.isSetErrorMessage()) {
-        execution.setErrorMessage(info.getErrorMessage());
+        execution.setErrorMessage(abbreviateErrorMessage(info.getErrorMessage(), 1000));
       }
 
       switch (info.getState()) {
@@ -13613,6 +13664,19 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
+  }
+
+  /**
+   * Abbreviates the error message to the given size.
+   *
+   * There might be error messages which may also contain a stack trace.
+   */
+  private String abbreviateErrorMessage(String errorMessage, int maxLength) {
+    if (errorMessage.length() < maxLength) {
+      return errorMessage;
+    }
+    String[] parts = errorMessage.split("\n", 2);
+    return StringUtils.abbreviate(parts[0], maxLength);
   }
 
   @Override
