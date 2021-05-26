@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetProperti
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
+import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.util.AddDependencyToLeaves;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
@@ -67,6 +68,7 @@ public class IncrementalLoadTasksBuilder {
   private final IncrementalLoadEventsIterator iterator;
   private final HashSet<ReadEntity> inputs;
   private final HashSet<WriteEntity> outputs;
+  private final ReplStatsTracker replStatsTracker;
   private Logger log;
   private final HiveConf conf;
 
@@ -80,10 +82,9 @@ public class IncrementalLoadTasksBuilder {
   private String dumpDirectory;
   private final ReplicationMetricCollector metricCollector;
 
-  public IncrementalLoadTasksBuilder(String dbName, String loadPath,
-                                     IncrementalLoadEventsIterator iterator, HiveConf conf,
-                                     Long eventTo,
-                                     ReplicationMetricCollector metricCollector) throws SemanticException {
+  public IncrementalLoadTasksBuilder(String dbName, String loadPath, IncrementalLoadEventsIterator iterator,
+      HiveConf conf, Long eventTo, ReplicationMetricCollector metricCollector, ReplStatsTracker replStatsTracker)
+      throws SemanticException {
     this.dbName = dbName;
     dumpDirectory = (new Path(loadPath).getParent()).toString();
     this.iterator = iterator;
@@ -91,7 +92,8 @@ public class IncrementalLoadTasksBuilder {
     outputs = new HashSet<>();
     log = null;
     this.conf = conf;
-    replLogger = new IncrementalLoadLogger(dbName, loadPath, iterator.getNumEvents());
+    this.replStatsTracker = replStatsTracker;
+    replLogger = new IncrementalLoadLogger(dbName, loadPath, iterator.getNumEvents(), replStatsTracker);
     replLogger.startLog();
     this.eventTo = eventTo;
     setNumIteration(0);

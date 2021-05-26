@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetrics;
+import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -47,7 +48,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -83,7 +83,8 @@ public class TestReplicationMetricSink {
     bootstrapDumpMetricCollector.reportStageProgress("dump", ReplUtils.MetricName.TABLES.name(), 2);
     bootstrapDumpMetricCollector.reportStageProgress("dump", ReplUtils.MetricName.FUNCTIONS.name(), 1);
     bootstrapDumpMetricCollector
-        .reportStageEnd("dump", Status.SUCCESS, 10, new SnapshotUtils.ReplSnapshotCount());
+        .reportStageEnd("dump", Status.SUCCESS, 10, new SnapshotUtils.ReplSnapshotCount(),
+            new ReplStatsTracker(0));
     bootstrapDumpMetricCollector.reportEnd(Status.SUCCESS);
 
     Metadata expectedMetadata = new Metadata("testAcidTablesReplLoadBootstrapIncr_1592205875387",
@@ -142,7 +143,8 @@ public class TestReplicationMetricSink {
     metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) 10);
     incrementDumpMetricCollector.reportStageStart("dump", metricMap);
     incrementDumpMetricCollector.reportStageProgress("dump", ReplUtils.MetricName.EVENTS.name(), 10);
-    incrementDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10, new SnapshotUtils.ReplSnapshotCount());
+    incrementDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10, new SnapshotUtils.ReplSnapshotCount(),
+        new ReplStatsTracker(0));
     incrementDumpMetricCollector.reportEnd(Status.SUCCESS);
 
     expectedMetadata = new Metadata("testAcidTablesReplLoadBootstrapIncr_1592205875387",

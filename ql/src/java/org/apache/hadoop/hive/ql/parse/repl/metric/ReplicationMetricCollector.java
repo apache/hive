@@ -21,6 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
+import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
@@ -73,9 +74,8 @@ public abstract class ReplicationMetricCollector {
     }
   }
 
-
   public void reportStageEnd(String stageName, Status status, long lastReplId,
-      SnapshotUtils.ReplSnapshotCount replSnapshotCount) throws SemanticException {
+      SnapshotUtils.ReplSnapshotCount replSnapshotCount, ReplStatsTracker replStatsTracker) throws SemanticException {
     if (isEnabled) {
       LOG.debug("Stage ended {}, {}, {}", stageName, status, lastReplId );
       Progress progress = replicationMetric.getProgress();
@@ -86,6 +86,9 @@ public abstract class ReplicationMetricCollector {
       stage.setStatus(status);
       stage.setEndTime(System.currentTimeMillis());
       stage.setReplSnapshotsCount(replSnapshotCount);
+      if (replStatsTracker != null) {
+        stage.setReplStats(replStatsTracker.toString());
+      }
       progress.addStage(stage);
       replicationMetric.setProgress(progress);
       Metadata metadata = replicationMetric.getMetadata();
