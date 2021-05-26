@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.llap.tezplugins.metrics.LlapMetricsCollector;
+import org.apache.hadoop.hive.llap.tezplugins.scheduler.StatsPerDag;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.metrics2.MetricsSource;
 import org.apache.hadoop.metrics2.MetricsSystem;
@@ -37,7 +38,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -1175,18 +1175,15 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     TezTaskAttemptID id = getTaskAttemptId(task);
     TaskInfo taskInfo = new TaskInfo(localityDelayConf, clock, task, clientCookie, priority,
         capability, hosts, racks, clock.getTime(), id);
-    LOG.info("Received allocateRequest. task={}, priority={}, capability={}, hosts={}",
-        task, priority, capability, Arrays.toString(hosts));
-    writeLock.lock();
-    try {
-      if (!dagRunning && metrics != null && id != null) {
+    LOG.info("Received allocateRequest. task={}, priority={}, capability={}",
+            task, priority, capability);
+    if (!dagRunning) {
+      if (metrics != null && id != null) {
         metrics.setDagId(id.getTaskID().getVertexID().getDAGId().toString());
       }
       setDagRunning(true);
-      dagStats.registerTaskRequest(hosts, racks);
-    } finally {
-      writeLock.unlock();
     }
+    dagStats.registerTaskRequest(hosts, racks);
     addPendingTask(taskInfo);
     trySchedulingPendingTasks();
   }
@@ -1201,16 +1198,13 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         capability, null, null, clock.getTime(), id);
     LOG.info("Received allocateRequest. task={}, priority={}, capability={}, containerId={}",
         task, priority, capability, containerId);
-    writeLock.lock();
-    try {
-      if (!dagRunning && metrics != null && id != null) {
+    if (!dagRunning) {
+      if (metrics != null && id != null) {
         metrics.setDagId(id.getTaskID().getVertexID().getDAGId().toString());
       }
       setDagRunning(true);
-      dagStats.registerTaskRequest(null, null);
-    } finally {
-      writeLock.unlock();
     }
+    dagStats.registerTaskRequest(null, null);
     addPendingTask(taskInfo);
     trySchedulingPendingTasks();
   }
@@ -1359,7 +1353,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   public void notifyStarted(TezTaskAttemptID attemptId) {
     TaskInfo info = null;
-    writeLock.lock();
+    readLock.lock();
     try {
       info = tasksById.get(attemptId);
       if (info == null) {
@@ -1367,7 +1361,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         return;
       }
     } finally {
-      writeLock.unlock();
+      readLock.unlock();
     }
     handleUpdateResult(info, true);
   }
@@ -2866,97 +2860,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
 
   }
-
-  @VisibleForTesting
-  static class StatsPerDag {
-    int numRequestedAllocations = 0;
-    int numRequestsWithLocation = 0;
-    int numRequestsWithoutLocation = 0;
-    int numTotalAllocations = 0;
-    int numLocalAllocations = 0;
-    int numNonLocalAllocations = 0;
-    int numAllocationsNoLocalityRequest = 0;
-    int numRejectedTasks = 0;
-    int numCommFailures = 0;
-    int numDelayedAllocations = 0;
-    int numPreemptedTasks = 0;
-    Map<String, AtomicInteger> localityBasedNumAllocationsPerHost = new HashMap<>();
-    Map<String, AtomicInteger> numAllocationsPerHost = new HashMap<>();
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("NumPreemptedTasks=").append(numPreemptedTasks).append(", ");
-      sb.append("NumRequestedAllocations=").append(numRequestedAllocations).append(", ");
-      sb.append("NumRequestsWithlocation=").append(numRequestsWithLocation).append(", ");
-      sb.append("NumLocalAllocations=").append(numLocalAllocations).append(",");
-      sb.append("NumNonLocalAllocations=").append(numNonLocalAllocations).append(",");
-      sb.append("NumTotalAllocations=").append(numTotalAllocations).append(",");
-      sb.append("NumRequestsWithoutLocation=").append(numRequestsWithoutLocation).append(", ");
-      sb.append("NumRejectedTasks=").append(numRejectedTasks).append(", ");
-      sb.append("NumCommFailures=").append(numCommFailures).append(", ");
-      sb.append("NumDelayedAllocations=").append(numDelayedAllocations).append(", ");
-      sb.append("LocalityBasedAllocationsPerHost=").append(localityBasedNumAllocationsPerHost)
-          .append(", ");
-      sb.append("NumAllocationsPerHost=").append(numAllocationsPerHost);
-      return sb.toString();
-    }
-
-    void registerTaskRequest(String[] requestedHosts, String[] requestedRacks) {
-      numRequestedAllocations++;
-      // TODO Change after HIVE-9987. For now, there's no rack matching.
-      if (requestedHosts != null && requestedHosts.length != 0) {
-        numRequestsWithLocation++;
-      } else {
-        numRequestsWithoutLocation++;
-      }
-    }
-
-    void registerTaskAllocated(String[] requestedHosts, String[] requestedRacks,
-        String allocatedHost) {
-      // TODO Change after HIVE-9987. For now, there's no rack matching.
-      if (requestedHosts != null && requestedHosts.length != 0) {
-        Set<String> requestedHostSet = new HashSet<>(Arrays.asList(requestedHosts));
-        if (requestedHostSet.contains(allocatedHost)) {
-          numLocalAllocations++;
-          _registerAllocationInHostMap(allocatedHost, localityBasedNumAllocationsPerHost);
-        } else {
-          numNonLocalAllocations++;
-        }
-      } else {
-        numAllocationsNoLocalityRequest++;
-      }
-      numTotalAllocations++;
-      _registerAllocationInHostMap(allocatedHost, numAllocationsPerHost);
-    }
-
-    // TODO Track stats of rejections etc per host
-    void registerTaskPreempted(String host) {
-      numPreemptedTasks++;
-    }
-
-    void registerCommFailure(String host) {
-      numCommFailures++;
-    }
-
-    void registerTaskRejected(String host) {
-      numRejectedTasks++;
-    }
-
-    void registerDelayedAllocation() {
-      numDelayedAllocations++;
-    }
-
-    private void _registerAllocationInHostMap(String host, Map<String, AtomicInteger> hostMap) {
-      AtomicInteger val = hostMap.get(host);
-      if (val == null) {
-        val = new AtomicInteger(0);
-        hostMap.put(host, val);
-      }
-      val.incrementAndGet();
-    }
-  }
-
 
   // TODO There needs to be a mechanism to figure out different attempts for the same task. Delays
   // could potentially be changed based on this.
