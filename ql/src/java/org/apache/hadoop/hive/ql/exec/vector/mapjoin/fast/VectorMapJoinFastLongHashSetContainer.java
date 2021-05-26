@@ -56,7 +56,7 @@ public class VectorMapJoinFastLongHashSetContainer extends VectorMapJoinFastHash
       int numThreads) {
     this.hashTableKeyType = hashTableKeyType;
     this.vectorMapJoinFastLongHashSets = new VectorMapJoinFastLongHashSet[numThreads];
-    for (int i=0; i<numThreads; ++i) {
+    for (int i = 0; i < numThreads; i++) {
       LOG.info("HT Container {} ", i);
       vectorMapJoinFastLongHashSets[i] =
           new VectorMapJoinFastLongHashSet(isFullOuter, minMaxEnabled, hashTableKeyType, initialCapacity,
@@ -98,7 +98,11 @@ public class VectorMapJoinFastLongHashSetContainer extends VectorMapJoinFastHash
 
   public JoinResult contains(long key, VectorMapJoinHashSetResult hashSetResult) {
     long hashCode = HashCodeUtil.calculateLongHashCode(key);
-    return vectorMapJoinFastLongHashSets[(int) ((numThreads - 1) & hashCode)].contains(key, hashSetResult);
+    return this.contains(hashCode, key, hashSetResult);
+  }
+
+  public JoinResult contains(long hashCode, long key, VectorMapJoinHashSetResult hashSetResult) {
+    return vectorMapJoinFastLongHashSets[(int) ((numThreads - 1) & hashCode)].contains(hashCode, key, hashSetResult);
   }
 
   @Override
@@ -145,10 +149,10 @@ public class VectorMapJoinFastLongHashSetContainer extends VectorMapJoinFastHash
 
   @Override
   public long min() {
-    long min = Long.MAX_VALUE;
-    for (int i=0; i<numThreads; ++i) {
+    long min = vectorMapJoinFastLongHashSets[0].min();
+    for (int i = 1; i < numThreads; i++) {
       long currentMin = vectorMapJoinFastLongHashSets[i].min();
-      if (min > currentMin) {
+      if (currentMin < min) {
         min = currentMin;
       }
     }
@@ -157,10 +161,10 @@ public class VectorMapJoinFastLongHashSetContainer extends VectorMapJoinFastHash
 
   @Override
   public long max() {
-    long max = Long.MIN_VALUE;
-    for (int i=0; i<numThreads; ++i) {
+    long max = vectorMapJoinFastLongHashSets[0].max();
+    for (int i = 1; i < numThreads; i++) {
       long currentMax = vectorMapJoinFastLongHashSets[i].max();
-      if (max > currentMax) {
+      if (currentMax > max) {
         max = currentMax;
       }
     }

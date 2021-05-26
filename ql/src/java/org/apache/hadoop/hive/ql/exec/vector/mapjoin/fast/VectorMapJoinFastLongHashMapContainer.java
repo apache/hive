@@ -59,7 +59,7 @@ public class VectorMapJoinFastLongHashMapContainer extends VectorMapJoinFastHash
       int numThreads) {
     this.hashTableKeyType = hashTableKeyType;
     this.vectorMapJoinFastLongHashMaps = new VectorMapJoinFastLongHashMap[numThreads];
-    for (int i=0; i<numThreads; ++i) {
+    for (int i = 0; i < numThreads; i++) {
       LOG.info("HT Container {} ", i);
       vectorMapJoinFastLongHashMaps[i] =
           new VectorMapJoinFastLongHashMap(isFullOuter, minMaxEnabled, hashTableKeyType, initialCapacity, loadFactor,
@@ -79,10 +79,10 @@ public class VectorMapJoinFastLongHashMapContainer extends VectorMapJoinFastHash
 
   @Override
   public long min() {
-    long min = Long.MAX_VALUE;
-    for (int i = 0; i < numThreads; ++i) {
+    long min = vectorMapJoinFastLongHashMaps[0].min();
+    for (int i = 1; i < numThreads; i++) {
       long currentMin = vectorMapJoinFastLongHashMaps[i].min();
-      if (min > currentMin) {
+      if (currentMin < min) {
         min = currentMin;
       }
     }
@@ -91,10 +91,10 @@ public class VectorMapJoinFastLongHashMapContainer extends VectorMapJoinFastHash
 
   @Override
   public long max() {
-    long max = Long.MIN_VALUE;
-    for (int i = 0; i < numThreads; ++i) {
+    long max = vectorMapJoinFastLongHashMaps[0].max();
+    for (int i = 1; i < numThreads; i++) {
       long currentMax = vectorMapJoinFastLongHashMaps[i].max();
-      if (max > currentMax) {
+      if (currentMax > max) {
         max = currentMax;
       }
     }
@@ -181,12 +181,21 @@ public class VectorMapJoinFastLongHashMapContainer extends VectorMapJoinFastHash
 
   public JoinUtil.JoinResult lookup(long key, VectorMapJoinHashMapResult hashMapResult) {
     long hashCode = HashCodeUtil.calculateLongHashCode(key);
-    return vectorMapJoinFastLongHashMaps[(int) ((numThreads - 1) & hashCode)].lookup(key, hashMapResult);
+    return this.lookup(hashCode, key, hashMapResult);
+  }
+
+  public JoinUtil.JoinResult lookup(long hashCode, long key, VectorMapJoinHashMapResult hashMapResult) {
+    return vectorMapJoinFastLongHashMaps[(int) ((numThreads - 1) & hashCode)].lookup(hashCode, key, hashMapResult);
   }
 
   public JoinUtil.JoinResult lookup(long key, VectorMapJoinHashMapResult hashMapResult,
       MatchTracker matchTracker) {
     long hashCode = HashCodeUtil.calculateLongHashCode(key);
+    return this.lookup(hashCode, key, hashMapResult, matchTracker);
+  }
+
+  public JoinUtil.JoinResult lookup(long hashCode, long key, VectorMapJoinHashMapResult hashMapResult,
+      MatchTracker matchTracker) {
     return vectorMapJoinFastLongHashMaps[(int) ((numThreads - 1) & hashCode)].lookup(key, hashMapResult, matchTracker);
   }
 

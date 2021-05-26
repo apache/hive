@@ -52,6 +52,9 @@ public interface VectorMapJoinBytesHashMap
   JoinUtil.JoinResult lookup(byte[] keyBytes, int keyStart, int keyLength,
           VectorMapJoinHashMapResult hashMapResult) throws IOException;
 
+  JoinUtil.JoinResult lookup(long hashCode, byte[] keyBytes, int keyStart, int keyLength,
+      VectorMapJoinHashMapResult hashMapResult) throws IOException;
+
   /*
    * A version of lookup with match tracking.
    * ...
@@ -63,5 +66,8 @@ public interface VectorMapJoinBytesHashMap
    * ...
    */
   JoinUtil.JoinResult lookup(byte[] keyBytes, int keyStart, int keyLength,
+      VectorMapJoinHashMapResult hashMapResult, MatchTracker matchTracker) throws IOException;
+
+  JoinUtil.JoinResult lookup(long hashCode, byte[] keyBytes, int keyStart, int keyLength,
       VectorMapJoinHashMapResult hashMapResult, MatchTracker matchTracker) throws IOException;
 }

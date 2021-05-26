@@ -57,7 +57,7 @@ public class VectorMapJoinFastLongHashMultiSetContainer extends VectorMapJoinFas
       int numThreads) {
     this.hashTableKeyType = hashTableKeyType;
     this.vectorMapJoinFastLongHashMultiSets = new VectorMapJoinFastLongHashMultiSet[numThreads];
-    for (int i=0; i<numThreads; ++i) {
+    for (int i = 0; i < numThreads; i++) {
       LOG.info("HT Container {} ", i);
       vectorMapJoinFastLongHashMultiSets[i] = new VectorMapJoinFastLongHashMultiSet(isFullOuter,
           minMaxEnabled, hashTableKeyType,
@@ -99,7 +99,11 @@ public class VectorMapJoinFastLongHashMultiSetContainer extends VectorMapJoinFas
 
   public JoinUtil.JoinResult contains(long key, VectorMapJoinHashMultiSetResult hashMultiSetResult) {
     long hashCode = HashCodeUtil.calculateLongHashCode(key);
-    return vectorMapJoinFastLongHashMultiSets[(int) ((numThreads - 1) & hashCode)].contains(key, hashMultiSetResult);
+    return this.contains(hashCode, key, hashMultiSetResult);
+  }
+
+  public JoinUtil.JoinResult contains(long hashCode, long key, VectorMapJoinHashMultiSetResult hashMultiSetResult) {
+    return vectorMapJoinFastLongHashMultiSets[(int) ((numThreads - 1) & hashCode)].contains(hashCode, key, hashMultiSetResult);
   }
 
   @Override
@@ -146,10 +150,10 @@ public class VectorMapJoinFastLongHashMultiSetContainer extends VectorMapJoinFas
 
   @Override
   public long min() {
-    long min = Long.MAX_VALUE;
-    for (int i=0; i<numThreads; ++i) {
+    long min = vectorMapJoinFastLongHashMultiSets[0].min();
+    for (int i = 1; i < numThreads; i++) {
       long currentMin = vectorMapJoinFastLongHashMultiSets[i].min();
-      if (min > currentMin) {
+      if (currentMin < min) {
         min = currentMin;
       }
     }
@@ -158,10 +162,10 @@ public class VectorMapJoinFastLongHashMultiSetContainer extends VectorMapJoinFas
 
   @Override
   public long max() {
-    long max = Long.MIN_VALUE;
-    for (int i=0; i<numThreads; ++i) {
+    long max = vectorMapJoinFastLongHashMultiSets[0].max();
+    for (int i = 1; i < numThreads; i++) {
       long currentMax = vectorMapJoinFastLongHashMultiSets[i].max();
-      if (max > currentMax) {
+      if (currentMax > max) {
         max = currentMax;
       }
     }

@@ -190,13 +190,18 @@ public class VectorMapJoinFastLongHashMap
 
   @Override
   public JoinUtil.JoinResult lookup(long key, VectorMapJoinHashMapResult hashMapResult) {
+    long hashCode = HashCodeUtil.calculateLongHashCode(key);
+    return this.lookup(hashCode, key, hashMapResult);
+  }
+
+  @Override
+  public JoinUtil.JoinResult lookup(long hashCode, long key, VectorMapJoinHashMapResult hashMapResult) {
 
     VectorMapJoinFastValueStore.HashMapResult optimizedHashMapResult =
         (VectorMapJoinFastValueStore.HashMapResult) hashMapResult;
 
     optimizedHashMapResult.forget();
 
-    long hashCode = HashCodeUtil.calculateLongHashCode(key);
     int pairIndex = findReadSlot(key, hashCode);
     JoinUtil.JoinResult joinResult;
     if (pairIndex == -1) {
@@ -215,13 +220,19 @@ public class VectorMapJoinFastLongHashMap
   @Override
   public JoinUtil.JoinResult lookup(long key, VectorMapJoinHashMapResult hashMapResult,
       MatchTracker matchTracker) {
+    long hashCode = HashCodeUtil.calculateLongHashCode(key);
+    return this.lookup(hashCode, key, hashMapResult, matchTracker);
+  }
+
+  @Override
+  public JoinUtil.JoinResult lookup(long hashCode, long key, VectorMapJoinHashMapResult hashMapResult,
+      MatchTracker matchTracker) {
 
     VectorMapJoinFastValueStore.HashMapResult optimizedHashMapResult =
         (VectorMapJoinFastValueStore.HashMapResult) hashMapResult;
 
     optimizedHashMapResult.forget();
 
-    long hashCode = HashCodeUtil.calculateLongHashCode(key);
     int pairIndex = findReadSlot(key, hashCode);
     JoinUtil.JoinResult joinResult;
     if (pairIndex == -1) {

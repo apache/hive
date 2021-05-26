@@ -54,11 +54,9 @@ public class VectorMapJoinFastStringCommon {
           keyBinarySortableDeserializeRead.getDetailedReadPositionString(), e);
     }
 
-    hashTable.add(
-        keyBinarySortableDeserializeRead.currentBytes,
-        keyBinarySortableDeserializeRead.currentBytesStart,
-        keyBinarySortableDeserializeRead.currentBytesLength,
-        currentValue, hashCode);
+    hashTable.add(hashCode, keyBinarySortableDeserializeRead.currentBytes,
+        keyBinarySortableDeserializeRead.currentBytesLength, currentValue,
+        keyBinarySortableDeserializeRead.currentBytesStart);
     return true;
   }
 

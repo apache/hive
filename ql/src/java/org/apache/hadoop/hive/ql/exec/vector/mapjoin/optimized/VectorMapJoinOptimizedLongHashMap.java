@@ -174,6 +174,12 @@ public class VectorMapJoinOptimizedLongHashMap
   }
 
   @Override
+  public JoinResult lookup(long hashCode, long key,
+      VectorMapJoinHashMapResult hashMapResult) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public JoinResult lookup(long key,
       VectorMapJoinHashMapResult hashMapResult, MatchTracker matchTracker) throws IOException {
 
@@ -181,6 +187,12 @@ public class VectorMapJoinOptimizedLongHashMap
 
     return super.lookup(serializedBytes.bytes, serializedBytes.offset, serializedBytes.length,
             hashMapResult, matchTracker);
+  }
+
+  @Override
+  public JoinResult lookup(long hashCode, long key,
+      VectorMapJoinHashMapResult hashMapResult, MatchTracker matchTracker) throws IOException {
+    throw new UnsupportedOperationException();
   }
 
   public VectorMapJoinOptimizedLongHashMap(

@@ -183,6 +183,12 @@ public class VectorMapJoinOptimizedHashMap
   }
 
   @Override
+  public JoinUtil.JoinResult lookup(long hashCode, byte[] keyBytes, int keyOffset, int keyLength,
+      VectorMapJoinHashMapResult hashMapResult) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public JoinUtil.JoinResult lookup(byte[] keyBytes, int keyOffset, int keyLength,
       VectorMapJoinHashMapResult hashMapResult, MatchTracker matchTracker) throws IOException {
 
@@ -194,6 +200,12 @@ public class VectorMapJoinOptimizedHashMap
             (VectorMapJoinHashTableResult) hashMapResult, matchTracker);
 
     return joinResult;
+  }
+
+  @Override
+  public JoinUtil.JoinResult lookup(long hashCode, byte[] keyBytes, int keyOffset, int keyLength,
+      VectorMapJoinHashMapResult hashMapResult, MatchTracker matchTracker) throws IOException {
+    throw new UnsupportedOperationException();
   }
 
   public VectorMapJoinOptimizedHashMap(

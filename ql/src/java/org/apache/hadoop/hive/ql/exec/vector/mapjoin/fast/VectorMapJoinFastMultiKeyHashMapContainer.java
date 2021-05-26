@@ -43,14 +43,13 @@ public class VectorMapJoinFastMultiKeyHashMapContainer
   private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastMultiKeyHashMapContainer.class);
 
   private final VectorMapJoinFastMultiKeyHashMap[] vectorMapJoinFastMultiKeyHashMaps;
-  private BytesWritable testKeyBytesWritable;
   private final int numThreads;
 
   public VectorMapJoinFastMultiKeyHashMapContainer(
       boolean isFullOuter,
       int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount, int numThreads) {
     this.vectorMapJoinFastMultiKeyHashMaps = new VectorMapJoinFastMultiKeyHashMap[numThreads];
-    for (int i=0; i<numThreads; ++i) {
+    for (int i = 0; i < numThreads; i++) {
       LOG.info("HT Container {} ", i);
       vectorMapJoinFastMultiKeyHashMaps[i] =
           new VectorMapJoinFastMultiKeyHashMap(isFullOuter, initialCapacity, loadFactor, writeBuffersSize,
@@ -175,15 +174,27 @@ public class VectorMapJoinFastMultiKeyHashMapContainer
   public JoinUtil.JoinResult lookup(byte[] keyBytes, int keyStart, int keyLength,
       VectorMapJoinHashMapResult hashMapResult) throws IOException {
     long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
-    return vectorMapJoinFastMultiKeyHashMaps[(int) ((numThreads - 1) & hashCode)].lookup(keyBytes, keyStart, keyLength, hashMapResult);
+    return this.lookup(hashCode, keyBytes, keyStart, keyLength, hashMapResult);
   }
 
+  @Override
+  public JoinUtil.JoinResult lookup(long hashCode, byte[] keyBytes, int keyStart, int keyLength,
+      VectorMapJoinHashMapResult hashMapResult) throws IOException {
+    return vectorMapJoinFastMultiKeyHashMaps[(int) ((numThreads - 1) & hashCode)].
+        lookup(hashCode, keyBytes, keyStart, keyLength, hashMapResult);
+  }
   @Override
   public JoinUtil.JoinResult lookup(byte[] keyBytes, int keyStart, int keyLength,
       VectorMapJoinHashMapResult hashMapResult, MatchTracker matchTracker) throws IOException {
     long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
-    return vectorMapJoinFastMultiKeyHashMaps[(int) ((numThreads - 1) & hashCode)].lookup(keyBytes, keyStart, keyLength, hashMapResult,
-        matchTracker);
+    return this.lookup(hashCode, keyBytes, keyStart, keyLength, hashMapResult, matchTracker);
+  }
+
+  @Override
+  public JoinUtil.JoinResult lookup(long hashCode, byte[] keyBytes, int keyStart, int keyLength,
+      VectorMapJoinHashMapResult hashMapResult, MatchTracker matchTracker) throws IOException {
+    return vectorMapJoinFastMultiKeyHashMaps[(int) ((numThreads - 1) & hashCode)].
+        lookup(keyBytes, keyStart, keyLength, hashMapResult, matchTracker);
   }
 
   @Override

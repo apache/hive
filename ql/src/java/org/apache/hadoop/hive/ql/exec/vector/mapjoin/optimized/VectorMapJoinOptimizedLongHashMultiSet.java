@@ -19,7 +19,9 @@
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.optimized;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
+import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.JoinUtil.JoinResult;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.ReusableGetAdaptor;
@@ -73,6 +75,11 @@ public class VectorMapJoinOptimizedLongHashMultiSet
     return super.contains(serializedBytes.bytes, serializedBytes.offset, serializedBytes.length,
         hashMultiSetResult);
 
+  }
+
+  @Override
+  public JoinUtil.JoinResult contains(long hashCode, long key, VectorMapJoinHashMultiSetResult hashMultiSetResult) throws IOException {
+    throw new UnsupportedEncodingException();
   }
 
   public VectorMapJoinOptimizedLongHashMultiSet(

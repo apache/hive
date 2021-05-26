@@ -43,4 +43,6 @@ public interface VectorMapJoinLongHashSet
    */
   JoinUtil.JoinResult contains(long key, VectorMapJoinHashSetResult hashSetResult) throws IOException;
 
+  JoinUtil.JoinResult contains(long hashCode, long key, VectorMapJoinHashSetResult hashSetResult) throws IOException;
+
 }

@@ -46,6 +46,12 @@ public class VectorMapJoinOptimizedStringHashMultiSet
   */
 
   @Override
+  public JoinResult contains(long hashCode, byte[] keyBytes, int keyStart, int keyLength,
+      VectorMapJoinHashMultiSetResult hashMultiSetResult) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public JoinResult contains(byte[] keyBytes, int keyStart, int keyLength,
       VectorMapJoinHashMultiSetResult hashMultiSetResult) throws IOException {
 

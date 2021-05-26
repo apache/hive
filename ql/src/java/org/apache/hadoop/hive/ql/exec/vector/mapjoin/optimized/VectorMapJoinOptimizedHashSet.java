@@ -58,6 +58,12 @@ public class VectorMapJoinOptimizedHashSet
   }
 
   @Override
+  public JoinUtil.JoinResult contains(long hashCode, byte[] keyBytes, int keyOffset, int keyLength,
+      VectorMapJoinHashSetResult hashSetResult) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public JoinUtil.JoinResult contains(byte[] keyBytes, int keyOffset, int keyLength,
           VectorMapJoinHashSetResult hashSetResult) throws IOException {
 

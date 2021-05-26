@@ -132,7 +132,14 @@ public class VectorMapJoinFastStringHashSetContainer extends VectorMapJoinFastHa
   public JoinUtil.JoinResult contains(byte[] keyBytes, int keyStart, int keyLength,
       VectorMapJoinHashSetResult hashSetResult) throws IOException {
     long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
-    return vectorMapJoinFastStringHashSets[(int) ((numThreads - 1) & hashCode)].contains(keyBytes, keyStart, keyLength, hashSetResult);
+    return this.contains(hashCode, keyBytes, keyStart, keyLength, hashSetResult);
+  }
+
+  @Override
+  public JoinUtil.JoinResult contains(long hashCode, byte[] keyBytes, int keyStart, int keyLength,
+      VectorMapJoinHashSetResult hashSetResult) throws IOException {
+    return vectorMapJoinFastStringHashSets[(int) ((numThreads - 1) & hashCode)].
+        contains(hashCode, keyBytes, keyStart, keyLength, hashSetResult);
   }
 
   @Override

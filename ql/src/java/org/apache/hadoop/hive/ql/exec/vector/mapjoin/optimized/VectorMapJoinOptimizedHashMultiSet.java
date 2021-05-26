@@ -96,6 +96,12 @@ public class VectorMapJoinOptimizedHashMultiSet
     return joinResult;
   }
 
+  @Override
+  public JoinUtil.JoinResult contains(long hashCode, byte[] keyBytes, int keyOffset, int keyLength,
+      VectorMapJoinHashMultiSetResult hashMultiSetResult) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
   public VectorMapJoinOptimizedHashMultiSet(
       MapJoinTableContainer originalTableContainer, ReusableGetAdaptor hashMapRowGetter) {
     super(originalTableContainer, hashMapRowGetter);

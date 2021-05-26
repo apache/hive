@@ -18,18 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
-import java.io.IOException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinBytesHashMultiSet;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashMultiSetResult;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.common.util.HashCodeUtil;
-
-import com.google.common.annotations.VisibleForTesting;
 
 /*
  * An bytes key hash multi-set optimized for vector map join.
@@ -49,7 +44,7 @@ public abstract class VectorMapJoinFastBytesHashMultiSet
     return new VectorMapJoinFastBytesHashMultiSetStore.HashMultiSetResult();
   }
 
-  public void add(byte[] keyBytes, int keyStart, int keyLength, BytesWritable currentValue, long hashCode) {
+  public void add(long hashCode, byte[] keyBytes, int keyLength, BytesWritable currentValue, int keyStart) {
 
     if (checkResize()) {
       expandAndRehash();
@@ -106,14 +101,19 @@ public abstract class VectorMapJoinFastBytesHashMultiSet
 
   @Override
   public JoinUtil.JoinResult contains(byte[] keyBytes, int keyStart, int keyLength,
+      VectorMapJoinHashMultiSetResult hashMultiSetResult) {
+    long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
+    return this.contains(hashCode, keyBytes, keyStart, keyLength, hashMultiSetResult);
+  }
+
+  @Override
+  public JoinUtil.JoinResult contains(long hashCode, byte[] keyBytes, int keyStart, int keyLength,
           VectorMapJoinHashMultiSetResult hashMultiSetResult) {
 
     VectorMapJoinFastBytesHashMultiSetStore.HashMultiSetResult fastHashMultiSetResult =
         (VectorMapJoinFastBytesHashMultiSetStore.HashMultiSetResult) hashMultiSetResult;
 
     fastHashMultiSetResult.forget();
-
-    long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
 
     doHashMultiSetContains(
         keyBytes, keyStart, keyLength, hashCode, fastHashMultiSetResult);

@@ -84,13 +84,18 @@ public class VectorMapJoinFastLongHashSet
 
   @Override
   public JoinResult contains(long key, VectorMapJoinHashSetResult hashSetResult) {
+    long hashCode = HashCodeUtil.calculateLongHashCode(key);
+    return this.contains(hashCode, key, hashSetResult);
+  }
+
+  @Override
+  public JoinResult contains(long hashCode, long key, VectorMapJoinHashSetResult hashSetResult) {
 
     VectorMapJoinFastHashSet.HashSetResult optimizedHashSetResult =
         (VectorMapJoinFastHashSet.HashSetResult) hashSetResult;
 
     optimizedHashSetResult.forget();
 
-    long hashCode = HashCodeUtil.calculateLongHashCode(key);
     int pairIndex = findReadSlot(key, hashCode);
     JoinUtil.JoinResult joinResult;
     if (pairIndex == -1) {

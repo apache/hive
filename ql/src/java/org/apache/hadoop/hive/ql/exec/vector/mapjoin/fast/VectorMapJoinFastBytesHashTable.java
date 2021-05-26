@@ -49,7 +49,7 @@ public abstract class VectorMapJoinFastBytesHashTable
     // No deserialization of key(s) here -- just get reference to bytes.
     byte[] keyBytes = currentKey.getBytes();
     int keyLength = currentKey.getLength();
-    add(keyBytes, 0, keyLength, currentValue, hashCode);
+    add(hashCode, keyBytes, keyLength, currentValue, 0);
   }
 
   @Override
@@ -58,8 +58,7 @@ public abstract class VectorMapJoinFastBytesHashTable
     throw new RuntimeException("Not supported yet!");
   }
 
-  public abstract void add(byte[] keyBytes, int keyStart, int keyLength,
-      BytesWritable currentValue, long hashCode);
+  public abstract void add(long hashCode, byte[] keyBytes, int keyLength, BytesWritable currentValue, int keyStart);
 
   protected void expandAndRehash() {
 

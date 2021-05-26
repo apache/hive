@@ -193,6 +193,11 @@ public class VectorMapJoinFastStringHashMapContainer extends VectorMapJoinFastHa
   public JoinUtil.JoinResult lookup(byte[] keyBytes, int keyStart, int keyLength,
       VectorMapJoinHashMapResult hashMapResult) throws IOException {
     long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
+    return this.lookup(hashCode, keyBytes, keyStart, keyLength, hashMapResult);
+  }
+  @Override
+  public JoinUtil.JoinResult lookup(long hashCode, byte[] keyBytes, int keyStart, int keyLength,
+      VectorMapJoinHashMapResult hashMapResult) throws IOException {
     return vectorMapJoinFastStringHashMaps[(int) ((numThreads - 1) & hashCode)].lookup(keyBytes, keyStart, keyLength, hashMapResult);
   }
 
@@ -200,6 +205,12 @@ public class VectorMapJoinFastStringHashMapContainer extends VectorMapJoinFastHa
   public JoinUtil.JoinResult lookup(byte[] keyBytes, int keyStart, int keyLength,
       VectorMapJoinHashMapResult hashMapResult, MatchTracker matchTracker) throws IOException {
     long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
+    return this.lookup(hashCode, keyBytes, keyStart, keyLength, hashMapResult, matchTracker);
+  }
+
+  @Override
+  public JoinUtil.JoinResult lookup(long hashCode, byte[] keyBytes, int keyStart, int keyLength,
+      VectorMapJoinHashMapResult hashMapResult, MatchTracker matchTracker) throws IOException {
     return vectorMapJoinFastStringHashMaps[(int) ((numThreads - 1) & hashCode)].lookup(keyBytes, keyStart, keyLength, hashMapResult,
         matchTracker);
   }

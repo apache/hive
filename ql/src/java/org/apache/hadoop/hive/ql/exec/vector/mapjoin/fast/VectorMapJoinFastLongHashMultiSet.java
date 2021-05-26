@@ -92,16 +92,19 @@ public class VectorMapJoinFastLongHashMultiSet
     }
   }
 
-
   @Override
   public JoinUtil.JoinResult contains(long key, VectorMapJoinHashMultiSetResult hashMultiSetResult) {
+    long hashCode = HashCodeUtil.calculateLongHashCode(key);
+    return contains(hashCode, key, hashMultiSetResult);
+  }
+
+  @Override
+  public JoinUtil.JoinResult contains(long hashCode, long key, VectorMapJoinHashMultiSetResult hashMultiSetResult) {
 
     VectorMapJoinFastHashMultiSet.HashMultiSetResult optimizedHashMultiSetResult =
         (VectorMapJoinFastHashMultiSet.HashMultiSetResult) hashMultiSetResult;
 
     optimizedHashMultiSetResult.forget();
-
-    long hashCode = HashCodeUtil.calculateLongHashCode(key);
     int pairIndex = findReadSlot(key, hashCode);
     JoinUtil.JoinResult joinResult;
     if (pairIndex == -1) {

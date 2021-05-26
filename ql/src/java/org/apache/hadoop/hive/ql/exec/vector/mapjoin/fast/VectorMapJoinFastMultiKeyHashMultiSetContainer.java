@@ -43,7 +43,6 @@ public class VectorMapJoinFastMultiKeyHashMultiSetContainer
   private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastMultiKeyHashMultiSetContainer.class);
 
   private final VectorMapJoinFastMultiKeyHashMultiSet[] vectorMapJoinFastMultiKeyHashMultiSets;
-  private BytesWritable testKeyBytesWritable;
   private final int numThreads;
 
   public VectorMapJoinFastMultiKeyHashMultiSetContainer(
@@ -114,8 +113,14 @@ public class VectorMapJoinFastMultiKeyHashMultiSetContainer
   public JoinUtil.JoinResult contains(byte[] keyBytes, int keyStart, int keyLength,
       VectorMapJoinHashMultiSetResult hashMultiSetResult) throws IOException {
     long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
-    return vectorMapJoinFastMultiKeyHashMultiSets[(int) ((numThreads - 1) & hashCode)].contains(keyBytes, keyStart, keyLength,
-        hashMultiSetResult);
+    return this.contains(hashCode, keyBytes, keyStart, keyLength, hashMultiSetResult);
+  }
+
+  @Override
+  public JoinUtil.JoinResult contains(long hashCode, byte[] keyBytes, int keyStart, int keyLength,
+      VectorMapJoinHashMultiSetResult hashMultiSetResult) throws IOException {
+    return vectorMapJoinFastMultiKeyHashMultiSets[(int) ((numThreads - 1) & hashCode)].
+        contains(hashCode, keyBytes, keyStart, keyLength, hashMultiSetResult);
   }
 
   @Override
