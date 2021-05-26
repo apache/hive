@@ -2694,6 +2694,10 @@ public class HiveConf extends Configuration {
     HIVE_OPTIMIZE_HMS_QUERY_CACHE_ENABLED("hive.optimize.metadata.query.cache.enabled", true,
         "This property enables caching metadata for repetitive requests on a per-query basis"),
 
+    HIVE_OPTIMIZE_VIEW_CACHE_ENABLED("hive.optimize.view.tables.cache.enabled", true,
+        "This property enables caching of views and their underlying tables. The cache in memory may be stale, but "
+            + " provides an optimization if it is accurate."),
+
     // CTE
     HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", -1,
         "If the number of references to a CTE clause exceeds this threshold, Hive will materialize it\n" +

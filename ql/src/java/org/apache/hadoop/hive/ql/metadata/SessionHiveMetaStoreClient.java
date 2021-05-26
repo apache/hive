@@ -243,13 +243,21 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   public org.apache.hadoop.hive.metastore.api.Table getTable(String dbname, String name,
   boolean getColStats, String engine) throws MetaException,
   TException, NoSuchObjectException {
+    return getTable(getDefaultCatalog(conf), dbname, name, null, getColStats, engine, false);
+  }
+
+  @Override
+  public org.apache.hadoop.hive.metastore.api.Table getTable(String catName, String dbname,
+      String name, String validWriteIdList,
+      boolean getColStats, String engine, boolean getFileMetadata) throws MetaException,
+  TException, NoSuchObjectException {
     // First check temp tables
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbname, name);
     if (table != null) {
       return deepCopy(table);  // Original method used deepCopy(), do the same here.
     }
     // Try underlying client
-    return super.getTable(getDefaultCatalog(conf), dbname, name, getColStats, engine);
+    return super.getTable(catName, dbname, name, validWriteIdList, getColStats, engine, getFileMetadata);
   }
 
   // Need to override this one too or dropTable breaks because it doesn't find the table when checks

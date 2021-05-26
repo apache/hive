@@ -334,6 +334,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Map<TableScanOperator, SampleDesc> opToSamplePruner;
   private final Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner;
   private Map<SelectOperator, Table> viewProjectToTableSchema;
+  private final CacheTableHelper cacheTableHelper = new CacheTableHelper();
   /**
    * a map for the split sampling, from alias to an instance of SplitSample
    * that describes percentage and number.
@@ -2705,6 +2706,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String viewText = tab.getViewExpandedText();
       TableMask viewMask = new TableMask(this, conf, false);
       viewTree = ParseUtils.parse(viewText, ctx, tab.getCompleteName());
+      cacheTableHelper.populateCacheForView(ctx.getParsedTables(), conf,
+          getTxnMgr(), tab.getDbName(), tab.getTableName());
       if (viewMask.isEnabled() && analyzeRewrite == null) {
         ParseResult parseResult = rewriteASTWithMaskAndFilter(viewMask, viewTree,
             ctx.getViewTokenRewriteStream(viewFullyQualifiedName),
@@ -12856,6 +12859,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean needsTransform = needsTransform();
     //change the location of position alias process here
     processPositionAlias(ast);
+    cacheTableHelper.populateCache(ctx.getParsedTables(), conf, getTxnMgr());
     PlannerContext plannerCtx = pcf.create();
     if (!genResolvedParseTree(ast, plannerCtx)) {
       return;

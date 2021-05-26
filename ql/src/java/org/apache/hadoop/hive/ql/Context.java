@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -35,6 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.antlr.runtime.TokenRewriteStream;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
@@ -187,6 +189,8 @@ public class Context {
 
   private EngineEventSequence timeline = new DummyEventSequence();
 
+  private List<Pair<String, String>> parsedTables = new ArrayList<>();
+
   public void setTimeline(EngineEventSequence timeline) {
     this.timeline = timeline;
   }
@@ -211,6 +215,13 @@ public class Context {
     this.wmContext = wmContext;
   }
 
+  public void setParsedTables(List<Pair<String, String>> parsedTables) {
+    this.parsedTables = parsedTables;
+  }
+
+  public List<Pair<String, String>> getParsedTables() {
+    return parsedTables;
+  }
   /**
    * These ops require special handling in various places
    * (note that Insert into Acid table is in OTHER category)

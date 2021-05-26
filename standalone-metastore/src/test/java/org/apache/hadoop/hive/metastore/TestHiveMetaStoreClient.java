@@ -118,6 +118,13 @@ public class TestHiveMetaStoreClient extends HiveMetaStoreClient implements IMet
 
   }
 
+  public Table getTable(String catName, String dbname,
+      String name, String validWriteIdList,
+      boolean getColStats, String engine, boolean getFileMetadata) throws MetaException,
+      TException, NoSuchObjectException {
+    return getTable(dbname, name, getColStats, engine);
+  }
+
   public GetPartitionsByNamesResult getPartitionsByNamesInternal(GetPartitionsByNamesRequest req)
           throws NoSuchObjectException, MetaException, TException {
     assertNotNull(req.getId());
