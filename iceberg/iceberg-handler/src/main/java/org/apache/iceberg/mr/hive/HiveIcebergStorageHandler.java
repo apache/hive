@@ -31,6 +31,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
@@ -61,6 +62,7 @@ import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
+import org.apache.iceberg.relocated.com.google.common.base.Throwables;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.SerializationUtil;
 import org.slf4j.Logger;
@@ -157,6 +159,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       if (catalogName != null) {
         jobConf.set(InputFormatConfig.TABLE_CATALOG_PREFIX + tableName, catalogName);
       }
+    }
+    try {
+      if (!jobConf.getBoolean(HiveConf.ConfVars.HIVE_IN_TEST_IDE.varname, false)) {
+        // For running unit test this won't work as maven surefire CP is different than what we have on a cluster:
+        // it places the current projects' classes and test-classes to top instead of jars made from these...
+        Utilities.addDependencyJars(jobConf, HiveIcebergStorageHandler.class);
+      }
+    } catch (IOException e) {
+      Throwables.propagate(e);
     }
   }
 
