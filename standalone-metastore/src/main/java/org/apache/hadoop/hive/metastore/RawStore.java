@@ -20,10 +20,13 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
+import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
+import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
 import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
+import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 
@@ -43,6 +46,11 @@ import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Package;
+import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
+import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
+import org.apache.hadoop.hive.metastore.api.ListPackageRequest;
+import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -1390,6 +1398,19 @@ public interface RawStore extends Configurable {
    */
   List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String catName, String dbName)
       throws MetaException, NoSuchObjectException;
+
+  void createOrUpdateStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException;
+
+  StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException;
+
+  void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException;
+
+  List<String> getAllStoredProcedures(ListStoredProcedureRequest request);
+
+  void addPackage(AddPackageRequest request) throws MetaException, NoSuchObjectException;
+  Package findPackage(GetPackageRequest request);
+  List<String> listPackages(ListPackageRequest request);
+  void dropPackage(DropPackageRequest request);
 
   /**
    * Get the next notification event.

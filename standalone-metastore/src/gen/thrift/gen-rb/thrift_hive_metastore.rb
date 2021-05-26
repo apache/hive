@@ -4075,6 +4075,133 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_open_txns_req failed: unknown result')
     end
 
+    def create_stored_procedure(proc)
+      send_create_stored_procedure(proc)
+      recv_create_stored_procedure()
+    end
+
+    def send_create_stored_procedure(proc)
+      send_message('create_stored_procedure', Create_stored_procedure_args, :proc => proc)
+    end
+
+    def recv_create_stored_procedure()
+      result = receive_message(Create_stored_procedure_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def get_stored_procedure(request)
+      send_get_stored_procedure(request)
+      return recv_get_stored_procedure()
+    end
+
+    def send_get_stored_procedure(request)
+      send_message('get_stored_procedure', Get_stored_procedure_args, :request => request)
+    end
+
+    def recv_get_stored_procedure()
+      result = receive_message(Get_stored_procedure_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_stored_procedure failed: unknown result')
+    end
+
+    def drop_stored_procedure(request)
+      send_drop_stored_procedure(request)
+      recv_drop_stored_procedure()
+    end
+
+    def send_drop_stored_procedure(request)
+      send_message('drop_stored_procedure', Drop_stored_procedure_args, :request => request)
+    end
+
+    def recv_drop_stored_procedure()
+      result = receive_message(Drop_stored_procedure_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
+    def get_all_stored_procedures(request)
+      send_get_all_stored_procedures(request)
+      return recv_get_all_stored_procedures()
+    end
+
+    def send_get_all_stored_procedures(request)
+      send_message('get_all_stored_procedures', Get_all_stored_procedures_args, :request => request)
+    end
+
+    def recv_get_all_stored_procedures()
+      result = receive_message(Get_all_stored_procedures_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_all_stored_procedures failed: unknown result')
+    end
+
+    def find_package(request)
+      send_find_package(request)
+      return recv_find_package()
+    end
+
+    def send_find_package(request)
+      send_message('find_package', Find_package_args, :request => request)
+    end
+
+    def recv_find_package()
+      result = receive_message(Find_package_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'find_package failed: unknown result')
+    end
+
+    def add_package(request)
+      send_add_package(request)
+      recv_add_package()
+    end
+
+    def send_add_package(request)
+      send_message('add_package', Add_package_args, :request => request)
+    end
+
+    def recv_add_package()
+      result = receive_message(Add_package_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
+    def get_all_packages(request)
+      send_get_all_packages(request)
+      return recv_get_all_packages()
+    end
+
+    def send_get_all_packages(request)
+      send_message('get_all_packages', Get_all_packages_args, :request => request)
+    end
+
+    def recv_get_all_packages()
+      result = receive_message(Get_all_packages_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_all_packages failed: unknown result')
+    end
+
+    def drop_package(request)
+      send_drop_package(request)
+      recv_drop_package()
+    end
+
+    def send_drop_package(request)
+      send_message('drop_package', Drop_package_args, :request => request)
+    end
+
+    def recv_drop_package()
+      result = receive_message(Drop_package_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -7121,6 +7248,100 @@ module ThriftHiveMetastore
       result = Get_open_txns_req_result.new()
       result.success = @handler.get_open_txns_req(args.getOpenTxnsRequest)
       write_result(result, oprot, 'get_open_txns_req', seqid)
+    end
+
+    def process_create_stored_procedure(seqid, iprot, oprot)
+      args = read_args(iprot, Create_stored_procedure_args)
+      result = Create_stored_procedure_result.new()
+      begin
+        @handler.create_stored_procedure(args.proc)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'create_stored_procedure', seqid)
+    end
+
+    def process_get_stored_procedure(seqid, iprot, oprot)
+      args = read_args(iprot, Get_stored_procedure_args)
+      result = Get_stored_procedure_result.new()
+      begin
+        result.success = @handler.get_stored_procedure(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_stored_procedure', seqid)
+    end
+
+    def process_drop_stored_procedure(seqid, iprot, oprot)
+      args = read_args(iprot, Drop_stored_procedure_args)
+      result = Drop_stored_procedure_result.new()
+      begin
+        @handler.drop_stored_procedure(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'drop_stored_procedure', seqid)
+    end
+
+    def process_get_all_stored_procedures(seqid, iprot, oprot)
+      args = read_args(iprot, Get_all_stored_procedures_args)
+      result = Get_all_stored_procedures_result.new()
+      begin
+        result.success = @handler.get_all_stored_procedures(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_all_stored_procedures', seqid)
+    end
+
+    def process_find_package(seqid, iprot, oprot)
+      args = read_args(iprot, Find_package_args)
+      result = Find_package_result.new()
+      begin
+        result.success = @handler.find_package(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'find_package', seqid)
+    end
+
+    def process_add_package(seqid, iprot, oprot)
+      args = read_args(iprot, Add_package_args)
+      result = Add_package_result.new()
+      begin
+        @handler.add_package(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'add_package', seqid)
+    end
+
+    def process_get_all_packages(seqid, iprot, oprot)
+      args = read_args(iprot, Get_all_packages_args)
+      result = Get_all_packages_result.new()
+      begin
+        result.success = @handler.get_all_packages(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_all_packages', seqid)
+    end
+
+    def process_drop_package(seqid, iprot, oprot)
+      args = read_args(iprot, Drop_package_args)
+      result = Drop_package_result.new()
+      begin
+        @handler.drop_package(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'drop_package', seqid)
     end
 
   end
@@ -16104,6 +16325,276 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetOpenTxnsResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_stored_procedure_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    PROC = 1
+
+    FIELDS = {
+      PROC => {:type => ::Thrift::Types::STRUCT, :name => 'proc', :class => ::StoredProcedure}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_stored_procedure_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_stored_procedure_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::StoredProcedureRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_stored_procedure_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::StoredProcedure},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_stored_procedure_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::StoredProcedureRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_stored_procedure_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_all_stored_procedures_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::ListStoredProcedureRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_all_stored_procedures_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Find_package_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::GetPackageRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Find_package_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Package},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_package_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::AddPackageRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_package_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_all_packages_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::ListPackageRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_all_packages_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_package_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::DropPackageRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_package_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

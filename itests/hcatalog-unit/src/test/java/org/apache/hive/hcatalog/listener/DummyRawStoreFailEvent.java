@@ -19,6 +19,13 @@
 package org.apache.hive.hcatalog.listener;
 
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
+import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
+import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
+import org.apache.hadoop.hive.metastore.api.ListPackageRequest;
+import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
+import org.apache.hadoop.hive.metastore.api.Package;
+import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.Catalog;
@@ -1400,5 +1407,45 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public List<Partition> getPartitionsByFilter(String catName, String dbName, String tblName,
       String filter, short maxParts) throws MetaException, NoSuchObjectException {
     return objectStore.getPartitionsByFilter(catName, dbName, tblName, filter, maxParts);
+  }
+
+  @Override
+  public void createOrUpdateStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException {
+    objectStore.createOrUpdateStoredProcedure(proc);
+  }
+
+  @Override
+  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException {
+    return objectStore.getStoredProcedure(catName, db, name);
+  }
+
+  @Override
+  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException {
+    objectStore.dropStoredProcedure(catName, dbName, funcName);
+  }
+
+  @Override
+  public List<String> getAllStoredProcedures(ListStoredProcedureRequest request) {
+    return objectStore.getAllStoredProcedures(request);
+  }
+
+  @Override
+  public void addPackage(AddPackageRequest request) throws MetaException, NoSuchObjectException {
+    objectStore.addPackage(request);
+  }
+
+  @Override
+  public Package findPackage(GetPackageRequest request) {
+    return objectStore.findPackage(request);
+  }
+
+  @Override
+  public List<String> listPackages(ListPackageRequest request) {
+    return objectStore.listPackages(request);
+  }
+
+  @Override
+  public void dropPackage(DropPackageRequest request) {
+    objectStore.dropPackage(request);
   }
 }

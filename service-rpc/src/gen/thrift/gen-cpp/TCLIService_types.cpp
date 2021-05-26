@@ -142,7 +142,8 @@ int _kTOperationTypeValues[] = {
   TOperationType::GET_TABLE_TYPES,
   TOperationType::GET_COLUMNS,
   TOperationType::GET_FUNCTIONS,
-  TOperationType::UNKNOWN
+  TOperationType::UNKNOWN,
+  TOperationType::PROCEDURAL_SQL
 };
 const char* _kTOperationTypeNames[] = {
   "EXECUTE_STATEMENT",
@@ -153,9 +154,10 @@ const char* _kTOperationTypeNames[] = {
   "GET_TABLE_TYPES",
   "GET_COLUMNS",
   "GET_FUNCTIONS",
-  "UNKNOWN"
+  "UNKNOWN",
+  "PROCEDURAL_SQL"
 };
-const std::map<int, const char*> _TOperationType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(9, _kTOperationTypeValues, _kTOperationTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _TOperationType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(10, _kTOperationTypeValues, _kTOperationTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 int _kTGetInfoTypeValues[] = {
   TGetInfoType::CLI_MAX_DRIVER_CONNECTIONS,

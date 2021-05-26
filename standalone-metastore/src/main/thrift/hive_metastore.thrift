@@ -2076,6 +2076,60 @@ struct GetOpenTxnsRequest {
   1: optional list<TxnType> excludeTxnTypes;
 }
 
+struct StoredProcedureRequest {
+  1: required string catName,
+  2: required string dbName,
+  3: required string procName
+}
+
+struct ListStoredProcedureRequest {
+  1: required string catName
+  2: optional string dbName
+}
+
+struct StoredProcedure {
+  1: string           name,
+  2: string           dbName,
+  3: string           catName,
+  4: string           ownerName,
+  5: string           source
+}
+
+struct AddPackageRequest {
+  1: string catName,
+  2: string dbName,
+  3: string packageName
+  4: string ownerName,
+  5: string header,
+  6: string body
+}
+
+struct GetPackageRequest {
+  1: required string catName,
+  2: required string dbName,
+  3: required string packageName
+}
+
+struct DropPackageRequest {
+  1: required string catName,
+  2: required string dbName,
+  3: required string packageName
+}
+
+struct ListPackageRequest {
+  1: required string catName
+  2: optional string dbName
+}
+
+struct Package {
+  1: string catName,
+  2: string dbName,
+  3: string packageName
+  4: string ownerName,
+  5: string header,
+  6: string body
+}
+
 // Exceptions.
 
 exception MetaException {
@@ -2807,6 +2861,15 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void add_replication_metrics(1: ReplicationMetricList replicationMetricList) throws(1:MetaException o1)
   ReplicationMetricList get_replication_metrics(1: GetReplicationMetricsRequest rqst) throws(1:MetaException o1)
   GetOpenTxnsResponse get_open_txns_req(1: GetOpenTxnsRequest getOpenTxnsRequest)
+
+  void create_stored_procedure(1: StoredProcedure proc) throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  StoredProcedure get_stored_procedure(1: StoredProcedureRequest request) throws (1:MetaException o1, 2:NoSuchObjectException o2)
+  void drop_stored_procedure(1: StoredProcedureRequest request) throws (1:MetaException o1)
+  list<string> get_all_stored_procedures(1: ListStoredProcedureRequest request) throws (1:MetaException o1)
+  Package find_package(1: GetPackageRequest request) throws (1:MetaException o1, 2:NoSuchObjectException o2)
+  void add_package(1: AddPackageRequest request) throws (1:MetaException o1)
+  list<string> get_all_packages(1: ListPackageRequest request) throws (1:MetaException o1)
+  void drop_package(1: DropPackageRequest request) throws (1:MetaException o1)
   }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

@@ -109,10 +109,13 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
+import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.FunctionType;
+import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -124,6 +127,8 @@ import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
+import org.apache.hadoop.hive.metastore.api.ListPackageRequest;
+import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -132,6 +137,7 @@ import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
@@ -172,6 +178,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SerdeType;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.Type;
@@ -300,6 +307,7 @@ import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
 import org.apache.hadoop.hive.metastore.model.MOrder;
+import org.apache.hadoop.hive.metastore.model.MPackage;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
@@ -314,6 +322,7 @@ import org.apache.hadoop.hive.metastore.model.MScheduledQuery;
 import org.apache.hadoop.hive.metastore.model.MSchemaVersion;
 import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
+import org.apache.hadoop.hive.metastore.model.MStoredProc;
 import org.apache.hadoop.hive.metastore.model.MStringList;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
@@ -10723,6 +10732,223 @@ public class ObjectStore implements RawStore, Configurable {
       rollbackAndCleanup(commited, query);
     }
     return funcs;
+  }
+
+  @Override
+  public void createOrUpdateStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    MStoredProc mProc;
+    Query query = null;
+    String catName = normalizeIdentifier(proc.getCatName());
+    String dbName = normalizeIdentifier(proc.getDbName());
+    MDatabase db = getMDatabase(catName, dbName);
+    try {
+      openTransaction();
+      query = storedProcQuery();
+      mProc = (MStoredProc) query.execute(proc.getName(), dbName, catName);
+      pm.retrieve(mProc);
+      if (mProc == null) { // create new
+        mProc = new MStoredProc();
+        MStoredProc.populate(mProc, proc, db);
+        pm.makePersistent(mProc);
+      } else { // update existing
+        MStoredProc.populate(mProc, proc, db);
+      }
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException {
+    MStoredProc proc = getMStoredProcedure(catName, db, name);
+    return proc == null ? null : convertToStoredProc(catName, proc);
+  }
+
+  private MStoredProc getMStoredProcedure(String catName, String db, String procName) {
+    MStoredProc proc;
+    catName = normalizeIdentifier(catName);
+    db = normalizeIdentifier(db);
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = storedProcQuery();
+      proc = (MStoredProc) query.execute(procName, db, catName);
+      pm.retrieve(proc);
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+    return proc;
+  }
+
+  private Query storedProcQuery() {
+    Query query = pm.newQuery(MStoredProc.class,
+            "name == procName && database.name == db && database.catalogName == catName");
+    query.declareParameters("java.lang.String procName, java.lang.String db, java.lang.String catName");
+    query.setUnique(true);
+    return query;
+  }
+
+  private Query findPackageQuery() {
+    Query query = pm.newQuery(MPackage.class,
+            "name == packageName && database.name == db && database.catalogName == catName");
+    query.declareParameters("java.lang.String packageName, java.lang.String db, java.lang.String catName");
+    query.setUnique(true);
+    return query;
+  }
+
+  private StoredProcedure convertToStoredProc(String catName, MStoredProc proc) {
+    return new StoredProcedure(
+            proc.getName(),
+            proc.getDatabase().getName(),
+            catName,
+            proc.getOwner(),
+            proc.getSource());
+  }
+
+  @Override
+  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException {
+    boolean success = false;
+    try {
+      openTransaction();
+      MStoredProc proc = getMStoredProcedure(catName, dbName, funcName);
+      pm.retrieve(proc);
+      if (proc != null) {
+        pm.deletePersistentAll(proc);
+      }
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public List<String> getAllStoredProcedures(ListStoredProcedureRequest request) {
+    boolean committed = false;
+    Query query = null;
+    final String catName = normalizeIdentifier(request.getCatName());
+    final String dbName = request.isSetDbName() ? normalizeIdentifier(request.getDbName()) : null;
+    List<String> names;
+    try {
+      openTransaction();
+      if (request.isSetDbName()) {
+        query = pm.newQuery("SELECT name FROM org.apache.hadoop.hive.metastore.model.MStoredProc " +
+                "WHERE database.catalogName == catName && database.name == db");
+        query.declareParameters("java.lang.String catName, java.lang.String db");
+        query.setResult("name");
+        names = new ArrayList<>((Collection<String>) query.execute(catName, dbName));
+      } else {
+        query = pm.newQuery("SELECT name FROM org.apache.hadoop.hive.metastore.model.MStoredProc " +
+                "WHERE database.catalogName == catName");
+        query.declareParameters("java.lang.String catName");
+        query.setResult("name");
+        names = new ArrayList<>((Collection<String>) query.execute(catName));
+      }
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+    return names;
+  }
+
+  @Override
+  public void addPackage(AddPackageRequest request) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    MPackage mPkg;
+    Query query = null;
+    String catName = normalizeIdentifier(request.getCatName());
+    String dbName = normalizeIdentifier(request.getDbName());
+    MDatabase db = getMDatabase(catName, dbName);
+    try {
+      openTransaction();
+      query = findPackageQuery();
+      mPkg = (MPackage) query.execute(request.getPackageName(), dbName, catName);
+      pm.retrieve(mPkg);
+      if (mPkg == null) { // create new
+        mPkg = new MPackage();
+        MPackage.populate(mPkg, db, request);
+        pm.makePersistent(mPkg);
+      } else { // update existing
+        MPackage.populate(mPkg, db, request);
+      }
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public Package findPackage(GetPackageRequest request) {
+    MPackage mPkg = findMPackage(request.getCatName(), request.getDbName(), request.getPackageName());
+    return mPkg == null ? null : mPkg.toPackage();
+  }
+
+  public List<String> listPackages(ListPackageRequest request) {
+    boolean committed = false;
+    Query query = null;
+    final String catName = normalizeIdentifier(request.getCatName());
+    final String dbName = request.isSetDbName() ? normalizeIdentifier(request.getDbName()) : null;
+    List<String> names;
+    try {
+      openTransaction();
+      if (request.isSetDbName()) {
+        query = pm.newQuery("SELECT name FROM org.apache.hadoop.hive.metastore.model.MPackage " +
+                "WHERE database.catalogName == catName && database.name == db");
+        query.declareParameters("java.lang.String catName, java.lang.String db");
+        query.setResult("name");
+        names = new ArrayList<>((Collection<String>) query.execute(catName, dbName));
+      } else {
+        query = pm.newQuery("SELECT name FROM org.apache.hadoop.hive.metastore.model.MPackage " +
+                "WHERE database.catalogName == catName");
+        query.declareParameters("java.lang.String catName");
+        query.setResult("name");
+        names = new ArrayList<>((Collection<String>) query.execute(catName));
+      }
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+    return names;
+  }
+
+  public void dropPackage(DropPackageRequest request) {
+    boolean success = false;
+    try {
+      openTransaction();
+      MPackage proc = findMPackage(request.getCatName(), request.getDbName(), request.getPackageName());
+      pm.retrieve(proc);
+      if (proc != null) {
+        pm.deletePersistentAll(proc);
+      }
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private MPackage findMPackage(String catName, String db, String packageName) {
+    MPackage pkg;
+    catName = normalizeIdentifier(catName);
+    db = normalizeIdentifier(db);
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = findPackageQuery();
+      pkg = (MPackage) query.execute(packageName, db, catName);
+      pm.retrieve(pkg);
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+    return pkg;
   }
 
   @Override

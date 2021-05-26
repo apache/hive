@@ -202,6 +202,7 @@ class TOperationType:
   GET_COLUMNS = 6
   GET_FUNCTIONS = 7
   UNKNOWN = 8
+  PROCEDURAL_SQL = 9
 
   _VALUES_TO_NAMES = {
     0: "EXECUTE_STATEMENT",
@@ -213,6 +214,7 @@ class TOperationType:
     6: "GET_COLUMNS",
     7: "GET_FUNCTIONS",
     8: "UNKNOWN",
+    9: "PROCEDURAL_SQL",
   }
 
   _NAMES_TO_VALUES = {
@@ -225,6 +227,7 @@ class TOperationType:
     "GET_COLUMNS": 6,
     "GET_FUNCTIONS": 7,
     "UNKNOWN": 8,
+    "PROCEDURAL_SQL": 9,
   }
 
 class TGetInfoType:

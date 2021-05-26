@@ -104,9 +104,14 @@ public class SQLOperation extends ExecuteStatementOperation {
   private MetricsScope submittedQryScp;
 
   public SQLOperation(HiveSession parentSession, String statement, Map<String, String> confOverlay,
-      boolean runInBackground, long queryTimeout) {
+                      boolean runInBackground, long queryTimeout) {
+    this(parentSession, statement, confOverlay, runInBackground, queryTimeout, false);
+  }
+
+  public SQLOperation(HiveSession parentSession, String statement, Map<String, String> confOverlay,
+      boolean runInBackground, long queryTimeout, boolean embedded) {
     // TODO: call setRemoteUser in ExecuteStatementOperation or higher.
-    super(parentSession, statement, confOverlay, runInBackground);
+    super(parentSession, statement, confOverlay, runInBackground, embedded);
     this.runAsync = runInBackground;
     this.queryTimeout = queryTimeout;
     long timeout = HiveConf.getTimeVar(queryState.getConf(),
@@ -314,7 +319,9 @@ public class SQLOperation extends ExecuteStatementOperation {
           // TODO: can this result in cross-thread reuse of session state?
           SessionState.setCurrentSessionState(parentSessionState);
           PerfLogger.setPerfLogger(parentPerfLogger);
-          LogUtils.registerLoggingContext(queryState.getConf());
+          if (!embedded) {
+            LogUtils.registerLoggingContext(queryState.getConf());
+          }
           try {
             if (asyncPrepare) {
               prepare(queryState);
@@ -325,7 +332,9 @@ public class SQLOperation extends ExecuteStatementOperation {
             setOperationException(e);
             LOG.error("Error running hive query: ", e);
           } finally {
-            LogUtils.unregisterLoggingContext();
+            if (!embedded) {
+              LogUtils.unregisterLoggingContext();
+            }
 
             // If new hive object is created  by the child thread, then we need to close it as it might
             // have created a hms connection. Call Hive.closeCurrent() that closes the HMS connection, causes
@@ -425,8 +434,10 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   @Override
   public void close() throws HiveSQLException {
-    cleanup(OperationState.CLOSED);
-    cleanupOperationLog(0);
+    if (!embedded) {
+      cleanup(OperationState.CLOSED);
+      cleanupOperationLog(0);
+    }
   }
 
   @Override

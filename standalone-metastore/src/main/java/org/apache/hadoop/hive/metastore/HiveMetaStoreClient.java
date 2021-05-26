@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Client;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -4553,6 +4554,47 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
                                                        replicationMetricsRequest) throws MetaException, TException {
     return client.get_replication_metrics(replicationMetricsRequest);
+  }
+
+  @Override
+  public void createStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException, TException {
+    client.create_stored_procedure(proc);
+  }
+
+  @Override
+  public StoredProcedure getStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException {
+    return client.get_stored_procedure(request);
+  }
+
+  @Override
+  public void dropStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException {
+    client.drop_stored_procedure(request);
+  }
+
+  @Override
+  public List<String> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException {
+    return client.get_all_stored_procedures(request);
+  }
+
+
+  @Override
+  public void addPackage(AddPackageRequest request) throws NoSuchObjectException, MetaException, TException {
+    client.add_package(request);
+  }
+
+  @Override
+  public Package findPackage(GetPackageRequest request) throws TException {
+    return client.find_package(request);
+  }
+
+  @Override
+  public List<String> listPackages(ListPackageRequest request) throws TException {
+    return client.get_all_packages(request);
+  }
+
+  @Override
+  public void dropPackage(DropPackageRequest request) throws TException {
+    client.drop_package(request);
   }
 
   /**

@@ -11,3 +11,12 @@ declare
 begin
   null;
 end;
+
+declare
+  num1 int := 1;
+  num2 int := 2;
+begin
+  print num1;
+  print -num1;
+  print -num1*2+num2;
+end;

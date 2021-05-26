@@ -18,6 +18,9 @@
 
 package org.apache.hive.jdbc;
 
+import static org.apache.hadoop.hive.conf.Constants.MODE;
+import static org.apache.hive.service.cli.operation.hplsql.HplSqlQueryExecutor.HPLSQL;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier;
@@ -915,6 +918,9 @@ public class HiveConnection implements java.sql.Connection {
       openConf.put("set:hiveconf:hive.create.as.external.legacy",
           sessConfMap.get(JdbcConnectionParams.CREATE_TABLE_AS_EXTERNAL).toLowerCase());
     }
+    if (isHplSqlMode()) {
+      openConf.put("set:hivevar:mode", HPLSQL);
+    }
 
     openReq.setConfiguration(openConf);
 
@@ -968,6 +974,10 @@ public class HiveConnection implements java.sql.Connection {
           " 08S01",
           ex);
     }
+  }
+
+  public boolean isHplSqlMode() {
+    return HPLSQL.equalsIgnoreCase(sessConfMap.getOrDefault(MODE, ""));
   }
 
   @VisibleForTesting

@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.annotation.NoReconnect;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
 
@@ -4096,6 +4097,21 @@ public interface IMetaStoreClient {
    */
   GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest request) throws TException;
 
+  void createStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException, TException;
+
+  StoredProcedure getStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException;
+
+  void dropStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException;
+
+  List<String> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException;
+
+  void addPackage(AddPackageRequest request) throws NoSuchObjectException, MetaException, TException;
+
+  Package findPackage(GetPackageRequest request) throws TException;
+
+  List<String> listPackages(ListPackageRequest request) throws TException;
+
+  void dropPackage(DropPackageRequest request) throws TException;
   /**
    * Returns the thrift client to the remote HMS server.
    * @throws MetaException if this is not initialized or connected to a remote HMS

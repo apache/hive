@@ -5,3 +5,11 @@ a
 Ln:6 PRINT
 1
 Ln:10 DECLARE code char = 'a'
+Ln:16 DECLARE num1 int = 1
+Ln:17 DECLARE num2 int = 2
+Ln:19 PRINT
+1
+Ln:20 PRINT
+-1
+Ln:21 PRINT
+0

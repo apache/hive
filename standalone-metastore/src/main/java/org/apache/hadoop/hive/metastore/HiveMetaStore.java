@@ -97,6 +97,7 @@ import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.api.FireEventRequestData._Fields;
+import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -1778,6 +1779,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         Set<String> uniqueTableNames = new HashSet<>(get_all_tables(catPrependedName));
         List<String> allFunctions = get_functions(catPrependedName, "*");
+        ListStoredProcedureRequest request = new ListStoredProcedureRequest(catName);
+        request.setDbName(name);
+        List<String> allProcedures = get_all_stored_procedures(request);
+        ListPackageRequest pkgRequest = new ListPackageRequest(catName);
+        pkgRequest.setDbName(name);
+        List<String> allPackages = get_all_packages(pkgRequest);
 
         if (!cascade) {
           if (!uniqueTableNames.isEmpty()) {
@@ -1787,6 +1794,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if (!allFunctions.isEmpty()) {
             throw new InvalidOperationException(
                 "Database " + db.getName() + " is not empty. One or more functions exist.");
+          }
+          if (!allProcedures.isEmpty()) {
+            throw new InvalidOperationException(
+                    "Database " + db.getName() + " is not empty. One or more stored procedures exist.");
+          }
+          if (!allPackages.isEmpty()) {
+            throw new InvalidOperationException(
+                    "Database " + db.getName() + " is not empty. One or more packages exist.");
           }
         }
         Path path = new Path(db.getLocationUri()).getParent();
@@ -1801,6 +1816,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // drop any functions before dropping db
         for (String funcName : allFunctions) {
           drop_function(catPrependedName, funcName);
+        }
+
+        for (String procName : allProcedures) {
+          drop_stored_procedure(new StoredProcedureRequest(catName, name, procName));
+        }
+        for (String pkgName : allPackages) {
+          drop_package(new DropPackageRequest(catName, name, pkgName));
         }
 
         final int tableBatchSize = MetastoreConf.getIntVar(conf,
@@ -10267,6 +10289,135 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw e;
       } finally {
         endFunction("get_replication_metrics", ex == null, ex);
+      }
+    }
+
+    @Override
+    public void create_stored_procedure(StoredProcedure proc) throws NoSuchObjectException, MetaException {
+      startFunction("create_stored_procedure");
+      Exception ex = null;
+      try {
+        getMS().createOrUpdateStoredProcedure(proc);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("create_stored_procedure", ex == null, ex);
+      }
+    }
+
+    public StoredProcedure get_stored_procedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException {
+      startFunction("get_stored_procedure");
+      Exception ex = null;
+      try {
+        StoredProcedure proc = getMS().getStoredProcedure(request.getCatName(), request.getDbName(), request.getProcName());
+        if (proc == null) {
+          throw new NoSuchObjectException(
+                  "HPL/SQL StoredProcedure " + request.getDbName() + "." + request.getProcName() + " does not exist");
+        }
+        return proc;
+      } catch (Exception e) {
+        if (!(e instanceof NoSuchObjectException)) {
+          LOG.error("Caught exception", e);
+        }
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_stored_procedure", ex == null, ex);
+      }
+    }
+
+    @Override
+    public void drop_stored_procedure(StoredProcedureRequest request) throws MetaException {
+      startFunction("drop_stored_procedure");
+      Exception ex = null;
+      try {
+        getMS().dropStoredProcedure(request.getCatName(), request.getDbName(), request.getProcName());
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("drop_stored_procedure", ex == null, ex);
+      }
+    }
+
+    @Override
+    public List<String> get_all_stored_procedures(ListStoredProcedureRequest request) throws MetaException {
+      startFunction("get_all_stored_procedures");
+      Exception ex = null;
+      try {
+        return getMS().getAllStoredProcedures(request);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_all_stored_procedures", ex == null, ex);
+      }
+    }
+
+    public Package find_package(GetPackageRequest request) throws MetaException, NoSuchObjectException {
+      startFunction("find_package");
+      Exception ex = null;
+      try {
+        Package pkg = getMS().findPackage(request);
+        if (pkg == null) {
+          throw new NoSuchObjectException(
+                  "HPL/SQL package " + request.getDbName() + "." + request.getPackageName() + " does not exist");
+        }
+        return pkg;
+      } catch (Exception e) {
+        if (!(e instanceof NoSuchObjectException)) {
+          LOG.error("Caught exception", e);
+        }
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("find_package", ex == null, ex);
+      }
+    }
+
+    public void add_package(AddPackageRequest request) throws MetaException, NoSuchObjectException {
+      startFunction("add_package");
+      Exception ex = null;
+      try {
+        getMS().addPackage(request);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("add_package", ex == null, ex);
+      }
+    }
+
+    public List<String> get_all_packages(ListPackageRequest request) throws MetaException {
+      startFunction("get_all_packages");
+      Exception ex = null;
+      try {
+        return getMS().listPackages(request);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_all_packages", ex == null, ex);
+      }
+    }
+
+    public void drop_package(DropPackageRequest request) throws MetaException {
+      startFunction("drop_package");
+      Exception ex = null;
+      try {
+        getMS().dropPackage(request);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("drop_package", ex == null, ex);
       }
     }
   }

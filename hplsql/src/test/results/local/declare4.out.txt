@@ -1,0 +1,6 @@
+Ln:2 DECLARE code character = 'a'
+Ln:3 DECLARE code1 character = 'ab'
+Ln:5 PRINT
+a
+Ln:6 PRINT
+ab

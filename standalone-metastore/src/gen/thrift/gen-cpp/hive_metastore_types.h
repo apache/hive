@@ -830,6 +830,22 @@ class GetReplicationMetricsRequest;
 
 class GetOpenTxnsRequest;
 
+class StoredProcedureRequest;
+
+class ListStoredProcedureRequest;
+
+class StoredProcedure;
+
+class AddPackageRequest;
+
+class GetPackageRequest;
+
+class DropPackageRequest;
+
+class ListPackageRequest;
+
+class Package;
+
 class MetaException;
 
 class UnknownTableException;
@@ -17328,6 +17344,484 @@ class GetOpenTxnsRequest {
 void swap(GetOpenTxnsRequest &a, GetOpenTxnsRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const GetOpenTxnsRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class StoredProcedureRequest {
+ public:
+
+  StoredProcedureRequest(const StoredProcedureRequest&);
+  StoredProcedureRequest& operator=(const StoredProcedureRequest&);
+  StoredProcedureRequest() : catName(), dbName(), procName() {
+  }
+
+  virtual ~StoredProcedureRequest() throw();
+  std::string catName;
+  std::string dbName;
+  std::string procName;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_procName(const std::string& val);
+
+  bool operator == (const StoredProcedureRequest & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(procName == rhs.procName))
+      return false;
+    return true;
+  }
+  bool operator != (const StoredProcedureRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const StoredProcedureRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(StoredProcedureRequest &a, StoredProcedureRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const StoredProcedureRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _ListStoredProcedureRequest__isset {
+  _ListStoredProcedureRequest__isset() : dbName(false) {}
+  bool dbName :1;
+} _ListStoredProcedureRequest__isset;
+
+class ListStoredProcedureRequest {
+ public:
+
+  ListStoredProcedureRequest(const ListStoredProcedureRequest&);
+  ListStoredProcedureRequest& operator=(const ListStoredProcedureRequest&);
+  ListStoredProcedureRequest() : catName(), dbName() {
+  }
+
+  virtual ~ListStoredProcedureRequest() throw();
+  std::string catName;
+  std::string dbName;
+
+  _ListStoredProcedureRequest__isset __isset;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  bool operator == (const ListStoredProcedureRequest & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    if (__isset.dbName != rhs.__isset.dbName)
+      return false;
+    else if (__isset.dbName && !(dbName == rhs.dbName))
+      return false;
+    return true;
+  }
+  bool operator != (const ListStoredProcedureRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ListStoredProcedureRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ListStoredProcedureRequest &a, ListStoredProcedureRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ListStoredProcedureRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _StoredProcedure__isset {
+  _StoredProcedure__isset() : name(false), dbName(false), catName(false), ownerName(false), source(false) {}
+  bool name :1;
+  bool dbName :1;
+  bool catName :1;
+  bool ownerName :1;
+  bool source :1;
+} _StoredProcedure__isset;
+
+class StoredProcedure {
+ public:
+
+  StoredProcedure(const StoredProcedure&);
+  StoredProcedure& operator=(const StoredProcedure&);
+  StoredProcedure() : name(), dbName(), catName(), ownerName(), source() {
+  }
+
+  virtual ~StoredProcedure() throw();
+  std::string name;
+  std::string dbName;
+  std::string catName;
+  std::string ownerName;
+  std::string source;
+
+  _StoredProcedure__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_catName(const std::string& val);
+
+  void __set_ownerName(const std::string& val);
+
+  void __set_source(const std::string& val);
+
+  bool operator == (const StoredProcedure & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(catName == rhs.catName))
+      return false;
+    if (!(ownerName == rhs.ownerName))
+      return false;
+    if (!(source == rhs.source))
+      return false;
+    return true;
+  }
+  bool operator != (const StoredProcedure &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const StoredProcedure & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(StoredProcedure &a, StoredProcedure &b);
+
+inline std::ostream& operator<<(std::ostream& out, const StoredProcedure& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _AddPackageRequest__isset {
+  _AddPackageRequest__isset() : catName(false), dbName(false), packageName(false), ownerName(false), header(false), body(false) {}
+  bool catName :1;
+  bool dbName :1;
+  bool packageName :1;
+  bool ownerName :1;
+  bool header :1;
+  bool body :1;
+} _AddPackageRequest__isset;
+
+class AddPackageRequest {
+ public:
+
+  AddPackageRequest(const AddPackageRequest&);
+  AddPackageRequest& operator=(const AddPackageRequest&);
+  AddPackageRequest() : catName(), dbName(), packageName(), ownerName(), header(), body() {
+  }
+
+  virtual ~AddPackageRequest() throw();
+  std::string catName;
+  std::string dbName;
+  std::string packageName;
+  std::string ownerName;
+  std::string header;
+  std::string body;
+
+  _AddPackageRequest__isset __isset;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_packageName(const std::string& val);
+
+  void __set_ownerName(const std::string& val);
+
+  void __set_header(const std::string& val);
+
+  void __set_body(const std::string& val);
+
+  bool operator == (const AddPackageRequest & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(packageName == rhs.packageName))
+      return false;
+    if (!(ownerName == rhs.ownerName))
+      return false;
+    if (!(header == rhs.header))
+      return false;
+    if (!(body == rhs.body))
+      return false;
+    return true;
+  }
+  bool operator != (const AddPackageRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AddPackageRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AddPackageRequest &a, AddPackageRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const AddPackageRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class GetPackageRequest {
+ public:
+
+  GetPackageRequest(const GetPackageRequest&);
+  GetPackageRequest& operator=(const GetPackageRequest&);
+  GetPackageRequest() : catName(), dbName(), packageName() {
+  }
+
+  virtual ~GetPackageRequest() throw();
+  std::string catName;
+  std::string dbName;
+  std::string packageName;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_packageName(const std::string& val);
+
+  bool operator == (const GetPackageRequest & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(packageName == rhs.packageName))
+      return false;
+    return true;
+  }
+  bool operator != (const GetPackageRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetPackageRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetPackageRequest &a, GetPackageRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetPackageRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class DropPackageRequest {
+ public:
+
+  DropPackageRequest(const DropPackageRequest&);
+  DropPackageRequest& operator=(const DropPackageRequest&);
+  DropPackageRequest() : catName(), dbName(), packageName() {
+  }
+
+  virtual ~DropPackageRequest() throw();
+  std::string catName;
+  std::string dbName;
+  std::string packageName;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_packageName(const std::string& val);
+
+  bool operator == (const DropPackageRequest & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(packageName == rhs.packageName))
+      return false;
+    return true;
+  }
+  bool operator != (const DropPackageRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DropPackageRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(DropPackageRequest &a, DropPackageRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const DropPackageRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _ListPackageRequest__isset {
+  _ListPackageRequest__isset() : dbName(false) {}
+  bool dbName :1;
+} _ListPackageRequest__isset;
+
+class ListPackageRequest {
+ public:
+
+  ListPackageRequest(const ListPackageRequest&);
+  ListPackageRequest& operator=(const ListPackageRequest&);
+  ListPackageRequest() : catName(), dbName() {
+  }
+
+  virtual ~ListPackageRequest() throw();
+  std::string catName;
+  std::string dbName;
+
+  _ListPackageRequest__isset __isset;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  bool operator == (const ListPackageRequest & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    if (__isset.dbName != rhs.__isset.dbName)
+      return false;
+    else if (__isset.dbName && !(dbName == rhs.dbName))
+      return false;
+    return true;
+  }
+  bool operator != (const ListPackageRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ListPackageRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ListPackageRequest &a, ListPackageRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ListPackageRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _Package__isset {
+  _Package__isset() : catName(false), dbName(false), packageName(false), ownerName(false), header(false), body(false) {}
+  bool catName :1;
+  bool dbName :1;
+  bool packageName :1;
+  bool ownerName :1;
+  bool header :1;
+  bool body :1;
+} _Package__isset;
+
+class Package {
+ public:
+
+  Package(const Package&);
+  Package& operator=(const Package&);
+  Package() : catName(), dbName(), packageName(), ownerName(), header(), body() {
+  }
+
+  virtual ~Package() throw();
+  std::string catName;
+  std::string dbName;
+  std::string packageName;
+  std::string ownerName;
+  std::string header;
+  std::string body;
+
+  _Package__isset __isset;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_packageName(const std::string& val);
+
+  void __set_ownerName(const std::string& val);
+
+  void __set_header(const std::string& val);
+
+  void __set_body(const std::string& val);
+
+  bool operator == (const Package & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(packageName == rhs.packageName))
+      return false;
+    if (!(ownerName == rhs.ownerName))
+      return false;
+    if (!(header == rhs.header))
+      return false;
+    if (!(body == rhs.body))
+      return false;
+    return true;
+  }
+  bool operator != (const Package &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Package & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(Package &a, Package &b);
+
+inline std::ostream& operator<<(std::ostream& out, const Package& obj)
 {
   obj.printTo(out);
   return out;

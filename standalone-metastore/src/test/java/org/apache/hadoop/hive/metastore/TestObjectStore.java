@@ -31,17 +31,23 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
+import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.ListPackageRequest;
+import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
+import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
@@ -51,6 +57,7 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
@@ -83,6 +90,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -96,6 +104,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @Category(MetastoreUnitTest.class)
 public class TestObjectStore {
@@ -762,6 +772,12 @@ public class TestObjectStore {
       for (String catName : store.getCatalogs()) {
         List<String> dbs = store.getAllDatabases(catName);
         for (String db : dbs) {
+          for (String each : store.getAllStoredProcedures(new ListStoredProcedureRequest(catName))) {
+            store.dropStoredProcedure(catName, db, each);
+          }
+          for (String each : store.listPackages(new ListPackageRequest(catName))) {
+            store.dropPackage(new DropPackageRequest(catName, db, each));
+          }
           List<String> tbls = store.getAllTables(DEFAULT_CATALOG_NAME, db);
           for (String tbl : tbls) {
             Deadline.startTimer("getPartition");
@@ -965,6 +981,167 @@ public class TestObjectStore {
       Assert.assertTrue(previousId + 1 == event.getEventId());
       previousId = event.getEventId();
     }
+  }
+
+  @Test
+  public void testUpdateStoredProc() throws Exception {
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB1)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+
+    StoredProcedure input = new StoredProcedure();
+    input.setCatName("hive");
+    input.setSource("print 'Hello world'");
+    input.setOwnerName("user1");
+    input.setName("toBeUpdated");
+    input.setDbName(DB1);
+    objectStore.createOrUpdateStoredProcedure(input);
+    input.setSource("print 'Hello world2'");
+    objectStore.createOrUpdateStoredProcedure(input);
+
+    StoredProcedure retrieved = objectStore.getStoredProcedure("hive", DB1, "toBeUpdated");
+    Assert.assertEquals(input, retrieved);
+  }
+
+  @Test
+  public void testStoredProcSaveAndRetrieve() throws Exception {
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB1)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+
+    StoredProcedure input = new StoredProcedure();
+    input.setSource("print 'Hello world'");
+    input.setCatName("hive");
+    input.setOwnerName("user1");
+    input.setName("greetings");
+    input.setDbName(DB1);
+
+    objectStore.createOrUpdateStoredProcedure(input);
+    StoredProcedure retrieved = objectStore.getStoredProcedure("hive", DB1, "greetings");
+
+    Assert.assertEquals(input, retrieved);
+  }
+
+  @Test
+  public void testDropStoredProc() throws Exception {
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB1)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+
+    StoredProcedure toBeDeleted = new StoredProcedure();
+    toBeDeleted.setSource("print 'Hello world'");
+    toBeDeleted.setCatName("hive");
+    toBeDeleted.setOwnerName("user1");
+    toBeDeleted.setName("greetings");
+    toBeDeleted.setDbName(DB1);
+    objectStore.createOrUpdateStoredProcedure(toBeDeleted);
+    Assert.assertNotNull(objectStore.getStoredProcedure("hive", DB1, "greetings"));
+    objectStore.dropStoredProcedure("hive", DB1, "greetings");
+    Assert.assertNull(objectStore.getStoredProcedure("hive", DB1, "greetings"));
+  }
+
+  @Test
+  public void testListStoredProc() throws Exception {
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB1)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB2)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+
+    StoredProcedure proc1 = new StoredProcedure();
+    proc1.setSource("print 'Hello world'");
+    proc1.setCatName("hive");
+    proc1.setOwnerName("user1");
+    proc1.setName("proc1");
+    proc1.setDbName(DB1);
+    objectStore.createOrUpdateStoredProcedure(proc1);
+
+    StoredProcedure proc2 = new StoredProcedure();
+    proc2.setSource("print 'Hello world'");
+    proc2.setCatName("hive");
+    proc2.setOwnerName("user2");
+    proc2.setName("proc2");
+    proc2.setDbName(DB2);
+    objectStore.createOrUpdateStoredProcedure(proc2);
+
+    List<String> result = objectStore.getAllStoredProcedures(new ListStoredProcedureRequest("hive"));
+    Assert.assertEquals(2, result.size());
+    assertThat(result, hasItems("proc1", "proc2"));
+
+    ListStoredProcedureRequest req = new ListStoredProcedureRequest("hive");
+    req.setDbName(DB1);
+    result = objectStore.getAllStoredProcedures(req);
+    Assert.assertEquals(1, result.size());
+    assertThat(result, hasItems("proc1"));
+  }
+
+  @Test
+  public void testCreateAndFindPackage() throws Exception {
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB1)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+    AddPackageRequest pkg = new AddPackageRequest("hive", DB1, "pkg1", "user1", "src", "src");
+    objectStore.addPackage(pkg);
+    Package found = objectStore.findPackage(new GetPackageRequest("hive", DB1, "pkg1"));
+    Assert.assertEquals(pkg.getBody(), found.getBody());
+    Assert.assertEquals(pkg.getHeader(), found.getHeader());
+    Assert.assertEquals(pkg.getCatName(), found.getCatName());
+    Assert.assertEquals(pkg.getDbName(), found.getDbName());
+    Assert.assertEquals(pkg.getOwnerName(), found.getOwnerName());
+    Assert.assertEquals(pkg.getPackageName(), found.getPackageName());
+  }
+
+  @Test
+  public void testDropPackage() throws Exception {
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB1)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+    AddPackageRequest pkg = new AddPackageRequest("hive", DB1, "pkg1", "user1", "header", "body");
+    objectStore.addPackage(pkg);
+    Assert.assertNotNull(objectStore.findPackage(new GetPackageRequest("hive", DB1, "pkg1")));
+    objectStore.dropPackage(new DropPackageRequest("hive", DB1, "pkg1"));
+    Assert.assertNull(objectStore.findPackage(new GetPackageRequest("hive", DB1, "pkg1")));
+  }
+
+  @Test
+  public void testListPackage() throws Exception {
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB1)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB2)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+    AddPackageRequest pkg1 = new AddPackageRequest("hive", DB1, "pkg1", "user1", "header1", "body1");
+    AddPackageRequest pkg2 = new AddPackageRequest("hive", DB2, "pkg2", "user1", "header2", "body2");
+    objectStore.addPackage(pkg1);
+    objectStore.addPackage(pkg2);
+    List<String> result = objectStore.listPackages(new ListPackageRequest("hive"));
+    assertThat(result, hasItems("pkg1", "pkg2"));
+    Assert.assertEquals(2, result.size());
+    ListPackageRequest req = new ListPackageRequest("hive");
+    req.setDbName(DB1);
+    result = objectStore.listPackages(req);
+    assertThat(result, hasItems("pkg1"));
+    Assert.assertEquals(1, result.size());
   }
 
   private void createTestCatalog(String catName) throws MetaException {

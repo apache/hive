@@ -269,6 +269,14 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void add_replication_metrics(ReplicationMetricList replicationMetricList)')
   print('  ReplicationMetricList get_replication_metrics(GetReplicationMetricsRequest rqst)')
   print('  GetOpenTxnsResponse get_open_txns_req(GetOpenTxnsRequest getOpenTxnsRequest)')
+  print('  void create_stored_procedure(StoredProcedure proc)')
+  print('  StoredProcedure get_stored_procedure(StoredProcedureRequest request)')
+  print('  void drop_stored_procedure(StoredProcedureRequest request)')
+  print('   get_all_stored_procedures(ListStoredProcedureRequest request)')
+  print('  Package find_package(GetPackageRequest request)')
+  print('  void add_package(AddPackageRequest request)')
+  print('   get_all_packages(ListPackageRequest request)')
+  print('  void drop_package(DropPackageRequest request)')
   print('  string getName()')
   print('  string getVersion()')
   print('  fb_status getStatus()')
@@ -1807,6 +1815,54 @@ elif cmd == 'get_open_txns_req':
     print('get_open_txns_req requires 1 args')
     sys.exit(1)
   pp.pprint(client.get_open_txns_req(eval(args[0]),))
+
+elif cmd == 'create_stored_procedure':
+  if len(args) != 1:
+    print('create_stored_procedure requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.create_stored_procedure(eval(args[0]),))
+
+elif cmd == 'get_stored_procedure':
+  if len(args) != 1:
+    print('get_stored_procedure requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_stored_procedure(eval(args[0]),))
+
+elif cmd == 'drop_stored_procedure':
+  if len(args) != 1:
+    print('drop_stored_procedure requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.drop_stored_procedure(eval(args[0]),))
+
+elif cmd == 'get_all_stored_procedures':
+  if len(args) != 1:
+    print('get_all_stored_procedures requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_all_stored_procedures(eval(args[0]),))
+
+elif cmd == 'find_package':
+  if len(args) != 1:
+    print('find_package requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.find_package(eval(args[0]),))
+
+elif cmd == 'add_package':
+  if len(args) != 1:
+    print('add_package requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.add_package(eval(args[0]),))
+
+elif cmd == 'get_all_packages':
+  if len(args) != 1:
+    print('get_all_packages requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_all_packages(eval(args[0]),))
+
+elif cmd == 'drop_package':
+  if len(args) != 1:
+    print('drop_package requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.drop_package(eval(args[0]),))
 
 elif cmd == 'getName':
   if len(args) != 0:

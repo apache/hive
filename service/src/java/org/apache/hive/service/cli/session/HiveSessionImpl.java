@@ -18,6 +18,9 @@
 
 package org.apache.hive.service.cli.session;
 
+import static org.apache.hadoop.hive.conf.Constants.MODE;
+import static org.apache.hive.service.cli.operation.hplsql.HplSqlQueryExecutor.HPLSQL;
+
 import java.util.Collections;
 import java.io.BufferedReader;
 import java.io.File;
@@ -118,7 +121,7 @@ public class HiveSessionImpl implements HiveSession {
 
   private volatile long lastAccessTime = System.currentTimeMillis();
   private volatile boolean lockedByUser;
-  private final Semaphore operationLock;
+  private Semaphore operationLock;
 
 
   public HiveSessionImpl(SessionHandle sessionHandle, TProtocolVersion protocol,
@@ -191,6 +194,11 @@ public class HiveSessionImpl implements HiveSession {
       configureSession(sessionConfMap);
     }
     lastAccessTime = System.currentTimeMillis();
+
+    if (HPLSQL.equalsIgnoreCase(sessionState.getHiveVariables().getOrDefault(MODE, ""))) {
+      LOG.info("Disabling operation lock in HPL/SQL mode.");
+      operationLock = null;
+    }
   }
 
 /**

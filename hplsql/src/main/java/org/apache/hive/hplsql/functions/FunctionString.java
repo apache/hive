@@ -19,31 +19,32 @@
 package org.apache.hive.hplsql.functions;
 
 import org.apache.hive.hplsql.*;
+import org.apache.hive.hplsql.executor.QueryExecutor;
 
-public class FunctionString extends Function {
-  public FunctionString(Exec e) {
-    super(e);
+public class FunctionString extends BuiltinFunctions {
+  public FunctionString(Exec e, QueryExecutor queryExecutor) {
+    super(e, queryExecutor);
   }
 
   /** 
    * Register functions
    */
   @Override
-  public void register(Function f) {
-    f.map.put("CONCAT", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { concat(ctx); }});
-    f.map.put("CHAR", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { char_(ctx); }});
-    f.map.put("INSTR", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { instr(ctx); }});
-    f.map.put("LEN", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { len(ctx); }});
-    f.map.put("LENGTH", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { length(ctx); }});
-    f.map.put("LOWER", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { lower(ctx); }});
-    f.map.put("REPLACE", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { replace(ctx); }}); 
-    f.map.put("SUBSTR", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { substr(ctx); }});    
-    f.map.put("SUBSTRING", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { substr(ctx); }});
-    f.map.put("TO_CHAR", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { toChar(ctx); }});
-    f.map.put("UPPER", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { upper(ctx); }});
+  public void register(BuiltinFunctions f) {
+    f.map.put("CONCAT", this::concat);
+    f.map.put("CHAR", this::char_);
+    f.map.put("INSTR", this::instr);
+    f.map.put("LEN", this::len);
+    f.map.put("LENGTH", this::length);
+    f.map.put("LOWER", this::lower);
+    f.map.put("REPLACE", this::replace);
+    f.map.put("SUBSTR", this::substr);
+    f.map.put("SUBSTRING", this::substr);
+    f.map.put("TO_CHAR", this::toChar);
+    f.map.put("UPPER", this::upper);
     
-    f.specMap.put("SUBSTRING", new FuncSpecCommand() { public void run(HplsqlParser.Expr_spec_funcContext ctx) { substring(ctx); }});
-    f.specMap.put("TRIM", new FuncSpecCommand() { public void run(HplsqlParser.Expr_spec_funcContext ctx) { trim(ctx); }});
+    f.specMap.put("SUBSTRING", this::substring);
+    f.specMap.put("TRIM", this::trim);
   }
   
   /**
@@ -96,7 +97,7 @@ public class FunctionString extends Function {
       return;
     }
     else if(str.isEmpty()) {
-      evalInt(new Long(0));
+      evalInt(0);
       return;
     }
     String substr = evalPop(ctx.func_param(1).expr()).toString();
@@ -139,7 +140,7 @@ public class FunctionString extends Function {
         }
       }
     }
-    evalInt(new Long(idx));
+    evalInt(idx);
   }
   
   /**
@@ -151,7 +152,7 @@ public class FunctionString extends Function {
       return;
     }
     int len = evalPop(ctx.func_param(0).expr()).toString().trim().length(); 
-    evalInt(new Long(len));
+    evalInt(len);
   }
   
   /**
@@ -163,7 +164,7 @@ public class FunctionString extends Function {
       return;
     }
     int len = evalPop(ctx.func_param(0).expr()).toString().length(); 
-    evalInt(new Long(len));
+    evalInt(len);
   }
   
   /**
@@ -197,7 +198,7 @@ public class FunctionString extends Function {
    * SUBSTR and SUBSTRING function
    */
   void substr(HplsqlParser.Expr_func_paramsContext ctx) {
-    int cnt = getParamCount(ctx);
+    int cnt = BuiltinFunctions.getParamCount(ctx);
     if (cnt < 2) {
       evalNull();
       return;
@@ -269,7 +270,7 @@ public class FunctionString extends Function {
    * TO_CHAR function
    */
   void toChar(HplsqlParser.Expr_func_paramsContext ctx) {
-    int cnt = getParamCount(ctx);
+    int cnt = BuiltinFunctions.getParamCount(ctx);
     if (cnt != 1) {
       evalNull();
       return;
