@@ -201,13 +201,13 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
     runQuery(query, getConfigs(), expectedCounts[1]);
 
     query = "select " + udtfName + "(" + "'select id from " + partitionedTableName + " limit 2', 5)";
-    runQuery(query, getConfigs(), expectedCounts[1]);
+    runQuery(query, getConfigs(), expectedCounts[2]);
 
     query = "select " + udtfName + "(" + "'select id from " + partitionedTableName + " where id != 0 limit 2', 5)";
-    runQuery(query, getConfigs(), expectedCounts[1]);
+    runQuery(query, getConfigs(), expectedCounts[3]);
 
     query = "select " + udtfName + "(" + "'select id from " + partitionedTableName + " group by id limit 2', 5)";
-    runQuery(query, getConfigs(), expectedCounts[1]);
+    runQuery(query, getConfigs(), expectedCounts[4]);
 
   }
 
