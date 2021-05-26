@@ -21,8 +21,10 @@ package org.apache.hadoop.hive.ql.cache.results;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -239,10 +241,6 @@ public final class QueryResultsCache {
         cleanupIfNeeded();
         decrementMetric(MetricsConstant.QC_VALID_ENTRIES);
       } else if (prevStatus == CacheEntryStatus.PENDING) {
-        // Need to notify any queries waiting on the change from pending status.
-        synchronized (this) {
-          this.notifyAll();
-        }
         decrementMetric(MetricsConstant.QC_PENDING_FAILS);
       }
     }
@@ -255,6 +253,7 @@ public final class QueryResultsCache {
       synchronized (this) {
         CacheEntryStatus oldStatus = status;
         status = newStatus;
+        this.notifyAll();
         return oldStatus;
       }
     }
@@ -294,7 +293,7 @@ public final class QueryResultsCache {
     public boolean waitForValidStatus() {
       LOG.info("Waiting on pending cacheEntry: {}", this);
 
-      long startTime = System.nanoTime();
+      final long startTime = System.nanoTime();
       long endTime;
 
       while (true) {
@@ -332,15 +331,16 @@ public final class QueryResultsCache {
   }
 
   // Allow lookup by query string
+  @GuardedBy("cacheLock")
   private final Multimap<String, CacheEntry> queryMap = ArrayListMultimap.create();
 
-  // LRU - This linked list defines the iteration ordering, which is normally
-  // the order in which keys were inserted into the map (insertion-order). Note
-  // that insertion order is not affected if a value is re-inserted into the set.
-  @GuardedBy("cacheLock")
-  private final Set<CacheEntry> lru = new LinkedHashSet<>();
+  // LRU. Could also implement LRU as a doubly linked list if CacheEntry keeps its node.
+  // Use synchronized map since even read actions cause the lru to get updated.
+  private final Map<CacheEntry, CacheEntry> lru =
+      Collections.synchronizedMap(new LinkedHashMap<CacheEntry, CacheEntry>(16, 0.75f, true));
 
-  // Lookup of cache entries by table used in the query, for cache invalidation.
+  // Lookup of cache entries by table used in the query, for cache invalidation
+  @GuardedBy("cacheLock")
   private final Multimap<String, CacheEntry> tableToEntryMap = ArrayListMultimap.create();
 
   private final HiveConf conf;
@@ -413,41 +413,45 @@ public final class QueryResultsCache {
 
   /**
    * Check if the cache contains an entry for the requested LookupInfo.
+   *
    * @param request
-   * @return  The cached result if there is a match in the cache, or null if no match is found.
+   * @return The cached result if there is a match in the cache, or null if no
+   *         match is found.
+   * @throws NullPointerException if request is {@code null}
    */
-  public CacheEntry lookup(LookupInfo request) {
-    CacheEntry result = null;
+  public CacheEntry lookup(final LookupInfo request) {
+    Objects.requireNonNull(request);
 
     LOG.debug("QueryResultsCache lookup for query: {}", request.queryText);
 
+    CacheEntry result = null;
     boolean foundPending = false;
-    // Cannot entries while we currently hold read lock, so keep track of them to delete later.
+    // Cannot modify entries while we currently hold read lock, so keep track of
+    // them to delete later.
     Set<CacheEntry> entriesToRemove = new HashSet<>();
     cacheReadLock.lock();
     try {
-      // Note: ReentrantReadWriteLock deos not allow upgrading a read lock to a write lock.
+      // Note: ReentrantReadWriteLock does not allow upgrading a read lock to a write lock.
       // Care must be taken while under read lock, to make sure we do not perform any actions
       // which attempt to take a write lock.
       Collection<CacheEntry> candidates = queryMap.get(request.queryText);
-      if (candidates != null) {
-        CacheEntry pendingResult = null;
-        for (CacheEntry candidate : candidates) {
-          if (entryMatches(request, candidate, entriesToRemove)) {
-            CacheEntryStatus entryStatus = candidate.status;
-            if (entryStatus == CacheEntryStatus.VALID) {
-              result = candidate;
-              break;
-            } else if (entryStatus == CacheEntryStatus.PENDING && pendingResult == null) {
-              pendingResult = candidate;
-            }
+      // Try to find valid entry, but settle for pending entry if that is all
+      // there is available
+      for (CacheEntry candidate : candidates) {
+        if (entryMatches(request, candidate, entriesToRemove)) {
+          CacheEntryStatus entryStatus = candidate.status;
+          if (entryStatus == CacheEntryStatus.VALID) {
+            result = candidate;
+            break;
+          }
+          if (entryStatus == CacheEntryStatus.PENDING) {
+            // Only accept first pending result
+            result = (result == null) ? candidate : result;
           }
         }
-
-        // Try to find valid entry, but settle for pending entry if that is all we have.
-        if (result == null && pendingResult != null) {
-          result = pendingResult;
-          foundPending = true;
+        if (result != null) {
+          foundPending = (result.status == CacheEntryStatus.PENDING);
+          lru.get(result); // Update LRU
         }
       }
     } finally {
@@ -491,7 +495,7 @@ public final class QueryResultsCache {
 
       // Add the entry to the cache structures while under write lock.
       queryMap.put(queryText, addedEntry);
-      lru.add(addedEntry);
+      lru.put(addedEntry, addedEntry);
       // Index of entries by table usage.
       addedEntry.getTableNames().forEach(tableName -> tableToEntryMap.put(tableName, addedEntry));
     } finally {
@@ -522,9 +526,9 @@ public final class QueryResultsCache {
       FileSystem resultsFs = queryResultsPath.getFileSystem(conf);
 
       long resultSize = 0;
-      for(FileStatus fs:fetchWork.getFilesToFetch()) {
-        if(resultsFs.exists(fs.getPath())) {
-          resultSize +=  fs.getLen();
+      for (FileStatus fs : fetchWork.getFilesToFetch()) {
+        if (resultsFs.exists(fs.getPath())) {
+          resultSize += fs.getLen();
         } else {
           // No actual result directory, no need to cache anything.
           requiresCaching = false;
@@ -559,7 +563,6 @@ public final class QueryResultsCache {
         fetchWorkForCache.setCachedResult(true);
         fetchWorkForCache.setFilesToFetch(fetchWork.getFilesToFetch());
         cacheEntry.fetchWork = fetchWorkForCache;
-        //cacheEntry.cachedResultsPath = cachedResultsPath;
         cacheEntry.size = resultSize;
         this.cacheSize += resultSize;
 
@@ -568,18 +571,15 @@ public final class QueryResultsCache {
         cacheEntry.addReader();
 
         scheduleEntryInvalidation(cacheEntry);
-
-        // Notify any queries waiting on this cacheEntry to become valid.
-        cacheEntry.notifyAll();
       }
 
       incrementMetric(MetricsConstant.QC_VALID_ENTRIES);
       incrementMetric(MetricsConstant.QC_TOTAL_ENTRIES_ADDED);
     } catch (Exception err) {
-      String queryText = cacheEntry.getQueryText();
-      LOG.error("Failed to create cache entry for query results for query: " + queryText, err);
+      LOG.error("Failed to create cache entry for query results for query: " + cacheEntry.getQueryText(), err);
       cacheEntry.size = 0;
       cacheEntry.cachedResultsPath = null;
+
       // Invalidate the entry. Rely on query cleanup to remove from lookup.
       cacheEntry.invalidate();
       return false;
@@ -592,8 +592,11 @@ public final class QueryResultsCache {
     cacheWriteLock.lock();
     try {
       LOG.info("Clearing the results cache");
-      Collection<CacheEntry> keys = new ArrayList<>(lru);
-      for (CacheEntry entry : keys) {
+      CacheEntry[] allEntries = null;
+      synchronized (lru) {
+        allEntries = lru.keySet().toArray(new CacheEntry[0]);
+      }
+      for (CacheEntry entry : allEntries) {
         try {
           removeEntry(entry);
         } catch (Exception err) {
@@ -616,25 +619,26 @@ public final class QueryResultsCache {
 
   public void notifyTableChanged(String dbName, String tableName, long updateTime) {
     LOG.debug("Table changed: {}.{}, at {}", dbName, tableName, updateTime);
-    // Invalidate all cache entries using this table.
-    List<CacheEntry> entriesToInvalidate = null;
+
+    final String key = (dbName.toLowerCase() + "." + tableName.toLowerCase());
+
     cacheWriteLock.lock();
     try {
-      String key = (dbName.toLowerCase() + "." + tableName.toLowerCase());
       Collection<CacheEntry> entriesForTable = tableToEntryMap.get(key);
-      if (entriesForTable != null) {
-        // Possible concurrent modification issues if we try to remove cache entries while
-        // traversing the cache structures. Save the entries to remove in a separate list.
-        entriesToInvalidate = new ArrayList<>(entriesForTable);
-      }
-      if (entriesToInvalidate != null) {
-        for (CacheEntry entry : entriesToInvalidate) {
-          // Ignore updates that occured before this cached query was created.
-          if (entry.getQueryInfo().getQueryTime() <= updateTime) {
-            removeEntry(entry);
-          }
+
+      // Possible concurrent modification issues if we try to remove cache
+      // entries while traversing the cache structures. Save the entries to
+      // remove in a separate list.
+      final List<CacheEntry> entriesToInvalidate =
+          entriesForTable.isEmpty() ? Collections.emptyList() : new ArrayList<>(entriesForTable);
+
+      for (CacheEntry entry : entriesToInvalidate) {
+        // Ignore updates that occured before this cached query was created.
+        if (entry.getQueryInfo().getQueryTime() <= updateTime) {
+          removeEntry(entry);
         }
       }
+
     } finally {
       cacheWriteLock.unlock();
     }
@@ -707,23 +711,20 @@ public final class QueryResultsCache {
     entry.invalidate();
     cacheWriteLock.lock();
     try {
-      removeFromLookup(entry);
+      String queryString = entry.getQueryText();
+      if (!queryMap.remove(queryString, entry)) {
+        LOG.warn("Attempted to remove entry but it was not in the cache: {}", entry);
+      }
+
+      // Remove this entry from the table usage mappings.
+      entry.getTableNames().forEach(tableName -> tableToEntryMap.remove(tableName, entry));
+
       lru.remove(entry);
       // Should the cache size be updated here, or after the result data has actually been deleted?
       cacheSize -= entry.size;
     } finally {
       cacheWriteLock.unlock();
     }
-  }
-
-  private void removeFromLookup(CacheEntry entry) {
-    String queryString = entry.getQueryText();
-    if (!queryMap.remove(queryString, entry)) {
-      LOG.warn("Attempted to remove entry but it was not in the cache: {}", entry);
-    }
-
-    // Remove this entry from the table usage mappings.
-    entry.getTableNames().forEach(tableName -> tableToEntryMap.remove(tableName, entry));
   }
 
   /**
@@ -753,16 +754,14 @@ public final class QueryResultsCache {
   }
 
   private CacheEntry findEntryToRemove() {
-    cacheReadLock.lock();
-    try {
-      // Entries should be in LRU order in the keyset iterator
-      for (CacheEntry removalCandidate : lru) {
+    // Entries should be in LRU order in the keyset iterator.
+    Set<CacheEntry> entries = lru.keySet();
+    synchronized (lru) {
+      for (CacheEntry removalCandidate : entries) {
         if (removalCandidate.getStatus() == CacheEntryStatus.VALID) {
           return removalCandidate;
         }
       }
-    } finally {
-      cacheReadLock.unlock();
     }
     return null;
   }
