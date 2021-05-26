@@ -217,6 +217,19 @@ public class PTFDesc extends AbstractOperatorDesc {
       }
       return result.toString();
     }
+
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "allEvaluatorsAreStreaming", explainLevels = {
+        Level.DEFAULT, Level.EXTENDED })
+    public boolean getAllEvaluatorsAreStreaming() {
+      VectorPTFEvaluatorBase[] evaluators =
+          VectorPTFDesc.getEvaluators(vectorPTFDesc, vectorPTFInfo);
+      for (VectorPTFEvaluatorBase evaluator : evaluators) {
+        if (!evaluator.streamsResult()) {
+          return false;
+        }
+      }
+      return true;
+    }
   }
 
   @Explain(vectorization = Vectorization.OPERATOR, displayName = "PTF Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })

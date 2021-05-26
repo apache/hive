@@ -104,9 +104,18 @@ public class VectorPTFEvaluatorDecimalFirstValue extends VectorPTFEvaluatorBase 
     return true;
   }
 
+  public boolean isGroupResultNull() {
+    return isGroupResultNull;
+  }
+
   @Override
   public Type getResultColumnVectorType() {
     return Type.DECIMAL;
+  }
+
+  @Override
+  public Object getGroupResult() {
+    return firstValue;
   }
 
   @Override
@@ -114,5 +123,12 @@ public class VectorPTFEvaluatorDecimalFirstValue extends VectorPTFEvaluatorBase 
     haveFirstValue = false;
     isGroupResultNull = true;
     firstValue.set(HiveDecimal.ZERO);
+  }
+
+  // this is not necessarily needed, because first_value is evaluated in a streaming way, therefore
+  // VectorPTFGroupBatches won't hit this codepath, so this is just for clarity's sake (behavior is
+  // other than default VectorPTFEvaluatorBase)
+  public boolean isCacheableForRange() {
+    throw new RuntimeException("isCacheableForRange check is not expected for first_value");
   }
 }

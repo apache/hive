@@ -46,7 +46,7 @@ public class <ClassName> extends <BaseClassName> {
     DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) inputTypeInfos[0];
     HiveDecimalWritable writable = new HiveDecimalWritable();
     writable.deserialize64(value, decimalTypeInfo.scale());
-    return getColumnParamString(0, colNum) + ", decimal64Val " + value +
+    return getColumnParamString(0, inputColumnNum[0]) + ", decimal64Val " + value +
         ", decimalVal " + writable.toString();
   }
 

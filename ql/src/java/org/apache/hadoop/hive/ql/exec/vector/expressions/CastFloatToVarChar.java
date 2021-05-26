@@ -49,6 +49,6 @@ public class CastFloatToVarChar extends CastFloatToString implements TruncString
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumn) + ", maxLength " + maxLength;
+    return getColumnParamString(0, inputColumnNum[0]) + ", maxLength " + maxLength;
   }
 }

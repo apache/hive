@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
  */
 public class VectorPTFEvaluatorDenseRank extends VectorPTFEvaluatorBase {
 
-  private int denseRank;
+  private long denseRank;
 
   public VectorPTFEvaluatorDenseRank(WindowFrameDef windowFrameDef, int outputColumnNum) {
     super(windowFrameDef, outputColumnNum);
@@ -40,8 +40,7 @@ public class VectorPTFEvaluatorDenseRank extends VectorPTFEvaluatorBase {
   }
 
   @Override
-  public void evaluateGroupBatch(VectorizedRowBatch batch)
-      throws HiveException {
+  public void evaluateGroupBatch(VectorizedRowBatch batch) throws HiveException {
 
     // We don't evaluate input columns...
 
@@ -63,8 +62,18 @@ public class VectorPTFEvaluatorDenseRank extends VectorPTFEvaluatorBase {
   }
 
   @Override
+  public boolean isGroupResultNull() {
+    return false;
+  }
+
+  @Override
   public Type getResultColumnVectorType() {
     return Type.LONG;
+  }
+
+  @Override
+  public Object getGroupResult() {
+    return denseRank;
   }
 
   @Override

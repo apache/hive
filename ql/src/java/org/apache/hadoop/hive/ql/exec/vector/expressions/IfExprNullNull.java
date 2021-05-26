@@ -27,7 +27,7 @@ public class IfExprNullNull extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
   public IfExprNullNull(int outputColumnNum) {
-    super(outputColumnNum);
+    super(-1, outputColumnNum);
   }
 
   public IfExprNullNull() {

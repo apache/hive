@@ -59,7 +59,7 @@ public class GroupingColumns extends MathFuncLongToLong {
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", masks " + Arrays.toString(masks);
+    return "col " + inputColumnNum[0] + ", masks " + Arrays.toString(masks);
   }
 
   @Override
