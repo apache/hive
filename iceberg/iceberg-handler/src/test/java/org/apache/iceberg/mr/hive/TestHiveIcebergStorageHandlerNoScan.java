@@ -160,7 +160,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
     shell.executeStatement("CREATE EXTERNAL TABLE customers " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        "STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
         SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA) + "', " +
@@ -222,7 +222,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     String createSql = "CREATE EXTERNAL TABLE " + identifier +
         " (customer_id BIGINT, first_name STRING COMMENT 'This is first name'," +
         " last_name STRING COMMENT 'This is last name')" +
-        " STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        " STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         testTables.propertiesForCreateTableSQL(ImmutableMap.of());
     shell.executeStatement(createSql);
@@ -245,7 +245,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
     String query = String.format("CREATE EXTERNAL TABLE customers (customer_id BIGINT, first_name STRING, last_name " +
         "STRING) STORED BY %s %s TBLPROPERTIES ('%s'='%s')",
-        "ICEBERG",
+        "iceBeRg",
         testTables.locationForCreateTableSQL(identifier),
         InputFormatConfig.CATALOG_NAME,
         Catalogs.ICEBERG_DEFAULT_CATALOG_NAME);
@@ -258,7 +258,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
     String query = String.format("CREATE EXTERNAL TABLE customers (customer_id BIGINT, first_name STRING, last_name " +
             "STRING) STORED BY %s WITH SERDEPROPERTIES('%s'='%s') %s TBLPROPERTIES ('%s'='%s')",
-        "ICEBERG",
+        "iceberg",
         TableProperties.DEFAULT_FILE_FORMAT,
         "orc",
         testTables.locationForCreateTableSQL(identifier),
@@ -275,7 +275,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
     shell.executeStatement("CREATE EXTERNAL TABLE customers " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        "STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
         SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA) + "','" +
@@ -291,7 +291,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
     // We need the location for HadoopTable based tests only
     shell.executeStatement("CREATE EXTERNAL TABLE customers " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        "STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
         SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA) + "', " +
@@ -309,7 +309,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
     shell.executeStatement("CREATE EXTERNAL TABLE customers " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        "STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
         SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA) + "', " +
@@ -355,7 +355,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
         "Unrecognized token 'WrongSchema'", () -> {
           shell.executeStatement("CREATE EXTERNAL TABLE withShell2 " +
-              "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+              "STORED BY ICEBERG " +
               testTables.locationForCreateTableSQL(identifier) +
               "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='WrongSchema'" +
               ",'" + InputFormatConfig.CATALOG_NAME + "'='" + Catalogs.ICEBERG_DEFAULT_CATALOG_NAME + "')");
@@ -366,7 +366,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
         "Please provide ", () -> {
           shell.executeStatement("CREATE EXTERNAL TABLE withShell2 " +
-              "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+              "STORED BY ICEBERG " +
               testTables.locationForCreateTableSQL(identifier) +
               testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
         }
@@ -377,7 +377,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
       AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
           "Table location not set", () -> {
             shell.executeStatement("CREATE EXTERNAL TABLE withShell2 " +
-                "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+                "STORED BY ICEBERG " +
                 "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
                 SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA) + "','" +
                 InputFormatConfig.CATALOG_NAME + "'='" + Catalogs.ICEBERG_DEFAULT_CATALOG_NAME + "')");
@@ -397,7 +397,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
       AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
           "customers already exists", () -> {
             shell.executeStatement("CREATE EXTERNAL TABLE customers " +
-                "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+                "STORED BY ICEBERG " +
                 "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
                 SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA) + "',' " +
                 InputFormatConfig.CATALOG_NAME + "'='" + Catalogs.ICEBERG_DEFAULT_CATALOG_NAME + "')");
@@ -406,7 +406,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     } else {
       // With other catalogs, table creation should succeed
       shell.executeStatement("CREATE EXTERNAL TABLE customers " +
-          "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+          "STORED BY ICEBERG " +
           testTables.locationForCreateTableSQL(TableIdentifier.of("default", "customers")) +
           testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
     }
@@ -421,7 +421,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         "Provide only one of the following", () -> {
           shell.executeStatement("CREATE EXTERNAL TABLE customers (customer_id BIGINT) " +
               "PARTITIONED BY (first_name STRING) " +
-              "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+              "STORED BY ICEBERG " +
               testTables.locationForCreateTableSQL(TableIdentifier.of("default", "customers")) +
               " TBLPROPERTIES ('" + InputFormatConfig.PARTITION_SPEC + "'='" +
               PartitionSpecParser.toJson(spec) + "')");
@@ -440,7 +440,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         "memorable_moments MAP < STRING, STRUCT < year: INT, place: STRING, details: STRING >>, " +
         "current_address STRUCT < street_address: STRUCT " +
         "<street_number: INT, street_name: STRING, street_type: STRING>, country: STRING, postal_code: STRING >) " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        "STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
 
@@ -469,7 +469,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     shell.executeStatement("CREATE EXTERNAL TABLE all_types (" +
         "t_Float FLOaT, t_dOuble DOUBLE, t_boolean BOOLEAN, t_int INT, t_bigint BIGINT, t_binary BINARY, " +
         "t_string STRING, t_timestamp TIMESTAMP, t_date DATE, t_decimal DECIMAL(3,2)) " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        "STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
 
@@ -493,7 +493,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
           "Unsupported Hive type", () -> {
             shell.executeStatement("CREATE EXTERNAL TABLE not_supported_types " +
                 "(not_supported " + notSupportedType + ") " +
-                "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+                "STORED BY ICEBERG " +
                 testTables.locationForCreateTableSQL(identifier) +
                 testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
           }
@@ -515,7 +515,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     for (String notSupportedType : notSupportedTypes.keySet()) {
       shell.executeStatement("CREATE EXTERNAL TABLE not_supported_types (not_supported " + notSupportedType + ") " +
-              "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+              "STORED BY ICEBERG " +
               testTables.locationForCreateTableSQL(identifier) +
               testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
 
@@ -531,7 +531,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     shell.executeStatement("CREATE EXTERNAL TABLE comment_table (" +
         "t_int INT COMMENT 'int column',  " +
         "t_string STRING COMMENT 'string column') " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        "STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
     org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
@@ -551,7 +551,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     shell.executeStatement("CREATE EXTERNAL TABLE without_comment_table (" +
             "t_int INT,  " +
             "t_string STRING) " +
-            "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+            "STORED BY ICEBERG " +
             testTables.locationForCreateTableSQL(identifier) +
             testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
     org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
@@ -572,7 +572,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     shell.executeStatement("CREATE EXTERNAL TABLE customers (" +
         "t_int INT,  " +
         "t_string STRING) " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        "STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
     String propKey = "dummy";
@@ -602,7 +602,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
     shell.executeStatement(String.format("CREATE EXTERNAL TABLE default.customers " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' %s" +
+        "STORED BY ICEBERG %s" +
         "TBLPROPERTIES ('%s'='%s', '%s'='%s', '%s'='%s', '%s'='%s')",
         testTables.locationForCreateTableSQL(identifier), // we need the location for HadoopTable based tests only
         InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA),
@@ -723,7 +723,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     // Create HMS table with with a property to be translated
     shell.executeStatement(String.format("CREATE EXTERNAL TABLE default.customers " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler'" +
+        "STORED BY ICEBERG " +
         "TBLPROPERTIES ('%s'='%s', '%s'='%s', '%s'='%s')",
         InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA),
         InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(SPEC),
