@@ -127,6 +127,11 @@
     </dependency>
     <!-- test intra-project -->
     <dependency>
+     <groupId>org.apache.hadoop</groupId>
+     <artifactId>hadoop-hdfs</artifactId>
+     <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
       <version>${project.version}</version>

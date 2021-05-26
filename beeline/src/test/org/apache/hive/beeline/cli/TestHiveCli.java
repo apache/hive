@@ -187,6 +187,18 @@ public class TestHiveCli {
   }
 
   @Test
+  public void testSessionId1() {
+    verifyCMD(null, "hive.session.id=xxxx", out,
+        new String[] { "--hiveconf", "hive.session.id=xxxx", "-e", "set hive.session.id" }, ERRNO_OK, true);
+  }
+
+  @Test
+  public void testSessionId2() {
+    verifyCMD(null, "Compiling", err,
+        new String[] { "--hiveconf", "hive.session.id=xxxx", "-e", "select 1" }, ERRNO_OK, true);
+  }
+
+  @Test
   public void testVariables() {
     verifyCMD(
         "set system:xxx=5;\nset system:yyy=${system:xxx};\nset system:yyy;", "", out, null, ERRNO_OK, true);

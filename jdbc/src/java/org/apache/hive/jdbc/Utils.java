@@ -437,6 +437,18 @@ public class Utils {
     // Don't parse them, but set embedded mode as true
     if (uri.equalsIgnoreCase(URL_PREFIX)) {
       connParams.setEmbeddedMode(true);
+      for (Map.Entry<Object, Object> kv : info.entrySet()) {
+        if ((kv.getKey() instanceof String)) {
+          String key = (String) kv.getKey();
+          if (key.startsWith(JdbcConnectionParams.HIVE_VAR_PREFIX)) {
+            connParams.getHiveVars().put(key.substring(JdbcConnectionParams.HIVE_VAR_PREFIX.length()),
+                info.getProperty(key));
+          } else if (key.startsWith(JdbcConnectionParams.HIVE_CONF_PREFIX)) {
+            connParams.getHiveConfs().put(
+                key.substring(JdbcConnectionParams.HIVE_CONF_PREFIX.length()), info.getProperty(key));
+          }
+        }
+      }
       return connParams;
     }
 

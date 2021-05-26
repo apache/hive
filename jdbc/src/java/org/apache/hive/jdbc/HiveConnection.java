@@ -98,6 +98,7 @@ import org.apache.hive.jdbc.saml.IJdbcBrowserClientFactory;
 import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 
 import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.KerberosSaslHelper;
@@ -347,7 +348,11 @@ public class HiveConnection implements java.sql.Connection {
     }
     if (isEmbeddedMode) {
       client = EmbeddedCLIServicePortal.get(connParams.getHiveConfs());
+      String sessionId = connParams.getHiveConfs().get(HiveConf.ConfVars.HIVESESSIONID.varname);
       connParams.getHiveConfs().clear();
+      if (sessionId != null) {
+        connParams.getHiveConfs().put(HiveConf.ConfVars.HIVESESSIONID.varname, sessionId);
+      }
       // open client session
       if (isBrowserAuthMode()) {
         throw new SQLException(new IllegalArgumentException(
