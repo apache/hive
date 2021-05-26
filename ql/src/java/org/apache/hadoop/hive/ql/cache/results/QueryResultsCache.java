@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,7 +75,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -332,16 +331,16 @@ public final class QueryResultsCache {
 
   // Allow lookup by query string
   @GuardedBy("cacheLock")
-  private final Multimap<String, CacheEntry> queryMap = ArrayListMultimap.create();
+  private final Multimap<String, CacheEntry> queryMap = HashMultimap.create();
 
   // LRU. Could also implement LRU as a doubly linked list if CacheEntry keeps its node.
   // Use synchronized map since even read actions cause the lru to get updated.
-  private final Map<CacheEntry, CacheEntry> lru =
-      Collections.synchronizedMap(new LinkedHashMap<CacheEntry, CacheEntry>(16, 0.75f, true));
+  private final Set<CacheEntry> lru =
+      Collections.synchronizedSet(Collections.newSetFromMap(new LinkedHashMap<>(16, 0.75f, true)));
 
   // Lookup of cache entries by table used in the query, for cache invalidation
   @GuardedBy("cacheLock")
-  private final Multimap<String, CacheEntry> tableToEntryMap = ArrayListMultimap.create();
+  private final Multimap<String, CacheEntry> tableToEntryMap = HashMultimap.create();
 
   private final HiveConf conf;
   private Path cacheDirPath;
@@ -422,7 +421,7 @@ public final class QueryResultsCache {
   public CacheEntry lookup(final LookupInfo request) {
     Objects.requireNonNull(request);
 
-    LOG.debug("QueryResultsCache lookup for query: {}", request.queryText);
+    LOG.debug("Cache lookup for query: {}", request.queryText);
 
     CacheEntry result = null;
     boolean foundPending = false;
@@ -449,10 +448,13 @@ public final class QueryResultsCache {
             result = (result == null) ? candidate : result;
           }
         }
-        if (result != null) {
-          foundPending = (result.status == CacheEntryStatus.PENDING);
-          lru.get(result); // Update LRU
-        }
+      }
+      if (result != null) {
+        foundPending = (result.status == CacheEntryStatus.PENDING);
+        // Overwrite itself to force update of LRU list. This is why access to
+        // 'lru' needs to be synchronized, Because LRU list is being modified
+        // inside what should be a read-only lock.
+        lru.add(result);
       }
     } finally {
       cacheReadLock.unlock();
@@ -463,7 +465,7 @@ public final class QueryResultsCache {
       removeEntry(invalidEntry);
     }
 
-    LOG.debug("QueryResultsCache lookup result: {}", result);
+    LOG.debug("Cache lookup result: {}", result);
     incrementMetric(MetricsConstant.QC_LOOKUPS);
     if (result != null) {
       if (foundPending) {
@@ -495,7 +497,7 @@ public final class QueryResultsCache {
 
       // Add the entry to the cache structures while under write lock.
       queryMap.put(queryText, addedEntry);
-      lru.put(addedEntry, addedEntry);
+      lru.add(addedEntry);
       // Index of entries by table usage.
       addedEntry.getTableNames().forEach(tableName -> tableToEntryMap.put(tableName, addedEntry));
     } finally {
@@ -592,11 +594,9 @@ public final class QueryResultsCache {
     cacheWriteLock.lock();
     try {
       LOG.info("Clearing the results cache");
-      CacheEntry[] allEntries = null;
-      synchronized (lru) {
-        allEntries = lru.keySet().toArray(new CacheEntry[0]);
-      }
-      for (CacheEntry entry : allEntries) {
+
+      // Make a copy to avoid ConcurrentModification during remove
+      for (CacheEntry entry : new ArrayList<>(lru)) {
         try {
           removeEntry(entry);
         } catch (Exception err) {
@@ -755,9 +755,8 @@ public final class QueryResultsCache {
 
   private CacheEntry findEntryToRemove() {
     // Entries should be in LRU order in the keyset iterator.
-    Set<CacheEntry> entries = lru.keySet();
     synchronized (lru) {
-      for (CacheEntry removalCandidate : entries) {
+      for (CacheEntry removalCandidate : lru) {
         if (removalCandidate.getStatus() == CacheEntryStatus.VALID) {
           return removalCandidate;
         }
