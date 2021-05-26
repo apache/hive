@@ -217,13 +217,11 @@ public class Driver implements IDriver {
       }
 
       if (SessionState.get() != null) {
-        // Clean up every resource object stored in the query state
-        driverContext.getQueryState().removeResources();
         // Remove any query state reference from the session state
         SessionState.get().removeQueryState(getConf().get(HiveConf.ConfVars.HIVEQUERYID.varname));
       }
+      
       driverState.executionFinishedWithLocking(isFinishedWithError);
-
     }
 
     SessionState.getPerfLogger().cleanupPerfLogMetrics();

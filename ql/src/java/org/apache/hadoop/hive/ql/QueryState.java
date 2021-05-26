@@ -155,10 +155,6 @@ public class QueryState {
     return resourceMap.get(resourceIdentifier);
   }
 
-  public void removeResources() {
-    resourceMap.clear();
-  }
-
   /**
    * Generating the new QueryState object. Making sure, that the new queryId is generated.
    * @param conf The HiveConf which should be used
