@@ -22,7 +22,7 @@ INSERT INTO employee VALUES (8, '1990-01-01 00:00:00');
 SELECT eid, birth FROM employee ORDER BY eid;
 -- Changing the read property does not have any effect in the current version of Hive
 -- since the file metadata contains the appropriate information to read them correctly 
-SET hive.parquet.timestamp.read.legacy.conversion.enabled=false;
+SET hive.parquet.timestamp.legacy.conversion.enabled=false;
 SELECT eid, birth FROM employee ORDER BY eid;
-SET hive.parquet.timestamp.read.legacy.conversion.enabled=true;
+SET hive.parquet.timestamp.legacy.conversion.enabled=true;
 SELECT eid, birth FROM employee ORDER BY eid;

@@ -545,7 +545,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
         // If there is no meta at all then it is not possible to determine which rules were used to write the file.
         // Choose between old/new rules using the respective configuration property.
         legacyConversion = String.valueOf(
-            HiveConf.getBoolVar(configuration, ConfVars.HIVE_PARQUET_TIMESTAMP_READ_LEGACY_CONVERSION_ENABLED));
+            HiveConf.getBoolVar(configuration, ConfVars.HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED));
       }
       metadata.put(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY, legacyConversion);
     } else {

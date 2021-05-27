@@ -145,7 +145,7 @@ public class ParquetRecordReaderBase {
       legacyConversionEnabled = DataWritableReadSupport.getWriterLegacyConversion(fileMetaData.getKeyValueMetaData());
       if (legacyConversionEnabled == null) {
         legacyConversionEnabled =
-            HiveConf.getBoolVar(conf, ConfVars.HIVE_PARQUET_TIMESTAMP_READ_LEGACY_CONVERSION_ENABLED);
+            HiveConf.getBoolVar(conf, ConfVars.HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED);
       }
 
       split = new ParquetInputSplit(finalPath,

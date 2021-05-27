@@ -5,7 +5,7 @@ load data local inpath '../../data/files/parquet_legacy_mixed_timestamps.parq' i
 
 select * from legacy_table;
 
-set hive.parquet.timestamp.read.legacy.conversion.enabled=false;
+set hive.parquet.timestamp.legacy.conversion.enabled=false;
 
 select * from legacy_table;
 
