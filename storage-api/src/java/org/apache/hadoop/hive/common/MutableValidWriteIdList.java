@@ -26,19 +26,18 @@ import java.util.List;
 public interface MutableValidWriteIdList extends ValidWriteIdList {
   /**
    * This method will mark write ids between highWatermark+1 and the writeId inclusive as open.
-   * @param writeId write id that is bigger than current highWatermark
    */
   void addOpenWriteId(long writeId);
 
   /**
-   * This method assume the input list is sorted and it will mark them as aborted.
-   * @param writeIds a list of write id that is currently open
+   * This method will mark the writeIds as aborted.
+   * Note that we cannot abort a write id that is committed.
    */
   void addAbortedWriteIds(List<Long> writeIds);
 
   /**
-   * This method assume the input list is sorted and it will mark them as committed.
-   * @param writeIds a list of write id that is currently open
+   * This method will mark the writeIds as committed.
+   * Note that we cannot commit a write id that is aborted.
    */
   void addCommittedWriteIds(List<Long> writeIds);
 }
