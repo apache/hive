@@ -76,12 +76,18 @@ public class MutableValidReaderWriteIdList extends ValidReaderWriteIdList implem
         nextCommitted = itr.hasNext() ? itr.next() : -1;
       }
     }
-    // All the elements in writeIds should be already removed from exceptions, so
+    // All the elements in writeIds should already be removed from exceptions, so
     // the iteration has no more elements.
     Preconditions.checkState(!itr.hasNext());
     exceptions = updatedExceptions;
     abortedBits = updatedAbortedBits;
     updateMinOpenWriteId();
+  }
+
+  @Override
+  public void readFromString(String str) {
+    super.readFromString(str);
+    exceptions = new ArrayList<>(exceptions);
   }
 
   @Override

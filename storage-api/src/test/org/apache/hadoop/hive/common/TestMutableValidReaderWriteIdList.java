@@ -66,13 +66,16 @@ public class TestMutableValidReaderWriteIdList {
     for (int i = 0; i < 100; i++) {
       TestCase.assertTrue(mutableWriteIdList.isWriteIdValid(i));
     }
+    TestCase.assertEquals(ValidWriteIdList.RangeResponse.ALL, mutableWriteIdList.isWriteIdRangeValid(0, 99));
     for (int i = 100; i < 1100; i++) {
       TestCase.assertFalse(mutableWriteIdList.isWriteIdValid(i));
     }
+    TestCase.assertEquals(ValidWriteIdList.RangeResponse.NONE, mutableWriteIdList.isWriteIdRangeValid(100, 1099));
     for (int i = 1100; i < 2001; i++) {
       TestCase.assertTrue(mutableWriteIdList.isWriteIdValid(i));
     }
     TestCase.assertFalse(mutableWriteIdList.isWriteIdValid(2001));
+    TestCase.assertEquals(ValidWriteIdList.RangeResponse.SOME, mutableWriteIdList.isWriteIdRangeValid(1100, 2001));
   }
 
   @Test
