@@ -524,6 +524,11 @@ public class MetastoreConf {
             "not blocked.\n" +
             "\n" +
             "See HIVE-4409 for more details."),
+    ALLOW_INCOMPATIBLE_COL_TYPE_CHANGES_TABLE_SERDES("metastore.allow.incompatible.col.type.changes.serdes",
+        "hive.metastore.allow.incompatible.col.type.changes.serdes", "org.apache.hadoop.hive.kudu.KuduSerDe",
+        "Comma-separated list of table serdes which are allowed to make incompatible column type\n" +
+        "changes. This configuration is only applicable if metastore.disallow.incompatible.col.type.changes\n" +
+        "is true."),
     DUMP_CONFIG_ON_CREATION("metastore.dump.config.on.creation", "metastore.dump.config.on.creation", true,
         "If true, a printout of the config file (minus sensitive values) will be dumped to the " +
             "log whenever newMetastoreConf() is called.  Can produce a lot of logs"),
