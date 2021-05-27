@@ -5234,7 +5234,7 @@ public class ObjectStore implements RawStore, Configurable {
      */
     try {
       openTransaction();
-      if (dbProduct.isPOSTGRES()) {
+      if (dbProduct.isPOSTGRES() || dbProduct.isMYSQL()) {
         query = pm.newQuery(MStorageDescriptor.class, "this.cd == inCD");
         query.declareParameters("MColumnDescriptor inCD");
         List<MStorageDescriptor> referencedSDs = listStorageDescriptorsWithCD(oldCD, query);
