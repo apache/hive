@@ -163,7 +163,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
     WarehouseInstance.Tuple tuple = primary.dump(replPolicy, dumpWithClause);
 
-    DumpMetaData dumpMetaData = new DumpMetaData(new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR), conf);
+    DumpMetaData dumpMetaData = new DumpMetaData(new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR),
+            conf, true);
     Assert.assertEquals(oldReplPolicy != null && !replPolicy.equals(oldReplPolicy),
       dumpMetaData.isReplScopeModified());
 
@@ -195,16 +196,16 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
   private void verifyDumpMetadata(String replPolicy, Path dumpPath) throws SemanticException {
     String[] parseReplPolicy = replPolicy.split("\\.'");
-    assertEquals(parseReplPolicy[0], new DumpMetaData(dumpPath, conf).getReplScope().getDbName());
+    assertEquals(parseReplPolicy[0], new DumpMetaData(dumpPath, conf, true).getReplScope().getDbName());
     if (parseReplPolicy.length > 1) {
       parseReplPolicy[1] = parseReplPolicy[1].replaceAll("'", "");
       assertEquals(parseReplPolicy[1],
-        new DumpMetaData(dumpPath, conf).getReplScope().getIncludedTableNames());
+        new DumpMetaData(dumpPath, conf, true).getReplScope().getIncludedTableNames());
     }
     if (parseReplPolicy.length > 2) {
       parseReplPolicy[2] = parseReplPolicy[2].replaceAll("'", "");
       assertEquals(parseReplPolicy[2],
-        new DumpMetaData(dumpPath, conf).getReplScope().getExcludedTableNames());
+        new DumpMetaData(dumpPath, conf, true).getReplScope().getExcludedTableNames());
     }
   }
 
@@ -1360,8 +1361,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     ReplDumpWork.testDeletePreviousDumpMetaPath(false);
 
     replPolicy = primaryDbName + ".'(t1+)|(t2)'.'t11|t3|t13'";
-    WarehouseInstance.Tuple incrementalDump4 = primary.run("use " + primaryDbName)
-      .dump(replPolicy);
+    WarehouseInstance.Tuple incrementalDump4 = primary.run("use " + primaryDbName).dump(replPolicy);
 
     assertNotEquals(incrementalDump3.dumpLocation, incrementalDump4.dumpLocation);
 

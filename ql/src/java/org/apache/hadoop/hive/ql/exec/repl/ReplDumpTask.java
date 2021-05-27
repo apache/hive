@@ -176,7 +176,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         boolean isBootstrap = (previousValidHiveDumpPath == null);
         work.setBootstrap(isBootstrap);
         if (previousValidHiveDumpPath != null) {
-          work.setOldReplScope(new DumpMetaData(previousValidHiveDumpPath, conf).getReplScope());
+          work.setOldReplScope(new DumpMetaData(previousValidHiveDumpPath, conf, true).getReplScope());
         }
         //If no previous dump is present or previous dump is already loaded, proceed with the dump operation.
         if (shouldDump(previousValidHiveDumpPath)) {
@@ -194,7 +194,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           if (shouldDumpAuthorizationMetadata()) {
             initiateAuthorizationDumpTask();
           }
-          DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf);
+          DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf, true);
           // Initialize ReplChangeManager instance since we will require it to encode file URI.
           ReplChangeManager.getInstance(conf);
           Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLCMDIR));
@@ -383,7 +383,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   private Long getEventFromPreviousDumpMetadata(Path previousDumpPath) throws SemanticException {
     if (previousDumpPath != null) {
-      DumpMetaData dmd = new DumpMetaData(previousDumpPath, conf);
+      DumpMetaData dmd = new DumpMetaData(previousDumpPath, conf, true);
       if (dmd.isIncrementalDump()) {
         return dmd.getEventTo();
       }
@@ -656,8 +656,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     } finally {
       //write the dmd always irrespective of success/failure to enable checkpointing in table level replication
       long executionId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
-      dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot, executionId,
-        previousReplScopeModified());
+      dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot, executionId, previousReplScopeModified());
       // If repl policy is changed (oldReplScope is set), then pass the current replication policy,
       // so that REPL LOAD would drop the tables which are not included in current policy.
       dmd.setReplScope(work.replScope);
@@ -1140,7 +1139,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       return false;
     }
     Path hiveDumpPath = new Path(lastDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
-    DumpMetaData dumpMetaData = new DumpMetaData(hiveDumpPath, conf);
+    DumpMetaData dumpMetaData = new DumpMetaData(hiveDumpPath, conf, true);
     if (tableExpressionModified(dumpMetaData)) {
       return false;
     }
