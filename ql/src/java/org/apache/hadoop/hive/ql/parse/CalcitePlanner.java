@@ -3553,14 +3553,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
         aggregateCalls.add(
             convertGBAgg(agg, gbChildProjLst, rexNodeToPosMap, gbChildProjLst.size()));
       }
-      if (hasGroupSets) {
-        // Create GroupingID column
-        AggregateCall aggCall = AggregateCall.create(HiveGroupingID.INSTANCE,
-                false, new ImmutableList.Builder<Integer>().build(), -1,
-                this.cluster.getTypeFactory().createSqlType(SqlTypeName.BIGINT),
-                HiveGroupingID.INSTANCE.getName());
-        aggregateCalls.add(aggCall);
-      }
+      // Create GroupingID column
+      AggregateCall aggCall = AggregateCall.create(HiveGroupingID.INSTANCE,
+              false, new ImmutableList.Builder<Integer>().build(), -1,
+              this.cluster.getTypeFactory().createSqlType(SqlTypeName.BIGINT),
+              HiveGroupingID.INSTANCE.getName());
+      aggregateCalls.add(aggCall);
 
       if (gbChildProjLst.isEmpty()) {
         // This will happen for count(*), in such cases we arbitarily pick
@@ -3795,17 +3793,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
         }
 
-        // 7. If GroupingSets, Cube, Rollup were used, we account grouping__id
-        if(groupingSets != null && !groupingSets.isEmpty()) {
-          String field = getColumnInternalName(groupingColsSize + aggregations.size());
-          outputColumnNames.add(field);
-          groupByOutputRowResolver.put(null, VirtualColumn.GROUPINGID.getName(),
-                  new ColumnInfo(
-                          field,
-                          VirtualColumn.GROUPINGID.getTypeInfo(),
-                          null,
-                          true));
-        }
+        // 7. add grouping__id column
+        String field = getColumnInternalName(groupingColsSize + aggregations.size());
+        outputColumnNames.add(field);
+        groupByOutputRowResolver.put(null, VirtualColumn.GROUPINGID.getName(),
+                new ColumnInfo(
+                        field,
+                        VirtualColumn.GROUPINGID.getTypeInfo(),
+                        null,
+                        true));
 
         // 8. We create the group_by operator
         groupByRel = genGBRelNode(groupByExpressions, aggregations, groupingSets, srcRel);

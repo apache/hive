@@ -1,0 +1,49 @@
+PREHOOK: query: create table alltypes (a int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypes
+POSTHOOK: query: create table alltypes (a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alltypes
+PREHOOK: query: explain cbo
+select count(distinct 0), count(distinct null) from alltypes
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select count(distinct 0), count(distinct null) from alltypes
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count(DISTINCT $0)], agg#1=[count(DISTINCT $1)])
+  HiveProject($f0=[0], $f1=[null:NULL])
+    HiveTableScan(table=[[default, alltypes]], table:alias=[alltypes])
+
+PREHOOK: query: select count(distinct 0), count(distinct null) from alltypes
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct 0), count(distinct null) from alltypes
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+PREHOOK: query: insert into  alltypes(a) values (1), (2), (4), (3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@alltypes
+POSTHOOK: query: insert into  alltypes(a) values (1), (2), (4), (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@alltypes
+POSTHOOK: Lineage: alltypes.a SCRIPT []
+PREHOOK: query: select count(distinct 0), count(distinct null) from alltypes
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct 0), count(distinct null) from alltypes
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypes
+#### A masked pattern was here ####
+1	0

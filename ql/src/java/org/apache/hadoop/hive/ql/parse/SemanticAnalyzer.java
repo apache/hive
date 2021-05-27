@@ -5346,7 +5346,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             groupByOutputRowResolver,
             colExprMap);
       }
+    } else {
+      createNewGroupingKey(groupByKeys,
+              outputColumnNames,
+              groupByOutputRowResolver,
+              colExprMap);
     }
+
 
     Map<String, ASTNode> aggregationTrees = parseInfo.getAggregationExprsForClause(dest);
     // get the last colName for the reduce KEY
