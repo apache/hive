@@ -304,14 +304,6 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
 
     return null;
   }
-
-  public static Boolean getWriterLegacyConversion(Map<String, String> metadata) {
-    if (metadata == null) {
-      return null;
-    }
-    String value = metadata.get(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY);
-    return value != null ? Boolean.valueOf(value) : null;
-  }
   
   /**
    * Return the columns which contains required nested attribute level
