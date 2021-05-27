@@ -18,8 +18,11 @@
 
 package org.apache.hadoop.hive.common;
 
+import com.google.common.primitives.Longs;
+
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collections;
 
 /**
  * An implementation of {@link ValidWriteIdList} for use by the compactor.
@@ -55,24 +58,24 @@ public class ValidCompactorWriteIdList extends ValidReaderWriteIdList {
                                    long highWatermark, long minOpenWriteId) {
     // abortedBits should be all true as everything in exceptions are aborted txns
     super(tableName, abortedWriteIdList, abortedBits, highWatermark, minOpenWriteId);
-    if(this.exceptions.length <= 0) {
+    if (this.exceptions.size() <= 0) {
       return;
     }
-    //now that exceptions (aka abortedTxnList) is sorted
-    int idx = Arrays.binarySearch(this.exceptions, highWatermark);
+    // now that exceptions (aka abortedTxnList) is sorted
+    int idx = Collections.binarySearch(this.exceptions, highWatermark);
     int lastElementPos;
     if(idx < 0) {
-      int insertionPoint = -idx - 1 ;//see Arrays.binarySearch() JavaDoc
+      int insertionPoint = -idx - 1; // see Collections.binarySearch() JavaDoc
       lastElementPos = insertionPoint - 1;
-    }
-    else {
+    } else {
       lastElementPos = idx;
     }
     /*
      * ensure that we throw out any exceptions above highWatermark to make
      * {@link #isWriteIdValid(long)} faster
      */
-    this.exceptions = Arrays.copyOf(this.exceptions, lastElementPos + 1);
+    this.exceptions = Longs.asList(
+        Arrays.copyOf(getInvalidWriteIds(), lastElementPos + 1));
   }
   public ValidCompactorWriteIdList(String value) {
     super(value);
@@ -91,6 +94,6 @@ public class ValidCompactorWriteIdList extends ValidReaderWriteIdList {
 
   @Override
   public boolean isWriteIdAborted(long writeId) {
-    return Arrays.binarySearch(exceptions, writeId) >= 0;
+    return Collections.binarySearch(exceptions, writeId) >= 0;
   }
 }

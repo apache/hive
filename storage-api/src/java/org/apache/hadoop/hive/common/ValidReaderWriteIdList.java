@@ -18,10 +18,13 @@
 
 package org.apache.hadoop.hive.common;
 
+import com.google.common.primitives.Longs;
 import org.apache.hive.common.util.SuppressFBWarnings;
 
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * An implementation of {@link ValidWriteIdList} for use by readers.
@@ -31,10 +34,10 @@ import java.util.BitSet;
 public class ValidReaderWriteIdList implements ValidWriteIdList {
 
   private String tableName; // Full table name of format <db_name>.<table_name>
-  protected long[] exceptions;
+  protected List<Long> exceptions;
   protected BitSet abortedBits; // BitSet for flagging aborted write ids. Bit is true if aborted, false if open
   //default value means there are no open write ids in the snapshot
-  private long minOpenWriteId = Long.MAX_VALUE;
+  protected long minOpenWriteId = Long.MAX_VALUE;
   protected long highWatermark;
 
   /**
@@ -61,7 +64,7 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
     if (exceptions.length > 0) {
       this.minOpenWriteId = minOpenWriteId;
     }
-    this.exceptions = exceptions;
+    this.exceptions = Longs.asList(exceptions);
     this.abortedBits = abortedBits;
     this.highWatermark = highWatermark;
   }
@@ -75,7 +78,7 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
     if (writeId > highWatermark) {
       return false;
     }
-    return Arrays.binarySearch(exceptions, writeId) < 0;
+    return Collections.binarySearch(exceptions, writeId) < 0;
   }
 
   /**
@@ -91,7 +94,7 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
     // check the easy cases first
     if (minWriteId > highWatermark) {
       return RangeResponse.NONE;
-    } else if (exceptions.length > 0 && exceptions[0] > maxWriteId) {
+    } else if (exceptions.size() > 0 && exceptions.get(0) > maxWriteId) {
       return RangeResponse.ALL;
     }
 
@@ -131,23 +134,23 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
     buf.append(highWatermark);
     buf.append(':');
     buf.append(minOpenWriteId);
-    if (exceptions.length == 0) {
+    if (exceptions.size() == 0) {
       buf.append(':');  // separator for open write ids
       buf.append(':');  // separator for aborted write ids
     } else {
       StringBuilder open = new StringBuilder();
       StringBuilder abort = new StringBuilder();
-      for (int i = 0; i < exceptions.length; i++) {
+      for (int i = 0; i < exceptions.size(); i++) {
         if (abortedBits.get(i)) {
           if (abort.length() > 0) {
             abort.append(',');
           }
-          abort.append(exceptions[i]);
+          abort.append(exceptions.get(i));
         } else {
           if (open.length() > 0) {
             open.append(',');
           }
-          open.append(exceptions[i]);
+          open.append(exceptions.get(i));
         }
       }
       buf.append(':');
@@ -162,7 +165,7 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
   public void readFromString(String src) {
     if (src == null || src.length() == 0) {
       highWatermark = Long.MAX_VALUE;
-      exceptions = new long[0];
+      exceptions = Collections.emptyList();
       abortedBits = new BitSet();
     } else {
       String[] values = src.split(":");
@@ -189,20 +192,21 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
           abortedWriteIds = values[4].split(",");
         }
       }
-      exceptions = new long[openWriteIds.length + abortedWriteIds.length];
+      long[] exceptionsArr = new long[openWriteIds.length + abortedWriteIds.length];
       int i = 0;
       for (String open : openWriteIds) {
-        exceptions[i++] = Long.parseLong(open);
+        exceptionsArr[i++] = Long.parseLong(open);
       }
       for (String abort : abortedWriteIds) {
-        exceptions[i++] = Long.parseLong(abort);
+        exceptionsArr[i++] = Long.parseLong(abort);
       }
-      Arrays.sort(exceptions);
-      abortedBits = new BitSet(exceptions.length);
+      Arrays.sort(exceptionsArr);
+      abortedBits = new BitSet(exceptionsArr.length);
       for (String abort : abortedWriteIds) {
-        int index = Arrays.binarySearch(exceptions, Long.parseLong(abort));
+        int index = Arrays.binarySearch(exceptionsArr, Long.parseLong(abort));
         abortedBits.set(index);
       }
+      exceptions = Longs.asList(exceptionsArr);
     }
   }
 
@@ -219,7 +223,7 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
   @Override
   @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Expose internal rep for efficiency")
   public long[] getInvalidWriteIds() {
-    return exceptions;
+    return Longs.toArray(exceptions);
   }
 
   @Override
@@ -229,7 +233,7 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
 
   @Override
   public boolean isWriteIdAborted(long writeId) {
-    int index = Arrays.binarySearch(exceptions, writeId);
+    int index = Collections.binarySearch(exceptions, writeId);
     return index >= 0 && abortedBits.get(index);
   }
 
@@ -244,7 +248,7 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
 
     // traverse the aborted txns list, starting at first aborted txn index
     for (int i = abortedBits.nextSetBit(0); i >= 0; i = abortedBits.nextSetBit(i + 1)) {
-      long abortedTxnId = exceptions[i];
+      long abortedTxnId = exceptions.get(i);
       if (abortedTxnId > maxWriteId) {  // we've already gone beyond the specified range
         break;
       }
@@ -263,7 +267,7 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
   }
 
   public ValidReaderWriteIdList updateHighWatermark(long value) {
-    return new ValidReaderWriteIdList(tableName, exceptions, abortedBits, value, minOpenWriteId);
+    return new ValidReaderWriteIdList(tableName, getInvalidWriteIds(), abortedBits, value, minOpenWriteId);
   }
 }
 
