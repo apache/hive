@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.serde;
 
-import jodd.datetime.JDateTime;
+import jodd.time.JulianDate;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
@@ -44,8 +44,8 @@ import static org.junit.Assert.assertEquals;
  * <p>
  * It is difficult to come up with an end-to-end test between Hive2 and Hive4 in both directions so we are limiting
  * the test to few APIs that are responsible for the conversion assuming that the main code path still relies on these
- * APIs. In order to test compatibility with Hive2 some pieces of code were copy-pasted from branch-2.3 inside this
- * class. 
+ * APIs. In order to test compatibility with Hive2 some pieces of code were copied from branch-2.3 inside this
+ * class with a few changes to account for library upgrades (e.g., jodd-util). 
  * </p>
  */
 class TestParquetTimestampsHive2Compatibility {
@@ -213,8 +213,8 @@ class TestParquetTimestampsHive2Compatibility {
     if (calendar.get(Calendar.ERA) == GregorianCalendar.BC) {
       year = 1 - year;
     }
-    JDateTime jDateTime = new JDateTime(year, calendar.get(Calendar.MONTH) + 1,  //java calendar index starting at 1.
-        calendar.get(Calendar.DAY_OF_MONTH));
+    JulianDate jDateTime = JulianDate.of(year, calendar.get(Calendar.MONTH) + 1,  //java calendar index starting at 1.
+        calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0, 0);
     int days = jDateTime.getJulianDayNumber();
 
     long hour = calendar.get(Calendar.HOUR_OF_DAY);
@@ -243,11 +243,11 @@ class TestParquetTimestampsHive2Compatibility {
       julianDay--;
     }
 
-    JDateTime jDateTime = new JDateTime((double) julianDay);
+    JulianDate jDateTime = JulianDate.of((double) julianDay);
     Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone(ZoneId.of("GMT")));
-    calendar.set(Calendar.YEAR, jDateTime.getYear());
-    calendar.set(Calendar.MONTH, jDateTime.getMonth() - 1); //java calendar index starting at 1.
-    calendar.set(Calendar.DAY_OF_MONTH, jDateTime.getDay());
+    calendar.set(Calendar.YEAR, jDateTime.toLocalDateTime().getYear());
+    calendar.set(Calendar.MONTH, jDateTime.toLocalDateTime().getMonthValue() - 1); //java calendar index starting at 1.
+    calendar.set(Calendar.DAY_OF_MONTH, jDateTime.toLocalDateTime().getDayOfMonth());
 
     int hour = (int) (remainder / (NANOS_PER_HOUR));
     remainder = remainder % (NANOS_PER_HOUR);
