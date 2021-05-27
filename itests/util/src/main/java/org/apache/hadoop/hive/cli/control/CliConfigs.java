@@ -562,26 +562,6 @@ public class CliConfigs {
     }
   }
 
-  public static class AccumuloCliConfig extends AbstractCliConfig {
-    public AccumuloCliConfig() {
-      super(CoreAccumuloCliDriver.class);
-      try {
-        setQueryDir("accumulo-handler/src/test/queries/positive");
-
-        setResultsDir("accumulo-handler/src/test/results/positive");
-        setLogDir("itests/qtest/target/qfile-results/accumulo-handler/positive");
-
-        setInitScript("q_test_init_src_with_stats.sql");
-        setCleanupScript("q_test_cleanup_src.sql");
-
-        setHiveConfDir("");
-        setClusterType(MiniClusterType.none);
-      } catch (Exception e) {
-        throw new RuntimeException("can't construct cliconfig", e);
-      }
-    }
-  }
-
   public static class SparkCliConfig extends AbstractCliConfig {
     public SparkCliConfig() {
       super(CoreCliDriver.class);
