@@ -606,7 +606,7 @@ public interface TxnStore extends Configurable {
    * Update the statistics for the given partitions. Add the notification logs also.
    * @return true if successful, false otherwise.
    */
-  boolean updatePartitionColumnStatistics(Map<String, ColumnStatistics> newStatsMap,
+  Map<String, Map<String, String>> updatePartitionColumnStatistics(Map<String, ColumnStatistics> newStatsMap,
                                           IHMSHandler handler,
                                           List<MetaStoreEventListener> listeners,
                                           Table tbl,

@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.dataconnector.DataConnectorProviderFactory;
 import org.apache.hadoop.hive.metastore.events.*;
+import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
@@ -7041,6 +7042,15 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return parameters != null;
   }
 
+  private void updatePartitionColStatsForOneBatch(Table tbl, Map<String, ColumnStatistics> statsMap,
+                                                     String validWriteIds, long writeId, long numStats)
+          throws MetaException, InvalidObjectException {
+    long csId = getTxnHandler().getNextCSIdForMPartitionColumnStatistics(numStats);
+    Map<String, Map<String, String>> result =
+            getTxnHandler().updatePartitionColumnStatistics(
+                    statsMap, this, listeners, tbl, csId, validWriteIds, writeId);
+  }
+
   private boolean updatePartitionColStatsInBatch(Table tbl, Map<String, ColumnStatistics> statsMap,
                                                  String validWriteIds, long writeId)
           throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
@@ -7057,7 +7067,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     Map<String, ColumnStatistics> newStatsMap = new HashMap<>();
     long numStats = 0;
-    long numStatsMax = 1;//MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
+    long numStatsMax = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
     try {
       for (Map.Entry entry : statsMap.entrySet()) {
         ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
@@ -7069,17 +7079,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         numStats += colStats.getStatsObjSize();
 
         if (newStatsMap.size() >= numStatsMax) {
-          long csId = getTxnHandler().getNextCSIdForMPartitionColumnStatistics(numStats);
-          getTxnHandler().updatePartitionColumnStatistics(newStatsMap, this,
-                  listeners, tbl, csId, validWriteIds, writeId);
+          updatePartitionColStatsForOneBatch(tbl, statsMap, validWriteIds, writeId, numStats);
           newStatsMap.clear();
           numStats = 0;
         }
       }
       if (numStats != 0) {
-        long csId = getTxnHandler().getNextCSIdForMPartitionColumnStatistics(numStats);
-        getTxnHandler().updatePartitionColumnStatistics(newStatsMap, this,
-                listeners, tbl, csId, validWriteIds, writeId);
+        updatePartitionColStatsForOneBatch(tbl, statsMap, validWriteIds, writeId, numStats);
       }
     } finally {
       endFunction("updatePartitionColStatsInBatch", true, null, tableName);
