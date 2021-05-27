@@ -74,8 +74,7 @@ public class ValidCompactorWriteIdList extends ValidReaderWriteIdList {
      * ensure that we throw out any exceptions above highWatermark to make
      * {@link #isWriteIdValid(long)} faster
      */
-    this.exceptions = Longs.asList(
-        Arrays.copyOf(getInvalidWriteIds(), lastElementPos + 1));
+    this.exceptions = Longs.asList(Arrays.copyOf(getInvalidWriteIds(), lastElementPos + 1));
   }
   public ValidCompactorWriteIdList(String value) {
     super(value);
