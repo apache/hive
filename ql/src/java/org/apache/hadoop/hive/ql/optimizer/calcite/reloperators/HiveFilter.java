@@ -109,7 +109,7 @@ public class HiveFilter extends Filter implements HiveRelNode {
                 if (input instanceof HiveJoin) {
                   findCorrelatedVar(((HiveJoin) input).getJoinFilter(), allVars);
                 }
-                  return;
+                return;
               }
               input = input.getInput(0);
           }

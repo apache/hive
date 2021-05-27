@@ -34,6 +34,7 @@ import java.util.TreeSet;
 
 import javax.annotation.Nonnull;
 
+import org.apache.calcite.adapter.enumerable.EnumerableConvention;
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.linq4j.function.Function2;
 import org.apache.calcite.plan.Context;
@@ -240,7 +241,8 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     HepProgram program = HepProgram.builder()
             .addRuleInstance(new AdjustProjectForCountAggregateRule(false))
             .addRuleInstance(new AdjustProjectForCountAggregateRule(true))
-            .addRuleInstance(new HiveJoinExtractFilterRule(HiveJoin.class, HiveRelFactories.HIVE_BUILDER))
+            .addRuleInstance(new HiveFilterJoinRule.HiveJoinConditionPushRule(HiveRelFactories.HIVE_BUILDER,
+              (join, joinType, exp) -> join.getConvention() != EnumerableConvention.INSTANCE))
             .addRuleInstance(HiveFilterJoinRule.FILTER_ON_JOIN)
             .addRuleInstance(HiveFilterProjectTransposeRule.INSTANCE)
             .addRuleInstance(FLATTEN_CORRELATED_CONDITION_RULE)
