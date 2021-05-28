@@ -161,7 +161,7 @@
     <mockito-core.version>3.3.3</mockito-core.version>
     <powermock.version>1.7.4</powermock.version>
     <mina.version>2.0.0-M5</mina.version>
-    <netty.version>4.1.48.Final</netty.version>
+    <netty.version>4.1.60.Final</netty.version>
     <netty3.version>3.10.5.Final</netty3.version> <!-- used by druid storage handler -->
     <netty.hadoop.version>4.0.52.Final</netty.hadoop.version>
     <pac4j-saml.version>4.0.3</pac4j-saml.version>
@@ -176,7 +176,7 @@
     <storage-api.version>3.1.3000.7.2.11.0-SNAPSHOT</storage-api.version>
     <tez.version>0.9.1.7.2.11.0-SNAPSHOT</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
-    <spark.version>2.4.5</spark.version>
+    <spark.version>2.4.7.7.2.11.0-SNAPSHOT</spark.version>
     <spark.scala.version>2.11</spark.scala.version>
     <scala.binary.version>2.12</scala.binary.version>
     <scala.version>2.12.10</scala.version>
