@@ -72,6 +72,12 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
 
     ret.add(getHivePrivilegeObject(oldTable));
 
+    String oldUri   = (oldTable != null) ? getSdLocation(oldTable.getSd()) : "";
+
+    if (!StringUtils.isEmpty(oldUri)) {
+      ret.add(getHivePrivilegeObjectDfsUri(oldUri));
+    }
+
     COMMAND_STR = buildCommandString(COMMAND_STR, oldTable);
 
     LOG.debug("<== AlterTableEvent.getInputHObjs(): ret={}", ret);
