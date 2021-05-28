@@ -111,7 +111,8 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
 
       // If not using HiveCatalog check for existing table
       try {
-        this.icebergTable = Catalogs.loadTable(conf, catalogProperties);
+
+        this.icebergTable = IcebergTableUtil.getTable(conf, catalogProperties);
 
         Preconditions.checkArgument(catalogProperties.getProperty(InputFormatConfig.TABLE_SCHEMA) == null,
             "Iceberg table already created - can not use provided schema");
@@ -169,7 +170,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
     if (deleteIcebergTable && Catalogs.hiveCatalog(conf, catalogProperties)) {
       // Store the metadata and the id for deleting the actual table data
       String metadataLocation = hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
-      this.deleteIo = Catalogs.loadTable(conf, catalogProperties).io();
+      this.deleteIo = IcebergTableUtil.getTable(conf, catalogProperties).io();
       this.deleteMetadata = TableMetadataParser.read(deleteIo, metadataLocation);
     }
   }
@@ -207,7 +208,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
     super.preAlterTable(hmsTable, context);
     catalogProperties = getCatalogProperties(hmsTable);
     try {
-      icebergTable = Catalogs.loadTable(conf, catalogProperties);
+      icebergTable = IcebergTableUtil.getTable(conf, catalogProperties);
     } catch (NoSuchTableException nte) {
       // If the iceberg table does not exist, and the hms table is external and not temporary and not acid
       // we will create it in commitAlterTable
