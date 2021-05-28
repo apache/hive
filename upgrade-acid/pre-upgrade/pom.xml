@@ -99,6 +99,10 @@
                 <groupId>org.apache.curator</groupId>
                 <artifactId>curator-framework</artifactId>
               </exclusion>
+              <exclusion>
+                <groupId>org.pentaho</groupId>
+                <artifactId>pentaho-aggdesigner-algorithm</artifactId>
+              </exclusion>
             </exclusions>
         </dependency>
         <dependency>
