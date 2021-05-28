@@ -98,8 +98,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       }
     } else {
       try {
+        Table table = IcebergTableUtil.getTable(configuration, serDeProperties);
         // always prefer the original table schema if there is one
-        Table table = Catalogs.loadTable(configuration, serDeProperties);
         this.tableSchema = table.schema();
         this.partitionColumns = table.spec().fields().stream().map(PartitionField::name).collect(Collectors.toList());
         LOG.info("Using schema from existing table {}", SchemaParser.toJson(tableSchema));

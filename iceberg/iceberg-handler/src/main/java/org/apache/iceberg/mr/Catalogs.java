@@ -87,8 +87,8 @@ public final class Catalogs {
    * The table identifier ({@link Catalogs#NAME}) and the catalog name ({@link InputFormatConfig#CATALOG_NAME}),
    * or table path ({@link Catalogs#LOCATION}) should be specified by the controlling properties.
    * <p>
-   * Used by HiveIcebergSerDe and HiveIcebergStorageHandler
-   * @param conf a Hadoop
+   * Used by HiveIcebergSerDe and HiveIcebergStorageHandler.
+   * @param conf a Hadoop configuration
    * @param props the controlling properties
    * @return an Iceberg table
    */

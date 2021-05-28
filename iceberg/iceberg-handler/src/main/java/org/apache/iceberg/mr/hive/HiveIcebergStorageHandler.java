@@ -329,7 +329,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @VisibleForTesting
   static void overlayTableProperties(Configuration configuration, TableDesc tableDesc, Map<String, String> map) {
     Properties props = tableDesc.getProperties();
-    Table table = Catalogs.loadTable(configuration, props);
+    Table table = IcebergTableUtil.getTable(configuration, props);
     String schemaJson = SchemaParser.toJson(table.schema());
 
     Maps.fromProperties(props).entrySet().stream()
