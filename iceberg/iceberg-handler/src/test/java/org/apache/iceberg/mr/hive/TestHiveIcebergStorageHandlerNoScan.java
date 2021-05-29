@@ -244,8 +244,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   public void testCreateTableStoredByIceberg() {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
     String query = String.format("CREATE EXTERNAL TABLE customers (customer_id BIGINT, first_name STRING, last_name " +
-        "STRING) STORED BY %s %s TBLPROPERTIES ('%s'='%s')",
-        "iceBeRg",
+        "STRING) STORED BY iceBerg %s TBLPROPERTIES ('%s'='%s')",
         testTables.locationForCreateTableSQL(identifier),
         InputFormatConfig.CATALOG_NAME,
         Catalogs.ICEBERG_DEFAULT_CATALOG_NAME);
@@ -257,8 +256,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   public void testCreateTableStoredByIcebergWithSerdeProperties() {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
     String query = String.format("CREATE EXTERNAL TABLE customers (customer_id BIGINT, first_name STRING, last_name " +
-            "STRING) STORED BY %s WITH SERDEPROPERTIES('%s'='%s') %s TBLPROPERTIES ('%s'='%s')",
-        "iceberg",
+            "STRING) STORED BY iceberg WITH SERDEPROPERTIES('%s'='%s') %s TBLPROPERTIES ('%s'='%s')",
         TableProperties.DEFAULT_FILE_FORMAT,
         "orc",
         testTables.locationForCreateTableSQL(identifier),

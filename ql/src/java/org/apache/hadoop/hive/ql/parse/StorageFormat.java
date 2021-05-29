@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import static org.apache.hadoop.hive.ql.parse.ParseUtils.ensureClassExists;
+
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -107,8 +109,11 @@ public class StorageFormat {
   }
 
   private String processStorageHandler(String name) throws SemanticException {
-    if (StorageHandlerTypes.ICEBERG.name().equalsIgnoreCase(name)) {
-      name = StorageHandlerTypes.ICEBERG.className();
+    for (StorageHandlerTypes type : StorageHandlerTypes.values()) {
+      if (type.name().equalsIgnoreCase(name)) {
+        name = type.className();
+        break;
+      }
     }
 
     return ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(name));

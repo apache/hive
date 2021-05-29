@@ -335,11 +335,14 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
       properties.put(Catalogs.NAME, TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()).toString());
     }
 
-    hmsTable.getSd().getSerdeInfo().getParameters().entrySet().stream()
-        .filter(e -> e.getKey() != null && e.getValue() != null).forEach(e -> {
-          String icebergKey = HiveTableOperations.translateToIcebergProp(e.getKey());
-          properties.put(icebergKey, e.getValue());
-        });
+    SerDeInfo serdeInfo = hmsTable.getSd().getSerdeInfo();
+    if (serdeInfo != null) {
+      serdeInfo.getParameters().entrySet().stream()
+          .filter(e -> e.getKey() != null && e.getValue() != null).forEach(e -> {
+            String icebergKey = HiveTableOperations.translateToIcebergProp(e.getKey());
+            properties.put(icebergKey, e.getValue());
+          });
+    }
 
     // Remove HMS table parameters we don't want to propagate to Iceberg
     PROPERTIES_TO_REMOVE.forEach(properties::remove);
