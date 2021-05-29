@@ -528,7 +528,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       success = true;
     } finally {
       if (!success && (hook != null)) {
-        // TODO: add rollBackAlterTable hook call
+        hook.rollbackAlterTable(new_tbl, envContext);
       }
     }
   }
@@ -573,7 +573,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       success = true;
     } finally {
       if (!success && (hook != null)) {
-        // TODO: add rollBackAlterTable hook call
+        hook.rollbackAlterTable(new_tbl, envContext);
       }
     }
   }
@@ -1796,7 +1796,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     HiveMetaHook hook = getHook(tbl);
     if (hook != null) {
-      hook.preDropTable(tbl);
+      hook.preDropTable(tbl, deleteData || (envContext != null && "TRUE".equals(envContext.getProperties().get("ifPurge"))));
     }
     boolean success = false;
     try {
