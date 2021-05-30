@@ -166,7 +166,7 @@ public class TestTCTLSeparatedProtocol {
 
     prot.writeStructEnd();
     trans.flush();
-    byte[] b = new byte[3 * 1024];
+    byte[] b = new byte[1024];
     int len = trans.read(b, 0, b.length);
     String test = new String(b, 0, len);
 
@@ -429,7 +429,7 @@ public class TestTCTLSeparatedProtocol {
 
     prot.writeStructEnd();
 
-    byte b[] = new byte[3 * 1024];
+    byte b[] = new byte[1024];
     int len = trans.read(b, 0, b.length);
     String written = new String(b, 0, len);
 
