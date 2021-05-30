@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TJSONProtocol;
+import org.apache.thrift.transport.TTransportException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -55,7 +56,7 @@ public class FunctionSerializer implements JsonWriter.Serializer {
 
   @Override
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
-      throws SemanticException, IOException, MetaException {
+      throws SemanticException, IOException, MetaException, TTransportException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
     List<ResourceUri> resourceUris = new ArrayList<>();
     if (function.getResourceUris() != null) {
@@ -96,7 +97,7 @@ public class FunctionSerializer implements JsonWriter.Serializer {
       writer.jsonGenerator.writeStringField(ReplicationSpec.KEY.CURR_STATE_ID.toString(),
           additionalPropertiesProvider.getCurrentReplicationState());
       writer.jsonGenerator
-          .writeStringField(FIELD_NAME, serializer.toString(copyObj, UTF_8));
+          .writeStringField(FIELD_NAME, serializer.toString(copyObj));
     } catch (TException e) {
       throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METASTORE.getMsg(), e);
     }

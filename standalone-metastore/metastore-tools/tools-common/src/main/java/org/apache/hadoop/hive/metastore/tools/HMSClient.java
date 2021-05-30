@@ -45,11 +45,12 @@ import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.thrift.TConfiguration;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.layered.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.jetbrains.annotations.NotNull;
@@ -405,7 +406,7 @@ final class HMSClient implements AutoCloseable {
 
     // Sasl/SSL code is copied from HiveMetastoreCLient
     if (!useSSL) {
-      transport = new TSocket(host, port, clientSocketTimeout);
+      transport = new TSocket(new TConfiguration(),host, port, clientSocketTimeout);
     } else {
       String trustStorePath = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PATH).trim();
       if (trustStorePath.isEmpty()) {
