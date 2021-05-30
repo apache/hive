@@ -588,7 +588,7 @@ public class CachedStore implements RawStore, Configurable {
                 Deadline.stopTimer();
                 cacheObjects.setValidWriteIdList(validWriteIdList);
               } catch (Exception e) {
-                LOG.debug(ExceptionUtils.getStackTrace(e));
+                LOG.info("Unable to cache validWriteIds for database: {}'s Table: {}. Skipping for now",dbName,tblName,ExceptionUtils.getStackTrace(e));
               }
 
               // If the table could not cached due to memory limit, stop prewarm
@@ -959,8 +959,9 @@ public class CachedStore implements RawStore, Configurable {
       }
       if (validWriteIdList != null) {
         sharedCache.refreshValidWriteIdListInCache(catName, dbName, tblName, validWriteIdList);
-        LOG.debug("CachedStore: updated cached table validWriteIdList for catalog: {}, database: {}, table: {}",
-            catName, dbName, tblName);
+        LOG.debug("CachedStore: updated cached table validWriteIdList for "
+                + "catalog: {}, database: {}, table: {}, validWriteIdList: {}", catName, dbName, tblName,
+            validWriteIdList);
       }
     }
 
@@ -1307,7 +1308,7 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public Table getTable(String catName, String dbName, String tblName, String validWriteIds) throws MetaException {
-    return getTable(catName, dbName, tblName, null, -1);
+    return getTable(catName, dbName, tblName, validWriteIds, -1);
   }
 
   @Override public Table getTable(String catName, String dbName, String tblName, String validWriteIds, long tableId)
