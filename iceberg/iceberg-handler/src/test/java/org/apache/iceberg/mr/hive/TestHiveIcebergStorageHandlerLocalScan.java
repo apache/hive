@@ -193,7 +193,7 @@ public class TestHiveIcebergStorageHandlerLocalScan {
     String createSql = "CREATE EXTERNAL TABLE " + identifier +
         " (customer_id BIGINT, first_name STRING COMMENT 'This is first name', " +
         "last_name STRING COMMENT 'This is last name')" +
-        " STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        " STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         testTables.propertiesForCreateTableSQL(ImmutableMap.of());
     runCreateAndReadTest(identifier, createSql, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
@@ -212,7 +212,7 @@ public class TestHiveIcebergStorageHandlerLocalScan {
     String createSql = "CREATE EXTERNAL TABLE " + identifier +
         " (customer_id BIGINT, first_name STRING COMMENT 'This is first name') " +
         "PARTITIONED BY (last_name STRING COMMENT 'This is last name') STORED BY " +
-         "'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+         "ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         testTables.propertiesForCreateTableSQL(ImmutableMap.of());
     runCreateAndReadTest(identifier, createSql, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec, data);
@@ -228,7 +228,7 @@ public class TestHiveIcebergStorageHandlerLocalScan {
         Row.of("Green"), Collections.singletonList(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.get(1)),
         Row.of("Pink"), Collections.singletonList(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.get(2)));
     String createSql = "CREATE EXTERNAL TABLE " + identifier +
-        " STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        " STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         "TBLPROPERTIES ('" + InputFormatConfig.PARTITION_SPEC + "'='" + PartitionSpecParser.toJson(spec) + "', " +
         "'" + InputFormatConfig.TABLE_SCHEMA + "'='" +
@@ -249,7 +249,7 @@ public class TestHiveIcebergStorageHandlerLocalScan {
     String createSql = "CREATE EXTERNAL TABLE " + identifier + " (customer_id BIGINT) " +
         "PARTITIONED BY (first_name STRING COMMENT 'This is first name', " +
         "last_name STRING COMMENT 'This is last name') " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        "STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         testTables.propertiesForCreateTableSQL(ImmutableMap.of());
     runCreateAndReadTest(identifier, createSql, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec, data);

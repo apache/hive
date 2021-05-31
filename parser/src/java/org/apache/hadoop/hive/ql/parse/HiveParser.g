@@ -1972,6 +1972,9 @@ tableFileFormat
       | KW_STORED KW_BY storageHandler=StringLiteral
          (KW_WITH KW_SERDEPROPERTIES serdeprops=tableProperties)?
       -> ^(TOK_STORAGEHANDLER $storageHandler $serdeprops?)
+      | KW_STORED KW_BY genericSpec=identifier
+         (KW_WITH KW_SERDEPROPERTIES serdeprops=tableProperties)?
+      -> ^(TOK_STORAGEHANDLER $genericSpec $serdeprops?)
       | KW_STORED KW_AS genericSpec=identifier
       -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
     ;

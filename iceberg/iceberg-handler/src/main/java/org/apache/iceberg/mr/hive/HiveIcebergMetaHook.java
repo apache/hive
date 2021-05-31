@@ -348,6 +348,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
    * <li>The base of the properties is the properties stored at the Hive Metastore for the given table
    * <li>We add the {@link Catalogs#LOCATION} as the table location
    * <li>We add the {@link Catalogs#NAME} as TableIdentifier defined by the database name and table name
+   * <li>We add the serdeProperties of the HMS table
    * <li>We remove some parameters that we don't want to push down to the Iceberg table props
    * </ul>
    * @param hmsTable Table for which we are calculating the properties
@@ -369,6 +370,15 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
 
     if (properties.get(Catalogs.NAME) == null) {
       properties.put(Catalogs.NAME, TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()).toString());
+    }
+
+    SerDeInfo serdeInfo = hmsTable.getSd().getSerdeInfo();
+    if (serdeInfo != null) {
+      serdeInfo.getParameters().entrySet().stream()
+          .filter(e -> e.getKey() != null && e.getValue() != null).forEach(e -> {
+            String icebergKey = HiveTableOperations.translateToIcebergProp(e.getKey());
+            properties.put(icebergKey, e.getValue());
+          });
     }
 
     // Remove HMS table parameters we don't want to propagate to Iceberg
