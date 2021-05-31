@@ -6,13 +6,6 @@ LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n158;
 
 -- SORT_QUERY_RESULTS
 
-EXPLAIN CBO
-SELECT key, val, GROUPING__ID from T1_n158 GROUP BY key, val;
-
-EXPLAIN
-SELECT key, val, GROUPING__ID from T1_n158 GROUP BY key, val;
-SELECT key, val, GROUPING__ID from T1_n158 GROUP BY key, val;
-
 SELECT key, val, GROUPING__ID from T1_n158 group by key, val with cube;
 SELECT key, val, GROUPING__ID from T1_n158 group by cube(key, val);
 
