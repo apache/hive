@@ -5789,8 +5789,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   @Override
   public Map<String, Map<String, String>> updatePartitionColumnStatistics(Map<String, ColumnStatistics> partColStatsMap,
-                                                 IHMSHandler handler,
-                                                 List<MetaStoreEventListener> listeners,
                                                  Table tbl, long csId,
                                                  String validWriteIds, long writeId) throws MetaException {
     try {
@@ -5817,22 +5815,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
                     EventMessage.EventType.UPDATE_PARTITION_COLUMN_STAT,
                     new UpdatePartitionColumnStatEvent(colStats, partVals, parameters,
-                            tbl, writeId, handler), dbConn, sqlGenerator);
-          }
-
-          if (listeners != null) {
-            MetaStoreListenerNotifier.notifyEvent(listeners,
-                    EventMessage.EventType.UPDATE_PARTITION_COLUMN_STAT,
-                    new UpdatePartitionColumnStatEvent(colStats, partVals, parameters,
-                            tbl, writeId, handler));
+                            tbl, writeId, null), dbConn, sqlGenerator);
           }
         }
         dbConn.commit();
         committed = true;
         return result;
       } catch (SQLException e) {
-        checkRetryable(dbConn, e, "updatePartitionColumnStatistics(" + partColStatsMap + "," + handler
-                + "," + listeners + "," + tbl + "," + csId
+        checkRetryable(dbConn, e, "updatePartitionColumnStatistics(" + partColStatsMap + "," + tbl + "," + csId
                 + "," + validWriteIds + "," + writeId + ")");
         throw new MetaException("Unable to update Column stats for  " + tbl.getTableName()
                 + " due to: " + getMessage(e) + "; " + StringUtils.stringifyException(e));
@@ -5848,7 +5838,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         unlockInternal();
       }
     } catch (RetryException e) {
-      return updatePartitionColumnStatistics(partColStatsMap, handler, listeners, tbl, csId, validWriteIds, writeId);
+      return updatePartitionColumnStatistics(partColStatsMap, tbl, csId, validWriteIds, writeId);
     }
   }
 

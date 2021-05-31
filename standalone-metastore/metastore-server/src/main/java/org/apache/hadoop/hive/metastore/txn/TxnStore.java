@@ -607,8 +607,6 @@ public interface TxnStore extends Configurable {
    * @return true if successful, false otherwise.
    */
   Map<String, Map<String, String>> updatePartitionColumnStatistics(Map<String, ColumnStatistics> newStatsMap,
-                                          IHMSHandler handler,
-                                          List<MetaStoreEventListener> listeners,
                                           Table tbl,
                                           long csId,
                                           String validWriteIds, long writeId) throws MetaException;

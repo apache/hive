@@ -7047,8 +7047,22 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           throws MetaException, InvalidObjectException {
     long csId = getTxnHandler().getNextCSIdForMPartitionColumnStatistics(numStats);
     Map<String, Map<String, String>> result =
-            getTxnHandler().updatePartitionColumnStatistics(
-                    statsMap, this, listeners, tbl, csId, validWriteIds, writeId);
+            getTxnHandler().updatePartitionColumnStatistics(statsMap, tbl, csId, validWriteIds, writeId);
+    if (result != null && result.size() != 0 && listeners != null) {
+      // The normal listeners, unlike transaction listeners are not using the same transactions used by the update
+      // operations. So there is no need of keeping them within the same transactions. If notification to one of
+      // the listeners failed, then even if we abort the transaction, we can not revert the notifications sent to the
+      // other listeners.
+      for (Map.Entry entry : result.entrySet()) {
+        Map<String, String> parameters = (Map<String, String>) entry.getValue();
+        ColumnStatistics colStats = statsMap.get(entry.getKey());
+        List<String> partVals = getPartValsFromName(tbl, colStats.getStatsDesc().getPartName());
+        MetaStoreListenerNotifier.notifyEvent(listeners,
+                EventMessage.EventType.UPDATE_PARTITION_COLUMN_STAT,
+                new UpdatePartitionColumnStatEvent(colStats, partVals, parameters,
+                        tbl, writeId, this));
+      }
+    }
   }
 
   private boolean updatePartitionColStatsInBatch(Table tbl, Map<String, ColumnStatistics> statsMap,
