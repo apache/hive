@@ -1497,7 +1497,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to commit");
         dbConn.commit();
 
-        Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS).inc();
+        if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+          Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS).inc();
+        }
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
@@ -4723,7 +4725,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         numAborted = getUpdateCount(numUpdateQueries, affectedRowsByQuery);
       }
 
-      Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_ABORTED_TXNS).inc(txnids.size());
+      if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+        Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_ABORTED_TXNS).inc(txnids.size());
+      }
       return numAborted;
     } finally {
       closeStmt(stmt);
@@ -5363,7 +5367,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
         }
         LOG.info("Aborted " + numTxnsAborted + " transactions due to timeout");
-        Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_TIMED_OUT_TXNS).inc(numTxnsAborted);
+        if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+          Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_TIMED_OUT_TXNS).inc(numTxnsAborted);
+        }
       }
     } catch (SQLException ex) {
       LOG.warn("Aborting timed out transactions failed due to " + getMessage(ex), ex);

@@ -454,6 +454,8 @@ public class MetastoreConf {
         "hive.metastore.acidmetrics.check.interval", 300,
         TimeUnit.SECONDS,
         "Time in seconds between acid related metric collection runs."),
+    METASTORE_ACIDMETRICS_EXT_ON("metastore.acidmetrics.ext.on", "hive.metastore.acidmetrics.ext.on", true,
+        "Whether to collect additional acid related metrics outside of the acid metrics service."),
     METASTORE_ACIDMETRICS_TABLES_WITH_ABORTED_TXNS_THRESHOLD("metastore.acidmetrics.table.aborted.txns.threshold",
         "hive.metastore.acidmetrics.table.aborted.txns.threshold", 1500,
         "The acid metrics system will collect the number of tables which have a large number of aborted transactions." +

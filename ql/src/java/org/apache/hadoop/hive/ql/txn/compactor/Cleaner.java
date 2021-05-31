@@ -111,7 +111,7 @@ public class Cleaner extends MetaStoreCompactorThread {
         // so wrap it in a big catch Throwable statement.
         try {
           handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
-          if (metricsEnabled) {
+          if (metricsEnabled && MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
             ratio.getRight().incrementAndGet();
           }
           startedAt = System.currentTimeMillis();
@@ -138,7 +138,7 @@ public class Cleaner extends MetaStoreCompactorThread {
           }
         } catch (Throwable t) {
           // the lock timeout on AUX lock, should be ignored.
-          if (metricsEnabled && handle != null) {
+          if (metricsEnabled && handle != null && MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
             ratio.getLeft().incrementAndGet();
           }
           LOG.error("Caught an exception in the main loop of compactor cleaner, " +
@@ -170,7 +170,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     String cleanerMetric = MetricsConstants.COMPACTION_CLEANER_CYCLE + "_" + ci.type;
     try {
-      if (metricsEnabled) {
+      if (metricsEnabled && MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
         perfLogger.perfLogBegin(CLASS_NAME, cleanerMetric);
       }
       Table t = resolveTable(ci);
@@ -262,7 +262,7 @@ public class Cleaner extends MetaStoreCompactorThread {
       ci.errorMessage = e.getMessage();
       txnHandler.markFailed(ci);
     } finally {
-      if (metricsEnabled) {
+      if (metricsEnabled && MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
         perfLogger.perfLogEnd(CLASS_NAME, cleanerMetric);
       }
     }

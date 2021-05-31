@@ -120,7 +120,7 @@ public class Initiator extends MetaStoreCompactorThread {
         // don't doom the entire thread.
         try {
           handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Initiator.name());
-          if (metricsEnabled) {
+          if (metricsEnabled && MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
             ratio.getRight().incrementAndGet();
             perfLogger.perfLogBegin(CLASS_NAME, MetricsConstants.COMPACTION_INITIATOR_CYCLE);
           }
@@ -179,7 +179,7 @@ public class Initiator extends MetaStoreCompactorThread {
           recoverFailedCompactions(true);
         } catch (Throwable t) {
           // the lock timeout on AUX lock, should be ignored.
-          if (metricsEnabled && handle != null) {
+          if (metricsEnabled && handle != null && MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
             ratio.getLeft().incrementAndGet();
           }
           LOG.error("Initiator loop caught unexpected exception this time through the loop: " +
@@ -189,7 +189,7 @@ public class Initiator extends MetaStoreCompactorThread {
           if (handle != null) {
             handle.releaseLocks();
           }
-          if (metricsEnabled) {
+          if (metricsEnabled && MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
             perfLogger.perfLogEnd(CLASS_NAME, MetricsConstants.COMPACTION_INITIATOR_CYCLE);
           }
         }

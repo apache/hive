@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 
@@ -73,6 +74,7 @@ import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricRe
 public class DeltaFilesMetricReporter {
 
   private static final Logger LOG = LoggerFactory.getLogger(AcidUtils.class);
+  private boolean acidMetricsExtEnabled;
 
   public enum DeltaFilesMetricType {
     NUM_OBSOLETE_DELTAS("HIVE_ACID_NUM_OBSOLETE_DELTAS"),
@@ -115,41 +117,45 @@ public class DeltaFilesMetricReporter {
     return InstanceHolder.instance;
   }
 
-  public static synchronized void init(HiveConf conf){
+  public static synchronized void init(HiveConf conf) {
     getInstance().configure(conf);
   }
 
   public void submit(TezCounters counters) {
-    updateMetrics(NUM_OBSOLETE_DELTAS,
-        obsoleteDeltaCache, obsoleteDeltaTopN, obsoleteDeltasThreshold, counters);
-    updateMetrics(NUM_DELTAS,
-        deltaCache, deltaTopN, deltasThreshold, counters);
-    updateMetrics(NUM_SMALL_DELTAS,
-        smallDeltaCache, smallDeltaTopN, deltasThreshold, counters);
+    if(acidMetricsExtEnabled) {
+      updateMetrics(NUM_OBSOLETE_DELTAS,
+          obsoleteDeltaCache, obsoleteDeltaTopN, obsoleteDeltasThreshold, counters);
+      updateMetrics(NUM_DELTAS,
+          deltaCache, deltaTopN, deltasThreshold, counters);
+      updateMetrics(NUM_SMALL_DELTAS,
+          smallDeltaCache, smallDeltaTopN, deltasThreshold, counters);
+    }
   }
 
-  public static void mergeDeltaFilesStats(AcidDirectory dir, long checkThresholdInSec,
-        float deltaPctThreshold, EnumMap<DeltaFilesMetricType, Map<String, Integer>> deltaFilesStats) throws IOException {
-    long baseSize = getBaseSize(dir);
-    int numObsoleteDeltas = getNumObsoleteDeltas(dir, checkThresholdInSec);
+  public static void mergeDeltaFilesStats(AcidDirectory dir, long checkThresholdInSec, float deltaPctThreshold,
+      EnumMap<DeltaFilesMetricType, Map<String, Integer>> deltaFilesStats, Configuration conf) throws IOException {
+    if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+      long baseSize = getBaseSize(dir);
+      int numObsoleteDeltas = getNumObsoleteDeltas(dir, checkThresholdInSec);
 
-    int numDeltas = 0;
-    int numSmallDeltas = 0;
+      int numDeltas = 0;
+      int numSmallDeltas = 0;
 
-    for (AcidUtils.ParsedDelta delta : dir.getCurrentDirectories()) {
-      FileStatus stat = dir.getFs().getFileStatus(delta.getPath());
-      if (System.currentTimeMillis() - stat.getModificationTime() >= checkThresholdInSec * 1000) {
-        numDeltas++;
+      for (AcidUtils.ParsedDelta delta : dir.getCurrentDirectories()) {
+        FileStatus stat = dir.getFs().getFileStatus(delta.getPath());
+        if (System.currentTimeMillis() - stat.getModificationTime() >= checkThresholdInSec * 1000) {
+          numDeltas++;
 
-        long deltaSize = getDirSize(delta, dir.getFs());
-        if (baseSize != 0 && deltaSize / (float) baseSize < deltaPctThreshold) {
-          numSmallDeltas++;
+          long deltaSize = getDirSize(delta, dir.getFs());
+          if (baseSize != 0 && deltaSize / (float) baseSize < deltaPctThreshold) {
+            numSmallDeltas++;
+          }
         }
       }
+      String path = getRelPath(dir);
+      newDeltaFilesStats(numObsoleteDeltas, numDeltas, numSmallDeltas)
+          .forEach((type, cnt) -> deltaFilesStats.computeIfAbsent(type, v -> new HashMap<>()).put(path, cnt));
     }
-    String path = getRelPath(dir);
-    newDeltaFilesStats(numObsoleteDeltas, numDeltas, numSmallDeltas)
-      .forEach((type, cnt) -> deltaFilesStats.computeIfAbsent(type, v -> new HashMap<>()).put(path, cnt));
   }
 
   private static int getNumObsoleteDeltas(AcidDirectory dir, long checkThresholdInSec) throws IOException {
@@ -178,7 +184,8 @@ public class DeltaFilesMetricReporter {
   }
 
   public static void createCountersForAcidMetrics(TezCounters tezCounters, JobConf jobConf) {
-    if (HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
+    if (HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED) &&
+        MetastoreConf.getBoolVar(jobConf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
       Arrays.stream(DeltaFilesMetricType.values())
         .filter(type -> jobConf.get(type.name()) != null)
         .forEach(type ->
@@ -190,13 +197,16 @@ public class DeltaFilesMetricReporter {
   }
 
   public static void addAcidMetricsToConfObj(EnumMap<DeltaFilesMetricType, Map<String, Integer>> deltaFilesStats, Configuration conf) {
-    deltaFilesStats.forEach((type, value) ->
-        conf.set(type.name(), Joiner.on(",").withKeyValueSeparator("->").join(value))
-    );
+    if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+      deltaFilesStats.forEach((type, value) ->
+          conf.set(type.name(), Joiner.on(",").withKeyValueSeparator("->").join(value))
+      );
+    }
   }
 
   public static void backPropagateAcidMetrics(JobConf jobConf, Configuration conf) {
-    if (HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
+    if (HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED) &&
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
       Arrays.stream(DeltaFilesMetricType.values())
         .filter(type -> conf.get(type.name()) != null)
         .forEach(type ->
@@ -206,7 +216,7 @@ public class DeltaFilesMetricReporter {
   }
 
   public static void close() {
-    if (getInstance() != null) {
+    if (getInstance() != null && getInstance().acidMetricsExtEnabled) {
       getInstance().executorService.shutdownNow();
     }
   }
@@ -230,23 +240,26 @@ public class DeltaFilesMetricReporter {
       .sum();
   }
 
-  private void configure(HiveConf conf){
-    deltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD);
-    obsoleteDeltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD);
+  private void configure(HiveConf conf) {
+    acidMetricsExtEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
+    if (acidMetricsExtEnabled) {
+      deltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD);
+      obsoleteDeltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD);
 
-    initMetricsCache(conf);
-    long reportingInterval = HiveConf.getTimeVar(conf,
-        HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_REPORTING_INTERVAL, TimeUnit.SECONDS);
+      initMetricsCache(conf);
+      long reportingInterval = HiveConf.getTimeVar(conf,
+          HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_REPORTING_INTERVAL, TimeUnit.SECONDS);
 
-    ThreadFactory threadFactory =
-      new ThreadFactoryBuilder()
-        .setDaemon(true)
-        .setNameFormat("DeltaFilesMetricReporter %d")
-        .build();
-    executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
-    executorService.scheduleAtFixedRate(
-        new ReportingTask(), 0, reportingInterval, TimeUnit.SECONDS);
-    LOG.info("Started DeltaFilesMetricReporter thread");
+      ThreadFactory threadFactory =
+          new ThreadFactoryBuilder()
+              .setDaemon(true)
+              .setNameFormat("DeltaFilesMetricReporter %d")
+              .build();
+      executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
+      executorService.scheduleAtFixedRate(
+          new ReportingTask(), 0, reportingInterval, TimeUnit.SECONDS);
+      LOG.info("Started DeltaFilesMetricReporter thread");
+    }
   }
 
   private void initMetricsCache(HiveConf conf) {
