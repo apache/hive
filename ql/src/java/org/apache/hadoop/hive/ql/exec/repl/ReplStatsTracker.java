@@ -19,7 +19,10 @@ package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.management.ObjectName;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
@@ -29,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Tracks the replication statistics per event type.
  */
 public class ReplStatsTracker {
+  private static final Logger LOG = LoggerFactory.getLogger(ReplStatsTracker.class);
 
   // Maintains the descriptive statistics per event type.
   private ConcurrentHashMap<String, DescriptiveStatistics> descMap;
