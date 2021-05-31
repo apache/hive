@@ -1,4 +1,4 @@
-PREHOOK: query: CREATE EXTERNAL TABLE ice_t (i int, s string, ts timestamp, d date) STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler'
+PREHOOK: query: CREATE EXTERNAL TABLE ice_t (i int, s string, ts timestamp, d date) STORED BY ICEBERG
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ice_t
