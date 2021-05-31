@@ -264,10 +264,10 @@ public final class PlanUtils {
     }
 
     if (partCols != null && !partCols.isEmpty()) {
-      properties.setProperty(serdeConstants.LIST_PARTITION_COLUMNS, partCols.stream()
-          .map(FieldSchema::getName).collect(Collectors.joining(",")));
-      properties.setProperty(serdeConstants.LIST_PARTITION_COLUMN_TYPES, partCols.stream()
-          .map(FieldSchema::getType).collect(Collectors.joining(":")));
+      properties.setProperty(serdeConstants.LIST_PARTITION_COLUMNS,
+          MetaStoreUtils.getColumnNamesFromFieldSchema(partCols));
+      properties.setProperty(serdeConstants.LIST_PARTITION_COLUMN_TYPES,
+          MetaStoreUtils.getColumnTypesFromFieldSchema(partCols, ":"));
     }
 
     if (lastColumnTakesRestOfTheLine) {

@@ -666,7 +666,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
             jc.getPartitionerClass(), null);
       }
 
-      if (dpCtx != null && !skipPartitionCheck()) {
+      if (dpCtx != null && !inspectPartitionValues()) {
         dpSetup();
       }
 
@@ -740,7 +740,14 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
   }
 
-  private boolean skipPartitionCheck() {
+  /**
+   * Whether partition values are stored in the data files too (as opposed to just being represented in the partition
+   * folder name), along with non-partition column values. Therefore if true, the object inspector should not
+   * disregard/remove the partition columns.
+   *
+   * @return whether partition values should be part of the object inspector too
+   */
+  private boolean inspectPartitionValues() {
     return Optional.ofNullable(conf).map(FileSinkDesc::getTableInfo)
         .map(TableDesc::getProperties)
         .map(props -> props.getProperty(hive_metastoreConstants.META_TABLE_STORAGE))

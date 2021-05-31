@@ -777,15 +777,20 @@ public class MetaStoreUtils {
    * Convert FieldSchemas to columnTypes.
    */
   public static String getColumnTypesFromFieldSchema(
-      List<FieldSchema> fieldSchemas) {
+      List<FieldSchema> fieldSchemas, String delimiter) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < fieldSchemas.size(); i++) {
       if (i > 0) {
-        sb.append(",");
+        sb.append(delimiter);
       }
       sb.append(fieldSchemas.get(i).getType());
     }
     return sb.toString();
+  }
+
+  public static String getColumnTypesFromFieldSchema(
+      List<FieldSchema> fieldSchemas) {
+    return getColumnTypesFromFieldSchema(fieldSchemas, ",");
   }
 
   public static String getColumnCommentsFromFieldSchema(List<FieldSchema> fieldSchemas) {

@@ -141,10 +141,8 @@ public class TestHiveIcebergStorageHandlerWithMultipleCatalogs {
         InputFormatConfig.CATALOG_NAME, HIVECATALOGNAME));
 
     List<Object[]> objects = shell.executeStatement("SELECT * FROM target");
-    Assert.assertEquals(3, objects.size());
-
-    Table target = testTables1.loadTable(TableIdentifier.of("default", "target"));
-    HiveIcebergTestUtils.validateData(target, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 0);
+    HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
   }
 
   @Test

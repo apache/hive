@@ -621,15 +621,11 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testCTASFromHiveTable() {
-    Assume.assumeTrue("CTAS target table is supported fully only for HiveCatalog tables." +
-        "For other catalog types, the HiveIcebergSerDe will create the target Iceberg table in the correct catalog " +
-        "using the Catalogs.createTable function, but will not register the table in HMS since those catalogs do not " +
-        "use HiveTableOperations. This means that even though the CTAS query succeeds, the user would not be able to " +
-        "query this new table from Hive, since HMS does not know about it.",
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
 
     shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
-    shell.executeStatement("INSERT INTO source VALUES (1, 'Mike', 'HR'), (2, 'Linda', 'Finance')");
+    shell.executeStatement(testTables.getInsertQuery(
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
 
     shell.executeStatement(String.format(
         "CREATE TABLE target STORED BY '%s' %s TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
@@ -638,22 +634,17 @@ public class TestHiveIcebergStorageHandlerWithEngine {
         TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
 
     List<Object[]> objects = shell.executeStatement("SELECT * FROM target ORDER BY id");
-    Assert.assertEquals(2, objects.size());
-    Assert.assertArrayEquals(new Object[]{1L, "Mike", "HR"}, objects.get(0));
-    Assert.assertArrayEquals(new Object[]{2L, "Linda", "Finance"}, objects.get(1));
+    HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
   }
 
   @Test
   public void testCTASPartitionedFromHiveTable() throws TException, InterruptedException {
-    Assume.assumeTrue("CTAS target table is supported fully only for HiveCatalog tables." +
-        "For other catalog types, the HiveIcebergSerDe will create the target Iceberg table in the correct catalog " +
-        "using the Catalogs.createTable function, but will not register the table in HMS since those catalogs do not " +
-        "use HiveTableOperations. This means that even though the CTAS query succeeds, the user would not be able to " +
-        "query this new table from Hive, since HMS does not know about it.",
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
 
     shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
-    shell.executeStatement("INSERT INTO source VALUES (1, 'Mike', 'HR'), (2, 'Linda', 'Finance')");
+    shell.executeStatement(testTables.getInsertQuery(
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
 
     shell.executeStatement(String.format(
         "CREATE TABLE target PARTITIONED BY (dept, name) " +
@@ -662,10 +653,9 @@ public class TestHiveIcebergStorageHandlerWithEngine {
         TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
 
     // check table can be read back correctly
-    List<Object[]> objects = shell.executeStatement("SELECT * FROM target ORDER BY id");
-    Assert.assertEquals(2, objects.size());
-    Assert.assertArrayEquals(new Object[]{1L, "HR", "Mike"}, objects.get(0));
-    Assert.assertArrayEquals(new Object[]{2L, "Finance", "Linda"}, objects.get(1));
+    List<Object[]> objects = shell.executeStatement("SELECT id, name, dept FROM target ORDER BY id");
+    HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
 
     // check HMS table has been created correctly (no partition cols, props pushed down)
     org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "target");
@@ -682,12 +672,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testCTASFailureRollback() throws IOException {
-    Assume.assumeTrue("CTAS target table is supported fully only for HiveCatalog tables." +
-        "For other catalog types, the HiveIcebergSerDe will create the target Iceberg table in the correct catalog " +
-        "using the Catalogs.createTable function, but will not register the table in HMS since those catalogs do not " +
-        "use HiveTableOperations. This means that even though the CTAS query succeeds, the user would not be able to " +
-        "query this new table from Hive, since HMS does not know about it.",
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
 
     // force an execution error by passing in a committer class that Tez won't be able to load
     shell.setHiveSessionValue("hive.tez.mapreduce.output.committer.class", "org.apache.NotExistingClass");
@@ -696,7 +681,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
-    String[] partitioningSchemes = {"" /* unpartitioned */, "PARTITIONED BY (dept)"};
+    String[] partitioningSchemes = {"" /* unpartitioned */, "PARTITIONED BY (dept)", "PARTITIONED BY (dept, name)"};
     for (String partitioning : partitioningSchemes) {
       try {
         shell.executeStatement(String.format("CREATE TABLE target %s STORED BY '%s' AS SELECT * FROM source",
