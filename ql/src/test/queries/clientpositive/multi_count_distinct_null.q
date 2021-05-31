@@ -3,8 +3,15 @@ set hive.mapred.mode=nonstrict;
 drop table employee;
 
 create table employee (department_id int, gender varchar(10), education_level int);
- 
+
+explain cbo
+select count(distinct 0), count(distinct null) from employee;
+
+select count(distinct 0), count(distinct null) from employee;
+
 insert into employee values (1, 'M', 1),(1, 'M', 1),(2, 'F', 1),(1, 'F', 3),(1, 'M', 2),(4, 'M', 1),(2, 'F', 1),(2, 'F', 3),(3, 'M', 2),(null, 'M', 1),(null, null, 1),(null, null, null);
+
+select count(distinct 0), count(distinct null) from employee;
 
 explain select count(distinct department_id), count(distinct gender), count(distinct education_level) from employee;
 
