@@ -274,6 +274,40 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
   }
 
   @Test
+  public void testDisablePolicy() throws Exception {
+    String testNamespace = "disable";
+    ScheduledQueryKey schqKey = new ScheduledQueryKey("q1", testNamespace);
+    ScheduledQuery schq = createScheduledQuery(schqKey);
+    ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
+    r.setType(ScheduledQueryMaintenanceRequestType.CREATE);
+    r.setScheduledQuery(schq);
+    client.scheduledQueryMaintenance(r);
+    client.scheduledQueryMaintenance(r);
+
+    // do some polls and report failure each time
+    ScheduledQueryPollRequest request = new ScheduledQueryPollRequest();
+    request.setClusterNamespace(testNamespace);
+    ScheduledQueryPollResponse pollResult = null;
+    int numFailed = 0;
+    for (int i = 0; i < 30; i++) {
+      pollResult = client.scheduledQueryPoll(request);
+      if (pollResult.isSetQuery()) {
+        numFailed++;
+        ScheduledQueryProgressInfo info =
+            new ScheduledQueryProgressInfo(pollResult.getExecutionId(), QueryState.FAILED, "executor-query-id");
+        info.setErrorMessage("something issue happened");
+        client.scheduledQueryProgress(info);
+
+        schq = client.getScheduledQuery(schqKey);
+        System.out.println(schq.isEnabled());
+
+      }
+      Thread.sleep(100);
+    }
+    throw new RuntimeException("x" + numFailed);
+  }
+
+  @Test
   public void testPoll() throws Exception {
     ScheduledQuery schq = createScheduledQuery(new ScheduledQueryKey("q1", "polltest"));
     ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();

@@ -13875,7 +13875,7 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
-    processScheduledQueryPolicies(info);
+    //    processScheduledQueryPolicies(info);
   }
 
   private void processScheduledQueryPolicies(ScheduledQueryProgressInfo info) {
