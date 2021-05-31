@@ -64,9 +64,7 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
   }
 
   private List<HivePrivilegeObject> getInputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> AlterTableEvent.getInputHObjs()");
-    }
+    LOG.debug("==> AlterTableEvent.getInputHObjs()");
 
     List<HivePrivilegeObject> ret      = new ArrayList<>();
     PreAlterTableEvent        event    = (PreAlterTableEvent) preEventContext;
@@ -76,17 +74,13 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
 
     COMMAND_STR = buildCommandString(COMMAND_STR, oldTable);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("<== AlterTableEvent.getInputHObjs(): ret=" + ret);
-    }
+    LOG.debug("<== AlterTableEvent.getInputHObjs(): ret={}", ret);
 
     return ret;
   }
 
   private List<HivePrivilegeObject> getOutputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> AlterTableEvent.getOutputHObjs()");
-    }
+    LOG.debug("==> AlterTableEvent.getOutputHObjs()");
 
     List<HivePrivilegeObject> ret      = new ArrayList<>();
     PreAlterTableEvent event    = (PreAlterTableEvent) preEventContext;
@@ -101,9 +95,7 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
       ret.add(getHivePrivilegeObjectDfsUri(newUri));
     }
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("<== AlterTableEvent.getOutputHObjs(): ret=" + ret);
-    }
+    LOG.debug("<== AlterTableEvent.getOutputHObjs(): ret={}", ret);
 
     return ret;
   }

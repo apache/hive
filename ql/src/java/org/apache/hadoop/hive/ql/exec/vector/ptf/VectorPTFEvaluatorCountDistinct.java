@@ -100,8 +100,8 @@ public abstract class VectorPTFEvaluatorCountDistinct extends VectorPTFEvaluator
   protected abstract Object getValue(ColumnVector colVector, int i);
 
   @Override
-  public long getLongGroupResult() {
-    return uniqueObjects.size();
+  public Object getGroupResult() {
+    return Long.valueOf(uniqueObjects.size());
   }
 
   @Override

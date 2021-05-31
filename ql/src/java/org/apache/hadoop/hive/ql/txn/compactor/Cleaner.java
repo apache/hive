@@ -231,9 +231,7 @@ public class Cleaner extends MetaStoreCompactorThread {
 
       // Creating 'reader' list since we are interested in the set of 'obsolete' files
       final ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, t, validTxnList);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Cleaning based on writeIdList: " + validWriteIdList);
-      }
+      LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
 
       Ref<Boolean> removedFiles = Ref.from(false);
       if (runJobAsSelf(ci.runAs)) {

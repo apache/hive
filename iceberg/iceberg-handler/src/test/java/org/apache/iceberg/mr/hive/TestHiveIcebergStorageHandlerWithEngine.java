@@ -21,14 +21,25 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionKey;
@@ -62,6 +73,9 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.mockito.ArgumentMatchers;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
@@ -195,6 +209,95 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     Assert.assertArrayEquals(new Object[] {"Trudy", 2L}, descRows.get(0));
     Assert.assertArrayEquals(new Object[] {"Bob", 1L}, descRows.get(1));
     Assert.assertArrayEquals(new Object[] {"Alice", 0L}, descRows.get(2));
+  }
+
+  @Test
+  public void testMigrateHiveTableToIceberg() throws TException, InterruptedException {
+    Assume.assumeTrue(fileFormat == FileFormat.AVRO || fileFormat == FileFormat.PARQUET);
+    String tableName = "tbl";
+    String createQuery = "CREATE EXTERNAL TABLE " +  tableName + " (a int) STORED AS " + fileFormat.name() + " " +
+        testTables.locationForCreateTableSQL(TableIdentifier.of("default", tableName));
+    shell.executeStatement(createQuery);
+    shell.executeStatement("INSERT INTO " + tableName + " VALUES (1), (2), (3)");
+    validateMigration(tableName);
+  }
+
+  @Test
+  public void testMigratePartitionedHiveTableToIceberg() throws TException, InterruptedException {
+    Assume.assumeTrue(fileFormat == FileFormat.AVRO || fileFormat == FileFormat.PARQUET);
+    String tableName = "tbl_part";
+    shell.executeStatement("CREATE EXTERNAL TABLE " + tableName + " (a int) PARTITIONED BY (b string) STORED AS " +
+        fileFormat.name() + " " + testTables.locationForCreateTableSQL(TableIdentifier.of("default", tableName)));
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='aaa') VALUES (1), (2), (3)");
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='bbb') VALUES (4), (5)");
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ccc') VALUES (6)");
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ddd') VALUES (7), (8), (9), (10)");
+    validateMigration(tableName);
+  }
+
+  @Test
+  public void testMigratePartitionedBucketedHiveTableToIceberg() throws TException, InterruptedException {
+    Assume.assumeTrue(fileFormat == FileFormat.AVRO || fileFormat == FileFormat.PARQUET);
+    String tableName = "tbl_part_bucketed";
+    shell.executeStatement("CREATE EXTERNAL TABLE " + tableName + " (a int) PARTITIONED BY (b string) clustered by " +
+        "(a) INTO 2 BUCKETS STORED AS " + fileFormat.name() + " " +
+        testTables.locationForCreateTableSQL(TableIdentifier.of("default", tableName)));
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='aaa') VALUES (1), (2), (3)");
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='bbb') VALUES (4), (5)");
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ccc') VALUES (6)");
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ddd') VALUES (7), (8), (9), (10)");
+    validateMigration(tableName);
+  }
+
+  @Test
+  public void testRollbackMigrateHiveTableToIceberg() throws TException, InterruptedException {
+    Assume.assumeTrue(fileFormat == FileFormat.AVRO || fileFormat == FileFormat.PARQUET);
+    String tableName = "tbl_rollback";
+    shell.executeStatement("CREATE EXTERNAL TABLE " +  tableName + " (a int) STORED AS " + fileFormat.name() + " " +
+        testTables.locationForCreateTableSQL(TableIdentifier.of("default", tableName)));
+    shell.executeStatement("INSERT INTO " + tableName + " VALUES (1), (2), (3)");
+    validateMigrationRollback(tableName);
+  }
+
+  @Test
+  public void testRollbackMigratePartitionedHiveTableToIceberg() throws TException, InterruptedException {
+    Assume.assumeTrue(fileFormat == FileFormat.AVRO || fileFormat == FileFormat.PARQUET);
+    String tableName = "tbl_rollback";
+    shell.executeStatement("CREATE EXTERNAL TABLE " + tableName + " (a int) PARTITIONED BY (b string) STORED AS " +
+        fileFormat.name() + " " + testTables.locationForCreateTableSQL(TableIdentifier.of("default", tableName)));
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='aaa') VALUES (1), (2), (3)");
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='bbb') VALUES (4), (5)");
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ccc') VALUES (6)");
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ddd') VALUES (7), (8), (9), (10)");
+    validateMigrationRollback(tableName);
+  }
+
+  @Test
+  public void testRollbackMultiPartitionedHiveTableToIceberg() throws TException, InterruptedException {
+    Assume.assumeTrue(fileFormat == FileFormat.AVRO || fileFormat == FileFormat.PARQUET);
+    String tableName = "tbl_rollback";
+    shell.executeStatement("CREATE EXTERNAL TABLE " + tableName + " (a int) PARTITIONED BY (b string, c int) " +
+        "STORED AS " + fileFormat.name() + " " +
+        testTables.locationForCreateTableSQL(TableIdentifier.of("default", tableName)));
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='aaa', c='111') VALUES (1), (2), (3)");
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='bbb', c='111') VALUES (4), (5)");
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='aaa', c='222') VALUES (6)");
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ccc', c='333') VALUES (7), (8), (9), (10)");
+    validateMigrationRollback(tableName);
+  }
+
+  @Test
+  public void testRollbackMigratePartitionedBucketedHiveTableToIceberg() throws TException, InterruptedException {
+    Assume.assumeTrue(fileFormat == FileFormat.AVRO || fileFormat == FileFormat.PARQUET);
+    String tableName = "tbl_part_bucketed";
+    shell.executeStatement("CREATE EXTERNAL TABLE " + tableName + " (a int) PARTITIONED BY (b string) clustered by " +
+        "(a) INTO 2 BUCKETS STORED AS " + fileFormat.name() + " " +
+        testTables.locationForCreateTableSQL(TableIdentifier.of("default", tableName)));
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='aaa') VALUES (1), (2), (3)");
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='bbb') VALUES (4), (5)");
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ccc') VALUES (6)");
+    shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ddd') VALUES (7), (8), (9), (10)");
+    validateMigrationRollback(tableName);
   }
 
   @Test
@@ -813,6 +916,108 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   }
 
   @Test
+  public void testYearTransform() throws IOException {
+    Schema schema = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "part_field", Types.DateType.get()));
+    PartitionSpec spec = PartitionSpec.builderFor(schema).year("part_field").build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schema)
+        .add(1L, LocalDate.of(2020, 1, 21))
+        .add(2L, LocalDate.of(2020, 1, 22))
+        .add(3L, LocalDate.of(2019, 1, 21))
+        .build();
+    Table table = testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
+    HiveIcebergTestUtils.validateData(table, records, 0);
+
+    HiveIcebergTestUtils.validateDataWithSQL(shell, "part_test", records, "id");
+  }
+
+  @Test
+  public void testMonthTransform() throws IOException {
+    Schema schema = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "part_field", Types.TimestampType.withZone()));
+    PartitionSpec spec = PartitionSpec.builderFor(schema).month("part_field").build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schema)
+        .add(1L, OffsetDateTime.of(2017, 11, 22, 11, 30, 7, 0, ZoneOffset.ofHours(1)))
+        .add(2L, OffsetDateTime.of(2017, 11, 22, 11, 30, 7, 0, ZoneOffset.ofHours(2)))
+        .add(3L, OffsetDateTime.of(2017, 11, 23, 11, 30, 7, 0, ZoneOffset.ofHours(3)))
+        .build();
+    Table table = testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
+    HiveIcebergTestUtils.validateData(table, records, 0);
+
+    HiveIcebergTestUtils.validateDataWithSQL(shell, "part_test", records, "id");
+  }
+
+  @Test
+  public void testDayTransform() throws IOException {
+    Schema schema = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "part_field", Types.TimestampType.withoutZone()));
+    PartitionSpec spec = PartitionSpec.builderFor(schema).day("part_field").build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schema)
+        .add(1L, LocalDateTime.of(2019, 2, 22, 9, 44, 54))
+        .add(2L, LocalDateTime.of(2019, 2, 22, 10, 44, 54))
+        .add(3L, LocalDateTime.of(2019, 2, 23, 9, 44, 54))
+        .build();
+    Table table = testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
+    HiveIcebergTestUtils.validateData(table, records, 0);
+
+    HiveIcebergTestUtils.validateDataWithSQL(shell, "part_test", records, "id");
+  }
+
+  @Test
+  public void testHourTransform() throws IOException {
+    Schema schema = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "part_field", Types.TimestampType.withoutZone()));
+    PartitionSpec spec = PartitionSpec.builderFor(schema).hour("part_field").build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schema)
+        .add(1L, LocalDateTime.of(2019, 2, 22, 9, 44, 54))
+        .add(2L, LocalDateTime.of(2019, 2, 22, 10, 44, 54))
+        .add(3L, LocalDateTime.of(2019, 2, 23, 9, 44, 54))
+        .build();
+    Table table = testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
+    HiveIcebergTestUtils.validateData(table, records, 0);
+
+    HiveIcebergTestUtils.validateDataWithSQL(shell, "part_test", records, "id");
+  }
+
+  @Test
+  public void testBucketTransform() throws IOException {
+    Schema schema = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "part_field", Types.StringType.get()));
+    PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("part_field", 2).build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schema)
+        .add(1L, "Part1")
+        .add(2L, "Part2")
+        .add(3L, "Art3")
+        .build();
+    Table table = testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
+    HiveIcebergTestUtils.validateData(table, records, 0);
+
+    HiveIcebergTestUtils.validateDataWithSQL(shell, "part_test", records, "id");
+  }
+
+  @Test
+  public void testTruncateTransform() throws IOException {
+    Schema schema = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "part_field", Types.StringType.get()));
+    PartitionSpec spec = PartitionSpec.builderFor(schema).truncate("part_field", 2).build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schema)
+        .add(1L, "Part1")
+        .add(2L, "Part2")
+        .add(3L, "Art3")
+        .build();
+    Table table = testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
+    HiveIcebergTestUtils.validateData(table, records, 0);
+
+    HiveIcebergTestUtils.validateDataWithSQL(shell, "part_test", records, "id");
+  }
+
+  @Test
   public void testMultiTableInsert() throws IOException {
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
@@ -1123,5 +1328,50 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     for (Map.Entry<String, String> entry : STATS_MAPPING.entrySet()) {
       Assert.assertEquals(summary.get(entry.getValue()), hmsParams.get(entry.getKey()));
     }
+  }
+
+  private void validateMigration(String tableName) throws TException, InterruptedException {
+    List<Object[]> originalResult = shell.executeStatement("SELECT * FROM " + tableName + " ORDER BY a");
+    shell.executeStatement("ALTER TABLE " + tableName + " SET TBLPROPERTIES " +
+        "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')");
+    List<Object[]> alterResult = shell.executeStatement("SELECT * FROM " + tableName + " ORDER BY a");
+    Assert.assertEquals(originalResult.size(), alterResult.size());
+    for (int i = 0; i < originalResult.size(); i++) {
+      Assert.assertTrue(Arrays.equals(originalResult.get(i), alterResult.get(i)));
+    }
+    validateSd(tableName, "iceberg");
+  }
+
+  private void validateMigrationRollback(String tableName) throws TException, InterruptedException {
+    List<Object[]> originalResult = shell.executeStatement("SELECT * FROM " + tableName + " ORDER BY a");
+    try (MockedStatic<HiveTableUtil> mockedTableUtil = Mockito.mockStatic(HiveTableUtil.class)) {
+      mockedTableUtil.when(() -> HiveTableUtil.importFiles(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
+          ArgumentMatchers.any(PartitionSpecProxy.class), ArgumentMatchers.anyList(),
+          ArgumentMatchers.any(Properties.class), ArgumentMatchers.any(Configuration.class)))
+          .thenThrow(new MetaException());
+      try {
+        shell.executeStatement("ALTER TABLE " + tableName + " SET TBLPROPERTIES " +
+            "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')");
+      } catch (IllegalArgumentException e) {
+        Assert.assertTrue(e.getMessage().contains("Error occurred during hive table migration to iceberg."));
+        validateSd(tableName, fileFormat.name());
+        shell.executeStatement("MSCK REPAIR TABLE " + tableName);
+        List<Object[]> alterResult = shell.executeStatement("SELECT * FROM " + tableName + " ORDER BY a");
+        Assert.assertEquals(originalResult.size(), alterResult.size());
+        for (int i = 0; i < originalResult.size(); i++) {
+          Assert.assertTrue(Arrays.equals(originalResult.get(i), alterResult.get(i)));
+        }
+        return;
+      }
+      Assert.fail("Alter table operations should have thrown an exception.");
+    }
+  }
+
+  private void validateSd(String tableName, String format) throws TException, InterruptedException {
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", tableName);
+    StorageDescriptor sd = hmsTable.getSd();
+    Assert.assertTrue(sd.getSerdeInfo().getSerializationLib().toLowerCase().contains(format.toLowerCase()));
+    Assert.assertTrue(sd.getInputFormat().toLowerCase().contains(format.toLowerCase()));
+    Assert.assertTrue(sd.getOutputFormat().toLowerCase(Locale.ROOT).contains(format.toLowerCase()));
   }
 }

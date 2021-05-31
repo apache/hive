@@ -166,7 +166,7 @@
     <jline.version>2.14.6</jline.version>
     <jms.version>2.0.2</jms.version>
     <joda.version>2.9.9</joda.version>
-    <jodd.version>3.5.2</jodd.version>
+    <jodd.version>6.0.0</jodd.version>
     <json.version>1.8</json.version>
     <junit.version>4.13</junit.version>
     <junit.jupiter.version>5.6.2</junit.jupiter.version>
@@ -183,8 +183,8 @@
     <mariadb.version>2.5.0</mariadb.version>
     <postgres.version>42.2.14</postgres.version>
     <opencsv.version>2.3</opencsv.version>
-    <orc.version>1.6.7</orc.version>
-    <mockito-core.version>3.3.3</mockito-core.version>
+    <orc.version>1.6.8</orc.version>
+    <mockito-core.version>3.4.4</mockito-core.version>
     <powermock.version>2.0.2</powermock.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.1.48.Final</netty.version>

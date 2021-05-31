@@ -213,9 +213,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       finalPaths = new Path[numFiles];
       outWriters = new RecordWriter[numFiles];
       updaters = new RecordUpdater[numFiles];
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Created slots for  " + numFiles);
-      }
+      LOG.debug("Created slots for {}", numFiles);
       stat = new Stat();
     }
 
@@ -422,11 +420,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           finalPaths[filesIdx] = finalPath;
           outPaths[filesIdx] = finalPath;
         }
-        if (LOG.isInfoEnabled()) {
-          LOG.info("Final Path: FS " + finalPaths[filesIdx]);
-          if (LOG.isInfoEnabled() && (!isMmTable && !isDirectInsert)) {
-            LOG.info("Writing to temp file: FS " + outPaths[filesIdx]);
-          }
+        LOG.info("Final Path: FS " + finalPaths[filesIdx]);
+        if (!isMmTable && !isDirectInsert) {
+          LOG.info("Writing to temp file: FS " + outPaths[filesIdx]);
         }
       } else {
         finalPaths[filesIdx] = outPaths[filesIdx] = specPath;
@@ -646,10 +642,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       destTablePath = conf.getDestPath();
       isInsertOverwrite = conf.getInsertOverwrite();
       counterGroup = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVECOUNTERGROUP);
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Using serializer : " + serializer + " and formatter : " + hiveOutputFormat +
-            (isCompressed ? " with compression" : ""));
-      }
+      LOG.info("Using serializer : " + serializer + " and formatter : " + hiveOutputFormat
+          + (isCompressed ? " with compression" : ""));
 
       // Timeout is chosen to make sure that even if one iteration takes more than
       // half of the script.timeout but less than script.timeout, we will still
@@ -831,15 +825,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       Set<Integer> seenBuckets = new HashSet<Integer>();
       for (int idx = 0; idx < totalFiles; idx++) {
         if (this.getExecContext() != null && this.getExecContext().getFileId() != null) {
-          if (LOG.isInfoEnabled()) {
-            LOG.info("replace taskId from execContext ");
-          }
+          LOG.info("replace taskId from execContext");
 
           taskId = Utilities.replaceTaskIdFromFilename(taskId, this.getExecContext().getFileId());
 
-          if (LOG.isInfoEnabled()) {
-            LOG.info("new taskId: FS " + taskId);
-          }
+          LOG.info("new taskId: FS " + taskId);
 
           assert !multiFileSpray;
           assert totalFiles == 1;
@@ -896,9 +886,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           + "; out path " + fsp.outPaths[filesIdx] +" (spec path " + specPath + ", tmp path "
           + fsp.buildTmpPath() + ", task " + taskId + ")");
       }
-      if (LOG.isInfoEnabled()) {
-        LOG.info("New Final Path: FS " + fsp.finalPaths[filesIdx]);
-      }
+      LOG.info("New Final Path: FS " + fsp.finalPaths[filesIdx]);
 
       if (isNativeTable() && !conf.isMmTable() && !conf.isDirectInsert()) {
         // in recent hadoop versions, use deleteOnExit to clean tmp files.

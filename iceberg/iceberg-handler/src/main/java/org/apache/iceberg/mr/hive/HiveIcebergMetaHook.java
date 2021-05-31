@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -45,6 +47,7 @@ import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.iceberg.BaseMetastoreTableOperations;
+import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
@@ -111,7 +114,8 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
 
       // If not using HiveCatalog check for existing table
       try {
-        this.icebergTable = Catalogs.loadTable(conf, catalogProperties);
+
+        this.icebergTable = IcebergTableUtil.getTable(conf, catalogProperties);
 
         Preconditions.checkArgument(catalogProperties.getProperty(InputFormatConfig.TABLE_SCHEMA) == null,
             "Iceberg table already created - can not use provided schema");
@@ -162,14 +166,19 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
 
   @Override
   public void preDropTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    // do nothing
+  }
+
+  @Override
+  public void preDropTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, boolean deleteData) {
     this.catalogProperties = getCatalogProperties(hmsTable);
     this.deleteIcebergTable = hmsTable.getParameters() != null &&
         "TRUE".equalsIgnoreCase(hmsTable.getParameters().get(InputFormatConfig.EXTERNAL_TABLE_PURGE));
 
-    if (deleteIcebergTable && Catalogs.hiveCatalog(conf, catalogProperties)) {
+    if (deleteIcebergTable && Catalogs.hiveCatalog(conf, catalogProperties) && deleteData) {
       // Store the metadata and the id for deleting the actual table data
       String metadataLocation = hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
-      this.deleteIo = Catalogs.loadTable(conf, catalogProperties).io();
+      this.deleteIo = IcebergTableUtil.getTable(conf, catalogProperties).io();
       this.deleteMetadata = TableMetadataParser.read(deleteIo, metadataLocation);
     }
   }
@@ -207,8 +216,9 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
     super.preAlterTable(hmsTable, context);
     catalogProperties = getCatalogProperties(hmsTable);
     try {
-      icebergTable = Catalogs.loadTable(conf, catalogProperties);
+      icebergTable = IcebergTableUtil.getTable(conf, catalogProperties);
     } catch (NoSuchTableException nte) {
+      context.getProperties().put(MIGRATE_HIVE_TO_ICEBERG, "true");
       // If the iceberg table does not exist, and the hms table is external and not temporary and not acid
       // we will create it in commitAlterTable
       StorageDescriptor sd = hmsTable.getSd();
@@ -272,6 +282,34 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
     }
   }
 
+  @Override
+  public void rollbackAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
+      throws MetaException {
+    if (Boolean.valueOf(context.getProperties().getOrDefault(MIGRATE_HIVE_TO_ICEBERG, "false"))) {
+      LOG.debug("Initiating rollback for table {} at location {}",
+          hmsTable.getTableName(), hmsTable.getSd().getLocation());
+      context.getProperties().put(INITIALIZE_ROLLBACK_MIGRATION, "true");
+      this.catalogProperties = getCatalogProperties(hmsTable);
+      try {
+        this.icebergTable = Catalogs.loadTable(conf, catalogProperties);
+      } catch (NoSuchTableException nte) {
+        // iceberg table was not yet created, no need to delete the metadata dir separately
+        return;
+      }
+
+      // we want to keep the data files but get rid of the metadata directory
+      String metadataLocation = ((BaseTable) this.icebergTable).operations().current().metadataFileLocation();
+      try {
+        Path path = new Path(metadataLocation).getParent();
+        FileSystem.get(path.toUri(), conf).delete(path, true);
+        LOG.debug("Metadata directory of iceberg table {} at location {} was deleted",
+            icebergTable.name(), path);
+      } catch (IOException e) {
+        // the file doesn't exists, do nothing
+      }
+    }
+  }
+
   private void setFileFormat() {
     String format = preAlterTableProperties.format.toLowerCase();
     if (format.contains("orc")) {
@@ -310,6 +348,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
    * <li>The base of the properties is the properties stored at the Hive Metastore for the given table
    * <li>We add the {@link Catalogs#LOCATION} as the table location
    * <li>We add the {@link Catalogs#NAME} as TableIdentifier defined by the database name and table name
+   * <li>We add the serdeProperties of the HMS table
    * <li>We remove some parameters that we don't want to push down to the Iceberg table props
    * </ul>
    * @param hmsTable Table for which we are calculating the properties
@@ -331,6 +370,15 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
 
     if (properties.get(Catalogs.NAME) == null) {
       properties.put(Catalogs.NAME, TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()).toString());
+    }
+
+    SerDeInfo serdeInfo = hmsTable.getSd().getSerdeInfo();
+    if (serdeInfo != null) {
+      serdeInfo.getParameters().entrySet().stream()
+          .filter(e -> e.getKey() != null && e.getValue() != null).forEach(e -> {
+            String icebergKey = HiveTableOperations.translateToIcebergProp(e.getKey());
+            properties.put(icebergKey, e.getValue());
+          });
     }
 
     // Remove HMS table parameters we don't want to propagate to Iceberg

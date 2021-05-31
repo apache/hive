@@ -1090,9 +1090,7 @@ public final class FunctionRegistry {
 
   public static GenericUDAFResolver getGenericUDAFResolver(String functionName)
       throws SemanticException {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Looking up GenericUDAF: " + functionName);
-    }
+    LOG.debug("Looking up GenericUDAF: {}", functionName);
     FunctionInfo finfo = getFunctionInfo(functionName);
     if (finfo == null) {
       return null;

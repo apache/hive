@@ -311,9 +311,8 @@ public class HiveSplitGenerator extends InputInitializer {
           counterName = Utilities.getVertexCounterName(HiveInputCounters.GROUPED_INPUT_SPLITS.name(), vertexName);
           tezCounters.findCounter(groupName, counterName).setValue(flatSplits.length);
 
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Published tez counters: " + tezCounters);
-          }
+          LOG.debug("Published tez counters: {}", tezCounters);
+
           inputInitializerContext.addCounters(tezCounters);
         }
 

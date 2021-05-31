@@ -747,10 +747,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       boolean keepAliveParam = false;
       if (keepAliveList != null && keepAliveList.size() == 1) {
         keepAliveParam = Boolean.parseBoolean(keepAliveList.get(0));
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("KeepAliveParam : " + keepAliveList
-            + " : " + keepAliveParam);
-        }
+        LOG.debug("KeepAliveParam : {} : {}", keepAliveList, keepAliveParam);
       }
       final List<String> mapIds = splitMaps(q.get("map"));
       final List<String> reduceQ = q.get("reduce");
@@ -892,10 +889,8 @@ public class ShuffleHandler implements AttemptRegistrationListener {
       try {
         AttemptPathIdentifier identifier = new AttemptPathIdentifier(jobId, dagId, user, mapId);
         pathInfo = pathCache.get(identifier);
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Retrieved pathInfo for " + identifier + " check for corresponding "
-              + "loaded messages to determine whether it was loaded or cached");
-        }
+        LOG.debug("Retrieved pathInfo for {} check for corresponding "
+            + "loaded messages to determine whether it was loaded or cached", identifier);
       } catch (ExecutionException e) {
         if (e.getCause() instanceof IOException) {
           throw (IOException) e.getCause();

@@ -173,7 +173,7 @@ public class TestHiveIcebergStorageHandlerWithMultipleCatalogs {
                                    String catalogName, List<Record> records) throws IOException {
     String createSql = String.format(
         "CREATE EXTERNAL TABLE %s (customer_id BIGINT, first_name STRING, last_name STRING)" +
-        " STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' %s " +
+        " STORED BY ICEBERG %s " +
         " TBLPROPERTIES ('%s'='%s', '%s'='%s')",
         identifier,
         testTables.locationForCreateTableSQL(identifier),

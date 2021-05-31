@@ -33,12 +33,20 @@ public class IncrementalLoadLogger extends ReplLogger<String> {
   private String dumpDir;
   private long numEvents;
   private long eventSeqNo;
+  private long currentEventTimestamp;
 
   public IncrementalLoadLogger(String dbName, String dumpDir, int numEvents) {
     this.dbName = dbName;
     this.dumpDir = dumpDir;
     this.numEvents = numEvents;
     this.eventSeqNo = 0;
+    this.currentEventTimestamp = 0;
+  }
+
+  public void initiateEventTimestamp(long timestamp) {
+    if (this.currentEventTimestamp == 0) {
+      this.currentEventTimestamp = timestamp;
+    }
   }
 
   @Override
@@ -49,8 +57,11 @@ public class IncrementalLoadLogger extends ReplLogger<String> {
   @Override
   public void eventLog(String eventId, String eventType) {
     eventSeqNo++;
-    (new IncrementalLoadEvent(dbName, eventId, eventType, eventSeqNo, numEvents))
-            .log(LogTag.EVENT_LOAD);
+    long previousEventTimestamp = this.currentEventTimestamp;
+    IncrementalLoadEvent incEvent = new IncrementalLoadEvent(dbName,
+            eventId, eventType, eventSeqNo, numEvents, previousEventTimestamp);
+    incEvent.log(LogTag.EVENT_LOAD);
+    this.currentEventTimestamp = incEvent.getLoadTimeMillis();
   }
 
   @Override

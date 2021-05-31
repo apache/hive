@@ -106,6 +106,8 @@ public class AcidMetricService  implements MetastoreTaskThread {
     Metrics.getOrCreateGauge(OLDEST_LOCK_AGE).set(metrics.getOldestLockAge());
 
     Metrics.getOrCreateGauge(TABLES_WITH_X_ABORTED_TXNS).set(metrics.getTablesWithXAbortedTxns());
+
+    Metrics.getOrCreateGauge(OLDEST_READY_FOR_CLEANING_AGE).set(metrics.getOldestReadyForCleaningAge());
   }
 
   @VisibleForTesting

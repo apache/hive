@@ -225,15 +225,11 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
   @Override
   protected void initializeChildren(Configuration hconf) throws HiveException {
     state = State.INIT;
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Operator " + id + " " + getName() + " initialized");
-    }
+    LOG.info("Operator " + id + " " + getName() + " initialized");
     if (childOperators == null || childOperators.isEmpty()) {
       return;
     }
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Initializing children of " + id + " " + getName());
-    }
+    LOG.info("Initializing children of " + id + " " + getName());
     childOperatorsArray[0].initialize(hconf, outputObjectInspectors);
     if (reporter != null) {
       childOperatorsArray[0].setReporter(reporter);

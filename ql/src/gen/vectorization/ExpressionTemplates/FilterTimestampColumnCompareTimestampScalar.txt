@@ -37,12 +37,10 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private final int colNum;
   private final <HiveOperandType> value;
 
   public <ClassName>(int colNum, <HiveOperandType> value) {
-    super();
-    this.colNum = colNum;
+    super(colNum, -1);
     this.value = value;
   }
 
@@ -50,7 +48,6 @@ public class <ClassName> extends VectorExpression {
    super();
 
     // Dummy final assignments.
-    colNum = -1;
     value = null;
   }
 
@@ -68,7 +65,7 @@ public class <ClassName> extends VectorExpression {
     }
 
      // Input #1 is type <OperandType>.
-    <InputColumnVectorType> inputColVector1 = (<InputColumnVectorType>) batch.cols[colNum];
+    <InputColumnVectorType> inputColVector1 = (<InputColumnVectorType>) batch.cols[inputColumnNum[0]];
 
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector1.isNull;
@@ -141,7 +138,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum) + ", val " + TimestampUtils.timestampScalarTypeToString(value);
+    return getColumnParamString(0, inputColumnNum[0]) + ", val " + TimestampUtils.timestampScalarTypeToString(value);
   }
 
   @Override

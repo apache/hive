@@ -197,9 +197,7 @@ public class MemoryDecider implements PhysicalPlanResolver {
           }
 
           if (size < remainingSize) {
-            if (LOG.isInfoEnabled()) {
-              LOG.info("Setting " + size + " bytes needed for " + mj + " (in-mem)");
-            }
+            LOG.info("Setting " + size + " bytes needed for " + mj + " (in-mem)");
 
             mj.getConf().setMemoryNeeded(size);
             remainingSize -= size;
@@ -226,23 +224,17 @@ public class MemoryDecider implements PhysicalPlanResolver {
 
         for (MapJoinOperator mj : sortedMapJoins) {
           long size = (long)(weight * sizes.get(mj));
-          if (LOG.isInfoEnabled()) {
-            LOG.info("Setting " + size + " bytes needed for " + mj + " (spills)");
-          }
+          LOG.info("Setting " + size + " bytes needed for " + mj + " (spills)");
 
           mj.getConf().setMemoryNeeded(size);
         }
       } catch (HiveException e) {
         // if we have issues with stats, just scale linearily
         long size = totalAvailableMemory / mapJoins.size();
-        if (LOG.isInfoEnabled()) {
-          LOG.info("Scaling mapjoin memory w/o stats");
-        }
+        LOG.info("Scaling mapjoin memory w/o stats");
 
         for (MapJoinOperator mj : mapJoins) {
-          if (LOG.isInfoEnabled()) {
-            LOG.info("Setting " + size + " bytes needed for " + mj + " (fallback)");
-          }
+          LOG.info("Setting " + size + " bytes needed for " + mj + " (fallback)");
           mj.getConf().setMemoryNeeded(size);
         }
       }
