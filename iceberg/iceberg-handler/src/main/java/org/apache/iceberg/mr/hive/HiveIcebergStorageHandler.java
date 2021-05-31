@@ -254,6 +254,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return LockType.SHARED_READ;
   }
 
+  @Override
+  public boolean supportsPartitionTransform() {
+    return true;
+  }
+
   public boolean addDynamicSplitPruningEdge(org.apache.hadoop.hive.ql.metadata.Table table,
       ExprNodeDesc syntheticFilterPredicate) {
     try {

@@ -960,6 +960,8 @@ nonReserved
     | KW_UNKNOWN
     | KW_WITHIN
     | KW_TRIM
+    | KW_IDENTITY
+    | KW_SPEC
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.

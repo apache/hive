@@ -385,6 +385,8 @@ KW_DATACONNECTORS: 'CONNECTORS';
 KW_TYPE: 'TYPE';
 KW_URL: 'URL';
 KW_REMOTE: 'REMOTE';
+KW_SPEC: 'SPEC';
+KW_IDENTITY: 'IDENTITY';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

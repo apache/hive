@@ -73,4 +73,6 @@ package org.apache.hadoop.hive.metastore.api;
 
   public static final java.lang.String TABLE_IS_CTAS = "created_with_ctas";
 
+  public static final java.lang.String PARTITION_TRANSFORM_SPEC = "partition_transform_spec";
+
 }

@@ -170,6 +170,7 @@ import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -13298,6 +13299,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<List<String>, String> listBucketColValuesMapping = new HashMap<List<String>, String>();
     boolean storedAsDirs = false;
     boolean isUserStorageFormat = false;
+    boolean partitionTransformSpecExists = false;
 
     RowFormatParams rowFormatParams = new RowFormatParams();
     StorageFormat storageFormat = new StorageFormat(conf);
@@ -13403,6 +13405,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                                       "partition columns. "));
         }
         break;
+      case HiveParser.TOK_TABLEPARTCOLSBYSPEC:
+        List<PartitionTransform.PartitionTransformSpec> partitionTransformSpec =
+            PartitionTransform.getPartitionTransformSpec(child);
+        QueryState queryState = SessionState.get().getQueryState(conf.get(ConfVars.HIVEQUERYID.varname));
+        if (queryState != null) {
+          queryState.addResource(hive_metastoreConstants.PARTITION_TRANSFORM_SPEC, partitionTransformSpec);
+        } else {
+          throw new SemanticException("Query state attached to Session state must be not null. " +
+              "Partition transform metadata cannot be saved.");
+        }
+        partitionTransformSpecExists = true;
+        break;
       case HiveParser.TOK_TABLEPARTCOLNAMES:
         partColNames = getColumnNames(child);
         break;
@@ -13452,6 +13466,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       default:
         throw new AssertionError("Unknown token: " + child.getToken());
+      }
+    }
+
+    if (partitionTransformSpecExists) {
+      try {
+        HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(conf, storageFormat.getStorageHandler());
+        if (!storageHandler.supportsPartitionTransform()) {
+          throw new SemanticException("Partition transform is not supported for " +
+              storageHandler.getClass().getName());
+        }
+      } catch (HiveException e) {
+        throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
       }
     }
 

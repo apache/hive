@@ -19,11 +19,15 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.util.List;
 import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.mr.Catalogs;
 import org.slf4j.Logger;
@@ -68,5 +72,43 @@ public class IcebergTableUtil {
     }
 
     return table;
+  }
+
+  /**
+   * Create {@link PartitionSpec} based on the partition information stored in
+   * {@link org.apache.hadoop.hive.ql.parse.PartitionTransform.PartitionTransformSpec}.
+   * @param schema iceberg table schema
+   * @param partitionTransformSpecList partition transform metadata
+   * @return iceberg partition spec, always non-null
+   */
+  public static PartitionSpec spec(Schema schema,
+      List<PartitionTransform.PartitionTransformSpec> partitionTransformSpecList) {
+    PartitionSpec.Builder builder = PartitionSpec.builderFor(schema);
+    partitionTransformSpecList.forEach(spec -> {
+      switch (spec.transformType) {
+        case IDENTITY:
+          builder.identity(spec.name);
+          break;
+        case YEAR:
+          builder.year(spec.name);
+          break;
+        case MONTH:
+          builder.month(spec.name);
+          break;
+        case DAY:
+          builder.day(spec.name);
+          break;
+        case HOUR:
+          builder.hour(spec.name);
+          break;
+        case TRUNCATE:
+          builder.truncate(spec.name, spec.transformParam);
+          break;
+        case BUCKET:
+          builder.bucket(spec.name, spec.transformParam);
+          break;
+      }
+    });
+    return builder.build();
   }
 }

@@ -238,6 +238,7 @@ TOK_TABCOLLIST;
 TOK_TABCOL;
 TOK_TABLECOMMENT;
 TOK_TABLEPARTCOLS;
+TOK_TABLEPARTCOLSBYSPEC;
 TOK_TABLEPARTCOLNAMES;
 TOK_TABLEROWFORMAT;
 TOK_TABLEROWFORMATFIELD;
@@ -487,6 +488,13 @@ TOK_PARAMETER;
 TOK_PARAMETER_IDX;
 TOK_RESPECT_NULLS;
 TOK_IGNORE_NULLS;
+TOK_IDENTITY;
+TOK_YEAR;
+TOK_MONTH;
+TOK_DAY;
+TOK_HOUR;
+TOK_TRUNCATE;
+TOK_BUCKET;
 }
 
 
@@ -690,6 +698,14 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_DATACONNECTOR", "CONNECTOR");
     xlateMap.put("KW_DATACONNECTORS", "CONNECTORS");
     xlateMap.put("KW_REMOTE", "REMOTE");
+    xlateMap.put("KW_SPEC", "SPEC");
+    xlateMap.put("KW_IDENTITY", "IDENTITY");
+    xlateMap.put("KW_YEAR", "YEAR");
+    xlateMap.put("KW_MONTH", "MONTH");
+    xlateMap.put("KW_DAY", "DAY");
+    xlateMap.put("KW_HOUR", "HOUR");
+    xlateMap.put("KW_BUCKET", "BUCKET");
+    xlateMap.put("KW_TRUNCATE", "TRUNCATE");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -1808,6 +1824,8 @@ createTablePartitionSpec
     : KW_PARTITIONED KW_BY LPAREN (opt1 = createTablePartitionColumnTypeSpec | opt2 = createTablePartitionColumnSpec) RPAREN
     -> {$opt1.tree != null}? $opt1
     -> $opt2
+    | KW_PARTITIONED KW_BY KW_SPEC LPAREN (spec = createTablePartitionTransformSpec) RPAREN
+    -> $spec
     ;
 
 createTablePartitionColumnTypeSpec
@@ -1822,6 +1840,33 @@ createTablePartitionColumnSpec
 @after { popMsg(state); }
     : columnName (COMMA columnName)*
     -> ^(TOK_TABLEPARTCOLNAMES columnName+)
+    ;
+
+createTablePartitionTransformSpec
+@init { pushMsg("create table partition by specification", state); }
+@after { popMsg(state); }
+    : columnNameTransformConstraint (COMMA columnNameTransformConstraint)*
+    -> ^(TOK_TABLEPARTCOLSBYSPEC columnNameTransformConstraint+)
+    ;
+
+columnNameTransformConstraint
+@init { pushMsg("column transform specification", state); }
+@after { popMsg(state); }
+    : columnName partitionTransformType
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    -> ^(TOK_TABCOL columnName partitionTransformType)
+    ;
+
+partitionTransformType
+@init {pushMsg("partitition transform type specification", state); }
+@after { popMsg(state); }
+    : KW_IDENTITY       ->  TOK_IDENTITY
+    | KW_YEAR           ->  TOK_YEAR
+    | KW_MONTH          ->  TOK_MONTH
+    | KW_DAY            ->  TOK_DAY
+    | KW_HOUR           ->  TOK_HOUR
+    | KW_TRUNCATE LSQUARE value = Number RSQUARE       ->  ^(TOK_TRUNCATE $value)
+    | KW_BUCKET LSQUARE value = Number RSQUARE         ->  ^(TOK_BUCKET $value)
     ;
 
 tableBuckets
