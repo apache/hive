@@ -40,6 +40,9 @@ import org.slf4j.LoggerFactory;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * RangerDenyTask.
  *
@@ -91,10 +94,12 @@ public class RangerDenyTask extends Task<RangerDenyWork> implements Serializable
                                 + rangerEndpoint, ReplUtils.REPL_RANGER_SERVICE));
             }
             if (!rangerRestClient.checkConnection(rangerEndpoint, conf)) {
-                throw new SemanticException(ErrorMsg.REPL_EXTERNAL_SERVICE_CONNECTION_ERROR.format(ReplUtils
-                                .REPL_RANGER_SERVICE,
-                        "Ranger endpoint is not valid " + rangerEndpoint));
+                throw new SemanticException(ErrorMsg.REPL_EXTERNAL_SERVICE_CONNECTION_ERROR.format(
+                        ReplUtils.REPL_RANGER_SERVICE, "Ranger endpoint is not valid " + rangerEndpoint));
             }
+            Map<String, Long> metricMap = new HashMap<>();
+            metricMap.put(ReplUtils.MetricName.POLICIES.name(), 1L);
+            work.getMetricCollector().reportStageStart(getName(), metricMap);
             if (conf.getBoolVar(HiveConf.ConfVars.REPL_RANGER_ADD_DENY_POLICY_TARGET)) {
                 RangerPolicy rangerDenyPolicy = rangerRestClient.getDenyPolicyForReplicatedDb(rangerHiveServiceName,
                         work.getSourceDbName(), work.getTargetDbName());
@@ -103,21 +108,22 @@ public class RangerDenyTask extends Task<RangerDenyWork> implements Serializable
                 rangerExportPolicyList.setPolicies(new ArrayList<RangerPolicy>() {{add(rangerDenyPolicy);}});
                 rangerRestClient.importRangerPolicies(rangerExportPolicyList, work.getTargetDbName(), rangerEndpoint,
                         rangerHiveServiceName, conf);
+                work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.POLICIES.name(), 1);
                 LOG.info("Created Ranger Deny policy for {}", work.getTargetDbName());
             } else {
                 String policyName = work.getSourceDbName() + "_replication deny policy for " + work.getTargetDbName();
                 rangerRestClient.deleteRangerPolicy(policyName, rangerEndpoint, rangerHiveServiceName, conf);
+                work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.POLICIES.name(), 1);
                 LOG.info("Deleted Ranger Deny policy for {}", work.getTargetDbName());
             }
-            work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.POLICIES.name(), 1);
             work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS);
             return 0;
         } catch (RuntimeException e) {
             LOG.error("Runtime Excepton during Ranger Deny policy creation.", e);
             setException(e);
             try{
-                ReplUtils.handleException(true, e, work.getCurrentDumpPath().getParent().toString(), work.getMetricCollector(),
-                        getName(), conf);
+                ReplUtils.handleException(true, e, work.getCurrentDumpPath().getParent().toString(),
+                        work.getMetricCollector(), getName(), conf);
             } catch (Exception ex){
                 LOG.error("Failed to collect replication metrics: ", ex);
             }

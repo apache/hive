@@ -127,7 +127,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (shouldLoadAtlasMetadata()) {
         addAtlasLoadTask();
       }
-      initiateRangerDenytask();
+      if (conf.getBoolVar(HiveConf.ConfVars.REPL_RANGER_HANDLE_DENY_POLICY_TARGET)) {
+        initiateRangerDenytask();
+      }
       if (shouldLoadAuthorizationMetadata()) {
         initiateAuthorizationLoadTask();
       }
@@ -167,18 +169,17 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
   private void initiateRangerDenytask() throws SemanticException {
     if (RANGER_AUTHORIZER.equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE))) {
-      String targetDbName = StringUtils.isEmpty(work.dbNameToLoadIn) ? work.getSourceDbName() : work.dbNameToLoadIn;
-      LOG.info("Adding Ranger Deny Policy Task for {} ", targetDbName);
+      LOG.info("Adding Ranger Deny Policy Task for {} ", work.dbNameToLoadIn);
       RangerDenyWork rangerDenyWork = new RangerDenyWork(new Path(work.getDumpDirectory()), work.getSourceDbName(),
-              targetDbName, work.getMetricCollector());
+              work.dbNameToLoadIn, work.getMetricCollector());
       if (childTasks == null) {
         childTasks = new ArrayList<>();
       }
       childTasks.add(TaskFactory.get(rangerDenyWork, conf));
     } else {
-      throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format("Authorizer " +
+      throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format("Authorizer: " +
               conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE)
-              + " not supported for replication ", ReplUtils.REPL_RANGER_SERVICE));
+              + " not supported for deny policy creation. Currently Only supports: ", ReplUtils.REPL_RANGER_SERVICE));
     }
   }
 

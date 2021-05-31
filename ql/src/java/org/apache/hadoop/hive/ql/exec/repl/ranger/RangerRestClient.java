@@ -53,5 +53,7 @@ public interface RangerRestClient {
 
   boolean checkConnection(String url, HiveConf hiveConf) throws Exception;
 
-  RangerPolicy getDenyPolicyForReplicatedDb(String rangerServiceName, String sourceDb, String targetDb) throws SemanticException;
+  RangerPolicy getDenyPolicyForReplicatedDb(String rangerServiceName, String sourceDb,
+                                            String targetDb) throws SemanticException;
+
 }

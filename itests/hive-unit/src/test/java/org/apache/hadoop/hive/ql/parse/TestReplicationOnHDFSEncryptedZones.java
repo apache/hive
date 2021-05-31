@@ -97,6 +97,7 @@ public class TestReplicationOnHDFSEncryptedZones {
 
     WarehouseInstance replica = new WarehouseInstance(LOG, miniDFSCluster,
         new HashMap<String, String>() {{
+          put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "false");
           put(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "false");
           put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
                   UserGroupInformation.getCurrentUser().getUserName());
