@@ -110,6 +110,7 @@ public class ReplLoadWork implements Serializable {
         if (numEvents < 0) {
           LOG.warn("Invalid value configured for {}, Using default of {}", REPL_STATS_TOP_EVENTS_COUNTS,
               REPL_STATS_TOP_EVENTS_COUNTS.defaultIntVal);
+          numEvents = REPL_STATS_TOP_EVENTS_COUNTS.defaultIntVal;
         }
         replStatsTracker = new ReplStatsTracker(numEvents);
       }
