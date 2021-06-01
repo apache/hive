@@ -162,12 +162,11 @@ public class ReExecDriver implements IDriver {
       CommandProcessorException cpe = null;
       try {
         cpr = coreDriver.run();
+        
+        afterExecute(coreDriver.getPlanMapper(), cpr != null);
       } catch (CommandProcessorException e) {
         cpe = e;
       }
-
-      PlanMapper oldPlanMapper = coreDriver.getPlanMapper();
-      afterExecute(oldPlanMapper, cpr != null);
 
       boolean shouldReExecute = explainReOptimization && executionIndex==1;
       shouldReExecute |= cpr == null && shouldReExecute();
