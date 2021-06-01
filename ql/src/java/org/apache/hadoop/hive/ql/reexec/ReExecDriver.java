@@ -162,7 +162,6 @@ public class ReExecDriver implements IDriver {
       CommandProcessorException cpe = null;
       try {
         cpr = coreDriver.run();
-        
         afterExecute(coreDriver.getPlanMapper(), cpr != null);
       } catch (CommandProcessorException e) {
         cpe = e;
