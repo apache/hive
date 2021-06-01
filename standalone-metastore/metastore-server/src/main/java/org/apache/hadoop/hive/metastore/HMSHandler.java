@@ -7006,40 +7006,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         + " part=" + csd.getPartName());
 
     boolean ret = false;
-
-    Map<String, String> parameters;
-    List<String> partVals;
-    boolean committed = false;
-    getMS().openTransaction();
     try {
       if (tbl == null) {
         tbl = getTable(catName, dbName, tableName);
       }
-      partVals = getPartValsFromName(tbl, csd.getPartName());
-      parameters = getMS().updatePartitionColumnStatistics(colStats, partVals, validWriteIds, writeId);
-      if (parameters != null) {
-        if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-              EventType.UPDATE_PARTITION_COLUMN_STAT,
-              new UpdatePartitionColumnStatEvent(colStats, partVals, parameters, tbl,
-                  writeId, this));
-        }
-        if (!listeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-              EventType.UPDATE_PARTITION_COLUMN_STAT,
-              new UpdatePartitionColumnStatEvent(colStats, partVals, parameters, tbl,
-                  writeId, this));
-        }
-      }
-      committed = getMS().commitTransaction();
+      ret = updatePartitionColStatsInBatch(tbl, Collections.singletonMap(csd.getPartName(), colStats),
+              validWriteIds, writeId);
     } finally {
-      if (!committed) {
-        getMS().rollbackTransaction();
-      }
-      endFunction("write_partition_column_statistics", ret != false, null, tableName);
+      endFunction("write_partition_column_statistics", ret == true, null, tableName);
     }
-
-    return parameters != null;
+    return ret;
   }
 
   private void updatePartitionColStatsForOneBatch(Table tbl, Map<String, ColumnStatistics> statsMap,
@@ -9061,13 +9037,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       } else { // No merge.
         Table t = getTable(catName, dbName, tableName);
         // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
-        if (newStatsMap.size() > 1) {
-          ret = updatePartitionColStatsInBatch(t, newStatsMap,
-                  request.getValidWriteIdList(), request.getWriteId());
-        } else {
-          ret = updatePartitonColStatsInternal(t, newStatsMap.values().iterator().next(),
-                  request.getValidWriteIdList(), request.getWriteId());
-        }
+        ret = updatePartitionColStatsInBatch(t, newStatsMap,
+                request.getValidWriteIdList(), request.getWriteId());
       }
     }
     return ret;
