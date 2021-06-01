@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
+import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
@@ -628,8 +629,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
 
     shell.executeStatement(String.format(
-        "CREATE TABLE target STORED BY '%s' %s TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
-        HiveIcebergStorageHandler.class.getName(),
+        "CREATE TABLE target STORED BY ICEBERG %s TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
         testTables.locationForCreateTableSQL(TableIdentifier.of("default", "target")),
         TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
 
@@ -648,8 +648,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
     shell.executeStatement(String.format(
         "CREATE TABLE target PARTITIONED BY (dept, name) " +
-        "STORED BY '%s' TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
-        HiveIcebergStorageHandler.class.getName(),
+        "STORED BY ICEBERG TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
         TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
 
     // check table can be read back correctly
@@ -681,15 +680,12 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
-    String[] partitioningSchemes = {"" /* unpartitioned */, "PARTITIONED BY (dept)", "PARTITIONED BY (dept, name)"};
+    String[] partitioningSchemes = {"", "PARTITIONED BY (last_name)", "PARTITIONED BY (customer_id, last_name)"};
     for (String partitioning : partitioningSchemes) {
-      try {
-        shell.executeStatement(String.format("CREATE TABLE target %s STORED BY '%s' AS SELECT * FROM source",
-            partitioning, HiveIcebergStorageHandler.class.getName()));
-      } catch (Exception e) {
-        // expected error
-      }
-
+      AssertHelpers.assertThrows("Should fail while loading non-existent output committer class.",
+          IllegalArgumentException.class, "org.apache.NotExistingClass",
+          () -> shell.executeStatement(String.format(
+              "CREATE TABLE target %s STORED BY ICEBERG AS SELECT * FROM source", partitioning)));
       // CTAS table should have been dropped by the lifecycle hook
       Assert.assertThrows(NoSuchTableException.class, () -> testTables.loadTable(target));
     }

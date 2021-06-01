@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -136,8 +137,7 @@ public class TestHiveIcebergStorageHandlerWithMultipleCatalogs {
         fileFormat2, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
     shell.executeStatement(String.format(
-        "CREATE TABLE target STORED BY '%s' TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
-        HiveIcebergStorageHandler.class.getName(),
+        "CREATE TABLE target STORED BY ICEBERG TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
         InputFormatConfig.CATALOG_NAME, HIVECATALOGNAME));
 
     List<Object[]> objects = shell.executeStatement("SELECT * FROM target");
@@ -154,15 +154,11 @@ public class TestHiveIcebergStorageHandlerWithMultipleCatalogs {
     testTables2.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat2, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
-    try {
-      shell.executeStatement(String.format(
-          "CREATE TABLE target STORED BY '%s' TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
-          HiveIcebergStorageHandler.class.getName(),
-          InputFormatConfig.CATALOG_NAME, HIVECATALOGNAME));
-    } catch (Exception e) {
-      // expected error
-    }
-
+    AssertHelpers.assertThrows("Should fail while loading non-existent output committer class.",
+        IllegalArgumentException.class, "org.apache.NotExistingClass",
+        () -> shell.executeStatement(String.format(
+            "CREATE TABLE target STORED BY ICEBERG TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
+            InputFormatConfig.CATALOG_NAME, HIVECATALOGNAME)));
     // CTAS table should have been dropped by the lifecycle hook
     Assert.assertThrows(NoSuchTableException.class, () -> testTables1.loadTable(target));
   }

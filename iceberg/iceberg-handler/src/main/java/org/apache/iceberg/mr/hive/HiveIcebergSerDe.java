@@ -126,6 +126,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
           if (!Catalogs.hiveCatalog(configuration, serDeProperties)) {
             throw new SerDeException(CTAS_EXCEPTION_MSG);
           }
+
           createTableForCTAS(configuration, serDeProperties);
         }
       }
