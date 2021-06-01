@@ -7043,11 +7043,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   private void updatePartitionColStatsForOneBatch(Table tbl, Map<String, ColumnStatistics> statsMap,
-                                                     String validWriteIds, long writeId, long numStats)
-          throws MetaException, InvalidObjectException {
-    long csId = getTxnHandler().getNextCSIdForMPartitionColumnStatistics(numStats);
+                                                     String validWriteIds, long writeId)
+          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     Map<String, Map<String, String>> result =
-            getTxnHandler().updatePartitionColumnStatistics(statsMap, tbl, csId, validWriteIds, writeId);
+        getMS().updatePartitionColumnStatisticsInBatch(statsMap, tbl, transactionalListeners, validWriteIds, writeId);
     if (result != null && result.size() != 0 && listeners != null) {
       // The normal listeners, unlike transaction listeners are not using the same transactions used by the update
       // operations. So there is no need of keeping them within the same transactions. If notification to one of
@@ -7081,7 +7080,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     Map<String, ColumnStatistics> newStatsMap = new HashMap<>();
     long numStats = 0;
-    long numStatsMax = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
+    long numStatsMax = MetastoreConf.getIntVar(conf, ConfVars.JDBC_MAX_BATCH_SIZE);
     try {
       for (Map.Entry entry : statsMap.entrySet()) {
         ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
@@ -7093,13 +7092,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         numStats += colStats.getStatsObjSize();
 
         if (newStatsMap.size() >= numStatsMax) {
-          updatePartitionColStatsForOneBatch(tbl, statsMap, validWriteIds, writeId, numStats);
+          updatePartitionColStatsForOneBatch(tbl, statsMap, validWriteIds, writeId);
           newStatsMap.clear();
           numStats = 0;
         }
       }
       if (numStats != 0) {
-        updatePartitionColStatsForOneBatch(tbl, statsMap, validWriteIds, writeId, numStats);
+        updatePartitionColStatsForOneBatch(tbl, statsMap, validWriteIds, writeId);
       }
     } finally {
       endFunction("updatePartitionColStatsInBatch", true, null, tableName);

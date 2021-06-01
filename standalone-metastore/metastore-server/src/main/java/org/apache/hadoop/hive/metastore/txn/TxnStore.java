@@ -24,15 +24,12 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
-import org.apache.hadoop.hive.metastore.IHMSHandler;
-import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -601,19 +598,4 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.ReadOnly
   MetricsInfo getMetricsInfo() throws MetaException;
-
-  /**
-   * Update the statistics for the given partitions. Add the notification logs also.
-   * @return true if successful, false otherwise.
-   */
-  Map<String, Map<String, String>> updatePartitionColumnStatistics(Map<String, ColumnStatistics> newStatsMap,
-                                          Table tbl,
-                                          long csId,
-                                          String validWriteIds, long writeId) throws MetaException;
-
-  /**
-   * Gets the next CS id from sequence MPartitionColumnStatistics and increment the CS id by numStats.
-   * @return The CD id before update.
-   */
-  long getNextCSIdForMPartitionColumnStatistics(long numStats) throws MetaException;
 }
