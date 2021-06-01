@@ -664,8 +664,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             startCompactorWorkers(conf);
           }
         } catch (Throwable e) {
-          LOG.error("Failure when starting the compactor, compactions may not happen, " +
-              StringUtils.stringifyException(e));
+          LOG.error("Failure when starting the compactor, compactions may not happen", e);
         } finally {
           startLock.unlock();
         }

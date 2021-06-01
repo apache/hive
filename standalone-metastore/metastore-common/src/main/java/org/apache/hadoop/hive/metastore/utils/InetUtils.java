@@ -63,10 +63,18 @@ public class InetUtils {
    * @return address of current host
    */
   public static String hostAddress() {
+    return hostAddress(Optional.empty());
+  }
+
+  /**
+   * @return address of current host
+   */
+  public static String hostAddress(Optional<String> defaultValue) {
+    Objects.requireNonNull(defaultValue);
     try {
       return InetAddress.getLocalHost().getHostAddress();
     } catch (UnknownHostException e) {
-      throw new RuntimeException("Unable to resolve my host address", e);
+      return defaultValue.orElseThrow(() -> new RuntimeException("Unable to resolve my host address", e));
     }
   }
 

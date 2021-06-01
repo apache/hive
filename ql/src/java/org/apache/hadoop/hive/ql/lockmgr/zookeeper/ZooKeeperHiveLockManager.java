@@ -66,7 +66,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
   private int numRetriesForLock;
   private int numRetriesForUnLock;
 
-  private static String clientIp = ServerUtils.hostname(Optional.of("UNKNOWN"));
+  private static String clientIp = ServerUtils.hostAddress(Optional.of("UNKNOWN"));
 
   public ZooKeeperHiveLockManager() {
   }

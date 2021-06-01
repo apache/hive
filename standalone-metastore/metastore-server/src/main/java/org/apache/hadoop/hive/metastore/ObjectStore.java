@@ -290,7 +290,7 @@ public class ObjectStore implements RawStore, Configurable {
   public static final String TRUSTSTORE_PASSWORD_KEY = "javax.net.ssl.trustStorePassword";
   public static final String TRUSTSTORE_TYPE_KEY = "javax.net.ssl.trustStoreType";
 
-  private static final String HOSTNAME = InetUtils.hostname(Optional.of("UNKNOWN"));
+  private static final String HOSTNAME = InetUtils.hostAddress(Optional.of("UNKNOWN"));
   private static final String USER = Optional.ofNullable(System.getenv("USER")).orElse("UNKNOWN");
   private static final String JDO_PARAM = ":param";
 
