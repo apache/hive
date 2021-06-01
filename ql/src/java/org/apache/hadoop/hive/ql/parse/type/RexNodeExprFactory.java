@@ -325,9 +325,9 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
         } else if (PrimitiveObjectInspectorUtils.longTypeEntry.equals(primitiveTypeEntry)) {
           return toBigDecimal(constantToInterpret.toString()).longValueExact();
         } else if (PrimitiveObjectInspectorUtils.doubleTypeEntry.equals(primitiveTypeEntry)) {
-          return new BigDecimal(Double.valueOf(constantToInterpret.toString()));
+          return toBigDecimal(constantToInterpret.toString());
         } else if (PrimitiveObjectInspectorUtils.floatTypeEntry.equals(primitiveTypeEntry)) {
-          return new BigDecimal(Float.valueOf(constantToInterpret.toString()));
+          return toBigDecimal(constantToInterpret.toString());
         } else if (PrimitiveObjectInspectorUtils.byteTypeEntry.equals(primitiveTypeEntry)) {
           return toBigDecimal(constantToInterpret.toString()).byteValueExact();
         } else if (PrimitiveObjectInspectorUtils.shortTypeEntry.equals(primitiveTypeEntry)) {

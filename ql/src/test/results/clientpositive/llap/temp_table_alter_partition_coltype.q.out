@@ -138,7 +138,7 @@ POSTHOOK: Input: default@alter_coltype_temp@dt=100/ts=6.30
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
 FROM `default`.`alter_coltype_temp`
-WHERE `ts` = 6.29999999999999982236431605997495353221893310546875
+WHERE `ts` = 6.30
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
