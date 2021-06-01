@@ -30,28 +30,12 @@ where t1.id not in
      from alltypestiny tt1 inner JOIN alltypesagg tt2
      on tt1.int_col = t1.int_col);
 
-
-select *
-from alltypesagg t1
-where t1.id not in
-    (select tt1.id
-     from alltypestiny tt1 inner JOIN alltypesagg tt2
-     where tt1.int_col = t1.int_col);
-
 explain cbo select *
 from alltypesagg t1
 where t1.id not in
     (select tt1.id
      from alltypestiny tt1 inner JOIN alltypesagg tt2
      on tt1.int_col = t1.int_col);
-
-
-explain cbo select *
-from alltypesagg t1
-where t1.id not in
-    (select tt1.id
-     from alltypestiny tt1 inner JOIN alltypesagg tt2
-     where tt1.int_col = t1.int_col);
 
 create table ta
 (
@@ -73,6 +57,13 @@ insert into tc values ('c1'), ('c2');
 select *
 from ta
 where exists
+    (select 1
+     from tb inner JOIN tc
+     on ta.id = tb.id);
+
+select *
+from ta
+where not exists
     (select 1
      from tb inner JOIN tc
      on ta.id = tb.id);

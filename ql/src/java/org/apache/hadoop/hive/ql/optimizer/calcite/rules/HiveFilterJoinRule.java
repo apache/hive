@@ -93,10 +93,10 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
   /**
    * Rule that tries to push join conditions into its inputs
    */
-  public static class HiveJoinConditionPushRule extends JoinConditionPushRule {
-    public HiveJoinConditionPushRule(RelBuilderFactory relBuilderFactory,
-                                     Predicate predicate) {
-      super(relBuilderFactory, predicate);
+  public static class HiveJoinConditionPushRule extends HiveFilterJoinRule {
+    public HiveJoinConditionPushRule() {
+      super(RelOptRule.operand(Join.class, RelOptRule.any()), "HiveJoinConditionPushRule:no-filter", true,
+        HiveRelFactories.HIVE_BUILDER);
     }
 
     @Override
