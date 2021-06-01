@@ -1,19 +1,16 @@
-Release Notes - Hive - Version 2.3.8
+Release Notes - Hive - Version 2.3.9
 
 
 
 ** Bug
-    * [HIVE-23980] - Shade guava from existing Hive versions
-    * [HIVE-24512] - Exclude calcite in packaging Hive
-    * [HIVE-22708] - Fix for HttpTransport to replace String.equals
-    * [HIVE-24553] - Exclude calcite from test-jar dependency of hive-exec
-    * [HIVE-24551] - Hive should include transitive dependencies from calcite after shading it
+    * [HIVE-17155] - findConfFile() in HiveConf.java has some issues with the conf path
+    * [HIVE-24797] - Disable validate default values when parsing Avro schemas
+    * [HIVE-24608] - Switch back to get_table in HMS client for Hive 2.3.x
+    * [HIVE-21200] - Vectorization: date column throwing java.lang.UnsupportedOperationException for parquet
 
 ** Improvement
-    * [HIVE-24324] - Remove deprecated API usage from Avro
-    * [HIVE-24379] - Backport HIVE-19662 to branch-2.3
-    * [HIVE-24436] - Fix Avro NULL_DEFAULT_VALUE compatibility issue
+    * [HIVE-21563] - Improve Table#getEmptyTable performance by disabling registerAllFunctionsOnce
+    * [HIVE-19228] - Remove commons-httpclient 3.x usage
 
 ** Test
-    * [HIVE-23323] - Add qsplits profile
-    * [HIVE-24035] - Add Jenkinsfile for branch-2.3
+    * [HIVE-18147] - Tests can fail with java.net.BindException: Address already in use
