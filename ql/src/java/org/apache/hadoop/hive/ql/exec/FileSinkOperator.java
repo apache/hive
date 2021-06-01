@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -64,6 +65,8 @@ import org.apache.hadoop.hive.ql.io.arrow.ArrowWrapperWritable;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
@@ -71,6 +74,7 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc.DPSortState;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.SkewedColumnPositionPair;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
@@ -662,7 +666,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
             jc.getPartitionerClass(), null);
       }
 
-      if (dpCtx != null) {
+      if (dpCtx != null && !inspectPartitionValues()) {
         dpSetup();
       }
 
@@ -734,6 +738,28 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     } catch (Exception e) {
       throw new HiveException(e);
     }
+  }
+
+  /**
+   * Whether partition values are stored in the data files too (as opposed to just being represented in the partition
+   * folder name), along with non-partition column values. Therefore if true, the object inspector should not
+   * disregard/remove the partition columns.
+   *
+   * @return whether partition values should be part of the object inspector too
+   */
+  private boolean inspectPartitionValues() {
+    return Optional.ofNullable(conf).map(FileSinkDesc::getTableInfo)
+        .map(TableDesc::getProperties)
+        .map(props -> props.getProperty(hive_metastoreConstants.META_TABLE_STORAGE))
+        .map(handler -> {
+          try {
+            return HiveUtils.getStorageHandler(hconf, handler);
+          } catch (HiveException e) {
+            return null;
+          }
+        })
+        .map(HiveStorageHandler::alwaysUnpartitioned)
+        .orElse(Boolean.FALSE);
   }
 
   public String getCounterName(Counter counter) {
