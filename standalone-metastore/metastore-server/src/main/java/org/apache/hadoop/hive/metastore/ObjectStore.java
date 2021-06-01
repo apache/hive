@@ -13869,13 +13869,16 @@ public class ObjectStore implements RawStore, Configurable {
         throw new InvalidOperationException("invalid state: " + info.getState());
       }
       pm.makePersistent(execution);
+
+      // FIXME events?
+      processScheduledQueryPolicies(info);
+
       commited = commitTransaction();
     } finally {
       if (!commited) {
         rollbackTransaction();
       }
     }
-    //    processScheduledQueryPolicies(info);
   }
 
   private void processScheduledQueryPolicies(ScheduledQueryProgressInfo info) {
@@ -13889,18 +13892,31 @@ public class ObjectStore implements RawStore, Configurable {
       MScheduledExecution lastExecution = pm.getObjectById(MScheduledExecution.class, info.getScheduledExecutionId());
 
       Query query = pm.newQuery(MScheduledExecution.class);
-      query.setFilter("schedule = currentSchedule");
+      query.setFilter("scheduledQuery == currentSchedule");
       query.setOrdering("scheduledExecutionId descending");
       query.declareParameters("MScheduledQuery currentSchedule");
-      query.execute(lastExecution.getScheduledQuery());
+      query.setRange(0, 10);
+      List<MScheduledExecution> list = (List<MScheduledExecution>) query.execute(lastExecution.getScheduledQuery());
+
+      if (xx(list)) {
+        LOG.info("disabling!!!");
+        MScheduledQuery schq = lastExecution.getScheduledQuery();
+        schq.setEnabled(false);
+      }
 
       commited = commitTransaction();
+    } catch (Exception e) {
+      LOG.info("Unexpected exception while processing schq policies", e);
     } finally {
       if (!commited) {
         rollbackTransaction();
       }
     }
 
+  }
+
+  private boolean xx(List<MScheduledExecution> list) {
+    return (list.size() > 0 && list.get(0).getState() == QueryState.FAILED);
   }
 
   /**

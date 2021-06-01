@@ -282,29 +282,32 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
     r.setType(ScheduledQueryMaintenanceRequestType.CREATE);
     r.setScheduledQuery(schq);
     client.scheduledQueryMaintenance(r);
-    client.scheduledQueryMaintenance(r);
+    //    client.scheduledQueryMaintenance(r);
 
     // do some polls and report failure each time
     ScheduledQueryPollRequest request = new ScheduledQueryPollRequest();
     request.setClusterNamespace(testNamespace);
     ScheduledQueryPollResponse pollResult = null;
-    int numFailed = 0;
+    int numProcessed = 0;
     for (int i = 0; i < 30; i++) {
       pollResult = client.scheduledQueryPoll(request);
       if (pollResult.isSetQuery()) {
-        numFailed++;
+        numProcessed++;
         ScheduledQueryProgressInfo info =
             new ScheduledQueryProgressInfo(pollResult.getExecutionId(), QueryState.FAILED, "executor-query-id");
-        info.setErrorMessage("something issue happened");
+        info.setErrorMessage("some issue happened");
         client.scheduledQueryProgress(info);
 
         schq = client.getScheduledQuery(schqKey);
-        System.out.println(schq.isEnabled());
-
+        assertFalse("Scheduled query must be disabled at this point", schq.isEnabled());
+        break;
       }
       Thread.sleep(100);
     }
-    throw new RuntimeException("x" + numFailed);
+
+    if (numProcessed != 1) {
+      throw new RuntimeException("Unexpected number of proccessed poll requests: " + numProcessed);
+    }
   }
 
   @Test
