@@ -4564,8 +4564,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw new InvalidObjectException("Unable to add partitions because "
             + "database or table " + dbName + "." + tblName + " does not exist");
       }
-      if (db.getType() == DatabaseType.REMOTE)
+      if (db.getType() == DatabaseType.REMOTE) {
         throw new MetaException("Operation add_partitions_pspec not supported on tables in REMOTE database");
+      }
       tbl = ms.getTable(catName, dbName, tblName, null);
       if (tbl == null) {
         throw new InvalidObjectException("Unable to add partitions because "
@@ -6031,7 +6032,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       request.setCatName(catName);
       Table oldt = get_table_core(request);
       if (transformer != null) {
-        newTable = transformer.transformAlterTable(newTable, processorCapabilities, processorId);
+        newTable = transformer.transformAlterTable(oldt, newTable, processorCapabilities, processorId);
       }
       firePreEvent(new PreAlterTableEvent(oldt, newTable, this));
       alterHandler.alterTable(getMS(), wh, catName, dbname, name, newTable,
