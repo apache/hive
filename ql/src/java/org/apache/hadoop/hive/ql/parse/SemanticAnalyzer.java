@@ -3921,7 +3921,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       TableDesc tblDesc = PlanUtils.getTableDesc(serdeClass, Integer
-          .toString(Utilities.tabCode), cols, colTypes, false);
+          .toString(Utilities.tabCode), cols, colTypes, null, false);
       // copy all the properties
       if (child.getChildCount() == 2) {
         ASTNode prop = (ASTNode) ((ASTNode) child.getChild(1)).getChild(0);
@@ -4125,7 +4125,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // hard-coded to DelimitedJSONSerDe
       inInfo = PlanUtils.getTableDesc(DelimitedJSONSerDe.class, Integer
           .toString(fieldSeparator), inpColumns.toString(), inpColumnTypes
-          .toString(), false);
+          .toString(), null, false);
     }
 
     if (trfm.getChild(outputSerDeNum).getChildCount() > 0) {
@@ -4139,7 +4139,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       outInfo = PlanUtils.getTableDesc(serde, Integer
           .toString(fieldSeparator), columns.toString(), columnTypes
-          .toString(), defaultOutputCols);
+          .toString(), null, defaultOutputCols);
     }
 
     // Error stream always uses the default serde with a single column

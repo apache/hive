@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
+import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
@@ -621,36 +622,56 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testCTASFromHiveTable() {
-    Assume.assumeTrue("CTAS target table is supported fully only for HiveCatalog tables." +
-        "For other catalog types, the HiveIcebergSerDe will create the target Iceberg table in the correct catalog " +
-        "using the Catalogs.createTable function, but will not register the table in HMS since those catalogs do not " +
-        "use HiveTableOperations. This means that even though the CTAS query succeeds, the user would not be able to " +
-        "query this new table from Hive, since HMS does not know about it.",
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
 
     shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
-    shell.executeStatement("INSERT INTO source VALUES (1, 'Mike', 'HR'), (2, 'Linda', 'Finance')");
+    shell.executeStatement(testTables.getInsertQuery(
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
 
     shell.executeStatement(String.format(
-        "CREATE TABLE target STORED BY '%s' %s TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
-        HiveIcebergStorageHandler.class.getName(),
+        "CREATE TABLE target STORED BY ICEBERG %s TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
         testTables.locationForCreateTableSQL(TableIdentifier.of("default", "target")),
         TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
 
     List<Object[]> objects = shell.executeStatement("SELECT * FROM target ORDER BY id");
-    Assert.assertEquals(2, objects.size());
-    Assert.assertArrayEquals(new Object[]{1L, "Mike", "HR"}, objects.get(0));
-    Assert.assertArrayEquals(new Object[]{2L, "Linda", "Finance"}, objects.get(1));
+    HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
+  }
+
+  @Test
+  public void testCTASPartitionedFromHiveTable() throws TException, InterruptedException {
+    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
+    shell.executeStatement(testTables.getInsertQuery(
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
+
+    shell.executeStatement(String.format(
+        "CREATE TABLE target PARTITIONED BY (dept, name) " +
+        "STORED BY ICEBERG TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
+        TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
+
+    // check table can be read back correctly
+    List<Object[]> objects = shell.executeStatement("SELECT id, name, dept FROM target ORDER BY id");
+    HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
+
+    // check HMS table has been created correctly (no partition cols, props pushed down)
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "target");
+    Assert.assertEquals(3, hmsTable.getSd().getColsSize());
+    Assert.assertTrue(hmsTable.getPartitionKeys().isEmpty());
+    Assert.assertEquals(fileFormat.toString(), hmsTable.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT));
+
+    // check Iceberg table has correct partition spec
+    Table table = testTables.loadTable(TableIdentifier.of("default", "target"));
+    Assert.assertEquals(2, table.spec().fields().size());
+    Assert.assertEquals("dept", table.spec().fields().get(0).name());
+    Assert.assertEquals("name", table.spec().fields().get(1).name());
   }
 
   @Test
   public void testCTASFailureRollback() throws IOException {
-    Assume.assumeTrue("CTAS target table is supported fully only for HiveCatalog tables." +
-        "For other catalog types, the HiveIcebergSerDe will create the target Iceberg table in the correct catalog " +
-        "using the Catalogs.createTable function, but will not register the table in HMS since those catalogs do not " +
-        "use HiveTableOperations. This means that even though the CTAS query succeeds, the user would not be able to " +
-        "query this new table from Hive, since HMS does not know about it.",
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
 
     // force an execution error by passing in a committer class that Tez won't be able to load
     shell.setHiveSessionValue("hive.tez.mapreduce.output.committer.class", "org.apache.NotExistingClass");
@@ -659,15 +680,15 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
-    try {
-      shell.executeStatement(String.format("CREATE TABLE target STORED BY '%s' AS SELECT * FROM source",
-          HiveIcebergStorageHandler.class.getName()));
-    } catch (Exception e) {
-      // expected error
+    String[] partitioningSchemes = {"", "PARTITIONED BY (last_name)", "PARTITIONED BY (customer_id, last_name)"};
+    for (String partitioning : partitioningSchemes) {
+      AssertHelpers.assertThrows("Should fail while loading non-existent output committer class.",
+          IllegalArgumentException.class, "org.apache.NotExistingClass",
+          () -> shell.executeStatement(String.format(
+              "CREATE TABLE target %s STORED BY ICEBERG AS SELECT * FROM source", partitioning)));
+      // CTAS table should have been dropped by the lifecycle hook
+      Assert.assertThrows(NoSuchTableException.class, () -> testTables.loadTable(target));
     }
-
-    // CTAS table should have been dropped by the lifecycle hook
-    Assert.assertThrows(NoSuchTableException.class, () -> testTables.loadTable(target));
   }
 
   /**
