@@ -5433,7 +5433,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                                                  Connection dbConn) throws SQLException {
     PreparedStatement preparedStatement = null;
     int numRows = 0;
-    int maxNumRows = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
 
     // Index is present on DB_NAME,TABLE_NAME,COLUMN_NAME,PARTITION_NAME. use that.
     // TODO : Need to add catalog name to the index
@@ -5454,7 +5453,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           preparedStatement.setLong(5, partitionInfo.partitionId);
           numRows++;
           preparedStatement.addBatch();
-          if (numRows == maxNumRows) {
+          if (numRows == maxBatchSize) {
             preparedStatement.executeBatch();
             numRows = 0;
             LOG.debug("Executed delete " + delete + " for numRows " + numRows);
@@ -5476,7 +5475,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                                           Connection dbConn) throws SQLException, MetaException, NoSuchObjectException {
     PreparedStatement preparedStatement = null;
     int numRows = 0;
-    int maxNumRows = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
     String insert = "INSERT INTO \"PART_COL_STATS\" (\"CS_ID\", \"CAT_NAME\", \"DB_NAME\","
             + "\"TABLE_NAME\", \"PARTITION_NAME\", \"COLUMN_NAME\", \"COLUMN_TYPE\", \"PART_ID\","
             + " \"LONG_LOW_VALUE\", \"LONG_HIGH_VALUE\", \"DOUBLE_HIGH_VALUE\", \"DOUBLE_LOW_VALUE\","
@@ -5523,7 +5521,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           maxCsId++;
           numRows++;
           preparedStatement.addBatch();
-          if (numRows == maxNumRows) {
+          if (numRows == maxBatchSize) {
             preparedStatement.executeBatch();
             numRows = 0;
           }
@@ -5597,7 +5595,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           throws SQLException, MetaException {
     Map<String, Map<String, String>> result = new HashMap<>();
     boolean areTxnStatsSupported = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_TXN_STATS_ENABLED);
-    int maxNumRows = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE);
     PreparedStatement statementInsert = null;
     PreparedStatement statementDelete = null;
     PreparedStatement statementUpdate = null;
@@ -5640,7 +5637,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           statementInsert.setString(2, newParameter.get(COLUMN_STATS_ACCURATE));
           numInsert++;
           statementInsert.addBatch();
-          if (numInsert == maxNumRows) {
+          if (numInsert == maxBatchSize) {
             LOG.debug(" Executing insert " + insert);
             statementInsert.executeBatch();
             numInsert = 0;
@@ -5670,7 +5667,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             statementDelete.setLong(1, partId);
             statementDelete.addBatch();
             numDelete++;
-            if (numDelete == maxNumRows) {
+            if (numDelete == maxBatchSize) {
               statementDelete.executeBatch();
               numDelete = 0;
               LOG.debug("Removed COLUMN_STATS_ACCURATE from the parameters of the partition "
@@ -5682,7 +5679,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             statementUpdate.setLong(2, partId);
             statementUpdate.addBatch();
             numUpdate++;
-            if (numUpdate == maxNumRows) {
+            if (numUpdate == maxBatchSize) {
               LOG.debug(" Executing update " + statementUpdate);
               statementUpdate.executeBatch();
               numUpdate = 0;
@@ -5770,6 +5767,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             partKeys, "\"PART_NAME\"", true, false);
 
     for (String query : queries) {
+      // Select for update makes sure that the partitions are not modified while the stats are getting updated.
       query = sqlGenerator.addForUpdateClause(query);
       try {
         statement = dbConn.createStatement();
@@ -5855,6 +5853,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolMutex);
 
       // This loop will be iterated at max twice. If there is no records, it will first insert and then do a select.
+      // We are not using any upsert operations as select for update and then update is required to make sure that
+      // the caller gets a reserved range for CSId not used by any other thread.
+      boolean insertDone = false;
       while (maxCsId == 0) {
         String query = "SELECT \"NEXT_VAL\" FROM \"SEQUENCE_TABLE\" WHERE \"SEQUENCE_NAME\"= "
                 + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics")
@@ -5864,14 +5865,25 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         rs = statement.executeQuery(query);
         if (rs.next()) {
           maxCsId = rs.getLong(1);
+        } else if (insertDone) {
+          throw new MetaException("Invalid state of SEQUENCE_TABLE for MPartitionColumnStatistics");
         } else {
+          insertDone = true;
           closeStmt(statement);
           statement = dbConn.createStatement();
           query = "INSERT INTO \"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\", \"NEXT_VAL\")  VALUES ( "
                   + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics") + "," + 1
                   + ")";
-          statement.executeUpdate(query);
-          closeStmt(statement);
+          try {
+            statement.executeUpdate(query);
+          } catch (SQLException e) {
+            // If the record is already inserted by some other thread continue to select.
+            if (isDuplicateKeyError(e)) {
+              continue;
+            }
+          } finally {
+            closeStmt(statement);
+          }
         }
       }
 
