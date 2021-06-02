@@ -1038,6 +1038,11 @@ public class CachedStore implements RawStore, Configurable {
     // So we will not update the cache during raw store operation but wait during commit transaction to make sure that
     // the event related to the current transactions are updated in the cache and thus we can support strong
     // consistency in case there is only one metastore.
+    updateCacheUsingEvents();
+    return true;
+  }
+
+  private void updateCacheUsingEvents() {
     if (canUseEvents) {
       try {
         triggerUpdateUsingEvent(rawStore);
@@ -1046,7 +1051,6 @@ public class CachedStore implements RawStore, Configurable {
         LOG.error("Failed to update cache", e);
       }
     }
-    return true;
   }
 
   @Override public boolean isActiveTransaction() {
@@ -2202,7 +2206,11 @@ public class CachedStore implements RawStore, Configurable {
           throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     Map<String, Map<String, String>> result =
             rawStore.updatePartitionColumnStatisticsInBatch(partColStatsMap, tbl, listeners, validWriteIds, writeId);
-    if (result != null && !canUseEvents) {
+    if (result == null) {
+      return null;
+    }
+
+    if (!canUseEvents) {
       //TODO : Do it in one call
       for (Map.Entry entry : result.entrySet()) {
         Map<String, String> newParams = (Map<String, String>) entry.getValue();
@@ -2210,6 +2218,10 @@ public class CachedStore implements RawStore, Configurable {
         List<String> partVals = getPartValsFromName(tbl, colStats.getStatsDesc().getPartName());
         updatePartitionColumnStatisticsInCache(colStats, newParams, partVals);
       }
+    } else {
+      // Usually the cache update using events is done during commit. But for this method,
+      // the commit is done internally using direct sql.
+      updateCacheUsingEvents();
     }
     return result;
   }

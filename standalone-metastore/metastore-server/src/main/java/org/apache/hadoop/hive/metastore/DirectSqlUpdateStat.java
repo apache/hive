@@ -45,8 +45,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -142,48 +144,82 @@ class DirectSqlUpdateStat {
     closeDbConn(dbConn);
   }
 
-  private void cleanOldStatsFromPartColStatTable(Map<PartitionInfo, ColumnStatistics> statsPartInfoMap,
-                                                 Connection dbConn) throws SQLException {
-    PreparedStatement preparedStatement = null;
-    int numRows = 0;
+  private void populateInsertUpdateMap(Map<PartitionInfo, ColumnStatistics> statsPartInfoMap,
+                                       Map<PartColNameInfo, MPartitionColumnStatistics> updateMap,
+                                       Map<PartColNameInfo, MPartitionColumnStatistics>insertMap,
+                                       Connection dbConn) throws SQLException, MetaException, NoSuchObjectException {
+    StringBuilder prefix = new StringBuilder();
+    StringBuilder suffix = new StringBuilder();
+    Statement statement = null;
+    ResultSet rs = null;
+    List<String> queries = new ArrayList<>();
+    Set<PartColNameInfo> selectedParts = new HashSet<>();
 
-    // Index is present on DB_NAME,TABLE_NAME,COLUMN_NAME,PARTITION_NAME. use that.
-    // TODO : Need to add catalog name to the index
-    String delete = "DELETE FROM \"PART_COL_STATS\" where \"DB_NAME\" = ? AND "
-            + "\"TABLE_NAME\" = ? AND \"COLUMN_NAME\" = ? AND \"PARTITION_NAME\" = ? "
-            + "AND \"PART_ID\" = ?";
+    List<Long> partIdList = statsPartInfoMap.keySet().stream().map(
+            e -> e.partitionId).collect(Collectors.toList()
+    );
 
-    try {
-      preparedStatement = dbConn.prepareStatement(delete);
-      for (Map.Entry entry : statsPartInfoMap.entrySet()) {
-        ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
-        PartitionInfo partitionInfo = (PartitionInfo) entry.getKey();
-        for (ColumnStatisticsObj statisticsObj : colStats.getStatsObj()) {
-          preparedStatement.setString(1, colStats.getStatsDesc().getDbName());
-          preparedStatement.setString(2, colStats.getStatsDesc().getTableName());
-          preparedStatement.setString(3, statisticsObj.getColName());
-          preparedStatement.setString(4, colStats.getStatsDesc().getPartName());
-          preparedStatement.setLong(5, partitionInfo.partitionId);
-          numRows++;
-          preparedStatement.addBatch();
-          if (numRows == maxBatchSize) {
-            preparedStatement.executeBatch();
-            numRows = 0;
-            LOG.debug("Executed delete " + delete + " for numRows " + numRows);
-          }
+    prefix.append("select \"PART_ID\", \"COLUMN_NAME\" from \"PART_COL_STATS\" WHERE ");
+    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix,
+            partIdList, "\"PART_ID\"", true, false);
+
+    for (String query : queries) {
+      try {
+        statement = dbConn.createStatement();
+        LOG.debug("Going to execute query " + query);
+        rs = statement.executeQuery(query);
+        while (rs.next()) {
+          selectedParts.add(new PartColNameInfo(rs.getLong(1), rs.getString(2)));
+        }
+      } finally {
+        close(rs, statement, null);
+      }
+    }
+
+    for (Map.Entry entry : statsPartInfoMap.entrySet()) {
+      PartitionInfo partitionInfo = (PartitionInfo) entry.getKey();
+      ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
+      long partId = partitionInfo.partitionId;
+      ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+      for (ColumnStatisticsObj statisticsObj : colStats.getStatsObj()) {
+        PartColNameInfo temp = new PartColNameInfo(partId, statisticsObj.getColName());
+        if (selectedParts.contains(temp)) {
+          updateMap.put(temp, StatObjectConverter.
+                  convertToMPartitionColumnStatistics(null, statsDesc, statisticsObj, colStats.getEngine()));
+        } else {
+          insertMap.put(temp, StatObjectConverter.
+                  convertToMPartitionColumnStatistics(null, statsDesc, statisticsObj, colStats.getEngine()));
         }
       }
-
-      if (numRows != 0) {
-        preparedStatement.executeBatch();
-        LOG.debug("Executed delete " + delete + " for numRows " + numRows);
-      }
-    } finally {
-      closeStmt(preparedStatement);
     }
   }
 
-  private void insertIntoPartColStatTable(Map<PartitionInfo, ColumnStatistics> partitionInfoMap,
+  private void updatePartColStatTable(Map<PartColNameInfo, MPartitionColumnStatistics> updateMap,
+                                          Connection dbConn) throws SQLException, MetaException, NoSuchObjectException {
+    PreparedStatement pst = null;
+    for (Map.Entry entry : updateMap.entrySet()) {
+      PartColNameInfo partColNameInfo = (PartColNameInfo) entry.getKey();
+      Long partId = partColNameInfo.partitionId;
+      MPartitionColumnStatistics mPartitionColumnStatistics = (MPartitionColumnStatistics) entry.getValue();
+      String update = "UPDATE \"PART_COL_STATS\" SET ";
+      update += StatObjectConverter.getUpdatedColumnSql(mPartitionColumnStatistics);
+      update += " WHERE \"PART_ID\" = " + partId + " AND "
+              + " \"COLUMN_NAME\" = " +  quoteString(mPartitionColumnStatistics.getColName());
+      try {
+        pst = dbConn.prepareStatement(update);
+        StatObjectConverter.getUpdatedColumnStatement(mPartitionColumnStatistics, pst);
+        LOG.info("Going to execute update " + update);
+        int numUpdate = pst.executeUpdate();
+        if (numUpdate != 1) {
+          throw new MetaException("Invalid state of  PART_COL_STATS for PART_ID " + partId);
+        }
+      } finally {
+        closeStmt(pst);
+      }
+    }
+  }
+
+  private void insertIntoPartColStatTable(Map<PartColNameInfo, MPartitionColumnStatistics> insertMap,
                                           long maxCsId,
                                           Connection dbConn) throws SQLException, MetaException, NoSuchObjectException {
     PreparedStatement preparedStatement = null;
@@ -197,49 +233,41 @@ class DirectSqlUpdateStat {
 
     try {
       preparedStatement = dbConn.prepareStatement(insert);
-      for (Map.Entry entry : partitionInfoMap.entrySet()) {
-        ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
-        PartitionInfo partitionInfo = (PartitionInfo)entry.getKey();
-        ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
-        long partId = partitionInfo.partitionId;
+      for (Map.Entry entry : insertMap.entrySet()) {
+        PartColNameInfo partColNameInfo = (PartColNameInfo) entry.getKey();
+        Long partId = partColNameInfo.partitionId;
+        MPartitionColumnStatistics mPartitionColumnStatistics = (MPartitionColumnStatistics) entry.getValue();
 
-        for (ColumnStatisticsObj statisticsObj : colStats.getStatsObj()) {
-          MPartitionColumnStatistics mPartitionColumnStatistics = StatObjectConverter.
-                  convertToMPartitionColumnStatistics(null, statsDesc, statisticsObj, colStats.getEngine());
+        preparedStatement.setLong(1, maxCsId);
+        preparedStatement.setString(2, mPartitionColumnStatistics.getCatName());
+        preparedStatement.setString(3, mPartitionColumnStatistics.getDbName());
+        preparedStatement.setString(4, mPartitionColumnStatistics.getTableName());
+        preparedStatement.setString(5, mPartitionColumnStatistics.getPartitionName());
+        preparedStatement.setString(6, mPartitionColumnStatistics.getColName());
+        preparedStatement.setString(7, mPartitionColumnStatistics.getColType());
+        preparedStatement.setLong(8, partId);
+        preparedStatement.setObject(9, mPartitionColumnStatistics.getLongLowValue());
+        preparedStatement.setObject(10, mPartitionColumnStatistics.getLongHighValue());
+        preparedStatement.setObject(11, mPartitionColumnStatistics.getDoubleHighValue());
+        preparedStatement.setObject(12, mPartitionColumnStatistics.getDoubleLowValue());
+        preparedStatement.setString(13, mPartitionColumnStatistics.getDecimalLowValue());
+        preparedStatement.setString(14, mPartitionColumnStatistics.getDecimalHighValue());
+        preparedStatement.setObject(15, mPartitionColumnStatistics.getNumNulls());
+        preparedStatement.setObject(16, mPartitionColumnStatistics.getNumDVs());
+        preparedStatement.setObject(17, mPartitionColumnStatistics.getBitVector());
+        preparedStatement.setObject(18, mPartitionColumnStatistics.getAvgColLen());
+        preparedStatement.setObject(19, mPartitionColumnStatistics.getMaxColLen());
+        preparedStatement.setObject(20, mPartitionColumnStatistics.getNumTrues());
+        preparedStatement.setObject(21, mPartitionColumnStatistics.getNumFalses());
+        preparedStatement.setLong(22, mPartitionColumnStatistics.getLastAnalyzed());
+        preparedStatement.setString(23, mPartitionColumnStatistics.getEngine());
 
-          preparedStatement.setLong(1, maxCsId);
-          preparedStatement.setString(2, mPartitionColumnStatistics.getCatName());
-          preparedStatement.setString(3, mPartitionColumnStatistics.getDbName());
-          preparedStatement.setString(4, mPartitionColumnStatistics.getTableName());
-          preparedStatement.setString(5, mPartitionColumnStatistics.getPartitionName());
-          preparedStatement.setString(6, mPartitionColumnStatistics.getColName());
-          preparedStatement.setString(7, mPartitionColumnStatistics.getColType());
-          preparedStatement.setLong(8, partId);
-          preparedStatement.setObject(9, mPartitionColumnStatistics.getLongLowValue());
-          preparedStatement.setObject(10, mPartitionColumnStatistics.getLongHighValue());
-          preparedStatement.setObject(11, mPartitionColumnStatistics.getDoubleHighValue());
-          preparedStatement.setObject(12, mPartitionColumnStatistics.getDoubleLowValue());
-          preparedStatement.setString(13, mPartitionColumnStatistics.getDecimalLowValue());
-          preparedStatement.setString(14, mPartitionColumnStatistics.getDecimalHighValue());
-          preparedStatement.setObject(15, mPartitionColumnStatistics.getNumNulls());
-          preparedStatement.setObject(16, mPartitionColumnStatistics.getNumDVs());
-          preparedStatement.setObject(17, mPartitionColumnStatistics.getBitVector());
-          preparedStatement.setObject(18, mPartitionColumnStatistics.getAvgColLen());
-          preparedStatement.setObject(19, mPartitionColumnStatistics.getMaxColLen());
-          preparedStatement.setObject(20, mPartitionColumnStatistics.getNumTrues());
-          preparedStatement.setObject(21, mPartitionColumnStatistics.getNumFalses());
-          preparedStatement.setLong(22, mPartitionColumnStatistics.getLastAnalyzed());
-          preparedStatement.setString(23, mPartitionColumnStatistics.getEngine());
-
-          LOG.info("Inserting into PART_COL_STATS with csid " + maxCsId);
-
-          maxCsId++;
-          numRows++;
-          preparedStatement.addBatch();
-          if (numRows == maxBatchSize) {
-            preparedStatement.executeBatch();
-            numRows = 0;
-          }
+        maxCsId++;
+        numRows++;
+        preparedStatement.addBatch();
+        if (numRows == maxBatchSize) {
+          preparedStatement.executeBatch();
+          numRows = 0;
         }
       }
 
@@ -462,6 +490,42 @@ class DirectSqlUpdateStat {
     }
   }
 
+  private static class PartColNameInfo {
+    long partitionId;
+    String colName;
+    public PartColNameInfo(long partitionId, String colName) {
+      this.partitionId = partitionId;
+      this.colName = colName;
+    }
+
+    @Override
+    public int hashCode() {
+      return (int)partitionId;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+      if (this == o) {
+        return true;
+      }
+      if (o == null) {
+        return false;
+      }
+      if (!(o instanceof PartColNameInfo)) {
+        return false;
+      }
+      PartColNameInfo other = (PartColNameInfo)o;
+      if (this.partitionId != other.partitionId) {
+        return false;
+      }
+      if (this.colName.equalsIgnoreCase(other.colName)) {
+        return true;
+      }
+      return false;
+    }
+  }
+
   private Map<PartitionInfo, ColumnStatistics> getPartitionInfo(Connection dbConn, long tblId,
                                                                  Map<String, ColumnStatistics> partColStatsMap)
           throws SQLException, MetaException {
@@ -522,9 +586,17 @@ class DirectSqlUpdateStat {
       Map<String, Map<String, String>> result =
               updatePartitionParamTable(dbConn, partitionInfoMap, validWriteIds, writeId, TxnUtils.isAcidTable(tbl));
 
-      cleanOldStatsFromPartColStatTable(partitionInfoMap, dbConn);
+      Map<PartColNameInfo, MPartitionColumnStatistics> insertMap = new HashMap<>();
+      Map<PartColNameInfo, MPartitionColumnStatistics> updateMap = new HashMap<>();
+      populateInsertUpdateMap(partitionInfoMap, updateMap, insertMap, dbConn);
 
-      insertIntoPartColStatTable(partitionInfoMap, csId, dbConn);
+      if (insertMap.size() != 0) {
+        insertIntoPartColStatTable(insertMap, csId, dbConn);
+      }
+
+      if (updateMap.size() != 0) {
+        updatePartColStatTable(updateMap, dbConn);
+      }
 
       for (Map.Entry entry : result.entrySet()) {
         Map<String, String> parameters = (Map<String, String>) entry.getValue();
@@ -599,6 +671,8 @@ class DirectSqlUpdateStat {
             if (dbType.isDuplicateKeyError(e)) {
               continue;
             }
+            LOG.error("Unable to insert into SEQUENCE_TABLE for MPartitionColumnStatistics.", e);
+            throw e;
           } finally {
             closeStmt(statement);
           }
@@ -607,9 +681,6 @@ class DirectSqlUpdateStat {
 
       long nextMaxCsId = maxCsId + numStats + 1;
       closeStmt(statement);
-
-      LOG.info("nextMaxCsId " + nextMaxCsId + " with csid " + maxCsId + " and numStats " + numStats);
-
       statement = dbConn.createStatement();
       String query = "UPDATE \"SEQUENCE_TABLE\" SET \"NEXT_VAL\" = "
               + nextMaxCsId
@@ -619,7 +690,8 @@ class DirectSqlUpdateStat {
       dbConn.commit();
       committed = true;
       return maxCsId;
-    } catch (SQLException e) {
+    } catch (Exception e) {
+      LOG.error("Unable to getNextCSIdForMPartitionColumnStatistics", e);
       throw new MetaException("Unable to getNextCSIdForMPartitionColumnStatistics  "
               + " due to: " + e.getMessage());
     } finally {
