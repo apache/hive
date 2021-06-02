@@ -18,20 +18,26 @@
 package org.apache.hadoop.hive.metastore.client;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
 
+import org.apache.curator.shaded.com.google.common.collect.Lists;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.ObjectStoreTestHook;
@@ -85,6 +91,9 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
 
   @Before
   public void setUp() throws Exception {
+    metaStore.getConf().set(MetastoreConf.ConfVars.SCHEDULED_QUERIES_AUTODISABLE_COUNT.getVarname(), "-1");
+    metaStore.getConf().set(MetastoreConf.ConfVars.SCHEDULED_QUERIES_SKIP_OPPORTUNITIES_AFTER_FAILURES.getVarname(),
+        "0");
     client = metaStore.getClient();
 
   }
@@ -274,34 +283,66 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
   }
 
   @Test
-  public void testDisablePolicy() throws Exception {
-    try {
-      //      metaStore.getConf().set(
-      //          MetastoreConf.ConfVars.SCHEDULED_QUERIES_EXPONENTIAL_SKIP_OPPORTUNITIES_AFTER_FAILURES.getVarname(), "3");
-      metaStore.getConf().set(MetastoreConf.ConfVars.SCHEDULED_QUERIES_AUTODISABLE_COUNT.getVarname(), "1");
-
-      testDisablePolicyInternal(2, 5);
-    } finally {
-
-    }
+  public void testDisable1() throws Exception {
+    metaStore.getConf().set(MetastoreConf.ConfVars.SCHEDULED_QUERIES_AUTODISABLE_COUNT.getVarname(), "1");
+    client.close();
+    client = metaStore.getClient();
+    testDisableInternal(2, 5, "dis1");
   }
 
   @Test
-  public void testDisablePolicy2() throws Exception {
+  public void testDisable2() throws Exception {
     metaStore.getConf().set(MetastoreConf.ConfVars.SCHEDULED_QUERIES_AUTODISABLE_COUNT.getVarname(), "2");
-    testDisablePolicyInternal(2, 5);
+    client.close();
+    client = metaStore.getClient();
+    testDisableInternal(3, 5, "dis2");
+
   }
 
+  @Test
+  public void testSkip2() throws Exception {
+    metaStore.getConf().set(MetastoreConf.ConfVars.SCHEDULED_QUERIES_AUTODISABLE_COUNT.getVarname(), "4");
+    metaStore.getConf().set(MetastoreConf.ConfVars.SCHEDULED_QUERIES_SKIP_OPPORTUNITIES_AFTER_FAILURES.getVarname(),
+        "2");
+    client.close();
+    client = metaStore.getClient();
+    testDisableInternal(5, 6, "skip2");
+
+    try (PersistenceManager pm = PersistenceManagerProvider.getPersistenceManager()) {
+
+      ScheduledQueryKey key = new ScheduledQueryKey("q1", "skip2");
+      Query query = pm.newQuery(MScheduledExecution.class);
+      query.setOrdering("scheduledExecutionId descending");
+      query.setRange(0, 20);
+      List<MScheduledExecution> list = (List<MScheduledExecution>) query.execute();
+      List<MScheduledExecution> q1list = new ArrayList<MScheduledExecution>();
+
+      List<Integer> tList = new ArrayList<Integer>();
+
+      for (MScheduledExecution schqExec : list) {
+        if (schqExec.getScheduledQuery().getScheduleKey().equals(key)) {
+          q1list.add(schqExec);
+          tList.add(schqExec.getStartTime());
+        }
+      }
+
+      tList = Lists.reverse(tList);
+      Integer startTime = tList.get(0);
+      tList = tList.stream().map(e -> e - startTime).collect(Collectors.toList());
+
+      assertArrayEquals(new Integer[] { 0, 1, 2, 4, 6 }, tList.toArray());
+    }
+
+  }
   /**
    * Simulates some schq failure scenario.
    *
    * Q1 is executed correctly 1 time; but every further executions are end with failures
    * Q2 should be executed without without issues even thru Q1 will be disabled at some point
    */
-  public void testDisablePolicyInternal(int q1NumberOfExecutions, int seconds)
+  public void testDisableInternal(int q1NumberOfExecutions, int seconds, String testNamespace)
       throws Exception {
     int q2NumberOfExecutions = seconds - 1;
-    String testNamespace = "disable";
     ScheduledQueryKey schqKey1 = new ScheduledQueryKey("q1", testNamespace);
     ScheduledQueryKey schqKey2 = new ScheduledQueryKey("q2", testNamespace);
     createEverySecondSchq(schqKey1);
@@ -354,7 +395,9 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
       }
       Thread.sleep(100);
     }
-
+    if (idx1 != q1NumberOfExecutions) {
+      fail("expected " + q1NumberOfExecutions + " execution of q1; only " + idx1 + " happened");
+    }
     if (idx2 < q2NumberOfExecutions) {
       fail("at least " + q2NumberOfExecutions + " expected for q2");
     }

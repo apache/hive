@@ -13933,9 +13933,9 @@ public class ObjectStore implements RawStore, Configurable {
           schq.setNextExecution(scheduledTime);
         }
       }
+      commited = commitTransaction();
     } catch (InvalidInputException e) {
       throw new MetaException("Unexpected InvalidInputException: " + e.getMessage());
-
     } finally {
       if (!commited) {
         rollbackTransaction();
