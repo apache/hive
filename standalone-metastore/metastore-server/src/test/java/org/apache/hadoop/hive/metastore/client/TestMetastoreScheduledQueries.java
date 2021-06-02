@@ -330,7 +330,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
       Integer startTime = tList.get(0);
       tList = tList.stream().map(e -> e - startTime).collect(Collectors.toList());
 
-      assertArrayEquals(new Integer[] { 0, 1, 2, 4, 6 }, tList.toArray());
+      assertArrayEquals(new Integer[] { 0, 1, 2, 4, 6, 6 }, tList.toArray());
     }
 
   }

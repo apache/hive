@@ -494,6 +494,7 @@ class QueryState(object):
     FAILED = 2
     FINISHED = 3
     TIMED_OUT = 4
+    AUTO_DISABLED = 5
 
     _VALUES_TO_NAMES = {
         0: "INITED",
@@ -501,6 +502,7 @@ class QueryState(object):
         2: "FAILED",
         3: "FINISHED",
         4: "TIMED_OUT",
+        5: "AUTO_DISABLED",
     }
 
     _NAMES_TO_VALUES = {
@@ -509,6 +511,7 @@ class QueryState(object):
         "FAILED": 2,
         "FINISHED": 3,
         "TIMED_OUT": 4,
+        "AUTO_DISABLED": 5,
     }
 
 
