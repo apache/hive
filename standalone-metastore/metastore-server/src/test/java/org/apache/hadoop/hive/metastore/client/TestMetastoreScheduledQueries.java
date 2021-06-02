@@ -275,39 +275,97 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
 
   @Test
   public void testDisablePolicy() throws Exception {
+    try {
+      //      metaStore.getConf().set(
+      //          MetastoreConf.ConfVars.SCHEDULED_QUERIES_EXPONENTIAL_SKIP_OPPORTUNITIES_AFTER_FAILURES.getVarname(), "3");
+      metaStore.getConf().set(MetastoreConf.ConfVars.SCHEDULED_QUERIES_AUTODISABLE_COUNT.getVarname(), "1");
+
+      testDisablePolicyInternal(2, 5);
+    } finally {
+
+    }
+  }
+
+  @Test
+  public void testDisablePolicy2() throws Exception {
+    metaStore.getConf().set(MetastoreConf.ConfVars.SCHEDULED_QUERIES_AUTODISABLE_COUNT.getVarname(), "2");
+    testDisablePolicyInternal(2, 5);
+  }
+
+  /**
+   * Simulates some schq failure scenario.
+   *
+   * Q1 is executed correctly 1 time; but every further executions are end with failures
+   * Q2 should be executed without without issues even thru Q1 will be disabled at some point
+   */
+  public void testDisablePolicyInternal(int q1NumberOfExecutions, int seconds)
+      throws Exception {
+    int q2NumberOfExecutions = seconds - 1;
     String testNamespace = "disable";
-    ScheduledQueryKey schqKey = new ScheduledQueryKey("q1", testNamespace);
-    ScheduledQuery schq = createScheduledQuery(schqKey);
-    ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
-    r.setType(ScheduledQueryMaintenanceRequestType.CREATE);
-    r.setScheduledQuery(schq);
-    client.scheduledQueryMaintenance(r);
-    //    client.scheduledQueryMaintenance(r);
+    ScheduledQueryKey schqKey1 = new ScheduledQueryKey("q1", testNamespace);
+    ScheduledQueryKey schqKey2 = new ScheduledQueryKey("q2", testNamespace);
+    createEverySecondSchq(schqKey1);
+    createEverySecondSchq(schqKey2);
 
     // do some polls and report failure each time
     ScheduledQueryPollRequest request = new ScheduledQueryPollRequest();
     request.setClusterNamespace(testNamespace);
     ScheduledQueryPollResponse pollResult = null;
-    int numProcessed = 0;
-    for (int i = 0; i < 30; i++) {
+    int idx1 = 0;
+    int idx2 = 0;
+    for (int i = 0; i < seconds * 10 + 9; i++) {
       pollResult = client.scheduledQueryPoll(request);
       if (pollResult.isSetQuery()) {
-        numProcessed++;
-        ScheduledQueryProgressInfo info =
-            new ScheduledQueryProgressInfo(pollResult.getExecutionId(), QueryState.FAILED, "executor-query-id");
-        info.setErrorMessage("some issue happened");
-        client.scheduledQueryProgress(info);
 
-        schq = client.getScheduledQuery(schqKey);
-        assertFalse("Scheduled query must be disabled at this point", schq.isEnabled());
-        break;
+        if (pollResult.getScheduleKey().equals(schqKey1)) {
+          idx1++;
+          if (idx1 == 1) {
+            ScheduledQueryProgressInfo info =
+                new ScheduledQueryProgressInfo(pollResult.getExecutionId(), QueryState.FINISHED, "executor-query-id");
+            client.scheduledQueryProgress(info);
+
+          } else {
+            ScheduledQueryProgressInfo info =
+                new ScheduledQueryProgressInfo(pollResult.getExecutionId(), QueryState.FAILED, "executor-query-id");
+            info.setErrorMessage("some issue happened");
+            client.scheduledQueryProgress(info);
+
+          }
+
+          ScheduledQuery schq = client.getScheduledQuery(pollResult.getScheduleKey());
+          if (idx1 > q1NumberOfExecutions) {
+            fail("unexpected execution of q1 happened");
+          }
+          if (idx1 == q1NumberOfExecutions) {
+            assertFalse("Scheduled query q1 must be disabled at this point", schq.isEnabled());
+          } else {
+            assertTrue("Scheduled query q1 must be enabled at this point", schq.isEnabled());
+          }
+        }
+
+        if (pollResult.getScheduleKey().equals(schqKey2)) {
+          idx2++;
+          ScheduledQueryProgressInfo info =
+              new ScheduledQueryProgressInfo(pollResult.getExecutionId(), QueryState.FINISHED, "executor-query-id");
+          client.scheduledQueryProgress(info);
+          ScheduledQuery schq = client.getScheduledQuery(pollResult.getScheduleKey());
+          assertTrue("Scheduled query q2 must be enabled", schq.isEnabled());
+        }
       }
       Thread.sleep(100);
     }
 
-    if (numProcessed != 1) {
-      throw new RuntimeException("Unexpected number of proccessed poll requests: " + numProcessed);
+    if (idx2 < q2NumberOfExecutions) {
+      fail("at least " + q2NumberOfExecutions + " expected for q2");
     }
+  }
+
+  private void createEverySecondSchq(ScheduledQueryKey schqKey) throws MetaException, TException {
+    ScheduledQuery schq = createScheduledQuery(schqKey);
+    ScheduledQueryMaintenanceRequest r = new ScheduledQueryMaintenanceRequest();
+    r.setType(ScheduledQueryMaintenanceRequestType.CREATE);
+    r.setScheduledQuery(schq);
+    client.scheduledQueryMaintenance(r);
   }
 
   @Test

@@ -13885,26 +13885,45 @@ public class ObjectStore implements RawStore, Configurable {
     if (info.getState() != QueryState.FAILED && info.getState() != QueryState.TIMED_OUT) {
       return;
     }
+    int autoDisableCount = MetastoreConf.getIntVar(conf, ConfVars.SCHEDULED_QUERIES_AUTODISABLE_COUNT);
+    int expSkipCount =
+        MetastoreConf.getIntVar(conf, ConfVars.SCHEDULED_QUERIES_EXPONENTIAL_SKIP_OPPORTUNITIES_AFTER_FAILURES);
+
+    int lastN = Math.max(autoDisableCount, expSkipCount);
+    if (lastN <= 0) {
+      // disabled
+      return;
+    }
+
     boolean commited = false;
     try {
       openTransaction();
 
       MScheduledExecution lastExecution = pm.getObjectById(MScheduledExecution.class, info.getScheduledExecutionId());
+      MScheduledQuery schq = lastExecution.getScheduledQuery();
 
       Query query = pm.newQuery(MScheduledExecution.class);
       query.setFilter("scheduledQuery == currentSchedule");
       query.setOrdering("scheduledExecutionId descending");
       query.declareParameters("MScheduledQuery currentSchedule");
-      query.setRange(0, 10);
-      List<MScheduledExecution> list = (List<MScheduledExecution>) query.execute(lastExecution.getScheduledQuery());
+      query.setRange(0, lastN);
+      List<MScheduledExecution> list = (List<MScheduledExecution>) query.execute(schq);
 
-      if (xx(list)) {
-        LOG.info("disabling!!!");
-        MScheduledQuery schq = lastExecution.getScheduledQuery();
-        schq.setEnabled(false);
+      int failureCount=0;
+      for(int i=0;i<list.size();i++) {
+        if (list.get(i).getState() != QueryState.FAILED) {
+          break;
+        }
+        failureCount++;
       }
 
-      commited = commitTransaction();
+      if (autoDisableCount > 0 && autoDisableCount <= failureCount) {
+        LOG.info("Disabling {} after {} consequtive failures", schq.getScheduleKey(), autoDisableCount);
+        schq.setEnabled(false);
+      }
+      if (expSkipCount > 0) {
+
+      }
     } catch (Exception e) {
       LOG.info("Unexpected exception while processing schq policies", e);
     } finally {
@@ -13913,10 +13932,6 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
 
-  }
-
-  private boolean xx(List<MScheduledExecution> list) {
-    return (list.size() > 0 && list.get(0).getState() == QueryState.FAILED);
   }
 
   /**
