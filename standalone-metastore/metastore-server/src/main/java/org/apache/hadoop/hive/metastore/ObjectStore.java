@@ -13919,6 +13919,14 @@ public class ObjectStore implements RawStore, Configurable {
       if (autoDisableCount > 0 && autoDisableCount <= failureCount) {
         LOG.info("Disabling {} after {} consequtive failures", schq.getScheduleKey(), autoDisableCount);
         schq.setEnabled(false);
+        int now = (int) (System.currentTimeMillis() / 1000);
+        MScheduledExecution execution = new MScheduledExecution();
+        execution.setScheduledQuery(schq);
+        execution.setState(QueryState.AUTO_DISABLED);
+        execution.setStartTime(now);
+        execution.setEndTime(now);
+        execution.setLastUpdateTime(now);
+        pm.makePersistent(execution);
       }
       if (skipCount > 0) {
         int n = Math.min(skipCount, failureCount) - 1;
