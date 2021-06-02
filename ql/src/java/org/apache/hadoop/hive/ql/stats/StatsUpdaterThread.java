@@ -96,8 +96,6 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
   private BlockingQueue<AnalyzeWork> workQueue;
   private Thread[] workers;
 
-  private Map<String, Boolean> dbsBeingFailedOver;
-
   @Override
   public void setConf(Configuration conf) {
     StatsUpdateMode mode = StatsUpdateMode.valueOf(
@@ -147,7 +145,6 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     txnHandler = TxnUtils.getTxnStore(conf);
     rs = RawStoreProxy.getProxy(conf, conf,
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.RAW_STORE_IMPL), threadId);
-    dbsBeingFailedOver = new ConcurrentHashMap<>();
     for (int i = 0; i < workers.length; ++i) {
       workers[i] = new Thread(new WorkerRunnable(conf, user));
       workers[i].setDaemon(true);
@@ -160,7 +157,6 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     LOG.info("Stats updater thread started");
     startWorkers();
     while (!stop.get()) {
-      dbsBeingFailedOver.clear();
       boolean hadUpdates = runOneIteration();
       try {
         Thread.sleep(hadUpdates ? 0 : noUpdatesWaitMs);
@@ -638,12 +634,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     String cmd = null;
     try {
       TableName tb = req.tableName;
-      String dbName = MetaStoreUtils.prependCatalogToDbName(tb.getCat(),tb.getDb(), conf);
-      if (isDbPresentInFailoverSet(dbName)) {
-        LOG.info("Skipping table: {} " + tb.getTable());
-        return true;
-      } else if (MetaStoreUtils.isDbBeingFailedOver(rs.getDatabase(tb.getCat(), tb.getDb()))) {
-        dbsBeingFailedOver.put(dbName, true);
+      if (MetaStoreUtils.isDbBeingFailedOver(rs.getDatabase(tb.getCat(), tb.getDb()))) {
         LOG.info("Skipping table: {} " + tb.getTable());
         return true;
       }
@@ -666,10 +657,6 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
       markAnalyzeDone(req);
     }
     return true;
-  }
-
-  private synchronized boolean isDbPresentInFailoverSet(String dbName) {
-    return dbsBeingFailedOver.containsKey(dbName) && dbsBeingFailedOver.get(dbName);
   }
 
   public class WorkerRunnable implements Runnable {
