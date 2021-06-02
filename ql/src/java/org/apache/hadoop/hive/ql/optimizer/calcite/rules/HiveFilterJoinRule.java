@@ -91,36 +91,6 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
   }
 
   /**
-   * Rule that tries to push join conditions into its inputs
-   */
-  public static class HiveJoinConditionPushRule extends HiveFilterJoinRule {
-    public HiveJoinConditionPushRule() {
-      super(RelOptRule.operand(Join.class, RelOptRule.any()), "HiveJoinConditionPushRule:no-filter", true,
-        HiveRelFactories.HIVE_BUILDER);
-    }
-
-    @Override
-    public boolean matches(RelOptRuleCall call) {
-      Join join = call.rel(0);
-      List<RexNode> joinConds = RelOptUtil.conjunctions(join.getCondition());
-
-      for (RexNode joinCnd : joinConds) {
-        if (!HiveCalciteUtil.isDeterministic(joinCnd)) {
-          return false;
-        }
-      }
-
-      return true;
-    }
-
-    @Override
-    public void onMatch(RelOptRuleCall call) {
-      Join join = call.rel(0);
-      perform(call, null, join);
-    }
-  }
-
-  /**
    * Rule that tries to push filter expressions into a join condition and into
    * the inputs of the join.
    */

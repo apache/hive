@@ -105,12 +105,9 @@ public class JoinCondTypeCheckProcFactory<T> extends TypeCheckProcFactory<T> {
           tblAliasCnt++;
       }
 
-      if (tblAliasCnt == 0 && ctx.getOuterRR() != null) {
-        for (RowResolver rr : ImmutableList.of(ctx.getOuterRR())) {
-          if (rr.hasTableAlias(tabName)) {
-            tblAliasCnt++;
-          }
-        }
+      // we only want to look into the outerRR if we didn't find the table in the inputRRs.
+      if (tblAliasCnt == 0 && ctx.getOuterRR() != null && ctx.getOuterRR().hasTableAlias(tabName)) {
+        tblAliasCnt++;
       }
 
       if (tblAliasCnt > 1) {
@@ -207,17 +204,9 @@ public class JoinCondTypeCheckProcFactory<T> extends TypeCheckProcFactory<T> {
         }
       }
 
+      // if we didn't find column info in inputRRs, look into the outerRR
       if (cInfoToRet == null && ctx.getOuterRR() != null) {
-        for (RowResolver rr : ImmutableList.of(ctx.getOuterRR())) {
-          tmp = rr.get(tabName, colAlias);
-          if (tmp != null) {
-            if (cInfoToRet != null) {
-              throw new SemanticException(ASTErrorUtils.getMsg(
-                ErrorMsg.AMBIGUOUS_TABLE_OR_COLUMN.getMsg(), expr));
-            }
-            cInfoToRet = tmp;
-          }
-        }
+        cInfoToRet = ctx.getOuterRR().get(tabName, colAlias);
       }
 
       return cInfoToRet;
