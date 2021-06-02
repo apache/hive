@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hive.common.util.HiveStringUtils;
@@ -162,12 +163,21 @@ public class JsonSerDe extends AbstractSerDe {
    * object, the client needs to clone the returned value by calling
    * ObjectInspectorUtils.getStandardObject().
    *
-   * @param blob The Writable (Text) object containing a serialized object
+   * @param blob The Writable (Text/Binary) object containing a serialized object
    * @return A List containing all the values of the row
    */
   @Override
   public Object deserialize(final Writable blob) throws SerDeException {
-    final Text t = (Text) blob;
+    Text text;
+    if (blob instanceof Text) {
+      text = (Text) blob;
+    } else if (blob instanceof BytesWritable) {
+      text = new Text(((BytesWritable) blob).getBytes());
+    } else {
+      throw new SerDeException("Not supported writable: " + blob.getClass().getName());
+    }
+
+    final Text t = text;
 
     if (t.getLength() == 0) {
       if (!this.nullEmptyLines) {

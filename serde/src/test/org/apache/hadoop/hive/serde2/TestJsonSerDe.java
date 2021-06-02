@@ -313,4 +313,38 @@ public class TestJsonSerDe {
         FileUtils.readFileToString(testJson, StandardCharsets.UTF_8);
     return jsonText.replaceAll("\\s+", "");
   }
+
+  @Test
+  public void testGetStringFromNested() throws Exception {
+    String value = "{\"data\":{\"H\":{\"event\":\"track_active\",\"platform\":\"Android\"}," +
+        "\"B\":{\"device_type\":\"Phone\"," +
+        "\"uuid\":\"[36ffec24-f6a4-4f5d-aa39-72e5513d2cae,11883bee-a7aa-4010-8a66-6c3c63a73f16]\"}}," +
+        "\"messageId\":\"2475185636801962\",\"publish_time\":1622514629783,\"attributes\":{\"region\":\"IN\"}}\"}}";
+    Properties tblProps = new Properties();
+    tblProps.put("columns", "data,messageid,publish_time,attributes");
+    tblProps.put("columns.types", "string,string,bigint,string");
+    Configuration conf = new Configuration();
+    JsonSerDe serDe = new JsonSerDe();
+    serDe.initialize(conf, tblProps, null, false);
+    List fields = (List) serDe.deserialize(new Text(value));
+    Assert.assertTrue(fields.size() == 4);
+    Assert.assertEquals("2475185636801962", fields.get(1));
+    Assert.assertEquals(1622514629783L, fields.get(2));
+    Assert.assertEquals("{\"region\":\"IN\"}", fields.get(3));
+
+    String validJson = (String) fields.get(0);
+    tblProps.clear();
+    tblProps.put("columns", "h,b");
+    tblProps.put("columns.types", "struct<event:string,platform:string>,struct<device_type:string,uuid:string>");
+    serDe.initialize(conf, tblProps, null, false);
+    fields = (List) serDe.deserialize(new Text(validJson));
+    Assert.assertTrue(fields.size() == 2);
+    List f1 = (List) fields.get(0), f2 = (List) fields.get(1);
+    Assert.assertEquals("track_active", f1.get(0));
+    Assert.assertEquals("Android", f1.get(1));
+    Assert.assertEquals("Phone", f2.get(0));
+    // array
+    Assert.assertEquals("[36ffec24-f6a4-4f5d-aa39-72e5513d2cae,11883bee-a7aa-4010-8a66-6c3c63a73f16]", f2.get(1));
+  }
+  
 }

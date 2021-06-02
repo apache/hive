@@ -57,6 +57,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hive.common.util.TimestampParser;
+
+import com.google.common.collect.ImmutableSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,6 +114,14 @@ public class HiveJsonReader {
   private final TimestampParser tsParser;
   private BinaryEncoding binaryEncoding;
   private final ObjectInspector oi;
+
+  private static Set<PrimitiveObjectInspector.PrimitiveCategory> stringOrBinaryCategories =
+      ImmutableSet.<PrimitiveObjectInspector.PrimitiveCategory>builder()
+          .add(PrimitiveObjectInspector.PrimitiveCategory.BINARY)
+          .add(PrimitiveObjectInspector.PrimitiveCategory.STRING)
+          .add(PrimitiveObjectInspector.PrimitiveCategory.VARCHAR)
+          .add(PrimitiveObjectInspector.PrimitiveCategory.CHAR)
+          .build();
 
   /**
    * Enumeration that defines all on/off features for this reader.
@@ -371,11 +381,13 @@ public class HiveJsonReader {
    */
   private Object visitLeafNode(final JsonNode leafNode,
       final ObjectInspector oi) throws SerDeException {
-    Preconditions.checkArgument(leafNode.getNodeType() != JsonNodeType.OBJECT);
-    Preconditions.checkArgument(leafNode.getNodeType() != JsonNodeType.ARRAY);
-
     final PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
     final PrimitiveTypeInfo typeInfo = poi.getTypeInfo();
+
+    if (!stringOrBinaryCategories.contains(typeInfo.getPrimitiveCategory())) {
+      Preconditions.checkArgument(leafNode.getNodeType() != JsonNodeType.OBJECT);
+      Preconditions.checkArgument(leafNode.getNodeType() != JsonNodeType.ARRAY);
+    }
 
     switch (typeInfo.getPrimitiveCategory()) {
     case INT:
@@ -393,7 +405,7 @@ public class HiveJsonReader {
     case DOUBLE:
       return Double.valueOf(leafNode.asDouble());
     case STRING:
-      return leafNode.asText();
+      return getStringValue(leafNode);
     case BINARY:
       return getByteValue(leafNode);
     case DATE:
@@ -409,14 +421,26 @@ public class HiveJsonReader {
       tstz.set(ts.toEpochSecond(), ts.getNanos(), zid);
       return tstz;
     case VARCHAR:
-      return new HiveVarchar(leafNode.asText(),
+      return new HiveVarchar(getStringValue(leafNode),
           ((BaseCharTypeInfo) typeInfo).getLength());
     case CHAR:
-      return new HiveChar(leafNode.asText(),
+      return new HiveChar(getStringValue(leafNode),
           ((BaseCharTypeInfo) typeInfo).getLength());
     default:
       throw new SerDeException(
           "Could not convert from string to type: " + typeInfo.getTypeName());
+    }
+  }
+
+  /**
+   * String representation of the JsonNode, if the node is a value node,
+   * returns the value it contains, otherwise the json output of the JsonNode.
+   */
+  private String getStringValue(final JsonNode jsonNode) {
+    if (jsonNode.isValueNode()) {
+      return jsonNode.asText();
+    } else {
+      return jsonNode.toString();
     }
   }
 
@@ -432,7 +456,7 @@ public class HiveJsonReader {
     try {
       switch (this.binaryEncoding) {
       case RAWSTRING:
-        final String byteText = binaryNode.textValue();
+        final String byteText = getStringValue(binaryNode);
         return byteText.getBytes(StandardCharsets.UTF_8);
       case BASE64:
         return binaryNode.binaryValue();
