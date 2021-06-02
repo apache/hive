@@ -873,11 +873,6 @@ public class MetastoreConf {
             + "In case that execution fails as well it will skip 2 opportunities; so next execution will be 1:06."
             + "If the query fails it will skip 2 opportunities again ; because it only cares with the last 3 executions based on the set value."),
 
-    //    SCHEDULED_QUERIES_FAILURE_POLICY("metastore.scheduled.queries.failure.policy",
-    //        "hive.metastore.scheduled.queries.failure.policy", "", new StringSetValidator("none", "disable"), "FIXME."),
-    //    SCHEDULED_QUERIES_FAILURE_POLICY_EXPONENTIAL_NEXT_EXEC_TIME("metastore.scheduled.queries.failure.policy",
-    //        "hive.metastore.scheduled.queries.failure.policy", "", new StringSetValidator("none", "disable"), "FIXME."),
-
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener
     METADATA_EXPORT_LOCATION("metastore.metadata.export.location", "hive.metadata.export.location",

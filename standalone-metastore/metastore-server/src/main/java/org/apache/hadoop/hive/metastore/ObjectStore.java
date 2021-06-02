@@ -13871,7 +13871,6 @@ public class ObjectStore implements RawStore, Configurable {
       }
       pm.makePersistent(execution);
 
-      // FIXME events?
       processScheduledQueryPolicies(info);
 
       commited = commitTransaction();
@@ -13911,7 +13910,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       int failureCount=0;
       for(int i=0;i<list.size();i++) {
-        if (list.get(i).getState() != QueryState.FAILED) {
+        if (list.get(i).getState() != QueryState.FAILED || list.get(i).getState() == QueryState.TIMED_OUT) {
           break;
         }
         failureCount++;
