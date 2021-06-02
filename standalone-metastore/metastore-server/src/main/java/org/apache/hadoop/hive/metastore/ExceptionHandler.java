@@ -108,7 +108,7 @@ public final class ExceptionHandler {
    * Throws if the input exception is the instance of MetaException, NoSuchObjectException or TException,
    * otherwise converts the exception to the MetaException and throws.
    */
-  public static TException rethrowException(Exception e) throws TException {
+  public static void rethrowException(Exception e) throws TException {
     throw handleException(e)
         .throwIfInstance(MetaException.class, NoSuchObjectException.class)
         .throwIfInstance(TException.class)
