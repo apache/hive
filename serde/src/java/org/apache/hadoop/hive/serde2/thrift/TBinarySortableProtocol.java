@@ -93,7 +93,7 @@ public class TBinarySortableProtocol extends TProtocol implements
 
   @Override
   public int getMinSerializedSize(byte b) throws TException {
-    return 0;
+    return -1;
   }
 
   /**

@@ -63,7 +63,6 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TJSONProtocol;
 import org.apache.thrift.transport.TMemoryBuffer;
-import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -745,34 +744,33 @@ public class QueryPlan implements Serializable {
     }
   }
 
-  public String toThriftJSONString() throws IOException, TTransportException {
+  public String toThriftJSONString() throws IOException {
     org.apache.hadoop.hive.ql.plan.api.Query q = getQueryPlan();
-    TMemoryBuffer tmb = new TMemoryBuffer(q.toString().length() * 5);
-    TJSONProtocol oprot = new TJSONProtocol(tmb);
     try {
+      TMemoryBuffer tmb = new TMemoryBuffer(q.toString().length() * 5);
+      TJSONProtocol oprot = new TJSONProtocol(tmb);
       q.write(oprot);
+      return tmb.toString(StandardCharsets.UTF_8);
     } catch (TException e) {
       LOG.warn("Unable to produce query plan Thrift string", e);
       return q.toString();
     }
-    return tmb.toString(StandardCharsets.UTF_8);
+
   }
 
-  public String toBinaryString() throws IOException, TTransportException {
+  public String toBinaryString() throws IOException {
     org.apache.hadoop.hive.ql.plan.api.Query q = getQueryPlan();
-    TMemoryBuffer tmb = new TMemoryBuffer(q.toString().length() * 5);
-    TBinaryProtocol oprot = new TBinaryProtocol(tmb);
     try {
+      TMemoryBuffer tmb = new TMemoryBuffer(q.toString().length() * 5);
+      TBinaryProtocol oprot = new TBinaryProtocol(tmb);
       q.write(oprot);
+      byte[] buf = new byte[tmb.length()];
+      tmb.read(buf, 0, tmb.length());
+      return new String(buf);
     } catch (TException e) {
       LOG.warn("Unable to produce query plan binary string", e);
       return q.toString();
     }
-    byte[] buf = new byte[tmb.length()];
-    tmb.read(buf, 0, tmb.length());
-    return new String(buf);
-    // return getQueryPlan().toString();
-
   }
 
   public void setStarted() {

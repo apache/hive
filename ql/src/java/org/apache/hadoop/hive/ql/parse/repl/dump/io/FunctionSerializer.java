@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TJSONProtocol;
-import org.apache.thrift.transport.TTransportException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -56,8 +55,8 @@ public class FunctionSerializer implements JsonWriter.Serializer {
 
   @Override
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
-      throws SemanticException, IOException, MetaException, TTransportException {
-    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+      throws SemanticException, IOException, MetaException {
+
     List<ResourceUri> resourceUris = new ArrayList<>();
     if (function.getResourceUris() != null) {
       for (ResourceUri uri : function.getResourceUris()) {
@@ -91,6 +90,7 @@ public class FunctionSerializer implements JsonWriter.Serializer {
     }
 
     try {
+      TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
       //This is required otherwise correct work object on repl load wont be created.
       writer.jsonGenerator.writeStringField(ReplicationSpec.KEY.REPL_SCOPE.toString(),
           "all");

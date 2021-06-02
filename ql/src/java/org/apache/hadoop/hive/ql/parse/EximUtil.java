@@ -52,7 +52,6 @@ import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetadataJson;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.thrift.TException;
-import org.apache.thrift.transport.TTransportException;
 import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -358,7 +357,7 @@ public class EximUtil {
   public static final String METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION = null;
 
   public static void createDbExportDump(FileSystem fs, Path metadataPath, Database dbObj,
-      ReplicationSpec replicationSpec, Configuration conf) throws IOException, SemanticException, TTransportException {
+      ReplicationSpec replicationSpec, Configuration conf) throws IOException, SemanticException {
     updateIfCustomDbLocations(dbObj, conf);
 
     // WARNING NOTE : at this point, createDbExportDump lives only in a world where ReplicationSpec is in replication scope

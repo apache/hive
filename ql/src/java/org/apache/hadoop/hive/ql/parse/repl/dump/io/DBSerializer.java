@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TJSONProtocol;
-import org.apache.thrift.transport.TTransportException;
 
 import java.io.IOException;
 
@@ -38,13 +37,14 @@ public class DBSerializer implements JsonWriter.Serializer {
 
   @Override
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
-      throws SemanticException, IOException, TTransportException {
+      throws SemanticException, IOException {
     dbObject.putToParameters(
         ReplicationSpec.KEY.CURR_STATE_ID.toString(),
         additionalPropertiesProvider.getCurrentReplicationState()
     );
-    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+
     try {
+      TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
       String value = serializer.toString(dbObject);
       writer.jsonGenerator.writeStringField(FIELD_NAME, value);
     } catch (TException e) {

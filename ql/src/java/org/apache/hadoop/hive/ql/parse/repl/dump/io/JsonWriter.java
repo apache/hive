@@ -22,7 +22,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.thrift.transport.TTransportException;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
 
@@ -51,7 +50,7 @@ public class JsonWriter implements Closeable {
 
   public interface Serializer {
     String UTF_8 = "UTF-8";
-    void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
-        throws SemanticException, IOException, MetaException, TTransportException;
+    void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider) throws
+        SemanticException, IOException, MetaException;
   }
 }

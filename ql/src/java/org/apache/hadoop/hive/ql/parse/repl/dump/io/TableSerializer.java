@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TJSONProtocol;
-import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,7 +100,7 @@ public class TableSerializer implements JsonWriter.Serializer {
   }
 
   private void writePartitions(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
-      throws SemanticException, IOException, TTransportException {
+      throws SemanticException, IOException {
     writer.jsonGenerator.writeStartArray();
     if (partitions != null) {
       for (org.apache.hadoop.hive.ql.metadata.Partition partition : partitions) {
