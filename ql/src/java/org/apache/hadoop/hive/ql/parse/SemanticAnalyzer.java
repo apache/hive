@@ -251,6 +251,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -13408,13 +13409,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_TABLEPARTCOLSBYSPEC:
         List<PartitionTransform.PartitionTransformSpec> partitionTransformSpec =
             PartitionTransform.getPartitionTransformSpec(child);
-        QueryState queryState = SessionState.get().getQueryState(conf.get(ConfVars.HIVEQUERYID.varname));
-        if (queryState != null) {
-          queryState.addResource(hive_metastoreConstants.PARTITION_TRANSFORM_SPEC, partitionTransformSpec);
-        } else {
+
+        if (!SessionStateUtil.addResourceToSessionState(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC,
+            partitionTransformSpec)) {
           throw new SemanticException("Query state attached to Session state must be not null. " +
               "Partition transform metadata cannot be saved.");
         }
+
         partitionTransformSpecExists = true;
         break;
       case HiveParser.TOK_TABLEPARTCOLNAMES:

@@ -1865,8 +1865,8 @@ partitionTransformType
     | KW_MONTH          ->  TOK_MONTH
     | KW_DAY            ->  TOK_DAY
     | KW_HOUR           ->  TOK_HOUR
-    | KW_TRUNCATE LSQUARE value = Number RSQUARE       ->  ^(TOK_TRUNCATE $value)
-    | KW_BUCKET LSQUARE value = Number RSQUARE         ->  ^(TOK_BUCKET $value)
+    | KW_TRUNCATE value = Number      ->  ^(TOK_TRUNCATE $value)
+    | KW_BUCKET value = Number        ->  ^(TOK_BUCKET $value)
     ;
 
 tableBuckets

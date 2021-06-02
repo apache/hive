@@ -22,10 +22,10 @@ package org.apache.iceberg.mr.hive;
 import java.util.List;
 import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.parse.PartitionTransform;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
@@ -50,25 +50,13 @@ public class IcebergTableUtil {
    * @return an Iceberg table
    */
   static Table getTable(Configuration configuration, Properties properties) {
-    Table table = null;
-    QueryState queryState = null;
     String tableIdentifier = properties.getProperty(Catalogs.NAME);
-    if (SessionState.get() != null) {
-      queryState = SessionState.get().getQueryState(configuration.get(HiveConf.ConfVars.HIVEQUERYID.varname));
-      if (queryState != null) {
-        table = (Table) queryState.getResource(tableIdentifier);
-      } else {
-        LOG.debug("QueryState is not available in SessionState. Loading {} from configured catalog.", tableIdentifier);
-      }
-    } else {
-      LOG.debug("SessionState is not available. Loading {} from configured catalog.", tableIdentifier);
-    }
+    Table table = (Table) SessionStateUtil.getResourceFromSessionState(configuration, tableIdentifier);
 
     if (table == null) {
+      LOG.debug("Iceberg table {} is not found in QueryState. Loading table from configured catalog", tableIdentifier);
       table = Catalogs.loadTable(configuration, properties);
-      if (queryState != null) {
-        queryState.addResource(tableIdentifier, table);
-      }
+      SessionStateUtil.addResourceToSessionState(configuration, tableIdentifier, table);
     }
 
     return table;
@@ -77,12 +65,20 @@ public class IcebergTableUtil {
   /**
    * Create {@link PartitionSpec} based on the partition information stored in
    * {@link org.apache.hadoop.hive.ql.parse.PartitionTransform.PartitionTransformSpec}.
+   * @param configuration a Hadoop configuration
    * @param schema iceberg table schema
-   * @param partitionTransformSpecList partition transform metadata
    * @return iceberg partition spec, always non-null
    */
-  public static PartitionSpec spec(Schema schema,
-      List<PartitionTransform.PartitionTransformSpec> partitionTransformSpecList) {
+  public static PartitionSpec spec(Configuration configuration, Schema schema) {
+    List<PartitionTransform.PartitionTransformSpec> partitionTransformSpecList =
+        (List<PartitionTransform.PartitionTransformSpec>) SessionStateUtil
+            .getResourceFromSessionState(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC);
+
+    if (partitionTransformSpecList == null) {
+      LOG.debug("Iceberg partition transform spec is not found in QueryState.");
+      return null;
+    }
+
     PartitionSpec.Builder builder = PartitionSpec.builderFor(schema);
     partitionTransformSpecList.forEach(spec -> {
       switch (spec.transformType) {
@@ -102,10 +98,10 @@ public class IcebergTableUtil {
           builder.hour(spec.name);
           break;
         case TRUNCATE:
-          builder.truncate(spec.name, spec.transformParam);
+          builder.truncate(spec.name, spec.transformParam.get());
           break;
         case BUCKET:
-          builder.bucket(spec.name, spec.transformParam);
+          builder.bucket(spec.name, spec.transformParam.get());
           break;
       }
     });

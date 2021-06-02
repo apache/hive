@@ -167,16 +167,21 @@ public class TestHiveIcebergStorageHandlerNoScan {
         optional(7, "bucket_field", Types.StringType.get()),
         optional(8, "identity_field", Types.StringType.get())
     );
-    PartitionSpec spec = PartitionSpec.builderFor(schema).year("year_field").month("month_field").day("day_field")
-        .hour("hour_field").truncate("truncate_field", 2).bucket("bucket_field", 2)
-        .identity("identity_field").build();
-    String tableName = "part_test";
+    PartitionSpec spec = PartitionSpec.builderFor(schema)
+        .year("year_field")
+        .month("month_field")
+        .day("day_field")
+        .hour("hour_field")
+        .truncate("truncate_field", 2)
+        .bucket("bucket_field", 2)
+        .identity("identity_field")
+        .build();
 
-    TableIdentifier identifier = TableIdentifier.of("default", tableName);
+    TableIdentifier identifier = TableIdentifier.of("default", "part_test");
     shell.executeStatement("CREATE EXTERNAL TABLE " + identifier +
         " PARTITIONED BY SPEC (year_field year, month_field month, day_field day, hour_field hour, " +
-        "truncate_field truncate[2], bucket_field bucket[2], identity_field identity)" +
-        " STORED BY '" + HiveIcebergStorageHandler.class.getName() + "' " +
+        "truncate_field truncate 2, bucket_field bucket 2, identity_field identity)" +
+        " STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
         SchemaParser.toJson(schema) + "', " +

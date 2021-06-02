@@ -28,7 +28,6 @@ import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -36,14 +35,11 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.parse.PartitionTransform;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.JobContextImpl;
@@ -409,15 +405,15 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   private static PartitionSpec spec(Configuration configuration, Schema schema, Properties properties,
       org.apache.hadoop.hive.metastore.api.Table hmsTable) {
 
-    if (SessionState.get().getQueryState(configuration.get(HiveConf.ConfVars.HIVEQUERYID.varname))
-        .getResource(hive_metastoreConstants.PARTITION_TRANSFORM_SPEC) != null) {
+    PartitionSpec spec = IcebergTableUtil.spec(configuration, schema);
+    if (spec != null) {
       Preconditions.checkArgument(!hmsTable.isSetPartitionKeys() || hmsTable.getPartitionKeys().isEmpty(),
           "Provide only one of the following: Hive partition transform specification, or the " +
               InputFormatConfig.PARTITION_SPEC + " property");
-      return IcebergTableUtil.spec(schema, (List<PartitionTransform.PartitionTransformSpec>) SessionState.get()
-          .getQueryState(configuration.get(HiveConf.ConfVars.HIVEQUERYID.varname))
-          .getResource(hive_metastoreConstants.PARTITION_TRANSFORM_SPEC));
-    } else if (hmsTable.getParameters().get(InputFormatConfig.PARTITION_SPEC) != null) {
+      return spec;
+    }
+
+    if (hmsTable.getParameters().get(InputFormatConfig.PARTITION_SPEC) != null) {
       Preconditions.checkArgument(!hmsTable.isSetPartitionKeys() || hmsTable.getPartitionKeys().isEmpty(),
           "Provide only one of the following: Hive partition specification, or the " +
               InputFormatConfig.PARTITION_SPEC + " property");
