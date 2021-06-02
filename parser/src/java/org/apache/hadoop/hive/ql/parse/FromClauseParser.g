@@ -25,6 +25,8 @@ k=3;
 }
 
 @members {
+  public List<Pair<String, String>> tables = new ArrayList<Pair<String, String>>();
+
   @Override
   public Object recoverFromMismatchedSet(IntStream input,
       RecognitionException re, BitSet follow) throws RecognitionException {
@@ -216,9 +218,11 @@ tableName
 @after { gParent.popMsg(state); }
     :
     db=identifier DOT tab=identifier
+    {tables.add(new ImmutablePair<>($db.text, $tab.text));}
     -> ^(TOK_TABNAME $db $tab)
     |
     tab=identifier
+    {tables.add(new ImmutablePair<>(null, $tab.text));}
     -> ^(TOK_TABNAME $tab)
     ;
 

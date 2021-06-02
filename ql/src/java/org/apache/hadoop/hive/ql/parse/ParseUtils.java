@@ -99,6 +99,7 @@ public final class ParseUtils {
         // It is a view
         ctx.addViewTokenRewriteStream(viewFullyQualifiedName, parseResult.getTokenRewriteStream());
       }
+      ctx.setParsedTables(parseResult.getTables());
     }
     ASTNode tree = parseResult.getTree();
     tree = findRootNonNullToken(tree);
