@@ -7375,7 +7375,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       String exInfo = "Got exception: " + e.getClass().getName() + " " + e.getMessage();
       LOG.error(exInfo, e);
       throw handleException(e).throwIfInstance(MetaException.class)
-          .convertToMetaExceptionIfInstance(exInfo, InvalidObjectException.class, NoSuchObjectException.class)
+          .toMetaExceptionIfInstance(exInfo, InvalidObjectException.class, NoSuchObjectException.class)
           .defaultTException();
     }
     return ret;
@@ -7426,7 +7426,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       String exInfo = "Got exception: " + e.getClass().getName() + " " + e.getMessage();
       LOG.error(exInfo, e);
       throw handleException(e).throwIfInstance(MetaException.class)
-          .convertToMetaExceptionIfInstance(exInfo, InvalidObjectException.class, NoSuchObjectException.class)
+          .toMetaExceptionIfInstance(exInfo, InvalidObjectException.class, NoSuchObjectException.class)
           .defaultTException();
     }
     return ret;
@@ -7446,7 +7446,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       String exInfo = "Got exception: " + e.getClass().getName() + " " + e.getMessage();
       LOG.error(exInfo, e);
       throw handleException(e).throwIfInstance(MetaException.class)
-          .convertToMetaExceptionIfInstance(exInfo, NoSuchObjectException.class)
+          .toMetaExceptionIfInstance(exInfo, NoSuchObjectException.class)
           .defaultTException();
     }
     return ret;
@@ -7476,7 +7476,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       String exInfo = "Got exception: " + e.getClass().getName() + " " + e.getMessage();
       LOG.error(exInfo, e);
       throw handleException(e).throwIfInstance(MetaException.class)
-          .convertToMetaExceptionIfInstance(exInfo, InvalidObjectException.class, NoSuchObjectException.class)
+          .toMetaExceptionIfInstance(exInfo, InvalidObjectException.class, NoSuchObjectException.class)
           .defaultTException();
     }
     return ret;
@@ -7504,7 +7504,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       String exInfo = "Got exception: " + e.getClass().getName() + " " + e.getMessage();
       LOG.error(exInfo, e);
       throw handleException(e).throwIfInstance(MetaException.class)
-          .convertToMetaExceptionIfInstance(exInfo, NoSuchObjectException.class)
+          .toMetaExceptionIfInstance(exInfo, NoSuchObjectException.class)
           .defaultTException();
     }
     return ret;
@@ -7597,7 +7597,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       String exInfo = "Got exception: " + e.getClass().getName() + " " + e.getMessage();
       LOG.error(exInfo, e);
       throw handleException(e).throwIfInstance(MetaException.class)
-          .convertToMetaExceptionIfInstance(exInfo, InvalidObjectException.class, NoSuchObjectException.class)
+          .toMetaExceptionIfInstance(exInfo, InvalidObjectException.class, NoSuchObjectException.class)
           .defaultTException();
     }
     return ret;

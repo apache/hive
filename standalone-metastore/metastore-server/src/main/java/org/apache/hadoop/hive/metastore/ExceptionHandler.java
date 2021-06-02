@@ -29,7 +29,7 @@ import static java.util.Objects.requireNonNull;
  * differently for some transformations of exceptions.
  */
 public final class ExceptionHandler {
-  // the input exception
+  // The exception needs to handle
   private final Exception e;
 
   private ExceptionHandler(Exception e) {
@@ -66,32 +66,34 @@ public final class ExceptionHandler {
   }
 
   /**
-   * Converts the input exception if it is the instance of class {@param source} to
-   * the target instance of class {@param target} and throws.
+   * Converts the input exception to the target instance of class {@param target},
+   * if the input exception is the instance of class {@param source}, throws the
+   * converted target exception.
    */
   public <S extends Exception, T extends TException> ExceptionHandler
       convertIfInstance(Class<S> source, Class<T> target) throws T {
     T targetException = null;
     if (source.isInstance(e)) {
       try {
-        targetException = JavaUtils.newInstance(target, new Class[]{String.class}, new Object[]{e.getMessage()});
+        targetException = JavaUtils.newInstance(target,
+            new Class[]{String.class}, new Object[]{e.getMessage()});
       } catch (Exception ex) {
-        // this should not happen
+        // This should not happen
         throw new RuntimeException(ex);
       }
     }
     if (targetException != null) {
       throw targetException;
     }
-
     return this;
   }
 
   /**
-   * Converts the input exception if it is the instance of the one in the input classes
-   * to MetaException with the given message and throws.
+   * Creates the MetaException with the given message,
+   * if the input exception is the instance of the one in the input classes,
+   * throws the created MetaException.
    */
-  public ExceptionHandler convertToMetaExceptionIfInstance(String message, Class<?>... clzs)
+  public ExceptionHandler toMetaExceptionIfInstance(String message, Class<?>... clzs)
       throws MetaException {
     if (clzs != null && clzs.length > 0) {
       for (Class<?> clz : clzs) {
@@ -144,7 +146,6 @@ public final class ExceptionHandler {
     if (e instanceof RuntimeException) {
       return (RuntimeException) e;
     }
-
     return new RuntimeException(e);
   }
 
