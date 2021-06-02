@@ -33,6 +33,7 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -13881,15 +13882,14 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private void processScheduledQueryPolicies(ScheduledQueryProgressInfo info) {
+  private void processScheduledQueryPolicies(ScheduledQueryProgressInfo info) throws MetaException {
     if (info.getState() != QueryState.FAILED && info.getState() != QueryState.TIMED_OUT) {
       return;
     }
     int autoDisableCount = MetastoreConf.getIntVar(conf, ConfVars.SCHEDULED_QUERIES_AUTODISABLE_COUNT);
-    int expSkipCount =
-        MetastoreConf.getIntVar(conf, ConfVars.SCHEDULED_QUERIES_EXPONENTIAL_SKIP_OPPORTUNITIES_AFTER_FAILURES);
+    int skipCount = MetastoreConf.getIntVar(conf, ConfVars.SCHEDULED_QUERIES_SKIP_OPPORTUNITIES_AFTER_FAILURES);
 
-    int lastN = Math.max(autoDisableCount, expSkipCount);
+    int lastN = Math.max(autoDisableCount, skipCount);
     if (lastN <= 0) {
       // disabled
       return;
@@ -13921,17 +13921,26 @@ public class ObjectStore implements RawStore, Configurable {
         LOG.info("Disabling {} after {} consequtive failures", schq.getScheduleKey(), autoDisableCount);
         schq.setEnabled(false);
       }
-      if (expSkipCount > 0) {
-
+      if (skipCount > 0) {
+        int n = Math.min(skipCount, failureCount) - 1;
+        Integer scheduledTime = schq.getNextExecution();
+        for (int i = 0; i < n; i++) {
+          if (scheduledTime != null) {
+            scheduledTime = computeNextExecutionTime(schq.getSchedule(), scheduledTime);
+          }
+        }
+        if (scheduledTime != null) {
+          schq.setNextExecution(scheduledTime);
+        }
       }
-    } catch (Exception e) {
-      LOG.info("Unexpected exception while processing schq policies", e);
+    } catch (InvalidInputException e) {
+      throw new MetaException("Unexpected InvalidInputException: " + e.getMessage());
+
     } finally {
       if (!commited) {
         rollbackTransaction();
       }
     }
-
   }
 
   /**
@@ -14083,6 +14092,16 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private Integer computeNextExecutionTime(String schedule) throws InvalidInputException {
+    ZonedDateTime now = ZonedDateTime.now();
+    return computeNextExecutionTime(schedule, now);
+  }
+
+  private Integer computeNextExecutionTime(String schedule, Integer time) throws InvalidInputException {
+    ZonedDateTime now = ZonedDateTime.ofInstant(Instant.ofEpochSecond(time), ZoneId.systemDefault());
+    return computeNextExecutionTime(schedule, now);
+  }
+
+  private Integer computeNextExecutionTime(String schedule, ZonedDateTime time) throws InvalidInputException {
     CronType cronType = CronType.QUARTZ;
 
     CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(cronType);
@@ -14090,9 +14109,8 @@ public class ObjectStore implements RawStore, Configurable {
 
     // Get date for last execution
     try {
-      ZonedDateTime now = ZonedDateTime.now();
       ExecutionTime executionTime = ExecutionTime.forCron(parser.parse(schedule));
-      Optional<ZonedDateTime> nextExecution = executionTime.nextExecution(now);
+      Optional<ZonedDateTime> nextExecution = executionTime.nextExecution(time);
       if (!nextExecution.isPresent()) {
         // no valid next execution time.
         return null;
