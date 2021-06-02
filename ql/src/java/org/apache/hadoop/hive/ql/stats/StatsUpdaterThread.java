@@ -23,8 +23,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -98,7 +96,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
   private BlockingQueue<AnalyzeWork> workQueue;
   private Thread[] workers;
 
-  private Set<String> dbsBeingFailedOver;
+  private Map<String, Boolean> dbsBeingFailedOver;
 
   @Override
   public void setConf(Configuration conf) {
@@ -149,7 +147,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     txnHandler = TxnUtils.getTxnStore(conf);
     rs = RawStoreProxy.getProxy(conf, conf,
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.RAW_STORE_IMPL), threadId);
-    dbsBeingFailedOver = new HashSet<>();
+    dbsBeingFailedOver = new ConcurrentHashMap<>();
     for (int i = 0; i < workers.length; ++i) {
       workers[i] = new Thread(new WorkerRunnable(conf, user));
       workers[i].setDaemon(true);
@@ -641,12 +639,12 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     try {
       TableName tb = req.tableName;
       String dbName = MetaStoreUtils.prependCatalogToDbName(tb.getCat(),tb.getDb(), conf);
-      if (dbsBeingFailedOver.contains(dbName)
-              || MetaStoreUtils.isDbBeingFailedOver(rs.getDatabase(tb.getCat(), tb.getDb()))) {
-        if (!dbsBeingFailedOver.contains(dbName)) {
-          dbsBeingFailedOver.add(dbName);
-        }
-        LOG.debug("Skipping table {}", tb.getTable());
+      if (isDbPresentInFailoverSet(dbName)) {
+        LOG.info("Skipping table: {} " + tb.getTable());
+        return true;
+      } else if (MetaStoreUtils.isDbBeingFailedOver(rs.getDatabase(tb.getCat(), tb.getDb()))) {
+        dbsBeingFailedOver.put(dbName, true);
+        LOG.info("Skipping table: {} " + tb.getTable());
         return true;
       }
       cmd = req.buildCommand();
@@ -668,6 +666,10 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
       markAnalyzeDone(req);
     }
     return true;
+  }
+
+  private synchronized boolean isDbPresentInFailoverSet(String dbName) {
+    return dbsBeingFailedOver.containsKey(dbName) && dbsBeingFailedOver.get(dbName);
   }
 
   public class WorkerRunnable implements Runnable {

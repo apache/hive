@@ -28,6 +28,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -160,7 +161,6 @@ public class PartitionManagementTask implements MetastoreTaskThread {
         if (candidateTables.isEmpty()) {
           return;
         }
-
         // TODO: Msck creates MetastoreClient (MSC) on its own. MSC creation is expensive. Sharing MSC also
         // will not be safe unless synchronized MSC is used. Using synchronized MSC in multi-threaded context also
         // defeats the purpose of thread pooled msck repair.
@@ -173,8 +173,7 @@ public class PartitionManagementTask implements MetastoreTaskThread {
         LOG.info("Found {} candidate tables for partition discovery", candidateTables.size());
         setupMsckPathInvalidation();
         Configuration msckConf = Msck.getMsckConf(conf);
-        databasesToSkip.clear();
-        Set<String> dbsBeingFailedOver = new HashSet<>();
+        Map<String, Boolean> dbsBeingFailedOver = new ConcurrentHashMap<>();
         for (Table table : candidateTables) {
           qualifiedTableName = Warehouse.getCatalogQualifiedTableName(table);
           long retentionSeconds = getRetentionPeriodInSeconds(table);
@@ -237,11 +236,11 @@ public class PartitionManagementTask implements MetastoreTaskThread {
     private Configuration conf;
     private String qualifiedTableName;
     private CountDownLatch countDownLatch;
-    private Set<String> dbsBeingFailedOver;
+    private Map<String, Boolean> dbsBeingFailedOver;
     private IMetaStoreClient msc;
 
     MsckThread(MsckInfo msckInfo, Configuration conf, String qualifiedTableName,
-               CountDownLatch countDownLatch, Set<String> dbsBeingFailedOver, IMetaStoreClient msc) {
+               CountDownLatch countDownLatch, Map<String, Boolean> dbsBeingFailedOver, IMetaStoreClient msc) {
       this.msckInfo = msckInfo;
       this.conf = conf;
       this.qualifiedTableName = qualifiedTableName;
@@ -250,15 +249,20 @@ public class PartitionManagementTask implements MetastoreTaskThread {
       this.msc = msc;
     }
 
+    private synchronized boolean isDbPresentInFailoverSet(String dbName) {
+      return dbsBeingFailedOver.containsKey(dbName) && dbsBeingFailedOver.get(dbName);
+    }
+
     @Override
     public void run() {
       try {
         String dbName = MetaStoreUtils.prependCatalogToDbName(msckInfo.getCatalogName(), msckInfo.getDbName(), conf);
-        if (dbsBeingFailedOver.contains(dbName) ||
-                MetaStoreUtils.isDbBeingFailedOver(msc.getDatabase(msckInfo.getCatalogName(), msckInfo.getDbName()))) {
-          if (!dbsBeingFailedOver.contains(dbName)) {
-            dbsBeingFailedOver.add(dbName);
-          }
+        if (isDbPresentInFailoverSet(dbName)) {
+          LOG.info("Skipping table: {} " + msckInfo.getTableName());
+          return;
+        } else if (MetaStoreUtils.isDbBeingFailedOver
+                (msc.getDatabase(msckInfo.getCatalogName(), msckInfo.getDbName()))) {
+          dbsBeingFailedOver.put(dbName, true);
           LOG.info("Skipping table: {} " + msckInfo.getTableName());
           return;
         }
