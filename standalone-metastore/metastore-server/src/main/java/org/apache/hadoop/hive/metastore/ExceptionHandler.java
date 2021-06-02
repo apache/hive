@@ -24,7 +24,12 @@ import org.apache.thrift.TException;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * Provides a simplified way of handling complex exceptions instead of catching the targeted exceptions
+ * differently for some transformations of exceptions.
+ */
 public final class ExceptionHandler {
+  // the input exception
   private final Exception e;
 
   private ExceptionHandler(Exception e) {
@@ -37,7 +42,7 @@ public final class ExceptionHandler {
   }
 
   /**
-   * Throws if the input e is the instance of the class clz
+   * Throws if the input exception is the instance of the input class
    */
   public <T extends Exception> ExceptionHandler
       throwIfInstance(Class<T> t) throws T {
@@ -48,35 +53,28 @@ public final class ExceptionHandler {
   }
 
   /**
-   * Throws if the input e is the instance of the class clzt or  class clze in order
+   * Throws if the input exception is the instance of the one in the input classes
    */
-  public <T extends Exception, E extends Exception> ExceptionHandler
-      throwIfInstance(Class<T> t, Class<E> e) throws T, E {
-    throwIfInstance(t);
-    throwIfInstance(e);
+  public <T extends Exception> ExceptionHandler
+      throwIfInstance(Class ...te) throws T {
+    if (te != null) {
+      for (Class t : te) {
+        throwIfInstance(t);
+      }
+    }
     return this;
   }
 
   /**
-   * Throws if the input e is the instance of the class clzt or  clze or clzc in order
+   * Converts the input exception if it is the instance of class {@param source} to
+   * the target instance of class {@param target} and throws.
    */
-  public <T extends Exception, E extends Exception, C extends Exception> ExceptionHandler
-      throwIfInstance(Class<T> t, Class<E> e, Class<C> c) throws T, E, C {
-    throwIfInstance(t);
-    throwIfInstance(e);
-    throwIfInstance(c);
-    return this;
-  }
-
-  /**
-   * Converts the input e if it is the instance of class from to the instance of class to and throws
-   */
-  public <T extends Exception, D extends TException> ExceptionHandler
-      convertIfInstance(Class<T> from, Class<D> to) throws D {
-    D targetException = null;
-    if (from.isInstance(e)) {
+  public <S extends Exception, T extends TException> ExceptionHandler
+      convertIfInstance(Class<S> source, Class<T> target) throws T {
+    T targetException = null;
+    if (source.isInstance(e)) {
       try {
-        targetException = JavaUtils.newInstance(to, new Class[]{String.class}, new Object[]{e.getMessage()});
+        targetException = JavaUtils.newInstance(target, new Class[]{String.class}, new Object[]{e.getMessage()});
       } catch (Exception ex) {
         // this should not happen
         throw new RuntimeException(ex);
@@ -90,14 +88,15 @@ public final class ExceptionHandler {
   }
 
   /**
-   * Converts the input e if it is the instance of classes to MetaException with the given message
+   * Converts the input exception if it is the instance of the one in the input classes
+   * to MetaException with the given message and throws.
    */
-  public ExceptionHandler convertToMetaExIfInstance(String message, Class<?>... classes)
+  public ExceptionHandler convertToMetaExceptionIfInstance(String message, Class<?>... clzs)
       throws MetaException {
-    if (classes != null && classes.length > 0) {
-      for (Class<?> clz : classes) {
+    if (clzs != null && clzs.length > 0) {
+      for (Class<?> clz : clzs) {
         if (clz.isInstance(e)) {
-          // throw the exception if matches
+          // throw MetaException if matches
           throw new MetaException(message);
         }
       }
@@ -105,19 +104,30 @@ public final class ExceptionHandler {
     return this;
   }
 
+  /**
+   * Throws if the input exception is the instance of MetaException, NoSuchObjectException or TException,
+   * otherwise converts the exception to the MetaException and throws.
+   */
   public static TException rethrowException(Exception e) throws TException {
-    return handleException(e)
+    throw handleException(e)
         .throwIfInstance(MetaException.class, NoSuchObjectException.class)
         .throwIfInstance(TException.class)
         .defaultMetaException();
   }
 
+  /**
+   * Throws if the input exception is the instance of MetaException or NoSuchObjectException,
+   * otherwise converts the exception to the MetaException and throws.
+   */
   public static void throwMetaException(Exception e) throws MetaException, NoSuchObjectException {
     throw handleException(e)
         .throwIfInstance(MetaException.class, NoSuchObjectException.class)
         .defaultMetaException();
   }
 
+  /**
+   * Converts the input exception to MetaException and returns.
+   */
   public static MetaException newMetaException(Exception e) {
     if (e instanceof MetaException) {
       return (MetaException) e;
@@ -127,6 +137,9 @@ public final class ExceptionHandler {
     return me;
   }
 
+  /**
+   * Converts the input exception to RuntimeException and returns.
+   */
   public RuntimeException defaultRuntimeException() {
     if (e instanceof RuntimeException) {
       return (RuntimeException) e;
