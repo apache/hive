@@ -399,13 +399,29 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     return getOpenTxnsList(false).toOpenTxnsResponse(excludeTxnTypes);
   }
 
-  private OpenTxnList getOpenTxnsList(boolean infoFields) throws MetaException {
+  private GetOpenTxnsResponse getOpenTxns(Connection dbConn) throws MetaException {
+    return getOpenTxnsList(false, dbConn).toOpenTxnsResponse(Arrays.asList(TxnType.READ_ONLY));
+  }
+
+  private OpenTxnList getOpenTxnsList(boolean infoFileds) throws MetaException {
+    Connection dbConn = null;
+    try {
+      dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+      return getOpenTxnsList(infoFileds, dbConn);
+    } catch (SQLException e) {
+      throw new MetaException(
+          "Unable to get a connection: " + getMessage(e) + StringUtils.stringifyException(e));
+    } finally {
+      closeDbConn(dbConn);
+    }
+  }
+
+  private OpenTxnList getOpenTxnsList(boolean infoFields, Connection dbConn) throws MetaException {
     try {
       // We need to figure out the current transaction number and the list of
       // open transactions.  To avoid needing a transaction on the underlying
       // database we'll look at the current transaction number first.  If it
       // subsequently shows up in the open list that's ok.
-      Connection dbConn = null;
       Statement stmt = null;
       ResultSet rs = null;
       try {
@@ -416,7 +432,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
          * adding corresponding entries into TXNS.  The reason is that any txnid below HWM
          * is either in TXNS and thus considered open (Open/Aborted) or it's considered Committed.
          */
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         String s = "SELECT \"NTXN_NEXT\" - 1 FROM \"NEXT_TXN_ID\"";
         LOG.debug("Going to execute query <" + s + ">");
@@ -458,10 +473,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new MetaException("Unable to select from transaction database, "
           + StringUtils.stringifyException(e));
       } finally {
-        close(rs, stmt, dbConn);
+        close(rs, stmt, null);
       }
     } catch (RetryException e) {
-      return getOpenTxnsList(infoFields);
+      return getOpenTxnsList(infoFields, dbConn);
     }
   }
 
@@ -1479,7 +1494,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               quoteString(names[1]), writeId);
       rs = pst.executeQuery();
       if (rs.next()) {
-        return TxnUtils.createValidReadTxnList(getOpenTxns(), rs.getLong(1));
+        long txnId = rs.getLong(1);
+        return TxnUtils.createValidReadTxnList(getOpenTxns(), txnId);
       }
       throw new MetaException("invalid write id " + writeId + " for table " + fullTableName);
     } finally {
@@ -1519,7 +1535,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           validTxnList = getValidTxnList(dbConn, rqst.getFullTableNames().get(0), rqst.getWriteId());
         } else {
           // Passing 0 for currentTxn means, this validTxnList is not wrt to any txn
-          validTxnList = TxnUtils.createValidReadTxnList(getOpenTxns(), 0);
+          validTxnList = TxnUtils.createValidReadTxnList(getOpenTxns(dbConn), 0);
         }
 
         // Get the valid write id list for all the tables read by the current txn
