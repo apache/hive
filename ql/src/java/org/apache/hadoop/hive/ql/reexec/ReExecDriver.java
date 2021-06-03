@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.reexec;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -160,9 +161,11 @@ public class ReExecDriver implements IDriver {
       LOG.info("Execution #{} of query", executionIndex);
       CommandProcessorResponse cpr = null;
       CommandProcessorException cpe = null;
+      Optional<PlanMapper> oldPlanMapper = Optional.empty();
       try {
         cpr = coreDriver.run();
-        afterExecute(coreDriver.getPlanMapper(), cpr != null);
+        oldPlanMapper = Optional.of(coreDriver.getPlanMapper());
+        afterExecute(oldPlanMapper.get(), cpr != null);
       } catch (CommandProcessorException e) {
         cpe = e;
       }
@@ -188,7 +191,7 @@ public class ReExecDriver implements IDriver {
       }
 
       PlanMapper newPlanMapper = coreDriver.getPlanMapper();
-      if (!explainReOptimization && !shouldReExecuteAfterCompile(oldPlanMapper, newPlanMapper)) {
+      if (!explainReOptimization && !shouldReExecuteAfterCompile(oldPlanMapper.orElse(null), newPlanMapper)) {
         LOG.info("re-running the query would probably not yield better results; returning with last error");
         // FIXME: retain old error; or create a new one?
         return cpr;
