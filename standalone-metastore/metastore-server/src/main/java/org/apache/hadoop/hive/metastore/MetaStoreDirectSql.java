@@ -915,13 +915,14 @@ class MetaStoreDirectSql {
     List<Object> sqlResult = executeWithArray(query, params, queryText, ((max == null)  ? -1 : max.intValue()));
     long queryTime = doTrace ? System.nanoTime() : 0;
     MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
+    final List<Long> result;
     if (sqlResult.isEmpty()) {
-      return Collections.emptyList(); // no partitions, bail early.
-    }
-
-    List<Long> result = new ArrayList<>(sqlResult.size());
-    for (Object fields : sqlResult) {
-      result.add(MetastoreDirectSqlUtils.extractSqlLong(fields));
+      result = Collections.emptyList(); // no partitions, bail early.
+    } else {
+      result = new ArrayList<>(sqlResult.size());
+      for (Object fields : sqlResult) {
+        result.add(MetastoreDirectSqlUtils.extractSqlLong(fields));
+      }
     }
     query.closeAll();
     return result;
@@ -1454,12 +1455,14 @@ class MetaStoreDirectSql {
       }
     };
     List<Object[]> list = Batchable.runBatched(batchSize, colNames, b);
+    final ColumnStatistics result;
     if (list.isEmpty()) {
-      return null;
+      result = null;
+    } else {
+      ColumnStatisticsDesc csd = new ColumnStatisticsDesc(true, dbName, tableName);
+      csd.setCatName(catName);
+      result = makeColumnStats(list, csd, 0, engine);
     }
-    ColumnStatisticsDesc csd = new ColumnStatisticsDesc(true, dbName, tableName);
-    csd.setCatName(catName);
-    ColumnStatistics result = makeColumnStats(list, csd, 0, engine);
     b.closeAllQueries();
     return result;
   }
