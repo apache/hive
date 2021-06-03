@@ -22,6 +22,7 @@ import java.util.Properties;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHook;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContext;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.slf4j.Logger;
@@ -57,18 +58,12 @@ public class HiveIcebergQueryLifeTimeHook implements QueryLifeTimeHook {
 
   private void checkAndRollbackIcebergCTAS(QueryLifeTimeHookContext ctx) {
     HiveConf conf = ctx.getHiveConf();
-    String queryId = conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
-    if (conf.getBoolean(String.format(InputFormatConfig.IS_CTAS_QUERY_TEMPLATE, queryId), false)) {
-      try {
-        String tableName = conf.get(String.format(InputFormatConfig.CTAS_TABLE_NAME_TEMPLATE, queryId));
-        LOG.info("Dropping the following CTAS target table as part of rollback: {}", tableName);
-        Properties props = new Properties();
-        props.put(Catalogs.NAME, tableName);
-        Catalogs.dropTable(conf, props);
-      } finally {
-        conf.unset(String.format(InputFormatConfig.IS_CTAS_QUERY_TEMPLATE, queryId));
-        conf.unset(String.format(InputFormatConfig.CTAS_TABLE_NAME_TEMPLATE, queryId));
-      }
+    if (Boolean.parseBoolean(SessionStateUtil.getProperty(conf, InputFormatConfig.IS_CTAS_QUERY))) {
+      String tableName = SessionStateUtil.getProperty(conf, InputFormatConfig.CTAS_TABLE_NAME);
+      LOG.info("Dropping the following CTAS target table as part of rollback: {}", tableName);
+      Properties props = new Properties();
+      props.put(Catalogs.NAME, tableName);
+      Catalogs.dropTable(conf, props);
     }
   }
 }

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hive.common.util.Ref;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
 import java.io.IOException;
@@ -101,9 +102,6 @@ import com.google.common.annotations.VisibleForTesting;
  */
 @SuppressWarnings({"serial"})
 public class TezTask extends Task<TezWork> {
-
-  public static final String HIVE_TEZ_COMMIT_JOB_ID_PREFIX = "hive.tez.commit.job.id.";
-  public static final String HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX = "hive.tez.commit.task.count.";
 
   private static final String CLASS_NAME = TezTask.class.getName();
   private static final String JOB_ID_TEMPLATE = "job_%s%d_%s";
@@ -357,7 +355,6 @@ public class TezTask extends Task<TezWork> {
   }
 
   private void collectCommitInformation(TezWork work) throws IOException, TezException {
-    HiveConf sessionConf = SessionState.get().getConf();
     for (BaseWork w : work.getAllWork()) {
       JobConf jobConf = workToConf.get(w);
       Vertex vertex = workToVertex.get(w);
@@ -388,20 +385,25 @@ public class TezTask extends Task<TezWork> {
                   tables.add(entry.getKey().substring("iceberg.mr.serialized.table.".length()));
                 }
               }
-              // save information for each target table (jobID, task num, query state)
+              // find iceberg props in jobConf as they can be needed, but not available, during job commit
+              Map<String, String> icebergProperties = new HashMap<>();
+              jobConf.forEach(e -> {
+                // don't copy the serialized tables, they're not needed anymore and take up lots of space
+                if (e.getKey().startsWith("iceberg.mr.") && !e.getKey().startsWith("iceberg.mr.serialized.table.")) {
+                  icebergProperties.put(e.getKey(), e.getValue());
+                }
+              });
+              // save information for each target table (jobID, task num)
               for (String table : tables) {
-                sessionConf.set(HIVE_TEZ_COMMIT_JOB_ID_PREFIX + table, jobIdStr);
-                sessionConf.setInt(HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX + table,
-                    status.getProgress().getSucceededTaskCount());
+                SessionStateUtil.newCommitInfo()
+                    .withTableName(table)
+                    .withJobID(jobIdStr)
+                    .withTaskNum(status.getProgress().getSucceededTaskCount())
+                    .withProps(icebergProperties)
+                    .save(queryState);
               }
             }
           }
-          // save iceberg mr props as they can be needed during job commit (e.g. serialized table)
-          jobConf.forEach(e -> {
-            if (e.getKey().startsWith("iceberg.mr.")) {
-              sessionConf.set(e.getKey(), e.getValue());
-            }
-          });
         } else {
           LOG.warn("Table location not found in config for base work: " + w.getName());
         }

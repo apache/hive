@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
@@ -38,8 +39,8 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
-import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.JobContextImpl;
@@ -445,20 +446,12 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
       throws MetaException {
     String tableName = TableIdentifier.of(table.getDbName(), table.getTableName()).toString();
     JobContext jobContext = getJobContextForCommitOrAbort(tableName, overwrite);
-    boolean failure = false;
     try {
       OutputCommitter committer = new HiveIcebergOutputCommitter();
       committer.commitJob(jobContext);
     } catch (Exception e) {
-      failure = true;
       LOG.error("Error while trying to commit job", e);
       throw new MetaException(StringUtils.stringifyException(e));
-    } finally {
-      // if there's a failure, the configs will still be needed in rollbackInsertTable
-      if (!failure) {
-        // avoid config pollution with prefixed/suffixed keys
-        cleanCommitConfig(tableName);
-      }
     }
   }
 
@@ -474,28 +467,24 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
     } catch (IOException e) {
       LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", e);
       // no throwing here because the original commitInsertTable exception should be propagated
-    } finally {
-      // avoid config pollution with prefixed/suffixed keys
-      cleanCommitConfig(tableName);
     }
   }
 
-  private void cleanCommitConfig(String tableName) {
-    conf.unset(TezTask.HIVE_TEZ_COMMIT_JOB_ID_PREFIX + tableName);
-    conf.unset(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX + tableName);
-    conf.unset(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableName);
-    conf.unset(InputFormatConfig.OUTPUT_TABLES);
-  }
-
-  private JobContext getJobContextForCommitOrAbort(String tableName, boolean overwrite) {
+  private JobContext getJobContextForCommitOrAbort(String tableName, boolean overwrite) throws MetaException {
     JobConf jobConf = new JobConf(conf);
-    JobID jobID = JobID.forName(jobConf.get(TezTask.HIVE_TEZ_COMMIT_JOB_ID_PREFIX + tableName));
-    jobConf.setBoolean(InputFormatConfig.IS_OVERWRITE, overwrite);
+    Optional<SessionStateUtil.CommitInfo> commitInfo = SessionStateUtil.getCommitInfo(jobConf, tableName);
+    if (commitInfo.isPresent()) {
+      JobID jobID = JobID.forName(commitInfo.get().getJobIdStr());
+      commitInfo.get().getProps().forEach(jobConf::set);
+      jobConf.setBoolean(InputFormatConfig.IS_OVERWRITE, overwrite);
 
-    // we should only commit this current table because
-    // for multi-table inserts, this hook method will be called sequentially for each target table
-    jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
+      // we should only commit this current table because
+      // for multi-table inserts, this hook method will be called sequentially for each target table
+      jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
 
-    return new JobContextImpl(jobConf, jobID, null);
+      return new JobContextImpl(jobConf, jobID, null);
+    } else {
+      throw new MetaException("Unable to find commit information in query state for table: " + tableName);
+    }
   }
 }

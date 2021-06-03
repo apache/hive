@@ -37,7 +37,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.tez.TezTask;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.OutputCommitter;
@@ -191,13 +191,13 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .stopOnFailure()
           .executeWith(tableExecutor)
           .run(output -> {
-            Table table = HiveIcebergStorageHandler.table(jobConf, output);
-            if (table != null) {
+            if (SessionStateUtil.getResource(jobConf, output) instanceof Table) {
+              Table table = (Table) SessionStateUtil.getResource(jobConf, output);
               String catalogName = HiveIcebergStorageHandler.catalogName(jobConf, output);
               jobLocations.add(generateJobLocation(table.location(), jobConf, jobContext.getJobID()));
               commitTable(table.io(), fileExecutor, jobContext, output, table.location(), catalogName);
             } else {
-              LOG.info("CommitJob found no serialized table in config for table: {}. Skipping job commit.", output);
+              LOG.info("CommitJob found no table object in query state for table: {}. Skipping job commit.", output);
             }
           });
     } finally {
@@ -313,15 +313,14 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     LOG.info("Committing job has started for table: {}, using location: {}",
         table, generateJobLocation(location, conf, jobContext.getJobID()));
 
-    int numTasks = conf.getInt(TezTask.HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX + name, -1);
-    if (numTasks == -1) {
+    int numTasks = SessionStateUtil.getCommitInfo(conf, name).map(info -> info.getTaskNum()).orElseGet(() -> {
       // Fallback logic, if number of tasks are not available in the config
       // If there are reducers, then every reducer will generate a result file.
       // If this is a map only task, then every mapper will generate a result file.
-      LOG.info("Number of tasks not available in config for jobID: {}, table: {}. Falling back to jobConf " +
+      LOG.info("Number of tasks not available in session state for jobID: {}, table: {}. Falling back to jobConf " +
           "numReduceTasks/numMapTasks", jobContext.getJobID(), name);
-      numTasks = conf.getNumReduceTasks() > 0 ? conf.getNumReduceTasks() : conf.getNumMapTasks();
-    }
+      return conf.getNumReduceTasks() > 0 ? conf.getNumReduceTasks() : conf.getNumMapTasks();
+    });
     Collection<DataFile> dataFiles = dataFiles(numTasks, executor, location, jobContext, io, true);
 
     boolean isOverwrite = conf.getBoolean(InputFormatConfig.IS_OVERWRITE, false);
