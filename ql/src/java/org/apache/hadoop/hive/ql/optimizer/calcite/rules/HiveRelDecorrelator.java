@@ -1361,7 +1361,8 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     // For SEMI/ANTI join decorrelate it's input directly,
     // because the correlate variables can only be propagated from
     // the left side, which is not supported yet.
-    if (rel.getJoinType().isOuterJoin()) {
+    if (cm != null && cm.mapRefRelToCorRef != null &&
+      cm.mapRefRelToCorRef.containsKey(rel) && rel.getJoinType().isOuterJoin()) {
       throw new UnsupportedOperationException("Correlated subqueries in outer join conditions not supported yet." +
         " Join condition: " + rel.getCondition());
     }
