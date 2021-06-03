@@ -280,7 +280,8 @@ public class StatObjectConverter {
     return setStmt.toString();
   }
 
-  public static void getUpdatedColumnStatement(MPartitionColumnStatistics mStatsObj, PreparedStatement pst) throws SQLException {
+  public static void initUpdatedColumnStatement(MPartitionColumnStatistics mStatsObj,
+                                                      PreparedStatement pst) throws SQLException {
     int colIdx = 1;
     if (mStatsObj.getAvgColLen() != null) {
       pst.setObject(colIdx++, mStatsObj.getAvgColLen());

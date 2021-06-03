@@ -207,7 +207,7 @@ class DirectSqlUpdateStat {
               + " \"COLUMN_NAME\" = " +  quoteString(mPartitionColumnStatistics.getColName());
       try {
         pst = dbConn.prepareStatement(update);
-        StatObjectConverter.getUpdatedColumnStatement(mPartitionColumnStatistics, pst);
+        StatObjectConverter.initUpdatedColumnStatement(mPartitionColumnStatistics, pst);
         LOG.info("Going to execute update " + update);
         int numUpdate = pst.executeUpdate();
         if (numUpdate != 1) {
