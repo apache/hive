@@ -105,6 +105,7 @@ public class TezTask extends Task<TezWork> {
 
   private static final String CLASS_NAME = TezTask.class.getName();
   private static final String JOB_ID_TEMPLATE = "job_%s%d_%s";
+  private static final String ICEBERG_SERIALIZED_TABLE_PREFIX = "iceberg.mr.serialized.table.";
   private static final String ICEBERG_TABLE_LOCATION = "iceberg.mr.table.location";
   private static transient Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
@@ -381,26 +382,25 @@ public class TezTask extends Task<TezWork> {
               // get all target tables this vertex wrote to
               List<String> tables = new ArrayList<>();
               for (Map.Entry<String, String> entry : jobConf) {
-                if (entry.getKey().startsWith("iceberg.mr.serialized.table.")) {
-                  tables.add(entry.getKey().substring("iceberg.mr.serialized.table.".length()));
+                if (entry.getKey().startsWith(ICEBERG_SERIALIZED_TABLE_PREFIX)) {
+                  tables.add(entry.getKey().substring(ICEBERG_SERIALIZED_TABLE_PREFIX.length()));
                 }
               }
               // find iceberg props in jobConf as they can be needed, but not available, during job commit
               Map<String, String> icebergProperties = new HashMap<>();
               jobConf.forEach(e -> {
                 // don't copy the serialized tables, they're not needed anymore and take up lots of space
-                if (e.getKey().startsWith("iceberg.mr.") && !e.getKey().startsWith("iceberg.mr.serialized.table.")) {
+                if (e.getKey().startsWith("iceberg.mr.") && !e.getKey().startsWith(ICEBERG_SERIALIZED_TABLE_PREFIX)) {
                   icebergProperties.put(e.getKey(), e.getValue());
                 }
               });
               // save information for each target table (jobID, task num)
               for (String table : tables) {
-                SessionStateUtil.newCommitInfo()
-                    .withTableName(table)
+                SessionStateUtil.newCommitInfo(jobConf, table)
                     .withJobID(jobIdStr)
                     .withTaskNum(status.getProgress().getSucceededTaskCount())
                     .withProps(icebergProperties)
-                    .save(queryState);
+                    .save();
               }
             }
           }

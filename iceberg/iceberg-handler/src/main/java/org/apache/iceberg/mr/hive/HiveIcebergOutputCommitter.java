@@ -191,11 +191,12 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .stopOnFailure()
           .executeWith(tableExecutor)
           .run(output -> {
-            if (SessionStateUtil.getResource(jobConf, output) instanceof Table) {
-              Table table = (Table) SessionStateUtil.getResource(jobConf, output);
+            Optional<Table> table =
+                SessionStateUtil.getResource(jobConf, output).filter(o -> o instanceof Table).map(o -> (Table) o);
+            if (table.isPresent()) {
               String catalogName = HiveIcebergStorageHandler.catalogName(jobConf, output);
-              jobLocations.add(generateJobLocation(table.location(), jobConf, jobContext.getJobID()));
-              commitTable(table.io(), fileExecutor, jobContext, output, table.location(), catalogName);
+              jobLocations.add(generateJobLocation(table.get().location(), jobConf, jobContext.getJobID()));
+              commitTable(table.get().io(), fileExecutor, jobContext, output, table.get().location(), catalogName);
             } else {
               LOG.info("CommitJob found no table object in query state for table: {}. Skipping job commit.", output);
             }

@@ -34,45 +34,75 @@ public class SessionStateUtil {
   private SessionStateUtil() {
 
   }
-  
-  public static Optional<QueryState> getQueryState(Configuration conf) {
-    return Optional.ofNullable(SessionState.get())
-        .map(session -> session.getQueryState(conf.get(HiveConf.ConfVars.HIVEQUERYID.varname)));
+
+  /**
+   * @param conf Configuration object used for getting the query state, should contain the query id
+   * @param key The resource identifier
+   * @return The requested resource, or an empty Optional if either the SessionState, QueryState or the resource itself
+   * could not be found
+   */
+  public static Optional<Object> getResource(Configuration conf, String key) {
+    return getQueryState(conf).map(state -> state.getResource(key));
   }
 
-  public static Object getResource(Configuration conf, String key) {
-    return getQueryState(conf).map(state -> state.getResource(key)).orElse(null);
+  /**
+   * @param conf Configuration object used for getting the query state, should contain the query id
+   * @param key The resource identifier
+   * @return The requested string property, or an empty Optional if either the SessionState, QueryState or the
+   * resource itself could not be found, or the resource is not of type String
+   */
+  public static Optional<String> getProperty(Configuration conf, String key) {
+    return getResource(conf, key).filter(o -> o instanceof String).map(o -> (String) o);
   }
 
-  public static String getProperty(Configuration conf, String key) {
-    return (String) getResource(conf, key);
+  /**
+   * @param conf Configuration object used for getting the query state, should contain the query id
+   * @param key The resource identifier
+   * @param resource The resource to save into the QueryState
+   * @return whether operation succeeded
+   */
+  public static boolean addResource(Configuration conf, String key, Object resource) {
+    Optional<QueryState> queryState = getQueryState(conf);
+    if (queryState.isPresent()) {
+      queryState.get().addResource(key, resource);
+      return true;
+    } else {
+      return false;
+    }
   }
 
-  public static void addResource(Configuration conf, String key, Object resource) {
-    getQueryState(conf).ifPresent(state -> state.addResource(key, resource));
-  }
-
+  /**
+   * @param conf Configuration object used for getting the query state, should contain the query id
+   * @param tableName Name of the table for which the commit info should be retrieved
+   * @return the CommitInfo, or empty Optional if not present
+   */
   public static Optional<CommitInfo> getCommitInfo(Configuration conf, String tableName) {
-    return Optional.ofNullable(getResource(conf, COMMIT_INFO_PREFIX + tableName))
+    return getResource(conf, COMMIT_INFO_PREFIX + tableName)
         .filter(o -> o instanceof CommitInfo)
         .map(o -> (CommitInfo) o);
   }
 
-  public static CommitInfo newCommitInfo() {
-    return new CommitInfo();
+  public static CommitInfo newCommitInfo(Configuration conf, String tableName) {
+    return new CommitInfo(conf, tableName);
+  }
+
+  private static Optional<QueryState> getQueryState(Configuration conf) {
+    return Optional.ofNullable(SessionState.get())
+        .map(session -> session.getQueryState(conf.get(HiveConf.ConfVars.HIVEQUERYID.varname)));
   }
 
   public static class CommitInfo {
 
+    public CommitInfo(Configuration conf, String tableName) {
+      this.conf = conf;
+      this.tableName = tableName;
+    }
+
+    Configuration conf;
     String tableName;
     String jobIdStr;
     int taskNum;
     Map<String, String> props;
-
-    public CommitInfo withTableName(String tableName) {
-      this.tableName = tableName;
-      return this;
-    }
 
     public CommitInfo withJobID(String jobIdStr) {
       this.jobIdStr = jobIdStr;
@@ -89,8 +119,15 @@ public class SessionStateUtil {
       return this;
     }
 
-    public void save(QueryState queryState) {
-      queryState.addResource(COMMIT_INFO_PREFIX + tableName, this);
+    /**
+     * Saves the commit information it contains into the QueryState.
+     * Once save() has been called on the CommitInfo object, it cannot be reused.
+     * @return whether the operation succeeded
+     */
+    public boolean save() {
+      boolean success = addResource(conf, COMMIT_INFO_PREFIX + tableName, this);
+      this.conf = null; // nulling this out so as not to accidentally keep it from being GC-ed
+      return success;
     }
 
     public String getTableName() {
