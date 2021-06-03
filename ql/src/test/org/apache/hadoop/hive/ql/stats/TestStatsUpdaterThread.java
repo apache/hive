@@ -227,7 +227,6 @@ public class TestStatsUpdaterThread {
     msClient.close();
   }
 
-
   @Test
   public void testTxnPartitions() throws Exception {
     StatsUpdaterThread su = createUpdater();

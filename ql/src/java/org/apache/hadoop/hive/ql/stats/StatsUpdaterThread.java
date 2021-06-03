@@ -220,14 +220,16 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     String dbName = MetaStoreUtils.prependCatalogToDbName(cat,db, conf);
     if (!dbsToSkip.containsKey(dbName)) {
       Database database = rs.getDatabase(cat, db);
-      dbsToSkip.put(dbName, ReplUtils.isTargetOfReplication(database)
-              || MetaStoreUtils.isDbBeingFailedOver(database));
+      boolean skipDb = false;
+      if (MetaStoreUtils.isDbBeingFailedOver(database)) {
+        skipDb = true;
+        LOG.info("Skipping all the tables which belong to database: {} as it is being failed over", db);
+      } else if (ReplUtils.isTargetOfReplication(database)) {
+        skipDb = true;
+        LOG.info("Skipping all the tables which belong to replicated database: {}", db);
+      }
+      dbsToSkip.put(dbName, skipDb);
     }
-    // If the table is being replicated into,
-    // 1. the stats are also replicated from the source, so we don't need those to be calculated on the target again
-    // 2. updating stats requires a writeId to be created. Hence writeIds on source and target can get out of sync
-    // when stats are updated. That can cause consistency issues.
-
     if (dbsToSkip.get(dbName)) {
       LOG.debug("Skipping table {}", tbl);
       return null;
@@ -633,16 +635,16 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     }
     String cmd = null;
     try {
+      if (doWait) {
+        SessionState.start(ss); // This is the first call, open the session
+      }
       TableName tb = req.tableName;
       if (MetaStoreUtils.isDbBeingFailedOver(rs.getDatabase(tb.getCat(), tb.getDb()))) {
-        LOG.info("Skipping table: {} " + tb.getTable());
+        LOG.info("Skipping table: {} as it belongs to database which is being failed over." + tb.getTable());
         return true;
       }
       cmd = req.buildCommand();
       LOG.debug("Running {} based on {}", cmd, req);
-      if (doWait) {
-        SessionState.start(ss); // This is the first call, open the session
-      }
       DriverUtils.runOnDriver(conf, user, ss, cmd);
     } catch (Exception e) {
       LOG.error("Analyze command failed: " + cmd, e);

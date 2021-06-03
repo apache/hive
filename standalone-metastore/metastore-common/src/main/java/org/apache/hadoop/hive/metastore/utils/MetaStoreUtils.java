@@ -234,10 +234,7 @@ public class MetaStoreUtils {
   public static boolean isDbBeingFailedOver(Database db) {
     assert (db != null);
     Map<String, String> dbParameters = db.getParameters();
-    if ((dbParameters != null) && (dbParameters.containsKey(ReplConst.REPL_FAILOVER_ENABLED))) {
-      return ReplConst.TRUE.equals(dbParameters.get(ReplConst.REPL_FAILOVER_ENABLED));
-    }
-    return false;
+    return dbParameters != null && ReplConst.TRUE.equalsIgnoreCase(dbParameters.get(ReplConst.REPL_FAILOVER_ENABLED));
   }
 
   /**

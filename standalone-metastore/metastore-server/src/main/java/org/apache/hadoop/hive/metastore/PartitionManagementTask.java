@@ -142,10 +142,19 @@ public class PartitionManagementTask implements MetastoreTaskThread {
             String dbName = MetaStoreUtils.prependCatalogToDbName(tableMeta.getCatName(), tableMeta.getDbName(), conf);
             if (!databasesToSkip.containsKey(dbName)) {
               Database db = msc.getDatabase(tableMeta.getCatName(), tableMeta.getDbName());
-              databasesToSkip.put(dbName, isTargetOfReplication(db) || MetaStoreUtils.isDbBeingFailedOver(db));
+              boolean skipDb = false;
+              if (MetaStoreUtils.isDbBeingFailedOver(db)) {
+                skipDb = true;
+                LOG.info("Skipping all the tables which belong to database: {} as it is being failed over",
+                        tableMeta.getDbName());
+              } else if (isTargetOfReplication(db)) {
+                skipDb = true;
+                LOG.info("Skipping all the tables which belong to replicated database: {}", tableMeta.getDbName());
+              }
+              databasesToSkip.put(dbName, skipDb);
             }
             if (databasesToSkip.get(dbName)) {
-              LOG.info("Skipping table : {}", tableMeta.getTableName());
+              LOG.debug("Skipping table : {}", tableMeta.getTableName());
               continue;
             }
             Table table = msc.getTable(tableMeta.getCatName(), tableMeta.getDbName(), tableMeta.getTableName());
@@ -248,7 +257,7 @@ public class PartitionManagementTask implements MetastoreTaskThread {
     public void run() {
       try {
         if (MetaStoreUtils.isDbBeingFailedOver((msc.getDatabase(msckInfo.getCatalogName(), msckInfo.getDbName())))) {
-          LOG.info("Skipping table: {} " + msckInfo.getTableName());
+          LOG.info("Skipping table: {} as it belongs to database being failed over." + msckInfo.getTableName());
           return;
         }
         Msck msck = new Msck( true, true);
