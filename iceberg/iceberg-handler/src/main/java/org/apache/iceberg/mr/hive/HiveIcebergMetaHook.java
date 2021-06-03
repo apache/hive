@@ -446,12 +446,14 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
       throws MetaException {
     String tableName = TableIdentifier.of(table.getDbName(), table.getTableName()).toString();
     JobContext jobContext = getJobContextForCommitOrAbort(tableName, overwrite);
-    try {
-      OutputCommitter committer = new HiveIcebergOutputCommitter();
-      committer.commitJob(jobContext);
-    } catch (Exception e) {
-      LOG.error("Error while trying to commit job", e);
-      throw new MetaException(StringUtils.stringifyException(e));
+    if (jobContext != null) {
+      try {
+        OutputCommitter committer = new HiveIcebergOutputCommitter();
+        committer.commitJob(jobContext);
+      } catch (Exception e) {
+        LOG.error("Error while trying to commit job", e);
+        throw new MetaException(StringUtils.stringifyException(e));
+      }
     }
   }
 
@@ -460,17 +462,19 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
       throws MetaException {
     String tableName = TableIdentifier.of(table.getDbName(), table.getTableName()).toString();
     JobContext jobContext = getJobContextForCommitOrAbort(tableName, overwrite);
-    OutputCommitter committer = new HiveIcebergOutputCommitter();
-    try {
-      LOG.info("rollbackInsertTable: Aborting job for jobID: {} and table: {}", jobContext.getJobID(), tableName);
-      committer.abortJob(jobContext, JobStatus.State.FAILED);
-    } catch (IOException e) {
-      LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", e);
-      // no throwing here because the original commitInsertTable exception should be propagated
+    if (jobContext != null) {
+      OutputCommitter committer = new HiveIcebergOutputCommitter();
+      try {
+        LOG.info("rollbackInsertTable: Aborting job for jobID: {} and table: {}", jobContext.getJobID(), tableName);
+        committer.abortJob(jobContext, JobStatus.State.FAILED);
+      } catch (IOException e) {
+        LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", e);
+        // no throwing here because the original commitInsertTable exception should be propagated
+      }
     }
   }
 
-  private JobContext getJobContextForCommitOrAbort(String tableName, boolean overwrite) throws MetaException {
+  private JobContext getJobContextForCommitOrAbort(String tableName, boolean overwrite) {
     JobConf jobConf = new JobConf(conf);
     Optional<SessionStateUtil.CommitInfo> commitInfo = SessionStateUtil.getCommitInfo(jobConf, tableName);
     if (commitInfo.isPresent()) {
@@ -484,7 +488,9 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
 
       return new JobContextImpl(jobConf, jobID, null);
     } else {
-      throw new MetaException("Unable to find commit information in query state for table: " + tableName);
+      // most likely empty write scenario
+      LOG.debug("Unable to find commit information in query state for table: {}", tableName);
+      return null;
     }
   }
 }
