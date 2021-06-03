@@ -2662,7 +2662,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       TableMask viewMask = new TableMask(this, conf, false);
       viewTree = ParseUtils.parse(viewText, ctx, tab.getCompleteName());
       cacheTableHelper.populateCacheForView(ctx.getParsedTables(), conf,
-          getTxnMgr(), viewFullyQualifiedName);
+          getTxnMgr(), tab.getDbName(), tab.getTableName());
       if (viewMask.isEnabled() && analyzeRewrite == null) {
         ParseResult parseResult = rewriteASTWithMaskAndFilter(viewMask, viewTree,
             ctx.getViewTokenRewriteStream(viewFullyQualifiedName),

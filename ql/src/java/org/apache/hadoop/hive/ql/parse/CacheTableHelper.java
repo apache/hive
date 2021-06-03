@@ -118,26 +118,24 @@ public class CacheTableHelper {
    * with the new associated tables and change our associated tables for the view.
    */
   public void populateCacheForView(List<Pair<String, String>> tables, HiveConf conf,
-      HiveTxnManager txnMgr, String viewName) {
+      HiveTxnManager txnMgr, String dbName, String viewName) {
     if (!conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_VIEW_CACHE_ENABLED)) {
       return;
     }
 
-    // The viewname passed in is of the form "dbname@table", so we replace the "@" with
-    // a ".".
-    viewName = viewName.replaceFirst("@", ".");
-    LOG.debug("Found view while parsing: " + viewName);
+    String completeViewName = dbName + "." + viewName;
+    LOG.debug("Found view while parsing: " + completeViewName);
     Set<String> underlyingTablesAndViews = getUniqueNames(tables);
     // If the tables passed in match our cache, assume the cache has already
     // been populated.
-    if (underlyingTablesAndViews.equals(underlyingTableHints.getIfPresent(viewName))) {
+    if (underlyingTablesAndViews.equals(underlyingTableHints.getIfPresent(completeViewName))) {
       LOG.debug("View already cached.");
       return;
     }
     // populate the metastore cache for this view.
     populateCache(tables, conf, txnMgr);
     // cache the names of the tables for the given view in our server-wide cache.
-    underlyingTableHints.put(viewName, underlyingTablesAndViews);
+    underlyingTableHints.put(completeViewName, underlyingTablesAndViews);
   }
 
   /**
