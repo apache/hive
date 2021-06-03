@@ -77,6 +77,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 /**
  * Hive Configuration.
  */
@@ -679,6 +680,16 @@ public class HiveConf extends Configuration {
         + " table or partition level. If hive.exec.parallel \n"
         + "is set to true then max worker threads created for copy can be hive.exec.parallel.thread.number(determines \n"
         + "number of copy tasks in parallel) * hive.repl.parallel.copy.tasks "),
+    REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY("hive.repl.externaltable.snapshotdiff.copy",
+        false,"Use snapshot diff for copying data from source to "
+        + "destination cluster for external table in distcp. If true it uses snapshot based distcp for all the paths "
+        + "configured as part of hive.repl.external.warehouse.single.copy.task along with the external warehouse "
+        + "default location."),
+    REPL_SNAPSHOT_OVERWRITE_TARGET_FOR_EXTERNAL_TABLE_COPY("hive.repl.externaltable.snapshot.overwrite.target",
+        true,"If this is enabled, in case the target is modified, when using snapshot for external table"
+        + "data copy, the target data is overwritten and the modifications are removed and the copy is again "
+        + "attempted using the snapshot based approach. If disabled, the replication will fail in case the target is "
+        + "modified."),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
@@ -1826,7 +1837,13 @@ public class HiveConf extends Configuration {
         "Size of the cache used on reducer side, that stores boundaries of ranges within a PTF " +
         "partition. Used if a query specifies a RANGE type window including an orderby clause." +
         "Set this to 0 to disable this cache."),
-
+    HIVE_PTF_VALUECACHE_SIZE("hive.ptf.valuecache.size", 10000,
+        "Size of the cache used on reducer side, that stores calculated values for ranges within a PTF "
+            + "partition. Set this to 0 to disable this cache."),
+    HIVE_PTF_VALUECACHE_COLLECT_STATISTICS("hive.ptf.valuecache.collect.statistics", false,
+        "Whether to collect cache statistics in PTFValueCache. On extremely hot codepaths, this can be expensive, "
+            + "so it's disabled by default. It's only for development/debugging purposes, "
+            + "execution engine doesn't take advantage of statistics stored in the cache."),
     // CBO related
     HIVE_CBO_ENABLED("hive.cbo.enable", true, "Flag to control enabling Cost Based Optimizations using Calcite framework."),
     HIVE_CBO_FALLBACK_STRATEGY("hive.cbo.fallback.strategy", "CONSERVATIVE",
@@ -1904,7 +1921,7 @@ public class HiveConf extends Configuration {
         "with aggregations will be multiplied by this value. Reducing the value can be useful to\n" +
         "favour incremental rebuild over full rebuild."),
     HIVE_MATERIALIZED_VIEW_FILE_FORMAT("hive.materializedview.fileformat", "ORC",
-        new StringSet("none", "TextFile", "SequenceFile", "RCfile", "ORC"),
+        new StringSet("none", "TextFile", "SequenceFile", "RCfile", "ORC", "parquet"),
         "Default file format for CREATE MATERIALIZED VIEW statement"),
     HIVE_MATERIALIZED_VIEW_SERDE("hive.materializedview.serde",
         "org.apache.hadoop.hive.ql.io.orc.OrcSerde", "Default SerDe used for materialized views"),
@@ -3014,6 +3031,27 @@ public class HiveConf extends Configuration {
 
     HIVE_TXN_READONLY_ENABLED("hive.txn.readonly.enabled", false,
       "Enables read-only transaction classification and related optimizations"),
+
+    // Configs having to do with DeltaFilesMetricReporter, which collects lists of most recently active tables
+    // with the most number of active/obsolete deltas.
+    HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE("hive.txn.acid.metrics.max.cache.size", 100,
+        "Size of the ACID metrics cache. Only topN metrics would remain in the cache if exceeded."),
+    HIVE_TXN_ACID_METRICS_CACHE_DURATION("hive.txn.acid.metrics.cache.duration", "7200s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Maximum lifetime in seconds for an entry in the ACID metrics cache."),
+    HIVE_TXN_ACID_METRICS_REPORTING_INTERVAL("hive.txn.acid.metrics.reporting.interval", "30s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Reporting period for ACID metrics in seconds."),
+    HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD("hive.txn.acid.metrics.delta.num.threshold", 100,
+        "The minimum number of active delta files a table/partition must have in order to be included in the ACID metrics report."),
+    HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD("hive.txn.acid.metrics.obsolete.delta.num.threshold", 100,
+        "The minimum number of obsolete delta files a table/partition must have in order to be included in the ACID metrics report."),
+    HIVE_TXN_ACID_METRICS_DELTA_CHECK_THRESHOLD("hive.txn.acid.metrics.delta.check.threshold", "300s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Deltas not older than this value will not be included in the ACID metrics report."),
+    HIVE_TXN_ACID_METRICS_DELTA_PCT_THRESHOLD("hive.txn.acid.metrics.delta.pct.threshold", 0.01f,
+        "Percentage (fractional) size of the delta files relative to the base directory. Deltas smaller than this threshold " +
+        "count as small deltas. Default 0.01 = 1%.)"),
 
     /**
      * @deprecated Use MetastoreConf.TXN_TIMEOUT
@@ -4205,6 +4243,8 @@ public class HiveConf extends Configuration {
     HIVE_LOAD_DYNAMIC_PARTITIONS_THREAD_COUNT("hive.load.dynamic.partitions.thread", 15,
         new  SizeValidator(1L, true, 1024L, true),
         "Number of threads used to load dynamic partitions."),
+    HIVE_LOAD_DYNAMIC_PARTITIONS_SCAN_SPECIFIC_PARTITIONS("hive.load.dynamic.partitions.scan.specific.partitions", false,
+        "For the dynamic partitioned tables, scan only the specific partitions using the name from the list"),
     // If this is set all move tasks at the end of a multi-insert query will only begin once all
     // outputs are ready
     HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES(
@@ -5124,11 +5164,6 @@ public class HiveConf extends Configuration {
     LLAP_EXTERNAL_SPLITS_TEMP_TABLE_STORAGE_FORMAT("hive.llap.external.splits.temp.table.storage.format",
         "orc", new StringSet("default", "text", "orc"),
         "Storage format for temp tables created using LLAP external client"),
-    LLAP_EXTERNAL_SPLITS_ORDER_BY_FORCE_SINGLE_SPLIT("hive.llap.external.splits.order.by.force.single.split",
-      true,
-      "If LLAP external clients submits ORDER BY queries, force return a single split to guarantee reading\n" +
-        "data out in ordered way. Setting this to false will let external clients read data out in parallel\n" +
-        "losing the ordering (external clients are responsible for guaranteeing the ordering)"),
     LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR("hive.llap.external.client.use.hybrid.calendar",
         false,
         "Whether to use hybrid calendar for parsing of data/timestamps."),
@@ -6117,9 +6152,7 @@ public class HiveConf extends Configuration {
   public String getLogIdVar(String defaultValue) {
     String retval = getVar(ConfVars.HIVE_LOG_TRACE_ID);
     if (StringUtils.EMPTY.equals(retval)) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Using the default value passed in for log id: {}", defaultValue);
-      }
+      LOG.debug("Using the default value passed in for log id: {}", defaultValue);
       retval = defaultValue;
     }
     if (retval.length() > LOG_PREFIX_LENGTH) {

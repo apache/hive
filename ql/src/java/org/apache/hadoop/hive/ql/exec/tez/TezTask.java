@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -106,6 +107,7 @@ public class TezTask extends Task<TezWork> {
 
   private static final String CLASS_NAME = TezTask.class.getName();
   private static final String JOB_ID_TEMPLATE = "job_%s%d_%s";
+  private static final String ICEBERG_TABLE_LOCATION = "iceberg.mr.table.location";
   private static transient Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final String TEZ_MEMORY_RESERVE_FRACTION = "tez.task.scale.memory.reserve-fraction";
@@ -261,6 +263,10 @@ public class TezTask extends Task<TezWork> {
           // fetch the counters
           Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
           TezCounters dagCounters = dagClient.getDAGStatus(statusGetOpts).getDAGCounters();
+
+          if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
+            DeltaFilesMetricReporter.getInstance().submit(dagCounters);
+          }
           // if initial counters exists, merge it with dag counters to get aggregated view
           TezCounters mergedCounters = counters == null ? dagCounters : Utils.mergeTezCounters(dagCounters, counters);
           counters = mergedCounters;
@@ -361,7 +367,7 @@ public class TezTask extends Task<TezWork> {
           .filter(name -> name.endsWith("HiveIcebergNoJobCommitter")).isPresent();
       // we should only consider jobs with Iceberg output committer and a data sink
       if (hasIcebergCommitter && !vertex.getDataSinks().isEmpty()) {
-        String tableLocationRoot = jobConf.get("location");
+        String tableLocationRoot = jobConf.get(ICEBERG_TABLE_LOCATION);
         if (tableLocationRoot != null) {
           VertexStatus status = dagClient.getVertexStatus(vertex.getName(), EnumSet.of(StatusGetOpts.GET_COUNTERS));
           Path path = new Path(tableLocationRoot + "/temp");

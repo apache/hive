@@ -581,7 +581,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
       relBuilder.push(input);
       relBuilder.project(newProjects);
       Aggregate newAggregate = new HiveAggregate(aggregate.getCluster(), aggregate.getTraitSet(), relBuilder.build(),
-          aggregate.getGroupSet(), null, aggregate.getAggCallList());
+          aggregate.getGroupSet(), aggregate.getGroupSets(), aggregate.getAggCallList());
       return newAggregate;
     }
     return aggregate;

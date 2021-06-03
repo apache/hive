@@ -1205,7 +1205,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Exception ex = null;
     try {
       ret = getMS().getCatalogs();
-    } catch (MetaException e) {
+    } catch (Exception e) {
       ex = e;
       throw e;
     } finally {
@@ -4564,8 +4564,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw new InvalidObjectException("Unable to add partitions because "
             + "database or table " + dbName + "." + tblName + " does not exist");
       }
-      if (db.getType() == DatabaseType.REMOTE)
+      if (db.getType() == DatabaseType.REMOTE) {
         throw new MetaException("Operation add_partitions_pspec not supported on tables in REMOTE database");
+      }
       tbl = ms.getTable(catName, dbName, tblName, null);
       if (tbl == null) {
         throw new InvalidObjectException("Unable to add partitions because "
@@ -6031,7 +6032,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       request.setCatName(catName);
       Table oldt = get_table_core(request);
       if (transformer != null) {
-        newTable = transformer.transformAlterTable(newTable, processorCapabilities, processorId);
+        newTable = transformer.transformAlterTable(oldt, newTable, processorCapabilities, processorId);
       }
       firePreEvent(new PreAlterTableEvent(oldt, newTable, this));
       alterHandler.alterTable(getMS(), wh, catName, dbname, name, newTable,
@@ -7565,7 +7566,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw e;
     } catch (InvalidObjectException | NoSuchObjectException e) {
       ret = false;
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     } catch (Exception e) {
       throw new TException(e);
     }
@@ -7617,7 +7618,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw e;
     } catch (InvalidObjectException | NoSuchObjectException e) {
       ret = false;
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     } catch (Exception e) {
       throw new TException(e);
     }
@@ -7638,7 +7639,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw e;
     } catch (NoSuchObjectException e) {
       ret = false;
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     } catch (Exception e) {
       throw new TException(e);
     }
@@ -7671,7 +7672,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw e;
     } catch (InvalidObjectException | NoSuchObjectException e) {
       ret = false;
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     } catch (Exception e) {
       throw new TException(e);
     }
@@ -7700,7 +7701,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw e;
     } catch (NoSuchObjectException e) {
       ret = false;
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     } catch (Exception e) {
       throw new TException(e);
     }
@@ -7796,7 +7797,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw e;
     } catch (InvalidObjectException | NoSuchObjectException e) {
       ret = false;
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     } catch (Exception e) {
       throw new TException(e);
     }
@@ -8592,7 +8593,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public OpenTxnsResponse open_txns(OpenTxnRequest rqst) throws TException {
     OpenTxnsResponse response = getTxnHandler().openTxns(rqst);
     List<Long> txnIds = response.getTxn_ids();
-    if (txnIds != null && listeners != null && !listeners.isEmpty()) {
+    boolean isHiveReplTxn = rqst.isSetReplPolicy() && TxnType.DEFAULT.equals(rqst.getTxn_type());
+    if (txnIds != null && listeners != null && !listeners.isEmpty() && !isHiveReplTxn) {
       MetaStoreListenerNotifier.notifyEvent(listeners, EventType.OPEN_TXN,
           new OpenTxnEvent(txnIds, this));
     }
@@ -8602,7 +8604,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public void abort_txn(AbortTxnRequest rqst) throws TException {
     getTxnHandler().abortTxn(rqst);
-    if (listeners != null && !listeners.isEmpty()) {
+    boolean isHiveReplTxn = rqst.isSetReplPolicy() && TxnType.DEFAULT.equals(rqst.getTxn_type());
+    if (listeners != null && !listeners.isEmpty() && !isHiveReplTxn) {
       MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ABORT_TXN,
           new AbortTxnEvent(rqst.getTxnid(), this));
     }
@@ -8626,8 +8629,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void commit_txn(CommitTxnRequest rqst) throws TException {
+    boolean isReplayedReplTxn = TxnType.REPL_CREATED.equals(rqst.getTxn_type());
+    boolean isHiveReplTxn = rqst.isSetReplPolicy() && TxnType.DEFAULT.equals(rqst.getTxn_type());
     // in replication flow, the write notification log table will be updated here.
-    if (rqst.isSetWriteEventInfos()) {
+    if (rqst.isSetWriteEventInfos() && isReplayedReplTxn) {
+      assert (rqst.isSetReplPolicy());
       long targetTxnId = getTxnHandler().getTargetTxnId(rqst.getReplPolicy(), rqst.getTxnid());
       if (targetTxnId < 0) {
         //looks like a retry
@@ -8676,9 +8682,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
     }
     getTxnHandler().commitTxn(rqst);
-    if (listeners != null && !listeners.isEmpty()) {
+    if (listeners != null && !listeners.isEmpty() && !isHiveReplTxn) {
       MetaStoreListenerNotifier.notifyEvent(listeners, EventType.COMMIT_TXN,
-          new CommitTxnEvent(rqst.getTxnid(), this));
+              new CommitTxnEvent(rqst.getTxnid(), this));
       Optional<CompactionInfo> compactionInfo = getTxnHandler().getCompactionByTxnId(rqst.getTxnid());
       if (compactionInfo.isPresent()) {
         MetaStoreListenerNotifier.notifyEvent(listeners, EventType.COMMIT_COMPACTION,

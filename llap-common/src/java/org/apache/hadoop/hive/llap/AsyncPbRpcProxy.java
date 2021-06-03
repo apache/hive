@@ -454,9 +454,7 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
                 numRetries = 0;
                 nextBackoffMs = nextBackoffMs * 2;
               }
-              if (LOG.isTraceEnabled()) {
-                LOG.trace("Async call limit exceeded.", ex.getCause());
-              }
+              LOG.trace("Async call limit exceeded", ex);
             } else {
               throw ex;
             }
@@ -556,9 +554,7 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
   protected final ProtocolType getProxy(
       final LlapNodeId nodeId, final Token<TokenType> nodeToken) {
     String hostId = getHostIdentifier(nodeId.getHostname(), nodeId.getPort());
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Getting host proxies for {}", hostId);
-    }
+    LOG.debug("Getting host proxies for {}", hostId);
     try {
       return hostProxies.get(hostId, new Callable<ProtocolType>() {
         @Override
@@ -574,9 +570,7 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
   private ProtocolType createProxy(
       final LlapNodeId nodeId, Token<TokenType> nodeToken) throws IOException {
     if (nodeToken == null && this.token == null) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Creating a client without a token for " + nodeId);
-      }
+      LOG.debug("Creating a client without a token for {}", nodeId);
       return createProtocolImpl(getConfig(), nodeId.getHostname(),
           nodeId.getPort(), null, retryPolicy, socketFactory);
     }
@@ -597,9 +591,7 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
     SecurityUtil.setTokenService(nodeToken, NetUtils.createSocketAddrForHost(
         nodeId.getHostname(), nodeId.getPort()));
     ugi.addToken(nodeToken);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Creating a client for " + nodeId + "; the token is " + nodeToken);
-    }
+    LOG.debug("Creating a client for {}; the token is {}", nodeId, nodeToken);
     return ugi.doAs(new PrivilegedAction<ProtocolType>() {
       @Override
       public ProtocolType run() {

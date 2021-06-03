@@ -76,6 +76,7 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.StringAppender;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
@@ -115,6 +116,8 @@ import java.util.Map;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.Base64;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
@@ -1069,7 +1072,7 @@ public class TestReplicationScenarios {
     String bootstrapDb = dbName + "_boot";
 
     //insert data in the additional db
-    String[] unptn_data = new String[]{ "eleven" , "twelve" };
+    String[] unptn_data = new String[]{"eleven", "twelve"};
     String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
     createTestDataFile(unptn_locn, unptn_data);
     run("CREATE DATABASE " + bootstrapDb, driver);
@@ -1088,7 +1091,7 @@ public class TestReplicationScenarios {
 
     //create new database and dump all databases again
     String incDbName1 = dbName + "_inc1";
-    run("CREATE DATABASE " + incDbName1 , driver);
+    run("CREATE DATABASE " + incDbName1, driver);
     run("CREATE TABLE " + incDbName1 + ".unptned(a string) STORED AS TEXTFILE", driver);
     run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + incDbName1 + ".unptned", true, driver);
     verifySetup("SELECT * from " + incDbName1 + ".unptned", unptn_data, driver);
@@ -1102,11 +1105,75 @@ public class TestReplicationScenarios {
 
     //create new database and dump all databases again
     String incDbName2 = dbName + "_inc2";
-    run("CREATE DATABASE " + incDbName2 , driver);
+    run("CREATE DATABASE " + incDbName2, driver);
     run("CREATE TABLE " + incDbName2 + ".unptned(a string) STORED AS TEXTFILE", driver);
     run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + incDbName2 + ".unptned", true, driver);
     verifySetup("SELECT * from " + incDbName2 + ".unptned", unptn_data, driver);
     replDumpAllDbs(metadataOnlyClause);
+  }
+
+  @Test
+  public void testIncrementalLogs() throws IOException {
+    verifySetupSteps = true;
+    String name = testName.getMethodName();
+    org.apache.logging.log4j.Logger logger = LogManager.getLogger("hive.ql.metadata.HIVE");
+    StringAppender appender = StringAppender.createStringAppender("%m");
+    appender.addToLogger(logger.getName(), Level.INFO);
+    appender.start();
+
+    String dbName = createDB(name, driver);
+    String replDbName = dbName + "_dupe";
+
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+    String[] unptn_data = new String[]{ "eleven" , "twelve" };
+    String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
+    String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
+    String[] empty = new String[]{};
+
+    String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
+    String ptn_locn_1 = new Path(TEST_PATH, name + "_ptn1").toUri().getPath();
+    String ptn_locn_2 = new Path(TEST_PATH, name + "_ptn2").toUri().getPath();
+
+    createTestDataFile(unptn_locn, unptn_data);
+    createTestDataFile(ptn_locn_1, ptn_data_1);
+    createTestDataFile(ptn_locn_2, ptn_data_2);
+
+
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", true, driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
+
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", true, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", true, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2, driver);
+
+    run("CREATE TABLE " + dbName + ".ptned_late(a string) PARTITIONED BY (b int) STORED AS TEXTFILE", driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned_late PARTITION(b=1)", true, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=1",ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned_late PARTITION(b=2)", true, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=2", ptn_data_2, driver);
+
+    // Perform REPL-DUMP/LOAD
+    // Set approx load tasks to a low value to trigger REPL_LOAD execution multiple times
+    List<String> replApproxTasksClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS.varname + "'='1'");
+    Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDbName, replApproxTasksClause);
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
+    Path dumpPath = new Path(incrementalDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
+    verifyIncrementalLogs(appender);
+
+    verifyRun("SELECT * from " + replDbName + ".unptned", unptn_data, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=1", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=2", ptn_data_2, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=1", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=2", ptn_data_2, driverMirror);
+    appender.removeFromLogger(logger.getName());
+    verifySetupSteps = false;
   }
 
   @Test
@@ -3675,36 +3742,6 @@ public class TestReplicationScenarios {
         "DROP TABLE " + dbName + ".ptned_rn",
             replDbName);
 
-    // DB-level REPL LOADs testing done, now moving on to table level repl loads.
-    // In each of these cases, the table-level repl.last.id must move forward, but the
-    // db-level last.repl.id must not.
-
-    lastReplDumpId = verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId,
-        "CREATE TABLE " + dbName + ".ptned2(a string) partitioned by (b int) STORED AS TEXTFILE",
-            replDbName);
-    lastReplDumpId = verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId,
-        "ALTER TABLE " + dbName + ".ptned2 ADD PARTITION (b=1)",
-            replDbName);
-    lastReplDumpId = verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId,
-        "ALTER TABLE " + dbName + ".ptned2 PARTITION (b=1) RENAME TO PARTITION (b=11)",
-            replDbName);
-    lastReplDumpId = verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId,
-        "ALTER TABLE " + dbName + ".ptned2 SET TBLPROPERTIES ('blah'='foo')",
-            replDbName);
-    // Note : Not testing table rename because table rename replication is not supported for table-level repl.
-    verifyAndReturnTblReplStatus(
-        dbName, "ptned2", lastReplDumpId,
-        "ALTER TABLE " + dbName + ".ptned2 DROP PARTITION (b=11)",
-            replDbName);
-
-    // TODO : currently not testing the following scenarios:
-    //   a) Multi-db wh-level REPL LOAD - need to add that
-    //   b) Insert into tables - quite a few cases need to be enumerated there, including dyn adds.
-
   }
 
   @Test
@@ -4816,10 +4853,26 @@ public class TestReplicationScenarios {
     if (fs.exists(dumpPath)) {
       FileStatus[] statuses = fs.listStatus(dumpPath);
       if (statuses.length > 0) {
-        return new Path(statuses[0].getPath(), NON_RECOVERABLE_MARKER.toString());
+        return new Path(statuses[statuses.length -1].getPath(), NON_RECOVERABLE_MARKER.toString());
       }
     }
     return null;
+  }
+
+  private void verifyIncrementalLogs(StringAppender appender) {
+    String logStr = appender.getOutput();
+    String eventStr = "REPL::EVENT_LOAD:";
+    String eventDurationStr = "eventDuration";
+    String incLoadStageStr = "REPL_INCREMENTAL_LOAD";
+    String incLoadTaskDurationStr = "REPL_INCREMENTAL_LOAD stage duration";
+    String incTaskBuilderDurationStr = "REPL_INCREMENTAL_LOAD task-builder";
+    assertTrue(logStr, logStr.contains(eventStr));
+    //verify for each loaded event, there is the event duration log
+    assertEquals(StringUtils.countMatches(logStr, eventStr), StringUtils.countMatches(logStr, eventDurationStr));
+    //verify for each repl-load stage, there is one log for entire stage-duration and one log for DAG-duration(builder)
+    assertTrue(StringUtils.countMatches(logStr, incLoadStageStr) > 3);
+    assertEquals(StringUtils.countMatches(logStr, incLoadStageStr) / 3, StringUtils.countMatches(logStr, incTaskBuilderDurationStr));
+    assertEquals(StringUtils.countMatches(logStr, incLoadStageStr) / 3, StringUtils.countMatches(logStr, incLoadTaskDurationStr));
   }
 
   private void deleteNewMetadataFields(Tuple dump) throws SemanticException {

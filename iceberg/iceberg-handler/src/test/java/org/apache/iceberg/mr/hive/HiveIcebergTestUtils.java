@@ -40,6 +40,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.common.type.TimestampUtils;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -265,5 +267,36 @@ public class HiveIcebergTestUtils {
     Assert.assertEquals(dataFileNum, dataFiles.size());
     Assert.assertFalse(
         new File(HiveIcebergOutputCommitter.generateJobLocation(table.location(), conf, jobId)).exists());
+  }
+
+  /**
+   * Validates whether the table contains the expected records. The records are retrieved by Hive query and compared as
+   * strings. The results should be sorted by a unique key so we do not end up with flaky tests.
+   * @param shell Shell to execute the query
+   * @param tableName The table to query
+   * @param expected The expected list of Records
+   * @param sortBy The column name by which we will sort
+   */
+  public static void validateDataWithSQL(TestHiveShell shell, String tableName, List<Record> expected, String sortBy) {
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + tableName + " ORDER BY " + sortBy);
+
+    Assert.assertEquals(expected.size(), rows.size());
+    for (int i = 0; i < expected.size(); ++i) {
+      Object[] row = rows.get(i);
+      Record record = expected.get(i);
+      Assert.assertEquals(record.size(), row.length);
+      for (int j = 0; j < record.size(); ++j) {
+        Object field = record.get(j);
+        if (field instanceof LocalDateTime) {
+          Assert.assertEquals(((LocalDateTime) field).toInstant(ZoneOffset.UTC).toEpochMilli(),
+              TimestampUtils.stringToTimestamp((String) row[j]).toEpochMilli());
+        } else if (field instanceof OffsetDateTime) {
+          Assert.assertEquals(((OffsetDateTime) field).toInstant().toEpochMilli(),
+              TimestampTZUtil.parse((String) row[j]).toEpochMilli());
+        } else {
+          Assert.assertEquals(field.toString(), row[j].toString());
+        }
+      }
+    }
   }
 }

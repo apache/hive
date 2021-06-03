@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.apache.hive.iceberg.org.apache.orc.OrcConf;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Schema;
@@ -103,11 +104,18 @@ public class HiveIcebergStorageHandlerTestUtils {
       shell.setHiveSessionValue("hive.vectorized.execution.enabled", "false");
     }
 
+    // Until HADOOP-16435 we have to manually remove the RpcMetrics for every run otherwise we might end up with OOM
+    // We have to initialize the metrics as TestMetrics, so shutdown will remove them
+    DefaultMetricsSystem.instance().init("TestMetrics");
   }
 
   static void close(TestHiveShell shell) throws Exception {
     shell.closeSession();
     shell.metastore().reset();
+
+    // Until HADOOP-16435 we have to manually remove the RpcMetrics for every run otherwise we might end up with OOM
+    DefaultMetricsSystem.shutdown();
+
     // HiveServer2 thread pools are using thread local Hive -> HMSClient objects. These are not cleaned up when the
     // HiveServer2 is stopped. Only Finalizer closes the HMS connections.
     System.gc();

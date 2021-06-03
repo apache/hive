@@ -28,12 +28,18 @@ public class MetricsConstants {
   public static final String COMPACTION_FAILED_CLEANER_RATIO = "compaction_failed_cleaner_ratio";
   public static final String COMPACTION_WORKER_CYCLE = "compaction_worker_cycle";
 
-  public static final String OLDEST_OPEN_TXN_ID = "oldest_open_txn_id";
-  public static final String OLDEST_OPEN_TXN_AGE = "oldest_open_txn_age_in_sec";
+  public static final String OLDEST_OPEN_REPL_TXN_ID = "oldest_open_repl_txn_id";
+  public static final String OLDEST_OPEN_NON_REPL_TXN_ID = "oldest_open_non_repl_txn_id";
+  public static final String OLDEST_OPEN_REPL_TXN_AGE = "oldest_open_repl_txn_age_in_sec";
+  public static final String OLDEST_OPEN_NON_REPL_TXN_AGE = "oldest_open_non_repl_txn_age_in_sec";
   // number of aborted txns in TXNS table
   public static final String NUM_ABORTED_TXNS = "num_aborted_transactions";
   public static final String OLDEST_ABORTED_TXN_ID = "oldest_aborted_txn_id";
   public static final String OLDEST_ABORTED_TXN_AGE = "oldest_aborted_txn_age_in_sec";
+
+  public static final String COMPACTION_NUM_OBSOLETE_DELTAS = COMPACTION_STATUS_PREFIX + "obsolete_deltas";
+  public static final String COMPACTION_NUM_DELTAS = COMPACTION_STATUS_PREFIX + "active_deltas";
+  public static final String COMPACTION_NUM_SMALL_DELTAS = COMPACTION_STATUS_PREFIX + "small_deltas";
 
   public static final String NUM_LOCKS = "num_locks";
   public static final String OLDEST_LOCK_AGE = "oldest_lock_age_in_sec";
@@ -63,6 +69,8 @@ public class MetricsConstants {
   public static final String JVM_EXTRA_SLEEP = "jvm.pause.extraSleepTime";
 
   public static final String NUM_OPEN_TXNS = "num_open_transactions";
+  public static final String NUM_OPEN_REPL_TXNS = "num_open_repl_transactions";
+  public static final String NUM_OPEN_NON_REPL_TXNS = "num_open_non_repl_transactions";
   public static final String TOTAL_NUM_ABORTED_TXNS = "total_num_aborted_transactions";
   public static final String TOTAL_NUM_COMMITTED_TXNS = "total_num_committed_transactions";
   public static final String TOTAL_NUM_TIMED_OUT_TXNS = "total_num_timed_out_transactions";
@@ -72,4 +80,10 @@ public class MetricsConstants {
   public static final String TOTAL_DATABASES = "total_count_dbs";
   public static final String TOTAL_TABLES = "total_count_tables";
   public static final String TOTAL_PARTITIONS = "total_count_partitions";
+
+  public static final String TABLES_WITH_X_ABORTED_TXNS = "tables_with_x_aborted_transactions";
+
+  public static final String WRITES_TO_DISABLED_COMPACTION_TABLE = "num_writes_to_disabled_compaction_table";
+
+  public static final String OLDEST_READY_FOR_CLEANING_AGE = "oldest_ready_for_cleaning_age_in_sec";
 }

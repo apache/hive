@@ -289,13 +289,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       return (ThriftHiveMetastore.Iface) method.invoke(null, conf);
     } catch (InvocationTargetException e) {
       if (e.getCause() != null) {
-        MetaStoreUtils.logAndThrowMetaException((Exception) e.getCause());
+        MetaStoreUtils.throwMetaException((Exception) e.getCause());
       }
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     } catch (ClassNotFoundException
         | NoSuchMethodException
         | IllegalAccessException e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -328,7 +328,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                 serviceDiscoveryMode);
       }
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
 
     if (metastoreUrisString.isEmpty() && "zookeeper".equalsIgnoreCase(serviceDiscoveryMode)) {
@@ -373,7 +373,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     } catch (IllegalArgumentException e) {
       throw (e);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
   }
 
@@ -528,7 +528,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       success = true;
     } finally {
       if (!success && (hook != null)) {
-        // TODO: add rollBackAlterTable hook call
+        hook.rollbackAlterTable(new_tbl, envContext);
       }
     }
   }
@@ -573,7 +573,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       success = true;
     } finally {
       if (!success && (hook != null)) {
-        // TODO: add rollBackAlterTable hook call
+        hook.rollbackAlterTable(new_tbl, envContext);
       }
     }
   }
@@ -1796,7 +1796,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     HiveMetaHook hook = getHook(tbl);
     if (hook != null) {
-      hook.preDropTable(tbl);
+      hook.preDropTable(tbl, deleteData || (envContext != null && "TRUE".equals(envContext.getProperties().get("ifPurge"))));
     }
     boolean success = false;
     try {
@@ -2631,7 +2631,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       return getTables(getDefaultCatalog(conf), dbname, tablePattern);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -2668,7 +2668,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       return getTables(getDefaultCatalog(conf), dbname, tablePattern, tableType);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -2705,7 +2705,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       List<Table> views = client.get_all_materialized_view_objects_for_rewriting();
       return FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, views);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -2723,7 +2723,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
           client.get_materialized_views_for_rewriting(prependCatalogToDbName(catName, dbname, conf));
       return FilterUtils.filterTableNamesIfEnabled(isClientFilterEnabled, filterHook, catName, dbname, views);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -2734,7 +2734,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       return getTableMeta(getDefaultCatalog(conf), dbPatterns, tablePatterns, tableTypes);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -2752,7 +2752,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       return getAllTables(getDefaultCatalog(conf), dbname);
     } catch (Exception e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -3821,10 +3821,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user) throws TException {
+  public List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user, TxnType txnType) throws TException {
     // As this is called from replication task, the user is the user who has fired the repl command.
     // This is required for standalone metastore authentication.
-    OpenTxnsResponse txns = openTxnsIntr(user, srcTxnIds != null ? srcTxnIds.size() : 1, replPolicy, srcTxnIds, null);
+    OpenTxnsResponse txns = openTxnsIntr(user, srcTxnIds != null ? srcTxnIds.size() : 1,
+                                        replPolicy, srcTxnIds, txnType);
     return txns.getTxn_ids();
   }
 
@@ -3844,11 +3845,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     OpenTxnRequest rqst = new OpenTxnRequest(numTxns, user, hostname);
     if (replPolicy != null) {
-      assert srcTxnIds != null;
-      assert numTxns == srcTxnIds.size();
-      // need to set this only for replication tasks
       rqst.setReplPolicy(replPolicy);
-      rqst.setReplSrcTxnIds(srcTxnIds);
+      if (txnType == TxnType.REPL_CREATED) {
+        assert srcTxnIds != null;
+        assert numTxns == srcTxnIds.size();
+        rqst.setReplSrcTxnIds(srcTxnIds);
+      }
     } else {
       assert srcTxnIds == null;
     }
@@ -3864,9 +3866,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void replRollbackTxn(long srcTxnId, String replPolicy) throws NoSuchTxnException, TException {
+  public void replRollbackTxn(long srcTxnId, String replPolicy, TxnType txnType) throws NoSuchTxnException, TException {
     AbortTxnRequest rqst = new AbortTxnRequest(srcTxnId);
     rqst.setReplPolicy(replPolicy);
+    rqst.setTxn_type(txnType);
     client.abort_txn(rqst);
   }
 

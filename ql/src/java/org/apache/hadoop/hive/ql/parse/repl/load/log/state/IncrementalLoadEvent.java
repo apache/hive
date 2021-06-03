@@ -36,16 +36,28 @@ public class IncrementalLoadEvent extends ReplState {
   @JsonProperty
   private Long loadTime;
 
+  @JsonProperty
+  private String eventDuration;
+
+  private long loadTimeMillis;
+
   public IncrementalLoadEvent(String dbName,
                               String eventId,
                               String eventType,
                               long eventSeqNo,
-                              long numEvents) {
+                              long numEvents,
+                              long previousTimestamp) {
     this.dbName = dbName;
     this.eventId = eventId;
     this.eventType = eventType;
     this.eventsLoadProgress = new String(new StringBuilder()
                                             .append(eventSeqNo).append("/").append(numEvents));
-    this.loadTime = System.currentTimeMillis() / 1000;
+    this.loadTimeMillis = System.currentTimeMillis();
+    this.loadTime = loadTimeMillis / 1000;
+    this.eventDuration = (this.loadTimeMillis - previousTimestamp) + " ms";
+  }
+
+  public long getLoadTimeMillis() {
+    return this.loadTimeMillis;
   }
 }
