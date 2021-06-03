@@ -2680,9 +2680,9 @@ public final class Utilities {
                   total += estimator.estimate(jobConf, scanOp, -1).getTotalLength();
                 }
                 recordSummary(path, new ContentSummary(total, -1, -1));
-              } else {
-                // todo: should nullify summary for non-native tables,
-                // not to be selected as a mapjoin target
+              } else if (handler == null) {
+                // Nullify summary for non-native tables(handler != null), otherwise the non-native table may be
+                // selected as a mapjoin target, which may cause oom problem when building the hash table.
                 FileSystem fs = path.getFileSystem(myConf);
                 recordSummary(path, fs.getContentSummary(path));
               }

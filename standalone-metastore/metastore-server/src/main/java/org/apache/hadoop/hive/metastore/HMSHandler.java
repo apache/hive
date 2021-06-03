@@ -2429,17 +2429,23 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
 
       if (!TableType.VIRTUAL_VIEW.toString().equals(tbl.getTableType())) {
-        if (tbl.getSd().getLocation() == null
-            || tbl.getSd().getLocation().isEmpty()) {
-          tblPath = wh.getDefaultTablePath(db, tbl);
-        } else {
-          if (!isExternal(tbl) && !MetaStoreUtils.isNonNativeTable(tbl)) {
-            LOG.warn("Location: " + tbl.getSd().getLocation()
-                + " specified for non-external table:" + tbl.getTableName());
+        String location = tbl.getSd().getLocation();
+        boolean isNonNativeTable = MetaStoreUtils.isNonNativeTable(tbl);
+        if (location == null || location.isEmpty()) {
+          if (!isNonNativeTable) {
+            tblPath = wh.getDefaultTablePath(db, tbl);
           }
-          tblPath = wh.getDnsPath(new Path(tbl.getSd().getLocation()));
+        } else {
+          if (!isExternal(tbl) || isNonNativeTable) {
+            String tabType = isNonNativeTable ? "non-native" : "non-external";
+            LOG.warn("Location: {} specified for {} table: {}", location, tabType,
+                TableName.getQualified(tbl.getCatName(), tbl.getDbName(), tbl.getTableName()));
+          }
+          tblPath = wh.getDnsPath(new Path(location));
         }
-        tbl.getSd().setLocation(tblPath.toString());
+        if (tblPath != null) {
+          tbl.getSd().setLocation(tblPath.toString());
+        }
       }
 
       if (tblPath != null) {
