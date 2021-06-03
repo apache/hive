@@ -123,9 +123,9 @@ public class CacheTableHelper {
       return;
     }
 
-    // The viewname passed in is of the form "view@table", so we replace the "@" with
+    // The viewname passed in is of the form "dbname@table", so we replace the "@" with
     // a ".".
-    viewName = viewName.replace("@", ".");
+    viewName = viewName.replaceFirst("@", ".");
     LOG.debug("Found view while parsing: " + viewName);
     Set<String> underlyingTablesAndViews = getUniqueNames(tables);
     // If the tables passed in match our cache, assume the cache has already
