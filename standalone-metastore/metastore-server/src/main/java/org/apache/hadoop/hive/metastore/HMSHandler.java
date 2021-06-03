@@ -7068,13 +7068,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         numStats += colStats.getStatsObjSize();
 
         if (newStatsMap.size() >= numStatsMax) {
-          updatePartitionColStatsForOneBatch(tbl, statsMap, validWriteIds, writeId);
+          updatePartitionColStatsForOneBatch(tbl, newStatsMap, validWriteIds, writeId);
           newStatsMap.clear();
           numStats = 0;
         }
       }
       if (numStats != 0) {
-        updatePartitionColStatsForOneBatch(tbl, statsMap, validWriteIds, writeId);
+        updatePartitionColStatsForOneBatch(tbl, newStatsMap, validWriteIds, writeId);
       }
     } finally {
       endFunction("updatePartitionColStatsInBatch", true, null, tableName);
