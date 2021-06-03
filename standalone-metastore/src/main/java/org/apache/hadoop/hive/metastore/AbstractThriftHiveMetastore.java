@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import com.facebook.fb303.fb_status;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface;
 import org.apache.thrift.TException;
 
@@ -27,11 +28,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This abstract class can be extended by any remote cache that implements HMS APIs.
- * The idea behind introducing this abstract class is not to break the build of remote cache,
+ * This class can be extended by any remote cache that implements HMS APIs.
+ * The idea behind introducing this class is not to break the build of remote cache,
  * whenever we add new HMS APIs.
  */
-public abstract class AbstractThriftHiveMetastore implements Iface {
+public class AbstractThriftHiveMetastore implements Iface {
+
+    @Override
+    public String get_hms_api_version() throws MetaException, TException {
+        throw new UnsupportedOperationException("this method is not supported");
+    }
 
     @Override
     public String getMetaConf(String key) throws MetaException, TException {
@@ -1090,6 +1096,11 @@ public abstract class AbstractThriftHiveMetastore implements Iface {
     }
 
     @Override
+    public OptionalCompactionInfoStruct find_next_compact(String workerId) throws MetaException, TException {
+        return null;
+    }
+
+    @Override
     public void update_compactor_state(CompactionInfoStruct cr, long txn_id) throws TException {
         throw new UnsupportedOperationException("this method is not supported");
     }
@@ -1432,6 +1443,55 @@ public abstract class AbstractThriftHiveMetastore implements Iface {
     @Override
     public ReplicationMetricList get_replication_metrics(GetReplicationMetricsRequest rqst)
             throws MetaException, TException {
+        throw new UnsupportedOperationException("this method is not supported");
+    }
+
+    @Override
+    public GetOpenTxnsResponse get_open_txns_req(GetOpenTxnsRequest getOpenTxnsRequest) throws TException {
+        throw new UnsupportedOperationException("this method is not supported");
+    }
+
+    @Override
+    public void create_stored_procedure(StoredProcedure proc)
+        throws NoSuchObjectException, MetaException, TException {
+        throw new UnsupportedOperationException("this method is not supported");
+    }
+
+    @Override
+    public StoredProcedure get_stored_procedure(StoredProcedureRequest request)
+        throws MetaException, NoSuchObjectException, TException {
+        throw new UnsupportedOperationException("this method is not supported");
+    }
+
+    @Override
+    public void drop_stored_procedure(StoredProcedureRequest request) throws MetaException, TException {
+        throw new UnsupportedOperationException("this method is not supported");
+    }
+
+    @Override
+    public List<String> get_all_stored_procedures(ListStoredProcedureRequest request)
+        throws MetaException, TException {
+        throw new UnsupportedOperationException("this method is not supported");
+    }
+
+    @Override
+    public Package find_package(GetPackageRequest request)
+        throws MetaException, NoSuchObjectException, TException {
+        throw new UnsupportedOperationException("this method is not supported");
+    }
+
+    @Override
+    public void add_package(AddPackageRequest request) throws MetaException, TException {
+        throw new UnsupportedOperationException("this method is not supported");
+    }
+
+    @Override
+    public List<String> get_all_packages(ListPackageRequest request) throws MetaException, TException {
+        throw new UnsupportedOperationException("this method is not supported");
+    }
+
+    @Override
+    public void drop_package(DropPackageRequest request) throws MetaException, TException {
         throw new UnsupportedOperationException("this method is not supported");
     }
 
