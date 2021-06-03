@@ -43,7 +43,7 @@ public class StageMapper {
 
   private SnapshotUtils.ReplSnapshotCount replSnapshotCount = new SnapshotUtils.ReplSnapshotCount();
 
-  private String replStats = "";
+  private String replStats;
 
   public StageMapper() {
 

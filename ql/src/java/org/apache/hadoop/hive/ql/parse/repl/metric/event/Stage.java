@@ -35,7 +35,7 @@ public class Stage {
   private Map<String, Metric> metrics = new HashMap<>();
   private String errorLogPath;
   private SnapshotUtils.ReplSnapshotCount replSnapshotCount = new SnapshotUtils.ReplSnapshotCount();
-  private String replStats = "";
+  private String replStats;
 
   public Stage() {
 

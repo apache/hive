@@ -22,8 +22,8 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Tracks the replication statistics per event type.
@@ -31,17 +31,17 @@ import java.util.Map;
 public class ReplStatsTracker {
 
   // Maintains the descriptive statistics per event type.
-  private HashMap<String, DescriptiveStatistics> descMap;
+  private ConcurrentHashMap<String, DescriptiveStatistics> descMap;
 
   // Maintains the top K costliest eventId's
-  private HashMap<String, ListOrderedMap<Long, Long>> topKEvents;
+  private ConcurrentHashMap<String, ListOrderedMap<Long, Long>> topKEvents;
   // Number of top events to maintain.
   private final int k;
 
   public ReplStatsTracker(int k) {
     this.k = k;
-    descMap = new HashMap<>();
-    topKEvents = new HashMap<>();
+    descMap = new ConcurrentHashMap<>();
+    topKEvents = new ConcurrentHashMap<>();
   }
 
   /**
@@ -50,7 +50,7 @@ public class ReplStatsTracker {
    * @param eventId the event id.
    * @param timeTaken time taken to process the event.
    */
-  public void addEntry(String eventType, String eventId, long timeTaken) {
+  public synchronized void addEntry(String eventType, String eventId, long timeTaken) {
     // Update the entry in the descriptive statistics.
     DescriptiveStatistics descStatistics = descMap.get(eventType);
     if (descStatistics == null) {
@@ -89,7 +89,7 @@ public class ReplStatsTracker {
    * Get the DescriptiveStatistics for each event type.
    * @return A HashMap, with key as event type & value as the DescriptiveAnalytics of the entire run.
    */
-  public HashMap<String, DescriptiveStatistics> getDescMap() {
+  public ConcurrentHashMap<String, DescriptiveStatistics> getDescMap() {
     return descMap;
   }
 
@@ -98,7 +98,7 @@ public class ReplStatsTracker {
    * @return A HashMap with key as the event type and a Map as values, which has the event id as key and time taken
    * as values.
    */
-  public HashMap<String, ListOrderedMap<Long, Long>> getTopKEvents() {
+  public ConcurrentHashMap<String, ListOrderedMap<Long, Long>> getTopKEvents() {
     return topKEvents;
   }
 
@@ -121,7 +121,7 @@ public class ReplStatsTracker {
       sb.append("50th Percentile: ").append(statistics.getPercentile(50)).append("; ");
       sb.append("75th Percentile: ").append(statistics.getPercentile(75)).append("; ");
       sb.append("90th Percentile: ").append(statistics.getPercentile(90)).append("; ");
-      sb.append("Top ").append(k).append(" EventIds(EventId,Time) ").append(topKEvents.get(event.getKey()))
+      sb.append("Top ").append(k).append(" EventIds(EventId=Time) ").append(topKEvents.get(event.getKey()))
           .append(";" + "]]");
     }
     sb.append("}");

@@ -68,7 +68,6 @@ public class IncrementalLoadTasksBuilder {
   private final IncrementalLoadEventsIterator iterator;
   private final HashSet<ReadEntity> inputs;
   private final HashSet<WriteEntity> outputs;
-  private final ReplStatsTracker replStatsTracker;
   private Logger log;
   private final HiveConf conf;
 
@@ -92,7 +91,6 @@ public class IncrementalLoadTasksBuilder {
     outputs = new HashSet<>();
     log = null;
     this.conf = conf;
-    this.replStatsTracker = replStatsTracker;
     replLogger = new IncrementalLoadLogger(dbName, loadPath, iterator.getNumEvents(), replStatsTracker);
     replLogger.startLog();
     this.eventTo = eventTo;

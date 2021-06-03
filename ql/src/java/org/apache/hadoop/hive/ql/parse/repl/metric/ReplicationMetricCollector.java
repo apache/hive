@@ -21,6 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
+import org.apache.hadoop.hive.ql.exec.repl.NoOpReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -86,7 +87,7 @@ public abstract class ReplicationMetricCollector {
       stage.setStatus(status);
       stage.setEndTime(System.currentTimeMillis());
       stage.setReplSnapshotsCount(replSnapshotCount);
-      if (replStatsTracker != null) {
+      if (replStatsTracker != null && !(replStatsTracker instanceof NoOpReplStatsTracker)) {
         stage.setReplStats(replStatsTracker.toString());
       }
       progress.addStage(stage);
