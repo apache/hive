@@ -71,6 +71,24 @@ POSTHOOK: Output: default@alltypesagg
 POSTHOOK: Lineage: alltypesagg.bool_col SCRIPT []
 POSTHOOK: Lineage: alltypesagg.id SCRIPT []
 POSTHOOK: Lineage: alltypesagg.int_col SCRIPT []
+PREHOOK: query: select tt1.id
+     from alltypestiny tt1 left JOIN alltypesagg tt2
+     on tt1.int_col = tt2.int_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesagg
+PREHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+POSTHOOK: query: select tt1.id
+     from alltypestiny tt1 left JOIN alltypesagg tt2
+     on tt1.int_col = tt2.int_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesagg
+POSTHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+1
+2
+3
+10
 Warning: Shuffle Join MERGEJOIN[63][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 6' is a cross product
 Warning: Shuffle Join MERGEJOIN[65][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select *

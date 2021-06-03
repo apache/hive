@@ -71,4 +71,4 @@ POSTHOOK: Output: default@alltypesagg
 POSTHOOK: Lineage: alltypesagg.bool_col SCRIPT []
 POSTHOOK: Lineage: alltypesagg.id SCRIPT []
 POSTHOOK: Lineage: alltypesagg.int_col SCRIPT []
-FAILED: IndexOutOfBoundsException Index: 2, Size: 2
+FAILED: UnsupportedOperationException Correlated subqueries in outer join conditions not supported yet. Join condition: =($1, $cor0.int_col)

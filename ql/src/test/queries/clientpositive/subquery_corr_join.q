@@ -23,6 +23,10 @@ insert into alltypesagg(id, int_col, bool_col) values
 (5, 6, true),
 (null, null, false);
 
+select tt1.id
+     from alltypestiny tt1 left JOIN alltypesagg tt2
+     on tt1.int_col = tt2.int_col;
+
 select *
 from alltypesagg t1
 where t1.id not in
