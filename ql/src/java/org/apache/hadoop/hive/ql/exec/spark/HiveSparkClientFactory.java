@@ -79,7 +79,11 @@ public class HiveSparkClientFactory {
 
   public static Map<String, String> initiateSparkConf(HiveConf hiveConf, String sessionId) {
     Map<String, String> sparkConf = new HashMap<String, String>();
-    HBaseConfiguration.addHbaseResources(hiveConf);
+    try {
+      HBaseConfiguration.addHbaseResources(hiveConf);
+    } catch (Exception e) {
+      LOG.warn("Could not add HBase resources to Configuration", e);
+    }
 
     // set default spark configurations.
     sparkConf.put("spark.master", SPARK_DEFAULT_MASTER);

@@ -64,6 +64,7 @@
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-client</artifactId>
       <version>${hbase.version}</version>
+      <scope>provided</scope>
        <exclusions>
              <exclusion>
             <groupId>org.slf4j</groupId>
@@ -198,6 +199,7 @@
       <groupId>co.cask.tephra</groupId>
       <artifactId>tephra-api</artifactId>
       <version>${tephra.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>co.cask.tephra</groupId>
@@ -222,6 +224,7 @@
       <groupId>co.cask.tephra</groupId>
       <artifactId>tephra-hbase-compat-1.0</artifactId>
       <version>${tephra.version}</version>
+      <scope>provided</scope>
     </dependency>
     <!-- test intra-project -->
     <dependency>

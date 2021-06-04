@@ -103,6 +103,7 @@
     <commons-io.version>2.4</commons-io.version>
     <commons-lang.version>2.6</commons-lang.version>
     <commons-lang3.version>3.9</commons-lang3.version>
+    <commons-math3.version>3.6.1</commons-math3.version>
     <commons-pool.version>1.5.4</commons-pool.version>
     <cdh.logredactor.version>2.0.8</cdh.logredactor.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
@@ -200,6 +201,7 @@
     <janino.version>3.0.11</janino.version>
     <snakeyaml.version>1.26</snakeyaml.version>
     <datasketches.version>1.1.0-incubating</datasketches.version>
+    <validation-api.version>1.1.0.Final</validation-api.version>
   </properties>
 
   <repositories>
@@ -606,6 +608,11 @@
         <groupId>org.apache.curator</groupId>
         <artifactId>curator-recipes</artifactId>
         <version>${curator.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-math3</artifactId>
+        <version>${commons-math3.version}</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.groovy</groupId>
