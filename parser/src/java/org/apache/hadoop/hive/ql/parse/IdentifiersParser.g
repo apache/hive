@@ -960,7 +960,6 @@ nonReserved
     | KW_UNKNOWN
     | KW_WITHIN
     | KW_TRIM
-    | KW_IDENTITY
     | KW_SPEC
 ;
 

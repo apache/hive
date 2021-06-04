@@ -51,15 +51,15 @@ public class PartitionTransform {
           case HiveParser.TOK_MONTH:
           case HiveParser.TOK_DAY:
           case HiveParser.TOK_HOUR:
+            spec.name = grandChild.getChild(0).getText();
             spec.transformType = TRANSFORMS.get(grandChild.getToken().getType());
             break;
           case HiveParser.TOK_TRUNCATE:
           case HiveParser.TOK_BUCKET:
             spec.transformType = TRANSFORMS.get(grandChild.getToken().getType());
             spec.transformParam = Optional.ofNullable(Integer.valueOf(grandChild.getChild(0).getText()));
+            spec.name = grandChild.getChild(1).getText();
             break;
-          default:
-            spec.name = grandChild.getText();
         }
       }
       partSpecList.add(spec);

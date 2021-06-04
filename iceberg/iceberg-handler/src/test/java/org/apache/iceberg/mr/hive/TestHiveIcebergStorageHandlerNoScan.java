@@ -179,8 +179,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     TableIdentifier identifier = TableIdentifier.of("default", "part_test");
     shell.executeStatement("CREATE EXTERNAL TABLE " + identifier +
-        " PARTITIONED BY SPEC (year_field year, month_field month, day_field day, hour_field hour, " +
-        "truncate_field truncate 2, bucket_field bucket 2, identity_field identity)" +
+        " PARTITIONED BY SPEC (year(year_field), month(month_field), day(day_field), hour(hour_field), " +
+        "truncate(2, truncate_field), bucket(2, bucket_field), identity_field)" +
         " STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +

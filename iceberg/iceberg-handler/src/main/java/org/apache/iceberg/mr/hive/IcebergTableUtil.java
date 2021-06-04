@@ -51,15 +51,14 @@ public class IcebergTableUtil {
    */
   static Table getTable(Configuration configuration, Properties properties) {
     String tableIdentifier = properties.getProperty(Catalogs.NAME);
-    Table table = (Table) SessionStateUtil.getResourceFromSessionState(configuration, tableIdentifier);
-
-    if (table == null) {
-      LOG.debug("Iceberg table {} is not found in QueryState. Loading table from configured catalog", tableIdentifier);
-      table = Catalogs.loadTable(configuration, properties);
-      SessionStateUtil.addResourceToSessionState(configuration, tableIdentifier, table);
-    }
-
-    return table;
+    return SessionStateUtil.getResource(configuration, tableIdentifier).filter(o -> o instanceof Table)
+        .map(o -> (Table) o).orElseGet(() -> {
+          LOG.debug("Iceberg table {} is not found in QueryState. Loading table from configured catalog",
+              tableIdentifier);
+          Table tab = Catalogs.loadTable(configuration, properties);
+          SessionStateUtil.addResource(configuration, tableIdentifier, tab);
+          return tab;
+        });
   }
 
   /**
@@ -70,9 +69,9 @@ public class IcebergTableUtil {
    * @return iceberg partition spec, always non-null
    */
   public static PartitionSpec spec(Configuration configuration, Schema schema) {
-    List<PartitionTransform.PartitionTransformSpec> partitionTransformSpecList =
-        (List<PartitionTransform.PartitionTransformSpec>) SessionStateUtil
-            .getResourceFromSessionState(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC);
+    List<PartitionTransform.PartitionTransformSpec> partitionTransformSpecList = SessionStateUtil
+            .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
+        .map(o -> (List<PartitionTransform.PartitionTransformSpec>) o).orElseGet(() -> null);
 
     if (partitionTransformSpecList == null) {
       LOG.debug("Iceberg partition transform spec is not found in QueryState.");

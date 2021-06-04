@@ -699,7 +699,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_DATACONNECTORS", "CONNECTORS");
     xlateMap.put("KW_REMOTE", "REMOTE");
     xlateMap.put("KW_SPEC", "SPEC");
-    xlateMap.put("KW_IDENTITY", "IDENTITY");
     xlateMap.put("KW_YEAR", "YEAR");
     xlateMap.put("KW_MONTH", "MONTH");
     xlateMap.put("KW_DAY", "DAY");
@@ -1852,21 +1851,34 @@ createTablePartitionTransformSpec
 columnNameTransformConstraint
 @init { pushMsg("column transform specification", state); }
 @after { popMsg(state); }
-    : columnName partitionTransformType
-    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
-    -> ^(TOK_TABCOL columnName partitionTransformType)
+    : partitionTransformType
+    -> ^(TOK_TABCOL partitionTransformType)
     ;
 
 partitionTransformType
 @init {pushMsg("partitition transform type specification", state); }
 @after { popMsg(state); }
-    : KW_IDENTITY       ->  TOK_IDENTITY
-    | KW_YEAR           ->  TOK_YEAR
-    | KW_MONTH          ->  TOK_MONTH
-    | KW_DAY            ->  TOK_DAY
-    | KW_HOUR           ->  TOK_HOUR
-    | KW_TRUNCATE value = Number      ->  ^(TOK_TRUNCATE $value)
-    | KW_BUCKET value = Number        ->  ^(TOK_BUCKET $value)
+    : columnName
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_IDENTITY columnName)
+    | KW_YEAR LPAREN columnName RPAREN
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_YEAR columnName)
+    | KW_MONTH LPAREN columnName RPAREN
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_MONTH columnName)
+    | KW_DAY LPAREN columnName RPAREN
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_DAY columnName)
+    | KW_HOUR LPAREN columnName RPAREN
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_HOUR columnName)
+    | KW_TRUNCATE LPAREN value = Number COMMA columnName RPAREN
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_TRUNCATE $value columnName)
+    | KW_BUCKET LPAREN value = Number COMMA columnName RPAREN
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_BUCKET $value columnName)
     ;
 
 tableBuckets

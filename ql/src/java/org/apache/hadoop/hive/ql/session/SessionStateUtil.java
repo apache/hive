@@ -18,80 +18,55 @@
 
 package org.apache.hadoop.hive.ql.session;
 
-import javax.annotation.Nullable;
+import java.util.Optional;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
 
-
-/**
- * Collection of helper methods to get resources from the {@link QueryState} associated with the active session.
- */
 public class SessionStateUtil {
 
-  /**
-   * Get a resource with a specific resource identifier stored on the SessionState.
-   * @param configuration a Hadoop configuration
-   * @param resourceId identifier of the resource
-   * @return resource object, can be null
-   */
-  @Nullable
-  public static Object getResourceFromSessionState(Configuration configuration, String resourceId) {
-    if (hasResourceInSessionState(configuration,resourceId)) {
-      QueryState queryState =
-          SessionState.get().getQueryState(configuration.get(HiveConf.ConfVars.HIVEQUERYID.varname));
-      return queryState.getResource(resourceId);
-    }
-    return null;
+  private SessionStateUtil() {
+
   }
 
   /**
-   * Store a resource in the SessionState.
-   * @param configuration a Hadoop configuration
-   * @param resourceId identifier of the resource
-   * @param resource resource object
-   * @return true, if the operation was successful
+   * @param conf Configuration object used for getting the query state, should contain the query id
+   * @param key The resource identifier
+   * @return The requested resource, or an empty Optional if either the SessionState, QueryState or the resource itself
+   * could not be found
    */
-  public static boolean addResourceToSessionState(Configuration configuration, String resourceId, Object resource) {
-    if (hasQueryStateInSessionState(configuration)) {
-      SessionState.get().getQueryState(configuration.get(HiveConf.ConfVars.HIVEQUERYID.varname))
-          .addResource(resourceId, resource);
+  public static Optional<Object> getResource(Configuration conf, String key) {
+    return getQueryState(conf).map(state -> state.getResource(key));
+  }
+
+  /**
+   * @param conf Configuration object used for getting the query state, should contain the query id
+   * @param key The resource identifier
+   * @return The requested string property, or an empty Optional if either the SessionState, QueryState or the
+   * resource itself could not be found, or the resource is not of type String
+   */
+  public static Optional<String> getProperty(Configuration conf, String key) {
+    return getResource(conf, key).filter(o -> o instanceof String).map(o -> (String) o);
+  }
+
+  /**
+   * @param conf Configuration object used for getting the query state, should contain the query id
+   * @param key The resource identifier
+   * @param resource The resource to save into the QueryState
+   * @return whether operation succeeded
+   */
+  public static boolean addResource(Configuration conf, String key, Object resource) {
+    Optional<QueryState> queryState = getQueryState(conf);
+    if (queryState.isPresent()) {
+      queryState.get().addResource(key, resource);
       return true;
+    } else {
+      return false;
     }
-    return false;
   }
 
-  /**
-   * Check for the existence of a resource in the SessionState.
-   * @param configuration a Hadoop configuration
-   * @param resourceId identifier of the resource
-   * @return true, if the resource can be found
-   */
-  private static boolean hasResourceInSessionState(Configuration configuration, String resourceId) {
-    if (hasQueryStateInSessionState(configuration)) {
-      Object resource = SessionState.get().getQueryState(configuration.get(HiveConf.ConfVars.HIVEQUERYID.varname))
-          .getResource(resourceId);
-      if (resource != null) {
-        return true;
-      }
-    }
-    return false;
+  private static Optional<QueryState> getQueryState(Configuration conf) {
+    return Optional.ofNullable(SessionState.get())
+        .map(session -> session.getQueryState(conf.get(HiveConf.ConfVars.HIVEQUERYID.varname)));
   }
-
-  /**
-   * Check fo the existence of QueryState object in the SessionState.
-   * @param configuration a Hadoop configuration
-   * @return true, if the QueryState can be found
-   */
-  private static boolean hasQueryStateInSessionState(Configuration configuration) {
-    if (SessionState.get() != null) {
-      QueryState queryState =
-          SessionState.get().getQueryState(configuration.get(HiveConf.ConfVars.HIVEQUERYID.varname));
-      if (queryState != null) {
-        return true;
-      }
-    }
-    return false;
-  }
-
 }
