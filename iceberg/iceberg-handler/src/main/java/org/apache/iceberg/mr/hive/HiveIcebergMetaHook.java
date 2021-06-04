@@ -39,8 +39,11 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
+import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.JobContextImpl;
@@ -59,6 +62,7 @@ import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableMetadataParser;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.UpdateProperties;
+import org.apache.iceberg.UpdateSchema;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveSchemaUtil;
@@ -85,6 +89,8 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
       // Initially we'd like to cache the partition spec in HMS, but not push it down later to Iceberg during alter
       // table commands since by then the HMS info can be stale + Iceberg does not store its partition spec in the props
       InputFormatConfig.PARTITION_SPEC);
+  private static final Set<Enum<?>> SUPPORTED_ALTER_OPS = ImmutableSet.of(
+      AlterTableType.ADDCOLS, AlterTableType.ADDPROPS, AlterTableType.DROPPROPS);
 
   private final Configuration conf;
   private Table icebergTable = null;
@@ -94,6 +100,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   private TableMetadata deleteMetadata;
   private boolean canMigrateHiveTable;
   private PreAlterTableProperties preAlterTableProperties;
+  private UpdateSchema updateSchema;
 
   public HiveIcebergMetaHook(Configuration conf) {
     this.conf = conf;
@@ -214,7 +221,9 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   @Override
   public void preAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws MetaException {
-    super.preAlterTable(hmsTable, context);
+    if (!isSupportedAlterOperation(context)) {
+      super.preAlterTable(hmsTable, context);
+    }
     catalogProperties = getCatalogProperties(hmsTable);
     try {
       icebergTable = IcebergTableUtil.getTable(conf, catalogProperties);
@@ -249,6 +258,20 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
           Collections.emptyMap()));
       updateHmsTableProperties(hmsTable);
     }
+    if (isMatchingAlterOp(AlterTableType.ADDCOLS, context)) {
+      List<FieldSchema> addedCols =
+          HiveSchemaUtil.schemaDifference(hmsTable.getSd().getCols(), HiveSchemaUtil.convert(icebergTable.schema()));
+      for (FieldSchema addedCol : addedCols) {
+        if (updateSchema == null) {
+          updateSchema = icebergTable.updateSchema();
+        }
+        updateSchema.addColumn(
+            addedCol.getName(),
+            HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType())),
+            addedCol.getComment()
+        );
+      }
+    }
   }
 
   @Override
@@ -266,9 +289,12 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
       HiveTableUtil.importFiles(preAlterTableProperties.tableLocation, preAlterTableProperties.format,
           partitionSpecProxy, preAlterTableProperties.partitionKeys, catalogProperties, conf);
     } else {
-      Map<String, String> contextProperties = context.getProperties();
-      if (contextProperties.containsKey(ALTER_TABLE_OPERATION_TYPE) &&
-          allowedAlterTypes.contains(contextProperties.get(ALTER_TABLE_OPERATION_TYPE))) {
+      if (isMatchingAlterOp(AlterTableType.ADDCOLS, context) && updateSchema != null) {
+        updateSchema.commit();
+      } else if (isMatchingAlterOp(AlterTableType.ADDPROPS, context) ||
+          isMatchingAlterOp(AlterTableType.DROPPROPS, context)) {
+
+        Map<String, String> contextProperties = context.getProperties();
         Map<String, String> hmsTableParameters = hmsTable.getParameters();
         Splitter splitter = Splitter.on(PROPERTIES_SEPARATOR);
         UpdateProperties icebergUpdateProperties = icebergTable.updateProperties();
@@ -309,6 +335,26 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
         // the file doesn't exists, do nothing
       }
     }
+  }
+
+  private static boolean isSupportedAlterOperation(EnvironmentContext context) {
+    for (Enum<?> op : SUPPORTED_ALTER_OPS) {
+      if (isMatchingAlterOp(op, context)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean isMatchingAlterOp(Enum<?> alterOperation, EnvironmentContext context) {
+    if (context == null) {
+      return false;
+    }
+    Map<String, String> contextProperties = context.getProperties();
+    if (contextProperties == null) {
+      return false;
+    }
+    return alterOperation.name().equals(contextProperties.get(ALTER_TABLE_OPERATION_TYPE));
   }
 
   private void setFileFormat() {

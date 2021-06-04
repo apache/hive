@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.iceberg.AssertHelpers;
@@ -56,6 +57,7 @@ import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.thrift.TException;
@@ -815,6 +817,43 @@ public class TestHiveIcebergStorageHandlerNoScan {
     Catalogs.dropTable(shell.getHiveConf(), properties);
 
     // Finally drop the Hive table as well
+    shell.executeStatement("DROP TABLE " + identifier);
+  }
+
+  @Test
+  public void testAlterTableAddColumns() throws Exception {
+    Assume.assumeTrue("Iceberg - alter table/add column is only relevant for HiveCatalog",
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    // Create HMS table with with a property to be translated
+    shell.executeStatement(String.format("CREATE EXTERNAL TABLE default.customers " +
+            "STORED BY ICEBERG " +
+            "TBLPROPERTIES ('%s'='%s', '%s'='%s', '%s'='%s')",
+        InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA),
+        InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(SPEC),
+        InputFormatConfig.EXTERNAL_TABLE_PURGE, "false"));
+
+    shell.executeStatement("ALTER TABLE default.customers ADD COLUMNS " +
+        "(newintcol int, newstringcol string COMMENT 'Column with description')");
+
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "customers");
+
+    List<FieldSchema> icebergSchema = HiveSchemaUtil.convert(icebergTable.schema());
+    List<FieldSchema> hmsSchema = hmsTable.getSd().getCols();
+
+    List<FieldSchema> expectedSchema = Lists.newArrayList(
+        new FieldSchema("customer_id", "bigint", null),
+        new FieldSchema("first_name", "string", "This is first name"),
+        new FieldSchema("last_name", "string", "This is last name"),
+        new FieldSchema("newintcol", "int", null),
+        new FieldSchema("newstringcol", "string", "Column with description"));
+
+    Assert.assertEquals(expectedSchema, icebergSchema);
+    Assert.assertEquals(icebergSchema, hmsSchema);
+
     shell.executeStatement("DROP TABLE " + identifier);
   }
 

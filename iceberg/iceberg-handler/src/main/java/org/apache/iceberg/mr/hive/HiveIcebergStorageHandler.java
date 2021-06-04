@@ -99,6 +99,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public HiveMetaHook getMetaHook() {
+    // Make sure to always return a new instance here, as HiveIcebergMetaHook might hold state relevant for the
+    // operation.
     return new HiveIcebergMetaHook(conf);
   }
 
