@@ -32,14 +32,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.repl.ReplConst;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.TimeValidator;
-import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,15 +89,6 @@ public class PartitionManagementTask implements MetastoreTaskThread {
             params.get(DISCOVER_PARTITIONS_TBLPROPERTY).equalsIgnoreCase("true");
   }
 
-  public boolean isTargetOfReplication(Database db) {
-    assert (db != null);
-    Map<String, String> params = db.getParameters();
-    if ((params != null) && (params.containsKey(ReplConst.TARGET_OF_REPLICATION))) {
-      return !StringUtils.isEmpty(params.get(ReplConst.TARGET_OF_REPLICATION));
-    }
-    return false;
-  }
-
   @Override
   public void run() {
     if (lock.tryLock()) {
@@ -141,17 +129,8 @@ public class PartitionManagementTask implements MetastoreTaskThread {
           try {
             String dbName = MetaStoreUtils.prependCatalogToDbName(tableMeta.getCatName(), tableMeta.getDbName(), conf);
             if (!databasesToSkip.containsKey(dbName)) {
-              Database db = msc.getDatabase(tableMeta.getCatName(), tableMeta.getDbName());
-              boolean skipDb = false;
-              if (MetaStoreUtils.isDbBeingFailedOver(db)) {
-                skipDb = true;
-                LOG.info("Skipping all the tables which belong to database: {} as it is being failed over",
-                        tableMeta.getDbName());
-              } else if (isTargetOfReplication(db)) {
-                skipDb = true;
-                LOG.info("Skipping all the tables which belong to replicated database: {}", tableMeta.getDbName());
-              }
-              databasesToSkip.put(dbName, skipDb);
+              databasesToSkip.put(dbName, MetaStoreUtils.checkIfDbNeedsToBeSkipped(
+                              msc.getDatabase(tableMeta.getCatName(), tableMeta.getDbName())));
             }
             if (databasesToSkip.get(dbName)) {
               LOG.debug("Skipping table : {}", tableMeta.getTableName());

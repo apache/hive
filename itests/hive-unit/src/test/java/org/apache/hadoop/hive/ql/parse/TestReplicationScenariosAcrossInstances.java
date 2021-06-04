@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.WarehouseInstance.Tuple;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
@@ -1167,12 +1168,12 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     //Perform empty dump and load
     primary.dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName);
-    assertTrue(ReplUtils.isTargetOfReplication(replica.getDatabase(replicatedDbName)));
+    assertTrue(MetaStoreUtils.isTargetOfReplication(replica.getDatabase(replicatedDbName)));
 
     replica.dumpFailure(replicatedDbName);  //can not dump db which is target of replication
 
     replica.run("ALTER DATABASE " + replicatedDbName + " Set DBPROPERTIES('repl.target.for' = '')");
-    assertFalse(ReplUtils.isTargetOfReplication(replica.getDatabase(replicatedDbName)));
+    assertFalse(MetaStoreUtils.isTargetOfReplication(replica.getDatabase(replicatedDbName)));
     replica.dump(replicatedDbName);
 
     // do a empty incremental load to allow dump of replicatedDbName
@@ -1181,7 +1182,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     replica.load(replicatedDbName, primaryDbName);
     compareDbProperties(primary.getDatabase(primaryDbName).getParameters(),
             replica.getDatabase(replicatedDbName).getParameters());
-    assertTrue(ReplUtils.isTargetOfReplication(replica.getDatabase(replicatedDbName)));
+    assertTrue(MetaStoreUtils.isTargetOfReplication(replica.getDatabase(replicatedDbName)));
 
     replica.dumpFailure(replicatedDbName);    //Cannot dump database which is target of replication.
   }

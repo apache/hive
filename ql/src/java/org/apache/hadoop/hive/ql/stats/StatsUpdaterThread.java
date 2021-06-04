@@ -50,7 +50,6 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.StatsUpdateMode;
@@ -59,7 +58,6 @@ import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.DriverUtils;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -219,16 +217,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     String cat = fullTableName.getCat(), db = fullTableName.getDb(), tbl = fullTableName.getTable();
     String dbName = MetaStoreUtils.prependCatalogToDbName(cat,db, conf);
     if (!dbsToSkip.containsKey(dbName)) {
-      Database database = rs.getDatabase(cat, db);
-      boolean skipDb = false;
-      if (MetaStoreUtils.isDbBeingFailedOver(database)) {
-        skipDb = true;
-        LOG.info("Skipping all the tables which belong to database: {} as it is being failed over", db);
-      } else if (ReplUtils.isTargetOfReplication(database)) {
-        skipDb = true;
-        LOG.info("Skipping all the tables which belong to replicated database: {}", db);
-      }
-      dbsToSkip.put(dbName, skipDb);
+      dbsToSkip.put(dbName, MetaStoreUtils.checkIfDbNeedsToBeSkipped(rs.getDatabase(cat, db)));
     }
     if (dbsToSkip.get(dbName)) {
       LOG.debug("Skipping table {}", tbl);

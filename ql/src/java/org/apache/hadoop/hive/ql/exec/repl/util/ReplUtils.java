@@ -259,15 +259,6 @@ public class ReplUtils {
     return false;
   }
 
-  public static boolean isTargetOfReplication(Database db) {
-    assert (db != null);
-    Map<String, String> m = db.getParameters();
-    if ((m != null) && (m.containsKey(ReplConst.TARGET_OF_REPLICATION))) {
-      return !StringUtils.isEmpty(m.get(ReplConst.TARGET_OF_REPLICATION));
-    }
-    return false;
-  }
-
   public static String getNonEmpty(String configParam, HiveConf hiveConf, String errorMsgFormat)
           throws SemanticException {
     String val = hiveConf.get(configParam);
