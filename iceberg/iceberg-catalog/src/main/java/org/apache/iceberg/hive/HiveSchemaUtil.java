@@ -20,6 +20,8 @@
 package org.apache.iceberg.hive;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -132,6 +134,28 @@ public final class HiveSchemaUtil {
    */
   public static Type convert(TypeInfo typeInfo) {
     return HiveSchemaConverter.convert(typeInfo, false);
+  }
+
+  /**
+   * Produces the difference of two FieldSchema lists by only taking into account the field name and type.
+   * @param from List of fields to subtract from
+   * @param to List of fields to subtract
+   * @return the result list of difference
+   */
+  public static List<FieldSchema> schemaDifference(List<FieldSchema> from, List<FieldSchema> to) {
+    List<FieldSchema> result = new LinkedList<>(from);
+    Iterator<FieldSchema> it = result.iterator();
+    while (it.hasNext()) {
+      FieldSchema fromSchemaField = it.next();
+      for (FieldSchema toSchemaField : to) {
+        if (fromSchemaField.getName().equals(toSchemaField.getName()) &&
+            fromSchemaField.getType().equals(toSchemaField.getType())) {
+          it.remove();
+          break;
+        }
+      }
+    }
+    return result;
   }
 
   private static String convertToTypeString(Type type) {
