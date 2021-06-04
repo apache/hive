@@ -19,6 +19,8 @@
 
 package org.apache.iceberg.mr.hive.serde.objectinspector;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -26,8 +28,6 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveJavaObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hive.iceberg.com.github.benmanes.caffeine.cache.Cache;
-import org.apache.hive.iceberg.com.github.benmanes.caffeine.cache.Caffeine;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 
 public final class IcebergDecimalObjectInspector extends AbstractPrimitiveJavaObjectInspector

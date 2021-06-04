@@ -19,10 +19,10 @@
 
 package org.apache.iceberg.hive;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hive.iceberg.com.github.benmanes.caffeine.cache.Cache;
-import org.apache.hive.iceberg.com.github.benmanes.caffeine.cache.Caffeine;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 
