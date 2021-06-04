@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
@@ -1251,7 +1252,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Path hiveDumpDir = new Path(incrementalDump1.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     Path ackFile = new Path(hiveDumpDir, ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
     Path ackLastEventID = new Path(hiveDumpDir, ReplAck.EVENTS_DUMP.toString());
-    Path dumpMetaData = new Path(hiveDumpDir, "_dumpmetadata");
+    Path dumpMetaData = new Path(hiveDumpDir, DumpMetaData.DUMP_METADATA_V2);
 
     FileSystem fs = FileSystem.get(hiveDumpDir.toUri(), primary.hiveConf);
     assertTrue(fs.exists(ackFile));
@@ -1297,7 +1298,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Path hiveDumpDir = new Path(incrementalDump1.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     Path ackFile = new Path(hiveDumpDir, ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
     Path ackLastEventID = new Path(hiveDumpDir, ReplAck.EVENTS_DUMP.toString());
-    Path dumpMetaData = new Path(hiveDumpDir, "_dumpmetadata");
+    Path dumpMetaData = new Path(hiveDumpDir, DumpMetaData.DUMP_METADATA_V2);
 
     FileSystem fs = FileSystem.get(hiveDumpDir.toUri(), primary.hiveConf);
     assertTrue(fs.exists(ackFile));
@@ -1335,7 +1336,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     hiveDumpDir = new Path(incrementalDump3.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     ackFile = new Path(hiveDumpDir, ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
     ackLastEventID = new Path(hiveDumpDir, ReplAck.EVENTS_DUMP.toString());
-    dumpMetaData = new Path(hiveDumpDir, "_dumpmetadata");
+    dumpMetaData = new Path(hiveDumpDir, DumpMetaData.DUMP_METADATA_V2);
 
     assertTrue(fs.exists(ackFile));
     assertTrue(fs.exists(ackLastEventID));
@@ -1384,7 +1385,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Path hiveDumpDir = new Path(incrementalDump1.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     Path ackFile = new Path(hiveDumpDir, ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
     Path ackLastEventID = new Path(hiveDumpDir, ReplAck.EVENTS_DUMP.toString());
-    Path dumpMetaData = new Path(hiveDumpDir, "_dumpmetadata");
+    Path dumpMetaData = new Path(hiveDumpDir, DumpMetaData.DUMP_METADATA_V2);
 
     FileSystem fs = FileSystem.get(hiveDumpDir.toUri(), primary.hiveConf);
     assertTrue(fs.exists(ackFile));
@@ -1453,7 +1454,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Path hiveDumpDir = new Path(incrementalDump1.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     Path ackFile = new Path(hiveDumpDir, ReplAck.DUMP_ACKNOWLEDGEMENT.toString());
     Path ackLastEventID = new Path(hiveDumpDir, ReplAck.EVENTS_DUMP.toString());
-    Path dumpMetaData = new Path(hiveDumpDir, "_dumpmetadata");
+    Path dumpMetaData = new Path(hiveDumpDir, DumpMetaData.DUMP_METADATA_V2);
 
     FileSystem fs = FileSystem.get(hiveDumpDir.toUri(), primary.hiveConf);
     assertTrue(fs.exists(ackFile));
@@ -2127,7 +2128,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     //Delete dump ack and metadata ack, everything should be rewritten in a new dump dir
     fs.delete(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString()), true);
-    fs.delete(new Path(dumpPath, "_dumpmetadata"), true);
+    fs.delete(new Path(dumpPath, DumpMetaData.DUMP_METADATA_V2), true);
     assertFalse(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
     //Insert new data
     primary.run("insert into "+ primaryDbName +".t1 values (12)");
