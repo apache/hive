@@ -117,6 +117,7 @@
                                             <include>org.apache.parquet:*</include>
                                             <include>com.google*:*</include>
                                             <include>com.fasterxml*:*</include>
+                                            <include>com.github.ben-manes*:*</include>
                                         </includes>
                                     </artifactSet>
                                     <filters>
