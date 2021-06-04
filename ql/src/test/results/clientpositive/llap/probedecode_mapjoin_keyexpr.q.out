@@ -377,7 +377,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 16
-                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col0:bigint, VALUE._col1:bigint, VALUE._col2:bigint, VALUE._col3:decimal(12,2), VALUE._col4:decimal(12,2), VALUE._col5:decimal(12,2), VALUE._col6:decimal(12,2), VALUE._col7:string, VALUE._col8:string, VALUE._col9:string, VALUE._col10:string, VALUE._col11:string, VALUE._col12:string, VALUE._col13:string, VALUE._col14:string
+                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col0:bigint, VALUE._col1:bigint, VALUE._col2:bigint, VALUE._col3:decimal(12,2)/DECIMAL_64, VALUE._col4:decimal(12,2)/DECIMAL_64, VALUE._col5:decimal(12,2)/DECIMAL_64, VALUE._col6:decimal(12,2)/DECIMAL_64, VALUE._col7:string, VALUE._col8:string, VALUE._col9:string, VALUE._col10:string, VALUE._col11:string, VALUE._col12:string, VALUE._col13:string, VALUE._col14:string
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [bigint]
             Reduce Operator Tree:

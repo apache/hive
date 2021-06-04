@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -102,8 +103,14 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
   }
 
   public BinarySortableDeserializeRead(TypeInfo[] typeInfos, boolean useExternalBuffer,
-          boolean[] columnSortOrderIsDesc, byte[] columnNullMarker, byte[] columnNotNullMarker) {
-    super(typeInfos, useExternalBuffer);
+      boolean[] columnSortOrderIsDesc, byte[] columnNullMarker, byte[] columnNotNullMarker) {
+    this(typeInfos, null, useExternalBuffer, columnSortOrderIsDesc, columnNullMarker,
+        columnNotNullMarker);
+  }
+
+  public BinarySortableDeserializeRead(TypeInfo[] typeInfos, DataTypePhysicalVariation[] dataTypePhysicalVariations,
+      boolean useExternalBuffer, boolean[] columnSortOrderIsDesc, byte[] columnNullMarker, byte[] columnNotNullMarker) {
+    super(typeInfos, dataTypePhysicalVariations, useExternalBuffer);
     final int count = typeInfos.length;
 
     root = new Field();

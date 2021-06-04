@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
@@ -853,7 +854,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
 
               decimalIsNull = !currentHiveDecimalWritable.mutateEnforcePrecisionScale(precision, scale);
               if (!decimalIsNull) {
-                if (field.dataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64) {
+                if (HiveDecimalWritable.isPrecisionDecimal64(precision)) {
                   currentDecimal64 = currentHiveDecimalWritable.serialize64(scale);
                 }
                 return true;

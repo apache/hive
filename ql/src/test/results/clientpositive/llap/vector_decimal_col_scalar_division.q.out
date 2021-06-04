@@ -131,14 +131,14 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 1
-                    dataColumns: VALUE._col0:decimal(14,6)
+                    dataColumns: VALUE._col0:decimal(14,6)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFMaxDecimal(col 0:decimal(14,6)) -> decimal(14,6)
+                    aggregators: VectorUDAFMaxDecimal64(col 0:decimal(14,6)/DECIMAL_64) -> decimal(14,6)/DECIMAL_64
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
                     native: false

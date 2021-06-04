@@ -726,9 +726,9 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
-                    dataColumns: KEY.reducesinkkey0:int, VALUE._col0:decimal(11,5)
+                    dataColumns: KEY.reducesinkkey0:int, VALUE._col0:decimal(11,5)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint]
+                    scratchColumnTypeNames: [bigint, decimal(11,5)]
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: decimal(11,5)), KEY.reducesinkkey0 (type: int)
@@ -760,7 +760,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations: min(col1), max(col1), count(1), count(col1), compute_bit_vector_hll(col1), min(col2), max(col2), count(col2), compute_bit_vector_hll(col2)
                     Group By Vectorization:
-                        aggregators: VectorUDAFMinDecimal(col 1:decimal(11,5)) -> decimal(11,5), VectorUDAFMaxDecimal(col 1:decimal(11,5)) -> decimal(11,5), VectorUDAFCount(ConstantVectorExpression(val 1) -> 2:int) -> bigint, VectorUDAFCount(col 1:decimal(11,5)) -> bigint, VectorUDAFComputeBitVectorDecimal(col 1:decimal(11,5)) -> binary, VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 0:int) -> int, VectorUDAFCount(col 0:int) -> bigint, VectorUDAFComputeBitVectorLong(col 0:int) -> binary
+                        aggregators: VectorUDAFMinDecimal64(col 1:decimal(11,5)/DECIMAL_64) -> decimal(11,5)/DECIMAL_64, VectorUDAFMaxDecimal64(col 1:decimal(11,5)/DECIMAL_64) -> decimal(11,5)/DECIMAL_64, VectorUDAFCount(ConstantVectorExpression(val 1) -> 2:int) -> bigint, VectorUDAFCount(col 1:decimal(11,5)/DECIMAL_64) -> bigint, VectorUDAFComputeBitVectorDecimal(ConvertDecimal64ToDecimal(col 1:decimal(11,5)/DECIMAL_64) -> 3:decimal(11,5)) -> binary, VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 0:int) -> int, VectorUDAFCount(col 0:int) -> bigint, VectorUDAFComputeBitVectorLong(col 0:int) -> binary
                         className: VectorGroupByOperator
                         groupByMode: COMPLETE
                         native: false

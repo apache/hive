@@ -1523,7 +1523,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
-                    dataColumns: KEY.reducesinkkey0:timestamp, VALUE._col1:decimal(4,2)
+                    dataColumns: KEY.reducesinkkey0:timestamp, VALUE._col1:decimal(4,2)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [bigint, decimal(4,2)]
             Reduce Operator Tree:
@@ -1572,7 +1572,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDecimalColEqualDecimalScalar(col 1:decimal(4,2), val 89.5)
+                        predicateExpression: FilterDecimal64ColEqualDecimal64Scalar(col 1:decimal(4,2)/DECIMAL_64, val 8950)
                     predicate: (_col2 = 89.5) (type: boolean)
                     Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: NONE
                     Select Operator

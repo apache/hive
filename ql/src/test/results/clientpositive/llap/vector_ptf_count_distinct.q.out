@@ -4523,9 +4523,9 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
-                    dataColumns: KEY.reducesinkkey0:decimal(10,0), VALUE._col1:decimal(10,0)
+                    dataColumns: KEY.reducesinkkey0:decimal(10,0), VALUE._col1:decimal(10,0)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint]
+                    scratchColumnTypeNames: [bigint, decimal(10,0)]
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col1 (type: decimal(10,0)), KEY.reducesinkkey0 (type: decimal(10,0))
@@ -4558,7 +4558,7 @@ STAGE PLANS:
                   PTF Vectorization:
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDecimalCountDistinct]
-                      functionInputExpressions: [col 1:decimal(10,0)]
+                      functionInputExpressions: [ConvertDecimal64ToDecimal(col 1:decimal(10,0)/DECIMAL_64) -> 3:decimal(10,0)]
                       functionNames: [count]
                       keyInputColumns: [0]
                       native: true
@@ -4601,9 +4601,9 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 3
-                    dataColumns: KEY.reducesinkkey0:decimal(10,0), VALUE._col0:bigint, VALUE._col2:decimal(10,0)
+                    dataColumns: KEY.reducesinkkey0:decimal(10,0), VALUE._col0:bigint, VALUE._col2:decimal(10,0)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint]
+                    scratchColumnTypeNames: [bigint, decimal(10,0)]
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: bigint), KEY.reducesinkkey0 (type: decimal(10,0)), VALUE._col2 (type: decimal(10,0))
@@ -4636,7 +4636,7 @@ STAGE PLANS:
                   PTF Vectorization:
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDecimalCountDistinct]
-                      functionInputExpressions: [col 2:decimal(10,0)]
+                      functionInputExpressions: [ConvertDecimal64ToDecimal(col 2:decimal(10,0)/DECIMAL_64) -> 4:decimal(10,0)]
                       functionNames: [count]
                       keyInputColumns: [0]
                       native: true
@@ -4678,7 +4678,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 4
-                    dataColumns: KEY.reducesinkkey0:decimal(10,0), VALUE._col0:decimal(10,0), VALUE._col1:bigint, VALUE._col2:bigint
+                    dataColumns: KEY.reducesinkkey0:decimal(10,0), VALUE._col0:decimal(10,0)/DECIMAL_64, VALUE._col1:bigint, VALUE._col2:bigint
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
@@ -4826,7 +4826,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
-                    dataColumns: KEY.reducesinkkey0:decimal(10,0), VALUE._col1:decimal(10,0)
+                    dataColumns: KEY.reducesinkkey0:decimal(10,0), VALUE._col1:decimal(10,0)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [bigint]
             Reduce Operator Tree:
@@ -4904,7 +4904,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 3
-                    dataColumns: KEY.reducesinkkey0:decimal(10,0), VALUE._col0:bigint, VALUE._col2:decimal(10,0)
+                    dataColumns: KEY.reducesinkkey0:decimal(10,0), VALUE._col0:bigint, VALUE._col2:decimal(10,0)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [bigint]
             Reduce Operator Tree:
@@ -4981,7 +4981,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 4
-                    dataColumns: KEY.reducesinkkey0:decimal(10,0), VALUE._col0:decimal(10,0), VALUE._col1:bigint, VALUE._col2:bigint
+                    dataColumns: KEY.reducesinkkey0:decimal(10,0), VALUE._col0:decimal(10,0)/DECIMAL_64, VALUE._col1:bigint, VALUE._col2:bigint
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
@@ -5216,7 +5216,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 4
-                    dataColumns: KEY.reducesinkkey0:decimal(10,0), VALUE._col0:decimal(10,0), VALUE._col1:bigint, VALUE._col2:bigint
+                    dataColumns: KEY.reducesinkkey0:decimal(10,0), VALUE._col0:decimal(10,0)/DECIMAL_64, VALUE._col1:bigint, VALUE._col2:bigint
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
@@ -5451,7 +5451,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 4
-                    dataColumns: KEY.reducesinkkey0:decimal(10,0), VALUE._col0:decimal(10,0), VALUE._col1:bigint, VALUE._col2:bigint
+                    dataColumns: KEY.reducesinkkey0:decimal(10,0), VALUE._col0:decimal(10,0)/DECIMAL_64, VALUE._col1:bigint, VALUE._col2:bigint
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
