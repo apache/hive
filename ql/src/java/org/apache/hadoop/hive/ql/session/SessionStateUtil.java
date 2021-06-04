@@ -93,7 +93,6 @@ public class SessionStateUtil {
   public static boolean addCommitInfo(Configuration conf, String tableName, String jobId, int taskNum,
                                          Map<String, String> additionalProps) {
     CommitInfo commitInfo = new CommitInfo()
-        .withTableName(tableName)
         .withJobID(jobId)
         .withTaskNum(taskNum)
         .withProps(additionalProps);
@@ -109,15 +108,9 @@ public class SessionStateUtil {
    * Container class for job commit information.
    */
   public static class CommitInfo {
-    String tableName;
     String jobIdStr;
     int taskNum;
     Map<String, String> props;
-
-    public CommitInfo withTableName(String tableName) {
-      this.tableName = tableName;
-      return this;
-    }
 
     public CommitInfo withJobID(String jobIdStr) {
       this.jobIdStr = jobIdStr;
@@ -132,10 +125,6 @@ public class SessionStateUtil {
     public CommitInfo withProps(Map<String, String> props) {
       this.props = props;
       return this;
-    }
-
-    public String getTableName() {
-      return tableName;
     }
 
     public String getJobIdStr() {
