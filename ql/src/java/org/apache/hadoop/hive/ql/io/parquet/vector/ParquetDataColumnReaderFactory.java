@@ -53,8 +53,12 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.TimeZone;
+
+import static com.google.common.base.MoreObjects.firstNonNull;
 
 /**
  * Parquet file has self-describing schema which may differ from the user required schema (e.g.
@@ -1211,23 +1215,19 @@ public final class ParquetDataColumnReaderFactory {
    * The reader who reads from the underlying Timestamp value value.
    */
   public static class TypesFromInt96PageReader extends DefaultParquetDataColumnReader {
-    private boolean skipTimestampConversion = false;
-    private ZoneId writerTimezone;
+    private final ZoneId targetZone;
     private boolean legacyConversionEnabled;
 
-    public TypesFromInt96PageReader(ValuesReader realReader, int length,
-        boolean skipTimestampConversion, ZoneId writerTimezone, boolean legacyConversionEnabled) {
+    public TypesFromInt96PageReader(ValuesReader realReader, int length, ZoneId targetZone,
+        boolean legacyConversionEnabled) {
       super(realReader, length);
-      this.skipTimestampConversion = skipTimestampConversion;
-      this.writerTimezone = writerTimezone;
+      this.targetZone = targetZone;
       this.legacyConversionEnabled = legacyConversionEnabled;
     }
 
-    public TypesFromInt96PageReader(Dictionary dict, int length, boolean skipTimestampConversion,
-        ZoneId writerTimezone, boolean legacyConversionEnabled) {
+    public TypesFromInt96PageReader(Dictionary dict, int length, ZoneId targetZone, boolean legacyConversionEnabled) {
       super(dict, length);
-      this.skipTimestampConversion = skipTimestampConversion;
-      this.writerTimezone = writerTimezone;
+      this.targetZone = targetZone;
       this.legacyConversionEnabled = legacyConversionEnabled;
     }
 
@@ -1237,7 +1237,7 @@ public final class ParquetDataColumnReaderFactory {
       long timeOfDayNanos = buf.getLong();
       int julianDay = buf.getInt();
       NanoTime nt = new NanoTime(julianDay, timeOfDayNanos);
-      return NanoTimeUtils.getTimestamp(nt, skipTimestampConversion, writerTimezone, legacyConversionEnabled);
+      return NanoTimeUtils.getTimestamp(nt, targetZone, legacyConversionEnabled);
     }
 
     @Override
@@ -1907,9 +1907,11 @@ public final class ParquetDataColumnReaderFactory {
       return isDictionary ? new TypesFromFloatPageReader(dictionary, length, hivePrecision,
           hiveScale) : new TypesFromFloatPageReader(valuesReader, length, hivePrecision, hiveScale);
     case INT96:
-      return isDictionary ? new TypesFromInt96PageReader(dictionary, length,
-          skipTimestampConversion, writerTimezone, legacyConversionEnabled) : new
-          TypesFromInt96PageReader(valuesReader, length, skipTimestampConversion, writerTimezone, legacyConversionEnabled);
+      ZoneId targetZone =
+          skipTimestampConversion ? ZoneOffset.UTC : firstNonNull(writerTimezone, TimeZone.getDefault().toZoneId());
+      return isDictionary ? 
+          new TypesFromInt96PageReader(dictionary, length, targetZone, legacyConversionEnabled) : 
+          new TypesFromInt96PageReader(valuesReader, length, targetZone, legacyConversionEnabled);
     case BOOLEAN:
       return isDictionary ? new TypesFromBooleanPageReader(dictionary, length) : new
           TypesFromBooleanPageReader(valuesReader, length);

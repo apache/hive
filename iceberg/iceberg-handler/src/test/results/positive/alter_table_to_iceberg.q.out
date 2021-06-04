@@ -249,7 +249,7 @@ Table Parameters:
 	rawDataSize         	116                 
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	568                 
+	totalSize           	607                 
 #### A masked pattern was here ####
 	write.format.default	parquet             
 	 	 
