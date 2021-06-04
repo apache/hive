@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -47,6 +48,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -54,6 +57,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
+import org.apache.hadoop.mapred.JobContextImpl;
+import org.apache.hadoop.mapred.JobID;
+import org.apache.hadoop.mapred.JobStatus;
+import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
@@ -267,6 +274,27 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return TableProperties.DEFAULT_FILE_FORMAT;
   }
 
+  @Override
+  public boolean useNativeCommit() {
+    return true;
+  }
+
+  @Override
+  public void nativeCommit(Properties tableProperties, boolean overwrite) {
+    String tableName = tableProperties.getProperty(Catalogs.NAME);
+    Configuration configuration = SessionState.getSessionConf();
+    Optional<JobContext> jobContext = getJobContextForCommitOrAbort(configuration, tableName, overwrite);
+    if (jobContext.isPresent()) {
+      try {
+        OutputCommitter committer = new HiveIcebergOutputCommitter();
+        committer.commitJob(jobContext.get());
+      } catch (Exception e) {
+        LOG.error("Error while trying to commit job", e);
+        rollbackInsertTable(configuration, tableName, overwrite);
+      }
+    }
+  }
+
   public boolean addDynamicSplitPruningEdge(org.apache.hadoop.hive.ql.metadata.Table table,
       ExprNodeDesc syntheticFilterPredicate) {
     try {
@@ -457,5 +485,40 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
 
     return column;
+  }
+
+  private void rollbackInsertTable(Configuration configuration, String tableName, boolean overwrite) {
+    Optional<JobContext> jobContext = getJobContextForCommitOrAbort(configuration, tableName, overwrite);
+    if (jobContext.isPresent()) {
+      OutputCommitter committer = new HiveIcebergOutputCommitter();
+      try {
+        LOG.info("rollbackInsertTable: Aborting job for jobID: {}, table: {}", jobContext.get().getJobID(), tableName);
+        committer.abortJob(jobContext.get(), JobStatus.State.FAILED);
+      } catch (IOException e) {
+        LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", e);
+        // no throwing here because the original commitInsertTable exception should be propagated
+      }
+    }
+  }
+
+  private Optional<JobContext> getJobContextForCommitOrAbort(Configuration configuration, String tableName,
+                                                             boolean overwrite) {
+    JobConf jobConf = new JobConf(configuration);
+    Optional<SessionStateUtil.CommitInfo> commitInfo = SessionStateUtil.getCommitInfo(jobConf, tableName);
+    if (commitInfo.isPresent()) {
+      JobID jobID = JobID.forName(commitInfo.get().getJobIdStr());
+      commitInfo.get().getProps().forEach(jobConf::set);
+      jobConf.setBoolean(InputFormatConfig.IS_OVERWRITE, overwrite);
+
+      // we should only commit this current table because
+      // for multi-table inserts, this hook method will be called sequentially for each target table
+      jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
+
+      return Optional.of(new JobContextImpl(jobConf, jobID, null));
+    } else {
+      // most likely empty write scenario
+      LOG.debug("Unable to find commit information in query state for table: {}", tableName);
+      return Optional.empty();
+    }
   }
 }

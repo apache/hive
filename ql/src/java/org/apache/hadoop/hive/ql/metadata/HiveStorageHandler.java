@@ -37,6 +37,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * HiveStorageHandler defines a pluggable interface for adding
@@ -262,5 +263,23 @@ public interface HiveStorageHandler extends Configurable {
    */
   default String getFileFormatPropertyKey() {
     return null;
+  }
+
+  /**
+   * Check if we should use the {@link #nativeCommit(Properties, boolean)} method for committing inserts instead of
+   * using file copy in the {@link org.apache.hadoop.hive.ql.exec.MoveTask}-s.
+   * @return
+   */
+  default boolean useNativeCommit() {
+    return false;
+  }
+
+  /**
+   * Commits the inserts for the non-native tables. Used in the {@link org.apache.hadoop.hive.ql.exec.MoveTask}.
+   * @param properties Table properties from LoadTableWork/TableDesc and LoadFileWork/CreateTableDesc
+   * @param overwrite If this is an INSERT OVERWRITE then it is true
+   */
+  default void nativeCommit(Properties properties, boolean overwrite) {
+    throw new UnsupportedOperationException();
   }
 }
