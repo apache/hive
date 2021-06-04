@@ -379,29 +379,21 @@ public class TezTask extends Task<TezWork> {
             if (child.isDirectory() && child.getPath().getName().contains(jobIdPrefix)) {
               // folder name pattern is queryID-jobID, we're removing the queryID part to get the jobID
               String jobIdStr = child.getPath().getName().substring(jobConf.get("hive.query.id").length() + 1);
-              // get all target tables this vertex wrote to
+
               List<String> tables = new ArrayList<>();
+              Map<String, String> icebergProperties = new HashMap<>();
               for (Map.Entry<String, String> entry : jobConf) {
                 if (entry.getKey().startsWith(ICEBERG_SERIALIZED_TABLE_PREFIX)) {
+                  // get all target tables this vertex wrote to
                   tables.add(entry.getKey().substring(ICEBERG_SERIALIZED_TABLE_PREFIX.length()));
+                } else if (entry.getKey().startsWith("iceberg.mr.")) {
+                  // find iceberg props in jobConf as they can be needed, but not available, during job commit
+                  icebergProperties.put(entry.getKey(), entry.getValue());
                 }
               }
-              // find iceberg props in jobConf as they can be needed, but not available, during job commit
-              Map<String, String> icebergProperties = new HashMap<>();
-              jobConf.forEach(e -> {
-                // don't copy the serialized tables, they're not needed anymore and take up lots of space
-                if (e.getKey().startsWith("iceberg.mr.") && !e.getKey().startsWith(ICEBERG_SERIALIZED_TABLE_PREFIX)) {
-                  icebergProperties.put(e.getKey(), e.getValue());
-                }
-              });
-              // save information for each target table (jobID, task num)
-              for (String table : tables) {
-                SessionStateUtil.newCommitInfo(jobConf, table)
-                    .withJobID(jobIdStr)
-                    .withTaskNum(status.getProgress().getSucceededTaskCount())
-                    .withProps(icebergProperties)
-                    .save();
-              }
+              // save information for each target table
+              tables.forEach(table -> SessionStateUtil.addCommitInfo(jobConf, table, jobIdStr,
+                  status.getProgress().getSucceededTaskCount(), icebergProperties));
             }
           }
         } else {

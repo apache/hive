@@ -445,11 +445,11 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   public void commitInsertTable(org.apache.hadoop.hive.metastore.api.Table table, boolean overwrite)
       throws MetaException {
     String tableName = TableIdentifier.of(table.getDbName(), table.getTableName()).toString();
-    JobContext jobContext = getJobContextForCommitOrAbort(tableName, overwrite);
-    if (jobContext != null) {
+    Optional<JobContext> jobContext = getJobContextForCommitOrAbort(tableName, overwrite);
+    if (jobContext.isPresent()) {
       try {
         OutputCommitter committer = new HiveIcebergOutputCommitter();
-        committer.commitJob(jobContext);
+        committer.commitJob(jobContext.get());
       } catch (Exception e) {
         LOG.error("Error while trying to commit job", e);
         throw new MetaException(StringUtils.stringifyException(e));
@@ -461,12 +461,12 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   public void rollbackInsertTable(org.apache.hadoop.hive.metastore.api.Table table, boolean overwrite)
       throws MetaException {
     String tableName = TableIdentifier.of(table.getDbName(), table.getTableName()).toString();
-    JobContext jobContext = getJobContextForCommitOrAbort(tableName, overwrite);
-    if (jobContext != null) {
+    Optional<JobContext> jobContext = getJobContextForCommitOrAbort(tableName, overwrite);
+    if (jobContext.isPresent()) {
       OutputCommitter committer = new HiveIcebergOutputCommitter();
       try {
-        LOG.info("rollbackInsertTable: Aborting job for jobID: {} and table: {}", jobContext.getJobID(), tableName);
-        committer.abortJob(jobContext, JobStatus.State.FAILED);
+        LOG.info("rollbackInsertTable: Aborting job for jobID: {}, table: {}", jobContext.get().getJobID(), tableName);
+        committer.abortJob(jobContext.get(), JobStatus.State.FAILED);
       } catch (IOException e) {
         LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", e);
         // no throwing here because the original commitInsertTable exception should be propagated
@@ -474,7 +474,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
     }
   }
 
-  private JobContext getJobContextForCommitOrAbort(String tableName, boolean overwrite) {
+  private Optional<JobContext> getJobContextForCommitOrAbort(String tableName, boolean overwrite) {
     JobConf jobConf = new JobConf(conf);
     Optional<SessionStateUtil.CommitInfo> commitInfo = SessionStateUtil.getCommitInfo(jobConf, tableName);
     if (commitInfo.isPresent()) {
@@ -486,11 +486,11 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
       // for multi-table inserts, this hook method will be called sequentially for each target table
       jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
 
-      return new JobContextImpl(jobConf, jobID, null);
+      return Optional.of(new JobContextImpl(jobConf, jobID, null));
     } else {
       // most likely empty write scenario
       LOG.debug("Unable to find commit information in query state for table: {}", tableName);
-      return null;
+      return Optional.empty();
     }
   }
 }

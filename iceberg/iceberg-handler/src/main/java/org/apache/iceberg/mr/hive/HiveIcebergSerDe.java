@@ -183,8 +183,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         serDeProperties.get(Catalogs.NAME), tableSchema, serDeProperties.get(InputFormatConfig.PARTITION_SPEC));
     Catalogs.createTable(configuration, serDeProperties);
 
-    // set these in the query state so that we can rollback the table in the lifecycle hook in case of failures
-    SessionStateUtil.addResource(configuration, InputFormatConfig.IS_CTAS_QUERY, "true");
+    // set this in the query state so that we can rollback the table in the lifecycle hook in case of failures
     SessionStateUtil.addResource(configuration, InputFormatConfig.CTAS_TABLE_NAME,
         serDeProperties.getProperty(Catalogs.NAME));
   }

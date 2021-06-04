@@ -82,8 +82,22 @@ public class SessionStateUtil {
         .map(o -> (CommitInfo) o);
   }
 
-  public static CommitInfo newCommitInfo(Configuration conf, String tableName) {
-    return new CommitInfo(conf, tableName);
+  /**
+   * @param conf Configuration object used for getting the query state, should contain the query id
+   * @param tableName Name of the table for which the commit info should be stored
+   * @param jobId The job ID
+   * @param taskNum The number of successful tasks for the job
+   * @param additionalProps Any additional properties related to the job commit
+   * @return whether the operation succeeded
+   */
+  public static boolean addCommitInfo(Configuration conf, String tableName, String jobId, int taskNum,
+                                         Map<String, String> additionalProps) {
+    CommitInfo commitInfo = new CommitInfo()
+        .withTableName(tableName)
+        .withJobID(jobId)
+        .withTaskNum(taskNum)
+        .withProps(additionalProps);
+    return addResource(conf, COMMIT_INFO_PREFIX + tableName, commitInfo);
   }
 
   private static Optional<QueryState> getQueryState(Configuration conf) {
@@ -91,18 +105,19 @@ public class SessionStateUtil {
         .map(session -> session.getQueryState(conf.get(HiveConf.ConfVars.HIVEQUERYID.varname)));
   }
 
+  /**
+   * Container class for job commit information.
+   */
   public static class CommitInfo {
-
-    public CommitInfo(Configuration conf, String tableName) {
-      this.conf = conf;
-      this.tableName = tableName;
-    }
-
-    Configuration conf;
     String tableName;
     String jobIdStr;
     int taskNum;
     Map<String, String> props;
+
+    public CommitInfo withTableName(String tableName) {
+      this.tableName = tableName;
+      return this;
+    }
 
     public CommitInfo withJobID(String jobIdStr) {
       this.jobIdStr = jobIdStr;
@@ -117,17 +132,6 @@ public class SessionStateUtil {
     public CommitInfo withProps(Map<String, String> props) {
       this.props = props;
       return this;
-    }
-
-    /**
-     * Saves the commit information it contains into the QueryState.
-     * Once save() has been called on the CommitInfo object, it cannot be reused.
-     * @return whether the operation succeeded
-     */
-    public boolean save() {
-      boolean success = addResource(conf, COMMIT_INFO_PREFIX + tableName, this);
-      this.conf = null; // nulling this out so as not to accidentally keep it from being GC-ed
-      return success;
     }
 
     public String getTableName() {
