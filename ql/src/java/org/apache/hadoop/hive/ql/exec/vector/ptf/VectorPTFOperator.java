@@ -28,6 +28,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -99,6 +100,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
   private int[] outputProjectionColumnMap;
   private String[] outputColumnNames;
   private TypeInfo[] outputTypeInfos;
+  private DataTypePhysicalVariation[] outputDataTypePhysicalVariations;
 
   private int evaluatorCount;
   private String[] evaluatorFunctionNames;
@@ -179,6 +181,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
 
     outputColumnNames = this.vectorDesc.getOutputColumnNames();
     outputTypeInfos = this.vectorDesc.getOutputTypeInfos();
+    outputDataTypePhysicalVariations = this.vectorDesc.getOutputDataTypePhysicalVariations();
     outputProjectionColumnMap = vectorPTFInfo.getOutputColumnMap();
 
     /*
