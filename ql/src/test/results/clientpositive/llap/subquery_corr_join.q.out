@@ -1,0 +1,285 @@
+PREHOOK: query: create table alltypestiny(
+id int,
+int_col int,
+bigint_col bigint,
+bool_col boolean
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypestiny
+POSTHOOK: query: create table alltypestiny(
+id int,
+int_col int,
+bigint_col bigint,
+bool_col boolean
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alltypestiny
+PREHOOK: query: insert into alltypestiny(id, int_col, bigint_col, bool_col) values
+(1, 1, 10, true),
+(2, 4, 5, false),
+(3, 5, 15, true),
+(10, 10, 30, false)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@alltypestiny
+POSTHOOK: query: insert into alltypestiny(id, int_col, bigint_col, bool_col) values
+(1, 1, 10, true),
+(2, 4, 5, false),
+(3, 5, 15, true),
+(10, 10, 30, false)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@alltypestiny
+POSTHOOK: Lineage: alltypestiny.bigint_col SCRIPT []
+POSTHOOK: Lineage: alltypestiny.bool_col SCRIPT []
+POSTHOOK: Lineage: alltypestiny.id SCRIPT []
+POSTHOOK: Lineage: alltypestiny.int_col SCRIPT []
+PREHOOK: query: create table alltypesagg(
+id int,
+int_col int,
+bool_col boolean
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypesagg
+POSTHOOK: query: create table alltypesagg(
+id int,
+int_col int,
+bool_col boolean
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alltypesagg
+PREHOOK: query: insert into alltypesagg(id, int_col, bool_col) values
+(1, 1, true),
+(2, 4, false),
+(5, 6, true),
+(null, null, false)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@alltypesagg
+POSTHOOK: query: insert into alltypesagg(id, int_col, bool_col) values
+(1, 1, true),
+(2, 4, false),
+(5, 6, true),
+(null, null, false)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@alltypesagg
+POSTHOOK: Lineage: alltypesagg.bool_col SCRIPT []
+POSTHOOK: Lineage: alltypesagg.id SCRIPT []
+POSTHOOK: Lineage: alltypesagg.int_col SCRIPT []
+PREHOOK: query: select tt1.id
+     from alltypestiny tt1 left JOIN alltypesagg tt2
+     on tt1.int_col = tt2.int_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesagg
+PREHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+POSTHOOK: query: select tt1.id
+     from alltypestiny tt1 left JOIN alltypesagg tt2
+     on tt1.int_col = tt2.int_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesagg
+POSTHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+1
+2
+3
+10
+Warning: Shuffle Join MERGEJOIN[63][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 6' is a cross product
+Warning: Shuffle Join MERGEJOIN[65][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+PREHOOK: query: select *
+from alltypesagg t1
+where t1.id not in
+    (select tt1.id
+     from alltypestiny tt1 inner JOIN alltypesagg tt2
+     on tt1.int_col = t1.int_col)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesagg
+PREHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+POSTHOOK: query: select *
+from alltypesagg t1
+where t1.id not in
+    (select tt1.id
+     from alltypestiny tt1 inner JOIN alltypesagg tt2
+     on tt1.int_col = t1.int_col)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesagg
+POSTHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+5	6	true
+NULL	NULL	false
+Warning: Shuffle Join MERGEJOIN[63][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 6' is a cross product
+Warning: Shuffle Join MERGEJOIN[65][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+PREHOOK: query: explain cbo select *
+from alltypesagg t1
+where t1.id not in
+    (select tt1.id
+     from alltypestiny tt1 inner JOIN alltypesagg tt2
+     on tt1.int_col = t1.int_col)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesagg
+PREHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select *
+from alltypesagg t1
+where t1.id not in
+    (select tt1.id
+     from alltypestiny tt1 inner JOIN alltypesagg tt2
+     on tt1.int_col = t1.int_col)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesagg
+POSTHOOK: Input: default@alltypestiny
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(id=[$0], int_col=[$1], bool_col=[$2])
+  HiveFilter(condition=[OR(IS NULL($4), =($4, 0), IS NOT TRUE(OR(IS NOT NULL($7), IS NULL($0), <($5, $4))))])
+    HiveJoin(condition=[AND(=($0, $6), =($8, $1))], joinType=[left], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[=($3, $1)], joinType=[left], algorithm=[none], cost=[not available])
+        HiveProject(id=[$0], int_col=[$1], bool_col=[$2])
+          HiveTableScan(table=[[default, alltypesagg]], table:alias=[t1])
+        HiveProject(int_col=[$0], c=[$1], ck=[$2])
+          HiveAggregate(group=[{1}], c=[COUNT()], ck=[COUNT($0)])
+            HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(id=[$0], int_col=[$1])
+                HiveFilter(condition=[IS NOT NULL($1)])
+                  HiveTableScan(table=[[default, alltypestiny]], table:alias=[tt1])
+              HiveProject(DUMMY=[0])
+                HiveTableScan(table=[[default, alltypesagg]], table:alias=[tt2])
+      HiveProject(id=[$0], literalTrue=[true], int_col=[$1])
+        HiveAggregate(group=[{0, 1}])
+          HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(id=[$0], int_col=[$1])
+              HiveFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
+                HiveTableScan(table=[[default, alltypestiny]], table:alias=[tt1])
+            HiveProject(DUMMY=[0])
+              HiveTableScan(table=[[default, alltypesagg]], table:alias=[tt2])
+
+PREHOOK: query: create table ta
+(
+    id int,
+    ca varchar(5)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ta
+POSTHOOK: query: create table ta
+(
+    id int,
+    ca varchar(5)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ta
+PREHOOK: query: insert into ta values (1, 'a1'), (2, 'a2'), (null, 'a3')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ta
+POSTHOOK: query: insert into ta values (1, 'a1'), (2, 'a2'), (null, 'a3')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ta
+POSTHOOK: Lineage: ta.ca SCRIPT []
+POSTHOOK: Lineage: ta.id SCRIPT []
+PREHOOK: query: create table tb
+(
+    id int,
+    cb varchar(5)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tb
+POSTHOOK: query: create table tb
+(
+    id int,
+    cb varchar(5)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tb
+PREHOOK: query: insert into tb values (1, 'b1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tb
+POSTHOOK: query: insert into tb values (1, 'b1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tb
+POSTHOOK: Lineage: tb.cb SCRIPT []
+POSTHOOK: Lineage: tb.id SCRIPT []
+PREHOOK: query: create table tc
+(
+    cc varchar(5)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tc
+POSTHOOK: query: create table tc
+(
+    cc varchar(5)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tc
+PREHOOK: query: insert into tc values ('c1'), ('c2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tc
+POSTHOOK: query: insert into tc values ('c1'), ('c2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tc
+POSTHOOK: Lineage: tc.cc SCRIPT []
+Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
+PREHOOK: query: select *
+from ta
+where exists
+    (select 1
+     from tb inner JOIN tc
+     on ta.id = tb.id)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ta
+PREHOOK: Input: default@tb
+PREHOOK: Input: default@tc
+#### A masked pattern was here ####
+POSTHOOK: query: select *
+from ta
+where exists
+    (select 1
+     from tb inner JOIN tc
+     on ta.id = tb.id)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ta
+POSTHOOK: Input: default@tb
+POSTHOOK: Input: default@tc
+#### A masked pattern was here ####
+1	a1
+Warning: Shuffle Join MERGEJOIN[26][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
+PREHOOK: query: select *
+from ta
+where not exists
+    (select 1
+     from tb inner JOIN tc
+     on ta.id = tb.id)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ta
+PREHOOK: Input: default@tb
+PREHOOK: Input: default@tc
+#### A masked pattern was here ####
+POSTHOOK: query: select *
+from ta
+where not exists
+    (select 1
+     from tb inner JOIN tc
+     on ta.id = tb.id)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ta
+POSTHOOK: Input: default@tb
+POSTHOOK: Input: default@tc
+#### A masked pattern was here ####
+2	a2
+NULL	a3
