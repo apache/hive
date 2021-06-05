@@ -4933,14 +4933,20 @@ public class Vectorizer implements PhysicalPlanResolver {
      * Output columns.
      */
 
+
+    TypeInfo[] reducerBatchTypeInfos = vContext.getAllTypeInfos();
+    DataTypePhysicalVariation[] reducerBatchDataTypePhysicalVariations = vContext.getAllDataTypePhysicalVariations();
+
     // Evaluator results are first.
     String[] outputColumnNames = new String[outputSize];
     TypeInfo[] outputTypeInfos = new TypeInfo[outputSize];
+    DataTypePhysicalVariation[] outputDataTypePhysicalVariations = new DataTypePhysicalVariation[outputSize];
     for (int i = 0; i < functionCount; i++) {
       ColumnInfo colInfo = outputSignature.get(i);
       TypeInfo typeInfo = colInfo.getType();
       outputColumnNames[i] = colInfo.getInternalName();
       outputTypeInfos[i] = typeInfo;
+      outputDataTypePhysicalVariations[i] = DataTypePhysicalVariation.NONE;
     }
 
     // Followed by key and non-key input columns (some may be missing).
@@ -4948,6 +4954,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       ColumnInfo colInfo = outputSignature.get(i);
       outputColumnNames[i] = colInfo.getInternalName();
       outputTypeInfos[i] = colInfo.getType();
+      outputDataTypePhysicalVariations[i] = reducerBatchDataTypePhysicalVariations[i-functionCount];
     }
 
     List<PTFExpressionDef> partitionExpressions = funcDef.getPartition().getExpressions();
@@ -4991,9 +4998,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         evaluatorWindowFrameDefs,
         evaluatorInputExprNodeDescLists);
 
-    TypeInfo[] reducerBatchTypeInfos = vContext.getAllTypeInfos();
-
-    vectorPTFDesc.setReducerBatchTypeInfos(reducerBatchTypeInfos);
+    vectorPTFDesc.setReducerBatchTypeInfos(reducerBatchTypeInfos, reducerBatchDataTypePhysicalVariations);
 
     vectorPTFDesc.setIsPartitionOrderBy(isPartitionOrderBy);
 
@@ -5006,7 +5011,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     vectorPTFDesc.setEvaluatorInputExprNodeDescLists(evaluatorInputExprNodeDescLists);
 
     vectorPTFDesc.setOutputColumnNames(outputColumnNames);
-    vectorPTFDesc.setOutputTypeInfos(outputTypeInfos);
+    vectorPTFDesc.setOutputTypeInfos(outputTypeInfos, outputDataTypePhysicalVariations);
 
     vectorPTFDesc.setVectorizedPTFMaxMemoryBufferingBatchCount(
         vectorizedPTFMaxMemoryBufferingBatchCount);

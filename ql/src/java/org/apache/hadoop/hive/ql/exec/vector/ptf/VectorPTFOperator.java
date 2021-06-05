@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -103,6 +104,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
   private int[] outputProjectionColumnMap;
   private String[] outputColumnNames;
   private TypeInfo[] outputTypeInfos;
+  private DataTypePhysicalVariation[] outputDataTypePhysicalVariations;
 
   private int evaluatorCount;
   private String[] evaluatorFunctionNames;
@@ -185,6 +187,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
 
     outputColumnNames = this.vectorDesc.getOutputColumnNames();
     outputTypeInfos = this.vectorDesc.getOutputTypeInfos();
+    outputDataTypePhysicalVariations = this.vectorDesc.getOutputDataTypePhysicalVariations();
     outputProjectionColumnMap = vectorPTFInfo.getOutputColumnMap();
 
     /*
@@ -233,14 +236,14 @@ public class VectorPTFOperator extends Operator<PTFDesc>
    * Allocate overflow batch columns by hand.
    */
   private void allocateOverflowBatchColumnVector(VectorizedRowBatch overflowBatch, int outputColumn,
-              String typeName) throws HiveException {
+              String typeName, DataTypePhysicalVariation dataTypePhysicalVariation) throws HiveException {
 
     if (overflowBatch.cols[outputColumn] == null) {
       typeName = VectorizationContext.mapTypeNameSynonyms(typeName);
 
       TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
 
-      overflowBatch.cols[outputColumn] = VectorizedBatchUtil.createColumnVector(typeInfo);
+      overflowBatch.cols[outputColumn] = VectorizedBatchUtil.createColumnVector(typeInfo, dataTypePhysicalVariation);
     }
   }
 
@@ -260,13 +263,16 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     for (int i = 0; i < outputProjectionColumnMap.length; i++) {
       int outputColumn = outputProjectionColumnMap[i];
       String typeName = outputTypeInfos[i].getTypeName();
-      allocateOverflowBatchColumnVector(overflowBatch, outputColumn, typeName);
+      allocateOverflowBatchColumnVector(overflowBatch, outputColumn, typeName,
+          vOutContext.getDataTypePhysicalVariation(outputColumn));
     }
 
     // Now, add any scratch columns needed for children operators.
     int outputColumn = initialColumnCount;
     for (String typeName : vOutContext.getScratchColumnTypeNames()) {
-      allocateOverflowBatchColumnVector(overflowBatch, outputColumn++, typeName);
+      allocateOverflowBatchColumnVector(overflowBatch, outputColumn, typeName,
+          vOutContext.getDataTypePhysicalVariation(outputColumn));
+      outputColumn += 1;
     }
 
     overflowBatch.projectedColumns = outputProjectionColumnMap;

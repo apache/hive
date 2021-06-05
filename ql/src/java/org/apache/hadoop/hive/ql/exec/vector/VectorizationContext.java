@@ -419,6 +419,16 @@ public class VectorizationContext {
     return result;
   }
 
+  public DataTypePhysicalVariation[] getAllDataTypePhysicalVariations() throws HiveException {
+    final int size = initialTypeInfos.size() + ocm.outputColCount;
+
+    DataTypePhysicalVariation[] result = new DataTypePhysicalVariation[size];
+    for (int i = 0; i < size; i++) {
+      result[i] = getDataTypePhysicalVariation(i);
+    }
+    return result;
+  }
+
   public static final Pattern decimalTypePattern = Pattern.compile("decimal.*",
       Pattern.CASE_INSENSITIVE);
 
