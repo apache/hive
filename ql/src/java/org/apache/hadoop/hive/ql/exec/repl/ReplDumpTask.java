@@ -742,7 +742,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         dumpTableListToDumpLocation(tableList, dumpRoot, dbName, conf);
       }
       setDataCopyIterators(extTableFileList, managedTblList);
-      work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS, lastReplId, snapshotCount);
+      work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS, lastReplId, snapshotCount, null);
       // Clean-up snapshots
       if (isSnapshotEnabled) {
         cleanupSnapshots(SnapshotUtils.getSnapshotFileListPath(dumpRoot), work.dbNameOrPattern.toLowerCase(), conf,
@@ -1071,7 +1071,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           }
         }
         replLogger.endLog(bootDumpBeginReplId.toString());
-        work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS, bootDumpBeginReplId, replSnapshotCount);
+        work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS, bootDumpBeginReplId, replSnapshotCount,
+            replLogger.getReplStatsTracker());
       }
       work.setFunctionCopyPathIterator(functionsBinaryCopyPaths.iterator());
       setDataCopyIterators(extTableFileList, managedTblList);
