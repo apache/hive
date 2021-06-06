@@ -1716,8 +1716,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
       Path path = new Path(db.getLocationUri()).getParent();
       if (!wh.isWritable(path)) {
-        throw new MetaException("Database not dropped since " +
-            path + " is not writable by " +
+        throw new MetaException("Database not dropped since its external warehouse location " + path + " is not writable by " +
+            SecurityUtils.getUser());
+      }
+      path = wh.getDatabaseManagedPath(db).getParent();
+      if (!wh.isWritable(path)) {
+        throw new MetaException("Database not dropped since its managed warehouse location " + path + " is not writable by " +
             SecurityUtils.getUser());
       }
 
@@ -1845,23 +1849,36 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         for (Path tablePath : tablePaths) {
           deleteTableData(tablePath, false, db);
         }
-        // Delete the data in the database
+        final Database dbFinal = db;
+        final Path path = (dbFinal.getManagedLocationUri() != null) ?
+            new Path(dbFinal.getManagedLocationUri()) : wh.getDatabaseManagedPath(dbFinal);
         try {
-          if (db.getManagedLocationUri() != null) {
-            wh.deleteDir(new Path(db.getManagedLocationUri()), true, db);
+
+          Boolean deleted = UserGroupInformation.getLoginUser().doAs(new PrivilegedExceptionAction<Boolean>() {
+            @Override public Boolean run() throws IOException, MetaException {
+              return wh.deleteDir(path, true, dbFinal);
+            }
+          });
+          if (!deleted) {
+            LOG.error("Failed to delete database's managed warehouse directory: " + path);
           }
         } catch (Exception e) {
-          LOG.error("Failed to delete database directory: " + db.getManagedLocationUri() +
-              " " + e.getMessage());
+          LOG.error("Failed to delete database's managed warehouse directory: " + path + " " + e.getMessage());
         }
-        // Delete the data in the database's location only if it is a legacy db path?
+
         try {
-          wh.deleteDir(new Path(db.getLocationUri()), true, db);
-        } catch (Exception e) {
-          LOG.error("Failed to delete database directory: " + db.getLocationUri() +
-              " " + e.getMessage());
+          Boolean deleted = UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<Boolean>() {
+            @Override public Boolean run() throws MetaException {
+              return wh.deleteDir(new Path(dbFinal.getLocationUri()), true, dbFinal);
+            }
+          });
+          if (!deleted) {
+            LOG.error("Failed to delete database external warehouse directory " + db.getLocationUri());
+          }
+        } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
+          LOG.error("Failed to delete the database external warehouse directory: " + db.getLocationUri() + " " + e
+              .getMessage());
         }
-        // it is not a terrible thing even if the data is not deleted
       }
 
       if (!listeners.isEmpty()) {
