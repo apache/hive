@@ -162,7 +162,7 @@ public class ReplStateLogWork implements Serializable {
         metricCollector.reportStageEnd("REPL_LOAD", Status.SUCCESS);
       } else {
         metricCollector.reportStageEnd("REPL_LOAD", Status.SUCCESS,
-            Long.parseLong(lastReplId), new SnapshotUtils.ReplSnapshotCount());
+            Long.parseLong(lastReplId), new SnapshotUtils.ReplSnapshotCount(), replLogger.getReplStatsTracker());
       }
       metricCollector.reportEnd(Status.SUCCESS);
       break;

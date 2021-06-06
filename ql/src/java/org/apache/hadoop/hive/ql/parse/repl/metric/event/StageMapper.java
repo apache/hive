@@ -21,7 +21,6 @@ import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hive.common.util.SuppressFBWarnings;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -43,6 +42,8 @@ public class StageMapper {
   private String errorLogPath;
 
   private SnapshotUtils.ReplSnapshotCount replSnapshotCount = new SnapshotUtils.ReplSnapshotCount();
+
+  private String replStats;
 
   public StageMapper() {
 
@@ -73,6 +74,10 @@ public class StageMapper {
 
   public SnapshotUtils.ReplSnapshotCount getReplSnapshotCount() {
     return replSnapshotCount;
+  }
+
+  public String getReplStats() {
+    return replStats;
   }
 
 }
