@@ -3214,6 +3214,21 @@ public class TestJdbcDriver2 {
   }
 
   @Test
+  public void testResultSetShouldNotCloseStatement() throws SQLException {
+    Statement stmt = con.createStatement();
+    ResultSet res = stmt.executeQuery("select under_col from " + tableName + " limit 1");
+    res.next();
+    assertFalse(stmt.isClosed());
+    assertFalse(((HiveStatement)stmt).isQueryClosed());
+    res.close();
+    assertFalse(stmt.isClosed());
+    assertFalse(((HiveStatement)stmt).isQueryClosed()); // check HIVE-25203
+    stmt.close();
+    assertTrue(stmt.isClosed());
+    assertTrue(((HiveStatement)stmt).isQueryClosed());
+  }
+
+  @Test
   public void testReplDBLocationDelete() throws Exception {
     // Create a database and dump.
     String primaryDb =
