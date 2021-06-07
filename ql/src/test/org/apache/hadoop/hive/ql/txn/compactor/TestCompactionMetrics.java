@@ -745,9 +745,57 @@ public class TestCompactionMetrics  extends CompactorTest {
     Set<Long> abort2 = LongStream.range(21, 31).boxed().collect(Collectors.toSet());
     Set<Long> abort3 = LongStream.range(41, 61).boxed().collect(Collectors.toSet());
 
-    burnThroughTransactions(t1.getDbName(), t1.getTableName(), 20, null, abort1);
-    burnThroughTransactions(t2.getDbName(), t2.getTableName(), 20, null, abort2);
-    burnThroughTransactions(t3.getDbName(), t3.getTableName(), 30, null, abort3);
+    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, dbName);
+    comp.setOperationType(DataOperationType.INSERT);
+    LockRequest lockReq = new LockRequest(Lists.newArrayList(comp), "me", "localhost");
+
+    comp.setTablename(t1.getTableName());
+    burnThroughTransactions(t1.getDbName(), t1.getTableName(), 20, null, abort1, lockReq);
+    comp.setTablename(t2.getTableName());
+    burnThroughTransactions(t2.getDbName(), t2.getTableName(), 20, null, abort2, lockReq);
+    comp.setTablename(t3.getTableName());
+    burnThroughTransactions(t3.getDbName(), t3.getTableName(), 30, null, abort3, lockReq);
+
+    runAcidMetricService();
+
+    Assert.assertEquals(MetricsConstants.TABLES_WITH_X_ABORTED_TXNS + " value incorrect",
+        2, Metrics.getOrCreateGauge(MetricsConstants.TABLES_WITH_X_ABORTED_TXNS).intValue());
+  }
+
+  @Test
+  public void testPartTablesWithXAbortedTxns() throws Exception {
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_TABLES_WITH_ABORTED_TXNS_THRESHOLD, 4);
+
+    String dbName = "default";
+    String tblName = "table";
+
+    String part1 = "p1";
+    String part2 = "p2";
+    String part3 = "p3";
+
+    Table t = newTable(dbName, tblName, true);
+    newPartition(t, part1);
+    newPartition(t, part2);
+    newPartition(t, part3);
+    String partPattern = t.getPartitionKeys().get(0).getName() + "=%s";
+
+    Set<Long> abort1 = LongStream.range(1, 6).boxed().collect(Collectors.toSet());
+    Set<Long> abort2 = LongStream.range(11, 16).boxed().collect(Collectors.toSet());
+
+    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, dbName);
+    comp.setTablename(tblName);
+    comp.setOperationType(DataOperationType.INSERT);
+    LockRequest lockReq = new LockRequest(Lists.newArrayList(comp), "me", "localhost");
+
+
+    comp.setPartitionname(String.format(partPattern, part1));
+    burnThroughTransactions(t.getDbName(), t.getTableName(), 10, null, abort1, lockReq);
+
+    comp.setPartitionname(String.format(partPattern, part2));
+    burnThroughTransactions(t.getDbName(), t.getTableName(), 10, null, abort2, lockReq);
+
+    comp.setPartitionname(String.format(partPattern, part3));
+    burnThroughTransactions(t.getDbName(), t.getTableName(), 10, null, null, lockReq);
 
     runAcidMetricService();
 
