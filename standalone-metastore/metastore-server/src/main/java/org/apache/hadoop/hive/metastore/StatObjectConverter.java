@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore;
 
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
@@ -230,6 +232,98 @@ public class StatObjectConverter {
       oldStatsObj.setNumNulls(mStatsObj.getNumNulls());
     }
     oldStatsObj.setEngine(mStatsObj.getEngine());
+  }
+
+  public static String getUpdatedColumnSql(MPartitionColumnStatistics mStatsObj) {
+    StringBuilder setStmt = new StringBuilder();
+    if (mStatsObj.getAvgColLen() != null) {
+      setStmt.append("\"AVG_COL_LEN\" = ? ,");
+    }
+    if (mStatsObj.getLongHighValue() != null) {
+      setStmt.append("\"LONG_HIGH_VALUE\" = ? ,");
+    }
+    if (mStatsObj.getDoubleHighValue() != null) {
+      setStmt.append("\"DOUBLE_HIGH_VALUE\" = ? ,");
+    }
+    setStmt.append("\"LAST_ANALYZED\" = ? ,");
+    if (mStatsObj.getLongLowValue() != null) {
+      setStmt.append("\"LONG_LOW_VALUE\" = ? ,");
+    }
+    if (mStatsObj.getDoubleLowValue() != null) {
+      setStmt.append("\"DOUBLE_LOW_VALUE\" = ? ,");
+    }
+    if (mStatsObj.getDecimalLowValue() != null) {
+      setStmt.append("\"BIG_DECIMAL_LOW_VALUE\" = ? ,");
+    }
+    if (mStatsObj.getDecimalHighValue() != null) {
+      setStmt.append("\"BIG_DECIMAL_HIGH_VALUE\" = ? ,");
+    }
+    if (mStatsObj.getMaxColLen() != null) {
+      setStmt.append("\"MAX_COL_LEN\" = ? ,");
+    }
+    if (mStatsObj.getNumDVs() != null) {
+      setStmt.append("\"NUM_DISTINCTS\" = ? ,");
+    }
+    if (mStatsObj.getBitVector() != null) {
+      setStmt.append("\"BIT_VECTOR\" = ? ,");
+    }
+    if (mStatsObj.getNumFalses() != null) {
+      setStmt.append("\"NUM_FALSES\" = ? ,");
+    }
+    if (mStatsObj.getNumTrues() != null) {
+      setStmt.append(" \"NUM_TRUES\" = ? ,");
+    }
+    if (mStatsObj.getNumNulls() != null) {
+      setStmt.append("\"NUM_NULLS\" = ? ,");
+    }
+    setStmt.append("\"ENGINE\" = ? ");
+    return setStmt.toString();
+  }
+
+  public static void initUpdatedColumnStatement(MPartitionColumnStatistics mStatsObj,
+                                                      PreparedStatement pst) throws SQLException {
+    int colIdx = 1;
+    if (mStatsObj.getAvgColLen() != null) {
+      pst.setObject(colIdx++, mStatsObj.getAvgColLen());
+    }
+    if (mStatsObj.getLongHighValue() != null) {
+      pst.setObject(colIdx++, mStatsObj.getLongHighValue());
+    }
+    if (mStatsObj.getDoubleHighValue() != null) {
+      pst.setObject(colIdx++, mStatsObj.getDoubleHighValue());
+    }
+    pst.setLong(colIdx++, mStatsObj.getLastAnalyzed());
+    if (mStatsObj.getLongLowValue() != null) {
+      pst.setObject(colIdx++, mStatsObj.getLongLowValue());
+    }
+    if (mStatsObj.getDoubleLowValue() != null) {
+      pst.setObject(colIdx++, mStatsObj.getDoubleLowValue());
+    }
+    if (mStatsObj.getDecimalLowValue() != null) {
+      pst.setObject(colIdx++, mStatsObj.getDecimalLowValue());
+    }
+    if (mStatsObj.getDecimalHighValue() != null) {
+      pst.setObject(colIdx++, mStatsObj.getDecimalHighValue());
+    }
+    if (mStatsObj.getMaxColLen() != null) {
+      pst.setObject(colIdx++, mStatsObj.getMaxColLen());
+    }
+    if (mStatsObj.getNumDVs() != null) {
+      pst.setObject(colIdx++, mStatsObj.getNumDVs());
+    }
+    if (mStatsObj.getBitVector() != null) {
+      pst.setObject(colIdx++, mStatsObj.getBitVector());
+    }
+    if (mStatsObj.getNumFalses() != null) {
+      pst.setObject(colIdx++, mStatsObj.getNumFalses());
+    }
+    if (mStatsObj.getNumTrues() != null) {
+      pst.setObject(colIdx++, mStatsObj.getNumTrues());
+    }
+    if (mStatsObj.getNumNulls() != null) {
+      pst.setObject(colIdx++, mStatsObj.getNumNulls());
+    }
+    pst.setString(colIdx++, mStatsObj.getEngine());
   }
 
   public static ColumnStatisticsObj getTableColumnStatisticsObj(

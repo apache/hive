@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -213,11 +214,14 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
       }
     } else {
       List<String> partitions = new ArrayList<String>();
-      partitions.add(part.getName());
+      // The partition name is converted to lowercase before generating the stats. So we should use the same
+      // lower case name to get the stats.
+      String partName = HMSHandler.lowerCaseConvertPartName(part.getName());
+      partitions.add(partName);
       cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer));
       Map<String, List<ColumnStatisticsObj>> partitionColumnStatistics = context.getDb().getPartitionColumnStatistics(
           tableName.getDb().toLowerCase(), tableName.getTable().toLowerCase(), partitions, colNames, false);
-      List<ColumnStatisticsObj> partitionColStat = partitionColumnStatistics.get(part.getName());
+      List<ColumnStatisticsObj> partitionColStat = partitionColumnStatistics.get(partName);
       if (partitionColStat != null) {
         colStats.addAll(partitionColStat);
       }
