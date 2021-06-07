@@ -1549,11 +1549,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
           if (db.getCatalogName() != null && !db.getCatalogName().
               equals(Warehouse.DEFAULT_CATALOG_NAME)) {
-            if (madeManagedDir) {
+            if (madeManagedDir && dbMgdPath != null) {
               wh.deleteDir(dbMgdPath, true, db);
             }
           } else {
-            if (madeManagedDir) {
+            if (madeManagedDir && dbMgdPath != null) {
               try {
                 UserGroupInformation.getLoginUser().doAs(new PrivilegedExceptionAction<Void>() {
                   @Override public Void run() throws Exception {
@@ -1567,7 +1567,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               }
             }
 
-            if (madeExternalDir) {
+            if (madeExternalDir && dbExtPath != null) {
               try {
                 UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<Void>() {
                   @Override public Void run() throws Exception {
