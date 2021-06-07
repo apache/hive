@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorBase;
@@ -132,6 +133,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
   }
 
   private TypeInfo[] reducerBatchTypeInfos;
+  private DataTypePhysicalVariation[] reducerBatchDataTypePhysicalVariations;
 
   private boolean isPartitionOrderBy;
 
@@ -145,6 +147,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
 
   private String[] outputColumnNames;
   private TypeInfo[] outputTypeInfos;
+  private DataTypePhysicalVariation[] outputDataTypePhysicalVariations;
 
   private VectorPTFInfo vectorPTFInfo;
 
@@ -421,8 +424,10 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     return reducerBatchTypeInfos;
   }
 
-  public void setReducerBatchTypeInfos(TypeInfo[] reducerBatchTypeInfos) {
+  public void setReducerBatchTypeInfos(TypeInfo[] reducerBatchTypeInfos,
+      DataTypePhysicalVariation[] reducerBatchDataTypePhysicalVariations) {
     this.reducerBatchTypeInfos = reducerBatchTypeInfos;
+    this.reducerBatchDataTypePhysicalVariations = reducerBatchDataTypePhysicalVariations;
   }
 
   public boolean getIsPartitionOrderBy() {
@@ -493,8 +498,14 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     return outputTypeInfos;
   }
 
-  public void setOutputTypeInfos(TypeInfo[] outputTypeInfos) {
+  public DataTypePhysicalVariation[] getOutputDataTypePhysicalVariations() {
+    return outputDataTypePhysicalVariations;
+  }
+
+  public void setOutputTypeInfos(TypeInfo[] outputTypeInfos,
+      DataTypePhysicalVariation[] outputDataTypePhysicalVariations) {
     this.outputTypeInfos = outputTypeInfos;
+    this.outputDataTypePhysicalVariations = outputDataTypePhysicalVariations;
   }
 
   public void setVectorPTFInfo(VectorPTFInfo vectorPTFInfo) {
