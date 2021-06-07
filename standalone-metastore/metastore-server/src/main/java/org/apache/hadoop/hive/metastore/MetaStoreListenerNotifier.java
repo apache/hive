@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.BatchAcidWriteEvent;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDataConnectorEvent;
@@ -267,6 +268,8 @@ public class MetaStoreListenerNotifier {
               (listener, event) -> listener.onAllocWriteId((AllocWriteIdEvent) event, null, null))
           .put(EventType.ACID_WRITE,
                   (listener, event) -> listener.onAcidWrite((AcidWriteEvent) event, null, null))
+          .put(EventType.BATCH_ACID_WRITE,
+                  (listener, event) -> listener.onBatchAcidWrite((BatchAcidWriteEvent) event, null, null))
           .put(EventType.UPDATE_TABLE_COLUMN_STAT,
                       (listener, event) -> listener.onUpdateTableColumnStat((UpdateTableColumnStatEvent) event))
           .put(EventType.DELETE_TABLE_COLUMN_STAT,
@@ -300,6 +303,9 @@ public class MetaStoreListenerNotifier {
       .put(EventType.ACID_WRITE,
         (listener, event, dbConn, sqlGenerator) ->
                 listener.onAcidWrite((AcidWriteEvent) event, dbConn, sqlGenerator))
+      .put(EventType.BATCH_ACID_WRITE,
+              (listener, event, dbConn, sqlGenerator) ->
+                      listener.onBatchAcidWrite((BatchAcidWriteEvent) event, dbConn, sqlGenerator))
       .put(EventType.COMMIT_COMPACTION,
         (listener, event, dbConn, sqlGenerator) -> listener
             .onCommitCompaction((CommitCompactionEvent) event, dbConn, sqlGenerator))

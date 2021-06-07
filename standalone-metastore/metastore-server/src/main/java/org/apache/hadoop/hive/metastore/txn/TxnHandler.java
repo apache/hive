@@ -144,6 +144,7 @@ import org.apache.hadoop.hive.metastore.datasource.DataSourceProviderFactory;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
+import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
@@ -2382,7 +2383,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   @Override
   @RetrySemantics.Idempotent
-  public void addWriteNotificationLog(AcidWriteEvent acidWriteEvent)
+  public void addWriteNotificationLog(ListenerEvent acidWriteEvent)
           throws MetaException {
     Connection dbConn = null;
     try {
@@ -2391,7 +2392,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
-                EventMessage.EventType.ACID_WRITE, acidWriteEvent, dbConn, sqlGenerator);
+                acidWriteEvent instanceof AcidWriteEvent ? EventMessage.EventType.ACID_WRITE
+                        : EventMessage.EventType.BATCH_ACID_WRITE,
+                acidWriteEvent, dbConn, sqlGenerator);
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
