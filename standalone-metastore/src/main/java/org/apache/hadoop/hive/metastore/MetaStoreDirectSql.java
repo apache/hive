@@ -139,6 +139,7 @@ class MetaStoreDirectSql {
   private final boolean isCompatibleDatastore;
   private final boolean isAggregateStatsCacheEnabled;
   private AggregateStatsCache aggrStatsCache;
+  private DirectSqlUpdateStat updateStat;
 
   private final ImmutableMap<String, String> fieldnameToTableName;
 
@@ -185,6 +186,7 @@ class MetaStoreDirectSql {
       batchSize = DatabaseProduct.needsInBatching(dbType) ? 1000 : NO_BATCHING;
     }
     this.batchSize = batchSize;
+    this.updateStat = new DirectSqlUpdateStat(pm, conf, dbType, batchSize);
 
     ImmutableMap.Builder<String, String> fieldNameToTableNameBuilder =
         new ImmutableMap.Builder<>();
@@ -2767,5 +2769,20 @@ class MetaStoreDirectSql {
     } finally {
       query.closeAll();
     }
+  }
+
+  public Map<String, Map<String, String>> updatePartitionColumnStatisticsBatch(
+          Map<String, ColumnStatistics> partColStatsMap,
+          Table tbl,
+          List<TransactionalMetaStoreEventListener> listeners,
+          String validWriteIds, long writeId)
+          throws MetaException {
+    long numStats = 0;
+    for (Map.Entry entry : partColStatsMap.entrySet()) {
+      ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
+      numStats += colStats.getStatsObjSize();
+    }
+    long csId = updateStat.getNextCSIdForMPartitionColumnStatistics(numStats);
+    return updateStat.updatePartitionColumnStatistics(partColStatsMap, tbl, csId, validWriteIds, writeId, listeners);
   }
 }

@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.HiveAlterHandler;
 import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
@@ -158,6 +159,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import static org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler.getPartValsFromName;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
@@ -1038,6 +1040,11 @@ public class CachedStore implements RawStore, Configurable {
     // So we will not update the cache during raw store operation but wait during commit transaction to make sure that
     // the event related to the current transactions are updated in the cache and thus we can support strong
     // consistency in case there is only one metastore.
+    updateCacheUsingEvents();
+    return true;
+  }
+
+  private void updateCacheUsingEvents() {
     if (canUseEvents) {
       try {
         triggerUpdateUsingEvent(rawStore);
@@ -1046,7 +1053,6 @@ public class CachedStore implements RawStore, Configurable {
         LOG.error("Failed to update cache", e);
       }
     }
-    return true;
   }
 
   @Override
@@ -2177,6 +2183,33 @@ public class CachedStore implements RawStore, Configurable {
     table.setParameters(newParams);
     sharedCache.alterTableInCache(catName, dbName, tblName, table);
     sharedCache.updateTableColStatsInCache(catName, dbName, tblName, colStats.getStatsObj());
+  }
+
+  @Override public Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
+          Map<String, ColumnStatistics> partColStatsMap,
+          Table tbl, List<TransactionalMetaStoreEventListener> listeners,
+          String validWriteIds, long writeId)
+          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    Map<String, Map<String, String>> result =
+            rawStore.updatePartitionColumnStatisticsInBatch(partColStatsMap, tbl, listeners, validWriteIds, writeId);
+    if (result == null) {
+      return null;
+    }
+
+    if (!canUseEvents) {
+      //TODO : Do it in one call
+      for (Map.Entry entry : result.entrySet()) {
+        Map<String, String> newParams = (Map<String, String>) entry.getValue();
+        ColumnStatistics colStats = partColStatsMap.get(entry.getKey());
+        List<String> partVals = getPartValsFromName(tbl, colStats.getStatsDesc().getPartName());
+        updateTableColumnsStatsInternal(conf, colStats, newParams, null, writeId);
+      }
+    } else {
+      // Usually the cache update using events is done during commit. But for this method,
+      // the commit is done internally using direct sql.
+      updateCacheUsingEvents();
+    }
+    return result;
   }
 
   @Override

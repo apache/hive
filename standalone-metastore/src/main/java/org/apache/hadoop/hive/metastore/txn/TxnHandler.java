@@ -5251,40 +5251,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   private boolean isDuplicateKeyError(SQLException ex) {
-    switch (dbProduct) {
-      case DERBY:
-        if("23505".equals(ex.getSQLState())) {
-          return true;
-        }
-        break;
-      case MYSQL:
-        //https://dev.mysql.com/doc/refman/5.5/en/error-messages-server.html
-        if((ex.getErrorCode() == 1022 || ex.getErrorCode() == 1062 || ex.getErrorCode() == 1586)
-          && "23000".equals(ex.getSQLState())) {
-          return true;
-        }
-        break;
-      case SQLSERVER:
-        //2627 is unique constaint violation incl PK, 2601 - unique key
-        if ((ex.getErrorCode() == 2627 || ex.getErrorCode() == 2601) && "23000".equals(ex.getSQLState())) {
-          return true;
-        }
-        break;
-      case ORACLE:
-        if(ex.getErrorCode() == 1 && "23000".equals(ex.getSQLState())) {
-          return true;
-        }
-        break;
-      case POSTGRES:
-        //http://www.postgresql.org/docs/8.1/static/errcodes-appendix.html
-        if("23505".equals(ex.getSQLState())) {
-          return true;
-        }
-        break;
-      default:
-        throw new IllegalArgumentException("Unexpected DB type: " + dbProduct + "; " + getMessage(ex));
-    }
-    return false;
+    return DatabaseProduct.isDuplicateKeyError(dbProduct, ex);
   }
 
   private static String getMessage(SQLException ex) {

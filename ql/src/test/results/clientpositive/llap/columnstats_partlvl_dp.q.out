@@ -918,3 +918,95 @@ num_trues
 num_falses          	                    
 bit_vector          	HL                  
 comment             	from deserializer   
+PREHOOK: query: analyze table Employee_n0 partition (employeeSalary,country) compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@employee_n0
+PREHOOK: Input: default@employee_n0@employeesalary=2000.0/country=UK
+PREHOOK: Input: default@employee_n0@employeesalary=2000.0/country=USA
+PREHOOK: Input: default@employee_n0@employeesalary=3000.0/country=UK
+PREHOOK: Input: default@employee_n0@employeesalary=3000.0/country=USA
+PREHOOK: Input: default@employee_n0@employeesalary=3500.0/country=UK
+PREHOOK: Input: default@employee_n0@employeesalary=4000.0/country=USA
+PREHOOK: Input: default@employee_n0@employeesalary=6000.0/country=UK
+PREHOOK: Output: default@employee_n0
+PREHOOK: Output: default@employee_n0@employeesalary=2000.0/country=UK
+PREHOOK: Output: default@employee_n0@employeesalary=2000.0/country=USA
+PREHOOK: Output: default@employee_n0@employeesalary=3000.0/country=UK
+PREHOOK: Output: default@employee_n0@employeesalary=3000.0/country=USA
+PREHOOK: Output: default@employee_n0@employeesalary=3500.0/country=UK
+PREHOOK: Output: default@employee_n0@employeesalary=4000.0/country=USA
+PREHOOK: Output: default@employee_n0@employeesalary=6000.0/country=UK
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table Employee_n0 partition (employeeSalary,country) compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@employee_n0
+POSTHOOK: Input: default@employee_n0@employeesalary=2000.0/country=UK
+POSTHOOK: Input: default@employee_n0@employeesalary=2000.0/country=USA
+POSTHOOK: Input: default@employee_n0@employeesalary=3000.0/country=UK
+POSTHOOK: Input: default@employee_n0@employeesalary=3000.0/country=USA
+POSTHOOK: Input: default@employee_n0@employeesalary=3500.0/country=UK
+POSTHOOK: Input: default@employee_n0@employeesalary=4000.0/country=USA
+POSTHOOK: Input: default@employee_n0@employeesalary=6000.0/country=UK
+POSTHOOK: Output: default@employee_n0
+POSTHOOK: Output: default@employee_n0@employeesalary=2000.0/country=UK
+POSTHOOK: Output: default@employee_n0@employeesalary=2000.0/country=USA
+POSTHOOK: Output: default@employee_n0@employeesalary=3000.0/country=UK
+POSTHOOK: Output: default@employee_n0@employeesalary=3000.0/country=USA
+POSTHOOK: Output: default@employee_n0@employeesalary=3500.0/country=UK
+POSTHOOK: Output: default@employee_n0@employeesalary=4000.0/country=USA
+POSTHOOK: Output: default@employee_n0@employeesalary=6000.0/country=UK
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') employeeName
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@employee_n0
+POSTHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') employeeName
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@employee_n0
+col_name            	employeeName        
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	9                   
+avg_col_len         	4.777777777777778   
+max_col_len         	6                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') c
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@employee_n0
+POSTHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') c
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@employee_n0
+col_name            	c                   
+data_type           	int                 
+min                 	2000                
+max                 	4000                
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') d
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@employee_n0
+POSTHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') d
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@employee_n0
+col_name            	d                   
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	2.4444444444444446  
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   

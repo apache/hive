@@ -259,6 +259,10 @@ public class MetaStoreListenerNotifier {
       .put(EventType.ACID_WRITE,
         (listener, event, dbConn, sqlGenerator) ->
                 listener.onAcidWrite((AcidWriteEvent) event, dbConn, sqlGenerator))
+      .put(EventType.UPDATE_PARTITION_COLUMN_STAT,
+              (listener, event, dbConn, sqlGenerator) ->
+                      listener.onUpdatePartitionColumnStatDirectSql((UpdatePartitionColumnStatEvent) event,
+                              dbConn, sqlGenerator))
       .build()
   );
 

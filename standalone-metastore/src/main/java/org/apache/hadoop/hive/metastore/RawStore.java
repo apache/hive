@@ -1897,6 +1897,12 @@ public interface RawStore extends Configurable {
   Map<String, List<String>> getPartitionColsWithStats(String catName, String dbName,
       String tableName) throws MetaException, NoSuchObjectException;
 
+  Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
+          Map<String, ColumnStatistics> partColStatsMap,
+          Table tbl, List<TransactionalMetaStoreEventListener> listeners,
+          String validWriteIds, long writeId)
+          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+
   /**
    * Remove older notification events.
    * @param olderThan Remove any events older than a given number of seconds

@@ -19,6 +19,7 @@
 package org.apache.hive.hcatalog.listener;
 
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
@@ -1447,5 +1448,14 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public void dropPackage(DropPackageRequest request) {
     objectStore.dropPackage(request);
+  }
+
+  @Override
+  public Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
+            Map<String, ColumnStatistics> partColStatsMap,
+            Table tbl, List<TransactionalMetaStoreEventListener> listeners,
+            String validWriteIds, long writeId)
+          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return objectStore.updatePartitionColumnStatisticsInBatch(partColStatsMap, tbl, listeners, validWriteIds, writeId);
   }
 }

@@ -6304,7 +6304,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    private List<String> getPartValsFromName(Table t, String partName)
+    public static List<String> getPartValsFromName(Table t, String partName)
         throws MetaException, InvalidObjectException {
       Preconditions.checkArgument(t != null, "Table can not be null");
       // Unescape the partition name
@@ -6603,7 +6603,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return Warehouse.makeSpecFromName(part_name);
     }
 
-    private String lowerCaseConvertPartName(String partName) throws MetaException {
+    public static String lowerCaseConvertPartName(String partName) throws MetaException {
       if (partName == null) return partName;
       boolean isFirst = true;
       Map<String, String> partSpec = Warehouse.makeEscSpecFromName(partName);
@@ -6847,40 +6847,81 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String catName = csd.getCatName(), dbName = csd.getDbName(), tableName = csd.getTableName();
       startFunction("write_partition_column_statistics", ":  db=" + dbName  + " table=" + tableName
               + " part=" + csd.getPartName());
-
       boolean ret = false;
-      Map<String, String> parameters;
-      List<String> partVals;
-      boolean committed = false;
-      getMS().openTransaction();
       try {
         if (tbl == null) {
           tbl = getTable(catName, dbName, tableName);
         }
-        partVals = getPartValsFromName(tbl, csd.getPartName());
-        parameters = getMS().updatePartitionColumnStatistics(colStats, partVals, validWriteIds, writeId);
-        if (parameters != null) {
-          if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                    EventType.UPDATE_PARTITION_COLUMN_STAT,
-                    new UpdatePartitionColumnStatEvent(colStats, partVals, parameters,
-                            tbl, writeId, this));
-          }
-          if (!listeners.isEmpty()) {
-            MetaStoreListenerNotifier.notifyEvent(listeners,
-                    EventType.UPDATE_PARTITION_COLUMN_STAT,
-                    new UpdatePartitionColumnStatEvent(colStats, partVals, parameters,
-                            tbl, writeId, this));
-          }
-        }
-        committed = getMS().commitTransaction();
+        ret = updatePartitionColStatsInBatch(tbl, Collections.singletonMap(csd.getPartName(), colStats),
+                validWriteIds, writeId);
       } finally {
-        if (!committed) {
-          getMS().rollbackTransaction();
-        }
-        endFunction("write_partition_column_statistics", ret != false, null, tableName);
+        endFunction("write_partition_column_statistics", ret == true, null, tableName);
       }
-      return parameters != null;
+      return ret;
+    }
+
+    private boolean updatePartitionColStatsInBatch(Table tbl, Map<String, ColumnStatistics> statsMap,
+                                                   String validWriteIds, long writeId)
+            throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
+
+      if (statsMap.size() == 0) {
+        return false;
+      }
+
+      String catalogName = tbl.getCatName();
+      String dbName = tbl.getDbName();
+      String tableName = tbl.getTableName();
+
+      startFunction("updatePartitionColStatsInBatch", ":  db=" + dbName + " table=" + tableName);
+
+      Map<String, ColumnStatistics> newStatsMap = new HashMap<>();
+      long numStats = 0;
+      long numStatsMax = MetastoreConf.getIntVar(conf, ConfVars.JDBC_MAX_BATCH_SIZE);
+      try {
+        for (Map.Entry entry : statsMap.entrySet()) {
+          ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
+          normalizeColStatsInput(colStats);
+          assert catalogName.equalsIgnoreCase(colStats.getStatsDesc().getCatName());
+          assert dbName.equalsIgnoreCase(colStats.getStatsDesc().getDbName());
+          assert tableName.equalsIgnoreCase(colStats.getStatsDesc().getTableName());
+          newStatsMap.put((String) entry.getKey(), colStats);
+          numStats += colStats.getStatsObjSize();
+
+          if (newStatsMap.size() >= numStatsMax) {
+            updatePartitionColStatsForOneBatch(tbl, newStatsMap, validWriteIds, writeId);
+            newStatsMap.clear();
+            numStats = 0;
+          }
+        }
+        if (numStats != 0) {
+          updatePartitionColStatsForOneBatch(tbl, newStatsMap, validWriteIds, writeId);
+        }
+      } finally {
+        endFunction("updatePartitionColStatsInBatch", true, null, tableName);
+      }
+      return true;
+    }
+
+    private void updatePartitionColStatsForOneBatch(Table tbl, Map<String, ColumnStatistics> statsMap,
+                                                    String validWriteIds, long writeId)
+            throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+      Map<String, Map<String, String>> result =
+              getMS().updatePartitionColumnStatisticsInBatch(statsMap, tbl, transactionalListeners, validWriteIds, writeId);
+      if (result != null && result.size() != 0 && listeners != null) {
+        // The normal listeners, unlike transaction listeners are not using the same transactions used by the update
+        // operations. So there is no need of keeping them within the same transactions. If notification to one of
+        // the listeners failed, then even if we abort the transaction, we can not revert the notifications sent to the
+        // other listeners.
+        for (Map.Entry entry : result.entrySet()) {
+          Map<String, String> parameters = (Map<String, String>) entry.getValue();
+          ColumnStatistics colStats = statsMap.get(entry.getKey());
+          List<String> partVals = getPartValsFromName(tbl, colStats.getStatsDesc().getPartName());
+          MetaStoreListenerNotifier.notifyEvent(listeners,
+                  EventType.UPDATE_PARTITION_COLUMN_STAT,
+                  new UpdatePartitionColumnStatEvent(colStats, partVals, parameters,
+                          tbl, writeId, this));
+        }
+      }
     }
 
     @Override
@@ -8818,11 +8859,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               colNames, newStatsMap, request);
         } else { // No merge.
           Table t = getTable(catName, dbName, tableName);
-          for (Entry<String, ColumnStatistics> entry : newStatsMap.entrySet()) {
-            // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
-            ret = updatePartitonColStatsInternal(t, entry.getValue(),
-                request.getValidWriteIdList(), request.getWriteId()) && ret;
-          }
+          // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
+          ret = updatePartitionColStatsInBatch(t, newStatsMap,
+                  request.getValidWriteIdList(), request.getWriteId());
         }
       }
       return ret;

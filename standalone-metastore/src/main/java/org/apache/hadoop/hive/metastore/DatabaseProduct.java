@@ -84,4 +84,46 @@ public enum DatabaseProduct {
   public static boolean hasJoinOperationOrderBug(DatabaseProduct dbType) {
     return dbType == DERBY || dbType == ORACLE || dbType == POSTGRES;
   }
+
+  public static boolean isDERBY(DatabaseProduct dbType) {
+    return dbType == DERBY;
+  }
+
+  public static boolean isDuplicateKeyError(DatabaseProduct dbType, SQLException ex) {
+    switch (dbType) {
+      case DERBY:
+        if("23505".equals(ex.getSQLState())) {
+          return true;
+        }
+        break;
+      case MYSQL:
+        //https://dev.mysql.com/doc/refman/5.5/en/error-messages-server.html
+        if((ex.getErrorCode() == 1022 || ex.getErrorCode() == 1062 || ex.getErrorCode() == 1586)
+                && "23000".equals(ex.getSQLState())) {
+          return true;
+        }
+        break;
+      case SQLSERVER:
+        //2627 is unique constaint violation incl PK, 2601 - unique key
+        if ((ex.getErrorCode() == 2627 || ex.getErrorCode() == 2601) && "23000".equals(ex.getSQLState())) {
+          return true;
+        }
+        break;
+      case ORACLE:
+        if(ex.getErrorCode() == 1 && "23000".equals(ex.getSQLState())) {
+          return true;
+        }
+        break;
+      case POSTGRES:
+        //http://www.postgresql.org/docs/8.1/static/errcodes-appendix.html
+        if("23505".equals(ex.getSQLState())) {
+          return true;
+        }
+        break;
+      default:
+        throw new IllegalArgumentException("Unexpected DB type: " + dbType + "; " +
+                ex.getMessage() + " (SQLState=" + ex.getSQLState() + ", ErrorCode=" + ex.getErrorCode() + ")");
+    }
+    return false;
+  }
 }
