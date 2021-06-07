@@ -2010,6 +2010,12 @@ public interface RawStore extends Configurable {
    */
   ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest replicationMetricsRequest);
 
+  Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
+          Map<String, ColumnStatistics> partColStatsMap,
+          Table tbl, List<TransactionalMetaStoreEventListener> listeners,
+          String validWriteIds, long writeId)
+          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+
   int deleteReplicationMetrics(int maxRetainSecs);
 
   int deleteScheduledExecutions(int maxRetainSecs);

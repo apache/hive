@@ -142,6 +142,7 @@ class MetaStoreDirectSql {
   private final boolean isAggregateStatsCacheEnabled;
   private final ImmutableMap<String, String> fieldnameToTableName;
   private AggregateStatsCache aggrStatsCache;
+  private DirectSqlUpdateStat updateStat;
 
   /**
    * This method returns a comma separated string consisting of String values of a given list.
@@ -182,6 +183,7 @@ class MetaStoreDirectSql {
       batchSize = dbType.needsInBatching() ? 1000 : NO_BATCHING;
     }
     this.batchSize = batchSize;
+    this.updateStat = new DirectSqlUpdateStat(pm, conf, dbType, batchSize);
     ImmutableMap.Builder<String, String> fieldNameToTableNameBuilder =
         new ImmutableMap.Builder<>();
 
@@ -3019,5 +3021,20 @@ class MetaStoreDirectSql {
     } catch (SQLException e) {
       throw new MetaException("Error removing column stat states:" + e.getMessage());
     }
+  }
+
+  public Map<String, Map<String, String>> updatePartitionColumnStatisticsBatch(
+                                                      Map<String, ColumnStatistics> partColStatsMap,
+                                                      Table tbl,
+                                                      List<TransactionalMetaStoreEventListener> listeners,
+                                                      String validWriteIds, long writeId)
+          throws MetaException {
+    long numStats = 0;
+    for (Map.Entry entry : partColStatsMap.entrySet()) {
+      ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
+      numStats += colStats.getStatsObjSize();
+    }
+    long csId = updateStat.getNextCSIdForMPartitionColumnStatistics(numStats);
+    return updateStat.updatePartitionColumnStatistics(partColStatsMap, tbl, csId, validWriteIds, writeId, listeners);
   }
 }

@@ -70,3 +70,273 @@ POSTHOOK: Input: default@alltypesparquet_part@ds=2011
 POSTHOOK: Input: default@alltypesparquet_part@ds=2012
 #### A masked pattern was here ####
 20000
+PREHOOK: query: analyze table alltypesparquet_part partition(ds) compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@alltypesparquet_part
+PREHOOK: Input: default@alltypesparquet_part@ds=2011
+PREHOOK: Input: default@alltypesparquet_part@ds=2012
+PREHOOK: Output: default@alltypesparquet_part
+PREHOOK: Output: default@alltypesparquet_part@ds=2011
+PREHOOK: Output: default@alltypesparquet_part@ds=2012
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table alltypesparquet_part partition(ds) compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@alltypesparquet_part
+POSTHOOK: Input: default@alltypesparquet_part@ds=2011
+POSTHOOK: Input: default@alltypesparquet_part@ds=2012
+POSTHOOK: Output: default@alltypesparquet_part
+POSTHOOK: Output: default@alltypesparquet_part@ds=2011
+POSTHOOK: Output: default@alltypesparquet_part@ds=2012
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') ctinyint
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alltypesparquet_part
+POSTHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') ctinyint
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alltypesparquet_part
+col_name            	ctinyint            
+data_type           	tinyint             
+min                 	-62                 
+max                 	62                  
+num_nulls           	2                   
+distinct_count      	66                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') csmallint
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alltypesparquet_part
+POSTHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') csmallint
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alltypesparquet_part
+col_name            	csmallint           
+data_type           	smallint            
+min                 	-15912              
+max                 	15626               
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') cfloat
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alltypesparquet_part
+POSTHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') cfloat
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alltypesparquet_part
+col_name            	cfloat              
+data_type           	float               
+min                 	-62.0               
+max                 	62.0                
+num_nulls           	2                   
+distinct_count      	66                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') cdouble
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alltypesparquet_part
+POSTHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') cdouble
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alltypesparquet_part
+col_name            	cdouble             
+data_type           	double              
+min                 	-15912.0            
+max                 	15626.0             
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') cstring1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alltypesparquet_part
+POSTHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') cstring1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alltypesparquet_part
+col_name            	cstring1            
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	16.0                
+max_col_len         	16                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') ctimestamp1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alltypesparquet_part
+POSTHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') ctimestamp1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alltypesparquet_part
+col_name            	ctimestamp1         
+data_type           	timestamp           
+min                 	1969-12-31 15:59:44 
+max                 	1969-12-31 16:00:15 
+num_nulls           	2                   
+distinct_count      	29                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') cboolean1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alltypesparquet_part
+POSTHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2011') cboolean1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alltypesparquet_part
+col_name            	cboolean1           
+data_type           	boolean             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	100                 
+num_falses          	0                   
+bit_vector          	                    
+comment             	from deserializer   
+PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') ctinyint
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alltypesparquet_part
+POSTHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') ctinyint
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alltypesparquet_part
+col_name            	ctinyint            
+data_type           	tinyint             
+min                 	-62                 
+max                 	62                  
+num_nulls           	2                   
+distinct_count      	66                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') csmallint
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alltypesparquet_part
+POSTHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') csmallint
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alltypesparquet_part
+col_name            	csmallint           
+data_type           	smallint            
+min                 	-15912              
+max                 	15626               
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') cfloat
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alltypesparquet_part
+POSTHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') cfloat
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alltypesparquet_part
+col_name            	cfloat              
+data_type           	float               
+min                 	-62.0               
+max                 	62.0                
+num_nulls           	2                   
+distinct_count      	66                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') cdouble
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alltypesparquet_part
+POSTHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') cdouble
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alltypesparquet_part
+col_name            	cdouble             
+data_type           	double              
+min                 	-15912.0            
+max                 	15626.0             
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') cstring1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alltypesparquet_part
+POSTHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') cstring1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alltypesparquet_part
+col_name            	cstring1            
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	16.0                
+max_col_len         	16                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') ctimestamp1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alltypesparquet_part
+POSTHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') ctimestamp1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alltypesparquet_part
+col_name            	ctimestamp1         
+data_type           	timestamp           
+min                 	1969-12-31 15:59:44 
+max                 	1969-12-31 16:00:15 
+num_nulls           	2                   
+distinct_count      	29                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') cboolean1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alltypesparquet_part
+POSTHOOK: query: describe formatted alltypesparquet_part PARTITION(ds='2012') cboolean1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alltypesparquet_part
+col_name            	cboolean1           
+data_type           	boolean             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	100                 
+num_falses          	0                   
+bit_vector          	                    
+comment             	from deserializer   
