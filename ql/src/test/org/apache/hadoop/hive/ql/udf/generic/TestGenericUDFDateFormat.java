@@ -140,7 +140,7 @@ public class TestGenericUDFDateFormat {
 
     udf.initialize(arguments);
 
-    runAndVerifyTs("2015-04-08 10:30:45", fmtText, "2015-04-08 03:30:45.000 PDT", udf);
+    runAndVerifyTs("2015-04-08 10:30:45", fmtText, "2015-04-08 10:30:45.000 PDT", udf);
 
   }
 
