@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesResult;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
@@ -102,6 +103,15 @@ public class TestHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCache i
 
   public Table getTable(String dbName, String tableName, boolean getColumnStats, String engine)
       throws MetaException, TException, NoSuchObjectException {
+    GetTableRequest getTableRequest = new GetTableRequest( dbName, tableName);
+    getTableRequest.setGetColumnStats(getColumnStats);
+    getTableRequest.setEngine(engine);
+    return getTable(getTableRequest);
+
+  }
+
+  public Table getTable(GetTableRequest getTableRequest)
+      throws MetaException, TException, NoSuchObjectException {
     Table tTable = new Table();
     tTable.setId(Long.MAX_VALUE);
     Map<String, String> parameters = new HashMap<>();
@@ -115,7 +125,6 @@ public class TestHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCache i
     tTable.setSd(sd);
 
     return tTable;
-
   }
 
   public GetPartitionsByNamesResult getPartitionsByNamesInternal(GetPartitionsByNamesRequest req)

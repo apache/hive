@@ -170,11 +170,10 @@ public class TezCompiler extends TaskCompiler {
   }
 
   @Override
-  protected void optimizeOperatorPlan(ParseContext pCtx, Set<ReadEntity> inputs,
-      Set<WriteEntity> outputs) throws SemanticException {
+  protected void optimizeOperatorPlan(ParseContext pCtx) throws SemanticException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     // Create the context for the walker
-    OptimizeTezProcContext procCtx = new OptimizeTezProcContext(conf, pCtx, inputs, outputs);
+    OptimizeTezProcContext procCtx = new OptimizeTezProcContext(conf, pCtx);
 
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     runTopNKeyOptimization(procCtx);
@@ -182,7 +181,7 @@ public class TezCompiler extends TaskCompiler {
 
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     // setup dynamic partition pruning where possible
-    runDynamicPartitionPruning(procCtx, inputs, outputs);
+    runDynamicPartitionPruning(procCtx);
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Setup dynamic partition pruning");
 
     if(procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_MULTICOLUMN)) {
@@ -224,7 +223,7 @@ public class TezCompiler extends TaskCompiler {
 
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     // run the optimizations that use stats for optimization
-    runStatsDependentOptimizations(procCtx, inputs, outputs);
+    runStatsDependentOptimizations(procCtx);
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run the optimizations that use stats for optimization");
 
     // repopulate bucket versions; join conversion may have created some new reducesinks
@@ -236,7 +235,7 @@ public class TezCompiler extends TaskCompiler {
     }
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run reduce sink after join algorithm selection");
 
-    semijoinRemovalBasedTransformations(procCtx, inputs, outputs);
+    semijoinRemovalBasedTransformations(procCtx);
 
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     if (procCtx.conf.getBoolVar(ConfVars.HIVE_SHARED_WORK_OPTIMIZATION)) {
@@ -263,8 +262,7 @@ public class TezCompiler extends TaskCompiler {
     }
   }
 
-  private void runCycleAnalysisForPartitionPruning(OptimizeTezProcContext procCtx,
-      Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException {
+  private void runCycleAnalysisForPartitionPruning(OptimizeTezProcContext procCtx) throws SemanticException {
     // Semijoins may have created task level cycles, examine those
     connectTerminalOps(procCtx.parseContext);
     boolean cycleFree = false;
@@ -464,8 +462,7 @@ public class TezCompiler extends TaskCompiler {
     new AnnotateWithOpTraits().transform(procCtx.parseContext);
   }
 
-  private void runStatsDependentOptimizations(OptimizeTezProcContext procCtx,
-      Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException {
+  private void runStatsDependentOptimizations(OptimizeTezProcContext procCtx) throws SemanticException {
 
     // Sequence of TableScan operators to be walked
     Deque<Operator<?>> deque = new LinkedList<Operator<?>>();
@@ -494,8 +491,7 @@ public class TezCompiler extends TaskCompiler {
     ogw.startWalking(topNodes, null);
   }
 
-  private void semijoinRemovalBasedTransformations(OptimizeTezProcContext procCtx,
-                                                   Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException {
+  private void semijoinRemovalBasedTransformations(OptimizeTezProcContext procCtx) throws SemanticException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
 
     final boolean dynamicPartitionPruningEnabled =
@@ -508,7 +504,7 @@ public class TezCompiler extends TaskCompiler {
 
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     if (dynamicPartitionPruningEnabled) {
-      runRemoveDynamicPruningOptimization(procCtx, inputs, outputs);
+      runRemoveDynamicPruningOptimization(procCtx);
     }
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run remove dynamic pruning by size");
 
@@ -548,7 +544,7 @@ public class TezCompiler extends TaskCompiler {
     // to take care of.
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     if (dynamicPartitionPruningEnabled) {
-      runCycleAnalysisForPartitionPruning(procCtx, inputs, outputs);
+      runCycleAnalysisForPartitionPruning(procCtx);
     }
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run cycle analysis for partition pruning");
 
@@ -560,8 +556,7 @@ public class TezCompiler extends TaskCompiler {
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Remove redundant semijoin reduction");
   }
 
-  private void runRemoveDynamicPruningOptimization(OptimizeTezProcContext procCtx,
-      Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException {
+  private void runRemoveDynamicPruningOptimization(OptimizeTezProcContext procCtx) throws SemanticException {
 
     // Sequence of TableScan operators to be walked
     Deque<Operator<?>> deque = new LinkedList<Operator<?>>();
@@ -584,8 +579,7 @@ public class TezCompiler extends TaskCompiler {
     ogw.startWalking(topNodes, null);
   }
 
-  private void runDynamicPartitionPruning(OptimizeTezProcContext procCtx, Set<ReadEntity> inputs,
-      Set<WriteEntity> outputs) throws SemanticException {
+  private void runDynamicPartitionPruning(OptimizeTezProcContext procCtx) throws SemanticException {
 
     if (!procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING)) {
       return;

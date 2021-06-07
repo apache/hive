@@ -265,6 +265,8 @@ public class TestCachedStoreUpdateUsingEvents {
     Table newTable = new Table(tbl);
     newTable.setOwner(tblOwner);
     newTable.setOwnerType(PrincipalType.ROLE);
+    Deadline.registerIfNot(100_000);
+    Deadline.startTimer("alter_table");
     hmsHandler.alter_table(dbName, tblName, newTable);
     newTable = rawStore.getTable(DEFAULT_CATALOG_NAME, dbName, tblName);
 
@@ -309,6 +311,8 @@ public class TestCachedStoreUpdateUsingEvents {
     String dbName = "Test_Table_Ops";
     String dbOwner = "user1";
     Database db = createTestDb(dbName, dbOwner);
+    Deadline.registerIfNot(100_000);
+    Deadline.startTimer("create_database");
     hmsHandler.create_database(db);
     db = rawStore.getDatabase(DEFAULT_CATALOG_NAME, dbName);
 

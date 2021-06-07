@@ -112,6 +112,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSQCountCheck;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -1298,6 +1299,8 @@ public class StatsRulesProcFactory {
             // Synthetic predicates from semijoin opt should not affect stats.
             return numRows;
           }
+        } else if (udf instanceof GenericUDFSQCountCheck) {
+          return numRows;
         }
       } else if (child instanceof ExprNodeConstantDesc) {
         if (Boolean.FALSE.equals(((ExprNodeConstantDesc) child).getValue())) {
@@ -1440,9 +1443,7 @@ public class StatsRulesProcFactory {
         // check if map side aggregation is possible or not based on column stats
         hashAgg = checkMapSideAggregation(gop, colStats, conf);
 
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("STATS-" + gop.toString() + " hashAgg: " + hashAgg);
-        }
+        LOG.debug("STATS-{} hashAgg: {}", gop, hashAgg);
 
         stats = parentStats.clone();
         stats.setColumnStats(colStats);

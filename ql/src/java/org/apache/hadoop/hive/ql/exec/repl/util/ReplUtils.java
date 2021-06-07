@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hdfs.protocol.SnapshotException;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.repl.ReplScope;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
+import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
@@ -68,6 +70,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -138,8 +141,6 @@ public class ReplUtils {
 
   public static final String RANGER_CONFIGURATION_RESOURCE_NAME = "ranger-hive-security.xml";
 
-  public static final String TARGET_OF_REPLICATION = "repl.target.for";
-
   // Service name for hive.
   public static final String REPL_HIVE_SERVICE = "hive";
 
@@ -161,6 +162,10 @@ public class ReplUtils {
   public enum MetricName {
     TABLES, FUNCTIONS, EVENTS, POLICIES, ENTITIES
   }
+
+  public static final String DISTCP_JOB_ID_CONF = "distcp.job.id";
+  public static final String DISTCP_JOB_ID_CONF_DEFAULT = "UNAVAILABLE";
+
 
   private static transient Logger LOG = LoggerFactory.getLogger(ReplUtils.class);
 
@@ -257,8 +262,8 @@ public class ReplUtils {
   public static boolean isTargetOfReplication(Database db) {
     assert (db != null);
     Map<String, String> m = db.getParameters();
-    if ((m != null) && (m.containsKey(TARGET_OF_REPLICATION))) {
-      return !StringUtils.isEmpty(m.get(TARGET_OF_REPLICATION));
+    if ((m != null) && (m.containsKey(ReplConst.TARGET_OF_REPLICATION))) {
+      return !StringUtils.isEmpty(m.get(ReplConst.TARGET_OF_REPLICATION));
     }
     return false;
   }
@@ -338,7 +343,12 @@ public class ReplUtils {
 
   public static int handleException(boolean isReplication, Throwable e, String nonRecoverablePath,
                                     ReplicationMetricCollector metricCollector, String stageName, HiveConf conf){
-    int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+    int errorCode;
+    if (isReplication && e instanceof SnapshotException) {
+      errorCode = ErrorMsg.getErrorMsg("SNAPSHOT_ERROR").getErrorCode();
+    } else {
+      errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+    }
     if(isReplication){
       try {
         if (nonRecoverablePath != null) {
@@ -457,18 +467,46 @@ public class ReplUtils {
     return null;
   }
 
-  public static String getDistCpCustomName(HiveConf conf) {
+  public static String getDistCpCustomName(HiveConf conf, String dbName) {
     String userChosenName = conf.get(JobContext.JOB_NAME);
     if (StringUtils.isEmpty(userChosenName)) {
-      String policyName = conf.get(SCHEDULED_QUERY_SCHEDULENAME, "POLICY_NAME");
-      String policyId =
-          conf.get(SCHEDULED_QUERY_EXECUTIONID, "QUERY_EXECUTION_ID");
-      userChosenName = "Repl#" + policyName + "#" + policyId;
+      String policyName = conf.get(SCHEDULED_QUERY_SCHEDULENAME, "");
+      if (policyName.isEmpty()) {
+        userChosenName = "Repl#" + dbName;
+      } else {
+        String executionId = conf.get(SCHEDULED_QUERY_EXECUTIONID, "");
+
+        userChosenName = "Repl#" + policyName + "#" + executionId + "#" + dbName;
+      }
       LOG.info("Using {} as job name for map-reduce jobs.", userChosenName);
     } else {
-      LOG.info("Job Name is explicitly configured as {}, not using "
-          + "replication job custom name.", userChosenName);
+      LOG.info("Job Name is explicitly configured as {}, not using " + "replication job custom name.", userChosenName);
     }
     return userChosenName;
+  }
+
+  /**
+   * Convert to a human time of minutes:seconds.millis.
+   * @param time time to humanize.
+   * @return a printable value.
+   */
+  public static String convertToHumanReadableTime(long time) {
+    long seconds = (time / 1000);
+    long minutes = (seconds / 60);
+    return String.format("%d:%02d.%03ds", minutes, seconds % 60, time % 1000);
+  }
+
+  /**
+   * Adds a logger task at the end of the tasks passed.
+   */
+  public static void addLoggerTask(ReplLogger replLogger, List<Task<?>> tasks, HiveConf conf) {
+    String message = "Completed all external table copy tasks.";
+    ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, message);
+    Task<ReplStateLogWork> task = TaskFactory.get(replStateLogWork, conf);
+    if (tasks.isEmpty()) {
+      tasks.add(task);
+    } else {
+      DAGTraversal.traverse(tasks, new AddDependencyToLeaves(Collections.singletonList(task)));
+    }
   }
 }

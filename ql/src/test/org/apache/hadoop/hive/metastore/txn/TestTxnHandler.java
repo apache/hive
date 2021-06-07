@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.util.StringUtils;
@@ -1244,6 +1245,7 @@ public class TestTxnHandler {
       OpenTxnsResponse response = txnHandler.openTxns(request);
       request.setReplPolicy("default.*");
       request.setReplSrcTxnIds(response.getTxn_ids());
+      request.setTxn_type(TxnType.REPL_CREATED);
       OpenTxnsResponse responseRepl = txnHandler.openTxns(request);
       Thread.sleep(1000);
       txnHandler.performTimeOuts();
@@ -1653,7 +1655,7 @@ public class TestTxnHandler {
     rqst.setReplPolicy(replPolicy);
     rqst.setReplSrcTxnIds(LongStream.rangeClosed(startId, lastId)
             .boxed().collect(Collectors.toList()));
-
+    rqst.setTxn_type(TxnType.REPL_CREATED);
     OpenTxnsResponse openedTxns = txnHandler.openTxns(rqst);
     List<Long> txnList = openedTxns.getTxn_ids();
     assertEquals(txnList.size(), numTxn);
@@ -1670,6 +1672,7 @@ public class TestTxnHandler {
     for (Long txnId : txnList) {
       AbortTxnRequest rqst = new AbortTxnRequest(txnId);
       rqst.setReplPolicy(replPolicy);
+      rqst.setTxn_type(TxnType.REPL_CREATED);
       txnHandler.abortTxn(rqst);
     }
     checkReplTxnForTest(txnList.get(0), txnList.get(txnList.size() - 1), replPolicy, new ArrayList<>());

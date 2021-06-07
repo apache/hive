@@ -47,6 +47,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.UtilsForTest;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.Utils;
@@ -89,7 +90,7 @@ import org.junit.Test;
    */
   @BeforeClass
   public static void preTests() throws Exception {
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = UtilsForTest.getHiveOnTezConfFromDir("../../data/conf/tez/");
     hiveConf.setVar(HiveConf.ConfVars.HIVE_LOCK_MANAGER,
         "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, false);
@@ -908,6 +909,8 @@ import org.junit.Test;
     // Set to non-zk lock manager to avoid trying to connect to zookeeper
     final String SCRIPT_TEXT = "set hive.lock.manager=org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager;\n"
         + "set hive.compute.query.using.stats=false;\n"
+        // Embedded BeeLine test does not work with tez engine, so reset it to mr - TODO: fix this in HIVE-25097
+        + "set hive.execution.engine=mr;"
         + "create table if not exists embeddedBeelineOutputs(d int);\n"
         + "set a=1;\nselect count(*) from embeddedBeelineOutputs;\n"
         + "drop table embeddedBeelineOutputs;\n";

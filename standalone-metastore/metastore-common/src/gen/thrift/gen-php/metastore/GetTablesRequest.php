@@ -66,6 +66,11 @@ class GetTablesRequest
             'type' => TType::STRUCT,
             'class' => '\metastore\GetProjectionsSpec',
         ),
+        8 => array(
+            'var' => 'tablesPattern',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -96,6 +101,10 @@ class GetTablesRequest
      * @var \metastore\GetProjectionsSpec
      */
     public $projectionSpec = null;
+    /**
+     * @var string
+     */
+    public $tablesPattern = null;
 
     public function __construct($vals = null)
     {
@@ -120,6 +129,9 @@ class GetTablesRequest
             }
             if (isset($vals['projectionSpec'])) {
                 $this->projectionSpec = $vals['projectionSpec'];
+            }
+            if (isset($vals['tablesPattern'])) {
+                $this->tablesPattern = $vals['tablesPattern'];
             }
         }
     }
@@ -153,13 +165,13 @@ class GetTablesRequest
                 case 2:
                     if ($ftype == TType::LST) {
                         $this->tblNames = array();
-                        $_size889 = 0;
-                        $_etype892 = 0;
-                        $xfer += $input->readListBegin($_etype892, $_size889);
-                        for ($_i893 = 0; $_i893 < $_size889; ++$_i893) {
-                            $elem894 = null;
-                            $xfer += $input->readString($elem894);
-                            $this->tblNames []= $elem894;
+                        $_size912 = 0;
+                        $_etype915 = 0;
+                        $xfer += $input->readListBegin($_etype915, $_size912);
+                        for ($_i916 = 0; $_i916 < $_size912; ++$_i916) {
+                            $elem917 = null;
+                            $xfer += $input->readString($elem917);
+                            $this->tblNames []= $elem917;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -184,13 +196,13 @@ class GetTablesRequest
                 case 5:
                     if ($ftype == TType::LST) {
                         $this->processorCapabilities = array();
-                        $_size895 = 0;
-                        $_etype898 = 0;
-                        $xfer += $input->readListBegin($_etype898, $_size895);
-                        for ($_i899 = 0; $_i899 < $_size895; ++$_i899) {
-                            $elem900 = null;
-                            $xfer += $input->readString($elem900);
-                            $this->processorCapabilities []= $elem900;
+                        $_size918 = 0;
+                        $_etype921 = 0;
+                        $xfer += $input->readListBegin($_etype921, $_size918);
+                        for ($_i922 = 0; $_i922 < $_size918; ++$_i922) {
+                            $elem923 = null;
+                            $xfer += $input->readString($elem923);
+                            $this->processorCapabilities []= $elem923;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -208,6 +220,13 @@ class GetTablesRequest
                     if ($ftype == TType::STRUCT) {
                         $this->projectionSpec = new \metastore\GetProjectionsSpec();
                         $xfer += $this->projectionSpec->read($input);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 8:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->tablesPattern);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -237,8 +256,8 @@ class GetTablesRequest
             }
             $xfer += $output->writeFieldBegin('tblNames', TType::LST, 2);
             $output->writeListBegin(TType::STRING, count($this->tblNames));
-            foreach ($this->tblNames as $iter901) {
-                $xfer += $output->writeString($iter901);
+            foreach ($this->tblNames as $iter924) {
+                $xfer += $output->writeString($iter924);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -262,8 +281,8 @@ class GetTablesRequest
             }
             $xfer += $output->writeFieldBegin('processorCapabilities', TType::LST, 5);
             $output->writeListBegin(TType::STRING, count($this->processorCapabilities));
-            foreach ($this->processorCapabilities as $iter902) {
-                $xfer += $output->writeString($iter902);
+            foreach ($this->processorCapabilities as $iter925) {
+                $xfer += $output->writeString($iter925);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -279,6 +298,11 @@ class GetTablesRequest
             }
             $xfer += $output->writeFieldBegin('projectionSpec', TType::STRUCT, 7);
             $xfer += $this->projectionSpec->write($output);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->tablesPattern !== null) {
+            $xfer += $output->writeFieldBegin('tablesPattern', TType::STRING, 8);
+            $xfer += $output->writeString($this->tablesPattern);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

@@ -47,7 +47,6 @@ import org.apache.hive.common.util.BloomKFilter;
 public class VectorInBloomFilterColDynamicValue extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  protected final int colNum;
   protected final DynamicValue bloomFilterDynamicValue;
 
   protected transient boolean initialized = false;
@@ -58,8 +57,7 @@ public class VectorInBloomFilterColDynamicValue extends VectorExpression {
   private ObjectCache runtimeCache;
 
   public VectorInBloomFilterColDynamicValue(int colNum, DynamicValue bloomFilterDynamicValue) {
-    super();
-    this.colNum = colNum;
+    super(colNum, -1);
     this.bloomFilterDynamicValue = bloomFilterDynamicValue;
   }
 
@@ -67,7 +65,6 @@ public class VectorInBloomFilterColDynamicValue extends VectorExpression {
     super();
 
     // Dummy final assignments.
-    colNum = -1;
     bloomFilterDynamicValue = null;
   }
 
@@ -153,7 +150,7 @@ public class VectorInBloomFilterColDynamicValue extends VectorExpression {
       initValue();
     }
 
-    ColumnVector inputColVector = batch.cols[colNum];
+    ColumnVector inputColVector = batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector.isNull;
     int n = batch.size;

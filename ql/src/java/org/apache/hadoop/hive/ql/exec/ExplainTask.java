@@ -41,6 +41,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
+import com.google.common.base.Joiner;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
@@ -49,6 +50,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -84,6 +89,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.TreeSet;
 
 /**
  * ExplainTask implementation.
@@ -301,7 +309,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
 
     boolean suppressOthersForVectorization = false;
-    if (this.work != null && this.work.isVectorization()) {
+    if (this.work != null && (this.work.isVectorization() || this.work.isDDL())) {
       ImmutablePair<Boolean, JSONObject> planVecPair = outputPlanVectorization(out, jsonOutput);
 
       if (this.work.isVectorizationOnly()) {
@@ -422,6 +430,96 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return jsonObject;
   }
 
+  public void addCreateTableStatement(Table table, List<String> tableCreateStmt , DDLPlanUtils ddlPlanUtils){
+    tableCreateStmt.add(ddlPlanUtils.getCreateTableCommand(table, false) + ";");
+  }
+  
+  public void addPKandBasicStats(Table tbl, List<String> basicDef, DDLPlanUtils ddlPlanUtils){
+    String primaryKeyStmt = ddlPlanUtils.getAlterTableStmtPrimaryKeyConstraint(tbl.getPrimaryKeyInfo());
+    if (primaryKeyStmt != null) {
+      basicDef.add(primaryKeyStmt);
+    }
+    basicDef.add(ddlPlanUtils.getAlterTableStmtTableStatsBasic(tbl));
+  }
+
+  public void addConstraints(Table tbl, List<String> constraints, Set<String> allTableNames,
+      DDLPlanUtils ddlPlanUtils){
+    constraints.addAll(ddlPlanUtils.populateConstraints(tbl, allTableNames));
+  }
+
+  public void addStats(Table table,List<String> alterTableStmt ,Map<String, List<Partition>> tablePartitionsMap,
+      DDLPlanUtils ddlPlanUtils)
+      throws HiveException, MetaException{
+    PerfLogger perfLogger = PerfLogger.getPerfLogger(conf, false);
+    perfLogger.perfLogBegin(ExplainTask.class.getName(), PerfLogger.HIVE_GET_TABLE_COLUMN_STATS);
+    if (table.isPartitioned()) {
+      alterTableStmt.addAll(ddlPlanUtils.getDDLPlanForPartitionWithStats(table, tablePartitionsMap));
+    } else {
+      alterTableStmt.addAll(ddlPlanUtils.getAlterTableStmtTableStatsColsAll(table));
+    }
+    perfLogger.perfLogEnd(ExplainTask.class.getName(), PerfLogger.HIVE_GET_TABLE_COLUMN_STATS);
+  }
+
+  public void addExplain(String sql , List<String> explainStmt, DDLPlanUtils ddlPlanUtils){
+    explainStmt.addAll(ddlPlanUtils.addExplainPlans(sql));
+    return;
+  }
+
+  public void getDDLPlan(PrintStream out) throws HiveException, MetaException, Exception {
+    DDLPlanUtils ddlPlanUtils = new DDLPlanUtils();
+    Set<String> createDatabase = new TreeSet<String>();
+    List<String> tableCreateStmt = new LinkedList<String>();
+    List<String> tableBasicDef = new LinkedList<String>();
+    List<String> createViewList = new LinkedList<String>();
+    List<String> alterTableStmt = new LinkedList<String>();
+    List<String> explainStmt = new LinkedList<String>();
+    Map<String, Table> tableMap = new HashMap<>();
+    Map<String, List<Partition>> tablePartitionsMap = new HashMap<>();
+    for (ReadEntity ent : work.getInputs()) {
+      switch (ent.getType()) {
+      // Views are also covered in table
+      case TABLE:
+        Table tbl = ent.getTable();
+        createDatabase.add(tbl.getDbName());
+        tableMap.put(tbl.getTableName(), tbl);
+        tablePartitionsMap.putIfAbsent(tbl.getTableName(), new ArrayList<Partition>());
+        break;
+      case PARTITION:
+        tablePartitionsMap.get(ent.getTable().getTableName()).add(ent.getPartition());
+        break;
+      default:
+        break;
+      }
+    }
+    //process the databases
+    List<String> createDatabaseStmt = ddlPlanUtils.getCreateDatabaseStmt(createDatabase);
+    //process the tables
+    for (String tableName : tableMap.keySet()) {
+      Table table = tableMap.get(tableName);
+      if (table.isView()) {
+        createViewList.add(ddlPlanUtils.getCreateViewStmt(table));
+        continue;
+      } else {
+        addCreateTableStatement(table, tableCreateStmt, ddlPlanUtils);
+        addPKandBasicStats(table, tableBasicDef, ddlPlanUtils);
+        addConstraints(table, alterTableStmt, tableMap.keySet(), ddlPlanUtils);
+        addStats(table, alterTableStmt, tablePartitionsMap, ddlPlanUtils);
+      }
+    }
+    addExplain(conf.getQueryString(), explainStmt, ddlPlanUtils);
+    Joiner jn = Joiner.on("\n");
+    out.println(jn.join(createDatabaseStmt));
+    out.println(jn.join(tableCreateStmt));
+    out.println(jn.join(tableBasicDef));
+    out.println(jn.join(alterTableStmt));
+    out.println(jn.join(createViewList));
+    out.println(jn.join(explainStmt));
+    // Get the explain plan outputs and print them in the console.
+    getJSONPlan(out, work.getRootTasks(), work.getFetchTask(),
+        false, false, work.isAppendTaskType(), work.getCboInfo(),
+        work.getCboPlan(), work.getOptimizedSQL());
+  }
+
   @Override
   public int execute() {
 
@@ -431,7 +529,9 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       OutputStream outS = resFile.getFileSystem(conf).create(resFile);
       out = new PrintStream(outS);
 
-      if (work.isCbo()) {
+      if(work.isDDL()){
+        getDDLPlan(out);
+      } else if (work.isCbo()) {
         JSONObject jsonCBOPlan = getJSONCBOPlan(out, work);
         if (work.isFormatted()) {
           out.print(jsonCBOPlan);

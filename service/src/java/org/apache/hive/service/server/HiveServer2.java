@@ -88,6 +88,7 @@ import org.apache.hadoop.hive.ql.session.ClearDanglingScratchDir;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorThread;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
+import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.apache.hadoop.hive.registry.impl.ZookeeperUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
@@ -100,6 +101,8 @@ import org.apache.hive.http.LlapServlet;
 import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
+import org.apache.hive.service.auth.saml.HiveSaml2Client;
+import org.apache.hive.service.auth.saml.HiveSamlUtils;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.HiveSession;
@@ -211,6 +214,7 @@ public class HiveServer2 extends CompositeService {
     try {
       if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
         MetricsFactory.init(hiveConf);
+        DeltaFilesMetricReporter.init(hiveConf);
       }
     } catch (Throwable t) {
       LOG.warn("Could not initiate the HiveServer2 Metrics system.  Metrics may not be reported.", t);
@@ -930,6 +934,7 @@ public class HiveServer2 extends CompositeService {
         LOG.error("error in Metrics deinit: " + e.getClass().getName() + " "
           + e.getMessage(), e);
       }
+      DeltaFilesMetricReporter.close();
     }
     // Remove this server instance from ZooKeeper if dynamic service discovery is set
     if (serviceDiscovery && !activePassiveHA) {
@@ -954,6 +959,12 @@ public class HiveServer2 extends CompositeService {
 
     if (zKClientForPrivSync != null) {
       zKClientForPrivSync.close();
+    }
+    if (hiveConf != null && HiveSamlUtils
+        .isSamlAuthMode(hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION))) {
+      // this is mostly for testing purposes to make sure that SAML client is
+      // reinitialized after a HS2 is restarted.
+      HiveSaml2Client.shutdown();
     }
   }
 

@@ -21,11 +21,14 @@ public class HiveConfPlannerContext{
 
   private boolean isCorrelatedColumns;
   private boolean heuristicMaterializationStrategy;
+  private boolean isExplainPlan;
 
 
-  public HiveConfPlannerContext(boolean isCorrelatedColumns, boolean heuristicMaterializationStrategy) {
+  public HiveConfPlannerContext(boolean isCorrelatedColumns, boolean heuristicMaterializationStrategy,
+                                boolean isExplainPlan) {
     this.isCorrelatedColumns = isCorrelatedColumns;
     this.heuristicMaterializationStrategy = heuristicMaterializationStrategy;
+    this.isExplainPlan = isExplainPlan;
   }
 
   public boolean getIsCorrelatedColumns() {
@@ -34,5 +37,9 @@ public class HiveConfPlannerContext{
 
   public boolean isHeuristicMaterializationStrategy() {
     return heuristicMaterializationStrategy;
+  }
+
+  public boolean isExplainPlan() {
+    return isExplainPlan;
   }
 }

@@ -742,14 +742,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // COMPONENT
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list778 = iprot.readListBegin();
-                struct.component = new java.util.ArrayList<LockComponent>(_list778.size);
-                @org.apache.thrift.annotation.Nullable LockComponent _elem779;
-                for (int _i780 = 0; _i780 < _list778.size; ++_i780)
+                org.apache.thrift.protocol.TList _list788 = iprot.readListBegin();
+                struct.component = new java.util.ArrayList<LockComponent>(_list788.size);
+                @org.apache.thrift.annotation.Nullable LockComponent _elem789;
+                for (int _i790 = 0; _i790 < _list788.size; ++_i790)
                 {
-                  _elem779 = new LockComponent();
-                  _elem779.read(iprot);
-                  struct.component.add(_elem779);
+                  _elem789 = new LockComponent();
+                  _elem789.read(iprot);
+                  struct.component.add(_elem789);
                 }
                 iprot.readListEnd();
               }
@@ -815,9 +815,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(COMPONENT_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.component.size()));
-          for (LockComponent _iter781 : struct.component)
+          for (LockComponent _iter791 : struct.component)
           {
-            _iter781.write(oprot);
+            _iter791.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -869,9 +869,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.component.size());
-        for (LockComponent _iter782 : struct.component)
+        for (LockComponent _iter792 : struct.component)
         {
-          _iter782.write(oprot);
+          _iter792.write(oprot);
         }
       }
       oprot.writeString(struct.user);
@@ -902,14 +902,14 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, LockRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list783 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.component = new java.util.ArrayList<LockComponent>(_list783.size);
-        @org.apache.thrift.annotation.Nullable LockComponent _elem784;
-        for (int _i785 = 0; _i785 < _list783.size; ++_i785)
+        org.apache.thrift.protocol.TList _list793 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.component = new java.util.ArrayList<LockComponent>(_list793.size);
+        @org.apache.thrift.annotation.Nullable LockComponent _elem794;
+        for (int _i795 = 0; _i795 < _list793.size; ++_i795)
         {
-          _elem784 = new LockComponent();
-          _elem784.read(iprot);
-          struct.component.add(_elem784);
+          _elem794 = new LockComponent();
+          _elem794.read(iprot);
+          struct.component.add(_elem794);
         }
       }
       struct.setComponentIsSet(true);

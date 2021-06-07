@@ -114,6 +114,7 @@
     <arrow.version>0.10.0</arrow.version>
     <avatica.version>1.12.0</avatica.version>
     <avro.version>1.8.2</avro.version>
+    <bcprov-jdk15on.version>1.64</bcprov-jdk15on.version>
     <calcite.version>1.21.0</calcite.version>
     <datanucleus-api-jdo.version>5.2.2</datanucleus-api-jdo.version>
     <datanucleus-core.version>5.2.2</datanucleus-core.version>
@@ -150,7 +151,7 @@
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
     <ivy.version>2.4.0</ivy.version>
-    <jackson.version>2.10.5</jackson.version>
+    <jackson.version>2.12.0</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
     <jamon-runtime.version>2.3.1</jamon-runtime.version>
     <javaewah.version>0.3.2</javaewah.version>
@@ -165,7 +166,7 @@
     <jline.version>2.14.6</jline.version>
     <jms.version>2.0.2</jms.version>
     <joda.version>2.9.9</joda.version>
-    <jodd.version>3.5.2</jodd.version>
+    <jodd.version>6.0.0</jodd.version>
     <json.version>1.8</json.version>
     <junit.version>4.13</junit.version>
     <junit.jupiter.version>5.6.2</junit.jupiter.version>
@@ -182,12 +183,13 @@
     <mariadb.version>2.5.0</mariadb.version>
     <postgres.version>42.2.14</postgres.version>
     <opencsv.version>2.3</opencsv.version>
-    <orc.version>1.6.7</orc.version>
-    <mockito-core.version>3.3.3</mockito-core.version>
+    <orc.version>1.6.8</orc.version>
+    <mockito-core.version>3.4.4</mockito-core.version>
     <powermock.version>2.0.2</powermock.version>
     <mina.version>2.0.0-M5</mina.version>
-    <netty.version>4.1.48.Final</netty.version>
-    <netty3.version>3.10.5.Final</netty3.version>
+    <netty.version>4.1.60.Final</netty.version>
+    <netty3.version>3.10.5.Final</netty3.version> <!-- used by druid storage handler -->
+    <pac4j-saml.version>4.0.3</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
     <parquet.version>1.11.1</parquet.version>
     <pig.version>0.16.0</pig.version>
@@ -207,6 +209,7 @@
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
     <velocity.version>1.5</velocity.version>
     <xerces.version>2.9.1</xerces.version>
+    <xmlsec.version>2.2.1</xmlsec.version>
     <zookeeper.version>3.5.5</zookeeper.version>
     <jpam.version>1.1</jpam.version>
     <felix.version>2.4.0</felix.version>
@@ -243,6 +246,19 @@
        <snapshots>
          <enabled>true</enabled>
        </snapshots>
+    </repository>
+    <repository>
+      <!-- shibboleth doesn't publish artifacts on maven central
+        See https://wiki.shibboleth.net/confluence/display/DEV/Use+of+Maven+Central -->
+      <id>shibboleth</id>
+      <url>https://build.shibboleth.net/nexus/content/groups/public</url>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
     </repository>
   </repositories>
 
@@ -417,6 +433,11 @@
         <version>${junit.jupiter.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-params</artifactId>
+        <version>${junit.jupiter.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.junit.vintage</groupId>
         <artifactId>junit-vintage-engine</artifactId>
         <version>${junit.vintage.version}</version>
@@ -524,6 +545,10 @@
           <exclusion>
             <groupId>org.mortbay.jetty</groupId>
             <artifactId>servlet-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
           </exclusion>
         </exclusions>
      </dependency>
@@ -737,6 +762,81 @@
         <version>${datanucleus-jdo.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.pac4j</groupId>
+        <artifactId>pac4j-saml-opensamlv3</artifactId>
+        <version>${pac4j-saml.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>xalan</groupId>
+            <artifactId>xalan</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.hibernate</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.hibernate.javax.persistence</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.springframework</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+          </exclusion>
+          <exclusion>
+            <!-- The dependency included in pac4j is old and has known CVEs.
+            We exclude it from here and add a separate dependency down below.-->
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>org.bouncycastle</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.santuario</groupId>
+            <artifactId>xmlsec</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcprov-jdk15on</artifactId>
+        <version>${bcprov-jdk15on.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.santuario</groupId>
+        <artifactId>xmlsec</artifactId>
+        <version>${xmlsec.version}</version>
+      </dependency>
+      <dependency>
         <groupId>com.tdunning</groupId>
         <artifactId>json</artifactId>
         <version>${json.version}</version>
@@ -833,6 +933,12 @@
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-hdfs</artifactId>
         <version>${hadoop.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
@@ -851,10 +957,14 @@
             <groupId>com.codahale.metrics</groupId>
             <artifactId>metrics-core</artifactId>
           </exclusion>
-            <exclusion>
-              <groupId>io.netty</groupId>
-              <artifactId>netty-all</artifactId>
-            </exclusion>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
         </exclusions>
      </dependency>
       <dependency>
@@ -874,6 +984,10 @@
              <groupId>io.netty</groupId>
              <artifactId>netty-all</artifactId>
            </exclusion>
+           <exclusion>
+             <groupId>io.netty</groupId>
+             <artifactId>netty</artifactId>
+           </exclusion>
         </exclusions>
      </dependency>
       <dependency>
@@ -892,6 +1006,10 @@
            <exclusion>
              <groupId>io.netty</groupId>
              <artifactId>netty-all</artifactId>
+           </exclusion>
+           <exclusion>
+             <groupId>io.netty</groupId>
+             <artifactId>netty</artifactId>
            </exclusion>
         </exclusions>
       </dependency>
@@ -1091,6 +1209,12 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-runtime-library</artifactId>
         <version>${tez.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>
@@ -1106,6 +1230,12 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-mapreduce</artifactId>
         <version>${tez.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>
@@ -1121,11 +1251,6 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty</artifactId>
-      <version>${netty3.version}</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
@@ -1478,6 +1603,7 @@
         </executions>
         <configuration>
 	  <excludes>
+	    <exclude>*.patch</exclude>
 	    <exclude>.github/**</exclude>
 	    <exclude>binary-package-licenses/**</exclude>
 	    <exclude>data/**</exclude>
@@ -1524,6 +1650,8 @@
             <exclude>**/patchprocess/**</exclude>
             <exclude>**/metastore_db/**</exclude>
             <exclude>**/test/resources/**/*.ldif</exclude>
+            <exclude>hcatalog/core/mapred/**/part-m*</exclude>
+            <exclude>hcatalog/core/mapred/**/*_SUCCESS*</exclude>
 	  </excludes>
 	</configuration>
       </plugin>
@@ -1741,6 +1869,12 @@
       <id>itests</id>
       <modules>
         <module>itests</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>iceberg</id>
+      <modules>
+        <module>iceberg</module>
       </modules>
     </profile>
     <profile>

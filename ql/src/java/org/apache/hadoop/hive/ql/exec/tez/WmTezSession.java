@@ -55,6 +55,7 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
   @JsonProperty("queryId")
   private String queryId;
   private SettableFuture<Boolean> returnFuture = null;
+  private boolean isDelayedMove;
 
   private final WorkloadManager wmParent;
 
@@ -72,6 +73,7 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
       SessionExpirationTracker expiration, HiveConf conf) {
     super(sessionId, parent, expiration, conf);
     wmParent = parent;
+    isDelayedMove = false;
   }
 
   @VisibleForTesting
@@ -79,6 +81,7 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
       SessionExpirationTracker expiration, HiveConf conf) {
     super(sessionId, testParent, expiration, conf);
     wmParent = null;
+    isDelayedMove = false;
   }
 
   public ListenableFuture<WmTezSession> waitForAmRegistryAsync(
@@ -168,6 +171,14 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
     return poolName;
   }
 
+  public void setDelayedMove(boolean isDelayedMove) {
+    this.isDelayedMove = isDelayedMove;
+  }
+
+  public boolean isDelayedMove() {
+    return isDelayedMove;
+  }
+
   void setClusterFraction(double fraction) {
     this.clusterFraction = fraction;
   }
@@ -175,6 +186,7 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
   void clearWm() {
     this.poolName = null;
     this.clusterFraction = null;
+    this.isDelayedMove = false;
   }
 
   public boolean hasClusterFraction() {

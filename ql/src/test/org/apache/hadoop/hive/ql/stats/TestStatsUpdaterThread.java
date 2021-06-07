@@ -563,7 +563,8 @@ public class TestStatsUpdaterThread {
     String tblWithStats = tblNamePrefix + "_repl_trgt_stats";
     String ptnTblWOStats = tblNamePrefix + "_ptn_repl_trgt_nostats";
     String ptnTblWithStats = tblNamePrefix + "_ptn_repl_trgt_stats";
-
+    String dbName = ss.getCurrentDatabase();
+    executeQuery("alter database " + dbName + " set dbproperties('" + ReplConst.TARGET_OF_REPLICATION + "'='true')");
     StatsUpdaterThread su = createUpdater();
     su.startWorkers();
     IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
@@ -571,29 +572,21 @@ public class TestStatsUpdaterThread {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
 
     executeQuery("create table " + tblWOStats + "(i int, s string) " + txnProperty);
-    // Mark this table as being replicated into
-    setTableReplTargetProperty(tblWOStats);
     executeQuery("insert into " + tblWOStats + "(i, s) values (1, 'test')");
     verifyStatsUpToDate(tblWOStats, Lists.newArrayList("i"), msClient, false);
 
     executeQuery("create table " + ptnTblWOStats + "(s string) partitioned by (i int) " + txnProperty);
-    // Mark this table as being replicated into
-    setTableReplTargetProperty(ptnTblWOStats);
     executeQuery("insert into " + ptnTblWOStats + "(i, s) values (1, 'test')");
     executeQuery("insert into " + ptnTblWOStats + "(i, s) values (2, 'test2')");
     executeQuery("insert into " + ptnTblWOStats + "(i, s) values (3, 'test3')");
     verifyPartStatsUpToDate(3, 1, msClient, ptnTblWOStats, false);
 
     executeQuery("create table " + tblWithStats + "(i int, s string)" + txnProperty);
-    // Mark this table as being replicated into
-    setTableReplTargetProperty(tblWithStats);
     executeQuery("insert into " + tblWithStats + "(i, s) values (1, 'test')");
     executeQuery("analyze table " + tblWithStats + " compute statistics for columns");
     verifyStatsUpToDate(tblWithStats, Lists.newArrayList("i"), msClient, true);
 
     executeQuery("create table " + ptnTblWithStats + "(s string) partitioned by (i int) " + txnProperty);
-    // Mark this table as being replicated into
-    setTableReplTargetProperty(ptnTblWithStats);
     executeQuery("insert into " + ptnTblWithStats + "(i, s) values (1, 'test')");
     executeQuery("insert into " + ptnTblWithStats + "(i, s) values (2, 'test2')");
     executeQuery("insert into " + ptnTblWithStats + "(i, s) values (3, 'test3')");
@@ -607,6 +600,11 @@ public class TestStatsUpdaterThread {
     verifyPartStatsUpToDate(3, 1, msClient, ptnTblWOStats, false);
     verifyPartStatsUpToDate(3, 1, msClient, ptnTblWithStats, true);
 
+    executeQuery("alter database " + dbName + " set dbproperties('" + ReplConst.TARGET_OF_REPLICATION + "'='')");
+    executeQuery("drop table " + tblWOStats);
+    executeQuery("drop table " + tblWithStats);
+    executeQuery("drop table " + ptnTblWOStats);
+    executeQuery("drop table " + ptnTblWithStats);
     msClient.close();
   }
 
@@ -634,11 +632,6 @@ public class TestStatsUpdaterThread {
     Table table = msClient.getTable(ss.getCurrentDatabase(), tbl);
     table.getParameters().put(StatsUpdaterThread.SKIP_STATS_AUTOUPDATE_PROPERTY, val);
     msClient.alter_table(table.getDbName(), table.getTableName(), table);
-  }
-
-  private void setTableReplTargetProperty(String tblName) throws Exception {
-    executeQuery("alter table " + tblName +
-            " set tblproperties ('" + ReplConst.REPL_TARGET_TABLE_PROPERTY + "' = '1')");
   }
 
   private void setPartitionSkipProperty(

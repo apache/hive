@@ -118,6 +118,10 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
     this.dbNameToLoadIn = dbNameToLoadIn;
     this.needLogger = needLogger;
     this.hiveConf = hiveConf;
+    if (needLogger) {
+      String dbName = StringUtils.isBlank(dbNameToLoadIn) ? "" : dbNameToLoadIn;
+      replLogger = new BootstrapLoadLogger(dbName, dumpDirectory, 0, 0);
+    }
   }
 
   @Override
@@ -179,7 +183,11 @@ public class BootstrapEventsIterator implements Iterator<BootstrapEvent> {
       long numTables = getNumTables(dbDumpPath, fs);
       long numFunctions = getNumFunctions(dbDumpPath, fs);
       String dbName = StringUtils.isBlank(dbNameToLoadIn) ? dbDumpPath.getName() : dbNameToLoadIn;
-      replLogger = new BootstrapLoadLogger(dbName, dumpDirectory, numTables, numFunctions);
+      if (replLogger != null) {
+        replLogger.setParams(dbName, dumpDirectory, numTables, numFunctions);
+      } else {
+        replLogger = new BootstrapLoadLogger(dbName, dumpDirectory, numTables, numFunctions);
+      }
       replLogger.startLog();
     } catch (IOException e) {
       // Ignore the exception

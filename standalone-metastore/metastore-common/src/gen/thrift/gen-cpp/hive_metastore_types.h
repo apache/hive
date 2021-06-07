@@ -252,6 +252,19 @@ std::ostream& operator<<(std::ostream& out, const SchemaVersionState::type& val)
 
 std::string to_string(const SchemaVersionState::type& val);
 
+struct DatabaseType {
+  enum type {
+    NATIVE = 1,
+    REMOTE = 2
+  };
+};
+
+extern const std::map<int, const char*> _DatabaseType_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const DatabaseType::type& val);
+
+std::string to_string(const DatabaseType::type& val);
+
 struct FunctionType {
   enum type {
     JAVA = 1
@@ -614,6 +627,8 @@ class GetPartitionsByNamesRequest;
 
 class GetPartitionsByNamesResult;
 
+class DataConnector;
+
 class ResourceUri;
 
 class Function;
@@ -697,6 +712,10 @@ class ShowCompactRequest;
 class ShowCompactResponseElement;
 
 class ShowCompactResponse;
+
+class GetLatestCommittedCompactionInfoRequest;
+
+class GetLatestCommittedCompactionInfoResponse;
 
 class AddDynamicPartitions;
 
@@ -885,6 +904,12 @@ class RuntimeStat;
 class GetRuntimeStatsRequest;
 
 class CreateTableRequest;
+
+class CreateDatabaseRequest;
+
+class CreateDataConnectorRequest;
+
+class GetDataConnectorRequest;
 
 class ScheduledQueryPollRequest;
 
@@ -3055,7 +3080,7 @@ void swap(DropCatalogRequest &a, DropCatalogRequest &b);
 std::ostream& operator<<(std::ostream& out, const DropCatalogRequest& obj);
 
 typedef struct _Database__isset {
-  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false), createTime(false), managedLocationUri(false) {}
+  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false), createTime(false), managedLocationUri(false), type(false), connector_name(false), remote_dbname(false) {}
   bool name :1;
   bool description :1;
   bool locationUri :1;
@@ -3066,6 +3091,9 @@ typedef struct _Database__isset {
   bool catalogName :1;
   bool createTime :1;
   bool managedLocationUri :1;
+  bool type :1;
+  bool connector_name :1;
+  bool remote_dbname :1;
 } _Database__isset;
 
 class Database : public virtual ::apache::thrift::TBase {
@@ -3073,7 +3101,7 @@ class Database : public virtual ::apache::thrift::TBase {
 
   Database(const Database&);
   Database& operator=(const Database&);
-  Database() : name(), description(), locationUri(), ownerName(), ownerType((PrincipalType::type)0), catalogName(), createTime(0), managedLocationUri() {
+  Database() : name(), description(), locationUri(), ownerName(), ownerType((PrincipalType::type)0), catalogName(), createTime(0), managedLocationUri(), type((DatabaseType::type)0), connector_name(), remote_dbname() {
   }
 
   virtual ~Database() noexcept;
@@ -3087,6 +3115,9 @@ class Database : public virtual ::apache::thrift::TBase {
   std::string catalogName;
   int32_t createTime;
   std::string managedLocationUri;
+  DatabaseType::type type;
+  std::string connector_name;
+  std::string remote_dbname;
 
   _Database__isset __isset;
 
@@ -3109,6 +3140,12 @@ class Database : public virtual ::apache::thrift::TBase {
   void __set_createTime(const int32_t val);
 
   void __set_managedLocationUri(const std::string& val);
+
+  void __set_type(const DatabaseType::type val);
+
+  void __set_connector_name(const std::string& val);
+
+  void __set_remote_dbname(const std::string& val);
 
   bool operator == (const Database & rhs) const
   {
@@ -3143,6 +3180,18 @@ class Database : public virtual ::apache::thrift::TBase {
     if (__isset.managedLocationUri != rhs.__isset.managedLocationUri)
       return false;
     else if (__isset.managedLocationUri && !(managedLocationUri == rhs.managedLocationUri))
+      return false;
+    if (__isset.type != rhs.__isset.type)
+      return false;
+    else if (__isset.type && !(type == rhs.type))
+      return false;
+    if (__isset.connector_name != rhs.__isset.connector_name)
+      return false;
+    else if (__isset.connector_name && !(connector_name == rhs.connector_name))
+      return false;
+    if (__isset.remote_dbname != rhs.__isset.remote_dbname)
+      return false;
+    else if (__isset.remote_dbname && !(remote_dbname == rhs.remote_dbname))
       return false;
     return true;
   }
@@ -7318,6 +7367,100 @@ void swap(GetPartitionsByNamesResult &a, GetPartitionsByNamesResult &b);
 
 std::ostream& operator<<(std::ostream& out, const GetPartitionsByNamesResult& obj);
 
+typedef struct _DataConnector__isset {
+  _DataConnector__isset() : name(false), type(false), url(false), description(false), parameters(false), ownerName(false), ownerType(false), createTime(false) {}
+  bool name :1;
+  bool type :1;
+  bool url :1;
+  bool description :1;
+  bool parameters :1;
+  bool ownerName :1;
+  bool ownerType :1;
+  bool createTime :1;
+} _DataConnector__isset;
+
+class DataConnector : public virtual ::apache::thrift::TBase {
+ public:
+
+  DataConnector(const DataConnector&);
+  DataConnector& operator=(const DataConnector&);
+  DataConnector() : name(), type(), url(), description(), ownerName(), ownerType((PrincipalType::type)0), createTime(0) {
+  }
+
+  virtual ~DataConnector() noexcept;
+  std::string name;
+  std::string type;
+  std::string url;
+  std::string description;
+  std::map<std::string, std::string>  parameters;
+  std::string ownerName;
+  PrincipalType::type ownerType;
+  int32_t createTime;
+
+  _DataConnector__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_type(const std::string& val);
+
+  void __set_url(const std::string& val);
+
+  void __set_description(const std::string& val);
+
+  void __set_parameters(const std::map<std::string, std::string> & val);
+
+  void __set_ownerName(const std::string& val);
+
+  void __set_ownerType(const PrincipalType::type val);
+
+  void __set_createTime(const int32_t val);
+
+  bool operator == (const DataConnector & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (!(type == rhs.type))
+      return false;
+    if (!(url == rhs.url))
+      return false;
+    if (__isset.description != rhs.__isset.description)
+      return false;
+    else if (__isset.description && !(description == rhs.description))
+      return false;
+    if (__isset.parameters != rhs.__isset.parameters)
+      return false;
+    else if (__isset.parameters && !(parameters == rhs.parameters))
+      return false;
+    if (__isset.ownerName != rhs.__isset.ownerName)
+      return false;
+    else if (__isset.ownerName && !(ownerName == rhs.ownerName))
+      return false;
+    if (__isset.ownerType != rhs.__isset.ownerType)
+      return false;
+    else if (__isset.ownerType && !(ownerType == rhs.ownerType))
+      return false;
+    if (__isset.createTime != rhs.__isset.createTime)
+      return false;
+    else if (__isset.createTime && !(createTime == rhs.createTime))
+      return false;
+    return true;
+  }
+  bool operator != (const DataConnector &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DataConnector & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(DataConnector &a, DataConnector &b);
+
+std::ostream& operator<<(std::ostream& out, const DataConnector& obj);
+
 typedef struct _ResourceUri__isset {
   _ResourceUri__isset() : resourceType(false), uri(false) {}
   bool resourceType :1;
@@ -7776,8 +7919,9 @@ void swap(OpenTxnsResponse &a, OpenTxnsResponse &b);
 std::ostream& operator<<(std::ostream& out, const OpenTxnsResponse& obj);
 
 typedef struct _AbortTxnRequest__isset {
-  _AbortTxnRequest__isset() : replPolicy(false) {}
+  _AbortTxnRequest__isset() : replPolicy(false), txn_type(false) {}
   bool replPolicy :1;
+  bool txn_type :1;
 } _AbortTxnRequest__isset;
 
 class AbortTxnRequest : public virtual ::apache::thrift::TBase {
@@ -7785,18 +7929,21 @@ class AbortTxnRequest : public virtual ::apache::thrift::TBase {
 
   AbortTxnRequest(const AbortTxnRequest&);
   AbortTxnRequest& operator=(const AbortTxnRequest&);
-  AbortTxnRequest() : txnid(0), replPolicy() {
+  AbortTxnRequest() : txnid(0), replPolicy(), txn_type((TxnType::type)0) {
   }
 
   virtual ~AbortTxnRequest() noexcept;
   int64_t txnid;
   std::string replPolicy;
+  TxnType::type txn_type;
 
   _AbortTxnRequest__isset __isset;
 
   void __set_txnid(const int64_t val);
 
   void __set_replPolicy(const std::string& val);
+
+  void __set_txn_type(const TxnType::type val);
 
   bool operator == (const AbortTxnRequest & rhs) const
   {
@@ -7805,6 +7952,10 @@ class AbortTxnRequest : public virtual ::apache::thrift::TBase {
     if (__isset.replPolicy != rhs.__isset.replPolicy)
       return false;
     else if (__isset.replPolicy && !(replPolicy == rhs.replPolicy))
+      return false;
+    if (__isset.txn_type != rhs.__isset.txn_type)
+      return false;
+    else if (__isset.txn_type && !(txn_type == rhs.txn_type))
       return false;
     return true;
   }
@@ -8057,12 +8208,13 @@ void swap(ReplLastIdInfo &a, ReplLastIdInfo &b);
 std::ostream& operator<<(std::ostream& out, const ReplLastIdInfo& obj);
 
 typedef struct _CommitTxnRequest__isset {
-  _CommitTxnRequest__isset() : replPolicy(false), writeEventInfos(false), replLastIdInfo(false), keyValue(false), exclWriteEnabled(true) {}
+  _CommitTxnRequest__isset() : replPolicy(false), writeEventInfos(false), replLastIdInfo(false), keyValue(false), exclWriteEnabled(true), txn_type(false) {}
   bool replPolicy :1;
   bool writeEventInfos :1;
   bool replLastIdInfo :1;
   bool keyValue :1;
   bool exclWriteEnabled :1;
+  bool txn_type :1;
 } _CommitTxnRequest__isset;
 
 class CommitTxnRequest : public virtual ::apache::thrift::TBase {
@@ -8070,7 +8222,7 @@ class CommitTxnRequest : public virtual ::apache::thrift::TBase {
 
   CommitTxnRequest(const CommitTxnRequest&);
   CommitTxnRequest& operator=(const CommitTxnRequest&);
-  CommitTxnRequest() : txnid(0), replPolicy(), exclWriteEnabled(true) {
+  CommitTxnRequest() : txnid(0), replPolicy(), exclWriteEnabled(true), txn_type((TxnType::type)0) {
   }
 
   virtual ~CommitTxnRequest() noexcept;
@@ -8080,6 +8232,7 @@ class CommitTxnRequest : public virtual ::apache::thrift::TBase {
   ReplLastIdInfo replLastIdInfo;
   CommitTxnKeyValue keyValue;
   bool exclWriteEnabled;
+  TxnType::type txn_type;
 
   _CommitTxnRequest__isset __isset;
 
@@ -8094,6 +8247,8 @@ class CommitTxnRequest : public virtual ::apache::thrift::TBase {
   void __set_keyValue(const CommitTxnKeyValue& val);
 
   void __set_exclWriteEnabled(const bool val);
+
+  void __set_txn_type(const TxnType::type val);
 
   bool operator == (const CommitTxnRequest & rhs) const
   {
@@ -8118,6 +8273,10 @@ class CommitTxnRequest : public virtual ::apache::thrift::TBase {
     if (__isset.exclWriteEnabled != rhs.__isset.exclWriteEnabled)
       return false;
     else if (__isset.exclWriteEnabled && !(exclWriteEnabled == rhs.exclWriteEnabled))
+      return false;
+    if (__isset.txn_type != rhs.__isset.txn_type)
+      return false;
+    else if (__isset.txn_type && !(txn_type == rhs.txn_type))
       return false;
     return true;
   }
@@ -9380,10 +9539,12 @@ void swap(HeartbeatTxnRangeResponse &a, HeartbeatTxnRangeResponse &b);
 std::ostream& operator<<(std::ostream& out, const HeartbeatTxnRangeResponse& obj);
 
 typedef struct _CompactionRequest__isset {
-  _CompactionRequest__isset() : partitionname(false), runas(false), properties(false) {}
+  _CompactionRequest__isset() : partitionname(false), runas(false), properties(false), initiatorId(false), initiatorVersion(false) {}
   bool partitionname :1;
   bool runas :1;
   bool properties :1;
+  bool initiatorId :1;
+  bool initiatorVersion :1;
 } _CompactionRequest__isset;
 
 class CompactionRequest : public virtual ::apache::thrift::TBase {
@@ -9391,7 +9552,7 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
 
   CompactionRequest(const CompactionRequest&);
   CompactionRequest& operator=(const CompactionRequest&);
-  CompactionRequest() : dbname(), tablename(), partitionname(), type((CompactionType::type)0), runas() {
+  CompactionRequest() : dbname(), tablename(), partitionname(), type((CompactionType::type)0), runas(), initiatorId(), initiatorVersion() {
   }
 
   virtual ~CompactionRequest() noexcept;
@@ -9401,6 +9562,8 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
   CompactionType::type type;
   std::string runas;
   std::map<std::string, std::string>  properties;
+  std::string initiatorId;
+  std::string initiatorVersion;
 
   _CompactionRequest__isset __isset;
 
@@ -9415,6 +9578,10 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
   void __set_runas(const std::string& val);
 
   void __set_properties(const std::map<std::string, std::string> & val);
+
+  void __set_initiatorId(const std::string& val);
+
+  void __set_initiatorVersion(const std::string& val);
 
   bool operator == (const CompactionRequest & rhs) const
   {
@@ -9435,6 +9602,14 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
     if (__isset.properties != rhs.__isset.properties)
       return false;
     else if (__isset.properties && !(properties == rhs.properties))
+      return false;
+    if (__isset.initiatorId != rhs.__isset.initiatorId)
+      return false;
+    else if (__isset.initiatorId && !(initiatorId == rhs.initiatorId))
+      return false;
+    if (__isset.initiatorVersion != rhs.__isset.initiatorVersion)
+      return false;
+    else if (__isset.initiatorVersion && !(initiatorVersion == rhs.initiatorVersion))
       return false;
     return true;
   }
@@ -9720,7 +9895,7 @@ void swap(ShowCompactRequest &a, ShowCompactRequest &b);
 std::ostream& operator<<(std::ostream& out, const ShowCompactRequest& obj);
 
 typedef struct _ShowCompactResponseElement__isset {
-  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true), id(false), errorMessage(false), enqueueTime(false) {}
+  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true), id(false), errorMessage(false), enqueueTime(false), workerVersion(false), initiatorId(false), initiatorVersion(false) {}
   bool partitionname :1;
   bool workerid :1;
   bool start :1;
@@ -9732,6 +9907,9 @@ typedef struct _ShowCompactResponseElement__isset {
   bool id :1;
   bool errorMessage :1;
   bool enqueueTime :1;
+  bool workerVersion :1;
+  bool initiatorId :1;
+  bool initiatorVersion :1;
 } _ShowCompactResponseElement__isset;
 
 class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
@@ -9739,7 +9917,7 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
 
   ShowCompactResponseElement(const ShowCompactResponseElement&);
   ShowCompactResponseElement& operator=(const ShowCompactResponseElement&);
-  ShowCompactResponseElement() : dbname(), tablename(), partitionname(), type((CompactionType::type)0), state(), workerid(), start(0), runAs(), hightestTxnId(0), metaInfo(), endTime(0), hadoopJobId("None"), id(0), errorMessage(), enqueueTime(0) {
+  ShowCompactResponseElement() : dbname(), tablename(), partitionname(), type((CompactionType::type)0), state(), workerid(), start(0), runAs(), hightestTxnId(0), metaInfo(), endTime(0), hadoopJobId("None"), id(0), errorMessage(), enqueueTime(0), workerVersion(), initiatorId(), initiatorVersion() {
   }
 
   virtual ~ShowCompactResponseElement() noexcept;
@@ -9758,6 +9936,9 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
   int64_t id;
   std::string errorMessage;
   int64_t enqueueTime;
+  std::string workerVersion;
+  std::string initiatorId;
+  std::string initiatorVersion;
 
   _ShowCompactResponseElement__isset __isset;
 
@@ -9790,6 +9971,12 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
   void __set_errorMessage(const std::string& val);
 
   void __set_enqueueTime(const int64_t val);
+
+  void __set_workerVersion(const std::string& val);
+
+  void __set_initiatorId(const std::string& val);
+
+  void __set_initiatorVersion(const std::string& val);
 
   bool operator == (const ShowCompactResponseElement & rhs) const
   {
@@ -9845,6 +10032,18 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.enqueueTime && !(enqueueTime == rhs.enqueueTime))
       return false;
+    if (__isset.workerVersion != rhs.__isset.workerVersion)
+      return false;
+    else if (__isset.workerVersion && !(workerVersion == rhs.workerVersion))
+      return false;
+    if (__isset.initiatorId != rhs.__isset.initiatorId)
+      return false;
+    else if (__isset.initiatorId && !(initiatorId == rhs.initiatorId))
+      return false;
+    if (__isset.initiatorVersion != rhs.__isset.initiatorVersion)
+      return false;
+    else if (__isset.initiatorVersion && !(initiatorVersion == rhs.initiatorVersion))
+      return false;
     return true;
   }
   bool operator != (const ShowCompactResponseElement &rhs) const {
@@ -9898,6 +10097,96 @@ class ShowCompactResponse : public virtual ::apache::thrift::TBase {
 void swap(ShowCompactResponse &a, ShowCompactResponse &b);
 
 std::ostream& operator<<(std::ostream& out, const ShowCompactResponse& obj);
+
+typedef struct _GetLatestCommittedCompactionInfoRequest__isset {
+  _GetLatestCommittedCompactionInfoRequest__isset() : partitionnames(false) {}
+  bool partitionnames :1;
+} _GetLatestCommittedCompactionInfoRequest__isset;
+
+class GetLatestCommittedCompactionInfoRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  GetLatestCommittedCompactionInfoRequest(const GetLatestCommittedCompactionInfoRequest&);
+  GetLatestCommittedCompactionInfoRequest& operator=(const GetLatestCommittedCompactionInfoRequest&);
+  GetLatestCommittedCompactionInfoRequest() : dbname(), tablename() {
+  }
+
+  virtual ~GetLatestCommittedCompactionInfoRequest() noexcept;
+  std::string dbname;
+  std::string tablename;
+  std::vector<std::string>  partitionnames;
+
+  _GetLatestCommittedCompactionInfoRequest__isset __isset;
+
+  void __set_dbname(const std::string& val);
+
+  void __set_tablename(const std::string& val);
+
+  void __set_partitionnames(const std::vector<std::string> & val);
+
+  bool operator == (const GetLatestCommittedCompactionInfoRequest & rhs) const
+  {
+    if (!(dbname == rhs.dbname))
+      return false;
+    if (!(tablename == rhs.tablename))
+      return false;
+    if (__isset.partitionnames != rhs.__isset.partitionnames)
+      return false;
+    else if (__isset.partitionnames && !(partitionnames == rhs.partitionnames))
+      return false;
+    return true;
+  }
+  bool operator != (const GetLatestCommittedCompactionInfoRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetLatestCommittedCompactionInfoRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetLatestCommittedCompactionInfoRequest &a, GetLatestCommittedCompactionInfoRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const GetLatestCommittedCompactionInfoRequest& obj);
+
+
+class GetLatestCommittedCompactionInfoResponse : public virtual ::apache::thrift::TBase {
+ public:
+
+  GetLatestCommittedCompactionInfoResponse(const GetLatestCommittedCompactionInfoResponse&);
+  GetLatestCommittedCompactionInfoResponse& operator=(const GetLatestCommittedCompactionInfoResponse&);
+  GetLatestCommittedCompactionInfoResponse() {
+  }
+
+  virtual ~GetLatestCommittedCompactionInfoResponse() noexcept;
+  std::vector<CompactionInfoStruct>  compactions;
+
+  void __set_compactions(const std::vector<CompactionInfoStruct> & val);
+
+  bool operator == (const GetLatestCommittedCompactionInfoResponse & rhs) const
+  {
+    if (!(compactions == rhs.compactions))
+      return false;
+    return true;
+  }
+  bool operator != (const GetLatestCommittedCompactionInfoResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetLatestCommittedCompactionInfoResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetLatestCommittedCompactionInfoResponse &a, GetLatestCommittedCompactionInfoResponse &b);
+
+std::ostream& operator<<(std::ostream& out, const GetLatestCommittedCompactionInfoResponse& obj);
 
 typedef struct _AddDynamicPartitions__isset {
   _AddDynamicPartitions__isset() : operationType(true) {}
@@ -11495,13 +11784,14 @@ void swap(GetTableResult &a, GetTableResult &b);
 std::ostream& operator<<(std::ostream& out, const GetTableResult& obj);
 
 typedef struct _GetTablesRequest__isset {
-  _GetTablesRequest__isset() : tblNames(false), capabilities(false), catName(false), processorCapabilities(false), processorIdentifier(false), projectionSpec(false) {}
+  _GetTablesRequest__isset() : tblNames(false), capabilities(false), catName(false), processorCapabilities(false), processorIdentifier(false), projectionSpec(false), tablesPattern(false) {}
   bool tblNames :1;
   bool capabilities :1;
   bool catName :1;
   bool processorCapabilities :1;
   bool processorIdentifier :1;
   bool projectionSpec :1;
+  bool tablesPattern :1;
 } _GetTablesRequest__isset;
 
 class GetTablesRequest : public virtual ::apache::thrift::TBase {
@@ -11509,7 +11799,7 @@ class GetTablesRequest : public virtual ::apache::thrift::TBase {
 
   GetTablesRequest(const GetTablesRequest&);
   GetTablesRequest& operator=(const GetTablesRequest&);
-  GetTablesRequest() : dbName(), catName(), processorIdentifier() {
+  GetTablesRequest() : dbName(), catName(), processorIdentifier(), tablesPattern() {
   }
 
   virtual ~GetTablesRequest() noexcept;
@@ -11520,6 +11810,7 @@ class GetTablesRequest : public virtual ::apache::thrift::TBase {
   std::vector<std::string>  processorCapabilities;
   std::string processorIdentifier;
   GetProjectionsSpec projectionSpec;
+  std::string tablesPattern;
 
   _GetTablesRequest__isset __isset;
 
@@ -11536,6 +11827,8 @@ class GetTablesRequest : public virtual ::apache::thrift::TBase {
   void __set_processorIdentifier(const std::string& val);
 
   void __set_projectionSpec(const GetProjectionsSpec& val);
+
+  void __set_tablesPattern(const std::string& val);
 
   bool operator == (const GetTablesRequest & rhs) const
   {
@@ -11564,6 +11857,10 @@ class GetTablesRequest : public virtual ::apache::thrift::TBase {
     if (__isset.projectionSpec != rhs.__isset.projectionSpec)
       return false;
     else if (__isset.projectionSpec && !(projectionSpec == rhs.projectionSpec))
+      return false;
+    if (__isset.tablesPattern != rhs.__isset.tablesPattern)
+      return false;
+    else if (__isset.tablesPattern && !(tablesPattern == rhs.tablesPattern))
       return false;
     return true;
   }
@@ -11977,17 +12274,22 @@ class Materialization : public virtual ::apache::thrift::TBase {
 
   Materialization(const Materialization&);
   Materialization& operator=(const Materialization&);
-  Materialization() : sourceTablesUpdateDeleteModified(0) {
+  Materialization() : sourceTablesUpdateDeleteModified(0), sourceTablesCompacted(0) {
   }
 
   virtual ~Materialization() noexcept;
   bool sourceTablesUpdateDeleteModified;
+  bool sourceTablesCompacted;
 
   void __set_sourceTablesUpdateDeleteModified(const bool val);
+
+  void __set_sourceTablesCompacted(const bool val);
 
   bool operator == (const Materialization & rhs) const
   {
     if (!(sourceTablesUpdateDeleteModified == rhs.sourceTablesUpdateDeleteModified))
+      return false;
+    if (!(sourceTablesCompacted == rhs.sourceTablesCompacted))
       return false;
     return true;
   }
@@ -14933,6 +15235,213 @@ class CreateTableRequest : public virtual ::apache::thrift::TBase {
 void swap(CreateTableRequest &a, CreateTableRequest &b);
 
 std::ostream& operator<<(std::ostream& out, const CreateTableRequest& obj);
+
+typedef struct _CreateDatabaseRequest__isset {
+  _CreateDatabaseRequest__isset() : description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false), createTime(false), managedLocationUri(false), type(false), dataConnectorName(false) {}
+  bool description :1;
+  bool locationUri :1;
+  bool parameters :1;
+  bool privileges :1;
+  bool ownerName :1;
+  bool ownerType :1;
+  bool catalogName :1;
+  bool createTime :1;
+  bool managedLocationUri :1;
+  bool type :1;
+  bool dataConnectorName :1;
+} _CreateDatabaseRequest__isset;
+
+class CreateDatabaseRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  CreateDatabaseRequest(const CreateDatabaseRequest&);
+  CreateDatabaseRequest& operator=(const CreateDatabaseRequest&);
+  CreateDatabaseRequest() : databaseName(), description(), locationUri(), ownerName(), ownerType((PrincipalType::type)0), catalogName(), createTime(0), managedLocationUri(), type(), dataConnectorName() {
+  }
+
+  virtual ~CreateDatabaseRequest() noexcept;
+  std::string databaseName;
+  std::string description;
+  std::string locationUri;
+  std::map<std::string, std::string>  parameters;
+  PrincipalPrivilegeSet privileges;
+  std::string ownerName;
+  PrincipalType::type ownerType;
+  std::string catalogName;
+  int32_t createTime;
+  std::string managedLocationUri;
+  std::string type;
+  std::string dataConnectorName;
+
+  _CreateDatabaseRequest__isset __isset;
+
+  void __set_databaseName(const std::string& val);
+
+  void __set_description(const std::string& val);
+
+  void __set_locationUri(const std::string& val);
+
+  void __set_parameters(const std::map<std::string, std::string> & val);
+
+  void __set_privileges(const PrincipalPrivilegeSet& val);
+
+  void __set_ownerName(const std::string& val);
+
+  void __set_ownerType(const PrincipalType::type val);
+
+  void __set_catalogName(const std::string& val);
+
+  void __set_createTime(const int32_t val);
+
+  void __set_managedLocationUri(const std::string& val);
+
+  void __set_type(const std::string& val);
+
+  void __set_dataConnectorName(const std::string& val);
+
+  bool operator == (const CreateDatabaseRequest & rhs) const
+  {
+    if (!(databaseName == rhs.databaseName))
+      return false;
+    if (__isset.description != rhs.__isset.description)
+      return false;
+    else if (__isset.description && !(description == rhs.description))
+      return false;
+    if (__isset.locationUri != rhs.__isset.locationUri)
+      return false;
+    else if (__isset.locationUri && !(locationUri == rhs.locationUri))
+      return false;
+    if (__isset.parameters != rhs.__isset.parameters)
+      return false;
+    else if (__isset.parameters && !(parameters == rhs.parameters))
+      return false;
+    if (__isset.privileges != rhs.__isset.privileges)
+      return false;
+    else if (__isset.privileges && !(privileges == rhs.privileges))
+      return false;
+    if (__isset.ownerName != rhs.__isset.ownerName)
+      return false;
+    else if (__isset.ownerName && !(ownerName == rhs.ownerName))
+      return false;
+    if (__isset.ownerType != rhs.__isset.ownerType)
+      return false;
+    else if (__isset.ownerType && !(ownerType == rhs.ownerType))
+      return false;
+    if (__isset.catalogName != rhs.__isset.catalogName)
+      return false;
+    else if (__isset.catalogName && !(catalogName == rhs.catalogName))
+      return false;
+    if (__isset.createTime != rhs.__isset.createTime)
+      return false;
+    else if (__isset.createTime && !(createTime == rhs.createTime))
+      return false;
+    if (__isset.managedLocationUri != rhs.__isset.managedLocationUri)
+      return false;
+    else if (__isset.managedLocationUri && !(managedLocationUri == rhs.managedLocationUri))
+      return false;
+    if (__isset.type != rhs.__isset.type)
+      return false;
+    else if (__isset.type && !(type == rhs.type))
+      return false;
+    if (__isset.dataConnectorName != rhs.__isset.dataConnectorName)
+      return false;
+    else if (__isset.dataConnectorName && !(dataConnectorName == rhs.dataConnectorName))
+      return false;
+    return true;
+  }
+  bool operator != (const CreateDatabaseRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CreateDatabaseRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CreateDatabaseRequest &a, CreateDatabaseRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const CreateDatabaseRequest& obj);
+
+typedef struct _CreateDataConnectorRequest__isset {
+  _CreateDataConnectorRequest__isset() : connector(false) {}
+  bool connector :1;
+} _CreateDataConnectorRequest__isset;
+
+class CreateDataConnectorRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  CreateDataConnectorRequest(const CreateDataConnectorRequest&);
+  CreateDataConnectorRequest& operator=(const CreateDataConnectorRequest&);
+  CreateDataConnectorRequest() {
+  }
+
+  virtual ~CreateDataConnectorRequest() noexcept;
+  DataConnector connector;
+
+  _CreateDataConnectorRequest__isset __isset;
+
+  void __set_connector(const DataConnector& val);
+
+  bool operator == (const CreateDataConnectorRequest & rhs) const
+  {
+    if (!(connector == rhs.connector))
+      return false;
+    return true;
+  }
+  bool operator != (const CreateDataConnectorRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CreateDataConnectorRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CreateDataConnectorRequest &a, CreateDataConnectorRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const CreateDataConnectorRequest& obj);
+
+
+class GetDataConnectorRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  GetDataConnectorRequest(const GetDataConnectorRequest&);
+  GetDataConnectorRequest& operator=(const GetDataConnectorRequest&);
+  GetDataConnectorRequest() : connectorName() {
+  }
+
+  virtual ~GetDataConnectorRequest() noexcept;
+  std::string connectorName;
+
+  void __set_connectorName(const std::string& val);
+
+  bool operator == (const GetDataConnectorRequest & rhs) const
+  {
+    if (!(connectorName == rhs.connectorName))
+      return false;
+    return true;
+  }
+  bool operator != (const GetDataConnectorRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetDataConnectorRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetDataConnectorRequest &a, GetDataConnectorRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const GetDataConnectorRequest& obj);
 
 
 class ScheduledQueryPollRequest : public virtual ::apache::thrift::TBase {

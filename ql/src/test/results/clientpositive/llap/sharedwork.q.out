@@ -608,7 +608,7 @@ INNER JOIN (SELECT `p_size` + 1 AS `$f0`
 FROM `default`.`part`
 WHERE `p_size` IS NOT NULL
 GROUP BY `p_size` + 1) AS `t11` ON `t8`.`$f1` = `t11`.`$f0`) AS `t12` ON `t`.`p_type` = `t12`.`p_type` AND `t`.`size` = `t12`.`size`) AS `t13`
-WHERE (`t13`.`$f2` IS NULL OR `t13`.`c` = 0 OR `t13`.`c` IS NULL) AND (`t13`.`ck` < (`t13`.`c` IS NOT TRUE) OR `t13`.`c` = 0 OR `t13`.`c` IS NULL OR `t13`.`$f2` IS NOT NULL OR `t13`.`p_type` IS NULL) AND (`t13`.`p_type` IS NOT NULL OR `t13`.`c` = 0 OR `t13`.`c` IS NULL OR `t13`.`$f2` IS NOT NULL)
+WHERE (`t13`.`$f2` IS NULL OR `t13`.`c` = 0 OR `t13`.`c` IS NULL) AND (`t13`.`ck` < `t13`.`c` IS NOT TRUE OR `t13`.`c` = 0 OR `t13`.`c` IS NULL OR `t13`.`$f2` IS NOT NULL OR `t13`.`p_type` IS NULL) AND (`t13`.`p_type` IS NOT NULL OR `t13`.`c` = 0 OR `t13`.`c` IS NULL OR `t13`.`$f2` IS NOT NULL)
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -882,7 +882,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6370 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((_col8 is null or (_col4 = 0L) or _col4 is null) and ((_col5 < _col4 is not true) or (_col4 = 0L) or _col4 is null or _col8 is not null or _col1 is null) and (_col1 is not null or (_col4 = 0L) or _col4 is null or _col8 is not null)) (type: boolean)
+                    predicate: ((_col8 is null or (_col4 = 0L) or _col4 is null) and ((_col5 < _col4) is not true or (_col4 = 0L) or _col4 is null or _col8 is not null or _col1 is null) and (_col1 is not null or (_col4 = 0L) or _col4 is null or _col8 is not null)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 245 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: string)

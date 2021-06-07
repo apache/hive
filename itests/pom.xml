@@ -482,6 +482,11 @@
         <artifactId>hadoop-yarn-registry</artifactId>
         <version>${hadoop.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.hive</groupId>
+        <artifactId>hive-iceberg-handler</artifactId>
+        <version>${project.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -490,6 +495,12 @@
       <id>spark-test</id>
       <modules>
         <module>qtest-spark</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>iceberg</id>
+      <modules>
+        <module>qtest-iceberg</module>
       </modules>
     </profile>
   </profiles>

@@ -31,7 +31,7 @@ PREHOOK: Input: database:test_db
 POSTHOOK: query: DESC DATABASE test_db
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:test_db
-test_db		location/in/test		hive_test_user	USER
+test_db		location/in/test		hive_test_user	USER		
 PREHOOK: query: EXPLAIN DESC DATABASE EXTENDED test_db
 PREHOOK: type: DESCDATABASE
 PREHOOK: Input: database:test_db
@@ -60,14 +60,14 @@ PREHOOK: Input: database:test_db
 POSTHOOK: query: DESC DATABASE EXTENDED test_db
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:test_db
-test_db		location/in/test		hive_test_user	USER	{key1=value1, key2=value2}
+test_db		location/in/test		hive_test_user	USER			{key1=value1, key2=value2}
 PREHOOK: query: DESC SCHEMA EXTENDED test_db
 PREHOOK: type: DESCDATABASE
 PREHOOK: Input: database:test_db
 POSTHOOK: query: DESC SCHEMA EXTENDED test_db
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:test_db
-test_db		location/in/test		hive_test_user	USER	{key1=value1, key2=value2}
+test_db		location/in/test		hive_test_user	USER			{key1=value1, key2=value2}
 PREHOOK: query: DROP DATABASE test_db
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:test_db

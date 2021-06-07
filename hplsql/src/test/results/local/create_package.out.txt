@@ -34,7 +34,7 @@ a: 3
 b: 1
 p1: 3
 Ln:22 RETURN
-pack1.f1: 
+pack1.f1: 12
 Ln:58 EXEC PACKAGE PROCEDURE PACK1.SP1
 Ln:58 SET PARAM p1 = 1
 a: 3

@@ -21,23 +21,17 @@ import io.jsonwebtoken.lang.Assert;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.io.Allocator;
-import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.DataCache;
-import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
-import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cache.BuddyAllocator;
-import org.apache.hadoop.hive.llap.cache.LlapDataBuffer;
-import org.apache.hadoop.hive.llap.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheImpl;
 import org.apache.hadoop.hive.llap.cache.LowLevelLrfuCachePolicy;
 import org.apache.hadoop.hive.llap.cache.TestBuddyAllocatorForceEvict;
+import org.apache.hadoop.hive.llap.io.LlapIoMocks;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
-import org.apache.hadoop.hive.ql.io.orc.encoded.CacheChunk;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.junit.Before;
@@ -58,7 +52,7 @@ public class TestLlapOrcCacheLoader {
   private FixedSizedObjectPool<IoTrace> tracePool;
   private LowLevelCacheImpl cache;
   private DataCache mockDataCache;
-  private MockDiskRangeListFactory mockDiskRangeListFactory;
+  private LlapIoMocks.MockDiskRangeListFactory mockDiskRangeListFactory;
 
   @Before
   public void setUp() {
@@ -72,27 +66,27 @@ public class TestLlapOrcCacheLoader {
         false, metrics);
     tracePool = IoTrace.createTracePool(conf);
     cache = new LowLevelCacheImpl(metrics, lrfu, buddyAllocator, true);
-    mockDataCache = new MockDataCache();
-    mockDiskRangeListFactory = new MockDiskRangeListFactory();
+    mockDataCache = new LlapIoMocks.MockDataCache(cache, buddyAllocator, lrfu);
+    mockDiskRangeListFactory = new LlapIoMocks.MockDiskRangeListFactory();
   }
 
   @Test(expected = IOException.class)
   public void testWrongFileKey() throws IOException {
-    LlapOrcCacheLoader loader = new LlapOrcCacheLoader(new Path(TEST_PATH),
-        null, conf, null, null, null, null);
-    loader.init();
+    try(LlapOrcCacheLoader loader = new LlapOrcCacheLoader(new Path(TEST_PATH),
+        null, conf, null, null, null, null)) {
+      loader.init();
+    }
   }
 
   @Test
   public void testLoadFooter() throws IOException {
     Path path = new Path(TEST_PATH);
     Object key = fileId(path);
-    LlapOrcCacheLoader loader = new LlapOrcCacheLoader(path, key, conf, null, metaCache,
-        null, null);
-    loader.init();
-
-    loader.loadFileFooter();
-
+    try(LlapOrcCacheLoader loader = new LlapOrcCacheLoader(path, key, conf, null, metaCache,
+        null, null)) {
+      loader.init();
+      loader.loadFileFooter();
+    }
     MetadataCache.LlapBufferOrBuffers metadata = metaCache.getFileMetadata(key);
     Assert.notNull(metadata);
   }
@@ -102,18 +96,19 @@ public class TestLlapOrcCacheLoader {
   public void testLoadUncompressedRanges() throws IOException {
     Path path = new Path(TEST_PATH_UNCOMPRESSED);
     Object key = fileId(path);
-    LlapOrcCacheLoader loader = new LlapOrcCacheLoader(path, key, conf, mockDataCache, metaCache,
-        null, tracePool);
-    loader.init();
+    try(LlapOrcCacheLoader loader = new LlapOrcCacheLoader(path, key, conf, mockDataCache, metaCache,
+        null, tracePool)) {
+      loader.init();
 
-    DiskRangeList range = new DiskRangeList(ORC_PADDING, 296);
-    loader.loadRanges(range);
+      DiskRangeList range = new DiskRangeList(ORC_PADDING, 296);
+      loader.loadRanges(range);
 
-    DataCache.BooleanRef gotAllData = new DataCache.BooleanRef();
-    cache.getFileData(key, range, 0,
-        mockDiskRangeListFactory, null, gotAllData);
+      DataCache.BooleanRef gotAllData = new DataCache.BooleanRef();
+      cache.getFileData(key, range, 0,
+          mockDiskRangeListFactory, null, gotAllData);
 
-    Assert.isTrue(gotAllData.value);
+      Assert.isTrue(gotAllData.value);
+    }
   }
 
   @Test
@@ -182,62 +177,5 @@ public class TestLlapOrcCacheLoader {
   private SyntheticFileId fileId(Path path) throws IOException {
     FileStatus fs = path.getFileSystem(conf).getFileStatus(path);
     return new SyntheticFileId(path, fs.getLen(), fs.getModificationTime());
-  }
-
-  private class MockDataCache implements DataCache, Allocator.BufferObjectFactory {
-
-    @Override
-    public MemoryBuffer create() {
-      return new LlapDataBuffer();
-    }
-
-    @Override
-    public DiskRangeList getFileData(Object fileKey, DiskRangeList range, long baseOffset,
-        DiskRangeListFactory factory, BooleanRef gotAllData) {
-      return cache.getFileData(fileKey, range, baseOffset, factory, null, gotAllData);
-    }
-
-    @Override
-    public long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] data, long baseOffset) {
-      return data != null ?
-          cache.putFileData(fileKey,ranges, data, baseOffset, LowLevelCache.Priority.NORMAL, null, null) :
-          null;
-    }
-
-    @Override
-    public void releaseBuffer(MemoryBuffer buffer) {
-
-    }
-
-    @Override
-    public void reuseBuffer(MemoryBuffer buffer) {
-
-    }
-
-    @Override
-    public Allocator getAllocator() {
-      return buddyAllocator;
-    }
-
-    @Override
-    public Allocator.BufferObjectFactory getDataBufferFactory() {
-      return this;
-    }
-
-    @Override
-    public long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] data, long baseOffset,
-        CacheTag tag) {
-      return data != null ?
-          cache.putFileData(fileKey,ranges, data, baseOffset, LowLevelCache.Priority.NORMAL, null, tag) :
-          null;
-    }
-  }
-
-  private class MockDiskRangeListFactory implements DataCache.DiskRangeListFactory {
-
-    @Override
-    public DiskRangeList createCacheChunk(MemoryBuffer buffer, long startOffset, long endOffset) {
-      return new CacheChunk(buffer, startOffset, endOffset);
-    }
   }
 }

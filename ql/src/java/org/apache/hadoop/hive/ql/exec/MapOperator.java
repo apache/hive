@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
+import org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -58,6 +59,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -436,10 +438,7 @@ public class MapOperator extends AbstractMapOperator {
 
       for (String alias : aliases) {
         Operator<? extends OperatorDesc> op = conf.getAliasToWork().get(alias);
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Adding alias " + alias + " to work list for file "
-              + onefile);
-        }
+        LOG.debug("Adding alias {} to work list for file {}", alias, onefile);
         Map<Operator<?>, MapOpCtx> contexts = opCtxMap.computeIfAbsent(onefile,
                 k -> new LinkedHashMap<>());
         if (contexts.containsKey(op)) {
@@ -523,9 +522,7 @@ public class MapOperator extends AbstractMapOperator {
         }
         builder.append(context.alias);
       }
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Processing alias(es) " + builder.toString() + " for file " + fpath);
-      }
+      LOG.debug("Processing alias(es) {} for file {}", builder, fpath);
     }
     // Add alias, table name, and partitions to hadoop conf so that their
     // children will inherit these
@@ -675,6 +672,9 @@ public class MapOperator extends AbstractMapOperator {
             //happen since IO layer either knows how to produce ROW__ID or not - but to be safe
           }
 	  break;
+        case ROWISDELETED:
+          vcValues[i] = new BooleanWritable(ctx.getIoCxt().isDeletedRecord());
+          break;
       }
     }
     return vcValues;

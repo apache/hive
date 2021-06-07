@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hive.hplsql.HplSqlSessionState;
 import org.apache.thrift.TException;
@@ -41,7 +42,7 @@ public class HmsPackageRegistry implements PackageRegistry {
   @Override
   public Optional<String> getPackage(String name) {
     try {
-      Package pkg = msc.findPackage(request(name));
+      Package pkg = findPackage(name);
       return pkg == null
               ? Optional.empty()
               : Optional.of(pkg.getHeader() + ";\n" + pkg.getBody());
@@ -53,7 +54,7 @@ public class HmsPackageRegistry implements PackageRegistry {
   @Override
   public void createPackageHeader(String name, String header, boolean replace) {
     try {
-      Package existing = msc.findPackage(request(name));
+      Package existing = findPackage(name);
       if (existing != null && !replace)
         throw new RuntimeException("Package " + name + " already exists");
       msc.addPackage(makePackage(name, header, ""));
@@ -65,7 +66,7 @@ public class HmsPackageRegistry implements PackageRegistry {
   @Override
   public void createPackageBody(String name, String body, boolean replace) {
     try {
-      Package existing = msc.findPackage(request(name));
+      Package existing = findPackage(name);
       if (existing == null || StringUtils.isEmpty(existing.getHeader()))
         throw new RuntimeException("Package header does not exists " + name);
       if (StringUtils.isNotEmpty(existing.getBody()) && !replace)
@@ -73,6 +74,14 @@ public class HmsPackageRegistry implements PackageRegistry {
       msc.addPackage(makePackage(name, existing.getHeader(), body));
     } catch (TException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  private Package findPackage(String name) throws TException {
+    try {
+      return msc.findPackage(request(name));
+    } catch (NoSuchObjectException e) {
+      return null;
     }
   }
 

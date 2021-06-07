@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.HiveAlterHandler;
 import org.apache.hadoop.hive.metastore.api.*;
@@ -74,6 +75,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
@@ -1036,6 +1038,11 @@ public class CachedStore implements RawStore, Configurable {
     // So we will not update the cache during raw store operation but wait during commit transaction to make sure that
     // the event related to the current transactions are updated in the cache and thus we can support strong
     // consistency in case there is only one metastore.
+    updateCacheUsingEvents();
+    return true;
+  }
+
+  private void updateCacheUsingEvents() {
     if (canUseEvents) {
       try {
         triggerUpdateUsingEvent(rawStore);
@@ -1044,7 +1051,6 @@ public class CachedStore implements RawStore, Configurable {
         LOG.error("Failed to update cache", e);
       }
     }
-    return true;
   }
 
   @Override public boolean isActiveTransaction() {
@@ -1083,7 +1089,7 @@ public class CachedStore implements RawStore, Configurable {
     return cat;
   }
 
-  @Override public List<String> getCatalogs() throws MetaException {
+  @Override public List<String> getCatalogs() {
     // in case of event based cache update, cache will not be updated for catalog.
     if (!sharedCache.isCatalogCachePrewarmed() || canUseEvents) {
       return rawStore.getCatalogs();
@@ -1102,6 +1108,9 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public void createDatabase(Database db) throws InvalidObjectException, MetaException {
+    if (db.getType() == null) {
+      db.setType(DatabaseType.NATIVE);
+    }
     rawStore.createDatabase(db);
     // in case of event based cache update, cache will be updated during commit.
     if (!canUseEvents) {
@@ -1158,6 +1167,32 @@ public class CachedStore implements RawStore, Configurable {
       return rawStore.getAllDatabases(catName);
     }
     return sharedCache.listCachedDatabases(catName);
+  }
+
+  @Override public void createDataConnector(DataConnector connector) throws InvalidObjectException, MetaException {
+    rawStore.createDataConnector(connector);
+  }
+
+  @Override public DataConnector getDataConnector(String dcName) throws NoSuchObjectException {
+    // in case of  event based cache update, cache will be updated during commit. So within active transaction, read
+    // directly from rawStore to avoid reading stale data as the data updated during same transaction will not be
+    // updated in the cache.
+      return rawStore.getDataConnector(dcName);
+  }
+
+  @Override
+  public boolean dropDataConnector(String dcName) throws NoSuchObjectException, MetaException {
+     return rawStore.dropDataConnector(dcName);
+  }
+
+  @Override public boolean alterDataConnector(String dcName, DataConnector connector)
+      throws NoSuchObjectException, MetaException {
+    return rawStore.alterDataConnector(dcName, connector);
+  }
+
+  @Override
+  public List<String> getAllDataConnectorNames() throws MetaException {
+      return rawStore.getAllDataConnectorNames();
   }
 
   @Override public boolean createType(Type type) {
@@ -1227,7 +1262,12 @@ public class CachedStore implements RawStore, Configurable {
     return getTable(catName, dbName, tblName, null);
   }
 
-  @Override public Table getTable(String catName, String dbName, String tblName, String validWriteIds)
+  @Override
+  public Table getTable(String catName, String dbName, String tblName, String validWriteIds) throws MetaException {
+    return getTable(catName, dbName, tblName, null, -1);
+  }
+
+  @Override public Table getTable(String catName, String dbName, String tblName, String validWriteIds, long tableId)
       throws MetaException {
     catName = normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
@@ -1532,8 +1572,8 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override
   public List<Table> getTableObjectsByName(String catName, String db, List<String> tbl_names,
-          GetProjectionsSpec projectionsSpec) throws MetaException, UnknownDBException {
-    return getTableObjectsByName(catName, db, tbl_names, null);
+          GetProjectionsSpec projectionsSpec, String tablePattern) throws MetaException, UnknownDBException {
+    return rawStore.getTableObjectsByName(catName, db, tbl_names, projectionsSpec, tablePattern);
   }
 
   @Override public List<String> getAllTables(String catName, String dbName) throws MetaException {
@@ -2132,6 +2172,21 @@ public class CachedStore implements RawStore, Configurable {
     return succ;
   }
 
+  private void updatePartitionColumnStatisticsInCache(ColumnStatistics colStats, Map<String, String> newParams,
+                                                  List<String> partVals) throws MetaException, NoSuchObjectException {
+    String catName = colStats.getStatsDesc().isSetCatName() ? normalizeIdentifier(
+            colStats.getStatsDesc().getCatName()) : DEFAULT_CATALOG_NAME;
+    String dbName = normalizeIdentifier(colStats.getStatsDesc().getDbName());
+    String tblName = normalizeIdentifier(colStats.getStatsDesc().getTableName());
+    if (!shouldCacheTable(catName, dbName, tblName)) {
+      return;
+    }
+    Partition part = getPartition(catName, dbName, tblName, partVals);
+    part.setParameters(newParams);
+    sharedCache.alterPartitionInCache(catName, dbName, tblName, partVals, part);
+    sharedCache.updatePartitionColStatsInCache(catName, dbName, tblName, partVals, colStats.getStatsObj());
+  }
+
   @Override public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics colStats, List<String> partVals,
       String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
@@ -2139,19 +2194,36 @@ public class CachedStore implements RawStore, Configurable {
         rawStore.updatePartitionColumnStatistics(colStats, partVals, validWriteIds, writeId);
     // in case of event based cache update, cache is updated during commit txn
     if (newParams != null && !canUseEvents) {
-      String catName = colStats.getStatsDesc().isSetCatName() ? normalizeIdentifier(
-          colStats.getStatsDesc().getCatName()) : DEFAULT_CATALOG_NAME;
-      String dbName = normalizeIdentifier(colStats.getStatsDesc().getDbName());
-      String tblName = normalizeIdentifier(colStats.getStatsDesc().getTableName());
-      if (!shouldCacheTable(catName, dbName, tblName)) {
-        return newParams;
-      }
-      Partition part = getPartition(catName, dbName, tblName, partVals);
-      part.setParameters(newParams);
-      sharedCache.alterPartitionInCache(catName, dbName, tblName, partVals, part);
-      sharedCache.updatePartitionColStatsInCache(catName, dbName, tblName, partVals, colStats.getStatsObj());
+      updatePartitionColumnStatisticsInCache(colStats, newParams, partVals);
     }
     return newParams;
+  }
+
+  @Override public Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
+          Map<String, ColumnStatistics> partColStatsMap,
+          Table tbl, List<TransactionalMetaStoreEventListener> listeners,
+          String validWriteIds, long writeId)
+          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    Map<String, Map<String, String>> result =
+            rawStore.updatePartitionColumnStatisticsInBatch(partColStatsMap, tbl, listeners, validWriteIds, writeId);
+    if (result == null) {
+      return null;
+    }
+
+    if (!canUseEvents) {
+      //TODO : Do it in one call
+      for (Map.Entry entry : result.entrySet()) {
+        Map<String, String> newParams = (Map<String, String>) entry.getValue();
+        ColumnStatistics colStats = partColStatsMap.get(entry.getKey());
+        List<String> partVals = getPartValsFromName(tbl, colStats.getStatsDesc().getPartName());
+        updatePartitionColumnStatisticsInCache(colStats, newParams, partVals);
+      }
+    } else {
+      // Usually the cache update using events is done during commit. But for this method,
+      // the commit is done internally using direct sql.
+      updateCacheUsingEvents();
+    }
+    return result;
   }
 
   @Override public List<List<ColumnStatistics>> getPartitionColumnStatistics(String catName, String dbName, String tblName,
@@ -3133,12 +3205,12 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException, NoSuchObjectException {
+  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException {
     return rawStore.getStoredProcedure(catName, db, name);
   }
 
   @Override
-  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException {
+  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException {
     rawStore.dropStoredProcedure(catName, dbName, funcName);
   }
 

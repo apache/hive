@@ -33,18 +33,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 public class StringLength extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private final int colNum;
-
   public StringLength(int colNum, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum = colNum;
+    super(colNum, outputColumnNum);
   }
 
   public StringLength() {
     super();
-
-    // Dummy final assignments.
-    colNum = -1;
   }
 
   // Calculate the length of the UTF-8 strings in input vector and place results in output vector.
@@ -55,7 +49,7 @@ public class StringLength extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[colNum];
+    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumnNum[0]];
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     int n = batch.size;
@@ -162,7 +156,7 @@ public class StringLength extends VectorExpression {
   }
 
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

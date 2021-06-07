@@ -31,6 +31,11 @@ class AbortTxnRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        3 => array(
+            'var' => 'txn_type',
+            'isRequired' => false,
+            'type' => TType::I32,
+        ),
     );
 
     /**
@@ -41,6 +46,10 @@ class AbortTxnRequest
      * @var string
      */
     public $replPolicy = null;
+    /**
+     * @var int
+     */
+    public $txn_type = null;
 
     public function __construct($vals = null)
     {
@@ -50,6 +59,9 @@ class AbortTxnRequest
             }
             if (isset($vals['replPolicy'])) {
                 $this->replPolicy = $vals['replPolicy'];
+            }
+            if (isset($vals['txn_type'])) {
+                $this->txn_type = $vals['txn_type'];
             }
         }
     }
@@ -87,6 +99,13 @@ class AbortTxnRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 3:
+                    if ($ftype == TType::I32) {
+                        $xfer += $input->readI32($this->txn_type);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -109,6 +128,11 @@ class AbortTxnRequest
         if ($this->replPolicy !== null) {
             $xfer += $output->writeFieldBegin('replPolicy', TType::STRING, 2);
             $xfer += $output->writeString($this->replPolicy);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->txn_type !== null) {
+            $xfer += $output->writeFieldBegin('txn_type', TType::I32, 3);
+            $xfer += $output->writeI32($this->txn_type);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

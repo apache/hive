@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Map;
 
 
@@ -42,6 +44,7 @@ public class ReplStateLogWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private final ReplLogger replLogger;
   private final LOG_TYPE logType;
+  private String message = "";
   private String eventId;
   private String eventType;
   private String tableName;
@@ -55,7 +58,8 @@ public class ReplStateLogWork implements Serializable {
     TABLE,
     FUNCTION,
     EVENT,
-    END
+    END,
+    DATA_COPY_END
   }
 
   public ReplStateLogWork(ReplLogger replLogger, ReplicationMetricCollector metricCollector,
@@ -126,6 +130,13 @@ public class ReplStateLogWork implements Serializable {
     this.metricCollector = collector;
   }
 
+  public ReplStateLogWork(ReplLogger replLogger, String message) {
+    this.logType = LOG_TYPE.DATA_COPY_END;
+    this.replLogger = replLogger;
+    this.metricCollector = null;
+    this.message = message;
+  }
+
 
   public ReplicationMetricCollector getMetricCollector() { return metricCollector; }
 
@@ -150,9 +161,13 @@ public class ReplStateLogWork implements Serializable {
       if (StringUtils.isEmpty(lastReplId) || "null".equalsIgnoreCase(lastReplId)) {
         metricCollector.reportStageEnd("REPL_LOAD", Status.SUCCESS);
       } else {
-        metricCollector.reportStageEnd("REPL_LOAD", Status.SUCCESS, Long.parseLong(lastReplId));
+        metricCollector.reportStageEnd("REPL_LOAD", Status.SUCCESS,
+            Long.parseLong(lastReplId), new SnapshotUtils.ReplSnapshotCount(), replLogger.getReplStatsTracker());
       }
       metricCollector.reportEnd(Status.SUCCESS);
+      break;
+    case DATA_COPY_END:
+      replLogger.dataCopyLog(message);
       break;
     }
   }

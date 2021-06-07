@@ -434,9 +434,7 @@ public class TezSessionState {
       // We are not in HS2; always create a new client for now.
       token = new LlapTokenClient(conf).getDelegationToken(null);
     }
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Obtained a LLAP token: " + token);
-    }
+    LOG.info("Obtained a LLAP token: " + token);
     return token;
   }
 
@@ -821,9 +819,7 @@ public class TezSessionState {
     destFileName = FilenameUtils.removeExtension(destFileName) + "-" + sha
         + FilenameUtils.EXTENSION_SEPARATOR + FilenameUtils.getExtension(destFileName);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("The destination file name for [" + localJarPath + "] is " + destFileName);
-    }
+    LOG.debug("The destination file name for [{}] is {}", localJarPath, destFileName);
 
     // TODO: if this method is ever called on more than one jar, getting the dir and the
     //       list need to be refactored out to be done only once.

@@ -247,6 +247,11 @@ enum SchemaVersionState {
   DELETED = 8
 }
 
+enum DatabaseType {
+  NATIVE = 1,
+  REMOTE = 2
+}
+
 struct HiveObjectRef{
   1: HiveObjectType objectType,
   2: string dbName,
@@ -395,8 +400,11 @@ struct Database {
   6: optional string ownerName,
   7: optional PrincipalType ownerType,
   8: optional string catalogName,
-  9: optional i32 createTime               // creation time of database in seconds since epoch
-  10: optional string managedLocationUri // directory for managed tables
+  9: optional i32 createTime,             // creation time of database in seconds since epoch
+  10: optional string managedLocationUri, // directory for managed tables
+  11: optional DatabaseType type,
+  12: optional string connector_name,
+  13: optional string remote_dbname
 }
 
 // This object holds the information needed by SerDes
@@ -910,6 +918,17 @@ struct GetPartitionsByNamesResult {
   1: required list<Partition> partitions
 }
 
+struct DataConnector {
+  1: string name,
+  2: string type,
+  3: string url,
+  4: optional string description,
+  5: optional map<string,string> parameters,
+  6: optional string ownerName,
+  7: optional PrincipalType ownerType,
+  8: optional i32 createTime
+}
+
 enum FunctionType {
   JAVA = 1,
 }
@@ -995,6 +1014,7 @@ struct OpenTxnsResponse {
 struct AbortTxnRequest {
     1: required i64 txnid,
     2: optional string replPolicy,
+    3: optional TxnType txn_type,
 }
 
 struct AbortTxnsRequest {
@@ -1034,7 +1054,8 @@ struct CommitTxnRequest {
     4: optional ReplLastIdInfo replLastIdInfo,
     // An optional key/value to store atomically with the transaction
     5: optional CommitTxnKeyValue keyValue,
-    6: optional bool exclWriteEnabled = true
+    6: optional bool exclWriteEnabled = true,
+    7: optional TxnType txn_type,
 }
 
 struct ReplTblWriteIdStateRequest {
@@ -1194,6 +1215,8 @@ struct CompactionRequest {
     4: required CompactionType type,
     5: optional string runas,
     6: optional map<string, string> properties
+    7: optional string initiatorId,
+    8: optional string initiatorVersion
 }
 
 struct CompactionInfoStruct {
@@ -1243,10 +1266,23 @@ struct ShowCompactResponseElement {
     13: optional i64 id,
     14: optional string errorMessage,
     15: optional i64 enqueueTime,
+    16: optional string workerVersion,
+    17: optional string initiatorId,
+    18: optional string initiatorVersion
 }
 
 struct ShowCompactResponse {
     1: required list<ShowCompactResponseElement> compacts,
+}
+
+struct GetLatestCommittedCompactionInfoRequest {
+    1: required string dbname,
+    2: required string tablename,
+    3: optional list<string> partitionnames,
+}
+
+struct GetLatestCommittedCompactionInfoResponse {
+    1: required list<CompactionInfoStruct> compactions,
 }
 
 struct AddDynamicPartitions {
@@ -1493,7 +1529,8 @@ struct GetTablesRequest {
   4: optional string catName,
   5: optional list<string> processorCapabilities,
   6: optional string processorIdentifier,
-  7: optional GetProjectionsSpec projectionSpec
+  7: optional GetProjectionsSpec projectionSpec,
+  8: optional string tablesPattern
 }
 
 struct GetTablesResult {
@@ -1545,6 +1582,7 @@ struct TableMeta {
 
 struct Materialization {
   1: required bool sourceTablesUpdateDeleteModified;
+  2: required bool sourceTablesCompacted;
 }
 
 // Data types for workload management.
@@ -1867,6 +1905,29 @@ struct CreateTableRequest {
    8: optional list<SQLCheckConstraint> checkConstraints,
    9: optional list<string> processorCapabilities,
    10: optional string processorIdentifier
+}
+
+struct CreateDatabaseRequest {
+  1: required string databaseName,
+  2: optional string description,
+  3: optional string locationUri,
+  4: optional map<string, string> parameters,
+  5: optional PrincipalPrivilegeSet privileges,
+  6: optional string ownerName,
+  7: optional PrincipalType ownerType,
+  8: optional string catalogName,
+  9: optional i32 createTime,
+  10: optional string managedLocationUri,
+  11: optional string type,
+  12: optional string dataConnectorName
+}
+
+struct CreateDataConnectorRequest {
+  1: DataConnector connector
+}
+
+struct GetDataConnectorRequest {
+  1: required string connectorName
 }
 
 struct ScheduledQueryPollRequest {
@@ -2233,7 +2294,13 @@ service ThriftHiveMetastore extends fb303.FacebookService
   list<string> get_all_databases() throws(1:MetaException o1)
   void alter_database(1:string dbname, 2:Database db) throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
-  // returns the type with given name (make seperate calls for the dependent types if needed)
+  void create_dataconnector(1:DataConnector connector) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
+  DataConnector get_dataconnector_req(1:GetDataConnectorRequest request) throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  void drop_dataconnector(1:string name, bool ifNotExists, bool checkReferences) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
+  list<string> get_dataconnectors() throws(1:MetaException o1)
+  void alter_dataconnector(1:string name, 2:DataConnector connector) throws(1:MetaException o1, 2:NoSuchObjectException o2)
+
+    // returns the type with given name (make seperate calls for the dependent types if needed)
   Type get_type(1:string name)  throws(1:MetaException o1, 2:NoSuchObjectException o2)
   bool create_type(1:Type type) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
   bool drop_type(1:string type) throws(1:MetaException o1, 2:NoSuchObjectException o2)
@@ -2762,13 +2829,14 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   CompactionResponse compact2(1:CompactionRequest rqst) 
   ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
   void add_dynamic_partitions(1:AddDynamicPartitions rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
-  OptionalCompactionInfoStruct find_next_compact(1: string workerId) throws(1:MetaException o1)
+  OptionalCompactionInfoStruct find_next_compact(1: string workerId, 2: string workerVersion) throws(1:MetaException o1)
   void update_compactor_state(1: CompactionInfoStruct cr, 2: i64 txn_id)
   list<string> find_columns_with_stats(1: CompactionInfoStruct cr)
   void mark_cleaned(1:CompactionInfoStruct cr) throws(1:MetaException o1)
   void mark_compacted(1: CompactionInfoStruct cr) throws(1:MetaException o1)
   void mark_failed(1: CompactionInfoStruct cr) throws(1:MetaException o1)
   void set_hadoop_jobid(1: string jobId, 2: i64 cq_id)
+  GetLatestCommittedCompactionInfoResponse get_latest_committed_compaction_info(1:GetLatestCommittedCompactionInfoRequest rqst)
 
   // Notification logging calls
   NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 
@@ -2893,10 +2961,10 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
 
   void create_stored_procedure(1: StoredProcedure proc) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   StoredProcedure get_stored_procedure(1: StoredProcedureRequest request) throws (1:MetaException o1, 2:NoSuchObjectException o2)
-  void drop_stored_procedure(1: StoredProcedureRequest request) throws (1:MetaException o1, 2:NoSuchObjectException o2)
+  void drop_stored_procedure(1: StoredProcedureRequest request) throws (1:MetaException o1)
   list<string> get_all_stored_procedures(1: ListStoredProcedureRequest request) throws (1:MetaException o1)
 
-  Package find_package(1: GetPackageRequest request) throws (1:MetaException o1)
+  Package find_package(1: GetPackageRequest request) throws (1:MetaException o1, 2:NoSuchObjectException o2)
   void add_package(1: AddPackageRequest request) throws (1:MetaException o1)
   list<string> get_all_packages(1: ListPackageRequest request) throws (1:MetaException o1)
   void drop_package(1: DropPackageRequest request) throws (1:MetaException o1)
@@ -2942,3 +3010,4 @@ const string TABLE_BUCKETING_VERSION = "bucketing_version",
 const string DRUID_CONFIG_PREFIX = "druid.",
 const string JDBC_CONFIG_PREFIX = "hive.sql.",
 const string TABLE_IS_CTAS = "created_with_ctas",
+const string PARTITION_TRANSFORM_SPEC = "partition_transform_spec",

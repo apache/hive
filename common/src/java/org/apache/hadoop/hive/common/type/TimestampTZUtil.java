@@ -110,9 +110,7 @@ public class TimestampTZUtil {
     try {
       return parse(s, defaultTimeZone);
     } catch (DateTimeParseException e) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Invalid string " + s + " for TIMESTAMP WITH TIME ZONE", e);
-      }
+      LOG.debug("Invalid string '{}' for TIMESTAMP WITH TIME ZONE", s, e);
       return null;
     }
   }

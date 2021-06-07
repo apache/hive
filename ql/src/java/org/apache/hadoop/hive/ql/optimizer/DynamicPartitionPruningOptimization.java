@@ -162,6 +162,11 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     List<ExprNodeDesc> newBetweenNodes = new ArrayList<>();
     List<ExprNodeDesc> newBloomFilterNodes = new ArrayList<>();
     for (DynamicListContext ctx : removerContext) {
+      if (ctx.desc.getTypeInfo().getCategory()  != ObjectInspector.Category.PRIMITIVE) {
+        // DPP is not supported for complex types.
+        // https://issues.apache.org/jira/browse/HIVE-24988
+        continue;
+      }
       String column = ExprNodeDescUtils.extractColName(ctx.parent);
       boolean semiJoinAttempted = false;
 
@@ -191,16 +196,16 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
           // have been already filtered
           if (plist == null || plist.getPartitions().size() != 0) {
             LOG.info("Dynamic partitioning: " + table.getCompleteName() + "." + column);
-            generateEventOperatorPlan(ctx, parseContext, ts, column, columnType);
+            generateEventOperatorPlan(ctx, parseContext, ts, column, columnType, null);
           } else {
             // all partitions have been statically removed
             LOG.debug("No partition pruning necessary.");
           }
         } else if (table.isNonNative() &&
-          table.getStorageHandler().addDynamicSplitPruningEdge(desc.getPredicate())){
+          table.getStorageHandler().addDynamicSplitPruningEdge(table, ctx.parent)) {
           generateEventOperatorPlan(ctx, parseContext, ts, column,
             table.getCols().stream().filter(e -> e.getName().equals(column)).
-          map(e -> e.getType()).findFirst().get());
+          map(e -> e.getType()).findFirst().get(), ctx.parent);
         } else { // semijoin
           LOG.debug("Column " + column + " is not a partition column");
           if (semiJoin && !disableSemiJoinOptDueToExternalTable(parseContext.getConf(), ts, ctx)
@@ -463,7 +468,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
 
 
   private void generateEventOperatorPlan(DynamicListContext ctx, ParseContext parseContext,
-      TableScanOperator ts, String column, String columnType) {
+      TableScanOperator ts, String column, String columnType, ExprNodeDesc predicate) {
 
     // we will put a fork in the plan at the source of the reduce sink
     Operator<? extends OperatorDesc> parentOfRS = ctx.generator.getParentOperators().get(0);
@@ -474,10 +479,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     // we also need the expr for the partitioned table
     ExprNodeDesc partKey = ctx.parent.getChildren().get(0);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("key expr: " + key);
-      LOG.debug("partition key expr: " + partKey);
-    }
+    LOG.debug("key expr: {}; partition key expr: {}", key, partKey);
 
     List<ExprNodeDesc> keyExprs = new ArrayList<ExprNodeDesc>();
     keyExprs.add(key);
@@ -541,6 +543,9 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
       eventDesc.setTargetColumnName(column);
       eventDesc.setTargetColumnType(columnType);
       eventDesc.setPartKey(partKey);
+      if (predicate != null) {
+        eventDesc.setPredicate(predicate.clone());
+      }
       OperatorFactory.getAndMakeChild(eventDesc, groupByOp);
     } else {
       // Must be spark branch

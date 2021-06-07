@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -176,9 +177,8 @@ public interface RawStore extends Configurable {
   /**
    * Get all the catalogs.
    * @return list of names of all catalogs in the system
-   * @throws MetaException if something goes wrong, usually in reading from the database.
    */
-  List<String> getCatalogs() throws MetaException;
+  List<String> getCatalogs();
 
   /**
    * Drop a catalog.  The catalog must be empty.
@@ -248,6 +248,52 @@ public interface RawStore extends Configurable {
    */
   List<String> getAllDatabases(String catalogName) throws MetaException;
 
+  /**
+   * Create a dataconnector.
+   * @param dataConnector dataconnector to create.
+   * @throws InvalidObjectException not sure it actually ever throws this.
+   * @throws MetaException if something goes wrong, usually in writing it to the dataconnector.
+   */
+  void createDataConnector(DataConnector dataConnector)
+      throws InvalidObjectException, MetaException;
+
+  /**
+   * Drop a dataconnector.
+   * @param dcName name of the dataconnector.
+   * @return true if the database was dropped, pretty much always returns this if it returns.
+   * @throws NoSuchObjectException no database in this catalog of this name to drop
+   * @throws MetaException something went wrong, usually with the database.
+   */
+  boolean dropDataConnector(String dcName)
+      throws NoSuchObjectException, MetaException;
+
+  /**
+   * Alter a dataconnector.
+   * @param dcName name of the dataconnector to alter
+   * @param connector new version of the dataconnector.  This should be complete as it will fully replace the
+   *          existing db object.
+   * @return true if the change succeeds, false otherwise.
+   * @throws NoSuchObjectException no dataconnector of this name exists to alter.
+   * @throws MetaException something went wrong, usually with the backend HMSDB.
+   */
+  boolean alterDataConnector(String dcName, DataConnector connector)
+      throws NoSuchObjectException, MetaException;
+
+  /**
+   * Get the dataconnector with a given name, if exists.
+   * @param dcName pattern names should match
+   * @return DataConnector object.
+   * @throws MetaException something went wrong, usually with the database.
+   */
+  DataConnector getDataConnector(String dcName) throws NoSuchObjectException;
+
+  /**
+   * Get names of all the databases in a catalog.
+   * @return list of names of all dataconnectors
+   * @throws MetaException something went wrong, usually with the database.
+   */
+  List<String> getAllDataConnectorNames() throws MetaException;
+
   boolean createType(Type type);
 
   Type getType(String typeName);
@@ -294,6 +340,19 @@ public interface RawStore extends Configurable {
    */
   Table getTable(String catalogName, String dbName, String tableName,
                  String writeIdList) throws MetaException;
+
+  /**
+   * Get a table object.
+   * @param catalogName catalog the table is in.
+   * @param dbName database the table is in.
+   * @param tableName table name.
+   * @param writeIdList string format of valid writeId transaction list
+   * @return table object, or null if no such table exists (wow it would be nice if we either
+   * consistently returned null or consistently threw NoSuchObjectException).
+   * @throws MetaException something went wrong in the RDBMS
+   */
+  Table getTable(String catalogName, String dbName, String tableName,
+      String writeIdList, long tableId) throws MetaException;
 
   /**
    * Add a partition.
@@ -532,7 +591,7 @@ public interface RawStore extends Configurable {
    * @throws MetaException failure in querying the RDBMS.
    */
   List<Table> getTableObjectsByName(String catName, String dbname, List<String> tableNames,
-                                    GetProjectionsSpec projectionSpec) throws MetaException, UnknownDBException;
+                                    GetProjectionsSpec projectionSpec, String tablePattern) throws MetaException, UnknownDBException;
 
   /**
    * Get all tables in a database.
@@ -1951,6 +2010,12 @@ public interface RawStore extends Configurable {
    */
   ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest replicationMetricsRequest);
 
+  Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
+          Map<String, ColumnStatistics> partColStatsMap,
+          Table tbl, List<TransactionalMetaStoreEventListener> listeners,
+          String validWriteIds, long writeId)
+          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+
   int deleteReplicationMetrics(int maxRetainSecs);
 
   int deleteScheduledExecutions(int maxRetainSecs);
@@ -1961,9 +2026,9 @@ public interface RawStore extends Configurable {
 
   void createOrUpdateStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException;
 
-  StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException, NoSuchObjectException;
+  StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException;
 
-  void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException;
+  void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException;
 
   List<String> getAllStoredProcedures(ListStoredProcedureRequest request);
 

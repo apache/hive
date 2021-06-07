@@ -18,9 +18,11 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -41,6 +43,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -60,6 +63,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -67,9 +71,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_INTIATOR_THREAD_NAME_FORMAT;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.isNoAutoCompactSet;
 
 /**
  * A class to initiate compactions.  This will run in a separate thread.
@@ -99,11 +105,14 @@ public class Initiator extends MetaStoreCompactorThread {
           .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
               TimeUnit.MILLISECONDS);
       boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED);
+      Pair<AtomicInteger, AtomicInteger> ratio =
+          Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_INITIATOR_RATIO);
 
       // Make sure we run through the loop once before checking to stop as this makes testing
       // much easier.  The stop value is only for testing anyway and not used when called from
       // HiveMetaStore.
       do {
+        PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
         long startedAt = -1;
         TxnStore.MutexAPI.LockHandle handle = null;
 
@@ -111,6 +120,10 @@ public class Initiator extends MetaStoreCompactorThread {
         // don't doom the entire thread.
         try {
           handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Initiator.name());
+          if (metricsEnabled) {
+            ratio.getRight().incrementAndGet();
+            perfLogger.perfLogBegin(CLASS_NAME, MetricsConstants.COMPACTION_INITIATOR_CYCLE);
+          }
           startedAt = System.currentTimeMillis();
 
           long compactionInterval = (prevStart < 0) ? prevStart : (startedAt - prevStart)/1000;
@@ -118,15 +131,13 @@ public class Initiator extends MetaStoreCompactorThread {
 
           ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
 
-          if (metricsEnabled) {
-            // Update compaction metrics based on showCompactions result
-            updateCompactionMetrics(currentCompactions);
-          }
+          Set<String> skipDBs = new HashSet<>();
+          Set<String> skipTables = new HashSet<>();
 
           Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold,
               abortedTimeThreshold, compactionInterval)
               .stream()
-              .filter(ci -> isEligibleForCompaction(ci, currentCompactions))
+              .filter(ci -> isEligibleForCompaction(ci, currentCompactions, skipDBs, skipTables))
               .collect(Collectors.toSet());
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");
@@ -167,12 +178,19 @@ public class Initiator extends MetaStoreCompactorThread {
           // Check for timed out remote workers.
           recoverFailedCompactions(true);
         } catch (Throwable t) {
+          // the lock timeout on AUX lock, should be ignored.
+          if (metricsEnabled && handle != null) {
+            ratio.getLeft().incrementAndGet();
+          }
           LOG.error("Initiator loop caught unexpected exception this time through the loop: " +
               StringUtils.stringifyException(t));
         }
         finally {
-          if(handle != null) {
+          if (handle != null) {
             handle.releaseLocks();
+          }
+          if (metricsEnabled) {
+            perfLogger.perfLogEnd(CLASS_NAME, MetricsConstants.COMPACTION_INITIATOR_CYCLE);
           }
         }
 
@@ -229,8 +247,12 @@ public class Initiator extends MetaStoreCompactorThread {
     String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
     StorageDescriptor sd = resolveStorageDescriptor(t, p);
 
-    cache.putIfAbsent(fullTableName, findUserToRunAs(sd.getLocation(), t));
-    return cache.get(fullTableName);
+    String user = cache.get(fullTableName);
+    if (user == null) {
+      user = findUserToRunAs(sd.getLocation(), t);
+      cache.put(fullTableName, user);
+    }
+    return user;
   }
 
   @Override
@@ -243,7 +265,7 @@ public class Initiator extends MetaStoreCompactorThread {
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {
-    if (!remoteOnly) txnHandler.revokeFromLocalWorkers(Worker.hostname());
+    if (!remoteOnly) txnHandler.revokeFromLocalWorkers(ServerUtils.hostname());
     txnHandler.revokeTimedoutWorkers(HiveConf.getTimeVar(conf,
         HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, TimeUnit.MILLISECONDS));
   }
@@ -408,23 +430,13 @@ public class Initiator extends MetaStoreCompactorThread {
     CompactionRequest rqst = new CompactionRequest(ci.dbname, ci.tableName, type);
     if (ci.partName != null) rqst.setPartitionname(ci.partName);
     rqst.setRunas(runAs);
+    rqst.setInitiatorId(getInitiatorId(Thread.currentThread().getId()));
+    rqst.setInitiatorVersion(this.runtimeVersion);
     LOG.info("Requesting compaction: " + rqst);
     CompactionResponse resp = txnHandler.compact(rqst);
     if(resp.isAccepted()) {
       ci.id = resp.getId();
     }
-  }
-
-  // Because TABLE_NO_AUTO_COMPACT was originally assumed to be NO_AUTO_COMPACT and then was moved
-  // to no_auto_compact, we need to check it in both cases.
-  private boolean noAutoCompactSet(Table t) {
-    String noAutoCompact =
-        t.getParameters().get(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT);
-    if (noAutoCompact == null) {
-      noAutoCompact =
-          t.getParameters().get(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT.toUpperCase());
-    }
-    return noAutoCompact != null && noAutoCompact.equalsIgnoreCase("true");
   }
 
   // Check if it's a dynamic partitioning case. If so, do not initiate compaction for streaming ingest, only for aborts.
@@ -438,21 +450,39 @@ public class Initiator extends MetaStoreCompactorThread {
     return false;
   }
 
-  private boolean isEligibleForCompaction(CompactionInfo ci, ShowCompactResponse currentCompactions) {
-    LOG.info("Checking to see if we should compact " + ci.getFullPartitionName());
-
-    // Check if we already have initiated or are working on a compaction for this partition
-    // or table. If so, skip it. If we are just waiting on cleaning we can still check,
-    // as it may be time to compact again even though we haven't cleaned.
-    // todo: this is not robust. You can easily run `alter table` to start a compaction between
-    // the time currentCompactions is generated and now
-    if (lookForCurrentCompactions(currentCompactions, ci)) {
-      LOG.info("Found currently initiated or working compaction for " +
-          ci.getFullPartitionName() + " so we will not initiate another compaction");
-      return false;
-    }
-
+  private boolean isEligibleForCompaction(CompactionInfo ci,
+      ShowCompactResponse currentCompactions, Set<String> skipDBs, Set<String> skipTables) {
     try {
+      if (skipDBs.contains(ci.dbname)) {
+        LOG.info("Skipping {}::{}, skipDBs::size:{}", ci.dbname, ci.tableName, skipDBs.size());
+        return false;
+      } else {
+        if (replIsCompactionDisabledForDatabase(ci.dbname)) {
+          skipDBs.add(ci.dbname);
+          LOG.info("Skipping {} as compaction is disabled due to repl; skipDBs::size:{}",
+              ci.dbname, skipDBs.size());
+          return false;
+        }
+      }
+
+      if (skipTables.contains(ci.getFullTableName())) {
+        return false;
+      }
+
+      LOG.info("Checking to see if we should compact " + ci.getFullPartitionName());
+
+      // Check if we already have initiated or are working on a compaction for this partition
+      // or table. If so, skip it. If we are just waiting on cleaning we can still check,
+      // as it may be time to compact again even though we haven't cleaned.
+      // todo: this is not robust. You can easily run `alter table` to start a compaction between
+      // the time currentCompactions is generated and now
+      if (lookForCurrentCompactions(currentCompactions, ci)) {
+        LOG.info("Found currently initiated or working compaction for " +
+            ci.getFullPartitionName() + " so we will not initiate another compaction");
+        return false;
+      }
+
+      //TODO: avoid repeated HMS lookup for same table (e.g partitions within table)
       Table t = resolveTable(ci);
       if (t == null) {
         LOG.info("Can't find table " + ci.getFullTableName() + ", assuming it's a temp " +
@@ -460,11 +490,12 @@ public class Initiator extends MetaStoreCompactorThread {
         return false;
       }
 
-      if (replIsCompactionDisabledForDatabase(ci.dbname) || replIsCompactionDisabledForTable(t)) {
+      if (replIsCompactionDisabledForTable(t)) {
+        skipTables.add(ci.getFullTableName());
         return false;
       }
 
-      if (noAutoCompactSet(t)) {
+      if (isNoAutoCompactSet(t.getParameters())) {
         LOG.info("Table " + tableName(t) + " marked " + hive_metastoreConstants.TABLE_NO_AUTO_COMPACT +
             "=true so we will not compact it.");
         return false;
@@ -500,41 +531,10 @@ public class Initiator extends MetaStoreCompactorThread {
     return true;
   }
 
-  @VisibleForTesting
-  protected static void updateCompactionMetrics(ShowCompactResponse showCompactResponse) {
-    Map<String, ShowCompactResponseElement> lastElements = new HashMap<>();
-    long oldestEnqueueTime = Long.MAX_VALUE;
-
-    // Get the last compaction for each db/table/partition
-    for(ShowCompactResponseElement element : showCompactResponse.getCompacts()) {
-      String key = element.getDbname() + "/" + element.getTablename() +
-          (element.getPartitionname() != null ? "/" + element.getPartitionname() : "");
-      // If new key, add the element, if there is an existing one, change to the element if the element.id is greater than old.id
-      lastElements.compute(key, (k, old) -> (old == null) ? element : (element.getId() > old.getId() ? element : old));
-      if (TxnStore.INITIATED_RESPONSE.equals(element.getState()) && oldestEnqueueTime > element.getEnqueueTime()) {
-        oldestEnqueueTime = element.getEnqueueTime();
-      }
-    }
-
-    // Get the current count for each state
-    Map<String, Long> counts = lastElements.values().stream()
-        .collect(Collectors.groupingBy(e -> e.getState(), Collectors.counting()));
-
-    // Update metrics
-    for (int i = 0; i < TxnStore.COMPACTION_STATES.length; ++i) {
-      String key = MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.COMPACTION_STATES[i];
-      Long count = counts.get(TxnStore.COMPACTION_STATES[i]);
-      if (count != null) {
-        Metrics.getOrCreateGauge(key).set(count.intValue());
-      } else {
-        Metrics.getOrCreateGauge(key).set(0);
-      }
-    }
-    if (oldestEnqueueTime == Long.MAX_VALUE) {
-      Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE).set(0);
-    } else {
-      Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE)
-          .set((int) ((System.currentTimeMillis() - oldestEnqueueTime) / 1000L));
-    }
+  private String getInitiatorId(long threadId) {
+    StringBuilder name = new StringBuilder(this.hostName);
+    name.append("-");
+    name.append(threadId);
+    return name.toString();
   }
 }

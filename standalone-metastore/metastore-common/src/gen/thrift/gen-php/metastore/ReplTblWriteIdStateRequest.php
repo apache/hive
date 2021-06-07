@@ -163,13 +163,13 @@ class ReplTblWriteIdStateRequest
                 case 6:
                     if ($ftype == TType::LST) {
                         $this->partNames = array();
-                        $_size636 = 0;
-                        $_etype639 = 0;
-                        $xfer += $input->readListBegin($_etype639, $_size636);
-                        for ($_i640 = 0; $_i640 < $_size636; ++$_i640) {
-                            $elem641 = null;
-                            $xfer += $input->readString($elem641);
-                            $this->partNames []= $elem641;
+                        $_size645 = 0;
+                        $_etype648 = 0;
+                        $xfer += $input->readListBegin($_etype648, $_size645);
+                        for ($_i649 = 0; $_i649 < $_size645; ++$_i649) {
+                            $elem650 = null;
+                            $xfer += $input->readString($elem650);
+                            $this->partNames []= $elem650;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -221,8 +221,8 @@ class ReplTblWriteIdStateRequest
             }
             $xfer += $output->writeFieldBegin('partNames', TType::LST, 6);
             $output->writeListBegin(TType::STRING, count($this->partNames));
-            foreach ($this->partNames as $iter642) {
-                $xfer += $output->writeString($iter642);
+            foreach ($this->partNames as $iter651) {
+                $xfer += $output->writeString($iter651);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

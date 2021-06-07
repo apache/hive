@@ -380,7 +380,7 @@ STAGE PLANS:
                     dataColumnCount: 2
                     dataColumns: KEY.reducesinkkey0:int, VALUE._col0:decimal(25,2)
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(35,2), bigint]
+                    scratchColumnTypeNames: [decimal(35,2), bigint, bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: decimal(25,2))
@@ -410,6 +410,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumHiveDecimal
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDecimalSum]
                       functionInputExpressions: [col 1:decimal(25,2)]
@@ -417,9 +418,10 @@ STAGE PLANS:
                       keyInputColumns: []
                       native: true
                       nonKeyInputColumns: [1]
-                      orderExpressions: [ConstantVectorExpression(val 0) -> 3:int]
+                      orderExpressions: [ConstantVectorExpression(val 0) -> 4:int]
                       outputColumns: [2, 1]
                       outputTypes: [decimal(35,2), decimal(25,2)]
+                      partitionExpressions: [ConstantVectorExpression(val 0) -> 3:int]
                       streamingColumns: []
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -640,6 +642,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumHiveDecimal
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDecimalSum]
                       functionInputExpressions: [col 2:decimal(25,2)]
@@ -958,6 +961,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumHiveDecimal
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDecimalSum]
                       functionInputExpressions: [col 2:decimal(25,2)]
@@ -1280,6 +1284,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumHiveDecimal
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDecimalSum]
                       functionInputExpressions: [col 2:decimal(25,2)]
@@ -1733,7 +1738,7 @@ STAGE PLANS:
                     dataColumnCount: 2
                     dataColumns: KEY.reducesinkkey0:int, VALUE._col0:decimal(17,2)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(27,2), bigint, decimal(17,2)]
+                    scratchColumnTypeNames: [decimal(27,2), bigint, bigint, decimal(17,2)]
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: decimal(17,2))
@@ -1763,16 +1768,18 @@ STAGE PLANS:
                               window function: GenericUDAFSumHiveDecimal
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDecimalSum]
-                      functionInputExpressions: [ConvertDecimal64ToDecimal(col 1:decimal(17,2)/DECIMAL_64) -> 4:decimal(17,2)]
+                      functionInputExpressions: [ConvertDecimal64ToDecimal(col 1:decimal(17,2)/DECIMAL_64) -> 5:decimal(17,2)]
                       functionNames: [sum]
                       keyInputColumns: []
                       native: true
                       nonKeyInputColumns: [1]
-                      orderExpressions: [ConstantVectorExpression(val 0) -> 3:int]
+                      orderExpressions: [ConstantVectorExpression(val 0) -> 4:int]
                       outputColumns: [2, 1]
                       outputTypes: [decimal(27,2), decimal(17,2)]
+                      partitionExpressions: [ConstantVectorExpression(val 0) -> 3:int]
                       streamingColumns: []
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -1993,6 +2000,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumHiveDecimal
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDecimalSum]
                       functionInputExpressions: [ConvertDecimal64ToDecimal(col 2:decimal(17,2)/DECIMAL_64) -> 4:decimal(17,2)]
@@ -2311,6 +2319,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumHiveDecimal
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDecimalSum]
                       functionInputExpressions: [ConvertDecimal64ToDecimal(col 2:decimal(17,2)/DECIMAL_64) -> 4:decimal(17,2)]
@@ -2633,6 +2642,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumHiveDecimal
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDecimalSum]
                       functionInputExpressions: [ConvertDecimal64ToDecimal(col 2:decimal(17,2)/DECIMAL_64) -> 4:decimal(17,2)]

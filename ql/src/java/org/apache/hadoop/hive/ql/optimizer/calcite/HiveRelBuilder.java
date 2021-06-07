@@ -17,14 +17,24 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import com.google.common.collect.Iterables;
 import org.apache.calcite.avatica.util.TimeUnitRange;
 import org.apache.calcite.plan.Context;
 import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptSchema;
+import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.CorrelationId;
+import org.apache.calcite.rel.core.Join;
+import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexCorrelVariable;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.server.CalciteServerStatement;
@@ -35,6 +45,8 @@ import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
+import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.Litmus;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeableAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFunction;
@@ -43,6 +55,10 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumEmptyIsZe
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 
 import com.google.common.collect.ImmutableList;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Builder for relational expressions in Hive.
@@ -156,6 +172,89 @@ public class HiveRelBuilder extends RelBuilder {
           countAgg.getOperandTypeInference(), countAgg.getOperandTypeChecker());
     }
     return null;
+  }
+
+  /** Creates a {@link Join} with correlating variables. */
+  @Override
+  public RelBuilder join(JoinRelType joinType, RexNode condition,
+      Set<CorrelationId> variablesSet) {
+    if (Bug.CALCITE_4574_FIXED) {
+      throw new IllegalStateException("Method overriding should be removed once CALCITE-4574 is fixed");
+    }
+    RelNode right = this.peek(0);
+    RelNode left = this.peek(1);
+    final boolean correlate = variablesSet.size() == 1;
+    RexNode postCondition = literal(true);
+    if (correlate) {
+      final CorrelationId id = Iterables.getOnlyElement(variablesSet);
+      if (!RelOptUtil.notContainsCorrelation(left, id, Litmus.IGNORE)) {
+        throw new IllegalArgumentException("variable " + id
+            + " must not be used by left input to correlation");
+      }
+      // Correlate does not have an ON clause.
+      switch (joinType) {
+      case LEFT:
+      case SEMI:
+      case ANTI:
+        // For a LEFT/SEMI/ANTI, predicate must be evaluated first.
+        filter(condition.accept(new Shifter(left, id, right)));
+        right = this.peek(0);
+        break;
+      case INNER:
+        // For INNER, we can defer.
+        postCondition = condition;
+        break;
+      default:
+        throw new IllegalArgumentException("Correlated " + joinType + " join is not supported");
+      }
+      final ImmutableBitSet requiredColumns = RelOptUtil.correlationColumns(id, right);
+      List<RexNode> leftFields = this.fields(2, 0);
+      List<RexNode> requiredFields = new ArrayList<>();
+      for (int i = 0; i < leftFields.size(); i++) {
+        if (requiredColumns.get(i)) {
+          requiredFields.add(leftFields.get(i));
+        }
+      }
+      correlate(joinType, id, requiredFields);
+      filter(postCondition);
+    } else {
+      // When there is no correlation use the default logic which works OK for now
+      // Cannot copy-paste the respective code here cause we don't have access to stack,
+      // Frame etc. and we might lose existing aliases in the builder
+      assert variablesSet.isEmpty();
+      super.join(joinType,condition, variablesSet);
+    }
+    return this;
+  }
+
+  /** Shuttle that shifts a predicate's inputs to the left, replacing early
+   * ones with references to a
+   * {@link RexCorrelVariable}. */
+  private class Shifter extends RexShuttle {
+    private final RelNode left;
+    private final CorrelationId id;
+    private final RelNode right;
+
+    Shifter(RelNode left, CorrelationId id, RelNode right) {
+      this.left = left;
+      this.id = id;
+      this.right = right;
+      if (Bug.CALCITE_4574_FIXED) {
+        throw new IllegalStateException("Class should be redundant once CALCITE-4574 is fixed");
+      }
+    }
+
+    public RexNode visitInputRef(RexInputRef inputRef) {
+      final RelDataType leftRowType = left.getRowType();
+      final RexBuilder rexBuilder = getRexBuilder();
+      final int leftCount = leftRowType.getFieldCount();
+      if (inputRef.getIndex() < leftCount) {
+        final RexNode v = rexBuilder.makeCorrel(leftRowType, id);
+        return rexBuilder.makeFieldAccess(v, inputRef.getIndex());
+      } else {
+        return rexBuilder.makeInputRef(right, inputRef.getIndex() - leftCount);
+      }
+    }
   }
 
   @Override

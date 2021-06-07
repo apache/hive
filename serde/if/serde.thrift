@@ -73,6 +73,8 @@ const string UNION_TYPE_NAME  = "uniontype";
 
 const string LIST_COLUMNS = "columns";
 const string LIST_COLUMN_TYPES = "columns.types";
+const string LIST_PARTITION_COLUMNS = "partition.columns";
+const string LIST_PARTITION_COLUMN_TYPES = "partition.columns.types";
 
 const string TIMESTAMP_FORMATS = "timestamp.formats";
 const string COLUMN_NAME_DELIMITER = "column.name.delimiter";

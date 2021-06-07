@@ -160,6 +160,10 @@ java.io.IOException: Cannot initialize Cluster. Please check your configuration 
                 <groupId>org.apache.zookeeper</groupId>
                 <artifactId>zookeeper</artifactId>
               </exclusion>
+              <exclusion>
+                <groupId>io.netty</groupId>
+                <artifactId>netty</artifactId>
+              </exclusion>
             </exclusions>
         </dependency>
         <dependency>

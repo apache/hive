@@ -437,9 +437,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       memoryMonitorInfo = new MemoryMonitorInfo(false, 1, maxSlotsPerQuery, overSubscriptionFactor, maxSize, maxSize,
         memoryCheckInterval, inflationFactor);
     }
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Memory monitor info set to : {}", memoryMonitorInfo);
-    }
+    LOG.info("Memory monitor info set to : {}", memoryMonitorInfo);
     return memoryMonitorInfo;
   }
 

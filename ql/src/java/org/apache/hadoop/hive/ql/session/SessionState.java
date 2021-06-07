@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.cache.CachedStore;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cleanup.CleanupService;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.cleanup.SyncCleanupService;
@@ -348,6 +349,20 @@ public class SessionState implements ISessionAuthState{
   private List<Closeable> cleanupItems = new LinkedList<Closeable>();
 
   private final AtomicLong sparkSessionId = new AtomicLong();
+
+  private final Map<String, QueryState> queryStateMap = new HashMap<>();
+
+  public QueryState getQueryState(String queryId) {
+    return queryStateMap.get(queryId);
+  }
+
+  public void addQueryState(String queryId, QueryState queryState) {
+    queryStateMap.put(queryId, queryState);
+  }
+
+  public void removeQueryState(String queryId) {
+    queryStateMap.remove(queryId);
+  }
 
   @Override
   public HiveConf getConf() {
@@ -1025,7 +1040,7 @@ public class SessionState implements ISessionAuthState{
     authorizerV2.applyAuthorizationConfigPolicy(sessionConf);
     // update config in Hive thread local as well and init the metastore client
     try {
-      Hive.get(sessionConf).getMSC();
+      Hive.getWithoutRegisterFns(sessionConf).getMSC();
     } catch (Exception e) {
       // catch-all due to some exec time dependencies on session state
       // that would cause ClassNoFoundException otherwise
@@ -1838,6 +1853,7 @@ public class SessionState implements ISessionAuthState{
       txnMgr.closeTxnManager();
     }
     JavaUtils.closeClassLoadersTo(sessionConf.getClassLoader(), parentLoader);
+    Utilities.restoreSessionSpecifiedClassLoader(getClass().getClassLoader());
     File resourceDir =
         new File(getConf().getVar(HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
     LOG.debug("Removing resource dir " + resourceDir);
@@ -1877,6 +1893,11 @@ public class SessionState implements ISessionAuthState{
     // There are lots of places where hadoop's ReflectionUtils is still used. Until all of them are
     // cleared up, we would have to retain this to avoid mem leak.
     clearReflectionUtilsCache();
+    for (Object each : dynamicVars.values()) {
+      if (each instanceof Closeable) {
+        ((Closeable)each).close();
+      }
+    }
     dynamicVars.clear();
   }
 

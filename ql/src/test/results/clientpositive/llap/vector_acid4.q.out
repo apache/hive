@@ -183,15 +183,15 @@ STAGE PLANS:
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                        Statistics: Num rows: 2 Data size: 332 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col2 (type: string)
+                        Statistics: Num rows: 2 Data size: 506 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: '206' (type: string), _col2 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), '206' (type: string), VALUE._col0 (type: string)
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), VALUE._col1 (type: string)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 2 Data size: 506 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator

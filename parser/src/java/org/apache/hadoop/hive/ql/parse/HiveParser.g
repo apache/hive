@@ -157,9 +157,17 @@ TOK_MAP;
 TOK_UNIONTYPE;
 TOK_COLTYPELIST;
 TOK_CREATEDATABASE;
+TOK_CREATEDATACONNECTOR;
 TOK_CREATETABLE;
 TOK_TRUNCATETABLE;
 TOK_LIKETABLE;
+TOK_DATACONNECTOR;
+TOK_DATACONNECTORCOMMENT;
+TOK_DATACONNECTORTYPE;
+TOK_DATACONNECTORURL;
+TOK_DATACONNECTOROWNER;
+TOK_DATACONNECTORPROPERTIES;
+TOK_DROPDATACONNECTOR;
 TOK_DESCTABLE;
 TOK_DESCFUNCTION;
 TOK_ALTERTABLE;
@@ -207,6 +215,7 @@ TOK_ALTERTABLE_UPDATECOLUMNS;
 TOK_ALTERTABLE_OWNER;
 TOK_MSCK;
 TOK_SHOWDATABASES;
+TOK_SHOWDATACONNECTORS;
 TOK_SHOWTABLES;
 TOK_SHOWCOLUMNS;
 TOK_SHOWFUNCTIONS;
@@ -229,6 +238,7 @@ TOK_TABCOLLIST;
 TOK_TABCOL;
 TOK_TABLECOMMENT;
 TOK_TABLEPARTCOLS;
+TOK_TABLEPARTCOLSBYSPEC;
 TOK_TABLEPARTCOLNAMES;
 TOK_TABLEROWFORMAT;
 TOK_TABLEROWFORMATFIELD;
@@ -289,6 +299,7 @@ TOK_VIEWCLUSTERCOLS;
 TOK_VIEWDISTRIBUTECOLS;
 TOK_VIEWSORTCOLS;
 TOK_EXPLAIN;
+TOK_DDL;
 TOK_EXPLAIN_SQ_REWRITE;
 TOK_TABLESERIALIZER;
 TOK_TABLEPROPERTIES;
@@ -355,6 +366,10 @@ TOK_ALTERDATABASE_PROPERTIES;
 TOK_ALTERDATABASE_OWNER;
 TOK_ALTERDATABASE_LOCATION;
 TOK_ALTERDATABASE_MANAGEDLOCATION;
+TOK_ALTERDATACONNECTOR_PROPERTIES;
+TOK_ALTERDATACONNECTOR_OWNER;
+TOK_ALTERDATACONNECTOR_URL;
+TOK_DESCDATACONNECTOR;
 TOK_DBNAME;
 TOK_TABNAME;
 TOK_TABSRC;
@@ -468,8 +483,18 @@ TOK_EXECUTED_AS;
 TOK_EXECUTE;
 TOK_SCHEDULE;
 TOK_EVERY;
+TOK_REMOTE;
 TOK_PARAMETER;
 TOK_PARAMETER_IDX;
+TOK_RESPECT_NULLS;
+TOK_IGNORE_NULLS;
+TOK_IDENTITY;
+TOK_YEAR;
+TOK_MONTH;
+TOK_DAY;
+TOK_HOUR;
+TOK_TRUNCATE;
+TOK_BUCKET;
 }
 
 
@@ -612,6 +637,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_FUNCTION", "FUNCTION");
     xlateMap.put("KW_FUNCTIONS", "FUNCTIONS");
     xlateMap.put("KW_EXPLAIN", "EXPLAIN");
+    xlateMap.put("KW_DDL", "DDL");
     xlateMap.put("KW_EXTENDED", "EXTENDED");
     xlateMap.put("KW_DEBUG", "DEBUG");
     xlateMap.put("KW_SERDE", "SERDE");
@@ -668,6 +694,17 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_TRAILING", "TRAILING");
     xlateMap.put("KW_BOTH", "BOTH");
 
+    xlateMap.put("KW_TYPE", "TYPE");
+    xlateMap.put("KW_DATACONNECTOR", "CONNECTOR");
+    xlateMap.put("KW_DATACONNECTORS", "CONNECTORS");
+    xlateMap.put("KW_REMOTE", "REMOTE");
+    xlateMap.put("KW_SPEC", "SPEC");
+    xlateMap.put("KW_YEAR", "YEAR");
+    xlateMap.put("KW_MONTH", "MONTH");
+    xlateMap.put("KW_DAY", "DAY");
+    xlateMap.put("KW_HOUR", "HOUR");
+    xlateMap.put("KW_BUCKET", "BUCKET");
+    xlateMap.put("KW_TRUNCATE", "TRUNCATE");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -863,6 +900,7 @@ explainOption
     | KW_AST
     | (KW_VECTORIZATION vectorizationOnly? vectorizatonDetail?)
     | KW_DEBUG
+    | KW_DDL
     ;
 
 vectorizationOnly
@@ -1041,6 +1079,8 @@ ddlStatement
     | abortTransactionStatement
     | killQueryStatement
     | resourcePlanDdlStatements
+    | createDataConnectorStatement
+    | dropDataConnectorStatement
     ;
 
 ifExists
@@ -1104,14 +1144,16 @@ orReplace
 createDatabaseStatement
 @init { pushMsg("create database statement", state); }
 @after { popMsg(state); }
-    : KW_CREATE (KW_DATABASE|KW_SCHEMA)
+    : KW_CREATE (remote=KW_REMOTE)? (KW_DATABASE|KW_SCHEMA)
         ifNotExists?
         name=identifier
         databaseComment?
         dbLocation?
         dbManagedLocation?
+        dbConnectorName?
         (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
-    -> ^(TOK_CREATEDATABASE $name ifNotExists? dbLocation? dbManagedLocation? databaseComment? $dbprops?)
+    -> {$remote != null}? ^(TOK_CREATEDATABASE $name ifNotExists? databaseComment? $dbprops? dbConnectorName?)
+    ->                    ^(TOK_CREATEDATABASE $name ifNotExists? dbLocation? dbManagedLocation? databaseComment? $dbprops?)
     ;
 
 dbLocation
@@ -1142,6 +1184,12 @@ dbPropertiesList
       keyValueProperty (COMMA keyValueProperty)* -> ^(TOK_DBPROPLIST keyValueProperty+)
     ;
 
+dbConnectorName
+@init { pushMsg("remote database using connector", state); }
+@after { popMsg(state); }
+    :
+      KW_USING dcName=identifier -> ^(TOK_DATACONNECTOR $dcName)
+    ;
 
 switchDatabaseStatement
 @init { pushMsg("switch database statement", state); }
@@ -1220,6 +1268,8 @@ descStatement
     (
     (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) KW_EXTENDED? (dbName=identifier) -> ^(TOK_DESCDATABASE $dbName KW_EXTENDED?)
     |
+    (KW_DATACONNECTOR) => (KW_DATACONNECTOR) KW_EXTENDED? (dcName=identifier) -> ^(TOK_DESCDATACONNECTOR $dcName KW_EXTENDED?)
+    |
     (KW_FUNCTION) => KW_FUNCTION KW_EXTENDED? (name=descFuncNames) -> ^(TOK_DESCFUNCTION $name KW_EXTENDED?)
     |
     (KW_FORMATTED|KW_EXTENDED) => ((descOptions=KW_FORMATTED|descOptions=KW_EXTENDED) parttype=tabPartColTypeExpr) -> ^(TOK_DESCTABLE $parttype $descOptions)
@@ -1275,6 +1325,7 @@ showStatement
         (KW_PLAN rp_name=identifier -> ^(TOK_SHOW_RP $rp_name))
         | (KW_PLANS -> ^(TOK_SHOW_RP))
       )
+    | KW_SHOW (KW_DATACONNECTORS) -> ^(TOK_SHOWDATACONNECTORS)
     ;
 
 showTablesFilterExpr
@@ -1772,6 +1823,8 @@ createTablePartitionSpec
     : KW_PARTITIONED KW_BY LPAREN (opt1 = createTablePartitionColumnTypeSpec | opt2 = createTablePartitionColumnSpec) RPAREN
     -> {$opt1.tree != null}? $opt1
     -> $opt2
+    | KW_PARTITIONED KW_BY KW_SPEC LPAREN (spec = createTablePartitionTransformSpec) RPAREN
+    -> $spec
     ;
 
 createTablePartitionColumnTypeSpec
@@ -1786,6 +1839,46 @@ createTablePartitionColumnSpec
 @after { popMsg(state); }
     : columnName (COMMA columnName)*
     -> ^(TOK_TABLEPARTCOLNAMES columnName+)
+    ;
+
+createTablePartitionTransformSpec
+@init { pushMsg("create table partition by specification", state); }
+@after { popMsg(state); }
+    : columnNameTransformConstraint (COMMA columnNameTransformConstraint)*
+    -> ^(TOK_TABLEPARTCOLSBYSPEC columnNameTransformConstraint+)
+    ;
+
+columnNameTransformConstraint
+@init { pushMsg("column transform specification", state); }
+@after { popMsg(state); }
+    : partitionTransformType
+    -> ^(TOK_TABCOL partitionTransformType)
+    ;
+
+partitionTransformType
+@init {pushMsg("partitition transform type specification", state); }
+@after { popMsg(state); }
+    : columnName
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_IDENTITY columnName)
+    | KW_YEAR LPAREN columnName RPAREN
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_YEAR columnName)
+    | KW_MONTH LPAREN columnName RPAREN
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_MONTH columnName)
+    | KW_DAY LPAREN columnName RPAREN
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_DAY columnName)
+    | KW_HOUR LPAREN columnName RPAREN
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_HOUR columnName)
+    | KW_TRUNCATE LPAREN value = Number COMMA columnName RPAREN
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_TRUNCATE $value columnName)
+    | KW_BUCKET LPAREN value = Number COMMA columnName RPAREN
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_BUCKET $value columnName)
     ;
 
 tableBuckets
@@ -1936,6 +2029,9 @@ tableFileFormat
       | KW_STORED KW_BY storageHandler=StringLiteral
          (KW_WITH KW_SERDEPROPERTIES serdeprops=tableProperties)?
       -> ^(TOK_STORAGEHANDLER $storageHandler $serdeprops?)
+      | KW_STORED KW_BY genericSpec=identifier
+         (KW_WITH KW_SERDEPROPERTIES serdeprops=tableProperties)?
+      -> ^(TOK_STORAGEHANDLER $genericSpec $serdeprops?)
       | KW_STORED KW_AS genericSpec=identifier
       -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
     ;

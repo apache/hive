@@ -59,6 +59,8 @@ class serdeConstants {
   std::string UNION_TYPE_NAME;
   std::string LIST_COLUMNS;
   std::string LIST_COLUMN_TYPES;
+  std::string LIST_PARTITION_COLUMNS;
+  std::string LIST_PARTITION_COLUMN_TYPES;
   std::string TIMESTAMP_FORMATS;
   std::string COLUMN_NAME_DELIMITER;
   std::set<std::string>  PrimitiveTypes;

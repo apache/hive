@@ -18,8 +18,11 @@
 
 package org.apache.hive.hplsql;
 
+import static java.util.stream.IntStream.range;
+
 import java.util.List;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -27,6 +30,7 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.apache.hive.hplsql.executor.QueryException;
 import org.apache.hive.hplsql.executor.QueryExecutor;
 import org.apache.hive.hplsql.executor.QueryResult;
+import org.apache.hive.hplsql.objects.Table;
 
 public class Select {
 
@@ -34,21 +38,24 @@ public class Select {
   Stack<Var> stack = null;
   Conf conf;
   Console console;
-  ResultListener resultListener;
+  ResultListener resultListener = ResultListener.NONE;
   QueryExecutor queryExecutor;
 
   boolean trace = false; 
   
-  Select(Exec e, ResultListener resultListener, QueryExecutor queryExecutor) {
+  Select(Exec e, QueryExecutor queryExecutor) {
     this.exec = e;
-    this.resultListener = resultListener;
     this.stack = exec.getStack();
     this.conf = exec.getConf();
     this.trace = exec.getTrace();
     this.console = exec.console;
     this.queryExecutor = queryExecutor;
   }
-   
+
+  public void setResultListener(ResultListener resultListener) {
+    this.resultListener = resultListener;
+  }
+
   /**
    * Executing or building SELECT statement
    */
@@ -87,37 +94,38 @@ public class Select {
     trace(ctx, "SELECT completed successfully");
     exec.setSqlSuccess();
     try {
-      int into_cnt = getIntoCount(ctx);
-      if (into_cnt > 0) {
-        trace(ctx, "SELECT INTO statement executed");
-        if (query.next()) {
-          for (int i = 0; i < into_cnt; i++) {
-            String into_name = getIntoVariable(ctx, i);
-            Var var = exec.findVariable(into_name);
-            if (var != null) {
-              if (var.type != Var.Type.ROW) {
-                var.setValue(query, i);
-              } else {
-                var.setValues(query);
-              }
-              if (trace) {
-                exec.trace(ctx, var, query.metadata(), i);
-              }
-            } 
-            else {
-              trace(ctx, "Variable not found: " + into_name);
+      int intoCount = getIntoCount(ctx);
+      if (intoCount > 0) {
+        if (isBulkCollect(ctx)) {
+          trace(ctx, "SELECT BULK COLLECT INTO statement executed");
+          long rowIndex = 1;
+          List<Table> tables = exec.intoTables(ctx, intoVariableNames(ctx, intoCount));
+          tables.forEach(Table::removeAll);
+          while (query.next()) {
+            for (int i = 0; i < intoCount; i++) {
+              Table table = tables.get(i);
+              table.populate(query, rowIndex, i);
             }
+            rowIndex++;
           }
-          exec.incRowCount();
-          exec.setSqlSuccess();
+        } else {
+          trace(ctx, "SELECT INTO statement executed");
+          if (query.next()) {
+            for (int i = 0; i < intoCount; i++) {
+              populateVariable(ctx, query, i);
+            }
+            exec.incRowCount();
+            exec.setSqlSuccess();
+            if (query.next()) {
+              exec.setSqlCode(SqlCodes.TOO_MANY_ROWS);
+              exec.signal(Signal.Type.TOO_MANY_ROWS);
+            }
+          } else {
+            exec.setSqlCode(SqlCodes.NO_DATA_FOUND);
+            exec.signal(Signal.Type.NOTFOUND);
+          }
         }
-        else {
-          exec.setSqlCode(100);
-          exec.signal(Signal.Type.NOTFOUND);
-        }
-      }
-      // Print all results for standalone SELECT statement
-      else if (ctx.parent instanceof HplsqlParser.StmtContext) {
+      } else if (ctx.parent instanceof HplsqlParser.StmtContext) { // Print all results for standalone SELECT statement
         resultListener.onMetadata(query.metadata());
         int cols = query.columnCount();
         if (trace) {
@@ -142,10 +150,9 @@ public class Select {
         if(query.next()) {
           exec.stackPush(new Var().setValue(query, 1));
           exec.setSqlSuccess();
-        }
-        else {
+        } else {
           evalNull();
-          exec.setSqlCode(100);
+          exec.setSqlCode(SqlCodes.NO_DATA_FOUND);
         }
       }
     } catch (QueryException e) {
@@ -155,7 +162,25 @@ public class Select {
     }
     query.close();
     return 0; 
-  }  
+  }
+
+  private void populateVariable(HplsqlParser.Select_stmtContext ctx, QueryResult query, int columnIndex) {
+    String intoName = getIntoVariable(ctx, columnIndex);
+    Var var = exec.findVariable(intoName);
+    if (var != null) {
+      if (var.type == Var.Type.HPL_OBJECT && var.value instanceof Table) {
+        Table table = (Table) var.value;
+        table.populate(query, getIntoTableIndex(ctx, columnIndex), columnIndex);
+      } else if (var.type == Var.Type.ROW) {
+        var.setRowValues(query);
+      } else {
+        var.setValue(query, columnIndex);
+      }
+      exec.trace(ctx, var, query.metadata(), columnIndex);
+    } else {
+      throw new UndefinedIdentException(ctx, intoName);
+    }
+  }
 
   /**
    * Common table expression (WITH clause)
@@ -166,7 +191,7 @@ public class Select {
     sql.append("WITH ");
     for (int i = 0; i < cnt; i++) {
       HplsqlParser.Cte_select_stmt_itemContext c = ctx.cte_select_stmt_item(i);      
-      sql.append(c.ident().getText());
+      sql.append(c.qident().getText());
       if (c.cte_select_cols() != null) {
         sql.append(" " + exec.getFormattedText(c.cte_select_cols()));
       }
@@ -367,7 +392,7 @@ public class Select {
     }
     sql.append(") ");
     if (ctx.from_alias_clause() != null) {
-      sql.append(ctx.from_alias_clause().ident().getText());
+      sql.append(ctx.from_alias_clause().qident().getText());
     }
     exec.stackPush(sql);
     return 0; 
@@ -403,7 +428,7 @@ public class Select {
   int getIntoCount(HplsqlParser.Select_stmtContext ctx) {
     HplsqlParser.Into_clauseContext into = getIntoClause(ctx);
     if (into != null) {
-      return into.ident().size();
+      return into.ident().size() + into.table_row().size();
     }
     List<HplsqlParser.Select_list_itemContext> sl = ctx.fullselect_stmt().fullselect_stmt_item(0).subselect_stmt().select_list().select_list_item(); 
     if (sl.get(0).T_EQUAL() != null) {
@@ -411,22 +436,42 @@ public class Select {
     }
     return 0;
   }
-  
+
+  private boolean isBulkCollect(HplsqlParser.Select_stmtContext ctx) {
+    HplsqlParser.Into_clauseContext into = getIntoClause(ctx);
+    return into != null && into.bulk_collect_clause() != null;
+  }
+
   /**
    * Get variable name assigned in INTO or var=col clause by index 
    */
   String getIntoVariable(HplsqlParser.Select_stmtContext ctx, int idx) {
     HplsqlParser.Into_clauseContext into = getIntoClause(ctx);
     if (into != null) {
-      return into.ident(idx).getText();
+      return into.table_row(idx) != null ? into.table_row(idx).ident().getText() : into.ident(idx).getText();
     }
     HplsqlParser.Select_list_itemContext sl = ctx.fullselect_stmt().fullselect_stmt_item(0).subselect_stmt().select_list().select_list_item(idx); 
     if (sl != null) {
-      return sl.ident().getText();
+      return sl.qident().getText();
     }
     return null;
   }
-  
+
+  private List<String> intoVariableNames(HplsqlParser.Select_stmtContext ctx, int count) {
+    return range(0, count)
+            .mapToObj(i -> getIntoVariable(ctx, i))
+            .collect(Collectors.toList());
+  }
+
+  private int getIntoTableIndex(HplsqlParser.Select_stmtContext ctx, int idx) {
+    HplsqlParser.Into_clauseContext into = getIntoClause(ctx);
+    HplsqlParser.Table_rowContext row = into.table_row(idx);
+    if (row == null) {
+      throw new TypeException(ctx, "Missing into table index");
+    }
+    return Integer.parseInt(row.L_INT().getText());
+  }
+
   /** 
    * SELECT statement options - LIMIT n, WITH UR i.e
    */
@@ -461,21 +506,7 @@ public class Select {
   String getText(ParserRuleContext ctx) {
     return ctx.start.getInputStream().getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
   }
-  
-  /**
-   * Execute rules
-   */
-  Integer visit(ParserRuleContext ctx) {
-    return exec.visit(ctx);  
-  } 
-  
-  /**
-   * Execute children rules
-   */
-  Integer visitChildren(ParserRuleContext ctx) {
-    return exec.visitChildren(ctx);  
-  }  
-  
+
   /**
    * Trace information
    */

@@ -115,6 +115,41 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function alter_database($dbname, \metastore\Database $db);
     /**
+     * @param \metastore\DataConnector $connector
+     * @throws \metastore\AlreadyExistsException
+     * @throws \metastore\InvalidObjectException
+     * @throws \metastore\MetaException
+     */
+    public function create_dataconnector(\metastore\DataConnector $connector);
+    /**
+     * @param \metastore\GetDataConnectorRequest $request
+     * @return \metastore\DataConnector
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function get_dataconnector_req(\metastore\GetDataConnectorRequest $request);
+    /**
+     * @param string $name
+     * @param bool $ifNotExists
+     * @param bool $checkReferences
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\InvalidOperationException
+     * @throws \metastore\MetaException
+     */
+    public function drop_dataconnector($name, $ifNotExists, $checkReferences);
+    /**
+     * @return string[]
+     * @throws \metastore\MetaException
+     */
+    public function get_dataconnectors();
+    /**
+     * @param string $name
+     * @param \metastore\DataConnector $connector
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function alter_dataconnector($name, \metastore\DataConnector $connector);
+    /**
      * @param string $name
      * @return \metastore\Type
      * @throws \metastore\MetaException
@@ -1418,10 +1453,11 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
     public function add_dynamic_partitions(\metastore\AddDynamicPartitions $rqst);
     /**
      * @param string $workerId
+     * @param string $workerVersion
      * @return \metastore\OptionalCompactionInfoStruct
      * @throws \metastore\MetaException
      */
-    public function find_next_compact($workerId);
+    public function find_next_compact($workerId, $workerVersion);
     /**
      * @param \metastore\CompactionInfoStruct $cr
      * @param int $txn_id
@@ -1452,6 +1488,11 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @param int $cq_id
      */
     public function set_hadoop_jobid($jobId, $cq_id);
+    /**
+     * @param \metastore\GetLatestCommittedCompactionInfoRequest $rqst
+     * @return \metastore\GetLatestCommittedCompactionInfoResponse
+     */
+    public function get_latest_committed_compaction_info(\metastore\GetLatestCommittedCompactionInfoRequest $rqst);
     /**
      * @param \metastore\NotificationEventRequest $rqst
      * @return \metastore\NotificationEventResponse
@@ -1832,7 +1873,6 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
     /**
      * @param \metastore\StoredProcedureRequest $request
      * @throws \metastore\MetaException
-     * @throws \metastore\NoSuchObjectException
      */
     public function drop_stored_procedure(\metastore\StoredProcedureRequest $request);
     /**
@@ -1845,6 +1885,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @param \metastore\GetPackageRequest $request
      * @return \metastore\Package
      * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
      */
     public function find_package(\metastore\GetPackageRequest $request);
     /**

@@ -30,7 +30,8 @@ public final class AuthenticationProviderFactory {
     LDAP("LDAP"),
     PAM("PAM"),
     CUSTOM("CUSTOM"),
-    NONE("NONE");
+    NONE("NONE"),
+    SAML("SAML");
 
     private final String authMethod;
 

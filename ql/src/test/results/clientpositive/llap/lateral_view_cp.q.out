@@ -87,10 +87,10 @@ STAGE PLANS:
                 keys:
                   0 key (type: string)
                   1 key (type: string)
-                outputColumnNames: _col6
+                outputColumnNames: _col7
                 Statistics: Num rows: 550 Data size: 47850 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col6 (type: array<string>)
+                  expressions: _col7 (type: array<string>)
                   outputColumnNames: _col1
                   Statistics: Num rows: 550 Data size: 47850 Basic stats: COMPLETE Column stats: NONE
                   Lateral View Forward

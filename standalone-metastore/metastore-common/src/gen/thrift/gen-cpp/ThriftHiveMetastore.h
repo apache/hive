@@ -37,6 +37,11 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_databases(std::vector<std::string> & _return, const std::string& pattern) = 0;
   virtual void get_all_databases(std::vector<std::string> & _return) = 0;
   virtual void alter_database(const std::string& dbname, const Database& db) = 0;
+  virtual void create_dataconnector(const DataConnector& connector) = 0;
+  virtual void get_dataconnector_req(DataConnector& _return, const GetDataConnectorRequest& request) = 0;
+  virtual void drop_dataconnector(const std::string& name, const bool ifNotExists, const bool checkReferences) = 0;
+  virtual void get_dataconnectors(std::vector<std::string> & _return) = 0;
+  virtual void alter_dataconnector(const std::string& name, const DataConnector& connector) = 0;
   virtual void get_type(Type& _return, const std::string& name) = 0;
   virtual bool create_type(const Type& type) = 0;
   virtual bool drop_type(const std::string& type) = 0;
@@ -207,13 +212,14 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void compact2(CompactionResponse& _return, const CompactionRequest& rqst) = 0;
   virtual void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst) = 0;
   virtual void add_dynamic_partitions(const AddDynamicPartitions& rqst) = 0;
-  virtual void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId) = 0;
+  virtual void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId, const std::string& workerVersion) = 0;
   virtual void update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id) = 0;
   virtual void find_columns_with_stats(std::vector<std::string> & _return, const CompactionInfoStruct& cr) = 0;
   virtual void mark_cleaned(const CompactionInfoStruct& cr) = 0;
   virtual void mark_compacted(const CompactionInfoStruct& cr) = 0;
   virtual void mark_failed(const CompactionInfoStruct& cr) = 0;
   virtual void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id) = 0;
+  virtual void get_latest_committed_compaction_info(GetLatestCommittedCompactionInfoResponse& _return, const GetLatestCommittedCompactionInfoRequest& rqst) = 0;
   virtual void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) = 0;
   virtual void get_current_notificationEventId(CurrentNotificationEventId& _return) = 0;
   virtual void get_notification_events_count(NotificationEventsCountResponse& _return, const NotificationEventsCountRequest& rqst) = 0;
@@ -347,6 +353,21 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void alter_database(const std::string& /* dbname */, const Database& /* db */) {
+    return;
+  }
+  void create_dataconnector(const DataConnector& /* connector */) {
+    return;
+  }
+  void get_dataconnector_req(DataConnector& /* _return */, const GetDataConnectorRequest& /* request */) {
+    return;
+  }
+  void drop_dataconnector(const std::string& /* name */, const bool /* ifNotExists */, const bool /* checkReferences */) {
+    return;
+  }
+  void get_dataconnectors(std::vector<std::string> & /* _return */) {
+    return;
+  }
+  void alter_dataconnector(const std::string& /* name */, const DataConnector& /* connector */) {
     return;
   }
   void get_type(Type& /* _return */, const std::string& /* name */) {
@@ -887,7 +908,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void add_dynamic_partitions(const AddDynamicPartitions& /* rqst */) {
     return;
   }
-  void find_next_compact(OptionalCompactionInfoStruct& /* _return */, const std::string& /* workerId */) {
+  void find_next_compact(OptionalCompactionInfoStruct& /* _return */, const std::string& /* workerId */, const std::string& /* workerVersion */) {
     return;
   }
   void update_compactor_state(const CompactionInfoStruct& /* cr */, const int64_t /* txn_id */) {
@@ -906,6 +927,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void set_hadoop_jobid(const std::string& /* jobId */, const int64_t /* cq_id */) {
+    return;
+  }
+  void get_latest_committed_compaction_info(GetLatestCommittedCompactionInfoResponse& /* _return */, const GetLatestCommittedCompactionInfoRequest& /* rqst */) {
     return;
   }
   void get_next_notification(NotificationEventResponse& /* _return */, const NotificationEventRequest& /* rqst */) {
@@ -2726,6 +2750,599 @@ class ThriftHiveMetastore_alter_database_presult {
   NoSuchObjectException o2;
 
   _ThriftHiveMetastore_alter_database_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_create_dataconnector_args__isset {
+  _ThriftHiveMetastore_create_dataconnector_args__isset() : connector(false) {}
+  bool connector :1;
+} _ThriftHiveMetastore_create_dataconnector_args__isset;
+
+class ThriftHiveMetastore_create_dataconnector_args {
+ public:
+
+  ThriftHiveMetastore_create_dataconnector_args(const ThriftHiveMetastore_create_dataconnector_args&);
+  ThriftHiveMetastore_create_dataconnector_args& operator=(const ThriftHiveMetastore_create_dataconnector_args&);
+  ThriftHiveMetastore_create_dataconnector_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_create_dataconnector_args() noexcept;
+  DataConnector connector;
+
+  _ThriftHiveMetastore_create_dataconnector_args__isset __isset;
+
+  void __set_connector(const DataConnector& val);
+
+  bool operator == (const ThriftHiveMetastore_create_dataconnector_args & rhs) const
+  {
+    if (!(connector == rhs.connector))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_create_dataconnector_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_create_dataconnector_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_create_dataconnector_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_create_dataconnector_pargs() noexcept;
+  const DataConnector* connector;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_create_dataconnector_result__isset {
+  _ThriftHiveMetastore_create_dataconnector_result__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_create_dataconnector_result__isset;
+
+class ThriftHiveMetastore_create_dataconnector_result {
+ public:
+
+  ThriftHiveMetastore_create_dataconnector_result(const ThriftHiveMetastore_create_dataconnector_result&);
+  ThriftHiveMetastore_create_dataconnector_result& operator=(const ThriftHiveMetastore_create_dataconnector_result&);
+  ThriftHiveMetastore_create_dataconnector_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_create_dataconnector_result() noexcept;
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_create_dataconnector_result__isset __isset;
+
+  void __set_o1(const AlreadyExistsException& val);
+
+  void __set_o2(const InvalidObjectException& val);
+
+  void __set_o3(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_create_dataconnector_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_create_dataconnector_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_create_dataconnector_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_create_dataconnector_presult__isset {
+  _ThriftHiveMetastore_create_dataconnector_presult__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_create_dataconnector_presult__isset;
+
+class ThriftHiveMetastore_create_dataconnector_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_create_dataconnector_presult() noexcept;
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_create_dataconnector_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_dataconnector_req_args__isset {
+  _ThriftHiveMetastore_get_dataconnector_req_args__isset() : request(false) {}
+  bool request :1;
+} _ThriftHiveMetastore_get_dataconnector_req_args__isset;
+
+class ThriftHiveMetastore_get_dataconnector_req_args {
+ public:
+
+  ThriftHiveMetastore_get_dataconnector_req_args(const ThriftHiveMetastore_get_dataconnector_req_args&);
+  ThriftHiveMetastore_get_dataconnector_req_args& operator=(const ThriftHiveMetastore_get_dataconnector_req_args&);
+  ThriftHiveMetastore_get_dataconnector_req_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_dataconnector_req_args() noexcept;
+  GetDataConnectorRequest request;
+
+  _ThriftHiveMetastore_get_dataconnector_req_args__isset __isset;
+
+  void __set_request(const GetDataConnectorRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_dataconnector_req_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_dataconnector_req_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_dataconnector_req_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_dataconnector_req_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_dataconnector_req_pargs() noexcept;
+  const GetDataConnectorRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_dataconnector_req_result__isset {
+  _ThriftHiveMetastore_get_dataconnector_req_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_dataconnector_req_result__isset;
+
+class ThriftHiveMetastore_get_dataconnector_req_result {
+ public:
+
+  ThriftHiveMetastore_get_dataconnector_req_result(const ThriftHiveMetastore_get_dataconnector_req_result&);
+  ThriftHiveMetastore_get_dataconnector_req_result& operator=(const ThriftHiveMetastore_get_dataconnector_req_result&);
+  ThriftHiveMetastore_get_dataconnector_req_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_dataconnector_req_result() noexcept;
+  DataConnector success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_dataconnector_req_result__isset __isset;
+
+  void __set_success(const DataConnector& val);
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_dataconnector_req_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_dataconnector_req_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_dataconnector_req_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_dataconnector_req_presult__isset {
+  _ThriftHiveMetastore_get_dataconnector_req_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_dataconnector_req_presult__isset;
+
+class ThriftHiveMetastore_get_dataconnector_req_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_dataconnector_req_presult() noexcept;
+  DataConnector* success;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_get_dataconnector_req_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_dataconnector_args__isset {
+  _ThriftHiveMetastore_drop_dataconnector_args__isset() : name(false), ifNotExists(false), checkReferences(false) {}
+  bool name :1;
+  bool ifNotExists :1;
+  bool checkReferences :1;
+} _ThriftHiveMetastore_drop_dataconnector_args__isset;
+
+class ThriftHiveMetastore_drop_dataconnector_args {
+ public:
+
+  ThriftHiveMetastore_drop_dataconnector_args(const ThriftHiveMetastore_drop_dataconnector_args&);
+  ThriftHiveMetastore_drop_dataconnector_args& operator=(const ThriftHiveMetastore_drop_dataconnector_args&);
+  ThriftHiveMetastore_drop_dataconnector_args() : name(), ifNotExists(0), checkReferences(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_dataconnector_args() noexcept;
+  std::string name;
+  bool ifNotExists;
+  bool checkReferences;
+
+  _ThriftHiveMetastore_drop_dataconnector_args__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_ifNotExists(const bool val);
+
+  void __set_checkReferences(const bool val);
+
+  bool operator == (const ThriftHiveMetastore_drop_dataconnector_args & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (!(ifNotExists == rhs.ifNotExists))
+      return false;
+    if (!(checkReferences == rhs.checkReferences))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_dataconnector_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_dataconnector_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_drop_dataconnector_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_dataconnector_pargs() noexcept;
+  const std::string* name;
+  const bool* ifNotExists;
+  const bool* checkReferences;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_dataconnector_result__isset {
+  _ThriftHiveMetastore_drop_dataconnector_result__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_drop_dataconnector_result__isset;
+
+class ThriftHiveMetastore_drop_dataconnector_result {
+ public:
+
+  ThriftHiveMetastore_drop_dataconnector_result(const ThriftHiveMetastore_drop_dataconnector_result&);
+  ThriftHiveMetastore_drop_dataconnector_result& operator=(const ThriftHiveMetastore_drop_dataconnector_result&);
+  ThriftHiveMetastore_drop_dataconnector_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_dataconnector_result() noexcept;
+  NoSuchObjectException o1;
+  InvalidOperationException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_drop_dataconnector_result__isset __isset;
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const InvalidOperationException& val);
+
+  void __set_o3(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_drop_dataconnector_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_dataconnector_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_dataconnector_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_dataconnector_presult__isset {
+  _ThriftHiveMetastore_drop_dataconnector_presult__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_drop_dataconnector_presult__isset;
+
+class ThriftHiveMetastore_drop_dataconnector_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_dataconnector_presult() noexcept;
+  NoSuchObjectException o1;
+  InvalidOperationException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_drop_dataconnector_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+
+class ThriftHiveMetastore_get_dataconnectors_args {
+ public:
+
+  ThriftHiveMetastore_get_dataconnectors_args(const ThriftHiveMetastore_get_dataconnectors_args&);
+  ThriftHiveMetastore_get_dataconnectors_args& operator=(const ThriftHiveMetastore_get_dataconnectors_args&);
+  ThriftHiveMetastore_get_dataconnectors_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_dataconnectors_args() noexcept;
+
+  bool operator == (const ThriftHiveMetastore_get_dataconnectors_args & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_dataconnectors_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_dataconnectors_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_dataconnectors_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_dataconnectors_pargs() noexcept;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_dataconnectors_result__isset {
+  _ThriftHiveMetastore_get_dataconnectors_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_dataconnectors_result__isset;
+
+class ThriftHiveMetastore_get_dataconnectors_result {
+ public:
+
+  ThriftHiveMetastore_get_dataconnectors_result(const ThriftHiveMetastore_get_dataconnectors_result&);
+  ThriftHiveMetastore_get_dataconnectors_result& operator=(const ThriftHiveMetastore_get_dataconnectors_result&);
+  ThriftHiveMetastore_get_dataconnectors_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_dataconnectors_result() noexcept;
+  std::vector<std::string>  success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_dataconnectors_result__isset __isset;
+
+  void __set_success(const std::vector<std::string> & val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_dataconnectors_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_dataconnectors_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_dataconnectors_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_dataconnectors_presult__isset {
+  _ThriftHiveMetastore_get_dataconnectors_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_dataconnectors_presult__isset;
+
+class ThriftHiveMetastore_get_dataconnectors_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_dataconnectors_presult() noexcept;
+  std::vector<std::string> * success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_dataconnectors_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_dataconnector_args__isset {
+  _ThriftHiveMetastore_alter_dataconnector_args__isset() : name(false), connector(false) {}
+  bool name :1;
+  bool connector :1;
+} _ThriftHiveMetastore_alter_dataconnector_args__isset;
+
+class ThriftHiveMetastore_alter_dataconnector_args {
+ public:
+
+  ThriftHiveMetastore_alter_dataconnector_args(const ThriftHiveMetastore_alter_dataconnector_args&);
+  ThriftHiveMetastore_alter_dataconnector_args& operator=(const ThriftHiveMetastore_alter_dataconnector_args&);
+  ThriftHiveMetastore_alter_dataconnector_args() : name() {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_dataconnector_args() noexcept;
+  std::string name;
+  DataConnector connector;
+
+  _ThriftHiveMetastore_alter_dataconnector_args__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_connector(const DataConnector& val);
+
+  bool operator == (const ThriftHiveMetastore_alter_dataconnector_args & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (!(connector == rhs.connector))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_dataconnector_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_dataconnector_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_alter_dataconnector_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_dataconnector_pargs() noexcept;
+  const std::string* name;
+  const DataConnector* connector;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_dataconnector_result__isset {
+  _ThriftHiveMetastore_alter_dataconnector_result__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_alter_dataconnector_result__isset;
+
+class ThriftHiveMetastore_alter_dataconnector_result {
+ public:
+
+  ThriftHiveMetastore_alter_dataconnector_result(const ThriftHiveMetastore_alter_dataconnector_result&);
+  ThriftHiveMetastore_alter_dataconnector_result& operator=(const ThriftHiveMetastore_alter_dataconnector_result&);
+  ThriftHiveMetastore_alter_dataconnector_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_alter_dataconnector_result() noexcept;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_alter_dataconnector_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  void __set_o2(const NoSuchObjectException& val);
+
+  bool operator == (const ThriftHiveMetastore_alter_dataconnector_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_alter_dataconnector_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_alter_dataconnector_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_alter_dataconnector_presult__isset {
+  _ThriftHiveMetastore_alter_dataconnector_presult__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_alter_dataconnector_presult__isset;
+
+class ThriftHiveMetastore_alter_dataconnector_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_alter_dataconnector_presult() noexcept;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_alter_dataconnector_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -23811,8 +24428,9 @@ class ThriftHiveMetastore_add_dynamic_partitions_presult {
 };
 
 typedef struct _ThriftHiveMetastore_find_next_compact_args__isset {
-  _ThriftHiveMetastore_find_next_compact_args__isset() : workerId(false) {}
+  _ThriftHiveMetastore_find_next_compact_args__isset() : workerId(false), workerVersion(false) {}
   bool workerId :1;
+  bool workerVersion :1;
 } _ThriftHiveMetastore_find_next_compact_args__isset;
 
 class ThriftHiveMetastore_find_next_compact_args {
@@ -23820,19 +24438,24 @@ class ThriftHiveMetastore_find_next_compact_args {
 
   ThriftHiveMetastore_find_next_compact_args(const ThriftHiveMetastore_find_next_compact_args&);
   ThriftHiveMetastore_find_next_compact_args& operator=(const ThriftHiveMetastore_find_next_compact_args&);
-  ThriftHiveMetastore_find_next_compact_args() : workerId() {
+  ThriftHiveMetastore_find_next_compact_args() : workerId(), workerVersion() {
   }
 
   virtual ~ThriftHiveMetastore_find_next_compact_args() noexcept;
   std::string workerId;
+  std::string workerVersion;
 
   _ThriftHiveMetastore_find_next_compact_args__isset __isset;
 
   void __set_workerId(const std::string& val);
 
+  void __set_workerVersion(const std::string& val);
+
   bool operator == (const ThriftHiveMetastore_find_next_compact_args & rhs) const
   {
     if (!(workerId == rhs.workerId))
+      return false;
+    if (!(workerVersion == rhs.workerVersion))
       return false;
     return true;
   }
@@ -23854,6 +24477,7 @@ class ThriftHiveMetastore_find_next_compact_pargs {
 
   virtual ~ThriftHiveMetastore_find_next_compact_pargs() noexcept;
   const std::string* workerId;
+  const std::string* workerVersion;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -24519,6 +25143,110 @@ class ThriftHiveMetastore_set_hadoop_jobid_presult {
 
 
   virtual ~ThriftHiveMetastore_set_hadoop_jobid_presult() noexcept;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_latest_committed_compaction_info_args__isset {
+  _ThriftHiveMetastore_get_latest_committed_compaction_info_args__isset() : rqst(false) {}
+  bool rqst :1;
+} _ThriftHiveMetastore_get_latest_committed_compaction_info_args__isset;
+
+class ThriftHiveMetastore_get_latest_committed_compaction_info_args {
+ public:
+
+  ThriftHiveMetastore_get_latest_committed_compaction_info_args(const ThriftHiveMetastore_get_latest_committed_compaction_info_args&);
+  ThriftHiveMetastore_get_latest_committed_compaction_info_args& operator=(const ThriftHiveMetastore_get_latest_committed_compaction_info_args&);
+  ThriftHiveMetastore_get_latest_committed_compaction_info_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_latest_committed_compaction_info_args() noexcept;
+  GetLatestCommittedCompactionInfoRequest rqst;
+
+  _ThriftHiveMetastore_get_latest_committed_compaction_info_args__isset __isset;
+
+  void __set_rqst(const GetLatestCommittedCompactionInfoRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_latest_committed_compaction_info_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_latest_committed_compaction_info_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_latest_committed_compaction_info_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_latest_committed_compaction_info_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_latest_committed_compaction_info_pargs() noexcept;
+  const GetLatestCommittedCompactionInfoRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_latest_committed_compaction_info_result__isset {
+  _ThriftHiveMetastore_get_latest_committed_compaction_info_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_get_latest_committed_compaction_info_result__isset;
+
+class ThriftHiveMetastore_get_latest_committed_compaction_info_result {
+ public:
+
+  ThriftHiveMetastore_get_latest_committed_compaction_info_result(const ThriftHiveMetastore_get_latest_committed_compaction_info_result&);
+  ThriftHiveMetastore_get_latest_committed_compaction_info_result& operator=(const ThriftHiveMetastore_get_latest_committed_compaction_info_result&);
+  ThriftHiveMetastore_get_latest_committed_compaction_info_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_latest_committed_compaction_info_result() noexcept;
+  GetLatestCommittedCompactionInfoResponse success;
+
+  _ThriftHiveMetastore_get_latest_committed_compaction_info_result__isset __isset;
+
+  void __set_success(const GetLatestCommittedCompactionInfoResponse& val);
+
+  bool operator == (const ThriftHiveMetastore_get_latest_committed_compaction_info_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_latest_committed_compaction_info_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_latest_committed_compaction_info_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_latest_committed_compaction_info_presult__isset {
+  _ThriftHiveMetastore_get_latest_committed_compaction_info_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_get_latest_committed_compaction_info_presult__isset;
+
+class ThriftHiveMetastore_get_latest_committed_compaction_info_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_latest_committed_compaction_info_presult() noexcept;
+  GetLatestCommittedCompactionInfoResponse* success;
+
+  _ThriftHiveMetastore_get_latest_committed_compaction_info_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -31276,9 +32004,8 @@ class ThriftHiveMetastore_drop_stored_procedure_pargs {
 };
 
 typedef struct _ThriftHiveMetastore_drop_stored_procedure_result__isset {
-  _ThriftHiveMetastore_drop_stored_procedure_result__isset() : o1(false), o2(false) {}
+  _ThriftHiveMetastore_drop_stored_procedure_result__isset() : o1(false) {}
   bool o1 :1;
-  bool o2 :1;
 } _ThriftHiveMetastore_drop_stored_procedure_result__isset;
 
 class ThriftHiveMetastore_drop_stored_procedure_result {
@@ -31291,19 +32018,14 @@ class ThriftHiveMetastore_drop_stored_procedure_result {
 
   virtual ~ThriftHiveMetastore_drop_stored_procedure_result() noexcept;
   MetaException o1;
-  NoSuchObjectException o2;
 
   _ThriftHiveMetastore_drop_stored_procedure_result__isset __isset;
 
   void __set_o1(const MetaException& val);
 
-  void __set_o2(const NoSuchObjectException& val);
-
   bool operator == (const ThriftHiveMetastore_drop_stored_procedure_result & rhs) const
   {
     if (!(o1 == rhs.o1))
-      return false;
-    if (!(o2 == rhs.o2))
       return false;
     return true;
   }
@@ -31319,9 +32041,8 @@ class ThriftHiveMetastore_drop_stored_procedure_result {
 };
 
 typedef struct _ThriftHiveMetastore_drop_stored_procedure_presult__isset {
-  _ThriftHiveMetastore_drop_stored_procedure_presult__isset() : o1(false), o2(false) {}
+  _ThriftHiveMetastore_drop_stored_procedure_presult__isset() : o1(false) {}
   bool o1 :1;
-  bool o2 :1;
 } _ThriftHiveMetastore_drop_stored_procedure_presult__isset;
 
 class ThriftHiveMetastore_drop_stored_procedure_presult {
@@ -31330,7 +32051,6 @@ class ThriftHiveMetastore_drop_stored_procedure_presult {
 
   virtual ~ThriftHiveMetastore_drop_stored_procedure_presult() noexcept;
   MetaException o1;
-  NoSuchObjectException o2;
 
   _ThriftHiveMetastore_drop_stored_procedure_presult__isset __isset;
 
@@ -31500,9 +32220,10 @@ class ThriftHiveMetastore_find_package_pargs {
 };
 
 typedef struct _ThriftHiveMetastore_find_package_result__isset {
-  _ThriftHiveMetastore_find_package_result__isset() : success(false), o1(false) {}
+  _ThriftHiveMetastore_find_package_result__isset() : success(false), o1(false), o2(false) {}
   bool success :1;
   bool o1 :1;
+  bool o2 :1;
 } _ThriftHiveMetastore_find_package_result__isset;
 
 class ThriftHiveMetastore_find_package_result {
@@ -31516,6 +32237,7 @@ class ThriftHiveMetastore_find_package_result {
   virtual ~ThriftHiveMetastore_find_package_result() noexcept;
   Package success;
   MetaException o1;
+  NoSuchObjectException o2;
 
   _ThriftHiveMetastore_find_package_result__isset __isset;
 
@@ -31523,11 +32245,15 @@ class ThriftHiveMetastore_find_package_result {
 
   void __set_o1(const MetaException& val);
 
+  void __set_o2(const NoSuchObjectException& val);
+
   bool operator == (const ThriftHiveMetastore_find_package_result & rhs) const
   {
     if (!(success == rhs.success))
       return false;
     if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
       return false;
     return true;
   }
@@ -31543,9 +32269,10 @@ class ThriftHiveMetastore_find_package_result {
 };
 
 typedef struct _ThriftHiveMetastore_find_package_presult__isset {
-  _ThriftHiveMetastore_find_package_presult__isset() : success(false), o1(false) {}
+  _ThriftHiveMetastore_find_package_presult__isset() : success(false), o1(false), o2(false) {}
   bool success :1;
   bool o1 :1;
+  bool o2 :1;
 } _ThriftHiveMetastore_find_package_presult__isset;
 
 class ThriftHiveMetastore_find_package_presult {
@@ -31555,6 +32282,7 @@ class ThriftHiveMetastore_find_package_presult {
   virtual ~ThriftHiveMetastore_find_package_presult() noexcept;
   Package* success;
   MetaException o1;
+  NoSuchObjectException o2;
 
   _ThriftHiveMetastore_find_package_presult__isset __isset;
 
@@ -31935,6 +32663,21 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void alter_database(const std::string& dbname, const Database& db);
   void send_alter_database(const std::string& dbname, const Database& db);
   void recv_alter_database();
+  void create_dataconnector(const DataConnector& connector);
+  void send_create_dataconnector(const DataConnector& connector);
+  void recv_create_dataconnector();
+  void get_dataconnector_req(DataConnector& _return, const GetDataConnectorRequest& request);
+  void send_get_dataconnector_req(const GetDataConnectorRequest& request);
+  void recv_get_dataconnector_req(DataConnector& _return);
+  void drop_dataconnector(const std::string& name, const bool ifNotExists, const bool checkReferences);
+  void send_drop_dataconnector(const std::string& name, const bool ifNotExists, const bool checkReferences);
+  void recv_drop_dataconnector();
+  void get_dataconnectors(std::vector<std::string> & _return);
+  void send_get_dataconnectors();
+  void recv_get_dataconnectors(std::vector<std::string> & _return);
+  void alter_dataconnector(const std::string& name, const DataConnector& connector);
+  void send_alter_dataconnector(const std::string& name, const DataConnector& connector);
+  void recv_alter_dataconnector();
   void get_type(Type& _return, const std::string& name);
   void send_get_type(const std::string& name);
   void recv_get_type(Type& _return);
@@ -32445,8 +33188,8 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void add_dynamic_partitions(const AddDynamicPartitions& rqst);
   void send_add_dynamic_partitions(const AddDynamicPartitions& rqst);
   void recv_add_dynamic_partitions();
-  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId);
-  void send_find_next_compact(const std::string& workerId);
+  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId, const std::string& workerVersion);
+  void send_find_next_compact(const std::string& workerId, const std::string& workerVersion);
   void recv_find_next_compact(OptionalCompactionInfoStruct& _return);
   void update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id);
   void send_update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id);
@@ -32466,6 +33209,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id);
   void send_set_hadoop_jobid(const std::string& jobId, const int64_t cq_id);
   void recv_set_hadoop_jobid();
+  void get_latest_committed_compaction_info(GetLatestCommittedCompactionInfoResponse& _return, const GetLatestCommittedCompactionInfoRequest& rqst);
+  void send_get_latest_committed_compaction_info(const GetLatestCommittedCompactionInfoRequest& rqst);
+  void recv_get_latest_committed_compaction_info(GetLatestCommittedCompactionInfoResponse& _return);
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst);
   void send_get_next_notification(const NotificationEventRequest& rqst);
   void recv_get_next_notification(NotificationEventResponse& _return);
@@ -32682,6 +33428,11 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_databases(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_all_databases(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_alter_database(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_create_dataconnector(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_dataconnector_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_drop_dataconnector(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_dataconnectors(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_alter_dataconnector(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_type(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_create_type(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_type(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -32859,6 +33610,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_mark_compacted(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_mark_failed(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_set_hadoop_jobid(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_latest_committed_compaction_info(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_next_notification(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_current_notificationEventId(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_notification_events_count(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -32941,6 +33693,11 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_databases"] = &ThriftHiveMetastoreProcessor::process_get_databases;
     processMap_["get_all_databases"] = &ThriftHiveMetastoreProcessor::process_get_all_databases;
     processMap_["alter_database"] = &ThriftHiveMetastoreProcessor::process_alter_database;
+    processMap_["create_dataconnector"] = &ThriftHiveMetastoreProcessor::process_create_dataconnector;
+    processMap_["get_dataconnector_req"] = &ThriftHiveMetastoreProcessor::process_get_dataconnector_req;
+    processMap_["drop_dataconnector"] = &ThriftHiveMetastoreProcessor::process_drop_dataconnector;
+    processMap_["get_dataconnectors"] = &ThriftHiveMetastoreProcessor::process_get_dataconnectors;
+    processMap_["alter_dataconnector"] = &ThriftHiveMetastoreProcessor::process_alter_dataconnector;
     processMap_["get_type"] = &ThriftHiveMetastoreProcessor::process_get_type;
     processMap_["create_type"] = &ThriftHiveMetastoreProcessor::process_create_type;
     processMap_["drop_type"] = &ThriftHiveMetastoreProcessor::process_drop_type;
@@ -33118,6 +33875,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["mark_compacted"] = &ThriftHiveMetastoreProcessor::process_mark_compacted;
     processMap_["mark_failed"] = &ThriftHiveMetastoreProcessor::process_mark_failed;
     processMap_["set_hadoop_jobid"] = &ThriftHiveMetastoreProcessor::process_set_hadoop_jobid;
+    processMap_["get_latest_committed_compaction_info"] = &ThriftHiveMetastoreProcessor::process_get_latest_committed_compaction_info;
     processMap_["get_next_notification"] = &ThriftHiveMetastoreProcessor::process_get_next_notification;
     processMap_["get_current_notificationEventId"] = &ThriftHiveMetastoreProcessor::process_get_current_notificationEventId;
     processMap_["get_notification_events_count"] = &ThriftHiveMetastoreProcessor::process_get_notification_events_count;
@@ -33346,6 +34104,53 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->alter_database(dbname, db);
     }
     ifaces_[i]->alter_database(dbname, db);
+  }
+
+  void create_dataconnector(const DataConnector& connector) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->create_dataconnector(connector);
+    }
+    ifaces_[i]->create_dataconnector(connector);
+  }
+
+  void get_dataconnector_req(DataConnector& _return, const GetDataConnectorRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_dataconnector_req(_return, request);
+    }
+    ifaces_[i]->get_dataconnector_req(_return, request);
+    return;
+  }
+
+  void drop_dataconnector(const std::string& name, const bool ifNotExists, const bool checkReferences) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->drop_dataconnector(name, ifNotExists, checkReferences);
+    }
+    ifaces_[i]->drop_dataconnector(name, ifNotExists, checkReferences);
+  }
+
+  void get_dataconnectors(std::vector<std::string> & _return) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_dataconnectors(_return);
+    }
+    ifaces_[i]->get_dataconnectors(_return);
+    return;
+  }
+
+  void alter_dataconnector(const std::string& name, const DataConnector& connector) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->alter_dataconnector(name, connector);
+    }
+    ifaces_[i]->alter_dataconnector(name, connector);
   }
 
   void get_type(Type& _return, const std::string& name) {
@@ -34981,13 +35786,13 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->add_dynamic_partitions(rqst);
   }
 
-  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId) {
+  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId, const std::string& workerVersion) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->find_next_compact(_return, workerId);
+      ifaces_[i]->find_next_compact(_return, workerId, workerVersion);
     }
-    ifaces_[i]->find_next_compact(_return, workerId);
+    ifaces_[i]->find_next_compact(_return, workerId, workerVersion);
     return;
   }
 
@@ -35044,6 +35849,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->set_hadoop_jobid(jobId, cq_id);
     }
     ifaces_[i]->set_hadoop_jobid(jobId, cq_id);
+  }
+
+  void get_latest_committed_compaction_info(GetLatestCommittedCompactionInfoResponse& _return, const GetLatestCommittedCompactionInfoRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_latest_committed_compaction_info(_return, rqst);
+    }
+    ifaces_[i]->get_latest_committed_compaction_info(_return, rqst);
+    return;
   }
 
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) {
@@ -35726,6 +36541,21 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void alter_database(const std::string& dbname, const Database& db);
   int32_t send_alter_database(const std::string& dbname, const Database& db);
   void recv_alter_database(const int32_t seqid);
+  void create_dataconnector(const DataConnector& connector);
+  int32_t send_create_dataconnector(const DataConnector& connector);
+  void recv_create_dataconnector(const int32_t seqid);
+  void get_dataconnector_req(DataConnector& _return, const GetDataConnectorRequest& request);
+  int32_t send_get_dataconnector_req(const GetDataConnectorRequest& request);
+  void recv_get_dataconnector_req(DataConnector& _return, const int32_t seqid);
+  void drop_dataconnector(const std::string& name, const bool ifNotExists, const bool checkReferences);
+  int32_t send_drop_dataconnector(const std::string& name, const bool ifNotExists, const bool checkReferences);
+  void recv_drop_dataconnector(const int32_t seqid);
+  void get_dataconnectors(std::vector<std::string> & _return);
+  int32_t send_get_dataconnectors();
+  void recv_get_dataconnectors(std::vector<std::string> & _return, const int32_t seqid);
+  void alter_dataconnector(const std::string& name, const DataConnector& connector);
+  int32_t send_alter_dataconnector(const std::string& name, const DataConnector& connector);
+  void recv_alter_dataconnector(const int32_t seqid);
   void get_type(Type& _return, const std::string& name);
   int32_t send_get_type(const std::string& name);
   void recv_get_type(Type& _return, const int32_t seqid);
@@ -36236,8 +37066,8 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void add_dynamic_partitions(const AddDynamicPartitions& rqst);
   int32_t send_add_dynamic_partitions(const AddDynamicPartitions& rqst);
   void recv_add_dynamic_partitions(const int32_t seqid);
-  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId);
-  int32_t send_find_next_compact(const std::string& workerId);
+  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId, const std::string& workerVersion);
+  int32_t send_find_next_compact(const std::string& workerId, const std::string& workerVersion);
   void recv_find_next_compact(OptionalCompactionInfoStruct& _return, const int32_t seqid);
   void update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id);
   int32_t send_update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id);
@@ -36257,6 +37087,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id);
   int32_t send_set_hadoop_jobid(const std::string& jobId, const int64_t cq_id);
   void recv_set_hadoop_jobid(const int32_t seqid);
+  void get_latest_committed_compaction_info(GetLatestCommittedCompactionInfoResponse& _return, const GetLatestCommittedCompactionInfoRequest& rqst);
+  int32_t send_get_latest_committed_compaction_info(const GetLatestCommittedCompactionInfoRequest& rqst);
+  void recv_get_latest_committed_compaction_info(GetLatestCommittedCompactionInfoResponse& _return, const int32_t seqid);
   void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst);
   int32_t send_get_next_notification(const NotificationEventRequest& rqst);
   void recv_get_next_notification(NotificationEventResponse& _return, const int32_t seqid);

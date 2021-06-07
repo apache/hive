@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.events.AddSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.AlterDataConnectorEvent;
 import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
@@ -40,12 +41,14 @@ import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
+import org.apache.hadoop.hive.metastore.events.CreateDataConnectorEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.DropConstraintEvent;
+import org.apache.hadoop.hive.metastore.events.DropDataConnectorEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.DropISchemaEvent;
@@ -143,6 +146,27 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @throws MetaException
    */
   public void onDropDatabase (DropDatabaseEvent dbEvent) throws MetaException {
+  }
+
+  /**
+   * @param connectorEvent  dataconnector event
+   * @throws MetaException
+   */
+  public void onCreateDataConnector (CreateDataConnectorEvent connectorEvent) throws MetaException {
+  }
+
+  /**
+   * @param connectorEvent dataconnector event
+   * @throws MetaException
+   */
+  public void onDropDataConnector (DropDataConnectorEvent connectorEvent) throws MetaException {
+  }
+
+  /**
+   * @param dcEvent alter data connector event
+   * @throws MetaException
+   */
+  public void onAlterDataConnector(AlterDataConnectorEvent dcEvent) throws MetaException {
   }
 
   /**
@@ -339,6 +363,16 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @throws MetaException
    */
   public void onUpdatePartitionColumnStat(UpdatePartitionColumnStatEvent updatePartColStatEvent)
+          throws MetaException {
+  }
+
+  /**
+   * This will be called to update partition column stats to execute the sql using direct sql mode.
+   * @param updatePartColStatEvent event to be processed
+   * @throws MetaException
+   */
+  public void onUpdatePartitionColumnStatDirectSql(UpdatePartitionColumnStatEvent updatePartColStatEvent,
+                                                   Connection dbConn, SQLGenerator sqlGenerator)
           throws MetaException {
   }
 

@@ -17,6 +17,7 @@
  */
 package org.apache.hive.service.cli.thrift;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.hive.service.auth.ldap.HttpEmptyAuthenticationException;
@@ -44,7 +45,8 @@ public class ThriftHttpServletTest {
   @Before
   public void setUp() {
     String authType = HiveAuthConstants.AuthTypes.KERBEROS.toString();
-    thriftHttpServlet = new ThriftHttpServlet(null, null, authType, null, null, null);
+    thriftHttpServlet = new ThriftHttpServlet(null, null, authType, null, null, null,
+        new HiveConf());
   }
 
   @Test

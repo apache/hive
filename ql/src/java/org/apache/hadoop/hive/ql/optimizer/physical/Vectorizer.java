@@ -113,6 +113,7 @@ import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
@@ -2594,7 +2595,9 @@ public class Vectorizer implements PhysicalPlanResolver {
       return false;
     }
     List<ExprNodeDesc> keyExprs = desc.getKeys().get(posBigTable);
-    if (!validateExprNodeDesc(keyExprs, "Key")) {
+    if (!validateExprNodeDescNoComplex(keyExprs, "Key")) {
+      // Vectorization for join keys of complex type is not supported.
+      // https://issues.apache.org/jira/browse/HIVE-24989
       return false;
     }
     List<ExprNodeDesc> valueExprs = desc.getExprs().get(posBigTable);
@@ -2895,6 +2898,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
     }
 
+    boolean[] distinctEvaluator = vectorPTFDesc.getEvaluatorsAreDistinct();
     String[] evaluatorFunctionNames = vectorPTFDesc.getEvaluatorFunctionNames();
     final int count = evaluatorFunctionNames.length;
     WindowFrameDef[] evaluatorWindowFrameDefs = vectorPTFDesc.getEvaluatorWindowFrameDefs();
@@ -2907,11 +2911,14 @@ public class Vectorizer implements PhysicalPlanResolver {
         setOperatorIssue(functionName + " not in supported functions " + VectorPTFDesc.supportedFunctionNames);
         return false;
       }
-      WindowFrameDef windowFrameDef = evaluatorWindowFrameDefs[i];
-      if (!windowFrameDef.isStartUnbounded()) {
-        setOperatorIssue(functionName + " only UNBOUNDED start frame is supported");
+
+      if (distinctEvaluator[i] && !supportedFunctionType.isSupportDistinct()) {
+        setOperatorIssue(functionName + " distinct is not supported ");
         return false;
       }
+
+      WindowFrameDef windowFrameDef = evaluatorWindowFrameDefs[i];
+
       List<ExprNodeDesc> exprNodeDescList = evaluatorInputExprNodeDescLists[i];
       final boolean isSingleParameter =
           (exprNodeDescList != null &&
@@ -2996,6 +3003,20 @@ public class Vectorizer implements PhysicalPlanResolver {
               return false;
             }
           }
+        }
+      }
+      if (vectorPTFDesc.getOrderExprNodeDescs().length > 1) {
+        /*
+         * Currently, we need to rule out here all cases where a range boundary scanner can run,
+         * basically: 1. bounded start 2. bounded end which is not current row
+         */
+        if (windowFrameDef.getWindowType() == WindowType.RANGE
+            && (!windowFrameDef.isStartUnbounded()
+                || !(windowFrameDef.getEnd().isCurrentRow() || windowFrameDef.isEndUnbounded()))) {
+          setOperatorIssue(
+              "Multi-column ordered RANGE boundary scanner is not supported in vectorized mode (window: "
+                  + windowFrameDef + ")");
+          return false;
         }
       }
     }
@@ -4895,14 +4916,20 @@ public class Vectorizer implements PhysicalPlanResolver {
      * Output columns.
      */
 
+
+    TypeInfo[] reducerBatchTypeInfos = vContext.getAllTypeInfos();
+    DataTypePhysicalVariation[] reducerBatchDataTypePhysicalVariations = vContext.getAllDataTypePhysicalVariations();
+
     // Evaluator results are first.
     String[] outputColumnNames = new String[outputSize];
     TypeInfo[] outputTypeInfos = new TypeInfo[outputSize];
+    DataTypePhysicalVariation[] outputDataTypePhysicalVariations = new DataTypePhysicalVariation[outputSize];
     for (int i = 0; i < functionCount; i++) {
       ColumnInfo colInfo = outputSignature.get(i);
       TypeInfo typeInfo = colInfo.getType();
       outputColumnNames[i] = colInfo.getInternalName();
       outputTypeInfos[i] = typeInfo;
+      outputDataTypePhysicalVariations[i] = DataTypePhysicalVariation.NONE;
     }
 
     // Followed by key and non-key input columns (some may be missing).
@@ -4910,6 +4937,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       ColumnInfo colInfo = outputSignature.get(i);
       outputColumnNames[i] = colInfo.getInternalName();
       outputTypeInfos[i] = colInfo.getType();
+      outputDataTypePhysicalVariations[i] = reducerBatchDataTypePhysicalVariations[i-functionCount];
     }
 
     List<PTFExpressionDef> partitionExpressions = funcDef.getPartition().getExpressions();
@@ -4953,9 +4981,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         evaluatorWindowFrameDefs,
         evaluatorInputExprNodeDescLists);
 
-    TypeInfo[] reducerBatchTypeInfos = vContext.getAllTypeInfos();
-
-    vectorPTFDesc.setReducerBatchTypeInfos(reducerBatchTypeInfos);
+    vectorPTFDesc.setReducerBatchTypeInfos(reducerBatchTypeInfos, reducerBatchDataTypePhysicalVariations);
 
     vectorPTFDesc.setIsPartitionOrderBy(isPartitionOrderBy);
 
@@ -4968,7 +4994,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     vectorPTFDesc.setEvaluatorInputExprNodeDescLists(evaluatorInputExprNodeDescLists);
 
     vectorPTFDesc.setOutputColumnNames(outputColumnNames);
-    vectorPTFDesc.setOutputTypeInfos(outputTypeInfos);
+    vectorPTFDesc.setOutputTypeInfos(outputTypeInfos, outputDataTypePhysicalVariations);
 
     vectorPTFDesc.setVectorizedPTFMaxMemoryBufferingBatchCount(
         vectorizedPTFMaxMemoryBufferingBatchCount);
@@ -5054,24 +5080,18 @@ public class Vectorizer implements PhysicalPlanResolver {
     Type[] partitionColumnVectorTypes;
     VectorExpression[] partitionExpressions;
 
-    if (!isPartitionOrderBy) {
-      partitionColumnMap = null;
-      partitionColumnVectorTypes = null;
-      partitionExpressions = null;
-    } else {
-      final int partitionKeyCount = partitionExprNodeDescs.length;
-      partitionColumnMap = new int[partitionKeyCount];
-      partitionColumnVectorTypes = new Type[partitionKeyCount];
-      partitionExpressions = new VectorExpression[partitionKeyCount];
+    final int partitionKeyCount = partitionExprNodeDescs.length;
+    partitionColumnMap = new int[partitionKeyCount];
+    partitionColumnVectorTypes = new Type[partitionKeyCount];
+    partitionExpressions = new VectorExpression[partitionKeyCount];
 
-      for (int i = 0; i < partitionKeyCount; i++) {
-        VectorExpression partitionExpression = vContext.getVectorExpression(partitionExprNodeDescs[i]);
-        TypeInfo typeInfo = partitionExpression.getOutputTypeInfo();
-        Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
-        partitionColumnVectorTypes[i] = columnVectorType;
-        partitionColumnMap[i] = partitionExpression.getOutputColumnNum();
-        partitionExpressions[i] = partitionExpression;
-      }
+    for (int i = 0; i < partitionKeyCount; i++) {
+      VectorExpression partitionExpression = vContext.getVectorExpression(partitionExprNodeDescs[i]);
+      TypeInfo typeInfo = partitionExpression.getOutputTypeInfo();
+      Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
+      partitionColumnVectorTypes[i] = columnVectorType;
+      partitionColumnMap[i] = partitionExpression.getOutputColumnNum();
+      partitionExpressions[i] = partitionExpression;
     }
 
     final int orderKeyCount = orderExprNodeDescs.length;

@@ -96,6 +96,21 @@ class ShowCompactResponseElement
             'isRequired' => false,
             'type' => TType::I64,
         ),
+        16 => array(
+            'var' => 'workerVersion',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
+        17 => array(
+            'var' => 'initiatorId',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
+        18 => array(
+            'var' => 'initiatorVersion',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -158,6 +173,18 @@ class ShowCompactResponseElement
      * @var int
      */
     public $enqueueTime = null;
+    /**
+     * @var string
+     */
+    public $workerVersion = null;
+    /**
+     * @var string
+     */
+    public $initiatorId = null;
+    /**
+     * @var string
+     */
+    public $initiatorVersion = null;
 
     public function __construct($vals = null)
     {
@@ -206,6 +233,15 @@ class ShowCompactResponseElement
             }
             if (isset($vals['enqueueTime'])) {
                 $this->enqueueTime = $vals['enqueueTime'];
+            }
+            if (isset($vals['workerVersion'])) {
+                $this->workerVersion = $vals['workerVersion'];
+            }
+            if (isset($vals['initiatorId'])) {
+                $this->initiatorId = $vals['initiatorId'];
+            }
+            if (isset($vals['initiatorVersion'])) {
+                $this->initiatorVersion = $vals['initiatorVersion'];
             }
         }
     }
@@ -334,6 +370,27 @@ class ShowCompactResponseElement
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 16:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->workerVersion);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 17:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->initiatorId);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 18:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->initiatorVersion);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -421,6 +478,21 @@ class ShowCompactResponseElement
         if ($this->enqueueTime !== null) {
             $xfer += $output->writeFieldBegin('enqueueTime', TType::I64, 15);
             $xfer += $output->writeI64($this->enqueueTime);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->workerVersion !== null) {
+            $xfer += $output->writeFieldBegin('workerVersion', TType::STRING, 16);
+            $xfer += $output->writeString($this->workerVersion);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->initiatorId !== null) {
+            $xfer += $output->writeFieldBegin('initiatorId', TType::STRING, 17);
+            $xfer += $output->writeString($this->initiatorId);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->initiatorVersion !== null) {
+            $xfer += $output->writeFieldBegin('initiatorVersion', TType::STRING, 18);
+            $xfer += $output->writeString($this->initiatorVersion);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

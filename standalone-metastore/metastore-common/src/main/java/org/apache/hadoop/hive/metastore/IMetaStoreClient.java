@@ -635,7 +635,7 @@ public interface IMetaStoreClient {
 
   /**
    * Get a table object in the default catalog.
-   *
+   * @deprecated use getTable(GetTableRequest getTableRequest)
    * @param dbName
    *          The database the table is located in.
    * @param tableName
@@ -648,12 +648,13 @@ public interface IMetaStoreClient {
    * @throws NoSuchObjectException
    *           In case the table wasn't found.
    */
+  @Deprecated
   Table getTable(String dbName, String tableName) throws MetaException,
       TException, NoSuchObjectException;
 
   /**
    * Get a table object in the default catalog.
-   *
+   * @deprecated use getTable(GetTableRequest getTableRequest)
    * @param dbName
    *          The database the table is located in.
    * @param tableName
@@ -669,11 +670,13 @@ public interface IMetaStoreClient {
    * @throws NoSuchObjectException
    *           In case the table wasn't found.
    */
+  @Deprecated
   Table getTable(String dbName, String tableName, boolean getColumnStats, String engine) throws MetaException,
           TException, NoSuchObjectException;
 
   /**
    * Get a table object.
+   * @deprecated use getTable(GetTableRequest getTableRequest)
    * @param catName catalog the table is in.
    * @param dbName database the table is in.
    * @param tableName table name.
@@ -681,10 +684,12 @@ public interface IMetaStoreClient {
    * @throws MetaException Something went wrong, usually in the RDBMS.
    * @throws TException general thrift error.
    */
+  @Deprecated
   Table getTable(String catName, String dbName, String tableName) throws MetaException, TException;
 
   /**
    * Get a table object.
+   * @deprecated use getTable(GetTableRequest getTableRequest)
    * @param catName catalog the table is in.
    * @param dbName database the table is in.
    * @param tableName table name.
@@ -693,11 +698,13 @@ public interface IMetaStoreClient {
    * @throws MetaException Something went wrong, usually in the RDBMS.
    * @throws TException general thrift error.
    */
+  @Deprecated
   Table getTable(String catName, String dbName, String tableName,
                         String validWriteIdList) throws TException;
 
   /**
    * Get a table object.
+   * @deprecated use getTable(GetTableRequest getTableRequest)
    * @param catName catalog the table is in.
    * @param dbName database the table is in.
    * @param tableName table name.
@@ -708,8 +715,23 @@ public interface IMetaStoreClient {
    * @throws MetaException Something went wrong, usually in the RDBMS.
    * @throws TException general thrift error.
    */
+  @Deprecated
   Table getTable(String catName, String dbName, String tableName,
                  String validWriteIdList, boolean getColumnStats, String engine) throws TException;
+
+  /**
+   *
+   * @param getTableRequest request object to query a table in HMS
+   * @return An object representing the table.
+   * @throws MetaException
+   *           Could not fetch the table
+   * @throws TException
+   *           A thrift communication error occurred
+   * @throws NoSuchObjectException
+   *           In case the table wasn't found.
+   */
+  Table getTable(GetTableRequest getTableRequest) throws MetaException, TException, NoSuchObjectException;
+
 
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
@@ -1989,6 +2011,58 @@ public interface IMetaStoreClient {
       throws NoSuchObjectException, MetaException, TException;
 
   /**
+   * Create a new dataconnector.
+   * @param connector object.
+   * @throws InvalidObjectException There is something wrong with the dataconnector object.
+   * @throws AlreadyExistsException There is already a dataconnector with this name.
+   * @throws MetaException something went wrong, usually in the RDBMS
+   * @throws TException general thrift error
+   */
+  void createDataConnector(DataConnector connector)
+      throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
+
+  /**
+   * Drop a dataconnector.
+   * @param name name of the dataconnector to drop.
+   * @param ifNotExists if specified, drop will not throw an exception if the connector does not exist.
+   * @param checkReferences drop only if there are no dbs referencing this connector.
+   * @throws NoSuchObjectException No such dataconnector exists.
+   * @throws InvalidOperationException The dataconnector cannot be dropped because it is not allowed.
+   * @throws MetaException something went wrong, usually either in the RDMBS or in storage.
+   * @throws TException general thrift error.
+   */
+  void dropDataConnector(String name, boolean ifNotExists, boolean checkReferences)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException;
+
+  /**
+   * Alter a dataconnector.
+   * @param name dataconnector name.
+   * @param connector new dataconnector object.
+   * @throws NoSuchObjectException No dataconnector with this name exists.
+   * @throws MetaException Operation could not be completed, usually in the RDBMS.
+   * @throws TException thrift transport layer error.
+   */
+  void alterDataConnector(String name, DataConnector connector)
+      throws NoSuchObjectException, MetaException, TException;
+
+  /**
+   * Get the dataconnector by name
+   * @return DataConnector if there is a match
+   * @throws MetaException error complete the operation
+   * @throws TException thrift transport error
+   */
+  DataConnector getDataConnector(String name)
+      throws MetaException, TException;
+
+  /**
+   * Get the names of all dataconnectors in the MetaStore.
+   * @return List of dataconnector names.
+   * @throws MetaException error accessing RDBMS.
+   * @throws TException thrift transport error
+   */
+  List<String> getAllDataConnectorNames() throws MetaException, TException;
+
+  /**
    * Drop a partition.
    * @param db_name database name
    * @param tbl_name table name
@@ -3104,14 +3178,19 @@ public interface IMetaStoreClient {
   long openTxn(String user, TxnType txnType) throws TException;
 
   /**
-   * Initiate a transaction at the target cluster.
-   * @param replPolicy The replication policy to uniquely identify the source cluster.
-   * @param srcTxnIds The list of transaction ids at the source cluster
-   * @param user The user who has fired the repl load command.
+   * Initiate a repl replayed or hive replication transaction (dump/load).
+   * @param replPolicy Contains replication policy to uniquely identify the source cluster in case of repl replayed txns
+   *                   or database under replication name for hive replication txns
+   * @param srcTxnIds The list of transaction ids at the source cluster in case of repl replayed transactions
+   *                 or null in case of hive replication transactions.
+   * @param user The user who has fired the command.
+   *
+   * @param txnType Type of transaction to open: REPL_CREATED for repl replayed transactions
+   *                                             DEFAULT for hive replication transactions.
    * @return transaction identifiers
    * @throws TException
    */
-  List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user) throws TException;
+  List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user, TxnType txnType) throws TException;
 
   /**
    * Initiate a batch of transactions.  It is not guaranteed that the
@@ -3154,14 +3233,18 @@ public interface IMetaStoreClient {
   /**
    * Rollback a transaction.  This will also unlock any locks associated with
    * this transaction.
-   * @param srcTxnid id of transaction at source while is rolled back and to be replicated.
-   * @param replPolicy the replication policy to identify the source cluster
+   * @param srcTxnid id of transaction at source while is rolled back and to be replicated
+   *                 or null in case of hive replication transactions
+   * @param replPolicy Contains replication policy to uniquely identify the source cluster in case of repl replayed txns
+   *                   or database under replication name for hive replication txns
+   * @param txnType Type of transaction to Rollback: REPL_CREATED for repl replayed transactions
+    *                                                DEFAULT for hive replication transactions.
    * @throws NoSuchTxnException if the requested transaction does not exist.
    * Note that this can result from the transaction having timed out and been
    * deleted.
    * @throws TException
    */
-  void replRollbackTxn(long srcTxnid, String replPolicy) throws NoSuchTxnException, TException;
+  void replRollbackTxn(long srcTxnid, String replPolicy, TxnType txnType) throws NoSuchTxnException, TException;
 
   /**
    * Commit a transaction.  This will also unlock any locks associated with
@@ -3467,6 +3550,20 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   ShowCompactResponse showCompactions() throws TException;
+
+  /**
+   * Get one latest record of SUCCEEDED or READY_FOR_CLEANING compaction for a table/partition.
+   * No checking is done on the dbname, tablename, or partitionname to make sure they refer to valid objects.
+   * Is is assumed to be done by the caller.
+   * Note that partition names should be supplied with the request for a partitioned table; otherwise,
+   * no records will be returned.
+   * @param request info on which compaction to retrieve
+   * @return one latest compaction record for a non partitioned table or one latest record for each
+   * partition specified by the request.
+   * @throws TException
+   */
+  GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(GetLatestCommittedCompactionInfoRequest request)
+    throws TException;
 
   /**
    * @deprecated in Hive 1.3.0/2.1.0 - will be removed in 2 releases
@@ -4104,8 +4201,20 @@ public interface IMetaStoreClient {
    * @return next compaction job encapsulated in a {@link CompactionInfoStruct}.
    * @throws MetaException
    * @throws TException
+   * @deprecated Use findNextCompact(workerId, workerVersion) instead
    */
+  @Deprecated
   OptionalCompactionInfoStruct findNextCompact(String workerId) throws MetaException, TException;
+
+  /**
+   * Get the next compaction job to do.
+   * @param workerId id of the worker requesting.
+   * @param workerVersion runtime version of the Worker
+   * @return next compaction job encapsulated in a {@link CompactionInfoStruct}.
+   * @throws MetaException
+   * @throws TException
+   */
+  OptionalCompactionInfoStruct findNextCompact(String workerId, String workerVersion) throws MetaException, TException;
 
   /**
    * Set the compaction highest write id.

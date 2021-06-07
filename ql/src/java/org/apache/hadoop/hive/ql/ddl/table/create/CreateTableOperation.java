@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Operation process of creating a table.
@@ -63,9 +64,9 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
       // trigger replace-mode semantics.
       Table existingTable = context.getDb().getTable(tbl.getDbName(), tbl.getTableName(), false);
       if (existingTable != null) {
-        if (desc.getReplicationSpec().allowEventReplacementInto(existingTable.getParameters())) {
+        Map<String, String> dbParams = context.getDb().getDatabase(existingTable.getDbName()).getParameters();
+        if (desc.getReplicationSpec().allowEventReplacementInto(dbParams)) {
           desc.setReplaceMode(true); // we replace existing table.
-          ReplicationSpec.copyLastReplId(existingTable.getParameters(), tbl.getParameters());
           // If location of an existing managed table is changed, then need to delete the old location if exists.
           // This scenario occurs when a managed table is converted into external table at source. In this case,
           // at target, the table data would be moved to different location under base directory for external tables.

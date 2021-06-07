@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.metastore.api.MetastoreException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
@@ -70,8 +71,6 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -88,7 +87,6 @@ public class HiveMetaStoreChecker {
   private final IMetaStoreClient msc;
   private final Configuration conf;
   private final long partitionExpirySeconds;
-  private final Interner<Path> pathInterner = Interners.newStrongInterner();
   public static final PathFilter HIDDEN_FILES_PATH_FILTER =
       p -> !p.getName().startsWith("_") && !p.getName().startsWith(".");
 
@@ -140,7 +138,12 @@ public class HiveMetaStoreChecker {
       if (tableName == null || "".equals(tableName)) {
         // TODO: I do not think this is used by anything other than tests
         // no table specified, check all tables and all partitions.
-        List<String> tables = getMsc().getTables(catName, dbName, ".*");
+        List<String> tables = new ArrayList<>();
+        try{
+          tables = getMsc().getTables(catName, dbName, ".*");
+        }catch(UnknownDBException ex){
+          //ignore database exception.
+        }
         for (String currentTableName : tables) {
           checkTable(catName, dbName, currentTableName, null, null, result);
         }
@@ -348,7 +351,6 @@ public class HiveMetaStoreChecker {
 
       for (int i = 0; i < getPartitionSpec(table, partition).size(); i++) {
         Path qualifiedPath = partPath.makeQualified(fs);
-        pathInterner.intern(qualifiedPath);
         partPaths.add(qualifiedPath);
         partPath = partPath.getParent();
       }

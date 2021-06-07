@@ -81,6 +81,8 @@ public class EximUtil {
   public static final String FILES_NAME = "_files";
   public static final String FILE_LIST = "_file_list";
   public static final String FILE_LIST_EXTERNAL = "_file_list_external";
+  public static final String FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT = "_file_list_external_current";
+  public static final String FILE_LIST_EXTERNAL_SNAPSHOT_OLD = "_file_list_external_old";
   public static final String DATA_PATH_NAME = "data";
   public static final String METADATA_PATH_NAME = "metadata";
 
@@ -387,7 +389,7 @@ public class EximUtil {
               MetastoreConf.getVar(conf, MetastoreConf.ConfVars.WAREHOUSE));
       Path dbDerivedLoc = new Path(whLocatoion, database.getName().toLowerCase() + DATABASE_PATH_SUFFIX);
       String defaultDbLoc = Utilities.getQualifiedPath((HiveConf) conf, dbDerivedLoc);
-      database.getParameters().put(ReplUtils.REPL_IS_CUSTOM_DB_LOC,
+      database.putToParameters(ReplUtils.REPL_IS_CUSTOM_DB_LOC,
               Boolean.toString(!defaultDbLoc.equals(database.getLocationUri())));
       String whManagedLocatoion = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.WAREHOUSE);
       Path dbDerivedManagedLoc = new Path(whManagedLocatoion, database.getName().toLowerCase()

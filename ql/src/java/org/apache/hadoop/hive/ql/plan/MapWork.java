@@ -156,6 +156,8 @@ public class MapWork extends BaseWork {
       new LinkedHashMap<String, List<String>>();
   private Map<String, List<ExprNodeDesc>> eventSourcePartKeyExprMap =
       new LinkedHashMap<String, List<ExprNodeDesc>>();
+  private Map<String, List<ExprNodeDesc>> eventSourcePredicateExprMap =
+      new LinkedHashMap<String, List<ExprNodeDesc>>();
 
   private boolean doSplitsGrouping = true;
 
@@ -707,6 +709,14 @@ public class MapWork extends BaseWork {
 
   public void setEventSourcePartKeyExprMap(Map<String, List<ExprNodeDesc>> map) {
     this.eventSourcePartKeyExprMap = map;
+  }
+
+  public Map<String, List<ExprNodeDesc>> getEventSourcePredicateExprMap() {
+    return eventSourcePredicateExprMap;
+  }
+
+  public void setEventSourcePredicateExprMap(Map<String, List<ExprNodeDesc>> eventSourcePredicateExprMap) {
+    this.eventSourcePredicateExprMap = eventSourcePredicateExprMap;
   }
 
   public void setDoSplitsGrouping(boolean doSplitsGrouping) {

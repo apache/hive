@@ -1,0 +1,5 @@
+PREHOOK: query: CREATE EXTERNAL TABLE ice_t (i int, s string, ts timestamp, d date) STORED BY ICEBERG
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_t
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.UnsupportedOperationException: Vectorized execution on Tez is currently not supported when using Iceberg tables. Please set hive.vectorized.execution.enabled=false and rerun the query.

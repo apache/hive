@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.metastore;
 import com.codahale.metrics.Counter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
@@ -28,11 +30,16 @@ import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
+
 /**
  * Report metrics of metadata added, deleted by this Hive Metastore.
+ * The listener is only attached when the metrics are enabled.
  */
 public class HMSMetricsListener extends MetaStoreEventListener {
 
@@ -85,5 +92,25 @@ public class HMSMetricsListener extends MetaStoreEventListener {
   public void onAddPartition(AddPartitionEvent partitionEvent) throws MetaException {
     Metrics.getOrCreateGauge(MetricsConstants.TOTAL_PARTITIONS).incrementAndGet();
     createdParts.inc();
+  }
+
+  @Override
+  public void onAllocWriteId(AllocWriteIdEvent allocWriteIdEvent, Connection dbConn, SQLGenerator sqlGenerator) throws MetaException {
+    Table table = getTable(allocWriteIdEvent);
+
+    if (MetaStoreUtils.isNoAutoCompactSet(table.getParameters())) {
+      Metrics.getOrCreateGauge(MetricsConstants.WRITES_TO_DISABLED_COMPACTION_TABLE).incrementAndGet();
+    }
+  }
+
+  private Table getTable(AllocWriteIdEvent allocWriteIdEvent) throws MetaException {
+    String catalog = MetaStoreUtils.getDefaultCatalog(getConf());
+    String dbName = allocWriteIdEvent.getDbName();
+    String tableName = allocWriteIdEvent.getTableName();
+    if (allocWriteIdEvent.getIHMSHandler() != null) {
+      return allocWriteIdEvent.getIHMSHandler().getMS().getTable(catalog, dbName, tableName);
+    } else {
+      return HMSHandler.getMSForConf(getConf()).getTable(catalog, dbName, tableName);
+    }
   }
 }

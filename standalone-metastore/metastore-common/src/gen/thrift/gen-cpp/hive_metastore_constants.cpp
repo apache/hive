@@ -75,6 +75,8 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   TABLE_IS_CTAS = "created_with_ctas";
 
+  PARTITION_TRANSFORM_SPEC = "partition_transform_spec";
+
 }
 
 }}} // namespace

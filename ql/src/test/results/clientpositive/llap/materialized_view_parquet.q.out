@@ -1,0 +1,1001 @@
+PREHOOK: query: create table emps_parquet_n3 (
+  empid int,
+  deptno int,
+  name varchar(256),
+  salary float,
+  commission int)
+stored as parquet TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emps_parquet_n3
+POSTHOOK: query: create table emps_parquet_n3 (
+  empid int,
+  deptno int,
+  name varchar(256),
+  salary float,
+  commission int)
+stored as parquet TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emps_parquet_n3
+PREHOOK: query: insert into emps_parquet_n3 values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
+  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (120, 10, 'Bill', 10000, 250)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@emps_parquet_n3
+POSTHOOK: query: insert into emps_parquet_n3 values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
+  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (120, 10, 'Bill', 10000, 250)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@emps_parquet_n3
+POSTHOOK: Lineage: emps_parquet_n3.commission SCRIPT []
+POSTHOOK: Lineage: emps_parquet_n3.deptno SCRIPT []
+POSTHOOK: Lineage: emps_parquet_n3.empid SCRIPT []
+POSTHOOK: Lineage: emps_parquet_n3.name SCRIPT []
+POSTHOOK: Lineage: emps_parquet_n3.salary SCRIPT []
+PREHOOK: query: create table depts_parquet_n2 (
+  deptno int,
+  name varchar(256),
+  locationid int)
+stored as parquet TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@depts_parquet_n2
+POSTHOOK: query: create table depts_parquet_n2 (
+  deptno int,
+  name varchar(256),
+  locationid int)
+stored as parquet TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@depts_parquet_n2
+PREHOOK: query: insert into depts_parquet_n2 values (10, 'Sales', 10), (30, 'Marketing', null), (20, 'HR', 20)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@depts_parquet_n2
+POSTHOOK: query: insert into depts_parquet_n2 values (10, 'Sales', 10), (30, 'Marketing', null), (20, 'HR', 20)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@depts_parquet_n2
+POSTHOOK: Lineage: depts_parquet_n2.deptno SCRIPT []
+POSTHOOK: Lineage: depts_parquet_n2.locationid SCRIPT []
+POSTHOOK: Lineage: depts_parquet_n2.name SCRIPT []
+PREHOOK: query: create table dependents_parquet_n2 (
+  empid int,
+  name varchar(256))
+stored as parquet TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dependents_parquet_n2
+POSTHOOK: query: create table dependents_parquet_n2 (
+  empid int,
+  name varchar(256))
+stored as parquet TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dependents_parquet_n2
+PREHOOK: query: insert into dependents_parquet_n2 values (10, 'Michael'), (20, 'Jane')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@dependents_parquet_n2
+POSTHOOK: query: insert into dependents_parquet_n2 values (10, 'Michael'), (20, 'Jane')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dependents_parquet_n2
+POSTHOOK: Lineage: dependents_parquet_n2.empid SCRIPT []
+POSTHOOK: Lineage: dependents_parquet_n2.name SCRIPT []
+PREHOOK: query: create table locations_parquet_n2 (
+  locationid int,
+  name varchar(256))
+stored as parquet TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@locations_parquet_n2
+POSTHOOK: query: create table locations_parquet_n2 (
+  locationid int,
+  name varchar(256))
+stored as parquet TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@locations_parquet_n2
+PREHOOK: query: insert into locations_parquet_n2 values (10, 'San Francisco'), (20, 'San Diego')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@locations_parquet_n2
+POSTHOOK: query: insert into locations_parquet_n2 values (10, 'San Francisco'), (20, 'San Diego')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@locations_parquet_n2
+POSTHOOK: Lineage: locations_parquet_n2.locationid SCRIPT []
+POSTHOOK: Lineage: locations_parquet_n2.name SCRIPT []
+PREHOOK: query: alter table emps_parquet_n3 add constraint pk1 primary key (empid) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table emps_parquet_n3 add constraint pk1 primary key (empid) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table depts_parquet_n2 add constraint pk2 primary key (deptno) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table depts_parquet_n2 add constraint pk2 primary key (deptno) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table dependents_parquet_n2 add constraint pk3 primary key (empid) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table dependents_parquet_n2 add constraint pk3 primary key (empid) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table locations_parquet_n2 add constraint pk4 primary key (locationid) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table locations_parquet_n2 add constraint pk4 primary key (locationid) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table emps_parquet_n3 add constraint fk1 foreign key (deptno) references depts_parquet_n2(deptno) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table emps_parquet_n3 add constraint fk1 foreign key (deptno) references depts_parquet_n2(deptno) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table depts_parquet_n2 add constraint fk2 foreign key (locationid) references locations_parquet_n2(locationid) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table depts_parquet_n2 add constraint fk2 foreign key (locationid) references locations_parquet_n2(locationid) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select * from emps_parquet_n3 where empid < 150
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select * from emps_parquet_n3 where empid < 150
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: describe formatted mv1_parquet_n2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@mv1_parquet_n2
+POSTHOOK: query: describe formatted mv1_parquet_n2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@mv1_parquet_n2
+# col_name            	data_type           	comment             
+empid               	int                 	                    
+deptno              	int                 	                    
+name                	varchar(256)        	                    
+salary              	float               	                    
+commission          	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"commission\":\"true\",\"deptno\":\"true\",\"empid\":\"true\",\"name\":\"true\",\"salary\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	279                 
+	totalSize           	1220                
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	select * from emps_parquet_n3 where empid < 150	 
+Expanded Query:     	select `emps_parquet_n3`.`empid`, `emps_parquet_n3`.`deptno`, `emps_parquet_n3`.`name`, `emps_parquet_n3`.`salary`, `emps_parquet_n3`.`commission` from `default`.`emps_parquet_n3` where `emps_parquet_n3`.`empid` < 150	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
+PREHOOK: query: explain cbo
+select *
+from (select * from emps_parquet_n3 where empid < 120) t
+join depts_parquet_n2 using (deptno)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts_parquet_n2
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select *
+from (select * from emps_parquet_n3 where empid < 120) t
+join depts_parquet_n2 using (deptno)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts_parquet_n2
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(deptno0=[CAST($5):INTEGER], empid=[$0], name=[$2], salary=[$3], commission=[$4], name0=[$6], locationid=[$7])
+  HiveJoin(condition=[=($1, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(empid=[CAST($0):INTEGER NOT NULL], deptno=[$1], name=[$2], salary=[$3], commission=[$4])
+      HiveFilter(condition=[AND(>(120, CAST($0):INTEGER NOT NULL), IS NOT NULL($1))])
+        HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
+    HiveProject(deptno=[$0], name=[$1], locationid=[$2])
+      HiveTableScan(table=[[default, depts_parquet_n2]], table:alias=[depts_parquet_n2])
+
+PREHOOK: query: select *
+from (select * from emps_parquet_n3 where empid < 120) t
+join depts_parquet_n2 using (deptno)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts_parquet_n2
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select *
+from (select * from emps_parquet_n3 where empid < 120) t
+join depts_parquet_n2 using (deptno)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts_parquet_n2
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+10	100	Bill	10000.0	1000	Sales	10
+10	110	Theodore	10000.0	250	Sales	10
+PREHOOK: query: drop materialized view mv1_parquet_n2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1_parquet_n2
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: drop materialized view mv1_parquet_n2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1_parquet_n2
+POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select deptno, name, salary, commission
+from emps_parquet_n3
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select deptno, name, salary, commission
+from emps_parquet_n3
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: explain cbo
+select emps_parquet_n3.name, emps_parquet_n3.salary, emps_parquet_n3.commission
+from emps_parquet_n3
+join depts_parquet_n2 using (deptno)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts_parquet_n2
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select emps_parquet_n3.name, emps_parquet_n3.salary, emps_parquet_n3.commission
+from emps_parquet_n3
+join depts_parquet_n2 using (deptno)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts_parquet_n2
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(name=[$1], salary=[$2], commission=[$3])
+  HiveFilter(condition=[IS NOT NULL($0)])
+    HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
+
+PREHOOK: query: select emps_parquet_n3.name, emps_parquet_n3.salary, emps_parquet_n3.commission
+from emps_parquet_n3
+join depts_parquet_n2 using (deptno)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts_parquet_n2
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select emps_parquet_n3.name, emps_parquet_n3.salary, emps_parquet_n3.commission
+from emps_parquet_n3
+join depts_parquet_n2 using (deptno)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts_parquet_n2
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+Bill	10000.0	1000
+Bill	10000.0	250
+Eric	8000.0	500
+Sebastian	7000.0	NULL
+Theodore	10000.0	250
+PREHOOK: query: drop materialized view mv1_parquet_n2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1_parquet_n2
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: drop materialized view mv1_parquet_n2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1_parquet_n2
+POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select empid deptno from emps_parquet_n3
+join depts_parquet_n2 using (deptno)
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@depts_parquet_n2
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select empid deptno from emps_parquet_n3
+join depts_parquet_n2 using (deptno)
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@depts_parquet_n2
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: explain cbo
+select empid deptno from emps_parquet_n3
+join depts_parquet_n2 using (deptno) where empid = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts_parquet_n2
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select empid deptno from emps_parquet_n3
+join depts_parquet_n2 using (deptno) where empid = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts_parquet_n2
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject($f0=[1])
+  HiveFilter(condition=[=(1, CAST($0):INTEGER NOT NULL)])
+    HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
+
+PREHOOK: query: select empid deptno from emps_parquet_n3
+join depts_parquet_n2 using (deptno) where empid = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts_parquet_n2
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select empid deptno from emps_parquet_n3
+join depts_parquet_n2 using (deptno) where empid = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts_parquet_n2
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+PREHOOK: query: drop materialized view mv1_parquet_n2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1_parquet_n2
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: drop materialized view mv1_parquet_n2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1_parquet_n2
+POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select * from emps_parquet_n3 where empid < 200
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select * from emps_parquet_n3 where empid < 200
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: explain cbo
+select * from emps_parquet_n3 where empid > 120
+union all select * from emps_parquet_n3 where empid < 150
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from emps_parquet_n3 where empid > 120
+union all select * from emps_parquet_n3 where empid < 150
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveUnion(all=[true])
+  HiveProject(empid=[$0], deptno=[$1], name=[$2], salary=[$3], commission=[$4])
+    HiveFilter(condition=[>($0, 120)])
+      HiveTableScan(table=[[default, emps_parquet_n3]], table:alias=[emps_parquet_n3])
+  HiveProject(empid=[CAST($0):INTEGER NOT NULL], deptno=[$1], name=[$2], salary=[$3], commission=[$4])
+    HiveFilter(condition=[>(150, CAST($0):INTEGER NOT NULL)])
+      HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
+
+PREHOOK: query: select * from emps_parquet_n3 where empid > 120
+union all select * from emps_parquet_n3 where empid < 150
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from emps_parquet_n3 where empid > 120
+union all select * from emps_parquet_n3 where empid < 150
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+100	10	Bill	10000.0	1000
+110	10	Theodore	10000.0	250
+120	10	Bill	10000.0	250
+150	10	Sebastian	7000.0	NULL
+200	20	Eric	8000.0	500
+PREHOOK: query: drop materialized view mv1_parquet_n2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1_parquet_n2
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: drop materialized view mv1_parquet_n2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1_parquet_n2
+POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select empid, deptno from emps_parquet_n3 group by empid, deptno
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select empid, deptno from emps_parquet_n3 group by empid, deptno
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: explain cbo
+select empid, deptno from emps_parquet_n3 group by empid, deptno
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select empid, deptno from emps_parquet_n3 group by empid, deptno
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(empid=[CAST($0):INTEGER NOT NULL], deptno=[$1])
+  HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
+
+PREHOOK: query: select empid, deptno from emps_parquet_n3 group by empid, deptno
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select empid, deptno from emps_parquet_n3 group by empid, deptno
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+100	10
+110	10
+120	10
+150	10
+200	20
+PREHOOK: query: drop materialized view mv1_parquet_n2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1_parquet_n2
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: drop materialized view mv1_parquet_n2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1_parquet_n2
+POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select empid, name from emps_parquet_n3 group by empid, name
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select empid, name from emps_parquet_n3 group by empid, name
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: explain cbo
+select empid, name from emps_parquet_n3 group by empid, name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select empid, name from emps_parquet_n3 group by empid, name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(empid=[CAST($0):INTEGER NOT NULL], name=[$1])
+  HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
+
+PREHOOK: query: select empid, name from emps_parquet_n3 group by empid, name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select empid, name from emps_parquet_n3 group by empid, name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+100	Bill
+110	Theodore
+120	Bill
+150	Sebastian
+200	Eric
+PREHOOK: query: drop materialized view mv1_parquet_n2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1_parquet_n2
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: drop materialized view mv1_parquet_n2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1_parquet_n2
+POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select name, salary from emps_parquet_n3 group by name, salary
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select name, salary from emps_parquet_n3 group by name, salary
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: explain cbo
+select name, salary from emps_parquet_n3 group by name, salary
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select name, salary from emps_parquet_n3 group by name, salary
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
+
+PREHOOK: query: select name, salary from emps_parquet_n3 group by name, salary
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select name, salary from emps_parquet_n3 group by name, salary
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+Bill	10000.0
+Eric	8000.0
+Sebastian	7000.0
+Theodore	10000.0
+PREHOOK: query: drop materialized view mv1_parquet_n2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1_parquet_n2
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: drop materialized view mv1_parquet_n2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1_parquet_n2
+POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select name, salary from emps_parquet_n3 group by name, salary
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select name, salary from emps_parquet_n3 group by name, salary
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: explain cbo
+select name from emps_parquet_n3 group by name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select name from emps_parquet_n3 group by name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0}])
+  HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
+
+PREHOOK: query: select name from emps_parquet_n3 group by name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select name from emps_parquet_n3 group by name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+Bill
+Eric
+Sebastian
+Theodore
+PREHOOK: query: drop materialized view mv1_parquet_n2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1_parquet_n2
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: drop materialized view mv1_parquet_n2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1_parquet_n2
+POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select name, salary from emps_parquet_n3 where deptno = 10 group by name, salary
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select name, salary from emps_parquet_n3 where deptno = 10 group by name, salary
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: explain cbo
+select name from emps_parquet_n3 where deptno = 10 group by name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select name from emps_parquet_n3 where deptno = 10 group by name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0}])
+  HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
+
+PREHOOK: query: select name from emps_parquet_n3 where deptno = 10 group by name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select name from emps_parquet_n3 where deptno = 10 group by name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+Bill
+Sebastian
+Theodore
+PREHOOK: query: drop materialized view mv1_parquet_n2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1_parquet_n2
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: drop materialized view mv1_parquet_n2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1_parquet_n2
+POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select name, salary, count(*) as c, sum(empid) as s
+from emps_parquet_n3 group by name, salary
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: create materialized view mv1_parquet_n2
+TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only') as
+select name, salary, count(*) as c, sum(empid) as s
+from emps_parquet_n3 group by name, salary
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1_parquet_n2
+PREHOOK: query: explain cbo
+select name from emps_parquet_n3 group by name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select name from emps_parquet_n3 group by name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0}])
+  HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
+
+PREHOOK: query: select name from emps_parquet_n3 group by name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select name from emps_parquet_n3 group by name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+Bill
+Eric
+Sebastian
+Theodore
+PREHOOK: query: insert into emps_parquet_n3 values (400, 10, 'Bill', 50000, 500)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@emps_parquet_n3
+POSTHOOK: query: insert into emps_parquet_n3 values (400, 10, 'Bill', 50000, 500)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@emps_parquet_n3
+POSTHOOK: Lineage: emps_parquet_n3.commission SCRIPT []
+POSTHOOK: Lineage: emps_parquet_n3.deptno SCRIPT []
+POSTHOOK: Lineage: emps_parquet_n3.empid SCRIPT []
+POSTHOOK: Lineage: emps_parquet_n3.name SCRIPT []
+POSTHOOK: Lineage: emps_parquet_n3.salary SCRIPT []
+PREHOOK: query: explain
+alter materialized view mv1_parquet_n2 rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: explain
+alter materialized view mv1_parquet_n2 rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+POSTHOOK: Output: default@mv1_parquet_n2
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-4 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 6 <- Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 4 <- Union 3 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: emps_parquet_n3
+                  filterExpr: (ROW__ID.writeid > 3L) (type: boolean)
+                  Statistics: Num rows: 6 Data size: 588 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (ROW__ID.writeid > 3L) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: empid (type: int), name (type: varchar(256)), salary (type: float)
+                      outputColumnNames: empid, name, salary
+                      Statistics: Num rows: 2 Data size: 196 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count(), sum(empid)
+                        keys: name (type: varchar(256)), salary (type: float)
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3
+                        Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: varchar(256)), _col1 (type: float)
+                          null sort order: zz
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: varchar(256)), _col1 (type: float)
+                          Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col2 (type: bigint), _col3 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: default.mv1_parquet_n2
+                  Statistics: Num rows: 4 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: name (type: varchar(256)), salary (type: float), c (type: bigint), s (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 4 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(_col2), sum(_col3)
+                      keys: _col0 (type: varchar(256)), _col1 (type: float)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 4 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: varchar(256)), _col1 (type: float)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: varchar(256)), _col1 (type: float)
+                        Statistics: Num rows: 4 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: bigint), _col3 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), sum(VALUE._col1)
+                keys: KEY._col0 (type: varchar(256)), KEY._col1 (type: float)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 2 Data size: 220 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: sum(_col2), sum(_col3)
+                  keys: _col0 (type: varchar(256)), _col1 (type: float)
+                  minReductionHashAggr: 0.4
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 4 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: varchar(256)), _col1 (type: float)
+                    null sort order: zz
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: varchar(256)), _col1 (type: float)
+                    Statistics: Num rows: 4 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col2 (type: bigint), _col3 (type: bigint)
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), sum(VALUE._col1)
+                keys: KEY._col0 (type: varchar(256)), KEY._col1 (type: float)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 4 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: varchar(256)), _col1 (type: float), COALESCE(_col2,0L) (type: bigint), _col3 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 4 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 4 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+                        serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+                        name: default.mv1_parquet_n2
+                    Write Type: INSERT
+                  Select Operator
+                    expressions: _col0 (type: varchar(256)), _col1 (type: float), _col2 (type: bigint), _col3 (type: bigint)
+                    outputColumnNames: name, salary, c, s
+                    Statistics: Num rows: 4 Data size: 440 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: max(length(name)), avg(COALESCE(length(name),0)), count(1), count(name), compute_bit_vector_hll(name), min(salary), max(salary), count(salary), compute_bit_vector_hll(salary), min(c), max(c), count(c), compute_bit_vector_hll(c), min(s), max(s), count(s), compute_bit_vector_hll(s)
+                      minReductionHashAggr: 0.75
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
+                      Statistics: Num rows: 1 Data size: 736 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 736 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: float), _col6 (type: float), _col7 (type: bigint), _col8 (type: binary), _col9 (type: bigint), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: binary), _col13 (type: bigint), _col14 (type: bigint), _col15 (type: bigint), _col16 (type: binary)
+        Reducer 5 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
+                Statistics: Num rows: 1 Data size: 668 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col5) (type: double), UDFToDouble(_col6) (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'LONG' (type: string), _col9 (type: bigint), _col10 (type: bigint), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary), 'LONG' (type: string), _col13 (type: bigint), _col14 (type: bigint), (_col2 - _col15) (type: bigint), COALESCE(ndv_compute_bit_vector(_col16),0) (type: bigint), _col16 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23
+                  Statistics: Num rows: 1 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Union 3 
+            Vertex: Union 3
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+              output format: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+              name: default.mv1_parquet_n2
+          Write Type: INSERT
+          micromanaged table: true
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: name, salary, c, s
+          Column Types: varchar(256), float, bigint, bigint
+          Table: default.mv1_parquet_n2
+
+  Stage: Stage-4
+    Materialized View Update
+      name: default.mv1_parquet_n2
+      update creation metadata: true
+
+PREHOOK: query: alter materialized view mv1_parquet_n2 rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: alter materialized view mv1_parquet_n2 rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+POSTHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: Lineage: mv1_parquet_n2.c EXPRESSION [(emps_parquet_n3)emps_parquet_n3.null, (mv1_parquet_n2)default.mv1_parquet_n2.FieldSchema(name:c, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv1_parquet_n2.name EXPRESSION [(emps_parquet_n3)emps_parquet_n3.FieldSchema(name:name, type:varchar(256), comment:null), (mv1_parquet_n2)default.mv1_parquet_n2.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_parquet_n2.s EXPRESSION [(emps_parquet_n3)emps_parquet_n3.FieldSchema(name:empid, type:int, comment:null), (mv1_parquet_n2)default.mv1_parquet_n2.FieldSchema(name:s, type:bigint, comment:null), ]
+POSTHOOK: Lineage: mv1_parquet_n2.salary EXPRESSION [(emps_parquet_n3)emps_parquet_n3.FieldSchema(name:salary, type:float, comment:null), (mv1_parquet_n2)default.mv1_parquet_n2.FieldSchema(name:salary, type:float, comment:null), ]
+PREHOOK: query: explain cbo
+select name from emps_parquet_n3 group by name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select name from emps_parquet_n3 group by name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0}])
+  HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
+
+PREHOOK: query: select name from emps_parquet_n3 group by name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps_parquet_n3
+PREHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select name from emps_parquet_n3 group by name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps_parquet_n3
+POSTHOOK: Input: default@mv1_parquet_n2
+#### A masked pattern was here ####
+Bill
+Eric
+Sebastian
+Theodore
+PREHOOK: query: drop materialized view mv1_parquet_n2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1_parquet_n2
+PREHOOK: Output: default@mv1_parquet_n2
+POSTHOOK: query: drop materialized view mv1_parquet_n2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1_parquet_n2
+POSTHOOK: Output: default@mv1_parquet_n2

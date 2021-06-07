@@ -178,9 +178,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     if (!session.stopUsing()) return true; // The session will be restarted and return to us.
     boolean canPutBack = putSessionBack(session, true);
     if (canPutBack) return true;
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Closing an unneeded returned session " + session);
-    }
+    LOG.debug("Closing an unneeded returned session {}", session);
 
     if (isAsync) return false; // The caller is responsible for destroying the session.
     try {
@@ -265,10 +263,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
       }
       newSession.open();
       if (!putSessionBack(newSession, false)) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Closing an unneeded session " + newSession
-              + "; trying to replace " + oldSession);
-        }
+        LOG.debug("Closing an unneeded session {}; trying to replace {}", newSession, oldSession);
         try {
           newSession.close(false);
         } catch (Exception ex) {

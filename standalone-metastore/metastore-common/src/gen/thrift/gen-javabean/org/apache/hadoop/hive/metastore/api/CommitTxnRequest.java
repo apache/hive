@@ -17,6 +17,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField REPL_LAST_ID_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("replLastIdInfo", org.apache.thrift.protocol.TType.STRUCT, (short)4);
   private static final org.apache.thrift.protocol.TField KEY_VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("keyValue", org.apache.thrift.protocol.TType.STRUCT, (short)5);
   private static final org.apache.thrift.protocol.TField EXCL_WRITE_ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("exclWriteEnabled", org.apache.thrift.protocol.TType.BOOL, (short)6);
+  private static final org.apache.thrift.protocol.TField TXN_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("txn_type", org.apache.thrift.protocol.TType.I32, (short)7);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new CommitTxnRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new CommitTxnRequestTupleSchemeFactory();
@@ -27,6 +28,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable ReplLastIdInfo replLastIdInfo; // optional
   private @org.apache.thrift.annotation.Nullable CommitTxnKeyValue keyValue; // optional
   private boolean exclWriteEnabled; // optional
+  private @org.apache.thrift.annotation.Nullable TxnType txn_type; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -35,7 +37,12 @@ package org.apache.hadoop.hive.metastore.api;
     WRITE_EVENT_INFOS((short)3, "writeEventInfos"),
     REPL_LAST_ID_INFO((short)4, "replLastIdInfo"),
     KEY_VALUE((short)5, "keyValue"),
-    EXCL_WRITE_ENABLED((short)6, "exclWriteEnabled");
+    EXCL_WRITE_ENABLED((short)6, "exclWriteEnabled"),
+    /**
+     * 
+     * @see TxnType
+     */
+    TXN_TYPE((short)7, "txn_type");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -63,6 +70,8 @@ package org.apache.hadoop.hive.metastore.api;
           return KEY_VALUE;
         case 6: // EXCL_WRITE_ENABLED
           return EXCL_WRITE_ENABLED;
+        case 7: // TXN_TYPE
+          return TXN_TYPE;
         default:
           return null;
       }
@@ -107,7 +116,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __TXNID_ISSET_ID = 0;
   private static final int __EXCLWRITEENABLED_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.REPL_POLICY,_Fields.WRITE_EVENT_INFOS,_Fields.REPL_LAST_ID_INFO,_Fields.KEY_VALUE,_Fields.EXCL_WRITE_ENABLED};
+  private static final _Fields optionals[] = {_Fields.REPL_POLICY,_Fields.WRITE_EVENT_INFOS,_Fields.REPL_LAST_ID_INFO,_Fields.KEY_VALUE,_Fields.EXCL_WRITE_ENABLED,_Fields.TXN_TYPE};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -124,6 +133,8 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, CommitTxnKeyValue.class)));
     tmpMap.put(_Fields.EXCL_WRITE_ENABLED, new org.apache.thrift.meta_data.FieldMetaData("exclWriteEnabled", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.TXN_TYPE, new org.apache.thrift.meta_data.FieldMetaData("txn_type", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, TxnType.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CommitTxnRequest.class, metaDataMap);
   }
@@ -164,6 +175,9 @@ package org.apache.hadoop.hive.metastore.api;
       this.keyValue = new CommitTxnKeyValue(other.keyValue);
     }
     this.exclWriteEnabled = other.exclWriteEnabled;
+    if (other.isSetTxn_type()) {
+      this.txn_type = other.txn_type;
+    }
   }
 
   public CommitTxnRequest deepCopy() {
@@ -180,6 +194,7 @@ package org.apache.hadoop.hive.metastore.api;
     this.keyValue = null;
     this.exclWriteEnabled = true;
 
+    this.txn_type = null;
   }
 
   public long getTxnid() {
@@ -338,6 +353,38 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __EXCLWRITEENABLED_ISSET_ID, value);
   }
 
+  /**
+   * 
+   * @see TxnType
+   */
+  @org.apache.thrift.annotation.Nullable
+  public TxnType getTxn_type() {
+    return this.txn_type;
+  }
+
+  /**
+   * 
+   * @see TxnType
+   */
+  public void setTxn_type(@org.apache.thrift.annotation.Nullable TxnType txn_type) {
+    this.txn_type = txn_type;
+  }
+
+  public void unsetTxn_type() {
+    this.txn_type = null;
+  }
+
+  /** Returns true if field txn_type is set (has been assigned a value) and false otherwise */
+  public boolean isSetTxn_type() {
+    return this.txn_type != null;
+  }
+
+  public void setTxn_typeIsSet(boolean value) {
+    if (!value) {
+      this.txn_type = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case TXNID:
@@ -388,6 +435,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case TXN_TYPE:
+      if (value == null) {
+        unsetTxn_type();
+      } else {
+        setTxn_type((TxnType)value);
+      }
+      break;
+
     }
   }
 
@@ -412,6 +467,9 @@ package org.apache.hadoop.hive.metastore.api;
     case EXCL_WRITE_ENABLED:
       return isExclWriteEnabled();
 
+    case TXN_TYPE:
+      return getTxn_type();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -435,6 +493,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetKeyValue();
     case EXCL_WRITE_ENABLED:
       return isSetExclWriteEnabled();
+    case TXN_TYPE:
+      return isSetTxn_type();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -508,6 +568,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_txn_type = true && this.isSetTxn_type();
+    boolean that_present_txn_type = true && that.isSetTxn_type();
+    if (this_present_txn_type || that_present_txn_type) {
+      if (!(this_present_txn_type && that_present_txn_type))
+        return false;
+      if (!this.txn_type.equals(that.txn_type))
+        return false;
+    }
+
     return true;
   }
 
@@ -536,6 +605,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetExclWriteEnabled()) ? 131071 : 524287);
     if (isSetExclWriteEnabled())
       hashCode = hashCode * 8191 + ((exclWriteEnabled) ? 131071 : 524287);
+
+    hashCode = hashCode * 8191 + ((isSetTxn_type()) ? 131071 : 524287);
+    if (isSetTxn_type())
+      hashCode = hashCode * 8191 + txn_type.getValue();
 
     return hashCode;
   }
@@ -608,6 +681,16 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.valueOf(isSetTxn_type()).compareTo(other.isSetTxn_type());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTxn_type()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.txn_type, other.txn_type);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -676,6 +759,16 @@ package org.apache.hadoop.hive.metastore.api;
       if (!first) sb.append(", ");
       sb.append("exclWriteEnabled:");
       sb.append(this.exclWriteEnabled);
+      first = false;
+    }
+    if (isSetTxn_type()) {
+      if (!first) sb.append(", ");
+      sb.append("txn_type:");
+      if (this.txn_type == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.txn_type);
+      }
       first = false;
     }
     sb.append(")");
@@ -752,14 +845,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 3: // WRITE_EVENT_INFOS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list714 = iprot.readListBegin();
-                struct.writeEventInfos = new java.util.ArrayList<WriteEventInfo>(_list714.size);
-                @org.apache.thrift.annotation.Nullable WriteEventInfo _elem715;
-                for (int _i716 = 0; _i716 < _list714.size; ++_i716)
+                org.apache.thrift.protocol.TList _list724 = iprot.readListBegin();
+                struct.writeEventInfos = new java.util.ArrayList<WriteEventInfo>(_list724.size);
+                @org.apache.thrift.annotation.Nullable WriteEventInfo _elem725;
+                for (int _i726 = 0; _i726 < _list724.size; ++_i726)
                 {
-                  _elem715 = new WriteEventInfo();
-                  _elem715.read(iprot);
-                  struct.writeEventInfos.add(_elem715);
+                  _elem725 = new WriteEventInfo();
+                  _elem725.read(iprot);
+                  struct.writeEventInfos.add(_elem725);
                 }
                 iprot.readListEnd();
               }
@@ -794,6 +887,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 7: // TXN_TYPE
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.txn_type = org.apache.hadoop.hive.metastore.api.TxnType.findByValue(iprot.readI32());
+              struct.setTxn_typeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -822,9 +923,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(WRITE_EVENT_INFOS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.writeEventInfos.size()));
-            for (WriteEventInfo _iter717 : struct.writeEventInfos)
+            for (WriteEventInfo _iter727 : struct.writeEventInfos)
             {
-              _iter717.write(oprot);
+              _iter727.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -849,6 +950,13 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(EXCL_WRITE_ENABLED_FIELD_DESC);
         oprot.writeBool(struct.exclWriteEnabled);
         oprot.writeFieldEnd();
+      }
+      if (struct.txn_type != null) {
+        if (struct.isSetTxn_type()) {
+          oprot.writeFieldBegin(TXN_TYPE_FIELD_DESC);
+          oprot.writeI32(struct.txn_type.getValue());
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -884,16 +992,19 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetExclWriteEnabled()) {
         optionals.set(4);
       }
-      oprot.writeBitSet(optionals, 5);
+      if (struct.isSetTxn_type()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetReplPolicy()) {
         oprot.writeString(struct.replPolicy);
       }
       if (struct.isSetWriteEventInfos()) {
         {
           oprot.writeI32(struct.writeEventInfos.size());
-          for (WriteEventInfo _iter718 : struct.writeEventInfos)
+          for (WriteEventInfo _iter728 : struct.writeEventInfos)
           {
-            _iter718.write(oprot);
+            _iter728.write(oprot);
           }
         }
       }
@@ -906,6 +1017,9 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetExclWriteEnabled()) {
         oprot.writeBool(struct.exclWriteEnabled);
       }
+      if (struct.isSetTxn_type()) {
+        oprot.writeI32(struct.txn_type.getValue());
+      }
     }
 
     @Override
@@ -913,21 +1027,21 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       struct.txnid = iprot.readI64();
       struct.setTxnidIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(5);
+      java.util.BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
         struct.replPolicy = iprot.readString();
         struct.setReplPolicyIsSet(true);
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list719 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.writeEventInfos = new java.util.ArrayList<WriteEventInfo>(_list719.size);
-          @org.apache.thrift.annotation.Nullable WriteEventInfo _elem720;
-          for (int _i721 = 0; _i721 < _list719.size; ++_i721)
+          org.apache.thrift.protocol.TList _list729 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.writeEventInfos = new java.util.ArrayList<WriteEventInfo>(_list729.size);
+          @org.apache.thrift.annotation.Nullable WriteEventInfo _elem730;
+          for (int _i731 = 0; _i731 < _list729.size; ++_i731)
           {
-            _elem720 = new WriteEventInfo();
-            _elem720.read(iprot);
-            struct.writeEventInfos.add(_elem720);
+            _elem730 = new WriteEventInfo();
+            _elem730.read(iprot);
+            struct.writeEventInfos.add(_elem730);
           }
         }
         struct.setWriteEventInfosIsSet(true);
@@ -945,6 +1059,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(4)) {
         struct.exclWriteEnabled = iprot.readBool();
         struct.setExclWriteEnabledIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.txn_type = org.apache.hadoop.hive.metastore.api.TxnType.findByValue(iprot.readI32());
+        struct.setTxn_typeIsSet(true);
       }
     }
   }

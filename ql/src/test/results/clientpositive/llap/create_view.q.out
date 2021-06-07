@@ -1636,6 +1636,45 @@ POSTHOOK: query: show create table view18
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@view18
 CREATE VIEW `view18` AS select "should replace"
+PREHOOK: query: DROP VIEW IF EXISTS view19
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW IF EXISTS view19
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: create view view19 partitioned on (key) as select value, key from src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view19
+POSTHOOK: query: create view view19 partitioned on (key) as select value, key from src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view19
+POSTHOOK: Lineage: view19.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show create table view19
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@view19
+POSTHOOK: query: show create table view19
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@view19
+CREATE VIEW `view19` PARTITIONED ON (`key`) AS select `src`.`value`, `src`.`key` from `default`.`src`
+PREHOOK: query: create or replace view view19 partitioned on (key) as select value, key from src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view19
+POSTHOOK: query: create or replace view view19 partitioned on (key) as select value, key from src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view19
+PREHOOK: query: show create table view19
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@view19
+POSTHOOK: query: show create table view19
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@view19
+CREATE VIEW `view19` PARTITIONED ON (`key`) AS select `src`.`value`, `src`.`key` from `default`.`src`
 PREHOOK: query: DROP VIEW view1
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@view1
@@ -1780,6 +1819,14 @@ POSTHOOK: query: DROP VIEW view18
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@view18
 POSTHOOK: Output: default@view18
+PREHOOK: query: DROP VIEW view19
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@view19
+PREHOOK: Output: default@view19
+POSTHOOK: query: DROP VIEW view19
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@view19
+POSTHOOK: Output: default@view19
 PREHOOK: query: DROP TEMPORARY FUNCTION test_translate
 PREHOOK: type: DROPFUNCTION
 PREHOOK: Output: test_translate

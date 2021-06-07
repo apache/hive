@@ -310,16 +310,6 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       rproc.init(mrReporter, inputs, outputs);
       rproc.run();
 
-      // commit the output tasks
-      for (LogicalOutput output : outputs.values()) {
-        if (output instanceof MROutput) {
-          MROutput mrOutput = (MROutput) output;
-          if (mrOutput.isCommitRequired()) {
-            mrOutput.commit();
-          }
-        }
-      }
-
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
     } catch (Throwable t) {
       originalThrowable = t;
@@ -341,6 +331,23 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
           originalThrowable = t;
         }
       }
+
+      // commit the output tasks
+      try {
+        for (LogicalOutput output : outputs.values()) {
+          if (output instanceof MROutput) {
+            MROutput mrOutput = (MROutput) output;
+            if (mrOutput.isCommitRequired()) {
+              mrOutput.commit();
+            }
+          }
+        }
+      } catch (Throwable t) {
+        if (originalThrowable == null) {
+          originalThrowable = t;
+        }
+      }
+
       if (originalThrowable != null) {
         LOG.error("Failed initializeAndRunProcessor", originalThrowable);
         // abort the output tasks

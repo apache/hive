@@ -109,9 +109,7 @@ public class PointLookupOptimizer extends Transform {
       ExprNodeDesc newPredicate = generateInClause(predicate);
       if (newPredicate != null) {
         // Replace filter in current FIL with new FIL
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Generated new predicate with IN clause: " + newPredicate);
-        }
+        LOG.debug("Generated new predicate with IN clause: {}", newPredicate);
         filterOp.getConf().setPredicate(newPredicate);
       }
 

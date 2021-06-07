@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.session.OperationLog;
+import org.apache.hadoop.hive.ql.stats.BasicStatsTask;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -82,7 +83,7 @@ public class LogDivertAppender {
     private static final Pattern executionIncludeNamePattern = Pattern.compile(Joiner.on("|").
         join(new String[]{"org.apache.hadoop.mapreduce.JobSubmitter",
           "org.apache.hadoop.mapreduce.Job", "SessionState", "ReplState", Task.class.getName(),
-          TezTask.class.getName(), Driver.class.getName(),
+          TezTask.class.getName(), Driver.class.getName(), BasicStatsTask.class.getName(),
           "org.apache.hadoop.hive.ql.exec.spark.status.SparkJobMonitor"}));
 
     /* Patterns that are included in performance logging level.

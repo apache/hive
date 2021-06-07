@@ -346,6 +346,7 @@ public class WindowingSpec {
     String name;
     boolean isStar;
     boolean isDistinct;
+    boolean respectNulls;
     ArrayList<ASTNode> args;
     WindowSpec windowSpec;
 
@@ -384,6 +385,15 @@ public class WindowingSpec {
     public void setWindowSpec(WindowSpec windowSpec) {
       this.windowSpec = windowSpec;
     }
+
+    public boolean isRespectNulls() {
+      return respectNulls;
+    }
+
+    public void setRespectNulls(boolean respectNulls) {
+      this.respectNulls = respectNulls;
+    }
+
     @Override
     public String toString() {
       StringBuilder buf = new StringBuilder();
@@ -414,6 +424,10 @@ public class WindowingSpec {
       }
 
       buf.append(")");
+
+      if (!respectNulls) {
+        buf.append(" ignore nulls ");
+      }
 
       if ( windowSpec != null )
       {

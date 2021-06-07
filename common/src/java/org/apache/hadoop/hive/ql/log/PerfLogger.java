@@ -150,9 +150,7 @@ public class PerfLogger {
   public void perfLogBegin(String callerName, String method) {
     long startTime = System.currentTimeMillis();
     startTimes.put(method, Long.valueOf(startTime));
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("<PERFLOG method=" + method + " from=" + callerName + ">");
-    }
+    LOG.debug("<PERFLOG method={} from={}>", method, callerName);
     beginMetrics(method);
   }
   /**

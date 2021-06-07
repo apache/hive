@@ -122,6 +122,7 @@ STAGE PLANS:
                               window function: GenericUDAFFirstValueEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorLongFirstValue]
                       functionInputExpressions: [col 1:date]

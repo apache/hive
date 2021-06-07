@@ -1,6 +1,4 @@
 BEGIN
-SET plhql.onerror = SETERROR;
- 
 HOST 'abcd';
 IF HOSTCODE <> 0 THEN
   PRINT 'Correct';

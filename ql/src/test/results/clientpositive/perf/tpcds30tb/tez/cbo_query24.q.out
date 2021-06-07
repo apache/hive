@@ -1,4 +1,4 @@
-Warning: Map Join MAPJOIN[331][bigTable=?] in task 'Reducer 6' is a cross product
+Warning: Map Join MAPJOIN[331][bigTable=?] in task 'Reducer 7' is a cross product
 CBO PLAN:
 HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3])
   HiveJoin(condition=[>($3, $4)], joinType=[inner], algorithm=[none], cost=[not available])

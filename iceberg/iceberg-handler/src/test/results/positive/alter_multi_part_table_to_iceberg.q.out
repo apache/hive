@@ -1,0 +1,699 @@
+PREHOOK: query: drop table if exists tbl_orc
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tbl_orc
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table tbl_orc(a int) partitioned by (b string, c string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: create external table tbl_orc(a int) partitioned by (b string, c string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_orc
+PREHOOK: query: describe formatted tbl_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: describe formatted tbl_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_orc
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	                    
+c                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table tbl_orc partition (b='one', c='Monday') values (1), (2), (3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc@b=one/c=Monday
+POSTHOOK: query: insert into table tbl_orc partition (b='one', c='Monday') values (1), (2), (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc@b=one/c=Monday
+POSTHOOK: Lineage: tbl_orc PARTITION(b=one,c=Monday).a SCRIPT []
+PREHOOK: query: insert into table tbl_orc partition (b='two', c='Tuesday') values (4), (5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc@b=two/c=Tuesday
+POSTHOOK: query: insert into table tbl_orc partition (b='two', c='Tuesday') values (4), (5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc@b=two/c=Tuesday
+POSTHOOK: Lineage: tbl_orc PARTITION(b=two,c=Tuesday).a SCRIPT []
+PREHOOK: query: insert into table tbl_orc partition (b='two', c='Friday') values (10), (11)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc@b=two/c=Friday
+POSTHOOK: query: insert into table tbl_orc partition (b='two', c='Friday') values (10), (11)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc@b=two/c=Friday
+POSTHOOK: Lineage: tbl_orc PARTITION(b=two,c=Friday).a SCRIPT []
+PREHOOK: query: insert into table tbl_orc partition (b='three', c='Wednesday') values (6), (7), (8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc@b=three/c=Wednesday
+POSTHOOK: query: insert into table tbl_orc partition (b='three', c='Wednesday') values (6), (7), (8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc@b=three/c=Wednesday
+POSTHOOK: Lineage: tbl_orc PARTITION(b=three,c=Wednesday).a SCRIPT []
+PREHOOK: query: insert into table tbl_orc partition (b='four', c='Thursday') values (9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc@b=four/c=Thursday
+POSTHOOK: query: insert into table tbl_orc partition (b='four', c='Thursday') values (9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc@b=four/c=Thursday
+POSTHOOK: Lineage: tbl_orc PARTITION(b=four,c=Thursday).a SCRIPT []
+PREHOOK: query: insert into table tbl_orc partition (b='four', c='Saturday') values (12), (13), (14)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc@b=four/c=Saturday
+POSTHOOK: query: insert into table tbl_orc partition (b='four', c='Saturday') values (12), (13), (14)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc@b=four/c=Saturday
+POSTHOOK: Lineage: tbl_orc PARTITION(b=four,c=Saturday).a SCRIPT []
+PREHOOK: query: insert into table tbl_orc partition (b='four', c='Sunday') values (15)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc@b=four/c=Sunday
+POSTHOOK: query: insert into table tbl_orc partition (b='four', c='Sunday') values (15)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc@b=four/c=Sunday
+POSTHOOK: Lineage: tbl_orc PARTITION(b=four,c=Sunday).a SCRIPT []
+PREHOOK: query: select * from tbl_orc order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Input: default@tbl_orc@b=four/c=Saturday
+PREHOOK: Input: default@tbl_orc@b=four/c=Sunday
+PREHOOK: Input: default@tbl_orc@b=four/c=Thursday
+PREHOOK: Input: default@tbl_orc@b=one/c=Monday
+PREHOOK: Input: default@tbl_orc@b=three/c=Wednesday
+PREHOOK: Input: default@tbl_orc@b=two/c=Friday
+PREHOOK: Input: default@tbl_orc@b=two/c=Tuesday
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_orc order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Input: default@tbl_orc@b=four/c=Saturday
+POSTHOOK: Input: default@tbl_orc@b=four/c=Sunday
+POSTHOOK: Input: default@tbl_orc@b=four/c=Thursday
+POSTHOOK: Input: default@tbl_orc@b=one/c=Monday
+POSTHOOK: Input: default@tbl_orc@b=three/c=Wednesday
+POSTHOOK: Input: default@tbl_orc@b=two/c=Friday
+POSTHOOK: Input: default@tbl_orc@b=two/c=Tuesday
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one	Monday
+2	one	Monday
+3	one	Monday
+4	two	Tuesday
+5	two	Tuesday
+6	three	Wednesday
+7	three	Wednesday
+8	three	Wednesday
+9	four	Thursday
+10	two	Friday
+11	two	Friday
+12	four	Saturday
+13	four	Saturday
+14	four	Saturday
+15	four	Sunday
+PREHOOK: query: alter table tbl_orc set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: alter table tbl_orc set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Output: default@tbl_orc
+PREHOOK: query: describe formatted tbl_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: describe formatted tbl_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_orc
+# col_name            	data_type           	comment             
+a                   	int                 	from deserializer   
+b                   	string              	from deserializer   
+c                   	string              	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	engine.hive.enabled 	true                
+	external.table.purge	TRUE                
+#### A masked pattern was here ####
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	7                   
+	numRows             	15                  
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	1329                
+#### A masked pattern was here ####
+	write.format.default	orc                 
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	0                   	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select * from tbl_orc order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_orc order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one	Monday
+2	one	Monday
+3	one	Monday
+4	two	Tuesday
+5	two	Tuesday
+6	three	Wednesday
+7	three	Wednesday
+8	three	Wednesday
+9	four	Thursday
+10	two	Friday
+11	two	Friday
+12	four	Saturday
+13	four	Saturday
+14	four	Saturday
+15	four	Sunday
+PREHOOK: query: drop table tbl_orc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: drop table tbl_orc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Output: default@tbl_orc
+PREHOOK: query: drop table if exists tbl_parquet
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tbl_parquet
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table tbl_parquet(a int) partitioned by (b string, c string) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_parquet
+POSTHOOK: query: create external table tbl_parquet(a int) partitioned by (b string, c string) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_parquet
+PREHOOK: query: describe formatted tbl_parquet
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_parquet
+POSTHOOK: query: describe formatted tbl_parquet
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_parquet
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	                    
+c                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table tbl_parquet partition (b='one', c='Monday') values (1), (2), (3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet@b=one/c=Monday
+POSTHOOK: query: insert into table tbl_parquet partition (b='one', c='Monday') values (1), (2), (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet@b=one/c=Monday
+POSTHOOK: Lineage: tbl_parquet PARTITION(b=one,c=Monday).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet partition (b='two', c='Tuesday') values (4), (5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet@b=two/c=Tuesday
+POSTHOOK: query: insert into table tbl_parquet partition (b='two', c='Tuesday') values (4), (5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet@b=two/c=Tuesday
+POSTHOOK: Lineage: tbl_parquet PARTITION(b=two,c=Tuesday).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet partition (b='two', c='Friday') values (10), (11)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet@b=two/c=Friday
+POSTHOOK: query: insert into table tbl_parquet partition (b='two', c='Friday') values (10), (11)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet@b=two/c=Friday
+POSTHOOK: Lineage: tbl_parquet PARTITION(b=two,c=Friday).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet partition (b='three', c='Wednesday') values (6), (7), (8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet@b=three/c=Wednesday
+POSTHOOK: query: insert into table tbl_parquet partition (b='three', c='Wednesday') values (6), (7), (8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet@b=three/c=Wednesday
+POSTHOOK: Lineage: tbl_parquet PARTITION(b=three,c=Wednesday).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet partition (b='four', c='Thursday') values (9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet@b=four/c=Thursday
+POSTHOOK: query: insert into table tbl_parquet partition (b='four', c='Thursday') values (9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet@b=four/c=Thursday
+POSTHOOK: Lineage: tbl_parquet PARTITION(b=four,c=Thursday).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet partition (b='four', c='Saturday') values (12), (13), (14)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet@b=four/c=Saturday
+POSTHOOK: query: insert into table tbl_parquet partition (b='four', c='Saturday') values (12), (13), (14)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet@b=four/c=Saturday
+POSTHOOK: Lineage: tbl_parquet PARTITION(b=four,c=Saturday).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet partition (b='four', c='Sunday') values (15)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet@b=four/c=Sunday
+POSTHOOK: query: insert into table tbl_parquet partition (b='four', c='Sunday') values (15)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet@b=four/c=Sunday
+POSTHOOK: Lineage: tbl_parquet PARTITION(b=four,c=Sunday).a SCRIPT []
+PREHOOK: query: select * from tbl_parquet order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet
+PREHOOK: Input: default@tbl_parquet@b=four/c=Saturday
+PREHOOK: Input: default@tbl_parquet@b=four/c=Sunday
+PREHOOK: Input: default@tbl_parquet@b=four/c=Thursday
+PREHOOK: Input: default@tbl_parquet@b=one/c=Monday
+PREHOOK: Input: default@tbl_parquet@b=three/c=Wednesday
+PREHOOK: Input: default@tbl_parquet@b=two/c=Friday
+PREHOOK: Input: default@tbl_parquet@b=two/c=Tuesday
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_parquet order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Input: default@tbl_parquet@b=four/c=Saturday
+POSTHOOK: Input: default@tbl_parquet@b=four/c=Sunday
+POSTHOOK: Input: default@tbl_parquet@b=four/c=Thursday
+POSTHOOK: Input: default@tbl_parquet@b=one/c=Monday
+POSTHOOK: Input: default@tbl_parquet@b=three/c=Wednesday
+POSTHOOK: Input: default@tbl_parquet@b=two/c=Friday
+POSTHOOK: Input: default@tbl_parquet@b=two/c=Tuesday
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one	Monday
+2	one	Monday
+3	one	Monday
+4	two	Tuesday
+5	two	Tuesday
+6	three	Wednesday
+7	three	Wednesday
+8	three	Wednesday
+9	four	Thursday
+10	two	Friday
+11	two	Friday
+12	four	Saturday
+13	four	Saturday
+14	four	Saturday
+15	four	Sunday
+PREHOOK: query: alter table tbl_parquet set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: default@tbl_parquet
+POSTHOOK: query: alter table tbl_parquet set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: default@tbl_parquet
+PREHOOK: query: describe formatted tbl_parquet
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_parquet
+POSTHOOK: query: describe formatted tbl_parquet
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_parquet
+# col_name            	data_type           	comment             
+a                   	int                 	from deserializer   
+b                   	string              	from deserializer   
+c                   	string              	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	engine.hive.enabled 	true                
+	external.table.purge	TRUE                
+#### A masked pattern was here ####
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	7                   
+	numRows             	15                  
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	2899                
+#### A masked pattern was here ####
+	write.format.default	parquet             
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	0                   	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select * from tbl_parquet order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_parquet order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one	Monday
+2	one	Monday
+3	one	Monday
+4	two	Tuesday
+5	two	Tuesday
+6	three	Wednesday
+7	three	Wednesday
+8	three	Wednesday
+9	four	Thursday
+10	two	Friday
+11	two	Friday
+12	four	Saturday
+13	four	Saturday
+14	four	Saturday
+15	four	Sunday
+PREHOOK: query: drop table tbl_parquet
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: default@tbl_parquet
+POSTHOOK: query: drop table tbl_parquet
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: default@tbl_parquet
+PREHOOK: query: drop table if exists tbl_avro
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tbl_avro
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table tbl_avro(a int) partitioned by (b string, c string) stored as avro
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_avro
+POSTHOOK: query: create external table tbl_avro(a int) partitioned by (b string, c string) stored as avro
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_avro
+PREHOOK: query: describe formatted tbl_avro
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_avro
+POSTHOOK: query: describe formatted tbl_avro
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_avro
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	                    
+c                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.avro.AvroSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table tbl_avro partition (b='one', c='Monday') values (1), (2), (3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro@b=one/c=Monday
+POSTHOOK: query: insert into table tbl_avro partition (b='one', c='Monday') values (1), (2), (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro@b=one/c=Monday
+POSTHOOK: Lineage: tbl_avro PARTITION(b=one,c=Monday).a SCRIPT []
+PREHOOK: query: insert into table tbl_avro partition (b='two', c='Tuesday') values (4), (5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro@b=two/c=Tuesday
+POSTHOOK: query: insert into table tbl_avro partition (b='two', c='Tuesday') values (4), (5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro@b=two/c=Tuesday
+POSTHOOK: Lineage: tbl_avro PARTITION(b=two,c=Tuesday).a SCRIPT []
+PREHOOK: query: insert into table tbl_avro partition (b='two', c='Friday') values (10), (11)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro@b=two/c=Friday
+POSTHOOK: query: insert into table tbl_avro partition (b='two', c='Friday') values (10), (11)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro@b=two/c=Friday
+POSTHOOK: Lineage: tbl_avro PARTITION(b=two,c=Friday).a SCRIPT []
+PREHOOK: query: insert into table tbl_avro partition (b='three', c='Wednesday') values (6), (7), (8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro@b=three/c=Wednesday
+POSTHOOK: query: insert into table tbl_avro partition (b='three', c='Wednesday') values (6), (7), (8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro@b=three/c=Wednesday
+POSTHOOK: Lineage: tbl_avro PARTITION(b=three,c=Wednesday).a SCRIPT []
+PREHOOK: query: insert into table tbl_avro partition (b='four', c='Thursday') values (9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro@b=four/c=Thursday
+POSTHOOK: query: insert into table tbl_avro partition (b='four', c='Thursday') values (9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro@b=four/c=Thursday
+POSTHOOK: Lineage: tbl_avro PARTITION(b=four,c=Thursday).a SCRIPT []
+PREHOOK: query: insert into table tbl_avro partition (b='four', c='Saturday') values (12), (13), (14)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro@b=four/c=Saturday
+POSTHOOK: query: insert into table tbl_avro partition (b='four', c='Saturday') values (12), (13), (14)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro@b=four/c=Saturday
+POSTHOOK: Lineage: tbl_avro PARTITION(b=four,c=Saturday).a SCRIPT []
+PREHOOK: query: insert into table tbl_avro partition (b='four', c='Sunday') values (15)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro@b=four/c=Sunday
+POSTHOOK: query: insert into table tbl_avro partition (b='four', c='Sunday') values (15)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro@b=four/c=Sunday
+POSTHOOK: Lineage: tbl_avro PARTITION(b=four,c=Sunday).a SCRIPT []
+PREHOOK: query: select * from tbl_avro order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_avro
+PREHOOK: Input: default@tbl_avro@b=four/c=Saturday
+PREHOOK: Input: default@tbl_avro@b=four/c=Sunday
+PREHOOK: Input: default@tbl_avro@b=four/c=Thursday
+PREHOOK: Input: default@tbl_avro@b=one/c=Monday
+PREHOOK: Input: default@tbl_avro@b=three/c=Wednesday
+PREHOOK: Input: default@tbl_avro@b=two/c=Friday
+PREHOOK: Input: default@tbl_avro@b=two/c=Tuesday
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_avro order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_avro
+POSTHOOK: Input: default@tbl_avro@b=four/c=Saturday
+POSTHOOK: Input: default@tbl_avro@b=four/c=Sunday
+POSTHOOK: Input: default@tbl_avro@b=four/c=Thursday
+POSTHOOK: Input: default@tbl_avro@b=one/c=Monday
+POSTHOOK: Input: default@tbl_avro@b=three/c=Wednesday
+POSTHOOK: Input: default@tbl_avro@b=two/c=Friday
+POSTHOOK: Input: default@tbl_avro@b=two/c=Tuesday
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one	Monday
+2	one	Monday
+3	one	Monday
+4	two	Tuesday
+5	two	Tuesday
+6	three	Wednesday
+7	three	Wednesday
+8	three	Wednesday
+9	four	Thursday
+10	two	Friday
+11	two	Friday
+12	four	Saturday
+13	four	Saturday
+14	four	Saturday
+15	four	Sunday
+PREHOOK: query: alter table tbl_avro set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@tbl_avro
+PREHOOK: Output: default@tbl_avro
+POSTHOOK: query: alter table tbl_avro set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@tbl_avro
+POSTHOOK: Output: default@tbl_avro
+PREHOOK: query: describe formatted tbl_avro
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_avro
+POSTHOOK: query: describe formatted tbl_avro
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_avro
+# col_name            	data_type           	comment             
+a                   	int                 	from deserializer   
+b                   	string              	from deserializer   
+c                   	string              	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	engine.hive.enabled 	true                
+	external.table.purge	TRUE                
+#### A masked pattern was here ####
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	7                   
+	numRows             	0                   
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	1591                
+#### A masked pattern was here ####
+	write.format.default	avro                
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	0                   	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select * from tbl_avro order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_avro
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_avro order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_avro
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one	Monday
+2	one	Monday
+3	one	Monday
+4	two	Tuesday
+5	two	Tuesday
+6	three	Wednesday
+7	three	Wednesday
+8	three	Wednesday
+9	four	Thursday
+10	two	Friday
+11	two	Friday
+12	four	Saturday
+13	four	Saturday
+14	four	Saturday
+15	four	Sunday
+PREHOOK: query: drop table tbl_avro
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_avro
+PREHOOK: Output: default@tbl_avro
+POSTHOOK: query: drop table tbl_avro
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_avro
+POSTHOOK: Output: default@tbl_avro

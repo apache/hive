@@ -124,17 +124,19 @@ public final class DDLUtils {
     }
     // If the table/partition exist and is older than the event, then just apply the event else noop.
     Table existingTable = db.getTable(tableName, false);
-    if ((existingTable != null) && replicationSpec.allowEventReplacementInto(existingTable.getParameters())) {
-      // Table exists and is older than the update. Now, need to ensure if update allowed on the partition.
-      if (partSpec != null) {
-        Partition existingPtn = db.getPartition(existingTable, partSpec, false);
-        return ((existingPtn != null) && replicationSpec.allowEventReplacementInto(existingPtn.getParameters()));
+    if (existingTable != null) {
+      Map<String, String> dbParams = db.getDatabase(existingTable.getDbName()).getParameters();
+      if (replicationSpec.allowEventReplacementInto(dbParams)) {
+        // Table exists and is older than the update. Now, need to ensure if update allowed on the partition.
+        if (partSpec != null) {
+          Partition existingPtn = db.getPartition(existingTable, partSpec, false);
+          return ((existingPtn != null) && replicationSpec.allowEventReplacementInto(dbParams));
+        }
+
+        // Replacement is allowed as the existing table is older than event
+        return true;
       }
-
-      // Replacement is allowed as the existing table is older than event
-      return true;
     }
-
     // The table is missing either due to drop/rename which follows the operation.
     // Or the existing table is newer than our update. So, don't allow the update.
     return false;

@@ -57,7 +57,8 @@ public abstract class ReplState {
     ATLAS_LOAD_END,
     RANGER_LOAD_START,
     RANGER_LOAD_END,
-    END
+    END,
+    DATA_COPY_END
   }
 
   public void log(LogTag tag) {

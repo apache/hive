@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.DatabaseEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem.BootstrapEventsIterator;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadEventsIter
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
@@ -41,10 +43,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Callable;
+
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_STATS_TOP_EVENTS_COUNTS;
 
 @Explain(displayName = "Replication Load Operator", explainLevels = { Explain.Level.USER,
     Explain.Level.DEFAULT,
@@ -67,6 +73,7 @@ public class ReplLoadWork implements Serializable {
   private transient IncrementalLoadTasksBuilder incrementalLoadTasksBuilder;
   private transient Task<?> rootTask;
   private Iterator<String> externalTableDataCopyItr;
+  private ReplStatsTracker replStatsTracker;
 
   /*
   these are sessionState objects that are copied over to work to allow for parallel execution.
@@ -98,8 +105,18 @@ public class ReplLoadWork implements Serializable {
 
     rootTask = null;
     if (isIncrementalDump) {
+      if (replStatsTracker == null) {
+        int numEvents = hiveConf.getIntVar(REPL_STATS_TOP_EVENTS_COUNTS);
+        if (numEvents < 0) {
+          LOG.warn("Invalid value configured for {}, Using default of {}", REPL_STATS_TOP_EVENTS_COUNTS,
+              REPL_STATS_TOP_EVENTS_COUNTS.defaultIntVal);
+          numEvents = REPL_STATS_TOP_EVENTS_COUNTS.defaultIntVal;
+        }
+        replStatsTracker = new ReplStatsTracker(numEvents);
+      }
       incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
-                  new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector);
+          new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector,
+          replStatsTracker);
 
       /*
        * If the current incremental dump also includes bootstrap for some tables, then create iterator
@@ -192,18 +209,40 @@ public class ReplLoadWork implements Serializable {
     return dumpExecutionId;
   }
 
-  public List<Task<?>> externalTableCopyTasks(TaskTracker tracker, HiveConf conf) {
+  public List<Task<?>> externalTableCopyTasks(TaskTracker tracker, HiveConf conf) throws IOException {
     if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY)) {
       return Collections.emptyList();
     }
     List<Task<?>> tasks = new ArrayList<>();
-    while (externalTableDataCopyItr.hasNext() && tracker.canAddMoreTasks()) {
-      DirCopyWork dirCopyWork = new DirCopyWork(metricCollector, (new Path(dumpDirectory).getParent()).toString());
-      dirCopyWork.loadFromString(externalTableDataCopyItr.next());
-      Task<DirCopyWork> task = TaskFactory.get(dirCopyWork, conf);
-      tasks.add(task);
-      tracker.addTask(task);
-      LOG.debug("Added task for {}", dirCopyWork);
+    Retryable retryable = Retryable.builder()
+            .withHiveConf(conf)
+            .withRetryOnException(UncheckedIOException.class).build();
+    try {
+      retryable.executeCallable((Callable<Void>) ()-> {
+        try{
+          int numEntriesToSkip = tasks == null ? 0 : tasks.size();
+          while (externalTableDataCopyItr.hasNext() && tracker.canAddMoreTasks()) {
+            if(numEntriesToSkip > 0) {
+              //skip entries added in the previous attempts of this retryable block
+              externalTableDataCopyItr.next();
+              numEntriesToSkip--;
+              continue;
+            }
+            DirCopyWork dirCopyWork = new DirCopyWork(metricCollector, (new Path(dumpDirectory).getParent()).toString());
+            dirCopyWork.loadFromString(externalTableDataCopyItr.next());
+            Task<DirCopyWork> task = TaskFactory.get(dirCopyWork, conf);
+            tasks.add(task);
+            tracker.addTask(task);
+            LOG.debug("Added task for {}", dirCopyWork);
+          }
+        } catch (UncheckedIOException e) {
+          LOG.error("Reading entry for data copy failed for external tables, attempting retry.", e);
+          throw e;
+        }
+        return null;
+      });
+    } catch (Exception e) {
+      throw new IOException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()));
     }
     LOG.info("Added total {} tasks for external table locations copy.", tasks.size());
     return tasks;

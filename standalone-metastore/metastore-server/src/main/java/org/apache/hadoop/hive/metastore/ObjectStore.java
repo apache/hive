@@ -90,6 +90,8 @@ import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
+import org.apache.hadoop.hive.metastore.api.DatabaseType;
+import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -186,6 +188,7 @@ import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
 import org.apache.hadoop.hive.metastore.model.MCreationMetadata;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
+import org.apache.hadoop.hive.metastore.model.MDataConnector;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MDelegationToken;
 import org.apache.hadoop.hive.metastore.model.MFieldSchema;
@@ -688,7 +691,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> getCatalogs() throws MetaException {
+  public List<String> getCatalogs() {
     LOG.debug("Fetching all catalog names");
     boolean commited = false;
     List<String> catalogs = null;
@@ -780,6 +783,13 @@ public class ObjectStore implements RawStore, Configurable {
     mdb.setDescription(db.getDescription());
     mdb.setParameters(db.getParameters());
     mdb.setOwnerName(db.getOwnerName());
+    mdb.setDataConnectorName(db.getConnector_name());
+    mdb.setRemoteDatabaseName(db.getRemote_dbname());
+    if (db.getType() == null) {
+      mdb.setType(DatabaseType.NATIVE.name());
+    } else {
+      mdb.setType(db.getType().name());
+    }
     PrincipalType ownerType = db.getOwnerType();
     mdb.setOwnerType((null == ownerType ? PrincipalType.USER.name() : ownerType.name()));
     mdb.setCreateTime(db.getCreateTime());
@@ -870,13 +880,20 @@ public class ObjectStore implements RawStore, Configurable {
     Database db = new Database();
     db.setName(mdb.getName());
     db.setDescription(mdb.getDescription());
-    db.setLocationUri(mdb.getLocationUri());
-    db.setManagedLocationUri(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getManagedLocationUri(), null));
     db.setParameters(convertMap(mdb.getParameters()));
     db.setOwnerName(mdb.getOwnerName());
     String type = org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getOwnerType(), null);
     PrincipalType principalType = (type == null) ? null : PrincipalType.valueOf(type);
     db.setOwnerType(principalType);
+    if (mdb.getType().equalsIgnoreCase(DatabaseType.NATIVE.name())) {
+      db.setType(DatabaseType.NATIVE);
+      db.setLocationUri(mdb.getLocationUri());
+      db.setManagedLocationUri(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getManagedLocationUri(), null));
+    } else {
+      db.setType(DatabaseType.REMOTE);
+      db.setConnector_name(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getDataConnectorName(), null));
+      db.setRemote_dbname(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getRemoteDatabaseName(), null));
+    }
     db.setCatalogName(catName);
     db.setCreateTime(mdb.getCreateTime());
     return db;
@@ -1000,6 +1017,203 @@ public class ObjectStore implements RawStore, Configurable {
     Collections.sort(databases);
     return databases;
   }
+
+  @Override
+  public void createDataConnector(DataConnector connector) throws InvalidObjectException, MetaException {
+    boolean commited = false;
+    MDataConnector mDataConnector = new MDataConnector();
+    mDataConnector.setName(connector.getName().toLowerCase());
+    mDataConnector.setType(connector.getType());
+    mDataConnector.setUrl(connector.getUrl());
+    mDataConnector.setDescription(connector.getDescription());
+    mDataConnector.setParameters(connector.getParameters());
+    mDataConnector.setOwnerName(connector.getOwnerName());
+    PrincipalType ownerType = connector.getOwnerType();
+    mDataConnector.setOwnerType((null == ownerType ? PrincipalType.USER.name() : ownerType.name()));
+    mDataConnector.setCreateTime(connector.getCreateTime());
+    try {
+      openTransaction();
+      pm.makePersistent(mDataConnector);
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @SuppressWarnings("nls")
+  private MDataConnector getMDataConnector(String name) throws NoSuchObjectException {
+    MDataConnector mdc = null;
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      name = normalizeIdentifier(name);
+      query = pm.newQuery(MDataConnector.class, "name == dcname");
+      query.declareParameters("java.lang.String dcname");
+      query.setUnique(true);
+      mdc = (MDataConnector) query.execute(name);
+      pm.retrieve(mdc);
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    if (mdc == null) {
+      throw new NoSuchObjectException("There is no dataconnector " + name);
+    }
+    return mdc;
+  }
+
+  @Override
+  public DataConnector getDataConnector(String name) throws NoSuchObjectException {
+    MDataConnector mdc = null;
+    boolean commited = false;
+    try {
+      openTransaction();
+      mdc = getMDataConnector(name);
+      commited = commitTransaction();
+    } catch (NoSuchObjectException no) {
+      throw new NoSuchObjectException("Dataconnector named " + name + " does not exist:" + no.getCause());
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+    DataConnector connector = new DataConnector();
+    connector.setName(mdc.getName());
+    connector.setType(mdc.getType());
+    connector.setUrl(mdc.getUrl());
+    connector.setDescription(mdc.getDescription());
+    connector.setParameters(convertMap(mdc.getParameters()));
+    connector.setOwnerName(mdc.getOwnerName());
+    String type = org.apache.commons.lang3.StringUtils.defaultIfBlank(mdc.getOwnerType(), null);
+    PrincipalType principalType = (type == null) ? null : PrincipalType.valueOf(type);
+    connector.setOwnerType(principalType);
+    connector.setCreateTime(mdc.getCreateTime());
+    return connector;
+  }
+
+  @Override
+  public List<String> getAllDataConnectorNames() throws MetaException {
+    boolean commited = false;
+    List<String> connectors = null;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MDataConnector.class);
+      query.setResult("name");
+      query.setOrdering("name ascending");
+      Collection<String> names = (Collection<String>) query.executeWithArray();
+      connectors = new ArrayList<>(names);
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    return connectors;
+  }
+
+  /**
+   * Alter the dataconnector object in metastore. Currently only the parameters
+   * of the dataconnector or the owner can be changed.
+   * @param dcName the dataconnector name
+   * @param connector the Hive DataConnector object
+   */
+  @Override
+  public boolean alterDataConnector(String dcName, DataConnector connector)
+      throws MetaException, NoSuchObjectException {
+
+    MDataConnector mdc = null;
+    boolean committed = false;
+    try {
+      mdc = getMDataConnector(dcName);
+      mdc.setUrl(connector.getUrl());
+      mdc.setParameters(connector.getParameters());
+      mdc.setOwnerName(connector.getOwnerName());
+      if (connector.getOwnerType() != null) {
+        mdc.setOwnerType(connector.getOwnerType().name());
+      }
+      if (org.apache.commons.lang3.StringUtils.isNotBlank(connector.getDescription())) {
+        mdc.setDescription(connector.getDescription());
+      }
+      openTransaction();
+      pm.makePersistent(mdc);
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @Override
+  public boolean dropDataConnector(String dcname)
+      throws NoSuchObjectException, MetaException {
+    boolean success = false;
+    LOG.info("Dropping dataconnector {} ", dcname);
+    dcname = normalizeIdentifier(dcname);
+    try {
+      openTransaction();
+
+      // then drop the dataconnector
+      MDataConnector mdb = getMDataConnector(dcname);
+      pm.retrieve(mdb);
+      pm.deletePersistent(mdb);
+      success = commitTransaction();
+    } catch (Exception e) {
+      throw new MetaException(e.getMessage() + " " + org.apache.hadoop.hive.metastore.utils.StringUtils.stringifyException(e));
+    } finally {
+      rollbackAndCleanup(success, null);
+    }
+    return success;
+  }
+
+  /*
+  public DataConnector getDataConnectorInternal(String name)
+      throws MetaException, NoSuchObjectException {
+    return new GetDcHelper(name, true, true) {
+      @Override
+      protected DataConnector getSqlResult(GetHelper<DataConnector> ctx) throws MetaException {
+        try {
+        return getJDODataConnector(name);
+      }
+
+      @Override
+      protected DataConnector getJdoResult(GetHelper<DataConnector> ctx) throws MetaException, NoSuchObjectException {
+        return getJDODataConnector(name);
+      }
+    }.run(false);
+  }
+
+  private DataConnector getDataConnectorInternal(String name) throws NoSuchObjectException {
+    MDataConnector mdc = null;
+    boolean commited = false;
+    try {
+      openTransaction();
+      mdc = getMDataConnector(name);
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+    DataConnector connector = new DataConnector();
+    connector.setName(mdc.getName());
+    connector.setType(mdc.getType());
+    connector.setUrl(mdc.getUrl());
+    connector.setDescription(mdc.getDescription());
+    connector.setParameters(convertMap(mdc.getParameters()));
+    connector.setOwnerName(mdc.getOwnerName());
+    String type = org.apache.commons.lang3.StringUtils.defaultIfBlank(mdc.getOwnerType(), null);
+    PrincipalType principalType = (type == null) ? null : PrincipalType.valueOf(type);
+    connector.setOwnerType(principalType);
+    connector.setCreateTime(mdc.getCreateTime());
+    return connector;
+  }
+   */
+
 
   private MType getMType(Type type) {
     List<MFieldSchema> fields = new ArrayList<>();
@@ -1417,6 +1631,12 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     return tbl;
+  }
+
+  @Override
+  public Table getTable(String catalogName, String dbName, String tableName, String writeIdList, long tableId)
+      throws MetaException {
+    return getTable( catalogName, dbName, tableName, writeIdList);
   }
 
   @Override
@@ -1847,7 +2067,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<Table> getTableObjectsByName(String catName, String db, List<String> tbl_names,
-      GetProjectionsSpec projectionSpec) throws MetaException, UnknownDBException {
+      GetProjectionsSpec projectionSpec, String tablePattern) throws MetaException, UnknownDBException {
     List<Table> tables = new ArrayList<>();
     boolean committed = false;
     Query query = null;
@@ -1858,15 +2078,25 @@ public class ObjectStore implements RawStore, Configurable {
       db = normalizeIdentifier(db);
       catName = normalizeIdentifier(catName);
 
-      List<String> lowered_tbl_names = new ArrayList<>(tbl_names.size());
-      for (String t : tbl_names) {
-        lowered_tbl_names.add(normalizeIdentifier(t));
+      List<String> lowered_tbl_names = new ArrayList<>();
+      if(tbl_names != null) {
+        lowered_tbl_names = new ArrayList<>(tbl_names.size());
+        for (String t : tbl_names) {
+          lowered_tbl_names.add(normalizeIdentifier(t));
+        }
       }
 
-      query = pm.newQuery(MTable.class);
-      query.setFilter("database.name == db && database.catalogName == cat && tbl_names.contains(tableName)");
-      query.declareParameters("java.lang.String db, java.lang.String cat, java.util.Collection tbl_names");
-
+      StringBuilder filterBuilder = new StringBuilder();
+      List<String> parameterVals = new ArrayList<>();
+      appendSimpleCondition(filterBuilder, "database.name", new String[] {db}, parameterVals);
+      appendSimpleCondition(filterBuilder, "database.catalogName", new String[] {catName}, parameterVals);
+      if(tbl_names != null){
+        appendSimpleCondition(filterBuilder, "tableName", lowered_tbl_names.toArray(new String[0]), parameterVals);
+      }
+      if(tablePattern != null){
+        appendPatternCondition(filterBuilder, "tableName", tablePattern, parameterVals);
+      }
+      query = pm.newQuery(MTable.class, filterBuilder.toString()) ;
       List<String> projectionFields = null;
 
       // If a projection specification has been set, validate it and translate it to JDO columns.
@@ -1882,11 +2112,11 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       if (projectionFields == null) {
-        mtables = (List<MTable>) query.execute(db, catName, lowered_tbl_names);
+        mtables = (List<MTable>) query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
       } else {
         if (projectionFields.size() > 1) {
           // Execute the query to fetch the partial results.
-          List<Object[]> results = (List<Object[]>) query.execute(db, catName, lowered_tbl_names);
+          List<Object[]> results = (List<Object[]>) query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
           // Declare the tables array to return the list of tables
           mtables = new ArrayList<>(results.size());
           // Iterate through each row of the result and create the MTable object.
@@ -1901,7 +2131,7 @@ public class ObjectStore implements RawStore, Configurable {
           }
         } else if (projectionFields.size() == 1) {
           // Execute the query to fetch the partial results.
-          List<Object> results = (List<Object>) query.execute(db, catName, lowered_tbl_names);
+          List<Object[]> results = (List<Object[]>) query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
           // Iterate through each row of the result and create the MTable object.
           mtables = new ArrayList<>(results.size());
           for (Object row : results) {
@@ -1948,7 +2178,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<Table> getTableObjectsByName(String catName, String db, List<String> tbl_names)
           throws MetaException, UnknownDBException {
-    return getTableObjectsByName(catName, db, tbl_names, null);
+    return getTableObjectsByName(catName, db, tbl_names, null, null);
   }
 
   /** Makes shallow copy of a list to avoid DataNucleus mucking with our objects. */
@@ -4865,14 +5095,18 @@ public class ObjectStore implements RawStore, Configurable {
       Iterator<List<String>> part_val_itr = part_vals.iterator();
       Set<MColumnDescriptor> oldCds = new HashSet<>();
       Ref<MColumnDescriptor> oldCdRef = new Ref<>();
+      MTable table = null;
       for (Partition tmpPart: newParts) {
         List<String> tmpPartVals = part_val_itr.next();
         if (writeId > 0) {
           tmpPart.setWriteId(writeId);
         }
         oldCdRef.t = null;
+        if (table == null) {
+          table = this.getMTable(tmpPart.getCatName(), tmpPart.getDbName(), tmpPart.getTableName());
+        }
         Partition result = alterPartitionNoTxn(
-            catName, dbname, name, tmpPartVals, tmpPart, queryWriteIdList, oldCdRef);
+            catName, dbname, name, tmpPartVals, tmpPart, queryWriteIdList, oldCdRef, table);
         results.add(result);
         if (oldCdRef.t != null) {
           oldCds.add(oldCdRef.t);
@@ -9156,6 +9390,17 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
+  public Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
+                                                      Map<String, ColumnStatistics> partColStatsMap,
+                                                      Table tbl,
+                                                      List<TransactionalMetaStoreEventListener> listeners,
+                                                      String validWriteIds, long writeId)
+          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return directSql.updatePartitionColumnStatisticsBatch(partColStatsMap, tbl,
+            listeners, validWriteIds, writeId);
+  }
+
   private List<MTableColumnStatistics> getMTableColumnStatistics(Table table, List<String> colNames, String engine)
       throws MetaException {
 
@@ -10560,7 +10805,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException, NoSuchObjectException {
+  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException {
     MStoredProc proc = getMStoredProcedure(catName, db, name);
     return proc == null ? null : convertToStoredProc(catName, proc);
   }
@@ -10609,7 +10854,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException {
+  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException {
     boolean success = false;
     try {
       openTransaction();

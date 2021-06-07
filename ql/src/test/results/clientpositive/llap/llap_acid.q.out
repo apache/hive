@@ -286,8 +286,9 @@ STAGE PLANS:
                             keyColumns: 5:struct<writeid:bigint,bucketid:int,rowid:bigint>
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            partitionColumns: 6:int
-                            valueColumns: 2:float, 3:double, 4:smallint
+                            partitionColumns: 8:int
+                            valueColumns: 6:int, 7:bigint, 2:float, 3:double, 4:smallint
+                            valueExpressions: ConstantVectorExpression(val 1) -> 6:int, ConstantVectorExpression(val 2) -> 7:bigint
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -306,7 +307,7 @@ STAGE PLANS:
                     neededVirtualColumns: [ROWID]
                     partitionColumnCount: 1
                     partitionColumns: csmallint:smallint
-                    scratchColumnTypeNames: [bigint]
+                    scratchColumnTypeNames: [bigint, bigint, bigint]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -318,16 +319,15 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
-                    dataColumnCount: 4
-                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col0:float, VALUE._col1:double, VALUE._col2:smallint
+                    dataColumnCount: 6
+                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col0:int, VALUE._col1:bigint, VALUE._col2:float, VALUE._col3:double, VALUE._col4:smallint
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint]
+                    scratchColumnTypeNames: []
             Reduce Operator Tree:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [0, 4, 5, 1, 2, 3]
-                    selectExpressions: ConstantVectorExpression(val 1) -> 4:int, ConstantVectorExpression(val 2) -> 5:bigint
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false

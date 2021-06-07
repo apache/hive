@@ -32,6 +32,7 @@ import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.MetricSet;
+import com.codahale.metrics.RatioGauge;
 import com.codahale.metrics.Reporter;
 import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.Slf4jReporter;
@@ -44,6 +45,7 @@ import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.github.joshelser.dropwizard.metrics.hadoop.HadoopMetrics2Reporter;
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
@@ -56,11 +58,14 @@ public class Metrics {
   private static Metrics self;
   private static final AtomicInteger singletonAtomicInteger = new AtomicInteger();
   private static final Counter dummyCounter = new Counter();
+  private static final Pair<AtomicInteger, AtomicInteger> dummyRatio =
+          Pair.of(singletonAtomicInteger, singletonAtomicInteger);
 
   private final MetricRegistry registry;
   private List<Reporter> reporters;
   private List<ScheduledReporter> scheduledReporters;
   private Map<String, AtomicInteger> gaugeAtomics;
+  private Map<String, Pair<AtomicInteger, AtomicInteger>> gaugeRatio;
   private boolean hadoopMetricsStarted;
 
   public static synchronized Metrics initialize(Configuration conf) {
@@ -155,6 +160,35 @@ public class Metrics {
       return ai;
     }
   }
+
+  /**
+   * Get the pair of AtomicIntegers behind an existing ratio gauge, or create a new gauge if it does not already
+   * exist.
+   * @param name Name of gauge.  This should come from MetricConstants
+   * @return Pair<AtomicInteger, AtomicInteger> as the numerator and denominator of the ratio.
+   */
+  public static Pair<AtomicInteger, AtomicInteger>  getOrCreateRatio(String name) {
+    // We return a garbage value if metrics haven't been initialized so that callers don't have
+    // to keep checking if the resulting value is null.
+    if (self == null) return dummyRatio;
+    Pair<AtomicInteger, AtomicInteger> ratio = self.gaugeRatio.get(name);
+    if (ratio != null) return ratio;
+    synchronized (Metrics.class) {
+      ratio = self.gaugeRatio.get(name);
+      if (ratio != null) return ratio;
+      ratio = Pair.of(new AtomicInteger(), new AtomicInteger());
+      final Pair<AtomicInteger, AtomicInteger> forGauge = ratio;
+      self.gaugeRatio.put(name, ratio);
+      self.registry.register(name, new RatioGauge() {
+        @Override
+        protected Ratio getRatio() {
+          return Ratio.of(forGauge.getLeft().get(), forGauge.getRight().get());
+        }
+      });
+      return ratio;
+    }
+  }
+
 
   public static Counter getOpenConnectionsCounter() {
     return getOrCreateCounter(MetricsConstants.OPEN_CONNECTIONS);
@@ -263,6 +297,7 @@ public class Metrics {
 
     // Create map for tracking gauges
     gaugeAtomics = new HashMap<>();
+    gaugeRatio = new HashMap<>();
   }
 
   private void registerAll(String prefix, MetricSet metricSet) {

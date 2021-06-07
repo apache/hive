@@ -80,6 +80,21 @@ class Database
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        11 => array(
+            'var' => 'type',
+            'isRequired' => false,
+            'type' => TType::I32,
+        ),
+        12 => array(
+            'var' => 'connector_name',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
+        13 => array(
+            'var' => 'remote_dbname',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -122,6 +137,18 @@ class Database
      * @var string
      */
     public $managedLocationUri = null;
+    /**
+     * @var int
+     */
+    public $type = null;
+    /**
+     * @var string
+     */
+    public $connector_name = null;
+    /**
+     * @var string
+     */
+    public $remote_dbname = null;
 
     public function __construct($vals = null)
     {
@@ -155,6 +182,15 @@ class Database
             }
             if (isset($vals['managedLocationUri'])) {
                 $this->managedLocationUri = $vals['managedLocationUri'];
+            }
+            if (isset($vals['type'])) {
+                $this->type = $vals['type'];
+            }
+            if (isset($vals['connector_name'])) {
+                $this->connector_name = $vals['connector_name'];
+            }
+            if (isset($vals['remote_dbname'])) {
+                $this->remote_dbname = $vals['remote_dbname'];
             }
         }
     }
@@ -261,6 +297,27 @@ class Database
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 11:
+                    if ($ftype == TType::I32) {
+                        $xfer += $input->readI32($this->type);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 12:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->connector_name);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 13:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->remote_dbname);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -334,6 +391,21 @@ class Database
         if ($this->managedLocationUri !== null) {
             $xfer += $output->writeFieldBegin('managedLocationUri', TType::STRING, 10);
             $xfer += $output->writeString($this->managedLocationUri);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->type !== null) {
+            $xfer += $output->writeFieldBegin('type', TType::I32, 11);
+            $xfer += $output->writeI32($this->type);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->connector_name !== null) {
+            $xfer += $output->writeFieldBegin('connector_name', TType::STRING, 12);
+            $xfer += $output->writeString($this->connector_name);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->remote_dbname !== null) {
+            $xfer += $output->writeFieldBegin('remote_dbname', TType::STRING, 13);
+            $xfer += $output->writeString($this->remote_dbname);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

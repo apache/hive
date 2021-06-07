@@ -525,6 +525,7 @@
                 <property name="test.classpath" refid="maven.test.classpath"/>
                 <taskdef resource="net/sf/antcontrib/antcontrib.properties"
                   classpathref="maven.plugin.classpath" />
+                <delete dir="${project.build.directory}/localfs/"/>
                 <mkdir dir="${project.build.directory}/qfile-results/clientpositive/" />
                 <mkdir dir="${project.build.directory}/qfile-results/clientpositive/perf" />
                 <mkdir dir="${project.build.directory}/qfile-results/clientnegative/" />
@@ -539,6 +540,8 @@
                 <mkdir dir="${project.build.directory}/qfile-results/contribnegative"/>
                 <mkdir dir="${project.build.directory}/qfile-results/contribclientpositive"/>
                 <mkdir dir="${project.build.directory}/qfile-results/contribclientnegative"/>
+                <mkdir dir="${project.build.directory}/qfile-results/iceberg-handler/positive/"/>
+                <mkdir dir="${project.build.directory}/qfile-results/iceberg-handler/negative/"/>
               </target>
             </configuration>
             <goals>

@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hive.common.util.Ref;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,11 +32,13 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -57,6 +61,7 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -97,7 +102,12 @@ import com.google.common.annotations.VisibleForTesting;
 @SuppressWarnings({"serial"})
 public class TezTask extends Task<TezWork> {
 
+  public static final String HIVE_TEZ_COMMIT_JOB_ID_PREFIX = "hive.tez.commit.job.id.";
+  public static final String HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX = "hive.tez.commit.task.count.";
+
   private static final String CLASS_NAME = TezTask.class.getName();
+  private static final String JOB_ID_TEMPLATE = "job_%s%d_%s";
+  private static final String ICEBERG_TABLE_LOCATION = "iceberg.mr.table.location";
   private static transient Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final String TEZ_MEMORY_RESERVE_FRACTION = "tez.task.scale.memory.reserve-fraction";
@@ -137,6 +147,8 @@ public class TezTask extends Task<TezWork> {
     Context ctx = null;
     Ref<TezSessionState> sessionRef = Ref.from(null);
 
+    final String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+
     try {
       // Get or create Context object. If we create it we have to clean it later as well.
       ctx = context;
@@ -145,7 +157,6 @@ public class TezTask extends Task<TezWork> {
         cleanContext = true;
         // some DDL task that directly executes a TezTask does not setup Context and hence TriggerContext.
         // Setting queryId is messed up. Some DDL tasks have executionId instead of proper queryId.
-        String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
         WmContext wmContext = new WmContext(System.currentTimeMillis(), queryId);
         ctx.setWmContext(wmContext);
       }
@@ -236,6 +247,10 @@ public class TezTask extends Task<TezWork> {
           throw new HiveException("Operation cancelled");
         }
 
+        // Log all the info required to find the various logs for this query
+        LOG.info("HS2 Host: [{}], Query ID: [{}], Dag ID: [{}], DAG Session ID: [{}]", ServerUtils.hostname(), queryId,
+            this.dagClient.getDagIdentifierString(), this.dagClient.getSessionIdentifierString());
+
         // finally monitor will print progress until the job is done
         TezJobMonitor monitor = new TezJobMonitor(work.getAllWork(), dagClient, conf, dag, ctx, counters);
         rc = monitor.monitorExecution();
@@ -244,17 +259,26 @@ public class TezTask extends Task<TezWork> {
           this.setException(new HiveException(monitor.getDiagnostics()));
         }
 
-        // fetch the counters
         try {
+          // fetch the counters
           Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
           TezCounters dagCounters = dagClient.getDAGStatus(statusGetOpts).getDAGCounters();
+
+          if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
+            DeltaFilesMetricReporter.getInstance().submit(dagCounters);
+          }
           // if initial counters exists, merge it with dag counters to get aggregated view
           TezCounters mergedCounters = counters == null ? dagCounters : Utils.mergeTezCounters(dagCounters, counters);
           counters = mergedCounters;
         } catch (Exception err) {
           // Don't fail execution due to counters - just don't print summary info
-          LOG.warn("Failed to get counters. Ignoring, summary info will be incomplete. " + err, err);
+          LOG.warn("Failed to get counters. Ignoring, summary info will be incomplete.", err);
           counters = null;
+        }
+
+        // save useful commit information into session conf, e.g. for custom commit hooks, like Iceberg
+        if (rc == 0) {
+          collectCommitInformation(work);
         }
       } finally {
         // Note: due to TEZ-3846, the session may actually be invalid in case of some errors.
@@ -330,6 +354,59 @@ public class TezTask extends Task<TezWork> {
       }
     }
     return rc;
+  }
+
+  private void collectCommitInformation(TezWork work) throws IOException, TezException {
+    HiveConf sessionConf = SessionState.get().getConf();
+    for (BaseWork w : work.getAllWork()) {
+      JobConf jobConf = workToConf.get(w);
+      Vertex vertex = workToVertex.get(w);
+      String jobIdPrefix = dagClient.getDagIdentifierString().split("_")[1];
+      boolean hasIcebergCommitter = Optional.ofNullable(jobConf).map(JobConf::getOutputCommitter)
+          .map(Object::getClass).map(Class::getName)
+          .filter(name -> name.endsWith("HiveIcebergNoJobCommitter")).isPresent();
+      // we should only consider jobs with Iceberg output committer and a data sink
+      if (hasIcebergCommitter && !vertex.getDataSinks().isEmpty()) {
+        String tableLocationRoot = jobConf.get(ICEBERG_TABLE_LOCATION);
+        if (tableLocationRoot != null) {
+          VertexStatus status = dagClient.getVertexStatus(vertex.getName(), EnumSet.of(StatusGetOpts.GET_COUNTERS));
+          Path path = new Path(tableLocationRoot + "/temp");
+          LOG.debug("Table temp directory path is: " + path);
+          // list the directories inside the temp directory
+          // TODO: this is temporary, refactor when new Tez version has been released
+          FileStatus[] children = path.getFileSystem(jobConf).listStatus(path);
+          LOG.debug("Listing the table temp directory yielded these files: " + Arrays.toString(children));
+          for (FileStatus child : children) {
+            // pick only directories that contain the correct jobID prefix
+            if (child.isDirectory() && child.getPath().getName().contains(jobIdPrefix)) {
+              // folder name pattern is queryID-jobID, we're removing the queryID part to get the jobID
+              String jobIdStr = child.getPath().getName().substring(jobConf.get("hive.query.id").length() + 1);
+              // get all target tables this vertex wrote to
+              List<String> tables = new ArrayList<>();
+              for (Map.Entry<String, String> entry : jobConf) {
+                if (entry.getKey().startsWith("iceberg.mr.serialized.table.")) {
+                  tables.add(entry.getKey().substring("iceberg.mr.serialized.table.".length()));
+                }
+              }
+              // save information for each target table (jobID, task num, query state)
+              for (String table : tables) {
+                sessionConf.set(HIVE_TEZ_COMMIT_JOB_ID_PREFIX + table, jobIdStr);
+                sessionConf.setInt(HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX + table,
+                    status.getProgress().getSucceededTaskCount());
+              }
+            }
+          }
+          // save iceberg mr props as they can be needed during job commit (e.g. serialized table)
+          jobConf.forEach(e -> {
+            if (e.getKey().startsWith("iceberg.mr.")) {
+              sessionConf.set(e.getKey(), e.getValue());
+            }
+          });
+        } else {
+          LOG.warn("Table location not found in config for base work: " + w.getName());
+        }
+      }
+    }
   }
 
   private void updateNumRows() {
@@ -416,7 +493,7 @@ public class TezTask extends Task<TezWork> {
     // the name of the dag is what is displayed in the AM/Job UI
     String dagName = utils.createDagName(conf, queryPlan);
 
-    LOG.info("Dag name: " + dagName);
+    LOG.info("Dag name: {}", dagName);
     DAG dag = DAG.create(dagName);
 
     // set some info for the query
@@ -427,9 +504,8 @@ public class TezTask extends Task<TezWork> {
     String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
     dag.setConf(HiveConf.ConfVars.HIVEQUERYID.varname, queryId);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("DagInfo: " + dagInfo);
-    }
+    LOG.debug("DagInfo: {}", dagInfo);
+
     dag.setDAGInfo(dagInfo);
 
     dag.setCredentials(conf.getCredentials());
@@ -545,11 +621,9 @@ public class TezTask extends Task<TezWork> {
     String modifyStr = Utilities.getAclStringWithHiveModification(conf,
             TezConfiguration.TEZ_AM_MODIFY_ACLS, addHs2User, user, loginUser);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Setting Tez DAG access for queryId={} with viewAclString={}, modifyStr={}",
-          queryId, viewStr, modifyStr);
-    }
-    // set permissions for current user on DAG
+    LOG.debug("Setting Tez DAG access for queryId={} with viewAclString={}, modifyStr={}", queryId, viewStr, modifyStr);
+
+      // set permissions for current user on DAG
     DAGAccessControls ac = new DAGAccessControls(viewStr, modifyStr);
     dag.setAccessControls(ac);
   }
@@ -749,13 +823,11 @@ public class TezTask extends Task<TezWork> {
     }
 
     public String getDagIdentifierString() {
-      // TODO: Implement this when tez is upgraded. TEZ-3550
-      return null;
+      return dagClient.getDagIdentifierString();
     }
 
     public String getSessionIdentifierString() {
-      // TODO: Implement this when tez is upgraded. TEZ-3550
-      return null;
+      return dagClient.getSessionIdentifierString();
     }
 
 

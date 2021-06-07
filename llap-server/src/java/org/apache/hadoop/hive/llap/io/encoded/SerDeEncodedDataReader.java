@@ -1228,8 +1228,8 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private void logProcessOneSlice(int stripeIx, Object diskData, StripeData cacheData) {
-    String sliceStr = cacheData == null ? "null" : cacheData.toCoordinateString();
     if (LlapIoImpl.LOG.isDebugEnabled()) {
+      String sliceStr = cacheData == null ? "null" : cacheData.toCoordinateString();
       LlapIoImpl.LOG.debug("Processing slice #" + stripeIx + " " + sliceStr + "; has"
         + ((cacheData == null) ? " no" : "") + " cache data; has"
         + ((diskData == null) ? " no" : "") + " disk data");

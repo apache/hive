@@ -84,7 +84,6 @@ import org.apache.calcite.sql.fun.SqlSingleValueAggFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.tools.RelBuilder;
-import org.apache.calcite.util.Bug;
 import org.apache.calcite.util.Holder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Litmus;
@@ -94,6 +93,7 @@ import org.apache.calcite.util.ReflectiveVisitor;
 import org.apache.calcite.util.Stacks;
 import org.apache.calcite.util.Util;
 import org.apache.calcite.util.mapping.Mappings;
+import org.apache.hadoop.hive.ql.optimizer.calcite.Bug;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttleImpl;
@@ -154,7 +154,10 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
 
   protected static final Logger LOG = LoggerFactory.getLogger(
           HiveRelDecorrelator.class);
-
+  
+  private static final FilterFlattenCorrelatedConditionRule FLATTEN_CORRELATED_CONDITION_RULE =
+      new FilterFlattenCorrelatedConditionRule(HiveFilter.class, HiveRelFactories.HIVE_BUILDER,
+          "HiveFilterFlattenCorrelatedConditionRule");
   //~ Instance fields --------------------------------------------------------
 
   private final RelBuilder relBuilder;
@@ -237,19 +240,28 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     HepProgram program = HepProgram.builder()
             .addRuleInstance(new AdjustProjectForCountAggregateRule(false))
             .addRuleInstance(new AdjustProjectForCountAggregateRule(true))
+            .addRuleInstance(HiveFilterJoinRule.JOIN)
             .addRuleInstance(HiveFilterJoinRule.FILTER_ON_JOIN)
             .addRuleInstance(HiveFilterProjectTransposeRule.INSTANCE)
+            .addRuleInstance(FLATTEN_CORRELATED_CONDITION_RULE)
             // FilterCorrelateRule rule mistakenly pushes a FILTER, consiting of correlated vars,
             // on top of LogicalCorrelate to within  left input for scalar corr queries
             // which causes exception during decorrelation. This has been disabled for now.
             //.addRuleInstance(FilterCorrelateRule.INSTANCE)
             .build();
-
     HepPlanner planner = createPlanner(program);
 
     planner.setRoot(root);
     root = planner.findBestExp();
-
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Plan before extracting correlated computations:\n" + RelOptUtil.toString(root));
+    }
+    root = root.accept(new CorrelateProjectExtractor(HiveRelFactories.HIVE_BUILDER));
+    // Necessary to update cm (CorrelMap) since CorrelateProjectExtractor above may modify the plan
+    this.cm = new CorelMapBuilder().build(root);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Plan after extracting correlated computations:\n" + RelOptUtil.toString(root));
+    }
     // Perform decorrelation.
     map.clear();
 
@@ -994,7 +1006,16 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       SortedMap<CorDef, Integer> coreMap = new TreeMap<>();
       for (CorRef correlation : corVarList) {
         final CorDef def = correlation.def();
-        if (corDefOutputs.containsKey(def) || coreMap.containsKey(def)) {
+        // If the correlation/variable is already provided by the input
+        // then we don't have to look for equivalent expressions and 
+        // we don't need to create value generator for them.
+        if (corDefOutputs.containsKey(def)) {
+          coreMap.put(def, corDefOutputs.get(def));
+          continue;
+        }
+        // If the correlation/variable is in the map then we already
+        // seen this before in this loop so we don't need to treat it again.
+        if (coreMap.containsKey(def)) {
           continue;
         }
         try {
@@ -1005,7 +1026,9 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
           // is generated
           def.setPredicateKind((SqlOperator) ((Pair)((Pair)e.getNode()).getValue()).getKey());
           def.setIsLeft((boolean)((Pair)((Pair) e.getNode()).getValue()).getValue());
-          coreMap.put(def, (Integer)((Pair) e.getNode()).getKey());
+          final Integer oldInputRef = (Integer) ((Pair) e.getNode()).getKey();
+          final Integer newInputRef = frame.oldToNewOutputs.get(oldInputRef);
+          coreMap.put(def, newInputRef);
         }
       }
       // If all correlation variables are now satisfied, skip creating a value
@@ -1220,10 +1243,12 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
 
     if (leftFrame == null || rightFrame == null) {
       // If any input has not been rewritten, do not rewrite this rel.
+      valueGen.pop();
       return null;
     }
 
     if (rightFrame.corDefOutputs.isEmpty()) {
+      valueGen.pop();
       return null;
     }
 
@@ -1336,6 +1361,11 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     // For SEMI/ANTI join decorrelate it's input directly,
     // because the correlate variables can only be propagated from
     // the left side, which is not supported yet.
+    if (cm != null && cm.mapRefRelToCorRef != null &&
+      cm.mapRefRelToCorRef.containsKey(rel) && rel.getJoinType().isOuterJoin()) {
+      throw new UnsupportedOperationException("Correlated subqueries in outer join conditions not supported yet." +
+        " Join condition: " + rel.getCondition());
+    }
     if (!rel.getJoinType().projectsRight()) {
       return decorrelateRel((RelNode) rel);
     }
@@ -1413,17 +1443,6 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       RelNode newInput = map.get(oldInput0).r;
       newOrdinal += newInput.getRowType().getFieldCount();
       oldOrdinal -= n;
-    }
-
-    if(oldInput == null) {
-      if(currentRel.getInputs().size() == 1 && currentRel.getInput(0) instanceof LogicalCorrelate) {
-        final Frame newFrame = map.get(currentRel.getInput(0));
-        if(newFrame.r instanceof HiveSemiJoin || newFrame.r instanceof HiveAntiJoin) {
-          int oldFieldSize = currentRel.getInput(0).getRowType().getFieldCount();
-          int newOrd = newFrame.r.getRowType().getFieldCount() + oldOrdinalNo - oldFieldSize;
-          return new RexInputRef(newOrd, oldInputRef.getType());
-        }
-      }
     }
 
     assert oldInput != null;
@@ -1690,46 +1709,49 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       this.valueGenerator = valueGenerator;
     }
 
-    // DecorrelateRexShuttle ends up decorrelating expressions cor.col1 <> $4
-    // to $4=$4 if value generator is not generated, $4<>$4 is further simplified
-    // to false. This is wrong and messes up the whole tree. To prevent this visitCall
-    // is overridden to rewrite/simply such predicates to is not null.
-    // we also need to take care that we do this only for correlated predicates and
-    // not user specified explicit predicates
-    // TODO:  This code should be removed once CALCITE-1851 is fixed and
-    // there is support of not equal
     @Override  public RexNode visitCall(final RexCall call) {
-      if(!valueGenerator) {
-        if(call.getOperands().size() == 2) {
-          final List<RexNode> operands = new ArrayList<>(call.operands);
-          RexNode o0 = operands.get(0);
-          RexNode o1 = operands.get(1);
-          boolean isCorrelated = false;
-          if (o0 instanceof RexFieldAccess && (cm.mapFieldAccessToCorRef.get(o0) != null)) {
-            o0 = decorrFieldAccess((RexFieldAccess) o0);
-            isCorrelated = true;
-
-          }
-          if (o1 instanceof RexFieldAccess && (cm.mapFieldAccessToCorRef.get(o1) != null)) {
-            o1 = decorrFieldAccess((RexFieldAccess) o1);
-            isCorrelated = true;
-          }
-          if (isCorrelated && o0.equals(o1)) {
-            return rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, o0);
-          }
-
-          final List<RexNode> newOperands = new ArrayList<>();
-          newOperands.add(o0);
-          newOperands.add(o1);
-          boolean[] update = {false};
-          List<RexNode> clonedOperands = visitList(newOperands, update);
-
-          return relBuilder.call(call.getOperator(), clonedOperands);
-        }
+      if (Bug.CALCITE_1851_FIXED) {
+        throw new AssertionError("Overriding should be removed");
       }
-      return super.visitCall(call);
+      if (valueGenerator) {
+        return super.visitCall(call);
+      }
+      switch (call.getKind()) {
+      case EQUALS:
+      case NOT_EQUALS:
+      case GREATER_THAN:
+      case GREATER_THAN_OR_EQUAL:
+      case LESS_THAN:
+      case LESS_THAN_OR_EQUAL:
+        // Expressions of the form OP(cor.col1, $4) are transformed to OP($4, $4) where OP in (<,<=,=,>,>=,<>).
+        // OP($4, $4) can be further simplified to TRUE/FALSE (e.g., $4 <> $4) that is wrong and messes up the tree.
+        // To prevent this simplifications we rewrite OP($4, $4) to IS_NOT_NULL($4).
+        // This should be done only for correlated predicates and not user specified explicit predicates  
+        if (hasCorrelation(call)) {
+          List<RexNode> ops = visitList(call.operands, new boolean[] { false });
+          assert ops.size() == 2;
+          RexNode o0 = ops.get(0);
+          RexNode o1 = ops.get(1);
+          if (o0.equals(o1)) {
+            return relBuilder.call(SqlStdOperatorTable.IS_NOT_NULL, o0);
+          } else {
+            return relBuilder.call(call.getOperator(), ops);
+          }
+        }
+      default:
+        return super.visitCall(call);
+      }
     }
 
+    private boolean hasCorrelation(RexCall call) {
+      for (RexNode n : call.operands) {
+        if (n instanceof RexFieldAccess && cm.mapFieldAccessToCorRef.containsKey(n)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    
     @Override public RexNode visitFieldAccess(RexFieldAccess fieldAccess) {
       return decorrFieldAccess(fieldAccess);
     }
@@ -3001,7 +3023,6 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
             new Supplier<TreeSet<CorRef>>() {
               @Override
               public TreeSet<CorRef> get() {
-                Bug.upgrade("use MultimapBuilder when we're on Guava-16");
                 return Sets.newTreeSet();
               }
             });

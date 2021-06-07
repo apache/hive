@@ -26,6 +26,9 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.I64, (short)13);
   private static final org.apache.thrift.protocol.TField ERROR_MESSAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("errorMessage", org.apache.thrift.protocol.TType.STRING, (short)14);
   private static final org.apache.thrift.protocol.TField ENQUEUE_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("enqueueTime", org.apache.thrift.protocol.TType.I64, (short)15);
+  private static final org.apache.thrift.protocol.TField WORKER_VERSION_FIELD_DESC = new org.apache.thrift.protocol.TField("workerVersion", org.apache.thrift.protocol.TType.STRING, (short)16);
+  private static final org.apache.thrift.protocol.TField INITIATOR_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("initiatorId", org.apache.thrift.protocol.TType.STRING, (short)17);
+  private static final org.apache.thrift.protocol.TField INITIATOR_VERSION_FIELD_DESC = new org.apache.thrift.protocol.TField("initiatorVersion", org.apache.thrift.protocol.TType.STRING, (short)18);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new ShowCompactResponseElementStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new ShowCompactResponseElementTupleSchemeFactory();
@@ -45,6 +48,9 @@ package org.apache.hadoop.hive.metastore.api;
   private long id; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String errorMessage; // optional
   private long enqueueTime; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String workerVersion; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String initiatorId; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String initiatorVersion; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -66,7 +72,10 @@ package org.apache.hadoop.hive.metastore.api;
     HADOOP_JOB_ID((short)12, "hadoopJobId"),
     ID((short)13, "id"),
     ERROR_MESSAGE((short)14, "errorMessage"),
-    ENQUEUE_TIME((short)15, "enqueueTime");
+    ENQUEUE_TIME((short)15, "enqueueTime"),
+    WORKER_VERSION((short)16, "workerVersion"),
+    INITIATOR_ID((short)17, "initiatorId"),
+    INITIATOR_VERSION((short)18, "initiatorVersion");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -112,6 +121,12 @@ package org.apache.hadoop.hive.metastore.api;
           return ERROR_MESSAGE;
         case 15: // ENQUEUE_TIME
           return ENQUEUE_TIME;
+        case 16: // WORKER_VERSION
+          return WORKER_VERSION;
+        case 17: // INITIATOR_ID
+          return INITIATOR_ID;
+        case 18: // INITIATOR_VERSION
+          return INITIATOR_VERSION;
         default:
           return null;
       }
@@ -159,7 +174,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __ID_ISSET_ID = 3;
   private static final int __ENQUEUETIME_ISSET_ID = 4;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.WORKERID,_Fields.START,_Fields.RUN_AS,_Fields.HIGHTEST_TXN_ID,_Fields.META_INFO,_Fields.END_TIME,_Fields.HADOOP_JOB_ID,_Fields.ID,_Fields.ERROR_MESSAGE,_Fields.ENQUEUE_TIME};
+  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.WORKERID,_Fields.START,_Fields.RUN_AS,_Fields.HIGHTEST_TXN_ID,_Fields.META_INFO,_Fields.END_TIME,_Fields.HADOOP_JOB_ID,_Fields.ID,_Fields.ERROR_MESSAGE,_Fields.ENQUEUE_TIME,_Fields.WORKER_VERSION,_Fields.INITIATOR_ID,_Fields.INITIATOR_VERSION};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -193,6 +208,12 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.ENQUEUE_TIME, new org.apache.thrift.meta_data.FieldMetaData("enqueueTime", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.WORKER_VERSION, new org.apache.thrift.meta_data.FieldMetaData("workerVersion", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.INITIATOR_ID, new org.apache.thrift.meta_data.FieldMetaData("initiatorId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.INITIATOR_VERSION, new org.apache.thrift.meta_data.FieldMetaData("initiatorVersion", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ShowCompactResponseElement.class, metaDataMap);
   }
@@ -255,6 +276,15 @@ package org.apache.hadoop.hive.metastore.api;
       this.errorMessage = other.errorMessage;
     }
     this.enqueueTime = other.enqueueTime;
+    if (other.isSetWorkerVersion()) {
+      this.workerVersion = other.workerVersion;
+    }
+    if (other.isSetInitiatorId()) {
+      this.initiatorId = other.initiatorId;
+    }
+    if (other.isSetInitiatorVersion()) {
+      this.initiatorVersion = other.initiatorVersion;
+    }
   }
 
   public ShowCompactResponseElement deepCopy() {
@@ -284,6 +314,9 @@ package org.apache.hadoop.hive.metastore.api;
     this.errorMessage = null;
     setEnqueueTimeIsSet(false);
     this.enqueueTime = 0;
+    this.workerVersion = null;
+    this.initiatorId = null;
+    this.initiatorVersion = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -644,6 +677,78 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ENQUEUETIME_ISSET_ID, value);
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getWorkerVersion() {
+    return this.workerVersion;
+  }
+
+  public void setWorkerVersion(@org.apache.thrift.annotation.Nullable java.lang.String workerVersion) {
+    this.workerVersion = workerVersion;
+  }
+
+  public void unsetWorkerVersion() {
+    this.workerVersion = null;
+  }
+
+  /** Returns true if field workerVersion is set (has been assigned a value) and false otherwise */
+  public boolean isSetWorkerVersion() {
+    return this.workerVersion != null;
+  }
+
+  public void setWorkerVersionIsSet(boolean value) {
+    if (!value) {
+      this.workerVersion = null;
+    }
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getInitiatorId() {
+    return this.initiatorId;
+  }
+
+  public void setInitiatorId(@org.apache.thrift.annotation.Nullable java.lang.String initiatorId) {
+    this.initiatorId = initiatorId;
+  }
+
+  public void unsetInitiatorId() {
+    this.initiatorId = null;
+  }
+
+  /** Returns true if field initiatorId is set (has been assigned a value) and false otherwise */
+  public boolean isSetInitiatorId() {
+    return this.initiatorId != null;
+  }
+
+  public void setInitiatorIdIsSet(boolean value) {
+    if (!value) {
+      this.initiatorId = null;
+    }
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getInitiatorVersion() {
+    return this.initiatorVersion;
+  }
+
+  public void setInitiatorVersion(@org.apache.thrift.annotation.Nullable java.lang.String initiatorVersion) {
+    this.initiatorVersion = initiatorVersion;
+  }
+
+  public void unsetInitiatorVersion() {
+    this.initiatorVersion = null;
+  }
+
+  /** Returns true if field initiatorVersion is set (has been assigned a value) and false otherwise */
+  public boolean isSetInitiatorVersion() {
+    return this.initiatorVersion != null;
+  }
+
+  public void setInitiatorVersionIsSet(boolean value) {
+    if (!value) {
+      this.initiatorVersion = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case DBNAME:
@@ -766,6 +871,30 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case WORKER_VERSION:
+      if (value == null) {
+        unsetWorkerVersion();
+      } else {
+        setWorkerVersion((java.lang.String)value);
+      }
+      break;
+
+    case INITIATOR_ID:
+      if (value == null) {
+        unsetInitiatorId();
+      } else {
+        setInitiatorId((java.lang.String)value);
+      }
+      break;
+
+    case INITIATOR_VERSION:
+      if (value == null) {
+        unsetInitiatorVersion();
+      } else {
+        setInitiatorVersion((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -817,6 +946,15 @@ package org.apache.hadoop.hive.metastore.api;
     case ENQUEUE_TIME:
       return getEnqueueTime();
 
+    case WORKER_VERSION:
+      return getWorkerVersion();
+
+    case INITIATOR_ID:
+      return getInitiatorId();
+
+    case INITIATOR_VERSION:
+      return getInitiatorVersion();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -858,6 +996,12 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetErrorMessage();
     case ENQUEUE_TIME:
       return isSetEnqueueTime();
+    case WORKER_VERSION:
+      return isSetWorkerVersion();
+    case INITIATOR_ID:
+      return isSetInitiatorId();
+    case INITIATOR_VERSION:
+      return isSetInitiatorVersion();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -1012,6 +1156,33 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_workerVersion = true && this.isSetWorkerVersion();
+    boolean that_present_workerVersion = true && that.isSetWorkerVersion();
+    if (this_present_workerVersion || that_present_workerVersion) {
+      if (!(this_present_workerVersion && that_present_workerVersion))
+        return false;
+      if (!this.workerVersion.equals(that.workerVersion))
+        return false;
+    }
+
+    boolean this_present_initiatorId = true && this.isSetInitiatorId();
+    boolean that_present_initiatorId = true && that.isSetInitiatorId();
+    if (this_present_initiatorId || that_present_initiatorId) {
+      if (!(this_present_initiatorId && that_present_initiatorId))
+        return false;
+      if (!this.initiatorId.equals(that.initiatorId))
+        return false;
+    }
+
+    boolean this_present_initiatorVersion = true && this.isSetInitiatorVersion();
+    boolean that_present_initiatorVersion = true && that.isSetInitiatorVersion();
+    if (this_present_initiatorVersion || that_present_initiatorVersion) {
+      if (!(this_present_initiatorVersion && that_present_initiatorVersion))
+        return false;
+      if (!this.initiatorVersion.equals(that.initiatorVersion))
+        return false;
+    }
+
     return true;
   }
 
@@ -1078,6 +1249,18 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetEnqueueTime()) ? 131071 : 524287);
     if (isSetEnqueueTime())
       hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(enqueueTime);
+
+    hashCode = hashCode * 8191 + ((isSetWorkerVersion()) ? 131071 : 524287);
+    if (isSetWorkerVersion())
+      hashCode = hashCode * 8191 + workerVersion.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetInitiatorId()) ? 131071 : 524287);
+    if (isSetInitiatorId())
+      hashCode = hashCode * 8191 + initiatorId.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetInitiatorVersion()) ? 131071 : 524287);
+    if (isSetInitiatorVersion())
+      hashCode = hashCode * 8191 + initiatorVersion.hashCode();
 
     return hashCode;
   }
@@ -1240,6 +1423,36 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.valueOf(isSetWorkerVersion()).compareTo(other.isSetWorkerVersion());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetWorkerVersion()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.workerVersion, other.workerVersion);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.valueOf(isSetInitiatorId()).compareTo(other.isSetInitiatorId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetInitiatorId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.initiatorId, other.initiatorId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.valueOf(isSetInitiatorVersion()).compareTo(other.isSetInitiatorVersion());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetInitiatorVersion()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.initiatorVersion, other.initiatorVersion);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1380,6 +1593,36 @@ package org.apache.hadoop.hive.metastore.api;
       if (!first) sb.append(", ");
       sb.append("enqueueTime:");
       sb.append(this.enqueueTime);
+      first = false;
+    }
+    if (isSetWorkerVersion()) {
+      if (!first) sb.append(", ");
+      sb.append("workerVersion:");
+      if (this.workerVersion == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.workerVersion);
+      }
+      first = false;
+    }
+    if (isSetInitiatorId()) {
+      if (!first) sb.append(", ");
+      sb.append("initiatorId:");
+      if (this.initiatorId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.initiatorId);
+      }
+      first = false;
+    }
+    if (isSetInitiatorVersion()) {
+      if (!first) sb.append(", ");
+      sb.append("initiatorVersion:");
+      if (this.initiatorVersion == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.initiatorVersion);
+      }
       first = false;
     }
     sb.append(")");
@@ -1563,6 +1806,30 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 16: // WORKER_VERSION
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.workerVersion = iprot.readString();
+              struct.setWorkerVersionIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 17: // INITIATOR_ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.initiatorId = iprot.readString();
+              struct.setInitiatorIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 18: // INITIATOR_VERSION
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.initiatorVersion = iprot.readString();
+              struct.setInitiatorVersionIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1663,6 +1930,27 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeI64(struct.enqueueTime);
         oprot.writeFieldEnd();
       }
+      if (struct.workerVersion != null) {
+        if (struct.isSetWorkerVersion()) {
+          oprot.writeFieldBegin(WORKER_VERSION_FIELD_DESC);
+          oprot.writeString(struct.workerVersion);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.initiatorId != null) {
+        if (struct.isSetInitiatorId()) {
+          oprot.writeFieldBegin(INITIATOR_ID_FIELD_DESC);
+          oprot.writeString(struct.initiatorId);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.initiatorVersion != null) {
+        if (struct.isSetInitiatorVersion()) {
+          oprot.writeFieldBegin(INITIATOR_VERSION_FIELD_DESC);
+          oprot.writeString(struct.initiatorVersion);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1718,7 +2006,16 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetEnqueueTime()) {
         optionals.set(10);
       }
-      oprot.writeBitSet(optionals, 11);
+      if (struct.isSetWorkerVersion()) {
+        optionals.set(11);
+      }
+      if (struct.isSetInitiatorId()) {
+        optionals.set(12);
+      }
+      if (struct.isSetInitiatorVersion()) {
+        optionals.set(13);
+      }
+      oprot.writeBitSet(optionals, 14);
       if (struct.isSetPartitionname()) {
         oprot.writeString(struct.partitionname);
       }
@@ -1752,6 +2049,15 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetEnqueueTime()) {
         oprot.writeI64(struct.enqueueTime);
       }
+      if (struct.isSetWorkerVersion()) {
+        oprot.writeString(struct.workerVersion);
+      }
+      if (struct.isSetInitiatorId()) {
+        oprot.writeString(struct.initiatorId);
+      }
+      if (struct.isSetInitiatorVersion()) {
+        oprot.writeString(struct.initiatorVersion);
+      }
     }
 
     @Override
@@ -1765,7 +2071,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setTypeIsSet(true);
       struct.state = iprot.readString();
       struct.setStateIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(11);
+      java.util.BitSet incoming = iprot.readBitSet(14);
       if (incoming.get(0)) {
         struct.partitionname = iprot.readString();
         struct.setPartitionnameIsSet(true);
@@ -1809,6 +2115,18 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(10)) {
         struct.enqueueTime = iprot.readI64();
         struct.setEnqueueTimeIsSet(true);
+      }
+      if (incoming.get(11)) {
+        struct.workerVersion = iprot.readString();
+        struct.setWorkerVersionIsSet(true);
+      }
+      if (incoming.get(12)) {
+        struct.initiatorId = iprot.readString();
+        struct.setInitiatorIdIsSet(true);
+      }
+      if (incoming.get(13)) {
+        struct.initiatorVersion = iprot.readString();
+        struct.setInitiatorVersionIsSet(true);
       }
     }
   }

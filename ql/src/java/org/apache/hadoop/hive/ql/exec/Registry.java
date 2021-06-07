@@ -477,7 +477,7 @@ public class Registry {
   @SuppressWarnings("deprecation")
   public GenericUDAFEvaluator getGenericUDAFEvaluator(String name,
       List<ObjectInspector> argumentOIs, boolean isWindowing, boolean isDistinct,
-      boolean isAllColumns) throws SemanticException {
+      boolean isAllColumns, boolean respectNulls) throws SemanticException {
 
     GenericUDAFResolver udafResolver = getGenericUDAFResolver(name);
     if (udafResolver == null) {
@@ -494,7 +494,7 @@ public class Registry {
 
     GenericUDAFParameterInfo paramInfo =
         new SimpleGenericUDAFParameterInfo(
-            args, isWindowing, isDistinct, isAllColumns);
+            args, isWindowing, isDistinct, isAllColumns, respectNulls);
     if (udafResolver instanceof GenericUDAFResolver2) {
       udafEvaluator =
           ((GenericUDAFResolver2) udafResolver).getEvaluator(paramInfo);
@@ -505,7 +505,7 @@ public class Registry {
   }
 
   public GenericUDAFEvaluator getGenericWindowingEvaluator(String functionName,
-      List<ObjectInspector> argumentOIs, boolean isDistinct, boolean isAllColumns)
+      List<ObjectInspector> argumentOIs, boolean isDistinct, boolean isAllColumns, boolean respectNulls)
       throws SemanticException {
     functionName = functionName.toLowerCase();
     WindowFunctionInfo info = getWindowFunctionInfo(functionName);
@@ -514,7 +514,7 @@ public class Registry {
     }
     if (!functionName.equals(FunctionRegistry.LEAD_FUNC_NAME) &&
         !functionName.equals(FunctionRegistry.LAG_FUNC_NAME)) {
-      return getGenericUDAFEvaluator(functionName, argumentOIs, true, isDistinct, isAllColumns);
+      return getGenericUDAFEvaluator(functionName, argumentOIs, true, isDistinct, isAllColumns, respectNulls);
     }
 
     // this must be lead/lag UDAF
@@ -553,21 +553,19 @@ public class Registry {
         Integer refCount = persistent.get(functionClass);
         persistent.put(functionClass, Integer.valueOf(refCount == null ? 1 : refCount + 1));
       }
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
     } finally {
       lock.unlock();
     }
   }
 
-  private Class<?> getPermanentUdfClass(FunctionInfo function) {
+  private Class<?> getPermanentUdfClass(FunctionInfo function) throws ClassNotFoundException {
     Class<?> functionClass = function.getFunctionClass();
     if (functionClass == null) {
       // Expected for permanent UDFs at this point.
       ClassLoader loader = Utilities.getSessionSpecifiedClassLoader();
-      try {
-        functionClass = Class.forName(function.getClassName(), true, loader);
-      } catch (ClassNotFoundException ex) {
-        throw new RuntimeException(ex);
-      }
+      functionClass = Class.forName(function.getClassName(), true, loader);
     }
     return functionClass;
   }
@@ -593,14 +591,19 @@ public class Registry {
   }
 
   private void removePersistentFunctionUnderLock(FunctionInfo fi) {
-    Class<?> functionClass = getPermanentUdfClass(fi);
-    Integer refCount = persistent.get(functionClass);
-    if (refCount != null) {
-      if (refCount == 1) {
-        persistent.remove(functionClass);
-      } else {
-        persistent.put(functionClass, Integer.valueOf(refCount - 1));
+    try {
+      Class<?> functionClass = getPermanentUdfClass(fi);
+      Integer refCount = persistent.get(functionClass);
+      if (refCount != null) {
+        if (refCount == 1) {
+          persistent.remove(functionClass);
+        } else {
+          persistent.put(functionClass, Integer.valueOf(refCount - 1));
+        }
       }
+    } catch (ClassNotFoundException e) {
+      LOG.debug("Associated class could not be found when dropping a custom UDF {}." +
+          "This may happen if this UDF was never used in this session.", fi.getDisplayName());
     }
   }
 

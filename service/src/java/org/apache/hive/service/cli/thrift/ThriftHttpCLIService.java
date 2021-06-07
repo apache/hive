@@ -36,7 +36,10 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hive.service.ServiceUtils;
 import org.apache.hive.service.auth.HiveAuthFactory;
+import org.apache.hive.service.auth.saml.HiveSamlHttpServlet;
+import org.apache.hive.service.auth.saml.HiveSamlUtils;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.rpc.thrift.TCLIService;
 import org.apache.hive.service.rpc.thrift.TCLIService.Iface;
@@ -181,7 +184,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       UserGroupInformation httpUGI = cliService.getHttpUGI();
       String authType = hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION);
       TServlet thriftHttpServlet = new ThriftHttpServlet(processor, protocolFactory, authType, serviceUGI, httpUGI,
-          hiveAuthFactory);
+          hiveAuthFactory, hiveConf);
 
       // Context handler
       final ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
@@ -207,6 +210,10 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         server.setHandler(context);
       }
       context.addServlet(new ServletHolder(thriftHttpServlet), httpPath);
+      if (HiveSamlUtils.isSamlAuthMode(authType)) {
+        String ssoPath = HiveSamlUtils.getCallBackPath(hiveConf);
+        context.addServlet(new ServletHolder(new HiveSamlHttpServlet(hiveConf)), ssoPath);
+      }
       constrainHttpMethods(context, false);
 
       // TODO: check defaults: maxTimeout, keepalive, maxBodySize,

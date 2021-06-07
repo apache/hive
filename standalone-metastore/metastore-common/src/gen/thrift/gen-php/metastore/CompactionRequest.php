@@ -59,6 +59,16 @@ class CompactionRequest
                 'type' => TType::STRING,
                 ),
         ),
+        7 => array(
+            'var' => 'initiatorId',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
+        8 => array(
+            'var' => 'initiatorVersion',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -85,6 +95,14 @@ class CompactionRequest
      * @var array
      */
     public $properties = null;
+    /**
+     * @var string
+     */
+    public $initiatorId = null;
+    /**
+     * @var string
+     */
+    public $initiatorVersion = null;
 
     public function __construct($vals = null)
     {
@@ -106,6 +124,12 @@ class CompactionRequest
             }
             if (isset($vals['properties'])) {
                 $this->properties = $vals['properties'];
+            }
+            if (isset($vals['initiatorId'])) {
+                $this->initiatorId = $vals['initiatorId'];
+            }
+            if (isset($vals['initiatorVersion'])) {
+                $this->initiatorVersion = $vals['initiatorVersion'];
             }
         }
     }
@@ -167,18 +191,32 @@ class CompactionRequest
                 case 6:
                     if ($ftype == TType::MAP) {
                         $this->properties = array();
-                        $_size715 = 0;
-                        $_ktype716 = 0;
-                        $_vtype717 = 0;
-                        $xfer += $input->readMapBegin($_ktype716, $_vtype717, $_size715);
-                        for ($_i719 = 0; $_i719 < $_size715; ++$_i719) {
-                            $key720 = '';
-                            $val721 = '';
-                            $xfer += $input->readString($key720);
-                            $xfer += $input->readString($val721);
-                            $this->properties[$key720] = $val721;
+                        $_size724 = 0;
+                        $_ktype725 = 0;
+                        $_vtype726 = 0;
+                        $xfer += $input->readMapBegin($_ktype725, $_vtype726, $_size724);
+                        for ($_i728 = 0; $_i728 < $_size724; ++$_i728) {
+                            $key729 = '';
+                            $val730 = '';
+                            $xfer += $input->readString($key729);
+                            $xfer += $input->readString($val730);
+                            $this->properties[$key729] = $val730;
                         }
                         $xfer += $input->readMapEnd();
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 7:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->initiatorId);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 8:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->initiatorVersion);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -228,11 +266,21 @@ class CompactionRequest
             }
             $xfer += $output->writeFieldBegin('properties', TType::MAP, 6);
             $output->writeMapBegin(TType::STRING, TType::STRING, count($this->properties));
-            foreach ($this->properties as $kiter722 => $viter723) {
-                $xfer += $output->writeString($kiter722);
-                $xfer += $output->writeString($viter723);
+            foreach ($this->properties as $kiter731 => $viter732) {
+                $xfer += $output->writeString($kiter731);
+                $xfer += $output->writeString($viter732);
             }
             $output->writeMapEnd();
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->initiatorId !== null) {
+            $xfer += $output->writeFieldBegin('initiatorId', TType::STRING, 7);
+            $xfer += $output->writeString($this->initiatorId);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->initiatorVersion !== null) {
+            $xfer += $output->writeFieldBegin('initiatorVersion', TType::STRING, 8);
+            $xfer += $output->writeString($this->initiatorVersion);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
