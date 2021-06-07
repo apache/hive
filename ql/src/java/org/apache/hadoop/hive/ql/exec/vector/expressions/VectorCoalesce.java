@@ -17,12 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 import java.util.Arrays;
 
@@ -94,6 +93,21 @@ public class VectorCoalesce extends VectorExpression {
       if (cv.isRepeating) {
 
         if (cv.noNulls || !cv.isNull[0]) {
+
+          // HIVE-25193: Vectorized Query Execution: ClassCastException when use nvl() function
+          // which default_value is decimal type
+          if (!cv.getClass().getName().equals(outputColVector.getClass().getName())
+              && outputColVector instanceof BytesColumnVector) {
+            LOG.warn("{} cannot be cast to {} ", cv.getClass().getName(), outputColVector.getClass().getName());
+            if (cv instanceof DecimalColumnVector) {
+              HiveDecimalWritable[] vector = ((DecimalColumnVector) cv).vector;
+              byte[] value = String.valueOf(vector[0].doubleValue()).getBytes();
+              cv = new BytesColumnVector(1);
+              cv.isRepeating = true;
+              cv.init();
+              ((BytesColumnVector) cv).fill(value);
+            }
+          }
 
           /*
            * With a repeating value we can finish all remaining rows.
