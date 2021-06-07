@@ -105,7 +105,7 @@ public class StorageFormat {
 
               serdeProps.put(fileFormatPropertyKey, fileFormat);
             } else {
-              throw new SemanticException("STORED BY is not supported for storage handler " +
+              throw new SemanticException("STORED AS is not supported for storage handler " +
                   handler.getClass().getName());
             }
             break;
