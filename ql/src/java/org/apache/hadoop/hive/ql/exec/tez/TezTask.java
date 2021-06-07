@@ -391,6 +391,7 @@ public class TezTask extends Task<TezWork> {
                   icebergProperties.put(entry.getKey(), entry.getValue());
                 }
               }
+
               // save information for each target table
               tables.forEach(table -> SessionStateUtil.addCommitInfo(jobConf, table, jobIdStr,
                   status.getProgress().getSucceededTaskCount(), icebergProperties));
