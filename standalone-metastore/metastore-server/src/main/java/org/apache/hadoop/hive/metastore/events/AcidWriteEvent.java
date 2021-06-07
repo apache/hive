@@ -47,7 +47,7 @@ public class AcidWriteEvent extends ListenerEvent {
     this.tableObj = tableObj;
     this.partitionObj = partitionObj;
   }
-  
+
   public Long getTxnId() {
     return writeNotificationLogRequest.getTxnId();
   }
