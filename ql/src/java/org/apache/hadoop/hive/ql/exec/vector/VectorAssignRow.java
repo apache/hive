@@ -355,7 +355,7 @@ public class VectorAssignRow {
       ColumnVector columnVector, int batchIndex, TypeInfo targetTypeInfo, Object object) {
 
     if (object == null) {
-      VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);
+      assignNullRowColumn(columnVector, batchIndex, targetTypeInfo);
       return;
     }
     switch (targetTypeInfo.getCategory()) {
@@ -635,7 +635,24 @@ public class VectorAssignRow {
     columnVector.isNull[batchIndex] = false;
   }
 
-  /**
+  private void assignNullRowColumn(
+    ColumnVector columnVector, int batchIndex, TypeInfo targetTypeInfo) {
+
+    VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);     
+    
+    if (targetTypeInfo.getCategory() == Category.STRUCT) {
+      final StructColumnVector structColumnVector = (StructColumnVector) columnVector;
+      final StructTypeInfo targetStructTypeInfo = (StructTypeInfo) targetTypeInfo;
+      final List<TypeInfo> targetFieldTypeInfos = targetStructTypeInfo.getAllStructFieldTypeInfos();
+      final int size = targetFieldTypeInfos.size();
+      
+      for (int i = 0; i < size; i++) {
+        assignRowColumn(structColumnVector.fields[i], batchIndex, targetFieldTypeInfos.get(i), null);
+      }
+    }
+  }
+
+    /**
    * Convert row's column object and then assign it the ColumnVector at batchIndex
    * in the VectorizedRowBatch.
    *
