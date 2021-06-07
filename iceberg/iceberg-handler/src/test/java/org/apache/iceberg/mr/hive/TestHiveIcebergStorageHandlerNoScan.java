@@ -822,18 +822,10 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
   @Test
   public void testAlterTableAddColumns() throws Exception {
-    Assume.assumeTrue("Iceberg - alter table/add column is only relevant for HiveCatalog",
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
-
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
-    // Create HMS table with with a property to be translated
-    shell.executeStatement(String.format("CREATE EXTERNAL TABLE default.customers " +
-            "STORED BY ICEBERG " +
-            "TBLPROPERTIES ('%s'='%s', '%s'='%s', '%s'='%s')",
-        InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA),
-        InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(SPEC),
-        InputFormatConfig.EXTERNAL_TABLE_PURGE, "false"));
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, SPEC,
+        FileFormat.PARQUET, ImmutableList.of());
 
     shell.executeStatement("ALTER TABLE default.customers ADD COLUMNS " +
         "(newintcol int, newstringcol string COMMENT 'Column with description')");
@@ -852,9 +844,12 @@ public class TestHiveIcebergStorageHandlerNoScan {
         new FieldSchema("newstringcol", "string", "Column with description"));
 
     Assert.assertEquals(expectedSchema, icebergSchema);
-    Assert.assertEquals(icebergSchema, hmsSchema);
 
-    shell.executeStatement("DROP TABLE " + identifier);
+    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+      expectedSchema.get(0).setComment("from deserializer");
+    }
+
+    Assert.assertEquals(expectedSchema, hmsSchema);
   }
 
   private String getCurrentSnapshotForHiveCatalogTable(org.apache.iceberg.Table icebergTable) {

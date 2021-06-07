@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -100,6 +101,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   private TableMetadata deleteMetadata;
   private boolean canMigrateHiveTable;
   private PreAlterTableProperties preAlterTableProperties;
+  private Enum<?> currentAlterTableOp;
   private UpdateSchema updateSchema;
 
   public HiveIcebergMetaHook(Configuration conf) {
@@ -221,9 +223,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   @Override
   public void preAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws MetaException {
-    if (!isSupportedAlterOperation(context)) {
-      super.preAlterTable(hmsTable, context);
-    }
+    setupAlterOperationType(context);
     catalogProperties = getCatalogProperties(hmsTable);
     try {
       icebergTable = IcebergTableUtil.getTable(conf, catalogProperties);
@@ -258,8 +258,8 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
           Collections.emptyMap()));
       updateHmsTableProperties(hmsTable);
     }
-    if (isMatchingAlterOp(AlterTableType.ADDCOLS, context)) {
-      List<FieldSchema> addedCols =
+    if (AlterTableType.ADDCOLS.equals(currentAlterTableOp)) {
+      Collection<FieldSchema> addedCols =
           HiveSchemaUtil.schemaDifference(hmsTable.getSd().getCols(), HiveSchemaUtil.convert(icebergTable.schema()));
       for (FieldSchema addedCol : addedCols) {
         if (updateSchema == null) {
@@ -289,10 +289,10 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
       HiveTableUtil.importFiles(preAlterTableProperties.tableLocation, preAlterTableProperties.format,
           partitionSpecProxy, preAlterTableProperties.partitionKeys, catalogProperties, conf);
     } else {
-      if (isMatchingAlterOp(AlterTableType.ADDCOLS, context) && updateSchema != null) {
+      if (AlterTableType.ADDCOLS.equals(currentAlterTableOp) && updateSchema != null) {
         updateSchema.commit();
-      } else if (isMatchingAlterOp(AlterTableType.ADDPROPS, context) ||
-          isMatchingAlterOp(AlterTableType.DROPPROPS, context)) {
+      } else if (AlterTableType.ADDPROPS.equals(currentAlterTableOp) ||
+          AlterTableType.DROPPROPS.equals(currentAlterTableOp)) {
 
         Map<String, String> contextProperties = context.getProperties();
         Map<String, String> hmsTableParameters = hmsTable.getParameters();
@@ -337,24 +337,22 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
     }
   }
 
-  private static boolean isSupportedAlterOperation(EnvironmentContext context) {
-    for (Enum<?> op : SUPPORTED_ALTER_OPS) {
-      if (isMatchingAlterOp(op, context)) {
-        return true;
+  private void setupAlterOperationType(EnvironmentContext context) throws MetaException {
+    if (context != null) {
+      Map<String, String> contextProperties = context.getProperties();
+      if (contextProperties != null) {
+        String stringOpType = contextProperties.get(ALTER_TABLE_OPERATION_TYPE);
+        if (stringOpType != null) {
+          currentAlterTableOp = AlterTableType.valueOf(stringOpType);
+          if (SUPPORTED_ALTER_OPS.stream().noneMatch(op -> op.equals(currentAlterTableOp))) {
+            throw new MetaException(
+                "Unsupported ALTER TABLE operation type for Iceberg tables, must be: " + allowedAlterTypes.toString());
+          }
+          return;
+        }
       }
     }
-    return false;
-  }
-
-  private static boolean isMatchingAlterOp(Enum<?> alterOperation, EnvironmentContext context) {
-    if (context == null) {
-      return false;
-    }
-    Map<String, String> contextProperties = context.getProperties();
-    if (contextProperties == null) {
-      return false;
-    }
-    return alterOperation.name().equals(contextProperties.get(ALTER_TABLE_OPERATION_TYPE));
+    throw new MetaException("ALTER TABLE operation type could not be determined.");
   }
 
   private void setFileFormat() {
