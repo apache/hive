@@ -397,6 +397,11 @@ public class StatsOptimizer extends Transform {
           if (udaf instanceof GenericUDAFSum) {
             // long/double/decimal
             ExprNodeDesc desc = aggr.getParameters().get(0);
+            // return null for SUM(1), when the table is empty. Without this, category = LONG, and the result is 0
+            // instead of NULL.
+            if (desc instanceof ExprNodeConstantDesc && rowCnt == 0) {
+              return null;
+            }
             PrimitiveCategory category = GenericUDAFSum.getReturnType(desc.getTypeInfo());
             if (category == null) {
               return null;
