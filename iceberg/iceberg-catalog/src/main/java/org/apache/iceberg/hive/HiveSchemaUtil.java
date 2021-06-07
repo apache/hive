@@ -20,9 +20,10 @@
 package org.apache.iceberg.hive;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -138,24 +139,19 @@ public final class HiveSchemaUtil {
 
   /**
    * Produces the difference of two FieldSchema lists by only taking into account the field name and type.
-   * @param from List of fields to subtract from
-   * @param to List of fields to subtract
+   * @param subtrahendCollection List of fields to subtract from
+   * @param minuendCollection List of fields to subtract
    * @return the result list of difference
    */
-  public static List<FieldSchema> schemaDifference(List<FieldSchema> from, List<FieldSchema> to) {
-    List<FieldSchema> result = new LinkedList<>(from);
-    Iterator<FieldSchema> it = result.iterator();
-    while (it.hasNext()) {
-      FieldSchema fromSchemaField = it.next();
-      for (FieldSchema toSchemaField : to) {
-        if (fromSchemaField.getName().equals(toSchemaField.getName()) &&
-            fromSchemaField.getType().equals(toSchemaField.getType())) {
-          it.remove();
-          break;
-        }
-      }
-    }
-    return result;
+  public static Collection<FieldSchema> schemaDifference(
+      Collection<FieldSchema> subtrahendCollection, Collection<FieldSchema> minuendCollection) {
+
+    Function<FieldSchema, FieldSchema> unsetCommentFunc = fs -> new FieldSchema(fs.getName(), fs.getType(), null);
+    Set<FieldSchema> minuendsWithoutComment =
+        minuendCollection.stream().map(unsetCommentFunc).collect(Collectors.toSet());
+
+    return subtrahendCollection.stream()
+        .filter(fs -> !minuendsWithoutComment.contains(unsetCommentFunc.apply(fs))).collect(Collectors.toList());
   }
 
   private static String convertToTypeString(Type type) {
