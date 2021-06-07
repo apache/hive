@@ -277,7 +277,7 @@ PREHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
 POSTHOOK: query: show create table ` "%&'()*+,-/:;<=>?[]_|{}$^!~#@```
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
-CREATE TABLE ` "%&'()*+,-/:;<=>?[]_|{}$^!~#@``(
+CREATE TABLE `"%&'()*+,-/:;<=>?[]_|{}$^!~#@``(
   ` "%&'()*+,-/;<=>?[]_|{}$^!~#@`` string)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
