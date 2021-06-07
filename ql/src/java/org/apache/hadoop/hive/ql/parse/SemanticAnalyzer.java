@@ -170,6 +170,7 @@ import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -250,6 +251,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -13299,6 +13301,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<List<String>, String> listBucketColValuesMapping = new HashMap<List<String>, String>();
     boolean storedAsDirs = false;
     boolean isUserStorageFormat = false;
+    boolean partitionTransformSpecExists = false;
 
     RowFormatParams rowFormatParams = new RowFormatParams();
     StorageFormat storageFormat = new StorageFormat(conf);
@@ -13404,6 +13407,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                                       "partition columns. "));
         }
         break;
+      case HiveParser.TOK_TABLEPARTCOLSBYSPEC:
+        List<PartitionTransform.PartitionTransformSpec> partitionTransformSpec =
+            PartitionTransform.getPartitionTransformSpec(child);
+
+        if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC,
+            partitionTransformSpec)) {
+          throw new SemanticException("Query state attached to Session state must be not null. " +
+              "Partition transform metadata cannot be saved.");
+        }
+
+        partitionTransformSpecExists = true;
+        break;
       case HiveParser.TOK_TABLEPARTCOLNAMES:
         partColNames = getColumnNames(child);
         break;
@@ -13453,6 +13468,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       default:
         throw new AssertionError("Unknown token: " + child.getToken());
+      }
+    }
+
+    if (partitionTransformSpecExists) {
+      try {
+        HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(conf, storageFormat.getStorageHandler());
+        if (!storageHandler.supportsPartitionTransform()) {
+          throw new SemanticException("Partition transform is not supported for " +
+              storageHandler.getClass().getName());
+        }
+      } catch (HiveException e) {
+        throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
       }
     }
 

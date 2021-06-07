@@ -247,4 +247,12 @@ public interface HiveStorageHandler extends Configurable {
   default boolean alwaysUnpartitioned() {
     return false;
   }
+
+  /**
+   * Check if the underlying storage handler implementation support partition transformations.
+   * @return true if the storage handler can support it
+   */
+  default boolean supportsPartitionTransform() {
+    return false;
+  }
 }
