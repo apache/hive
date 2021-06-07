@@ -274,8 +274,12 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
   @Override
   public void close() throws SQLException {
     if (this.statement != null && (this.statement instanceof HiveStatement)) {
+      /*
+       * HIVE-25203: Be aware that a ResultSet is not supposed to control its parent Statement's
+       * lifecycle, so before adding any logic into this branch, make sure if it's really correct.
+       * One known exception is Statement#closeOnCompletion, which is part of the Statement API.
+       */
       HiveStatement s = (HiveStatement) this.statement;
-      s.closeClientOperation();
       s.closeOnResultSetCompletion();
     } else {
       // for those stmtHandle passed from HiveDatabaseMetaData instead of Statement

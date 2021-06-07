@@ -79,7 +79,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.junit.rules.TestName;
 
 import static java.sql.ResultSet.CONCUR_READ_ONLY;
@@ -3289,6 +3288,21 @@ public class TestJdbcDriver2 {
     assertFalse(stmt.isClosed());
     res.close();
     assertTrue(stmt.isClosed());
+  }
+
+  @Test
+  public void testResultSetShouldNotCloseStatement() throws SQLException {
+    Statement stmt = con.createStatement();
+    ResultSet res = stmt.executeQuery("select under_col from " + tableName + " limit 1");
+    res.next();
+    assertFalse(stmt.isClosed());
+    assertFalse(((HiveStatement)stmt).isQueryClosed());
+    res.close();
+    assertFalse(stmt.isClosed());
+    assertFalse(((HiveStatement)stmt).isQueryClosed()); // check HIVE-25203
+    stmt.close();
+    assertTrue(stmt.isClosed());
+    assertTrue(((HiveStatement)stmt).isQueryClosed());
   }
 
   @Test
