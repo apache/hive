@@ -433,8 +433,7 @@ public class ObjectStore implements RawStore, Configurable {
            JavaUtils.getClass(className, PartitionExpressionProxy.class);
       return JavaUtils.newInstance(clazz, new Class<?>[0], new Object[0]);
     } catch (MetaException e) {
-      LOG.error("Error loading PartitionExpressionProxy", e);
-      throw new RuntimeException("Error loading PartitionExpressionProxy: " + e.getMessage());
+      throw new RuntimeException("Error loading PartitionExpressionProxy", e);
     }
   }
 
@@ -583,14 +582,12 @@ public class ObjectStore implements RawStore, Configurable {
       RuntimeException e = new RuntimeException("commitTransaction was called but openTransactionCalls = "
           + openTrasactionCalls + ". This probably indicates that there are unbalanced " +
           "calls to openTransaction/commitTransaction");
-      LOG.error("Unbalanced calls to open/commit Transaction", e);
       throw e;
     }
     if (!currentTransaction.isActive()) {
       RuntimeException e = new RuntimeException("commitTransaction was called but openTransactionCalls = "
           + openTrasactionCalls + ". This probably indicates that there are unbalanced " +
           "calls to openTransaction/commitTransaction");
-      LOG.error("Unbalanced calls to open/commit Transaction", e);
       throw e;
     }
     openTrasactionCalls--;

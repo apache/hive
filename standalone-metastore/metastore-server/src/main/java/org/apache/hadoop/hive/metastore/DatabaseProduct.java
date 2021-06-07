@@ -291,9 +291,7 @@ public class DatabaseProduct implements Configurable {
     if (epochFn != null) {
       return epochFn;
     } else {
-      String msg = "Unknown database product: " + dbType.toString();
-      LOG.error(msg);
-      throw new MetaException(msg);
+      throw new MetaException("Unknown database product: " + dbType);
     }
   }
 
@@ -320,9 +318,7 @@ public class DatabaseProduct implements Configurable {
       break;
 
     default:
-      String msg = "Unknown database product: " + dbType.toString();
-      LOG.error(msg);
-      throw new MetaException(msg);
+      throw new MetaException("Unknown database product: " + dbType);
   }
     return s;
   }
@@ -354,9 +350,7 @@ public class DatabaseProduct implements Configurable {
       condition = expr + " >= current_timestamp - numtodsinterval(" + intervalInSeconds + " , 'second')";
       break;
     default:
-      String msg = "Unknown database product: " + dbType.toString();
-      LOG.error(msg);
-      throw new MetaException(msg);
+      throw new MetaException("Unknown database product: " + dbType);
   }
     return condition;
   }
@@ -386,9 +380,7 @@ public class DatabaseProduct implements Configurable {
       return selectStatement.substring(0, wherePos) + modifier +
           selectStatement.substring(wherePos, selectStatement.length());
     default:
-      String msg = "Unrecognized database product name <" + dbType + ">";
-      LOG.error(msg);
-      throw new MetaException(msg);
+      throw new MetaException("Unrecognized database product name <" + dbType + ">");
     }
   }
 
@@ -418,9 +410,7 @@ public class DatabaseProduct implements Configurable {
       //https://msdn.microsoft.com/en-us/library/ms189463.aspx
       return "select TOP(" + numRows + ") " + noSelectsqlQuery;
     default:
-      String msg = "Unrecognized database product name <" + dbType + ">";
-      LOG.error(msg);
-      throw new MetaException(msg);
+      throw new MetaException("Unrecognized database product name <" + dbType + ">");
     }
   }
 
@@ -451,9 +441,7 @@ public class DatabaseProduct implements Configurable {
       // https://docs.microsoft.com/en-us/sql/t-sql/queries/hints-transact-sql-table?view=sql-server-ver15
       return "SELECT * FROM \"" + txnLockTable + "\" WITH (" + (shared ? "TABLOCK" : "TABLOCKX") + ", HOLDLOCK)";
     default:
-      String msg = "Unrecognized database product name <" + dbType + ">";
-      LOG.error(msg);
-      throw new MetaException(msg);
+      throw new MetaException("Unrecognized database product name <" + dbType + ">");
     }
   }
 
@@ -527,9 +515,7 @@ public class DatabaseProduct implements Configurable {
       return true;
     case UNDEFINED:
     default:
-      String msg = "Unknown database product: " + dbType.toString();
-      LOG.error(msg);
-      throw new MetaException(msg);
+      throw new MetaException("Unknown database product: " + dbType);
     }
   }
 
@@ -644,9 +630,7 @@ public class DatabaseProduct implements Configurable {
       }
       return insertStmts;
     default:
-      String msg = "Unrecognized database product name <" + dbType + ">";
-      LOG.error(msg);
-      throw new IllegalStateException(msg);
+      throw new IllegalStateException("Unrecognized database product name <" + dbType + ">");
     }
   }
 

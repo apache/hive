@@ -677,9 +677,8 @@ public class HiveMetaStoreChecker {
         nextLevel = tempQueue;
       }
     } catch (InterruptedException | ExecutionException e) {
-      LOG.error("Exception received while listing partition directories", e);
       executor.shutdownNow();
-      throw new MetastoreException(e.getCause());
+      throw new MetastoreException("Exception received while listing partition directories", e);
     }
   }
 }

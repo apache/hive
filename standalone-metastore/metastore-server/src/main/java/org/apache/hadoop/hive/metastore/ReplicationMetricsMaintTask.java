@@ -70,7 +70,7 @@ public class ReplicationMetricsMaintTask implements MetastoreTaskThread {
         LOG.info("Number of deleted entries: {} " + deleteCnt);
       }
     } catch (Exception e) {
-      LOG.error("Exception while trying to delete: " + e.getMessage(), e);
+      LOG.error("Exception while trying to delete", e);
     }
   }
 }

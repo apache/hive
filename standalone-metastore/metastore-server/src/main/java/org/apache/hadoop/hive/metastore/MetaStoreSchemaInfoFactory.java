@@ -47,8 +47,7 @@ public class MetaStoreSchemaInfoFactory {
     try {
       clasz = conf.getClassByName(className);
     } catch (ClassNotFoundException e) {
-      LOG.error("Unable to load class " + className, e);
-      throw new IllegalArgumentException(e);
+      throw new IllegalArgumentException("Unable to load class " + className, e);
     }
     Constructor<?> constructor;
     try {
@@ -57,8 +56,7 @@ public class MetaStoreSchemaInfoFactory {
       return (IMetaStoreSchemaInfo) constructor.newInstance(hiveHome, dbType);
     } catch (NoSuchMethodException | InstantiationException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
-      LOG.error("Unable to create instance of class " + className, e);
-      throw new IllegalArgumentException(e);
+      throw new IllegalArgumentException("Unable to create instance of class " + className, e);
     }
   }
 }

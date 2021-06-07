@@ -68,15 +68,11 @@ public class MetaStoreInit {
         connectUrl = updateData.urlHook.getJdoConnectionUrl(originalConf);
       }
     } catch (Exception e) {
-      LOG.error("Exception while getting connection URL from the hook: " +
-          e);
+      LOG.error("Exception while getting connection URL from the hook", e);
     }
 
     if (connectUrl != null && !connectUrl.equals(currentUrl)) {
-      LOG.error(
-          String.format("Overriding %s with %s",
-              MetastoreConf.ConfVars.CONNECT_URL_KEY.toString(),
-              connectUrl));
+      LOG.error("Overriding {} with {}", MetastoreConf.ConfVars.CONNECT_URL_KEY, connectUrl);
       MetastoreConf.setVar(activeConf, ConfVars.CONNECT_URL_KEY, connectUrl);
       return true;
     }

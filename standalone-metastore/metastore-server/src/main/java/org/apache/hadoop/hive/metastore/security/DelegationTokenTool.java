@@ -245,7 +245,7 @@ public class DelegationTokenTool extends Configured implements Tool {
       return 0;
     }
     catch (Exception exception) {
-      LOG.error("Unexpected exception: ", exception);
+      LOG.error("Unexpected exception", exception);
       return -1;
     }
   }

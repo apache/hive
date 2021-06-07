@@ -80,7 +80,7 @@ public class RetryingHMSHandler implements InvocationHandler {
       invoke(baseHandler, baseHandler.getClass().getDeclaredMethod("init", (Class<?>[]) null),
           null);
     } catch (Throwable e) {
-      LOG.error("HMSHandler Fatal error: " + ExceptionUtils.getStackTrace(e));
+      LOG.error("HMSHandler Fatal error", e);
       MetaException me = new MetaException(e.getMessage());
       me.initCause(e);
       throw me;
@@ -163,11 +163,11 @@ public class RetryingHMSHandler implements InvocationHandler {
             // The JDOException may be wrapped further in a MetaException
             caughtException = e.getCause().getCause();
           } else {
-            LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
+            LOG.error("", e);
             throw e.getCause();
           }
         } else {
-          LOG.error(ExceptionUtils.getStackTrace(e));
+          LOG.error("", e);
           throw e;
         }
       } catch (InvocationTargetException e) {
@@ -180,7 +180,7 @@ public class RetryingHMSHandler implements InvocationHandler {
           if (!methodName.startsWith("get_database") && !methodName.startsWith("get_table")
               && !methodName.startsWith("get_partition") && !methodName.startsWith("get_function")
               && !methodName.startsWith("get_stored_procedure") && !methodName.startsWith("find_package")) {
-            LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
+            LOG.error("" , e);
           }
           throw e.getCause();
         } else if (e.getCause() instanceof MetaException && e.getCause().getCause() != null) {
@@ -191,21 +191,20 @@ public class RetryingHMSHandler implements InvocationHandler {
           } else if (e.getCause().getCause() instanceof DeadlineException) {
             // The Deadline Exception needs no retry and be thrown immediately.
             Deadline.clear();
-            LOG.error("Error happens in method " + method.getName() + ": " +
-                ExceptionUtils.getStackTrace(e.getCause()));
+            LOG.error("Error happens in method " + method.getName(), e);
             throw e.getCause();
           } else {
-            LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
+            LOG.error("", e);
             throw e.getCause();
           }
         } else {
-          LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
+          LOG.error("", e);
           throw e.getCause();
         }
       }
 
       if (retryCount >= retryLimit) {
-        LOG.error("HMSHandler Fatal error: " + ExceptionUtils.getStackTrace(caughtException));
+        LOG.error("HMSHandler Fatal error", caughtException);
         MetaException me = new MetaException(caughtException.getMessage());
         me.initCause(caughtException);
         throw me;
@@ -213,10 +212,8 @@ public class RetryingHMSHandler implements InvocationHandler {
 
       assert (retryInterval >= 0);
       retryCount++;
-      LOG.error(
-        String.format(
-          "Retrying HMSHandler after %d ms (attempt %d of %d)", retryInterval, retryCount, retryLimit) +
-          " with error: " + ExceptionUtils.getStackTrace(caughtException));
+      LOG.error("Retrying HMSHandler after {} ms (attempt {} of {})", retryInterval, retryCount, retryLimit,
+          caughtException);
 
       Thread.sleep(retryInterval);
       // If we have a connection error, the JDO connection URL hook might

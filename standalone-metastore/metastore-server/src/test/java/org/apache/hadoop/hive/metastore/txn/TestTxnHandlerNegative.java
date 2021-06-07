@@ -20,39 +20,26 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.junit.experimental.categories.Category;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.Assert;
 import org.junit.Test;
-
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
+import org.junit.experimental.categories.Category;
 
 @Category(MetastoreUnitTest.class)
 public class TestTxnHandlerNegative {
-  static final private Logger LOG = LoggerFactory.getLogger(TestTxnHandlerNegative.class);
 
   /**
-   * this intentionally sets a bad URL for connection to test error handling logic
-   * in TxnHandler
-   * @throws Exception
+   * This intentionally sets a bad URL for connection to test error handling
+   * logic in TxnHandler.
    */
   @Test
-  public void testBadConnection() throws Exception {
+  public void testBadConnection() {
     Configuration conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY, "blah");
-    RuntimeException e = null;
-    try {
+
+    final RuntimeException re = Assert.assertThrows(RuntimeException.class, () -> {
       TxnUtils.getTxnStore(conf);
-    }
-    catch(RuntimeException ex) {
-      LOG.info("Expected error: " + ex.getMessage(), ex);
-      e = ex;
-    }
-    assertNotNull(e);
-    assertTrue(
-        e.getMessage().contains("No suitable driver found for blah")
-        || e.getMessage().contains("Failed to get driver instance for jdbcUrl=blah")
-    );
+    });
+
+    Assert.assertEquals("Unable to instantiate raw store directly in fastpath mode", re.getMessage());
   }
 }

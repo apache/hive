@@ -284,8 +284,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           try {
             Metrics.shutdown();
           } catch (Exception e) {
-            LOG.error("error in Metrics deinit: " + e.getClass().getName() + " "
-                + e.getMessage(), e);
+            LOG.error("error in Metrics deinit", e);
           }
         }
         // Remove from zookeeper if it's configured
@@ -306,8 +305,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           Metrics.initialize(conf);
         } catch (Exception e) {
           // log exception, but ignore inability to start
-          LOG.error("error in Metrics init: " + e.getClass().getName() + " "
-              + e.getMessage(), e);
+          LOG.error("error in Metrics init", e);
         }
       }
 
@@ -664,8 +662,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             startCompactorWorkers(conf);
           }
         } catch (Throwable e) {
-          LOG.error("Failure when starting the compactor, compactions may not happen, " +
-              StringUtils.stringifyException(e));
+          LOG.error("Failure when starting the compactor, compactions may not happen", e);
         } finally {
           startLock.unlock();
         }
@@ -727,9 +724,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     if (MetaStoreThread.class.isAssignableFrom(o.getClass())) {
       return (MetaStoreThread)o;
     } else {
-      String s = classname + " is not an instance of MetaStoreThread.";
-      LOG.error(s);
-      throw new IOException(s);
+      throw new IOException(classname + " is not an instance of MetaStoreThread");
     }
   }
 

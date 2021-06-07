@@ -173,9 +173,8 @@ public class MessageBuilder {
     try {
       paramsFilter = MetaStoreUtils.compilePatternsToPredicates(excludePatterns);
     } catch (PatternSyntaxException e) {
-      LOG.error("Regex pattern compilation failed. Verify that "
-          + "metastore.notification.parameters.exclude.patterns has valid patterns.");
-      throw new IllegalStateException("Regex pattern compilation failed. " + e.getMessage());
+      throw new IllegalStateException("Regex pattern compilation failed. Verify that "
+          + "metastore.notification.parameters.exclude.patterns has valid patterns.", e);
     }
   }
 
