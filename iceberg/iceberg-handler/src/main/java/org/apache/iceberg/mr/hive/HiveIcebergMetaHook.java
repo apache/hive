@@ -258,6 +258,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
           Collections.emptyMap()));
       updateHmsTableProperties(hmsTable);
     }
+
     if (AlterTableType.ADDCOLS.equals(currentAlterTableOp)) {
       Collection<FieldSchema> addedCols =
           HiveSchemaUtil.schemaDifference(hmsTable.getSd().getCols(), HiveSchemaUtil.convert(icebergTable.schema()));

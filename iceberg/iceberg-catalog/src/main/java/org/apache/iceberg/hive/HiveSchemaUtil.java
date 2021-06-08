@@ -139,19 +139,19 @@ public final class HiveSchemaUtil {
 
   /**
    * Produces the difference of two FieldSchema lists by only taking into account the field name and type.
-   * @param subtrahendCollection List of fields to subtract from
-   * @param minuendCollection List of fields to subtract
+   * @param minuendCollection Collection of fields to subtract from
+   * @param subtrahendCollection Collection of fields to subtract
    * @return the result list of difference
    */
   public static Collection<FieldSchema> schemaDifference(
-      Collection<FieldSchema> subtrahendCollection, Collection<FieldSchema> minuendCollection) {
+      Collection<FieldSchema> minuendCollection, Collection<FieldSchema> subtrahendCollection) {
 
     Function<FieldSchema, FieldSchema> unsetCommentFunc = fs -> new FieldSchema(fs.getName(), fs.getType(), null);
-    Set<FieldSchema> minuendsWithoutComment =
-        minuendCollection.stream().map(unsetCommentFunc).collect(Collectors.toSet());
+    Set<FieldSchema> subtrahendWithoutComment =
+        subtrahendCollection.stream().map(unsetCommentFunc).collect(Collectors.toSet());
 
-    return subtrahendCollection.stream()
-        .filter(fs -> !minuendsWithoutComment.contains(unsetCommentFunc.apply(fs))).collect(Collectors.toList());
+    return minuendCollection.stream()
+        .filter(fs -> !subtrahendWithoutComment.contains(unsetCommentFunc.apply(fs))).collect(Collectors.toList());
   }
 
   private static String convertToTypeString(Type type) {
