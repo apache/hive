@@ -982,25 +982,25 @@ public class TestVectorizedOrcAcidRowBatchReader {
 
   private void setupTestData() throws IOException {
     conf.set("bucket_count", "1");
-    conf.set(ValidTxnList.VALID_TXNS_KEY,
-            new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
+      conf.set(ValidTxnList.VALID_TXNS_KEY,
+          new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
 
     int bucket = 0;
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
-            .filesystem(fs)
-            .bucket(bucket)
-            .writingBase(false)
-            .minimumWriteId(1)
-            .maximumWriteId(NUM_OWID)
-            .inspector(inspector)
-            .reporter(Reporter.NULL)
-            .recordIdColumn(1)
-            .finalDestination(root);
+        .filesystem(fs)
+        .bucket(bucket)
+        .writingBase(false)
+        .minimumWriteId(1)
+        .maximumWriteId(NUM_OWID)
+        .inspector(inspector)
+        .reporter(Reporter.NULL)
+        .recordIdColumn(1)
+        .finalDestination(root);
     RecordUpdater updater = new OrcRecordUpdater(root, options);
     // Create a single insert delta with 150,000 rows, with 15000 rowIds per original transaction id.
     for (long i = 1; i <= NUM_OWID; ++i) {
       for (long j = 0; j < NUM_ROWID_PER_OWID; ++j) {
-        long payload = (i - 1) * NUM_ROWID_PER_OWID + j;
+        long payload = (i-1) * NUM_ROWID_PER_OWID + j;
         updater.insert(i, new DummyRow(payload, j, i, bucket));
       }
     }
