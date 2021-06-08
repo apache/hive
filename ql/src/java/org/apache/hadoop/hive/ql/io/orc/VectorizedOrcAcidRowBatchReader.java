@@ -973,7 +973,7 @@ public class VectorizedOrcAcidRowBatchReader
     BitSet notDeletedBitSet = fetchDeletedRows ? (BitSet) selectedBitSet.clone() : selectedBitSet;
 
     this.deleteEventRegistry.findDeletedRecords(innerRecordIdColumnVector,
-            vectorizedRowBatchBase.size, notDeletedBitSet);
+        vectorizedRowBatchBase.size, notDeletedBitSet);
 
     if (selectedBitSet.cardinality() == vectorizedRowBatchBase.size) {
       // None of the cases above matched and everything is selected. Hence, we will use the
@@ -2106,24 +2106,24 @@ public class VectorizedOrcAcidRowBatchReader
       // check if it is deleted or not.
 
       long[] originalWriteIdVector =
-              cols[OrcRecordUpdater.ORIGINAL_WRITEID].isRepeating ? null
-                      : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector;
+          cols[OrcRecordUpdater.ORIGINAL_WRITEID].isRepeating ? null
+              : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector;
       long repeatedOriginalWriteId = (originalWriteIdVector != null) ? -1
               : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector[0];
 
       long[] bucketProperties =
-              cols[OrcRecordUpdater.BUCKET].isRepeating ? null
-                      : ((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector;
+        cols[OrcRecordUpdater.BUCKET].isRepeating ? null
+          : ((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector;
       int repeatedBucketProperty = (bucketProperties != null) ? -1
-              : (int) ((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector[0];
+        : (int) ((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector[0];
 
       long[] rowIdVector =
           ((LongColumnVector) cols[OrcRecordUpdater.ROW_ID]).vector;
 
       LongColumnVector currentWriteIdVector = (LongColumnVector) cols[OrcRecordUpdater.CURRENT_WRITEID];
       for (int setBitIndex = selectedBitSet.nextSetBit(0);
-           setBitIndex >= 0;
-           setBitIndex = selectedBitSet.nextSetBit(setBitIndex + 1)) {
+          setBitIndex >= 0;
+          setBitIndex = selectedBitSet.nextSetBit(setBitIndex+1)) {
         long owid = originalWriteIdVector != null ? originalWriteIdVector[setBitIndex]
                                                     : repeatedOriginalWriteId ;
         int bucketProperty = bucketProperties != null ? (int)bucketProperties[setBitIndex]
