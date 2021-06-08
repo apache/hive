@@ -255,4 +255,12 @@ public interface HiveStorageHandler extends Configurable {
   default boolean supportsPartitionTransform() {
     return false;
   }
+
+  /**
+   * Get file format property key, if the file format is configured through a table property.
+   * @return table property key, can be null
+   */
+  default String getFileFormatPropertyKey() {
+    return null;
+  }
 }
