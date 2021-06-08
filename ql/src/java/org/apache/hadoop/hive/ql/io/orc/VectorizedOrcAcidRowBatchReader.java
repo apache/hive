@@ -292,7 +292,7 @@ public class VectorizedOrcAcidRowBatchReader
       // delete deltas in memory...
       ColumnizedDeleteEventRegistry.OriginalWriteIdLoader writeIdLoader;
       if (fetchDeletedRows) {
-        writeIdLoader = new ColumnizedDeleteEventRegistry.BothWriteIdLoader();
+        writeIdLoader = new ColumnizedDeleteEventRegistry.OriginalAndCurrentWriteIdLoader();
       } else {
         writeIdLoader = new ColumnizedDeleteEventRegistry.OriginalWriteIdLoader();
       }
@@ -1857,12 +1857,12 @@ public class VectorizedOrcAcidRowBatchReader
       }
     }
 
-    static class BothWriteIdLoader extends OriginalWriteIdLoader {
+    static class OriginalAndCurrentWriteIdLoader extends OriginalWriteIdLoader {
       private final TreeMap<Integer, Long> compressedCwids;
       private long lastCwid;
       private int lastBucketProperty;
 
-      BothWriteIdLoader() {
+      OriginalAndCurrentWriteIdLoader() {
         this.compressedCwids = new TreeMap<>();
         this.lastCwid = -1;
         this.lastBucketProperty = -1;
