@@ -93,7 +93,6 @@ public class VectorCoalesce extends VectorExpression {
       if (cv.isRepeating) {
 
         if (cv.noNulls || !cv.isNull[0]) {
-
           // HIVE-25193: Vectorized Query Execution: ClassCastException when use nvl() function
           // which default_value is decimal type
           if (!cv.getClass().getName().equals(outputColVector.getClass().getName())
