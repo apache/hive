@@ -2032,10 +2032,12 @@ tableFileFormat
       -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $inDriver? $outDriver?)
       | KW_STORED KW_BY storageHandler=StringLiteral
          (KW_WITH KW_SERDEPROPERTIES serdeprops=tableProperties)?
-      -> ^(TOK_STORAGEHANDLER $storageHandler $serdeprops?)
+         (KW_STORED KW_AS fileformat=identifier)?
+      -> ^(TOK_STORAGEHANDLER $storageHandler $serdeprops? ^(TOK_FILEFORMAT_GENERIC $fileformat)?)
       | KW_STORED KW_BY genericSpec=identifier
          (KW_WITH KW_SERDEPROPERTIES serdeprops=tableProperties)?
-      -> ^(TOK_STORAGEHANDLER $genericSpec $serdeprops?)
+         (KW_STORED KW_AS fileformat=identifier)?
+      -> ^(TOK_STORAGEHANDLER $genericSpec $serdeprops? ^(TOK_FILEFORMAT_GENERIC $fileformat)?)
       | KW_STORED KW_AS genericSpec=identifier
       -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
     ;

@@ -13477,15 +13477,28 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    if (partitionTransformSpecExists) {
-      try {
-        HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(conf, storageFormat.getStorageHandler());
-        if (!storageHandler.supportsPartitionTransform()) {
-          throw new SemanticException("Partition transform is not supported for " +
-              storageHandler.getClass().getName());
+    HiveStorageHandler handler;
+    try {
+      handler = HiveUtils.getStorageHandler(conf, storageFormat.getStorageHandler());
+    } catch (HiveException e) {
+      throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
+    }
+
+    if (handler != null) {
+      if (partitionTransformSpecExists && !handler.supportsPartitionTransform()) {
+        throw new SemanticException("Partition transform is not supported for " + handler.getClass().getName());
+      }
+
+      String fileFormatPropertyKey = handler.getFileFormatPropertyKey();
+      if (fileFormatPropertyKey != null) {
+        if (tblProps != null && tblProps.containsKey(fileFormatPropertyKey) && storageFormat.getSerdeProps() != null &&
+            storageFormat.getSerdeProps().containsKey(fileFormatPropertyKey)) {
+          String fileFormat = tblProps.get(fileFormatPropertyKey);
+          throw new SemanticException(
+              "Provide only one of the following: STORED BY " + fileFormat + " or WITH SERDEPROPERTIES('" +
+              fileFormatPropertyKey + "'='" + fileFormat + "') or" + " TBLPROPERTIES('" + fileFormatPropertyKey
+              + "'='" + fileFormat + "')");
         }
-      } catch (HiveException e) {
-        throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
       }
     }
 
