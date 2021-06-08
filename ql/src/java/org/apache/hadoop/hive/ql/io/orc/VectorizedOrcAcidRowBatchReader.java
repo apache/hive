@@ -929,7 +929,7 @@ public class VectorizedOrcAcidRowBatchReader
       copyFromBase(value);
 
       if (rowIsDeletedProjected) {
-        rowIsDeletedVector.clear();
+        rowIsDeletedVector.fill(false);
         int ix = rbCtx.findVirtualColumnNum(VirtualColumn.ROWISDELETED);
         value.cols[ix] = rowIsDeletedVector;
       }
@@ -1001,7 +1001,7 @@ public class VectorizedOrcAcidRowBatchReader
     }
     if (rowIsDeletedProjected) {
       if (!fetchDeletedRows || notDeletedBitSet.cardinality() == vectorizedRowBatchBase.size) {
-        rowIsDeletedVector.setAll(false);
+        rowIsDeletedVector.fill(false);
       } else {
         rowIsDeletedVector.set(notDeletedBitSet);
       }
@@ -2204,18 +2204,13 @@ public class VectorizedOrcAcidRowBatchReader
       super(defaultSize);
     }
 
-    void clear() {
-      Arrays.fill(vector, 0);
-    }
-
-    void setAll(boolean deleted) {
-      vector[0] = deleted ? 1 : 0;
-      isRepeating = true;
+    void fill(boolean deleted) {
+      fill(deleted ? 1 : 0);
     }
 
     void set(BitSet notDeletedBitSet) {
       if (notDeletedBitSet.cardinality() == 0) {
-        setAll(true);
+        fill(true);
       } else {
         Arrays.fill(vector, 1);
         isRepeating = false;
