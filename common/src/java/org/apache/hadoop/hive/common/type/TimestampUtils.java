@@ -196,8 +196,7 @@ public class TimestampUtils {
     } catch (IllegalArgumentException eT) {
       // Try zoned timestamp
       try {
-        return Timestamp.valueOf(
-            TimestampTZUtil.parse(s).getZonedDateTime().toLocalDateTime().toString());
+        return Timestamp.valueOf(TimestampTZUtil.parse(s).getZonedDateTime());
       } catch (IllegalArgumentException | DateTimeParseException eTZ) {
         try {
           // Try HH:mm:ss format (For Hour, Minute & Second UDF).

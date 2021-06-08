@@ -133,7 +133,7 @@ public class TestVectorizedORCReader {
     for (int i = 0; i < 21000; ++i) {
       if ((i % 7) != 0) {
         writer.addRow(new MyRecord(((i % 3) == 0), (byte)(i % 5), i, (long) 200, (short) (300 + i), (double) (400 + i),
-            words[r1.nextInt(words.length)], Timestamp.valueOf(LocalDateTime.now().toString()),
+            words[r1.nextInt(words.length)], Timestamp.valueOf(LocalDateTime.now()),
             Date.valueOf(dates[i % 3]), HiveDecimal.create(decimalStrings[i % decimalStrings.length])));
       } else {
         writer.addRow(new MyRecord(null, null, i, (long) 200, null, null, null, null, null, null));

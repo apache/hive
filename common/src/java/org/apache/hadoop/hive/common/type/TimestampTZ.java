@@ -21,17 +21,24 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.TextStyle;
 
 /**
  * This is the internal type for Timestamp with time zone.
  * The full qualified input format of Timestamp with time zone is
  * "yyyy-MM-dd HH:mm:ss[.SSS...] zoneid/zoneoffset", where the time and zone parts are optional.
- * If time part is absent, a default '00:00:00.0' will be used.
+ * If time part is absent, a default '00:00:00' will be used.
  * If zone part is absent, the system time zone will be used.
  */
 public class TimestampTZ implements Comparable<TimestampTZ> {
 
   private static final ZonedDateTime EPOCH = ZonedDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC);
+
+  private static final DateTimeFormatter FORMATTER =
+      new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_LOCAL_DATE).appendLiteral(' ')
+          .append(DateTimeFormatter.ISO_LOCAL_TIME).appendLiteral(' ').appendZoneText(TextStyle.NARROW).toFormatter();
 
   private ZonedDateTime zonedDateTime;
 
@@ -67,7 +74,7 @@ public class TimestampTZ implements Comparable<TimestampTZ> {
 
   @Override
   public String toString() {
-    return zonedDateTime.format(TimestampTZUtil.FORMATTER);
+    return zonedDateTime.format(FORMATTER);
   }
 
   @Override

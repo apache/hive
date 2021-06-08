@@ -22,6 +22,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.Date;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -65,7 +66,9 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
 
   public static final int BINARY_SORTABLE_LENGTH = 11;
 
-  public static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+  public static final DateTimeFormatter DATE_TIME_FORMAT =
+      new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_LOCAL_DATE).appendLiteral(' ')
+          .append(DateTimeFormatter.ISO_LOCAL_TIME).toFormatter();
 
   private Timestamp timestamp = new Timestamp(0);
 

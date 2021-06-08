@@ -22,23 +22,16 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DateTimeException;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.format.TextStyle;
-import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
-import java.time.temporal.TemporalQueries;
+import java.util.Objects;
 import java.util.TimeZone;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import org.apache.hive.common.util.HiveDateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,65 +39,40 @@ public class TimestampTZUtil {
 
   private static final Logger LOG = LoggerFactory.getLogger(TimestampTZ.class);
 
-  private static final LocalTime DEFAULT_LOCAL_TIME = LocalTime.of(0, 0);
-  private static final Pattern SINGLE_DIGIT_PATTERN = Pattern.compile("[\\+-]\\d:\\d\\d");
-
-  static final DateTimeFormatter FORMATTER;
-  static {
-    DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
-    // Date part
-    builder.append(DateTimeFormatter.ofPattern("uuuu-MM-dd"));
-    // Time part
-    builder.optionalStart().appendLiteral(" ").append(DateTimeFormatter.ofPattern("HH:mm:ss")).
-        optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true).
-        optionalEnd().optionalEnd();
-    // Zone part
-    builder.optionalStart().appendLiteral(" ").optionalEnd();
-    builder.optionalStart().appendZoneText(TextStyle.NARROW).optionalEnd();
-
-    FORMATTER = builder.toFormatter();
-  }
-
   public static TimestampTZ parse(String s) {
     return parse(s, null);
   }
 
-  public static TimestampTZ parse(String s, ZoneId defaultTimeZone) {
-    // need to handle offset with single digital hour, see JDK-8066806
-    s = handleSingleDigitHourOffset(s);
-    TemporalAccessor accessor = FORMATTER.parse(s);
+  public static TimestampTZ parse(String text, ZoneId defaultTimeZone) {
+    Objects.requireNonNull(text);
 
-    LocalDate localDate = accessor.query(TemporalQueries.localDate());
+    final String s = HiveDateTimeFormatter.handleSingleDigitHourOffset(text.trim());
 
-    LocalTime localTime = accessor.query(TemporalQueries.localTime());
-    if (localTime == null) {
-      localTime = DEFAULT_LOCAL_TIME;
-    }
+    TemporalAccessor accessor =
+        HiveDateTimeFormatter.HIVE_DATE_TIME_ZONED.parseBest(s, ZonedDateTime::from, LocalDateTime::from);
 
-    ZoneId zoneId = accessor.query(TemporalQueries.zone());
-    if (zoneId == null) {
-      zoneId = defaultTimeZone;
-      if (zoneId == null) {
+    final ZonedDateTime zonedDateTime;
+
+    if (ZonedDateTime.class.isInstance(accessor)) {
+      zonedDateTime = ZonedDateTime.class.cast(accessor);
+    } else {
+      if (defaultTimeZone == null) {
         throw new DateTimeException("Time Zone not available");
+      }
+      if (LocalDateTime.class.isInstance(accessor)) {
+        zonedDateTime = ZonedDateTime.of(LocalDateTime.class.cast(accessor), defaultTimeZone);
+      } else {
+        // Should never happen as parseBest itself will error if there are no
+        // matches
+        throw new DateTimeException("Unknown TemporalAccessor type");
       }
     }
 
-    ZonedDateTime zonedDateTime = ZonedDateTime.of(localDate, localTime, zoneId);
     if (defaultTimeZone == null) {
       return new TimestampTZ(zonedDateTime);
     }
     return new TimestampTZ(zonedDateTime.withZoneSameInstant(defaultTimeZone));
   }
-
-  private static String handleSingleDigitHourOffset(String s) {
-    Matcher matcher = SINGLE_DIGIT_PATTERN.matcher(s);
-    if (matcher.find()) {
-      int index = matcher.start() + 1;
-      s = s.substring(0, index) + "0" + s.substring(index, s.length());
-    }
-    return s;
-  }
-
 
   public static TimestampTZ parseOrNull(String s, ZoneId defaultTimeZone) {
     try {

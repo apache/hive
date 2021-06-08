@@ -28,20 +28,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
 
 public class CastTimestampToString extends TimestampToStringUnaryUDF {
   private static final long serialVersionUID = 1L;
-  private static final DateTimeFormatter PRINT_FORMATTER;
-
-  static {
-    DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
-    // Date and time parts
-    builder.append(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-    // Fractional part
-    builder.optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true).optionalEnd();
-    PRINT_FORMATTER = builder.toFormatter();
-  }
+  private static final DateTimeFormatter PRINT_FORMATTER =
+      new DateTimeFormatterBuilder().append(DateTimeFormatter.ISO_LOCAL_DATE).appendLiteral(' ')
+          .append(DateTimeFormatter.ISO_LOCAL_TIME).toFormatter();
 
   public CastTimestampToString() {
     super();

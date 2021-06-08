@@ -290,7 +290,7 @@ public class TestJsonSerDe {
       Assert.assertNotNull(results);
       Assert.assertEquals(1, results.size());
       Assert.assertTrue(results.get(0) instanceof TimestampTZ);
-      Assert.assertEquals("2013-08-30 18:02:33.0 US/Pacific",
+      Assert.assertEquals("2013-08-30 18:02:33 US/Pacific",
           results.get(0).toString());
 
     } finally {

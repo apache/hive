@@ -67,26 +67,6 @@ public class TestGenericUDFQuarter {
     runAndVerifyStr("1966-03-31", 1, udf);
     runAndVerifyStr("1966-04-01", 2, udf);
     runAndVerifyStr("1966-12-31", 4, udf);
-
-    // ts str
-    runAndVerifyStr("2014-01-01 00:00:00", 1, udf);
-    runAndVerifyStr("2014-02-10 15:23:00", 1, udf);
-    runAndVerifyStr("2014-03-31 15:23:00", 1, udf);
-    runAndVerifyStr("2014-04-02 15:23:00", 2, udf);
-    runAndVerifyStr("2014-05-28 15:23:00", 2, udf);
-    runAndVerifyStr("2016-06-03 15:23:00", 2, udf);
-    runAndVerifyStr("2016-07-28 15:23:00", 3, udf);
-    runAndVerifyStr("2016-08-29 15:23:00", 3, udf);
-    runAndVerifyStr("2016-09-29 15:23:00", 3, udf);
-    runAndVerifyStr("2016-10-29 15:23:00", 4, udf);
-    runAndVerifyStr("2016-11-29 15:23:00", 4, udf);
-    runAndVerifyStr("2016-12-31 23:59:59.999", 4, udf);
-
-    // negative Unix time
-    runAndVerifyStr("1966-01-01 00:00:00", 1, udf);
-    runAndVerifyStr("1966-03-31 23:59:59.999", 1, udf);
-    runAndVerifyStr("1966-04-01 00:00:00", 2, udf);
-    runAndVerifyStr("1966-12-31 23:59:59.999", 4, udf);
   }
 
   @Test
@@ -97,8 +77,8 @@ public class TestGenericUDFQuarter {
 
     udf.initialize(arguments);
 
-    runAndVerifyStr("2016-03-35", 2, udf);
-    runAndVerifyStr("2014-01-32", 1, udf);
+    runAndVerifyStr("2016-13-35", null, udf);
+    runAndVerifyStr("2014-01-32", null, udf);
     runAndVerifyStr("01/14/2014", null, udf);
     runAndVerifyStr(null, null, udf);
   }

@@ -17,23 +17,16 @@
  */
 package org.apache.hadoop.hive.common.type;
 
-import org.apache.hive.common.util.SuppressFBWarnings;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
-import java.time.format.SignStyle;
 import java.time.temporal.ChronoField;
 import java.util.Objects;
 
-import static java.time.temporal.ChronoField.DAY_OF_MONTH;
-import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
-import static java.time.temporal.ChronoField.YEAR;
+import org.apache.hive.common.util.HiveDateTimeFormatter;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 /**
  * This is the internal type for Date. The full qualified input format of Date
@@ -79,14 +72,6 @@ public class Date implements Comparable<Date> {
 
   private static final LocalDate EPOCH = LocalDate.of(1970, 1, 1);
 
-  private static final DateTimeFormatter PARSE_FORMATTER =
-      new DateTimeFormatterBuilder().appendValue(YEAR, 1, 10, SignStyle.NORMAL).appendLiteral('-')
-          .appendValue(MONTH_OF_YEAR, 1, 2, SignStyle.NORMAL).appendLiteral('-')
-          .appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NORMAL).toFormatter().withResolverStyle(ResolverStyle.LENIENT);
-
-  private static final DateTimeFormatter PRINT_FORMATTER =
-      new DateTimeFormatterBuilder().append(DateTimeFormatter.ofPattern("uuuu-MM-dd")).toFormatter();
-
   private LocalDate localDate;
 
   private Date(LocalDate localDate) {
@@ -103,7 +88,7 @@ public class Date implements Comparable<Date> {
 
   @Override
   public String toString() {
-    return localDate.format(PRINT_FORMATTER);
+    return localDate.toString();
   }
 
   public int hashCode() {
@@ -157,10 +142,10 @@ public class Date implements Comparable<Date> {
   }
 
   /**
-   * Obtains an instance of Date from a text string such as 2021-02-22T09:39:27.
-   * Other supported formats are "2021-02-22T09:39:27Z", "2021-02-22 09:39:27",
-   * "2021-02-22T09:39:27+00:00", "2021-02-22". Any time information is simply
-   * dropped.
+   * DATE values describe a particular year/month/day, in the form YYYY-MM-DD.
+   * For example, DATE '2014-01-02'. Date types do not have a time of day
+   * component. The range of values supported for the Date type is 0000-01-01
+   * to 9999-12-31.
    *
    * @param text the text to parse, not null
    * @return The {@code Date} objects parsed from the text
@@ -169,23 +154,13 @@ public class Date implements Comparable<Date> {
    * @throws NullPointerException if {@code text} is null
    */
   public static Date valueOf(final String text) {
-    String s = Objects.requireNonNull(text).trim();
-    int idx = s.indexOf(" ");
-    if (idx != -1) {
-      s = s.substring(0, idx);
-    } else {
-      idx = s.indexOf('T');
-      if (idx != -1) {
-        s = s.substring(0, idx);
-      }
-    }
-    LocalDate localDate;
+    final String s = Objects.requireNonNull(text).trim();
     try {
-      localDate = LocalDate.parse(s, PARSE_FORMATTER);
+      final LocalDate localDate = LocalDate.parse(s, HiveDateTimeFormatter.HIVE_LOCAL_DATE);
+      return new Date(localDate);
     } catch (DateTimeParseException e) {
-      throw new IllegalArgumentException("Cannot create date, parsing error");
+      throw new IllegalArgumentException("Cannot create date, parsing error: " + text, e);
     }
-    return new Date(localDate);
   }
 
   public static Date ofEpochDay(int epochDay) {

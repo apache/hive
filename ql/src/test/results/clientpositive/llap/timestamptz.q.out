@@ -18,7 +18,7 @@ STAGE PLANS:
           alias: _dummy_table
           Row Limit Per Split: 1
           Select Operator
-            expressions: TIMESTAMPLOCALTZ'2005-01-02 18:01:00.0 US/Pacific' (type: timestamp with local time zone)
+            expressions: TIMESTAMPLOCALTZ'2005-01-02 18:01:00 US/Pacific' (type: timestamp with local time zone)
             outputColumnNames: _col0
             ListSink
 
@@ -30,7 +30,7 @@ POSTHOOK: query: select cast('2005-01-03 02:01:00 GMT' as timestamp with local t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-2005-01-02 18:01:00.0 US/Pacific
+2005-01-02 18:01:00 US/Pacific
 PREHOOK: query: explain select cast('2016-01-03 12:26:34.0123 America/Los_Angeles' as timestamplocaltz)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -84,7 +84,7 @@ STAGE PLANS:
           alias: _dummy_table
           Row Limit Per Split: 1
           Select Operator
-            expressions: TIMESTAMPLOCALTZ'2016-01-02 16:00:00.0 US/Pacific' (type: timestamp with local time zone)
+            expressions: TIMESTAMPLOCALTZ'2016-01-02 16:00:00 US/Pacific' (type: timestamp with local time zone)
             outputColumnNames: _col0
             ListSink
 
@@ -96,7 +96,7 @@ POSTHOOK: query: select cast('2016-01-03Europe/London' as timestamplocaltz)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-2016-01-02 16:00:00.0 US/Pacific
+2016-01-02 16:00:00 US/Pacific
 PREHOOK: query: explain select cast('2016-01-03 13:34:56.38 +1:00' as timestamplocaltz)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

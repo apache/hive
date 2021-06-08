@@ -17,27 +17,20 @@
  */
 package org.apache.hadoop.hive.common.type;
 
-import org.apache.hive.common.util.SuppressFBWarnings;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
-import java.time.format.SignStyle;
 import java.time.temporal.ChronoField;
+import java.util.Objects;
 
-import static java.time.temporal.ChronoField.DAY_OF_MONTH;
-import static java.time.temporal.ChronoField.HOUR_OF_DAY;
-import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
-import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
-import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
-import static java.time.temporal.ChronoField.YEAR;
+import org.apache.hive.common.util.HiveDateTimeFormatter;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 /**
  * This is the internal type for Timestamp. The full qualified input format of
@@ -84,26 +77,9 @@ import static java.time.temporal.ChronoField.YEAR;
 public class Timestamp implements Comparable<Timestamp> {
   
   private static final LocalDateTime EPOCH = LocalDateTime.of(1970, 1, 1, 0, 0, 0);
-  private static final DateTimeFormatter PARSE_FORMATTER = new DateTimeFormatterBuilder()
-      // Date
-      .appendValue(YEAR, 1, 10, SignStyle.NORMAL).appendLiteral('-').appendValue(MONTH_OF_YEAR, 1, 2, SignStyle.NORMAL)
-      .appendLiteral('-').appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NORMAL)
-      // Time (Optional)
-      .optionalStart().appendLiteral(" ").appendValue(HOUR_OF_DAY, 1, 2, SignStyle.NORMAL).appendLiteral(':')
-      .appendValue(MINUTE_OF_HOUR, 1, 2, SignStyle.NORMAL).appendLiteral(':')
-      .appendValue(SECOND_OF_MINUTE, 1, 2, SignStyle.NORMAL).optionalStart()
-      .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true).optionalEnd().optionalEnd().toFormatter()
-      .withResolverStyle(ResolverStyle.LENIENT);
-
-  private static final DateTimeFormatter PRINT_FORMATTER = new DateTimeFormatterBuilder()
-      // Date and Time Parts
-      .append(DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss"))
-      // Fractional Part (Optional)
-      .optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true).optionalEnd().toFormatter();
 
   private LocalDateTime localDateTime;
 
-  /* Private constructor */
   private Timestamp(LocalDateTime localDateTime) {
     this.localDateTime = localDateTime != null ? localDateTime : EPOCH;
   }
@@ -126,7 +102,7 @@ public class Timestamp implements Comparable<Timestamp> {
 
   @Override
   public String toString() {
-    return localDateTime.format(PRINT_FORMATTER);
+    return localDateTime.format(HiveDateTimeFormatter.HIVE_DATE_TIME_FORMATTER);
   }
 
   public int hashCode() {
@@ -178,20 +154,39 @@ public class Timestamp implements Comparable<Timestamp> {
     return localDateTime.getNano();
   }
 
-  public static Timestamp valueOf(String s) {
-    s = s.trim();
-    LocalDateTime localDateTime;
+  /**
+   * Obtains an instance of Timestamp from a text string. Timestamps in text
+   * files have to use the format yyyy-mm-dd hh:mm:ss[.f...]. If they are in
+   * another format, declare them as the appropriate type (INT, FLOAT, STRING,
+   * etc.) and use a UDF to convert them to timestamps.
+   *
+   * @param text the text to parse, not null
+   * @return The {@code Timestamp} objects parsed from the text
+   * @throws IllegalArgumentException if the text cannot be parsed into a
+   *           {@code Date}
+   * @throws NullPointerException if {@code text} is null
+   */
+  public static Timestamp valueOf(final String text) {
+    final String s = Objects.requireNonNull(text).trim();
+
     try {
-      localDateTime = LocalDateTime.parse(s, PARSE_FORMATTER);
+      final LocalDateTime localDateTime = LocalDateTime.parse(s, HiveDateTimeFormatter.HIVE_LOCAL_DATE_TIME);
+      return new Timestamp(localDateTime);
     } catch (DateTimeParseException e) {
-      // Try ISO-8601 format
-      try {
-        localDateTime = LocalDateTime.parse(s);
-      } catch (DateTimeParseException e2) {
-        throw new IllegalArgumentException("Cannot create timestamp, parsing error");
-      }
+      throw new IllegalArgumentException("Cannot parse timestamp text: " + text, e);
     }
-    return new Timestamp(localDateTime);
+  }
+
+  public static Timestamp valueOf(final LocalDateTime dateTime) {
+    return new Timestamp(dateTime);
+  }
+
+  public static Timestamp valueOf(ZonedDateTime dateTime) {
+    return valueOf(dateTime.toLocalDateTime());
+  }
+
+  public static Timestamp valueOf(java.sql.Timestamp timestamp) {
+    return valueOf(timestamp.toLocalDateTime());
   }
 
   public static Timestamp getTimestampFromTime(String s) {
