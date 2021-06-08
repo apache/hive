@@ -54,6 +54,8 @@ import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveSchemaUtil;
+import org.apache.iceberg.mr.Catalogs;
+import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -584,6 +586,26 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     shell.executeStatement("INSERT OVERWRITE TABLE target SELECT * FROM source WHERE FALSE");
 
     HiveIcebergTestUtils.validateData(table, ImmutableList.of(), 0);
+  }
+
+
+  @Test
+  public void testSpecialCharacters() {
+    TableIdentifier table = TableIdentifier.of("default", "tar,! ,get");
+    // note: the Chinese character seems to be accepted in the column name, but not
+    // in the table name - this is the case for both Iceberg and standard Hive tables.
+    shell.executeStatement(String.format(
+        "CREATE TABLE `%s` (id bigint, `dep,! 是,t` string) STORED BY ICEBERG STORED AS %s %s TBLPROPERTIES ('%s'='%s')",
+        table.name(), fileFormat, testTables.locationForCreateTableSQL(table),
+        InputFormatConfig.CATALOG_NAME, Catalogs.ICEBERG_DEFAULT_CATALOG_NAME));
+    shell.executeStatement(String.format("INSERT INTO `%s` VALUES (1, 'moon'), (2, 'star')", table.name()));
+
+    List<Object[]> result = shell.executeStatement(String.format(
+        "SELECT `dep,! 是,t`, id FROM `%s` ORDER BY id", table.name()));
+
+    Assert.assertEquals(2, result.size());
+    Assert.assertArrayEquals(new Object[]{"moon", 1L}, result.get(0));
+    Assert.assertArrayEquals(new Object[]{"star", 2L}, result.get(1));
   }
 
   @Test
