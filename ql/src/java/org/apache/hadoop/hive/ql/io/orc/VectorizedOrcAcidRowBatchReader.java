@@ -314,7 +314,7 @@ public class VectorizedOrcAcidRowBatchReader
           VectorizedRowBatch.DEFAULT_SIZE, null, null, null);
     }
     rowIdProjected = areRowIdsProjected(rbCtx);
-    rowIsDeletedProjected = isVirtualColumnProjected(rbCtx, VirtualColumn.ROWISDELETED);
+    rowIsDeletedProjected = isRowIsDeletedProjected(rbCtx);
     if (rowIsDeletedProjected) {
       rowIsDeletedVector = new RowIsDeletedColumnVector();
     } else {
@@ -836,6 +836,10 @@ public class VectorizedOrcAcidRowBatchReader
     // Update/Delete statement.
     //Either way, we need to decorate "original" rows with row__id
     return isVirtualColumnProjected(rbCtx, VirtualColumn.ROWID);
+  }
+
+  private static boolean isRowIsDeletedProjected(VectorizedRowBatchCtx rbCtx) {
+    return isVirtualColumnProjected(rbCtx, VirtualColumn.ROWISDELETED);
   }
 
   private static boolean isVirtualColumnProjected(VectorizedRowBatchCtx rbCtx, VirtualColumn virtualColumn) {
