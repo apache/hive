@@ -22,6 +22,7 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -90,7 +91,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
       // Initially we'd like to cache the partition spec in HMS, but not push it down later to Iceberg during alter
       // table commands since by then the HMS info can be stale + Iceberg does not store its partition spec in the props
       InputFormatConfig.PARTITION_SPEC);
-  private static final Set<Enum<?>> SUPPORTED_ALTER_OPS = ImmutableSet.of(
+  private static final EnumSet<AlterTableType> SUPPORTED_ALTER_OPS = EnumSet.of(
       AlterTableType.ADDCOLS, AlterTableType.ADDPROPS, AlterTableType.DROPPROPS);
 
   private final Configuration conf;
@@ -101,7 +102,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   private TableMetadata deleteMetadata;
   private boolean canMigrateHiveTable;
   private PreAlterTableProperties preAlterTableProperties;
-  private Enum<?> currentAlterTableOp;
+  private Enum<AlterTableType> currentAlterTableOp;
   private UpdateSchema updateSchema;
 
   public HiveIcebergMetaHook(Configuration conf) {
