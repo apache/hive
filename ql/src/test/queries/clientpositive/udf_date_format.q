@@ -1,6 +1,8 @@
 DESCRIBE FUNCTION date_format;
 DESC FUNCTION EXTENDED date_format;
 
+set hive.local.time.zone=Asia/Kolkata;
+
 explain select date_format('2015-04-08', 'EEEE');
 
 --string date
@@ -58,3 +60,6 @@ date_format(cast(null as timestamp), 'HH');
 select
 date_format('2015-04-08', ''),
 date_format('2015-04-08', 'Q');
+
+-- with current time stamp
+select date_format("2015-04-08 10:30:45","yyyy-MM-dd HH:mm:ss.SSS z");
