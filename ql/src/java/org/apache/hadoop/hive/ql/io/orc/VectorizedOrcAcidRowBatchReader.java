@@ -994,14 +994,10 @@ public class VectorizedOrcAcidRowBatchReader
       value.cols[ix] = recordIdColumnVector;
     }
     if (rowIsDeletedProjected) {
-      if (fetchDeletedRows) {
-        if (notDeletedBitSet.cardinality() == vectorizedRowBatchBase.size) {
-          rowIsDeletedVector.setAll(false);
-        } else {
-          rowIsDeletedVector.set(notDeletedBitSet);
-        }
-      } else {
+      if (!fetchDeletedRows || notDeletedBitSet.cardinality() == vectorizedRowBatchBase.size) {
         rowIsDeletedVector.setAll(false);
+      } else {
+        rowIsDeletedVector.set(notDeletedBitSet);
       }
 
       int ix = rbCtx.findVirtualColumnNum(VirtualColumn.ROWISDELETED);
