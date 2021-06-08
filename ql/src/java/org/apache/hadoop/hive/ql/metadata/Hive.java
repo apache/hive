@@ -1540,7 +1540,8 @@ public class Hive {
       request.setEngine(Constants.HIVE_ENGINE);
       if (checkTransactional) {
         ValidWriteIdList validWriteIdList = null;
-        long txnId = SessionState.get().getTxnMgr() != null ? SessionState.get().getTxnMgr().getCurrentTxnId() : 0;
+        long txnId = SessionState.get() != null && SessionState.get().getTxnMgr() != null ?
+             SessionState.get().getTxnMgr().getCurrentTxnId() : 0;
         if (txnId > 0) {
           validWriteIdList = AcidUtils.getTableValidWriteIdListWithTxnList(conf, dbName, tableName);
         }
