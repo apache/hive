@@ -347,8 +347,8 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
             throw new MetaException(
                 "Unsupported ALTER TABLE operation type for Iceberg tables, must be: " + allowedAlterTypes.toString());
           }
-          return;
         }
+        return;
       }
     }
     throw new MetaException("ALTER TABLE operation type could not be determined.");
