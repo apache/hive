@@ -292,6 +292,9 @@ public class VectorizedOrcAcidRowBatchReader
       // delete deltas in memory...
       ColumnizedDeleteEventRegistry.OriginalWriteIdLoader writeIdLoader;
       if (fetchDeletedRows) {
+        // Deleted rows requires both Current and Original writeId.
+        // Original is for lookup
+        // Current is for updating the writeId in the output record
         writeIdLoader = new ColumnizedDeleteEventRegistry.OriginalAndCurrentWriteIdLoader();
       } else {
         writeIdLoader = new ColumnizedDeleteEventRegistry.OriginalWriteIdLoader();
@@ -964,6 +967,9 @@ public class VectorizedOrcAcidRowBatchReader
     }
 
     // Case 2- find rows which have been deleted.
+    // if deleted rows should be fetched we clone the selectedBitSet to notDeletedBitSet.
+    // Records marked by selectedBitSet should be filtered out from the result but notDeletedBitSet
+    // should be appear with ROW__IS__DELETED = false
     BitSet notDeletedBitSet = fetchDeletedRows ? (BitSet) selectedBitSet.clone() : selectedBitSet;
 
     this.deleteEventRegistry.findDeletedRecords(innerRecordIdColumnVector,
@@ -1027,6 +1033,8 @@ public class VectorizedOrcAcidRowBatchReader
       System.arraycopy(payloadStruct.fields, 0, value.cols, 0, value.getDataColumnCount());
     }
     if (rowIdProjected) {
+      // If deleted rows should be fetched the writeId belongs to the deleted record should be the one which actually did
+      // the delete operation. Current and Original writeId of inserted records are equals.
       recordIdColumnVector.fields[0] = vectorizedRowBatchBase.cols[fetchDeletedRows ? OrcRecordUpdater.CURRENT_WRITEID : OrcRecordUpdater.ORIGINAL_WRITEID];
       recordIdColumnVector.fields[1] = vectorizedRowBatchBase.cols[OrcRecordUpdater.BUCKET];
       recordIdColumnVector.fields[2] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ROW_ID];
