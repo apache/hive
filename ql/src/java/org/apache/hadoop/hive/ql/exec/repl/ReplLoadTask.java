@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.fs.Options;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.IncrementalLoadLogger;
 import org.apache.thrift.TException;
@@ -631,7 +632,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     if (work.replScopeModified) {
       dropTablesExcludedInReplScope(work.currentReplScope);
     }
-    if (!ReplUtils.isTargetOfReplication(getHive().getDatabase(work.dbNameToLoadIn))) {
+    if (!MetaStoreUtils.isTargetOfReplication(getHive().getDatabase(work.dbNameToLoadIn))) {
       Map<String, String> props = new HashMap<>();
       props.put(ReplConst.TARGET_OF_REPLICATION, "true");
       AlterDatabaseSetPropertiesDesc setTargetDesc = new AlterDatabaseSetPropertiesDesc(work.dbNameToLoadIn, props, null);

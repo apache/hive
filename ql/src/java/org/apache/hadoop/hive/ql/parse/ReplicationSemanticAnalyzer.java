@@ -25,8 +25,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
 import java.util.List;
 import java.util.Collections;
@@ -177,7 +176,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
       Database database = db.getDatabase(dbName);
       if (database != null) {
-        if (ReplUtils.isTargetOfReplication(database)) {
+        if (MetaStoreUtils.isTargetOfReplication(database)) {
           LOG.error("Cannot dump database " + dbNameOrPattern + " as it is a target of replication (repl.target.for)");
           throw new SemanticException(ErrorMsg.REPL_DATABASE_IS_TARGET_OF_REPLICATION.getMsg());
         }

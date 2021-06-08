@@ -48,6 +48,7 @@ import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -58,6 +59,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionsSpecByExprResult;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -227,6 +229,30 @@ public class MetaStoreUtils {
     }
 
     return isExternal(params);
+  }
+
+  public static boolean isDbBeingFailedOver(Database db) {
+    assert (db != null);
+    Map<String, String> dbParameters = db.getParameters();
+    return dbParameters != null && ReplConst.TRUE.equalsIgnoreCase(dbParameters.get(ReplConst.REPL_FAILOVER_ENABLED));
+  }
+
+  public static boolean isTargetOfReplication(Database db) {
+    assert (db != null);
+    Map<String, String> dbParameters = db.getParameters();
+    return dbParameters != null && !StringUtils.isEmpty(dbParameters.get(ReplConst.TARGET_OF_REPLICATION));
+  }
+
+  public static boolean checkIfDbNeedsToBeSkipped(Database db) {
+    assert (db != null);
+    if (isDbBeingFailedOver(db)) {
+      LOG.info("Skipping all the tables which belong to database: {} as it is being failed over", db.getName());
+      return true;
+    } else if (isTargetOfReplication(db)) {
+      LOG.info("Skipping all the tables which belong to replicated database: {}", db.getName());
+      return true;
+    }
+    return false;
   }
 
   /**
