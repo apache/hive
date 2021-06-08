@@ -2109,13 +2109,13 @@ public class VectorizedOrcAcidRowBatchReader
           cols[OrcRecordUpdater.ORIGINAL_WRITEID].isRepeating ? null
               : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector;
       long repeatedOriginalWriteId = (originalWriteIdVector != null) ? -1
-              : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector[0];
+          : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector[0];
 
       long[] bucketProperties =
         cols[OrcRecordUpdater.BUCKET].isRepeating ? null
           : ((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector;
       int repeatedBucketProperty = (bucketProperties != null) ? -1
-        : (int) ((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector[0];
+        : (int)((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector[0];
 
       long[] rowIdVector =
           ((LongColumnVector) cols[OrcRecordUpdater.ROW_ID]).vector;
