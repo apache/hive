@@ -55,6 +55,10 @@ while [ $# -gt 0 ]; do
       SERVICE=llapdump
       shift
       ;;
+    --replMigration)
+      SERVICE=replMigration
+      shift
+      ;;
     --skiphadoopversion)
       SKIP_HADOOPVERSION=true
       shift
