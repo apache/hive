@@ -316,7 +316,7 @@ public class VectorizedOrcAcidRowBatchReader
     rowIdProjected = areRowIdsProjected(rbCtx);
     rowIsDeletedProjected = isRowIsDeletedProjected(rbCtx);
     if (rowIsDeletedProjected) {
-      rowIsDeletedVector = new RowIsDeletedColumnVector();
+      rowIsDeletedVector = new RowIsDeletedColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
     } else {
       rowIsDeletedVector = null;
     }
@@ -2195,6 +2195,11 @@ public class VectorizedOrcAcidRowBatchReader
   }
 
   private static class RowIsDeletedColumnVector extends LongColumnVector {
+
+    public RowIsDeletedColumnVector(int defaultSize) {
+      super(defaultSize);
+    }
+
     void clear() {
       Arrays.fill(vector, 0);
     }
