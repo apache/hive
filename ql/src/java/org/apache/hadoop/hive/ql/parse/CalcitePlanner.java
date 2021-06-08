@@ -1661,6 +1661,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // Create and set MD provider
       HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf, HIVE_REL_NODE_CLASSES);
       RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
+      optCluster.invalidateMetadataQuery();
 
       // We need to get the ColumnAccessInfo and viewToTableSchema for views.
       HiveRelFieldTrimmer.get()
