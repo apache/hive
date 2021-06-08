@@ -31,6 +31,7 @@ import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -223,7 +224,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   @Override
   public void preAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws MetaException {
-    setupAlterOperationType(context);
+    setupAlterOperationType(hmsTable, context);
     catalogProperties = getCatalogProperties(hmsTable);
     try {
       icebergTable = IcebergTableUtil.getTable(conf, catalogProperties);
@@ -338,16 +339,20 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
     }
   }
 
-  private void setupAlterOperationType(EnvironmentContext context) throws MetaException {
+  private void setupAlterOperationType(org.apache.hadoop.hive.metastore.api.Table hmsTable,
+      EnvironmentContext context) throws MetaException {
+    TableName tableName = new TableName(hmsTable.getCatName(), hmsTable.getDbName(), hmsTable.getTableName());
     if (context == null || context.getProperties() == null) {
-      throw new MetaException("ALTER TABLE operation type could not be determined.");
+      throw new MetaException("ALTER TABLE operation type on Iceberg table " + tableName +
+          " could not be determined.");
     }
     String stringOpType = context.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
     if (stringOpType != null) {
       currentAlterTableOp = AlterTableType.valueOf(stringOpType);
       if (SUPPORTED_ALTER_OPS.stream().noneMatch(op -> op.equals(currentAlterTableOp))) {
         throw new MetaException(
-            "Unsupported ALTER TABLE operation type for Iceberg tables, must be: " + allowedAlterTypes.toString());
+            "Unsupported ALTER TABLE operation type on Iceberg table " + tableName + ", must be one of: " +
+                SUPPORTED_ALTER_OPS.toString());
       }
     }
   }
