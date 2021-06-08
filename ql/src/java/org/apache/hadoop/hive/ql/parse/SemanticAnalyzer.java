@@ -349,6 +349,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private final Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner;
   private Map<SelectOperator, Table> viewProjectToTableSchema;
   private Operator<? extends OperatorDesc> sinkOp;
+  private final CacheTableHelper cacheTableHelper = new CacheTableHelper();
+
   /**
    * a map for the split sampling, from alias to an instance of SplitSample
    * that describes percentage and number.
@@ -2661,6 +2663,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String viewText = tab.getViewExpandedText();
       TableMask viewMask = new TableMask(this, conf, false);
       viewTree = ParseUtils.parse(viewText, ctx, tab.getCompleteName());
+      cacheTableHelper.populateCacheForView(ctx.getParsedTables(), conf,
+          getTxnMgr(), tab.getDbName(), tab.getTableName());
       if (viewMask.isEnabled() && analyzeRewrite == null) {
         ParseResult parseResult = rewriteASTWithMaskAndFilter(viewMask, viewTree,
             ctx.getViewTokenRewriteStream(viewFullyQualifiedName),
@@ -12273,12 +12277,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         Context rewriteCtx = new Context(conf);
         ctx.addSubContext(rewriteCtx);
         rewrittenTree = ParseUtils.parse(rewrittenQuery, rewriteCtx);
-        return new ParseResult(rewrittenTree, rewriteCtx.getTokenRewriteStream());
+        return new ParseResult(rewrittenTree, rewriteCtx.getTokenRewriteStream(),
+            rewriteCtx.getParsedTables());
       } catch (ParseException e) {
         throw new SemanticException(e);
       }
     } else {
-      return new ParseResult(ast, ctx.getTokenRewriteStream());
+      return new ParseResult(ast, ctx.getTokenRewriteStream(), ctx.getParsedTables());
     }
   }
 
@@ -12457,6 +12462,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean needsTransform = needsTransform();
     //change the location of position alias process here
     processPositionAlias(ast);
+    cacheTableHelper.populateCache(ctx.getParsedTables(), conf, getTxnMgr());
     PlannerContext plannerCtx = pcf.get();
     if (!genResolvedParseTree(ast, plannerCtx)) {
       return;
