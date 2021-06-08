@@ -168,7 +168,7 @@ public class PartitionManagementTask implements MetastoreTaskThread {
           // this always runs in 'sync' mode where partitions can be added and dropped
           MsckInfo msckInfo = new MsckInfo(table.getCatName(), table.getDbName(), table.getTableName(),
             null, null, true, true, true, retentionSeconds);
-          executorService.submit(new MsckThread(msckInfo, msckConf, qualifiedTableName, countDownLatch, msc));
+          executorService.submit(new MsckThread(msckInfo, msckConf, qualifiedTableName, countDownLatch));
         }
         countDownLatch.await();
         executorService.shutdownNow();
@@ -221,20 +221,19 @@ public class PartitionManagementTask implements MetastoreTaskThread {
     private Configuration conf;
     private String qualifiedTableName;
     private CountDownLatch countDownLatch;
-    IMetaStoreClient msc;
 
-    MsckThread(MsckInfo msckInfo, Configuration conf, String qualifiedTableName,
-               CountDownLatch countDownLatch, IMetaStoreClient msc) {
+    MsckThread(MsckInfo msckInfo, Configuration conf, String qualifiedTableName, CountDownLatch countDownLatch) {
       this.msckInfo = msckInfo;
       this.conf = conf;
       this.qualifiedTableName = qualifiedTableName;
       this.countDownLatch = countDownLatch;
-      this.msc = msc;
     }
 
     @Override
     public void run() {
+      IMetaStoreClient msc = null;
       try {
+        msc = new HiveMetaStoreClient(conf);
         if (MetaStoreUtils.isDbBeingFailedOver((msc.getDatabase(msckInfo.getCatalogName(), msckInfo.getDbName())))) {
           LOG.info("Skipping table: {} as it belongs to database being failed over." + msckInfo.getTableName());
           return;
@@ -247,6 +246,9 @@ public class PartitionManagementTask implements MetastoreTaskThread {
       } finally {
         // there is no recovery from exception, so we always count down and retry in next attempt
         countDownLatch.countDown();
+        if (msc != null) {
+          msc.close();
+        }
       }
     }
   }

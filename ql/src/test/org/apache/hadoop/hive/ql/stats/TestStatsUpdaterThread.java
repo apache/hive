@@ -623,6 +623,7 @@ public class TestStatsUpdaterThread {
     hiveConf.setInt(MetastoreConf.ConfVars.STATS_AUTO_UPDATE_WORKER_COUNT.getVarname(), 4);
     String tblWOStats = tblNamePrefix + "_repl_failover_nostats";
     String ptnTblWOStats = tblNamePrefix + "_ptn_repl_failover_nostats";
+    String newTable = "new_table";
     String dbName = ss.getCurrentDatabase();
     StatsUpdaterThread su = createUpdater();
     IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
@@ -649,8 +650,8 @@ public class TestStatsUpdaterThread {
     verifyPartStatsUpToDate(3, 1, msClient, ptnTblWOStats, false);
     Assert.assertEquals(0, su.getQueueLength());
 
-    executeQuery("create table new_table(s string) partitioned by (i int) " + txnProperty);
-    executeQuery("insert into new_table(i, s) values (4, 'test4')");
+    executeQuery("create table " + newTable + "(i int, s string) " + txnProperty);
+    executeQuery("insert into "+ newTable + "(i, s) values (4, 'test4')");
 
     assertFalse(su.runOneIteration());
     Assert.assertEquals(0, su.getQueueLength());
@@ -658,9 +659,15 @@ public class TestStatsUpdaterThread {
     verifyPartStatsUpToDate(3, 1, msClient, ptnTblWOStats, false);
 
     executeQuery("alter database " + dbName + " set dbproperties('" + ReplConst.REPL_FAILOVER_ENABLED + "'='')");
+    assertTrue(su.runOneIteration());
+    Assert.assertEquals(3, su.getQueueLength());
+    drainWorkQueue(su, 3);
+    verifyStatsUpToDate(newTable, Lists.newArrayList("i"), msClient, true);
+    verifyStatsUpToDate(tblWOStats, Lists.newArrayList("i"), msClient, true);
+    verifyPartStatsUpToDate(3, 1, msClient, ptnTblWOStats, true);
     executeQuery("drop table " + tblWOStats);
     executeQuery("drop table " + ptnTblWOStats);
-    executeQuery("drop table new_table");
+    executeQuery("drop table " + newTable);
     msClient.close();
   }
 
