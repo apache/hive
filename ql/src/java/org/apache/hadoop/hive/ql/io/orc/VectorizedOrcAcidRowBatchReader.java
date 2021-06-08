@@ -913,7 +913,7 @@ public class VectorizedOrcAcidRowBatchReader
     } catch (Exception e) {
       throw new IOException("error iterating", e);
     }
-    if (!includeAcidColumns) {
+    if(!includeAcidColumns) {
       //if here, we don't need to filter anything wrt acid metadata columns
       //in fact, they are not even read from file/llap
       value.size = vectorizedRowBatchBase.size;
@@ -978,7 +978,7 @@ public class VectorizedOrcAcidRowBatchReader
       // This loop fills up the selected[] vector with all the index positions that are selected.
       for (int setBitIndex = selectedBitSet.nextSetBit(0), selectedItr = 0;
            setBitIndex >= 0;
-           setBitIndex = selectedBitSet.nextSetBit(setBitIndex + 1), ++selectedItr) {
+           setBitIndex = selectedBitSet.nextSetBit(setBitIndex+1), ++selectedItr) {
         value.selected[selectedItr] = setBitIndex;
       }
     }
@@ -1946,7 +1946,7 @@ public class VectorizedOrcAcidRowBatchReader
                   assert shouldReadDeleteDeltasWithLlap(conf, true);
                 }
                 deleteReaderValue = new DeleteReaderValue(readerData.reader, deleteDeltaFile, readerOptions, bucket,
-                        validWriteIdList, isBucketedTable, conf, keyInterval, orcSplit, numRows, cacheTag, fileId);
+                    validWriteIdList, isBucketedTable, conf, keyInterval, orcSplit, numRows, cacheTag, fileId);
 
                 DeleteRecordKey deleteRecordKey = new DeleteRecordKey();
                 if (deleteReaderValue.next(deleteRecordKey)) {
@@ -2110,16 +2110,16 @@ public class VectorizedOrcAcidRowBatchReader
               : (int) ((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector[0];
 
       long[] rowIdVector =
-              ((LongColumnVector) cols[OrcRecordUpdater.ROW_ID]).vector;
+          ((LongColumnVector) cols[OrcRecordUpdater.ROW_ID]).vector;
 
       LongColumnVector currentWriteIdVector = (LongColumnVector) cols[OrcRecordUpdater.CURRENT_WRITEID];
       for (int setBitIndex = selectedBitSet.nextSetBit(0);
            setBitIndex >= 0;
            setBitIndex = selectedBitSet.nextSetBit(setBitIndex + 1)) {
         long owid = originalWriteIdVector != null ? originalWriteIdVector[setBitIndex]
-                : repeatedOriginalWriteId;
-        int bucketProperty = bucketProperties != null ? (int) bucketProperties[setBitIndex]
-                : repeatedBucketProperty;
+                                                    : repeatedOriginalWriteId ;
+        int bucketProperty = bucketProperties != null ? (int)bucketProperties[setBitIndex]
+          : repeatedBucketProperty;
         long rowId = rowIdVector[setBitIndex];
         writeIds.markAsDeleted(owid, bucketProperty, rowId, rowIds, setBitIndex, selectedBitSet, currentWriteIdVector);
       }
