@@ -340,21 +340,17 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   }
 
   private void setupAlterOperationType(EnvironmentContext context) throws MetaException {
-    if (context != null) {
-      Map<String, String> contextProperties = context.getProperties();
-      if (contextProperties != null) {
-        String stringOpType = contextProperties.get(ALTER_TABLE_OPERATION_TYPE);
-        if (stringOpType != null) {
-          currentAlterTableOp = AlterTableType.valueOf(stringOpType);
-          if (SUPPORTED_ALTER_OPS.stream().noneMatch(op -> op.equals(currentAlterTableOp))) {
-            throw new MetaException(
-                "Unsupported ALTER TABLE operation type for Iceberg tables, must be: " + allowedAlterTypes.toString());
-          }
-        }
-        return;
+    if (context == null || context.getProperties() == null) {
+      throw new MetaException("ALTER TABLE operation type could not be determined.");
+    }
+    String stringOpType = context.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
+    if (stringOpType != null) {
+      currentAlterTableOp = AlterTableType.valueOf(stringOpType);
+      if (SUPPORTED_ALTER_OPS.stream().noneMatch(op -> op.equals(currentAlterTableOp))) {
+        throw new MetaException(
+            "Unsupported ALTER TABLE operation type for Iceberg tables, must be: " + allowedAlterTypes.toString());
       }
     }
-    throw new MetaException("ALTER TABLE operation type could not be determined.");
   }
 
   private void setFileFormat() {
