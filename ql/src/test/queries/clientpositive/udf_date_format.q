@@ -63,3 +63,7 @@ date_format('2015-04-08', 'Q');
 
 -- with current time stamp
 select date_format("2015-04-08 10:30:45","yyyy-MM-dd HH:mm:ss.SSS z");
+
+--julian date
+set hive.local.time.zone=UTC;
+select date_format("1001-01-05","dd---MM--yyyy");

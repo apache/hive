@@ -169,3 +169,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2015-04-08 10:30:45.000 IST
+PREHOOK: query: select date_format("1001-01-05","dd---MM--yyyy")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select date_format("1001-01-05","dd---MM--yyyy")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+05---01--1001

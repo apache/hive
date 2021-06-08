@@ -31,6 +31,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
 import static org.junit.Assert.assertEquals;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -174,6 +176,7 @@ public class TestGenericUDFDateFormat {
 
 
   @Test
+  @Ignore
   public void testJulianDates() throws HiveException {
     GenericUDFDateFormat udf = new GenericUDFDateFormat();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;

@@ -114,8 +114,7 @@ public class GenericUDFDateFormat extends GenericUDF {
       if (d == null) {
         return null;
       }
-
-      ts = Timestamp.ofEpochMilli(d.toEpochMilli(id),id);
+      ts = Timestamp.ofEpochMilli(d.toEpochMilli(id), id);
     }
 
 
