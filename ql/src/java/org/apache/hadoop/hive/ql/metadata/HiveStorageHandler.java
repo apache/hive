@@ -278,8 +278,9 @@ public interface HiveStorageHandler extends Configurable {
    * Commits the inserts for the non-native tables. Used in the {@link org.apache.hadoop.hive.ql.exec.MoveTask}.
    * @param commitProperties Commit properties which are needed for the native commit
    * @param overwrite If this is an INSERT OVERWRITE then it is true
+   * @throws HiveException If there is an error during commit
    */
-  default void nativeCommit(Properties commitProperties, boolean overwrite) {
+  default void nativeCommit(Properties commitProperties, boolean overwrite) throws HiveException {
     throw new UnsupportedOperationException();
   }
 }

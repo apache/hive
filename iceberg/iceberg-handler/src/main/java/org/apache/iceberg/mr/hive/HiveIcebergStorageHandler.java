@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -280,7 +281,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public void nativeCommit(Properties commitProperties, boolean overwrite) {
+  public void nativeCommit(Properties commitProperties, boolean overwrite) throws HiveException {
     String tableName = commitProperties.getProperty(Catalogs.NAME);
     Configuration configuration = SessionState.getSessionConf();
     Optional<JobContext> jobContext = getJobContextForCommitOrAbort(configuration, tableName, overwrite);
@@ -288,9 +289,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       try {
         OutputCommitter committer = new HiveIcebergOutputCommitter();
         committer.commitJob(jobContext.get());
-      } catch (Exception e) {
-        LOG.error("Error while trying to commit job", e);
+      } catch (Throwable e) {
+        LOG.error("Error while trying to commit job, starting rollback", e);
         rollbackInsertTable(configuration, tableName, overwrite);
+        throw new HiveException("Error committing job", e);
       }
     }
   }
