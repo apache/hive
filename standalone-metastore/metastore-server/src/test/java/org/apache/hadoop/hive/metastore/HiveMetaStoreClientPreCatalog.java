@@ -75,11 +75,12 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TApplicationException;
+import org.apache.thrift.TConfiguration;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.layered.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
@@ -473,7 +474,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
               throw new MetaException(e.toString());
             }
           } else {
-            transport = new TSocket(store.getHost(), store.getPort(), clientSocketTimeout);
+            try {
+              transport = new TSocket(new TConfiguration(),store.getHost(), store.getPort(), clientSocketTimeout);
+            } catch (TTransportException e) {
+              tte = e;
+              throw new MetaException(e.toString());
+            }
           }
 
           if (useSasl) {
@@ -511,7 +517,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
             }
           } else {
             if (useFramedTransport) {
-              transport = new TFramedTransport(transport);
+              try {
+                transport = new TFramedTransport(transport);
+              } catch (TTransportException e) {
+                LOG.error("Couldn't create client transport", e);
+                throw new MetaException(e.toString());
+              }
             }
           }
 
