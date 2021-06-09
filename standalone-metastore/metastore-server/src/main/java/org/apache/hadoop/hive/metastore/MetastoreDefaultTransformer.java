@@ -835,7 +835,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
         if (!FileUtils.isSubdirectory(whRootPath.toString(), dbLocation.toString())) {
           tablePath = new Path(db.getLocationUri(), table.getTableName().toLowerCase());
         } else {
-          tablePath = hmsHandler.getWh().getDefaultTablePath(db, table.getTableName().toLowerCase(), true);
+          tablePath = hmsHandler.getWh().getDefaultTablePath(db, table.getTableName(), true);
         }
         table.getSd().setLocation(tablePath.toString());
       }
