@@ -31,10 +31,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -183,10 +183,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         serDeProperties.get(Catalogs.NAME), tableSchema, serDeProperties.get(InputFormatConfig.PARTITION_SPEC));
     Catalogs.createTable(configuration, serDeProperties);
 
-    // set these in the global conf so that we can rollback the table in the lifecycle hook in case of failures
-    String queryId = configuration.get(HiveConf.ConfVars.HIVEQUERYID.varname);
-    configuration.set(String.format(InputFormatConfig.IS_CTAS_QUERY_TEMPLATE, queryId), "true");
-    configuration.set(String.format(InputFormatConfig.CTAS_TABLE_NAME_TEMPLATE, queryId),
+    // set this in the query state so that we can rollback the table in the lifecycle hook in case of failures
+    SessionStateUtil.addResource(configuration, InputFormatConfig.CTAS_TABLE_NAME,
         serDeProperties.getProperty(Catalogs.NAME));
   }
 
