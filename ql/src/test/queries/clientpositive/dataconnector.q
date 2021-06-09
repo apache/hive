@@ -24,7 +24,7 @@ SHOW CONNECTORS;
 -- CREATE IF NOT EXISTS already
 CREATE CONNECTOR IF NOT EXISTS derby_test
 TYPE 'derby'
-URL 'jdbc:derby:./target/tmp/junit_metastore_db;create=true'
+URL 'jdbc:derby:./target/db_for_connectortest.db;create=true'
 COMMENT 'test derby connector'
 WITH DCPROPERTIES (
 "hive.sql.dbcp.username"="APP",
@@ -65,6 +65,7 @@ DESCRIBE CONNECTOR extended mysql_test;
 alter connector mysql_test set OWNER USER newuser;
 DESCRIBE CONNECTOR extended mysql_test;
 
+-- drop remote database and connector
 DROP DATABASE db_derby;
 SHOW DATABASES;
 DROP CONNECTOR mysql_test;
