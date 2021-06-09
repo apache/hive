@@ -331,7 +331,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE);
         commitProperties = new Properties(tableDesc.getProperties());
         overwrite = work.getLoadTableWork().isInsertOverwrite();
-      } else if (work.getLoadFileWork() != null && work.getLoadFileWork().getCtasCreateTableDesc() != null) {
+      } else if (work.getLoadFileWork() != null) {
         // Get the info from the create table data
         CreateTableDesc createTableDesc = work.getLoadFileWork().getCtasCreateTableDesc();
         if (createTableDesc != null) {

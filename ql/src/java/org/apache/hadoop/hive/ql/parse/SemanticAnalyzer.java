@@ -13195,7 +13195,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     if (isCTAS) {
       retValue.put(TABLE_IS_CTAS, Boolean.toString(isCTAS));
-      retValue.put(hive_metastoreConstants.META_TABLE_NAME, qualifiedTableName);
     }
     return retValue;
   }
