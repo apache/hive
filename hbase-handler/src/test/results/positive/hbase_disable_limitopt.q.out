@@ -1,0 +1,49 @@
+PREHOOK: query: CREATE EXTERNAL TABLE hht (key string, value int)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf1:val")
+TBLPROPERTIES ("hbase.table.name" = "hht", "hbase.mapred.output.outputtable" = "hht")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hht
+POSTHOOK: query: CREATE EXTERNAL TABLE hht (key string, value int)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf1:val")
+TBLPROPERTIES ("hbase.table.name" = "hht", "hbase.mapred.output.outputtable" = "hht")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hht
+PREHOOK: query: insert into hht values ('a', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hht
+POSTHOOK: query: insert into hht values ('a', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hht
+PREHOOK: query: insert into hht values ('b', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hht
+POSTHOOK: query: insert into hht values ('b', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hht
+PREHOOK: query: insert into hht values ('c', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hht
+POSTHOOK: query: insert into hht values ('c', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hht
+PREHOOK: query: select * from hht limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hht
+PREHOOK: Output: file:/Users/amagyar/development/hive/itests/qtest/target/tmp/localscratchdir/633aac2b-0e9c-4852-a935-ce9934076da7/hive_2021-06-09_06-47-38_604_7601206630527733345-1/-mr-10001
+POSTHOOK: query: select * from hht limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hht
+POSTHOOK: Output: file:/Users/amagyar/development/hive/itests/qtest/target/tmp/localscratchdir/633aac2b-0e9c-4852-a935-ce9934076da7/hive_2021-06-09_06-47-38_604_7601206630527733345-1/-mr-10001
+a	1
+b	1
+c	1
