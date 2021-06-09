@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
@@ -320,7 +321,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
     try (LocalTableLock lock = acquireLockForFileMove(work.getLoadTableWork())) {
       String storageHandlerClass = null;
-      Properties tableProperties = null;
+      Properties commitProperties = null;
       boolean overwrite = false;
 
       if (work.getLoadTableWork() != null) {
@@ -328,15 +329,15 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         TableDesc tableDesc = work.getLoadTableWork().getTable();
         storageHandlerClass = tableDesc.getProperties().getProperty(
             org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE);
-        tableProperties = tableDesc.getProperties();
+        commitProperties = new Properties(tableDesc.getProperties());
         overwrite = work.getLoadTableWork().isInsertOverwrite();
       } else if (work.getLoadFileWork() != null && work.getLoadFileWork().getCtasCreateTableDesc() != null) {
         // Get the info from the create table data
         CreateTableDesc createTableDesc = work.getLoadFileWork().getCtasCreateTableDesc();
         if (createTableDesc != null) {
           storageHandlerClass = createTableDesc.getStorageHandler();
-          tableProperties = new Properties();
-          tableProperties.putAll(createTableDesc.getTblProps());
+          commitProperties = new Properties();
+          commitProperties.put(hive_metastoreConstants.META_TABLE_NAME, createTableDesc.getDbTableName());
         }
       }
 
@@ -344,7 +345,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       if (storageHandlerClass != null) {
         HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(conf, storageHandlerClass);
         if (storageHandler.useNativeCommit()) {
-          storageHandler.nativeCommit(tableProperties, overwrite);
+          storageHandler.nativeCommit(commitProperties, overwrite);
           return 0;
         }
       }

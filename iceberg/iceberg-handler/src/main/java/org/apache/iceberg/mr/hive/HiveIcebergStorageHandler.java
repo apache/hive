@@ -280,8 +280,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public void nativeCommit(Properties tableProperties, boolean overwrite) {
-    String tableName = tableProperties.getProperty(Catalogs.NAME);
+  public void nativeCommit(Properties commitProperties, boolean overwrite) {
+    String tableName = commitProperties.getProperty(Catalogs.NAME);
     Configuration configuration = SessionState.getSessionConf();
     Optional<JobContext> jobContext = getJobContextForCommitOrAbort(configuration, tableName, overwrite);
     if (jobContext.isPresent()) {

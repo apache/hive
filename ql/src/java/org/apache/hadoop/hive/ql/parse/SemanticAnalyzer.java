@@ -7733,7 +7733,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // this order needs to be enforced because metastore expects a table to exist before we can
         // add any partitions to it.
         isNonNativeTable = tableDescriptor.isNonNative();
-        if (!isNonNativeTable) {
+        if (!isNonNativeTable || destinationTable.getStorageHandler().useNativeCommit()) {
           AcidUtils.Operation acidOp = AcidUtils.Operation.NOT_ACID;
           if (destTableIsTransactional) {
             acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest, isMmTable);
