@@ -78,6 +78,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -244,8 +245,18 @@ public class TestTxnHandler {
     List<Long> txnList = openedTxns.getTxn_ids();
     txnHandler.abortTxns(new AbortTxnsRequest(txnList));
 
+    OpenTxnRequest replRqst = new OpenTxnRequest(2, "me", "localhost");
+    replRqst.setReplPolicy("default.*");
+    replRqst.setTxn_type(TxnType.REPL_CREATED);
+    replRqst.setReplSrcTxnIds(Arrays.asList(1L, 2L));
+    List<Long> targetTxns = txnHandler.openTxns(replRqst).getTxn_ids();
+
+    assertTrue(targetTxnsPresentInReplTxnMap(1L, 2L, targetTxns));
+    txnHandler.abortTxns(new AbortTxnsRequest(targetTxns));
+    assertFalse(targetTxnsPresentInReplTxnMap(1L, 2L, targetTxns));
+
     GetOpenTxnsInfoResponse txnsInfo = txnHandler.getOpenTxnsInfo();
-    assertEquals(3, txnsInfo.getOpen_txns().size());
+    assertEquals(5, txnsInfo.getOpen_txns().size());
     txnsInfo.getOpen_txns().forEach(txn ->
       assertEquals(TxnState.ABORTED, txn.getState())
     );
@@ -1688,6 +1699,16 @@ public class TestTxnHandler {
       long txnId = Long.parseLong(output[idx].trim());
       assertEquals(txnId, targetTxnId.get(idx-1).longValue());
     }
+  }
+
+  private boolean targetTxnsPresentInReplTxnMap(Long startTxnId, Long endTxnId, List<Long> targetTxnId) throws Exception {
+    String[] output = TestTxnDbUtil.queryToString(conf, "SELECT \"RTM_TARGET_TXN_ID\" FROM \"REPL_TXN_MAP\" WHERE " +
+            " \"RTM_SRC_TXN_ID\" >=  " + startTxnId + "AND \"RTM_SRC_TXN_ID\" <=  " + endTxnId).split("\n");
+    List<Long> replayedTxns = new ArrayList<>();
+    for (int idx = 1; idx < output.length; idx++) {
+      replayedTxns.add(Long.parseLong(output[idx].trim()));
+    }
+    return replayedTxns.equals(targetTxnId);
   }
 
   @Test

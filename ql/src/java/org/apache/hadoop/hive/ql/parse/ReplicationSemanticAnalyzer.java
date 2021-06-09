@@ -317,6 +317,12 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         .getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase()), conf), conf)) {
         throw new Exception(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getMsg());
       }
+
+      Database targetDb = Hive.get(conf).getDatabase(replScope.getDbName());
+      if (targetDb != null && MetaStoreUtils.isDbReplIncompatible(targetDb)) {
+        throw new SemanticException("Target Database: " + replScope.getDbName() + " is replication incompatible.");
+      }
+
       if (loadPath != null) {
         DumpMetaData dmd = new DumpMetaData(loadPath, conf);
 
