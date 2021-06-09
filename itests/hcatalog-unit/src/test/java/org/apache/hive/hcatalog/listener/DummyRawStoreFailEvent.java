@@ -194,7 +194,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
 
   @Override
   public List<String> getCatalogs() {
-    return objectStore.getCatalogs();
+    try {
+      return objectStore.getCatalogs();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return null;
   }
 
   @Override
