@@ -3719,8 +3719,31 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public GetTablesResult get_table_objects_by_name_req(GetTablesRequest req) throws TException {
     String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+    if (isDatabaseRemote(req.getDbName())) {
+      return new GetTablesResult(getRemoteTableObjectsInternal(req.getDbName(), req.getTblNames(), req.getTablesPattern()));
+    }
     return new GetTablesResult(getTableObjectsInternal(catName, req.getDbName(),
         req.getTblNames(), req.getCapabilities(), req.getProjectionSpec(), req.getTablesPattern()));
+  }
+
+  private String tableNames2regex(List<String> tableNames) {
+    return "/^(" + String.join("|", tableNames) + ")$/";
+  }
+
+  private List<Table> getRemoteTableObjectsInternal(String dbname, List<String> tableNames, String pattern) throws MetaException {
+    String[] parsedDbName = parseDbName(dbname, conf);
+    try {
+      Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+      List<Table> tables = null;
+      if (tableNames == null || pattern.equals(".*")) {
+        tables = DataConnectorProviderFactory.getDataConnectorProvider(db).getTables(null);
+      } else {
+        tables = DataConnectorProviderFactory.getDataConnectorProvider(db).getTables(tableNames2regex(tableNames));
+      }
+      return FilterUtils.filterTablesIfEnabled(isServerFilterEnabled, filterHook, tables);
+    } catch (Exception e) {
+      return new ArrayList<Table>();
+    }
   }
 
   private List<Table> getTableObjectsInternal(String catName, String dbName,
