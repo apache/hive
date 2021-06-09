@@ -26,8 +26,10 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -133,6 +135,7 @@ import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.hcatalog.data.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
@@ -843,16 +846,24 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   @Override
   public void onAcidWrite(AcidWriteEvent acidWriteEvent, Connection dbConn, SQLGenerator sqlGenerator)
           throws MetaException {
-    AcidWriteMessage msg = MessageBuilder.getInstance().buildAcidWriteMessage(acidWriteEvent,
-            new FileChksumIterator(acidWriteEvent.getFiles(), acidWriteEvent.getChecksums(),
-                    acidWriteEvent.getSubDirs()));
-    NotificationEvent event = new NotificationEvent(0, now(), EventType.ACID_WRITE.toString(),
-        msgEncoder.getSerializer().serialize(msg));
-    event.setMessageFormat(msgEncoder.getMessageFormat());
-    event.setDbName(acidWriteEvent.getDatabase());
-    event.setTableName(acidWriteEvent.getTable());
+    List<NotificationEvent> eventBatch = new ArrayList<>();
+    List<AcidWriteMessage> msgBatch = new ArrayList<>();
+    for (int i = 0; i < acidWriteEvent.getNumRequest(); i++) {
+      AcidWriteEvent acidWriteEventTemp = new AcidWriteEvent(acidWriteEvent.getPartition(i),
+            acidWriteEvent.getTableObj(i), acidWriteEvent.getPartitionObj(i), acidWriteEvent.getNotificationRequest(i));
+      AcidWriteMessage msg = MessageBuilder.getInstance().buildAcidWriteMessage(acidWriteEventTemp,
+              new FileChksumIterator(acidWriteEvent.getFiles(i), acidWriteEvent.getChecksums(i),
+                      acidWriteEvent.getSubDirs(i)));
+      NotificationEvent event = new NotificationEvent(0, now(), EventType.ACID_WRITE.toString(),
+              msgEncoder.getSerializer().serialize(msg));
+      event.setMessageFormat(msgEncoder.getMessageFormat());
+      event.setDbName(acidWriteEvent.getDatabase(i));
+      event.setTableName(acidWriteEvent.getTable(i));
+      eventBatch.add(event);
+      msgBatch.add(msg);
+    }
     try {
-      addWriteNotificationLog(event, acidWriteEvent, dbConn, sqlGenerator, msg);
+      addWriteNotificationLog(eventBatch, acidWriteEvent, dbConn, sqlGenerator, msgBatch);
     } catch (SQLException e) {
       throw new MetaException("Unable to add write notification log " + StringUtils.stringifyException(e));
     }
@@ -1013,7 +1024,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
    *           called on a closed connection
    * @throws MetaException if the sequence table is not properly initialized
    */
-  private long getNextNLId(Connection con, SQLGenerator sqlGenerator, String sequence)
+  private long getNextNLId(Connection con, SQLGenerator sqlGenerator, String sequence, long numValues)
           throws SQLException, MetaException {
 
     final String sfuSql = sqlGenerator.addForUpdateClause(NL_SEL_SQL);
@@ -1028,7 +1039,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       }
     }
 
-    final long updatedNLId = 1L + nextSequenceValue.orElseThrow(
+    final long updatedNLId = numValues + nextSequenceValue.orElseThrow(
         () -> new MetaException("Transaction database not properly configured, failed to determine next NL ID"));
 
     LOG.debug("Going to execute query [{}][1={}][2={}]", NL_UPD_SQL, updatedNLId, sequence);
@@ -1093,20 +1104,18 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     return nextSequenceValue.get();
   }
 
-  private void addWriteNotificationLog(NotificationEvent event, AcidWriteEvent acidWriteEvent, Connection dbConn,
-                                 SQLGenerator sqlGenerator, AcidWriteMessage msg) throws MetaException, SQLException {
-    LOG.debug("DbNotificationListener: adding write notification log for : {}", event.getMessage());
+  private void addWriteNotificationLog(List<NotificationEvent> eventBatch, AcidWriteEvent acidWriteEvent,
+                                       Connection dbConn, SQLGenerator sqlGenerator, List<AcidWriteMessage> msgBatch)
+          throws MetaException, SQLException {
+    LOG.debug("DbNotificationListener: adding write notification log for : {}", eventBatch);
     assert ((dbConn != null) && (sqlGenerator != null));
 
     Statement stmt = null;
     PreparedStatement pst = null;
     ResultSet rs = null;
-    String dbName = acidWriteEvent.getDatabase();
-    String tblName = acidWriteEvent.getTable();
-    String partition = acidWriteEvent.getPartition();
-    String tableObj = msg.getTableObjStr();
-    String partitionObj = msg.getPartitionObjStr();
-    String files = ReplChangeManager.joinWithSeparator(msg.getFiles());
+
+    int numRows;
+    long maxRows = MetastoreConf.getIntVar(conf, ConfVars.JDBC_MAX_BATCH_SIZE);
 
     try {
       stmt = dbConn.createStatement();
@@ -1115,70 +1124,134 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         stmt.execute(st);
       }
 
-      String s = sqlGenerator.addForUpdateClause("select \"WNL_FILES\", \"WNL_ID\" from" +
-                      " \"TXN_WRITE_NOTIFICATION_LOG\" " +
-                      "where \"WNL_DATABASE\" = ? " +
-                      "and \"WNL_TABLE\" = ? " +  " and \"WNL_PARTITION\" = ? " +
-                      "and \"WNL_TXNID\" = " + Long.toString(acidWriteEvent.getTxnId()));
-      List<String> params = Arrays.asList(dbName, tblName, partition);
-      pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
-      LOG.debug("Going to execute query <" + s.replaceAll("\\?", "{}") + ">",
-              quoteString(dbName), quoteString(tblName), quoteString(partition));
-      rs = pst.executeQuery();
-      if (!rs.next()) {
+      String select = sqlGenerator.addForUpdateClause("select \"WNL_FILES\", \"WNL_ID\" from" +
+              " \"TXN_WRITE_NOTIFICATION_LOG\" " +
+              "where \"WNL_DATABASE\" = ? " +
+              "and \"WNL_TABLE\" = ? " + " and \"WNL_PARTITION\" = ? " +
+              "and \"WNL_TXNID\" = ? ");
+      pst = dbConn.prepareStatement(select);
+      List<Integer> insertList = new ArrayList<>();
+      Map<Integer, Pair<Long, String>> updateMap = new HashMap<>();
+      for (int i = 0; i < acidWriteEvent.getNumRequest(); i++) {
+        String dbName = acidWriteEvent.getDatabase(i);
+        String tblName = acidWriteEvent.getTable(i);
+        String partition = acidWriteEvent.getPartition(i);
+        Long txnId = acidWriteEvent.getTxnId(i);
+
+        LOG.debug("Going to execute query <" + select.replaceAll("\\?", "{}") + ">",
+                quoteString(dbName), quoteString(tblName), quoteString(partition));
+        pst.setString(1, dbName);
+        pst.setString(2, tblName);
+        pst.setString(3, partition);
+        pst.setLong(4, txnId);
+        rs = pst.executeQuery();
+        if (!rs.next()) {
+          insertList.add(i);
+        } else {
+          updateMap.put(i, new Pair<>(rs.getLong(1), rs.getString(2)));
+        }
+      }
+
+      if (insertList.size() != 0) {
         // if rs is empty then no lock is taken and thus it can not cause deadlock.
         long nextNLId = getNextNLId(dbConn, sqlGenerator,
-                "org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog");
-        s = "insert into \"TXN_WRITE_NOTIFICATION_LOG\" " +
+                "org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog", insertList.size());
+
+        String insert = "insert into \"TXN_WRITE_NOTIFICATION_LOG\" " +
                 "(\"WNL_ID\", \"WNL_TXNID\", \"WNL_WRITEID\", \"WNL_DATABASE\", \"WNL_TABLE\", " +
                 "\"WNL_PARTITION\", \"WNL_TABLE_OBJ\", \"WNL_PARTITION_OBJ\", " +
                 "\"WNL_FILES\", \"WNL_EVENT_TIME\") VALUES (?,?,?,?,?,?,?,?,?,?)";
+
         closeStmt(pst);
-        int currentTime = now();
-        pst = dbConn.prepareStatement(sqlGenerator.addEscapeCharacters(s));
-        pst.setLong(1, nextNLId);
-        pst.setLong(2, acidWriteEvent.getTxnId());
-        pst.setLong(3, acidWriteEvent.getWriteId());
-        pst.setString(4, dbName);
-        pst.setString(5, tblName);
-        pst.setString(6, partition);
-        pst.setString(7, tableObj);
-        pst.setString(8, partitionObj);
-        pst.setString(9, files);
-        pst.setInt(10, currentTime);
-        LOG.info("Going to execute insert <" + s.replaceAll("\\?", "{}") + ">", nextNLId
-                , acidWriteEvent.getTxnId(), acidWriteEvent.getWriteId(), quoteString(dbName), quoteString(tblName),
-                quoteString(partition), quoteString(tableObj), quoteString(partitionObj), quoteString(files), currentTime);
-        pst.execute();
-      } else {
-        String existingFiles = rs.getString(1);
-        if (existingFiles.contains(sqlGenerator.addEscapeCharacters(files))) {
-          // If list of files are already present then no need to update it again. This scenario can come in case of
-          // retry done to the meta store for the same operation.
-          LOG.info("file list " + files + " already present");
-          return;
+        pst = dbConn.prepareStatement(sqlGenerator.addEscapeCharacters(insert));
+        numRows = 0;
+
+        for (int idx : insertList) {
+          String tableObj = msgBatch.get(idx).getTableObjStr();
+          String partitionObj = msgBatch.get(idx).getPartitionObjStr();
+          String files = ReplChangeManager.joinWithSeparator(msgBatch.get(idx).getFiles());
+          String dbName = acidWriteEvent.getDatabase(idx);
+          String tblName = acidWriteEvent.getTable(idx);
+          String partition = acidWriteEvent.getPartition(idx);
+          int currentTime = now();
+
+          pst.setLong(1, nextNLId);
+          pst.setLong(2, acidWriteEvent.getTxnId(idx));
+          pst.setLong(3, acidWriteEvent.getWriteId(idx));
+          pst.setString(4, dbName);
+          pst.setString(5, tblName);
+          pst.setString(6, partition);
+          pst.setString(7, tableObj);
+          pst.setString(8, partitionObj);
+          pst.setString(9, files);
+          pst.setInt(10, currentTime);
+          LOG.debug("Going to execute insert <" + insert.replaceAll("\\?", "{}") + ">", nextNLId
+            , acidWriteEvent.getTxnId(idx), acidWriteEvent.getWriteId(idx), quoteString(dbName), quoteString(tblName),
+            quoteString(partition), quoteString(tableObj), quoteString(partitionObj), quoteString(files), currentTime);
+          pst.addBatch();
+          numRows++;
+          if (numRows == maxRows) {
+            pst.executeBatch();
+            numRows = 0;
+          }
         }
-        long nlId = rs.getLong(2);
-        int currentTime = now();
-        files = ReplChangeManager.joinWithSeparator(Lists.newArrayList(files, existingFiles));
-        s = "update \"TXN_WRITE_NOTIFICATION_LOG\" set \"WNL_TABLE_OBJ\" = ? ," +
+
+        if (numRows != 0) {
+          pst.executeBatch();
+        }
+      }
+
+      if (updateMap.size() != 0) {
+        String update = "update \"TXN_WRITE_NOTIFICATION_LOG\" set \"WNL_TABLE_OBJ\" = ? ," +
                 " \"WNL_PARTITION_OBJ\" = ? ," +
                 " \"WNL_FILES\" = ? ," +
                 " \"WNL_EVENT_TIME\" = ?" +
                 " where \"WNL_ID\" = ?";
+
         closeStmt(pst);
-        pst = dbConn.prepareStatement(sqlGenerator.addEscapeCharacters(s));
-        pst.setString(1, tableObj);
-        pst.setString(2, partitionObj);
-        pst.setString(3, files);
-        pst.setInt(4, currentTime);
-        pst.setLong(5, nlId);
-        LOG.info("Going to execute update <" + s.replaceAll("\\?", "{}") + ">", quoteString(tableObj),
-                quoteString(partitionObj), quoteString(files), currentTime, nlId);
-        pst.executeUpdate();
+        pst = dbConn.prepareStatement(sqlGenerator.addEscapeCharacters(update));
+        numRows = 0;
+
+        for (Map.Entry entry : updateMap.entrySet()) {
+          int idx = (int) entry.getKey();
+          Pair<Long, String> nlIdInfo = (Pair<Long, String>) entry.getValue();
+          String tableObj = msgBatch.get(idx).getTableObjStr();
+          String partitionObj = msgBatch.get(idx).getPartitionObjStr();
+          String files = ReplChangeManager.joinWithSeparator(msgBatch.get(idx).getFiles());
+          String existingFiles = nlIdInfo.second;
+          long nlId = nlIdInfo.first;
+          int currentTime = now();
+
+          if (existingFiles.contains(sqlGenerator.addEscapeCharacters(files))) {
+            // If list of files are already present then no need to update it again. This scenario can come in case of
+            // retry done to the meta store for the same operation.
+            LOG.info("file list " + files + " already present");
+            continue;
+          }
+
+          files = ReplChangeManager.joinWithSeparator(Lists.newArrayList(files, existingFiles));
+
+          pst.setString(1, tableObj);
+          pst.setString(2, partitionObj);
+          pst.setString(3, files);
+          pst.setInt(4, currentTime);
+          pst.setLong(5, nlId);
+          LOG.debug("Going to execute update <" + update.replaceAll("\\?", "{}") + ">",
+                  quoteString(tableObj), quoteString(partitionObj), quoteString(files), currentTime, nlId);
+          pst.addBatch();
+          numRows++;
+          if (numRows == maxRows) {
+            pst.executeBatch();
+            numRows = 0;
+          }
+        }
+
+        if (numRows != 0) {
+          pst.executeBatch();
+        }
       }
     } catch (SQLException e) {
-      LOG.warn("failed to add write notification log" + e.getMessage());
+      LOG.warn("failed to add write notification log " , e);
       throw e;
     } finally {
       closeStmt(stmt);
@@ -1213,7 +1286,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       long nextEventId = getNextEventId(dbConn, sqlGenerator); 
 
       long nextNLId = getNextNLId(dbConn, sqlGenerator,
-              "org.apache.hadoop.hive.metastore.model.MNotificationLog");
+              "org.apache.hadoop.hive.metastore.model.MNotificationLog", 1);
 
       String insertVal;
       String columns;

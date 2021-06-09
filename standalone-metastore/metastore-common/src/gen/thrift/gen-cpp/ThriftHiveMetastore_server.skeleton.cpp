@@ -1035,6 +1035,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("add_write_notification_log\n");
   }
 
+  void add_write_notification_log_in_batch(WriteNotificationLogBatchResponse& _return, const WriteNotificationLogBatchRequest& rqst) {
+    // Your implementation goes here
+    printf("add_write_notification_log_in_batch\n");
+  }
+
   void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request) {
     // Your implementation goes here
     printf("cm_recycle\n");

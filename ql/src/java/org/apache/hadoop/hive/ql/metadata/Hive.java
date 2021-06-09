@@ -182,6 +182,7 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
+import org.apache.hadoop.hive.metastore.api.WriteNotificationLogBatchRequest;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -2371,7 +2372,7 @@ public class Hive {
       // For acid table, add the acid_write event with file list at the time of load itself. But
       // it should be done after partition is created.
       if (isTxnTable && (null != newFiles)) {
-        addWriteNotificationLog(tbl, partSpec, newFiles, writeId);
+        addWriteNotificationLog(tbl, partSpec, newFiles, writeId, null);
       }
     } else {
       try {
@@ -2549,7 +2550,7 @@ public class Hive {
       // When inserting into a new partition, the add partition event takes care of insert event
       if ((null != oldPart) && (null != newFiles)) {
         if (isTxnTable) {
-          addWriteNotificationLog(tbl, partSpec, newFiles, writeId);
+          addWriteNotificationLog(tbl, partSpec, newFiles, writeId, null);
         } else {
           fireInsertEvent(tbl, partSpec, (loadFileType == LoadFileType.REPLACE_ALL), newFiles);
         }
@@ -3091,11 +3092,18 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // For acid table, add the acid_write event with file list at the time of load itself. But
       // it should be done after partition is created.
 
+      List<WriteNotificationLogRequest> requestList = new ArrayList<>();
       for (Entry<Path, PartitionDetails> entry : partitionDetailsMap.entrySet()) {
         PartitionDetails partitionDetails = entry.getValue();
         if (isTxnTable && partitionDetails.newFiles != null) {
-          addWriteNotificationLog(tbl, partitionDetails.fullSpec, partitionDetails.newFiles, writeId);
+          addWriteNotificationLog(tbl, partitionDetails.fullSpec, partitionDetails.newFiles,
+                  writeId, requestList);
         }
+      }
+      if (requestList.size() != 0) {
+        WriteNotificationLogBatchRequest rqst = new WriteNotificationLogBatchRequest(tbl.getCatName(), tbl.getDbName(),
+                tbl.getTableName(), requestList);
+        get(conf).getSynchronizedMSC().addWriteNotificationLogInBatch(rqst);
       }
 
       setStatsPropAndAlterPartitions(resetStatistics, tbl,
@@ -3282,7 +3290,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             true, ((writeId == null) ? 0 : writeId));
 
     if (AcidUtils.isTransactionalTable(tbl)) {
-      addWriteNotificationLog(tbl, null, newFiles, writeId);
+      addWriteNotificationLog(tbl, null, newFiles, writeId, null);
     } else {
       fireInsertEvent(tbl, null, (loadFileType == LoadFileType.REPLACE_ALL), newFiles);
     }
@@ -3515,7 +3523,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public void addWriteNotificationLog(Table tbl, Map<String, String> partitionSpec,
-                                       List<Path> newFiles, Long writeId) throws HiveException {
+                                       List<Path> newFiles, Long writeId,
+                                       List<WriteNotificationLogRequest> requestList) throws HiveException {
     if (!conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML)) {
       LOG.debug("write notification log is ignored as dml event logging is disabled");
       return;
@@ -3544,14 +3553,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
         }
       }
 
-      addWriteNotificationLog(conf, tbl, partitionVals, txnId, writeId, newFiles);
+      addWriteNotificationLog(conf, tbl, partitionVals, txnId, writeId, newFiles, requestList);
     } catch (IOException | TException e) {
       throw new HiveException(e);
     }
   }
 
   public static void addWriteNotificationLog(HiveConf conf, Table tbl, List<String> partitionVals,
-                                             Long txnId, Long writeId, List<Path> newFiles)
+                                             Long txnId, Long writeId, List<Path> newFiles,
+                                             List<WriteNotificationLogRequest> requestList)
           throws IOException, HiveException, TException {
     FileSystem fileSystem = tbl.getDataLocation().getFileSystem(conf);
     InsertEventRequestData insertData = new InsertEventRequestData();
@@ -3562,7 +3572,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
     addInsertFileInformation(newFiles, fileSystem, insertData);
     rqst.setPartitionVals(partitionVals);
 
-    get(conf).getSynchronizedMSC().addWriteNotificationLog(rqst);
+    if (requestList == null) {
+      get(conf).getSynchronizedMSC().addWriteNotificationLog(rqst);
+    } else {
+      requestList.add(rqst);
+    }
   }
 
   private void fireInsertEvent(Table tbl, Map<String, String> partitionSpec, boolean replace, List<Path> newFiles)

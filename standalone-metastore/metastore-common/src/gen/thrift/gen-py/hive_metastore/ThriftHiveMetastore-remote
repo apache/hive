@@ -227,6 +227,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  FireEventResponse fire_listener_event(FireEventRequest rqst)')
     print('  void flushCache()')
     print('  WriteNotificationLogResponse add_write_notification_log(WriteNotificationLogRequest rqst)')
+    print('  WriteNotificationLogBatchResponse add_write_notification_log_in_batch(WriteNotificationLogBatchRequest rqst)')
     print('  CmRecycleResponse cm_recycle(CmRecycleRequest request)')
     print('  GetFileMetadataByExprResult get_file_metadata_by_expr(GetFileMetadataByExprRequest req)')
     print('  GetFileMetadataResult get_file_metadata(GetFileMetadataRequest req)')
@@ -1594,6 +1595,12 @@ elif cmd == 'add_write_notification_log':
         print('add_write_notification_log requires 1 args')
         sys.exit(1)
     pp.pprint(client.add_write_notification_log(eval(args[0]),))
+
+elif cmd == 'add_write_notification_log_in_batch':
+    if len(args) != 1:
+        print('add_write_notification_log_in_batch requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.add_write_notification_log_in_batch(eval(args[0]),))
 
 elif cmd == 'cm_recycle':
     if len(args) != 1:

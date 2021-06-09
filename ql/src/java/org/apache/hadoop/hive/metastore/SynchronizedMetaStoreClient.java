@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
+import org.apache.hadoop.hive.metastore.api.WriteNotificationLogBatchRequest;
 import org.apache.thrift.TException;
 
 
@@ -125,6 +126,10 @@ public final class SynchronizedMetaStoreClient {
 
   public synchronized void addWriteNotificationLog(WriteNotificationLogRequest rqst) throws TException {
     client.addWriteNotificationLog(rqst);
+  }
+
+  public synchronized void addWriteNotificationLogInBatch(WriteNotificationLogBatchRequest rqst) throws TException {
+    client.addWriteNotificationLogInBatch(rqst);
   }
 
   public synchronized CmRecycleResponse recycleDirToCmPath(CmRecycleRequest request) throws MetaException, TException {

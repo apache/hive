@@ -1387,6 +1387,17 @@ struct WriteNotificationLogResponse {
     // NOP for now, this is just a place holder for future responses
 }
 
+struct WriteNotificationLogBatchRequest {
+    1: required string catalog,
+    2: required string db,
+    3: required string table,
+    4: required list<WriteNotificationLogRequest> requestList,
+}
+
+struct WriteNotificationLogBatchResponse {
+    // NOP for now, this is just a place holder for future responses
+}
+
 struct MetadataPpdResult {
   1: optional binary metadata,
   2: optional binary includeBitset
@@ -2845,6 +2856,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
   void flushCache()
   WriteNotificationLogResponse add_write_notification_log(1:WriteNotificationLogRequest rqst)
+  WriteNotificationLogBatchResponse add_write_notification_log_in_batch(1:WriteNotificationLogBatchRequest rqst)
 
   // Repl Change Management api
   CmRecycleResponse cm_recycle(1:CmRecycleRequest request) throws(1:MetaException o1)

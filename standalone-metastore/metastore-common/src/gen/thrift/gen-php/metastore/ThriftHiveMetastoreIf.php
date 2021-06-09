@@ -1521,6 +1521,11 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function add_write_notification_log(\metastore\WriteNotificationLogRequest $rqst);
     /**
+     * @param \metastore\WriteNotificationLogBatchRequest $rqst
+     * @return \metastore\WriteNotificationLogBatchResponse
+     */
+    public function add_write_notification_log_in_batch(\metastore\WriteNotificationLogBatchRequest $rqst);
+    /**
      * @param \metastore\CmRecycleRequest $request
      * @return \metastore\CmRecycleResponse
      * @throws \metastore\MetaException

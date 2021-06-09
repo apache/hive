@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,58 +35,116 @@ import java.util.List;
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public class AcidWriteEvent extends ListenerEvent {
-  private final WriteNotificationLogRequest writeNotificationLogRequest;
-  private final String partition;
-  private final Table tableObj;
-  private final Partition partitionObj;
+  private final List<WriteNotificationLogRequest> writeNotificationLogRequestList = new ArrayList<>();
+  private final List<String> partitionList = new ArrayList<>();
+  private final List<Table> tableObjList = new ArrayList<>();
+  private final List<Partition> partitionObjList = new ArrayList<>();
 
   public AcidWriteEvent(String partition, Table tableObj, Partition partitionObj,
                         WriteNotificationLogRequest writeNotificationLogRequest) {
     super(true, null);
-    this.writeNotificationLogRequest = writeNotificationLogRequest;
-    this.partition = partition;
-    this.tableObj = tableObj;
-    this.partitionObj = partitionObj;
+    addNotification(partition, tableObj, partitionObj, writeNotificationLogRequest);
   }
 
+  public AcidWriteEvent() {
+    super(true, null);
+  }
+
+  public void addNotification(String partition, Table tableObj, Partition partitionObj,
+                              WriteNotificationLogRequest writeNotificationLogRequest) {
+    this.writeNotificationLogRequestList.add(writeNotificationLogRequest);
+    this.partitionList.add(partition);
+    this.tableObjList.add(tableObj);
+    this.partitionObjList.add(partitionObj);
+  }
+
+  // To maintain the old interface we get the first object and return.
   public Long getTxnId() {
-    return writeNotificationLogRequest.getTxnId();
+    return writeNotificationLogRequestList.get(0).getTxnId();
   }
 
   public List<String> getFiles() {
-    return writeNotificationLogRequest.getFileInfo().getFilesAdded();
+    return writeNotificationLogRequestList.get(0).getFileInfo().getFilesAdded();
   }
 
   public List<String> getChecksums() {
-    return writeNotificationLogRequest.getFileInfo().getFilesAddedChecksum();
+    return writeNotificationLogRequestList.get(0).getFileInfo().getFilesAddedChecksum();
   }
 
   public String getDatabase() {
-    return StringUtils.normalizeIdentifier(writeNotificationLogRequest.getDb());
+    return StringUtils.normalizeIdentifier(writeNotificationLogRequestList.get(0).getDb());
   }
 
   public String getTable() {
-    return StringUtils.normalizeIdentifier(writeNotificationLogRequest.getTable());
+    return StringUtils.normalizeIdentifier(writeNotificationLogRequestList.get(0).getTable());
   }
 
   public String getPartition() {
-    return partition; //Don't normalize partition value, as its case sensitive.
+    return partitionList.get(0); //Don't normalize partition value, as its case sensitive.
   }
 
   public Long getWriteId() {
-    return writeNotificationLogRequest.getWriteId();
+    return writeNotificationLogRequestList.get(0).getWriteId();
   }
 
   public Table getTableObj() {
-    return tableObj;
+    return tableObjList.get(0);
   }
 
   public Partition getPartitionObj() {
-    return partitionObj;
+    return partitionObjList.get(0);
   }
 
   public List<String> getSubDirs() {
-    return writeNotificationLogRequest.getFileInfo().getSubDirectoryList();
+    return writeNotificationLogRequestList.get(0).getFileInfo().getSubDirectoryList();
+  }
+
+  public Long getTxnId(int idx) {
+    return writeNotificationLogRequestList.get(idx).getTxnId();
+  }
+
+  public List<String> getFiles(int idx) {
+    return writeNotificationLogRequestList.get(idx).getFileInfo().getFilesAdded();
+  }
+
+  public List<String> getChecksums(int idx) {
+    return writeNotificationLogRequestList.get(idx).getFileInfo().getFilesAddedChecksum();
+  }
+
+  public String getDatabase(int idx) {
+    return StringUtils.normalizeIdentifier(writeNotificationLogRequestList.get(idx).getDb());
+  }
+
+  public String getTable(int idx) {
+    return StringUtils.normalizeIdentifier(writeNotificationLogRequestList.get(idx).getTable());
+  }
+
+  public String getPartition(int idx) {
+    return partitionList.get(idx); //Don't normalize partition value, as its case sensitive.
+  }
+
+  public Long getWriteId(int idx) {
+    return writeNotificationLogRequestList.get(idx).getWriteId();
+  }
+
+  public Table getTableObj(int idx) {
+    return tableObjList.get(idx);
+  }
+
+  public Partition getPartitionObj(int idx) {
+    return partitionObjList.get(idx);
+  }
+
+  public List<String> getSubDirs(int idx) {
+    return writeNotificationLogRequestList.get(idx).getFileInfo().getSubDirectoryList();
+  }
+
+  public WriteNotificationLogRequest getNotificationRequest(int idx) {
+    return writeNotificationLogRequestList.get(idx);
+  }
+
+  public int getNumRequest() {
+    return writeNotificationLogRequestList.size();
   }
 }
 

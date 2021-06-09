@@ -745,6 +745,10 @@ class WriteNotificationLogRequest;
 
 class WriteNotificationLogResponse;
 
+class WriteNotificationLogBatchRequest;
+
+class WriteNotificationLogBatchResponse;
+
 class MetadataPpdResult;
 
 class GetFileMetadataByExprResult;
@@ -11007,6 +11011,88 @@ class WriteNotificationLogResponse : public virtual ::apache::thrift::TBase {
 void swap(WriteNotificationLogResponse &a, WriteNotificationLogResponse &b);
 
 std::ostream& operator<<(std::ostream& out, const WriteNotificationLogResponse& obj);
+
+
+class WriteNotificationLogBatchRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  WriteNotificationLogBatchRequest(const WriteNotificationLogBatchRequest&);
+  WriteNotificationLogBatchRequest& operator=(const WriteNotificationLogBatchRequest&);
+  WriteNotificationLogBatchRequest() : catalog(), db(), table() {
+  }
+
+  virtual ~WriteNotificationLogBatchRequest() noexcept;
+  std::string catalog;
+  std::string db;
+  std::string table;
+  std::vector<WriteNotificationLogRequest>  requestList;
+
+  void __set_catalog(const std::string& val);
+
+  void __set_db(const std::string& val);
+
+  void __set_table(const std::string& val);
+
+  void __set_requestList(const std::vector<WriteNotificationLogRequest> & val);
+
+  bool operator == (const WriteNotificationLogBatchRequest & rhs) const
+  {
+    if (!(catalog == rhs.catalog))
+      return false;
+    if (!(db == rhs.db))
+      return false;
+    if (!(table == rhs.table))
+      return false;
+    if (!(requestList == rhs.requestList))
+      return false;
+    return true;
+  }
+  bool operator != (const WriteNotificationLogBatchRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WriteNotificationLogBatchRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WriteNotificationLogBatchRequest &a, WriteNotificationLogBatchRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const WriteNotificationLogBatchRequest& obj);
+
+
+class WriteNotificationLogBatchResponse : public virtual ::apache::thrift::TBase {
+ public:
+
+  WriteNotificationLogBatchResponse(const WriteNotificationLogBatchResponse&);
+  WriteNotificationLogBatchResponse& operator=(const WriteNotificationLogBatchResponse&);
+  WriteNotificationLogBatchResponse() {
+  }
+
+  virtual ~WriteNotificationLogBatchResponse() noexcept;
+
+  bool operator == (const WriteNotificationLogBatchResponse & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const WriteNotificationLogBatchResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WriteNotificationLogBatchResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WriteNotificationLogBatchResponse &a, WriteNotificationLogBatchResponse &b);
+
+std::ostream& operator<<(std::ostream& out, const WriteNotificationLogBatchResponse& obj);
 
 typedef struct _MetadataPpdResult__isset {
   _MetadataPpdResult__isset() : metadata(false), includeBitset(false) {}

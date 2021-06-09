@@ -3374,6 +3374,21 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_write_notification_log failed: unknown result')
     end
 
+    def add_write_notification_log_in_batch(rqst)
+      send_add_write_notification_log_in_batch(rqst)
+      return recv_add_write_notification_log_in_batch()
+    end
+
+    def send_add_write_notification_log_in_batch(rqst)
+      send_message('add_write_notification_log_in_batch', Add_write_notification_log_in_batch_args, :rqst => rqst)
+    end
+
+    def recv_add_write_notification_log_in_batch()
+      result = receive_message(Add_write_notification_log_in_batch_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_write_notification_log_in_batch failed: unknown result')
+    end
+
     def cm_recycle(request)
       send_cm_recycle(request)
       return recv_cm_recycle()
@@ -6857,6 +6872,13 @@ module ThriftHiveMetastore
       result = Add_write_notification_log_result.new()
       result.success = @handler.add_write_notification_log(args.rqst)
       write_result(result, oprot, 'add_write_notification_log', seqid)
+    end
+
+    def process_add_write_notification_log_in_batch(seqid, iprot, oprot)
+      args = read_args(iprot, Add_write_notification_log_in_batch_args)
+      result = Add_write_notification_log_in_batch_result.new()
+      result.success = @handler.add_write_notification_log_in_batch(args.rqst)
+      write_result(result, oprot, 'add_write_notification_log_in_batch', seqid)
     end
 
     def process_cm_recycle(seqid, iprot, oprot)
@@ -15075,6 +15097,38 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::WriteNotificationLogResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_write_notification_log_in_batch_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::WriteNotificationLogBatchRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_write_notification_log_in_batch_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::WriteNotificationLogBatchResponse}
     }
 
     def struct_fields; FIELDS; end

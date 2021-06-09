@@ -2744,6 +2744,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     client.add_write_notification_log(rqst);
   }
 
+  @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
+  @Override
+  public void addWriteNotificationLogInBatch(WriteNotificationLogBatchRequest rqst) throws TException {
+    client.add_write_notification_log_in_batch(rqst);
+  }
+
   /**
    * Creates a synchronized wrapper for any {@link IMetaStoreClient}.
    * This may be used by multi-threaded applications until we have

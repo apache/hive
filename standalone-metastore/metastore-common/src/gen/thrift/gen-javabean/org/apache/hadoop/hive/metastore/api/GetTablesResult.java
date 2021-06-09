@@ -331,14 +331,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // TABLES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1050 = iprot.readListBegin();
-                struct.tables = new java.util.ArrayList<Table>(_list1050.size);
-                @org.apache.thrift.annotation.Nullable Table _elem1051;
-                for (int _i1052 = 0; _i1052 < _list1050.size; ++_i1052)
+                org.apache.thrift.protocol.TList _list1058 = iprot.readListBegin();
+                struct.tables = new java.util.ArrayList<Table>(_list1058.size);
+                @org.apache.thrift.annotation.Nullable Table _elem1059;
+                for (int _i1060 = 0; _i1060 < _list1058.size; ++_i1060)
                 {
-                  _elem1051 = new Table();
-                  _elem1051.read(iprot);
-                  struct.tables.add(_elem1051);
+                  _elem1059 = new Table();
+                  _elem1059.read(iprot);
+                  struct.tables.add(_elem1059);
                 }
                 iprot.readListEnd();
               }
@@ -364,9 +364,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(TABLES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.tables.size()));
-          for (Table _iter1053 : struct.tables)
+          for (Table _iter1061 : struct.tables)
           {
-            _iter1053.write(oprot);
+            _iter1061.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -391,9 +391,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.tables.size());
-        for (Table _iter1054 : struct.tables)
+        for (Table _iter1062 : struct.tables)
         {
-          _iter1054.write(oprot);
+          _iter1062.write(oprot);
         }
       }
     }
@@ -402,14 +402,14 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetTablesResult struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list1055 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.tables = new java.util.ArrayList<Table>(_list1055.size);
-        @org.apache.thrift.annotation.Nullable Table _elem1056;
-        for (int _i1057 = 0; _i1057 < _list1055.size; ++_i1057)
+        org.apache.thrift.protocol.TList _list1063 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.tables = new java.util.ArrayList<Table>(_list1063.size);
+        @org.apache.thrift.annotation.Nullable Table _elem1064;
+        for (int _i1065 = 0; _i1065 < _list1063.size; ++_i1065)
         {
-          _elem1056 = new Table();
-          _elem1056.read(iprot);
-          struct.tables.add(_elem1056);
+          _elem1064 = new Table();
+          _elem1064.read(iprot);
+          struct.tables.add(_elem1064);
         }
       }
       struct.setTablesIsSet(true);

@@ -160,7 +160,8 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
           LOG.error("Error listing files", e);
           throw new HiveException(e);
         }
-        context.getDb().addWriteNotificationLog(createdTable, null, newFilesList, tTable.getWriteId());
+        context.getDb().addWriteNotificationLog(createdTable, null,
+                newFilesList, tTable.getWriteId(), null);
       }
     }
   }
