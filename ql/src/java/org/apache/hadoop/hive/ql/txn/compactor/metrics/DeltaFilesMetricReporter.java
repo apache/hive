@@ -53,6 +53,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -197,11 +198,9 @@ public class DeltaFilesMetricReporter {
   }
 
   public static void addAcidMetricsToConfObj(EnumMap<DeltaFilesMetricType, Map<String, Integer>> deltaFilesStats, Configuration conf) {
-    if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
-      deltaFilesStats.forEach((type, value) ->
-          conf.set(type.name(), Joiner.on(",").withKeyValueSeparator("->").join(value))
-      );
-    }
+    deltaFilesStats.forEach((type, value) ->
+        conf.set(type.name(), Joiner.on(",").withKeyValueSeparator("->").join(value))
+    );
   }
 
   public static void backPropagateAcidMetrics(JobConf jobConf, Configuration conf) {
@@ -216,8 +215,9 @@ public class DeltaFilesMetricReporter {
   }
 
   public static void close() {
-    if (getInstance() != null && getInstance().acidMetricsExtEnabled) {
-      getInstance().executorService.shutdownNow();
+    DeltaFilesMetricReporter reporter = getInstance();
+    if (reporter != null && reporter.executorService != null) {
+      reporter.executorService.shutdownNow();
     }
   }
 
@@ -242,24 +242,22 @@ public class DeltaFilesMetricReporter {
 
   private void configure(HiveConf conf) {
     acidMetricsExtEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
-    if (acidMetricsExtEnabled) {
-      deltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD);
-      obsoleteDeltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD);
+    deltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD);
+    obsoleteDeltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD);
 
-      initMetricsCache(conf);
-      long reportingInterval = HiveConf.getTimeVar(conf,
-          HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_REPORTING_INTERVAL, TimeUnit.SECONDS);
+    initMetricsCache(conf);
+    long reportingInterval = HiveConf.getTimeVar(conf,
+        HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_REPORTING_INTERVAL, TimeUnit.SECONDS);
 
-      ThreadFactory threadFactory =
-          new ThreadFactoryBuilder()
-              .setDaemon(true)
-              .setNameFormat("DeltaFilesMetricReporter %d")
-              .build();
-      executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
-      executorService.scheduleAtFixedRate(
-          new ReportingTask(), 0, reportingInterval, TimeUnit.SECONDS);
-      LOG.info("Started DeltaFilesMetricReporter thread");
-    }
+    ThreadFactory threadFactory =
+        new ThreadFactoryBuilder()
+            .setDaemon(true)
+            .setNameFormat("DeltaFilesMetricReporter %d")
+            .build();
+    executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
+    executorService.scheduleAtFixedRate(
+        new ReportingTask(), 0, reportingInterval, TimeUnit.SECONDS);
+    LOG.info("Started DeltaFilesMetricReporter thread");
   }
 
   private void initMetricsCache(HiveConf conf) {

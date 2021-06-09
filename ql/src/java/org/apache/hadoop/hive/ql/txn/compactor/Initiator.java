@@ -104,7 +104,8 @@ public class Initiator extends MetaStoreCompactorThread {
       long abortedTimeThreshold = HiveConf
           .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
               TimeUnit.MILLISECONDS);
-      boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED);
+      boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
+          MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
       Pair<AtomicInteger, AtomicInteger> ratio =
           Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_INITIATOR_RATIO);
 
@@ -120,7 +121,7 @@ public class Initiator extends MetaStoreCompactorThread {
         // don't doom the entire thread.
         try {
           handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Initiator.name());
-          if (metricsEnabled && MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+          if (metricsEnabled) {
             ratio.getRight().incrementAndGet();
             perfLogger.perfLogBegin(CLASS_NAME, MetricsConstants.COMPACTION_INITIATOR_CYCLE);
           }
@@ -179,7 +180,7 @@ public class Initiator extends MetaStoreCompactorThread {
           recoverFailedCompactions(true);
         } catch (Throwable t) {
           // the lock timeout on AUX lock, should be ignored.
-          if (metricsEnabled && handle != null && MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+          if (metricsEnabled && handle != null) {
             ratio.getLeft().incrementAndGet();
           }
           LOG.error("Initiator loop caught unexpected exception this time through the loop: " +
@@ -189,7 +190,7 @@ public class Initiator extends MetaStoreCompactorThread {
           if (handle != null) {
             handle.releaseLocks();
           }
-          if (metricsEnabled && MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+          if (metricsEnabled) {
             perfLogger.perfLogEnd(CLASS_NAME, MetricsConstants.COMPACTION_INITIATOR_CYCLE);
           }
         }
