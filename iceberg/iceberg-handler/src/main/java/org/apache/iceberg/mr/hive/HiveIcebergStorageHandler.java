@@ -288,7 +288,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     if (jobContext.isPresent()) {
       OutputCommitter committer = new HiveIcebergOutputCommitter();
       try {
-        // Committing the job
         committer.commitJob(jobContext.get());
       } catch (Throwable e) {
         // Aborting the job if the commit has failed
@@ -300,7 +299,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", ioe);
           // no throwing here because the original exception should be propagated
         }
-        throw new HiveException("Error committing job: " + jobContext.get().getJobID() + " for table: " + tableName);
+        throw new HiveException(
+            "Error committing job: " + jobContext.get().getJobID() + " for table: " + tableName, e);
       }
     }
   }
