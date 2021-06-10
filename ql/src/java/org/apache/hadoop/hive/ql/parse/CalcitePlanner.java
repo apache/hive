@@ -1658,14 +1658,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RexExecutor executorProvider = new HiveRexExecutorImpl();
       calcitePlan.getCluster().getPlanner().setExecutor(executorProvider);
 
+      // Create and set MD provider
+      HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf, HIVE_REL_NODE_CLASSES);
+      RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
+      optCluster.invalidateMetadataQuery();
+
       // We need to get the ColumnAccessInfo and viewToTableSchema for views.
       HiveRelFieldTrimmer.get()
           .trim(HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
               calcitePlan, this.columnAccessInfo, this.viewProjectToTableSchema);
-
-      // Create and set MD provider
-      HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf, HIVE_REL_NODE_CLASSES);
-      RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
 
       //Remove subquery
       if (LOG.isDebugEnabled()) {
