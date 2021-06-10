@@ -207,6 +207,7 @@ public class InputFormatConfig {
     if (readColumns == null || readColumns.isEmpty()) {
       return null;
     }
+
     return readColumns.split(conf.get(serdeConstants.COLUMN_NAME_DELIMITER, String.valueOf(SerDeUtils.COMMA)));
   }
 
