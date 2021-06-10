@@ -1655,6 +1655,49 @@
           </value>
        </field>
     </class>
+    <class name="MDCPrivilege" table="DC_PRIVS" identity-type="datastore" detachable="true">
+          <index name="DCPrivilegeIndex" unique="true">
+            <column name="AUTHORIZER"/>
+            <column name="NAME"/>
+            <column name="PRINCIPAL_NAME"/>
+            <column name="PRINCIPAL_TYPE"/>
+            <column name="DC_PRIV"/>
+            <column name="GRANTOR"/>
+            <column name="GRANTOR_TYPE"/>
+          </index>
+
+          <datastore-identity>
+            <column name="DC_GRANT_ID"/>
+          </datastore-identity>
+
+          <field name="principalName">
+            <column name="PRINCIPAL_NAME" length="128" jdbc-type="VARCHAR"/>
+          </field>
+          <field name="principalType">
+            <column name="PRINCIPAL_TYPE" length="128" jdbc-type="VARCHAR"/>
+          </field>
+          <field name="dataConnector">
+            <column name="NAME" />
+          </field>
+          <field name="privilege">
+            <column name="DC_PRIV" length="128" jdbc-type="VARCHAR"/>
+          </field>
+          <field name="createTime">
+            <column name="CREATE_TIME" jdbc-type="integer"/>
+          </field>
+          <field name="grantor">
+            <column name="GRANTOR" length="128" jdbc-type="VARCHAR"/>
+          </field>
+          <field name="grantorType">
+            <column name="GRANTOR_TYPE" length="128" jdbc-type="VARCHAR"/>
+          </field>
+          <field name="grantOption">
+            <column name="GRANT_OPTION" jdbc-type="SMALLINT"/>
+          </field>
+          <field name="authorizer">
+            <column name="AUTHORIZER" length="128" jdbc-type="VARCHAR"/>
+          </field>
+        </class>
   </package>
 </jdo>
 

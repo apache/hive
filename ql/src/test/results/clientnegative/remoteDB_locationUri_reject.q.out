@@ -16,10 +16,5 @@ WITH DCPROPERTIES (
 "hive.sql.dbcp.password"="hive1")
 POSTHOOK: type: CREATEDATACONNECTOR
 POSTHOOK: Output: connector:mysql_test
-PREHOOK: query: SHOW CONNECTORS
-PREHOOK: type: SHOWDATACONNECTORS
-POSTHOOK: query: SHOW CONNECTORS
-POSTHOOK: type: SHOWDATACONNECTORS
-mysql_test
 FAILED: ParseException line 4:33 missing USING at 'location' near 'location'
 #### A masked pattern was here ####
