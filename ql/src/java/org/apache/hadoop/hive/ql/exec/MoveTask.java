@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -320,7 +321,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
 
     try (LocalTableLock lock = acquireLockForFileMove(work.getLoadTableWork())) {
-      if (checkAndCommitNatively()) {
+      if (checkAndCommitNatively(work, conf)) {
         return 0;
       }
 
@@ -992,25 +993,27 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
   /**
    * Checks if the StorageHandler provides methods for committing changes which should be used instead of the file
-   * moves. This commit should be executed here if possible.
-   * @return Returns <code>true</code> if the commit was successfully finished
-   * @throws HiveException If there was an error committing
+   * moves. This commit will be executed here if possible.
+   * @param moveWork The {@link MoveWork} we would like to commit
+   * @param configuration The Configuration used to instantiate the {@link HiveStorageHandler} for the target table
+   * @return Returns <code>true</code> if the commit was successfully executed
+   * @throws HiveException If we tried to commit, but there was an error during the process
    */
-  private boolean checkAndCommitNatively() throws HiveException {
+  private static boolean checkAndCommitNatively(MoveWork moveWork, Configuration configuration) throws HiveException {
     String storageHandlerClass = null;
     Properties commitProperties = null;
     boolean overwrite = false;
 
-    if (work.getLoadTableWork() != null) {
+    if (moveWork.getLoadTableWork() != null) {
       // Get the info from the table data
-      TableDesc tableDesc = work.getLoadTableWork().getTable();
+      TableDesc tableDesc = moveWork.getLoadTableWork().getTable();
       storageHandlerClass = tableDesc.getProperties().getProperty(
           org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE);
       commitProperties = new Properties(tableDesc.getProperties());
-      overwrite = work.getLoadTableWork().isInsertOverwrite();
-    } else if (work.getLoadFileWork() != null) {
+      overwrite = moveWork.getLoadTableWork().isInsertOverwrite();
+    } else if (moveWork.getLoadFileWork() != null) {
       // Get the info from the create table data
-      CreateTableDesc createTableDesc = work.getLoadFileWork().getCtasCreateTableDesc();
+      CreateTableDesc createTableDesc = moveWork.getLoadFileWork().getCtasCreateTableDesc();
       if (createTableDesc != null) {
         storageHandlerClass = createTableDesc.getStorageHandler();
         commitProperties = new Properties();
@@ -1020,7 +1023,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
     // If the storage handler supports native commits the use that instead of moving files
     if (storageHandlerClass != null) {
-      HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(conf, storageHandlerClass);
+      HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(configuration, storageHandlerClass);
       if (storageHandler.commitInMoveTask()) {
         storageHandler.storageHandlerCommit(commitProperties, overwrite);
         return true;
