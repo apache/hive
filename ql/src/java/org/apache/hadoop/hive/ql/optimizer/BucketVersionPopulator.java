@@ -135,6 +135,7 @@ public class BucketVersionPopulator extends Transform {
   enum InfoType {
     MANDATORY, OPTIONAL,
   };
+
   /**
    * This class represents the version required by an Operator.
    */
