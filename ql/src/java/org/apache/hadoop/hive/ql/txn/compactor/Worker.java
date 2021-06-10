@@ -59,6 +59,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -250,47 +251,46 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
   static final class CompactionHeartbeater extends Thread {
     static final private Logger LOG = LoggerFactory.getLogger(CompactionHeartbeater.class);
-    private final AtomicBoolean stop = new AtomicBoolean();
     private final CompactionTxn compactionTxn;
     private final String tableName;
     private final HiveConf conf;
-    private final long interval;
-    public CompactionHeartbeater(CompactionTxn compactionTxn, String tableName, HiveConf conf) {
-      this.tableName = tableName;
-      this.compactionTxn = compactionTxn;
-      this.conf = conf;
+    private final long txnTimeout;
 
-      this.interval =
-          MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS) / 2;
+    public CompactionHeartbeater(CompactionTxn compactionTxn, String tableName, HiveConf conf) {
+      this.tableName = Objects.requireNonNull(tableName);
+      this.compactionTxn = Objects.requireNonNull(compactionTxn);
+      this.conf = Objects.requireNonNull(conf);
+
+      this.txnTimeout = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS);
+
       setDaemon(true);
       setPriority(MIN_PRIORITY);
       setName("CompactionHeartbeater-" + compactionTxn.getTxnId());
     }
+
     @Override
     public void run() {
+      LOG.debug("Heartbeating compaction transaction id {} for table: {}", compactionTxn, tableName);
+
       IMetaStoreClient msc = null;
       try {
-        // We need to create our own metastore client since the thrifts clients
-        // are not thread safe.
+        // Create a metastore client for each thread since it is not thread safe
         msc = HiveMetaStoreUtils.getHiveMetastoreClient(conf);
-        LOG.debug("Heartbeating compaction transaction id {} for table: {}", compactionTxn, tableName);
-        while(!stop.get()) {
+        while (true) {
           msc.heartbeat(compactionTxn.getTxnId(), 0);
-          Thread.sleep(interval);
+
+          // Send a heart beat before a timeout occurs. Scale the interval based
+          // on the server's transaction timeout allowance
+          Thread.sleep(txnTimeout / 2);
         }
+      } catch (InterruptedException ie) {
+        LOG.debug("Successfully stop the heartbeating the transaction {}", this.compactionTxn);
       } catch (Exception e) {
-        LOG.error("Error while heartbeating txn {} in {}, error: ", compactionTxn, Thread.currentThread().getName(), e.getMessage());
+        LOG.error("Error while heartbeating txn {}", compactionTxn, e);
       } finally {
         if (msc != null) {
           msc.close();
         }
-      }
-    }
-
-    public void cancel() {
-      if(!this.stop.get()) {
-        LOG.debug("Successfully stop the heartbeating the transaction {}", this.compactionTxn);
-        this.stop.set(true);
       }
     }
   }
@@ -535,7 +535,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           LOG.info("Will compact id: " + ci.id + " via MR job");
           runCompactionViaMrJob(ci, t, p, sd, tblValidWriteIds, jobName, dir, su);
         }
-        heartbeater.cancel();
+        heartbeater.interrupt();
 
         verifyTableIdHasNotChanged(ci, t1);
 
@@ -578,7 +578,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       LOG.error("Caught an exception in the main loop of compactor worker " + workerName, t);
     } finally {
       if (heartbeater != null) {
-        heartbeater.cancel();
+        heartbeater.interrupt();
       }
       if (workerMetric != null) {
         perfLogger.perfLogEnd(CLASS_NAME, workerMetric);

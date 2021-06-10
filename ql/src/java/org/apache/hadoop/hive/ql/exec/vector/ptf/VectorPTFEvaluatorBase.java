@@ -24,7 +24,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.ql.udf.ptf.Range;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is the vector PTF evaluator base class.  An evaluator does the group batch aggregation work
@@ -43,10 +45,13 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
  */
 public abstract class VectorPTFEvaluatorBase {
 
-  protected final WindowFrameDef windowFrameDef;
-  private final VectorExpression inputVecExpr;
-  protected final int inputColumnNum;
+  final WindowFrameDef windowFrameDef;
+  final VectorExpression inputVecExpr;
+  protected int inputColumnNum;
   protected final int outputColumnNum;
+  private boolean nullsLast;
+
+  protected final Logger LOG = LoggerFactory.getLogger(getClass());
 
   public VectorPTFEvaluatorBase(WindowFrameDef windowFrameDef, VectorExpression inputVecExpr,
       int outputColumnNum) {
@@ -72,6 +77,14 @@ public abstract class VectorPTFEvaluatorBase {
     this.outputColumnNum = outputColumnNum;
   }
 
+  public boolean getNullsLast() {
+    return nullsLast;
+  }
+
+  public void setNullsLast(boolean nullsLast) {
+    this.nullsLast = nullsLast;
+  }
+
   // Evaluate the aggregation input argument expression.
   public void evaluateInputExpr(VectorizedRowBatch batch) throws HiveException {
     if (inputVecExpr != null) {
@@ -79,7 +92,13 @@ public abstract class VectorPTFEvaluatorBase {
     }
   }
 
-  // Evaluate the aggregation over one of the group's batches.
+  /*
+   * Evaluate the aggregation over one of the group's batches. In this mode, evaluator is not
+   * allowed to touch output columns, otherwise it can mess up buffered batches. This can happen,
+   * when a streaming evaluator is used together with non-streaming ones. In this case, the
+   * streaming evaluator should only calculate the evaluator results, which then can be collected by
+   * VectorPTFGroupBatches.
+   */
   public abstract void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException;
 
@@ -100,7 +119,7 @@ public abstract class VectorPTFEvaluatorBase {
   // After processing all the group's batches with evaluateGroupBatch, is the non-streaming
   // aggregation result null?
   public boolean isGroupResultNull() {
-    throw new RuntimeException("Not implemented");
+    throw new RuntimeException("Not implemented isGroupResultNull for " + this.getClass().getName());
   }
 
   // What is the ColumnVector type of the aggregation result?
@@ -111,18 +130,60 @@ public abstract class VectorPTFEvaluatorBase {
    * isGroupResultNull is false, the aggregation result value (based on getResultColumnVectorType).
    */
 
-  public long getLongGroupResult() {
-    throw new RuntimeException("No long group result evaluator implementation " + this.getClass().getName());
-  }
-
-  public double getDoubleGroupResult() {
-    throw new RuntimeException("No double group result evaluator implementation " + this.getClass().getName());
-  }
-
-  public HiveDecimalWritable getDecimalGroupResult() {
-    throw new RuntimeException("No decimal group result evaluator implementation " + this.getClass().getName());
+  public Object getGroupResult(){
+    throw new RuntimeException("No generic group result evaluator implementation " + this.getClass().getName());
   }
 
   // Resets the aggregation calculation variable(s).
   public abstract void resetEvaluator();
+
+  /**
+   * Whether the evaluator can calculate the result for a given range. The optimization is supposed
+   * to save CPU/IO cost in case of evaluators that can provide the result without iterating through
+   * the batches of a range. This method is called before every single calculation, so it lets the
+   * evaluator store state whether it's able to run an optimized calculation in a given point of
+   * time.
+   */
+  public boolean canRunOptimizedCalculation(int rowNum, Range range) {
+    return false;
+  }
+
+  public Object runOnRange(int rowNum, Range range, VectorPTFGroupBatches batches)
+      throws HiveException {
+    if (canRunOptimizedCalculation(rowNum, range)) {
+      throw new RuntimeException(
+          "No optimized runOnRange is implemented for " + this.getClass().getName());
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * This method is called by VectorPTFGroupBatches once the calculation is finished for a given
+   * row/range, but before the next calculation is invoked.
+   *
+   * @param result
+   * @param range
+   */
+  public void onResultCalculated(Object result, Range range) {
+  }
+
+  /**
+   * There might be some cleanup operations for evaluators that should not be taken care of after
+   * every row (resetEvaluator), but rather on partition-level.
+   */
+  public void onPartitionEnd() {
+  }
+
+  /**
+   * Whether the results calculated by this evaluator are eligible for caching by PTFValueCache. A
+   * result of an evaluator is cacheable, if it returns the same value for the same range within the
+   * a PTF partition, regardless of which row the current result is calculated for. That's typically
+   * true for most of the evaluators (e.g. sum), but not true for e.g.
+   * lead/lag/first_value/last_value, as their results only depend on a relation between the current
+   * and some reference row (instead of ranges).
+   */
+  public boolean isCacheableForRange() {
+    return true;
+  }
 }

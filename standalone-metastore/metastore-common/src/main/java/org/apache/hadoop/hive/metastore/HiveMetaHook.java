@@ -51,6 +51,8 @@ public interface HiveMetaHook {
   String SET_PROPERTIES = "set_properties";
   String UNSET_PROPERTIES = "unset_properties";
   String PROPERTIES_SEPARATOR = "'";
+  String MIGRATE_HIVE_TO_ICEBERG = "migrate_hive_to_iceberg";
+  String INITIALIZE_ROLLBACK_MIGRATION = "initialize_rollback_migration";
 
   /**
    * Called before a new table definition is added to the metastore
@@ -87,6 +89,18 @@ public interface HiveMetaHook {
    */
   public void preDropTable(Table table)
     throws MetaException;
+
+  /**
+   * Called before a table definition is removed from the metastore
+   * during DROP TABLE
+   *
+   * @param table table definition
+   * @param deleteData whether to delete data as well; this should typically
+   * be ignored in the case of an external table
+   */
+  default void preDropTable(Table table, boolean deleteData) throws MetaException {
+    preDropTable(table);
+  }
 
   /**
    * Called after failure removing a table definition from the metastore
@@ -133,6 +147,16 @@ public interface HiveMetaHook {
    * @param partitionSpecProxy list of partitions wrapped in {@link PartitionSpecProxy}
    */
   default void commitAlterTable(Table table, EnvironmentContext context, PartitionSpecProxy partitionSpecProxy) throws MetaException {
+    // Do nothing
+  }
+
+  /**
+   * Called after failure altering a table definition from the metastore
+   * during ALTER TABLE
+   * @param table new table definition
+   * @param context context of the alter operation
+   */
+  default void rollbackAlterTable(Table table, EnvironmentContext context) throws MetaException {
     // Do nothing
   }
 

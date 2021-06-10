@@ -3149,6 +3149,7 @@ POSTHOOK: Input: default@outputtbl1_n18
 2	2
 3	2
 7	2
+8	4
 PREHOOK: query: EXPLAIN EXTENDED 
 SELECT * FROM 
 (SELECT key, count(1) FROM T1_n80 GROUP BY key) subq1

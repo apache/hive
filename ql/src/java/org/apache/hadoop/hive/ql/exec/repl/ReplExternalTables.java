@@ -145,7 +145,7 @@ public class ReplExternalTables {
       if (!StringUtils.isEmpty(location.getKey()) && location.getValue()) {
         Path fullyQualifiedDataLocation =
             PathBuilder.fullyQualifiedHDFSUri(new Path(location.getKey()), FileSystem.get(hiveConf));
-        dirLocationToCopy(fullyQualifiedDataLocation.getName(), fileList, fullyQualifiedDataLocation, conf,
+        dirLocationToCopy("dbPath:" + fullyQualifiedDataLocation.getName(), fileList, fullyQualifiedDataLocation, conf,
             isSnapshotEnabled, snapshotPrefix, replSnapshotCount, snapPathFileList, prevSnaps, isBootstrap);
       }
     }

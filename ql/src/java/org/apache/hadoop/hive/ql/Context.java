@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -35,6 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.antlr.runtime.TokenRewriteStream;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
@@ -186,6 +188,8 @@ public class Context {
    * See {@link org.apache.hadoop.hive.ql.ddl.view.materialized.alter.rebuild.AlterMaterializedViewRebuildAnalyzer}.
    */
   private boolean scheduledQuery;
+
+  private List<Pair<String, String>> parsedTables = new ArrayList<>();
 
   public void setOperation(Operation operation) {
     this.operation = operation;
@@ -1307,5 +1311,13 @@ public class Context {
 
   public void setScheduledQuery(boolean scheduledQuery) {
     this.scheduledQuery = scheduledQuery;
+  }
+
+  public void setParsedTables(List<Pair<String, String>> parsedTables) {
+    this.parsedTables = parsedTables;
+  }
+
+  public List<Pair<String, String>> getParsedTables() {
+    return parsedTables;
   }
 }

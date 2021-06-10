@@ -233,4 +233,34 @@ public interface HiveStorageHandler extends Configurable {
   default boolean directInsertCTAS() {
     return false;
   }
+
+  /**
+   * Check if partition columns should be removed and added to the list of regular columns in HMS.
+   * This can be useful for non-native tables where the table format/layout differs from the standard Hive table layout,
+   * e.g. Iceberg tables. For these table formats, the partition column values are stored in the data files along with
+   * regular column values, therefore the object inspectors should include the partition columns as well.
+   * Any partitioning scheme provided via the standard HiveQL syntax will be honored but stored in someplace
+   * other than HMS, depending on the storage handler implementation.
+   *
+   * @return whether table should always be unpartitioned from the perspective of HMS
+   */
+  default boolean alwaysUnpartitioned() {
+    return false;
+  }
+
+  /**
+   * Check if the underlying storage handler implementation support partition transformations.
+   * @return true if the storage handler can support it
+   */
+  default boolean supportsPartitionTransform() {
+    return false;
+  }
+
+  /**
+   * Get file format property key, if the file format is configured through a table property.
+   * @return table property key, can be null
+   */
+  default String getFileFormatPropertyKey() {
+    return null;
+  }
 }

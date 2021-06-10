@@ -9391,6 +9391,17 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
+  public Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
+                                                      Map<String, ColumnStatistics> partColStatsMap,
+                                                      Table tbl,
+                                                      List<TransactionalMetaStoreEventListener> listeners,
+                                                      String validWriteIds, long writeId)
+          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return directSql.updatePartitionColumnStatisticsBatch(partColStatsMap, tbl,
+            listeners, validWriteIds, writeId);
+  }
+
   private List<MTableColumnStatistics> getMTableColumnStatistics(Table table, List<String> colNames, String engine)
       throws MetaException {
 

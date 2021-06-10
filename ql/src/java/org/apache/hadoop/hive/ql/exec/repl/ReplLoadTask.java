@@ -19,7 +19,9 @@ package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.fs.Options;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
+import org.apache.hadoop.hive.ql.parse.repl.load.log.IncrementalLoadLogger;
 import org.apache.thrift.TException;
 import com.google.common.collect.Collections2;
 import org.apache.commons.lang3.StringUtils;
@@ -120,6 +122,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   @Override
   public int execute() {
     try {
+      long loadTaskStartTime = System.currentTimeMillis();
       SecurityUtils.reloginExpiringKeytabUser();
       Task<?> rootTask = work.getRootTask();
       if (rootTask != null) {
@@ -138,7 +141,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       }
       LOG.info("Data copy at load enabled : {}", conf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET));
       if (work.isIncrementalLoad()) {
-        return executeIncrementalLoad();
+        return executeIncrementalLoad(loadTaskStartTime);
       } else {
         return executeBootStrapLoad();
       }
@@ -623,13 +626,13 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     DAGTraversal.traverse(rootTasks, new AddDependencyToLeaves(loadTask));
   }
 
-  private int executeIncrementalLoad() throws Exception {
+  private int executeIncrementalLoad(long loadStartTime) throws Exception {
     // If replication policy is changed between previous and current repl load, then drop the tables
     // that are excluded in the new replication policy.
     if (work.replScopeModified) {
       dropTablesExcludedInReplScope(work.currentReplScope);
     }
-    if (!ReplUtils.isTargetOfReplication(getHive().getDatabase(work.dbNameToLoadIn))) {
+    if (!MetaStoreUtils.isTargetOfReplication(getHive().getDatabase(work.dbNameToLoadIn))) {
       Map<String, String> props = new HashMap<>();
       props.put(ReplConst.TARGET_OF_REPLICATION, "true");
       AlterDatabaseSetPropertiesDesc setTargetDesc = new AlterDatabaseSetPropertiesDesc(work.dbNameToLoadIn, props, null);
@@ -703,6 +706,11 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       cleanupSnapshots(new Path(work.getDumpDirectory()).getParent().getParent().getParent(),
           work.getSourceDbName().toLowerCase(), conf, null, true);
     }
+
+    //pass the current time at the end of repl-load stage as the starting time of the first event.
+    long currentTimestamp = System.currentTimeMillis();
+    ((IncrementalLoadLogger)work.incrementalLoadTasksBuilder().getReplLogger()).initiateEventTimestamp(currentTimestamp);
+    LOG.info("REPL_INCREMENTAL_LOAD stage duration : {} ms", currentTimestamp - loadStartTime);
     return 0;
   }
 }

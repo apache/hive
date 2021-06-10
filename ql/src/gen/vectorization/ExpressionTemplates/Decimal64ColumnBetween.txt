@@ -43,7 +43,7 @@ public class <ClassName> extends <BaseClassName> {
     HiveDecimalWritable writable2 = new HiveDecimalWritable();
     writable2.deserialize64(rightValue, decimalTypeInfo2.scale());
     return
-        getColumnParamString(0, colNum) +
+        getColumnParamString(0, inputColumnNum[0]) +
         ", decimal64Left " + leftValue + ", decimalLeft " + writable1.toString() +
         ", decimal64Right " + rightValue + ", decimalRight " + writable2.toString();
   }

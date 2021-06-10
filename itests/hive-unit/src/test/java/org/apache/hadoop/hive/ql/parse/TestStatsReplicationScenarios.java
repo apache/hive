@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
@@ -443,31 +444,29 @@ public class TestStatsReplicationScenarios {
     }
     callerVerifier.assertInjectionsPerformed(true, false);
 
-    // fail add notification when second update partition stats event is encountered. Thus we test
+    // fail second call to update partition column stats. Thus we test
     // successful application as well as failed application of this event.
-    callerVerifier = new BehaviourInjection<NotificationEvent, Boolean>() {
+    BehaviourInjection<Table, Boolean> callerVerifier2 = new BehaviourInjection<Table, Boolean>() {
       int cntEvents = 0;
 
       @Override
-      public Boolean apply(NotificationEvent entry) {
+      public Boolean apply(Table entry) {
         cntEvents++;
-        if (entry.getEventType().equalsIgnoreCase(EventMessage.EventType.UPDATE_PARTITION_COLUMN_STAT.toString()) &&
-            cntEvents > 1) {
+        if (cntEvents > 1) {
           injectionPathCalled = true;
           LOG.warn("Verifier - DB: " + entry.getDbName()
-                  + " Table: " + entry.getTableName()
-                  + " Event: " + entry.getEventType());
+                  + " Table: " + entry.getTableName());
           return false;
         }
         return true;
       }
     };
 
-    InjectableBehaviourObjectStore.setAddNotificationModifier(callerVerifier);
+    InjectableBehaviourObjectStore.setUpdatePartColStatsBehaviour(callerVerifier2);
     try {
       replica.loadFailure(replicatedDbName, primaryDbName);
     } finally {
-      InjectableBehaviourObjectStore.resetAddNotificationModifier();
+      InjectableBehaviourObjectStore.setUpdatePartColStatsBehaviour(null);
     }
     callerVerifier.assertInjectionsPerformed(true, false);
   }

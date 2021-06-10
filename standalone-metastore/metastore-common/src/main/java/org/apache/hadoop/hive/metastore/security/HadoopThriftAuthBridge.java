@@ -219,12 +219,16 @@ public abstract class HadoopThriftAuthBridge {
       case DIGEST:
         Token<DelegationTokenIdentifier> t= new Token<>();
         t.decodeFromUrlString(tokenStrForm);
-        saslTransport = new TSaslClientTransport(
-            method.getMechanismName(),
-            null,
-            null, SaslRpcServer.SASL_DEFAULT_REALM,
-            saslProps, new SaslClientCallbackHandler(t),
-            underlyingTransport);
+        try {
+          saslTransport = new TSaslClientTransport(
+              method.getMechanismName(),
+              null,
+              null, SaslRpcServer.SASL_DEFAULT_REALM,
+              saslProps, new SaslClientCallbackHandler(t),
+              underlyingTransport);
+        } catch (TTransportException e) {
+          e.printStackTrace();
+        }
         return new TUGIAssumingTransport(saslTransport, UserGroupInformation.getCurrentUser());
 
       case KERBEROS:
@@ -239,7 +243,7 @@ public abstract class HadoopThriftAuthBridge {
           return UserGroupInformation.getCurrentUser().doAs(
               new PrivilegedExceptionAction<TUGIAssumingTransport>() {
                 @Override
-                public TUGIAssumingTransport run() throws IOException {
+                public TUGIAssumingTransport run() throws IOException, TTransportException {
                   TTransport saslTransport = new TSaslClientTransport(
                     method.getMechanismName(),
                     null,
@@ -702,7 +706,12 @@ public abstract class HadoopThriftAuthBridge {
         return ugi.doAs(new PrivilegedAction<TTransport>() {
           @Override
           public TTransport run() {
-            return wrapped.getTransport(trans);
+            try {
+              return wrapped.getTransport(trans);
+            } catch (TTransportException e) {
+              e.printStackTrace();
+            }
+            return null;
           }
         });
       }

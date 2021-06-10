@@ -34,17 +34,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 public class ListIndexColColumn extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private int listColumnNum;
-  private int indexColumnNum;
-
   public ListIndexColColumn() {
     super();
   }
 
   public ListIndexColColumn(int listColumnNum, int indexColumnNum, int outputColumnNum) {
-    super(outputColumnNum);
-    this.listColumnNum = listColumnNum;
-    this.indexColumnNum = indexColumnNum;
+    super(listColumnNum, indexColumnNum, outputColumnNum);
   }
 
   @Override
@@ -61,9 +56,9 @@ public class ListIndexColColumn extends VectorExpression {
     }
 
     ColumnVector outV = batch.cols[outputColumnNum];
-    ListColumnVector listV = (ListColumnVector) batch.cols[listColumnNum];
+    ListColumnVector listV = (ListColumnVector) batch.cols[inputColumnNum[0]];
     ColumnVector childV = listV.child;
-    LongColumnVector indexColumnVector = (LongColumnVector) batch.cols[indexColumnNum];
+    LongColumnVector indexColumnVector = (LongColumnVector) batch.cols[inputColumnNum[1]];
     long[] indexV = indexColumnVector.vector;
     int[] sel = batch.selected;
     boolean[] indexIsNull = indexColumnVector.isNull;
@@ -525,7 +520,7 @@ public class ListIndexColColumn extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, listColumnNum) + ", " + getColumnParamString(1, indexColumnNum);
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getColumnParamString(1, inputColumnNum[1]);
   }
 
   @Override

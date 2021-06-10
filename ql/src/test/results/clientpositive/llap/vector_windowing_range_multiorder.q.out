@@ -154,6 +154,7 @@ STAGE PLANS:
                               window function: GenericUDAFFirstValueEvaluator
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorLongFirstValue]
                       functionInputExpressions: [col 3:tinyint]
@@ -376,7 +377,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: last_value only UNBOUNDED start frame is supported
+                notVectorizedReason: PTF operator: Multi-column ordered RANGE boundary scanner is not supported in vectorized mode (window: RANGE CURRENT~CURRENT)
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -868,6 +869,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorLongAvg]
                       functionInputExpressions: [col 2:int]
@@ -878,6 +880,7 @@ STAGE PLANS:
                       orderExpressions: [col 0:string]
                       outputColumns: [3, 1, 2, 0]
                       outputTypes: [double, smallint, int, string]
+                      partitionExpressions: [col 0:string]
                       streamingColumns: []
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -11021,6 +11024,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorLongAvg]
                       functionInputExpressions: [col 2:int]
@@ -11282,6 +11286,7 @@ STAGE PLANS:
                               window function: GenericUDAFMinEvaluator
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorLongMin]
                       functionInputExpressions: [col 2:int]
@@ -11543,6 +11548,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorLongAvg]
                       functionInputExpressions: [col 2:int]
@@ -11804,6 +11810,7 @@ STAGE PLANS:
                               window function: GenericUDAFMaxEvaluator
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorLongMax]
                       functionInputExpressions: [col 2:int]

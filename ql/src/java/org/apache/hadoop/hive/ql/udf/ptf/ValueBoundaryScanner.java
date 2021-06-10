@@ -35,9 +35,11 @@ import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderDef;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
 public abstract class ValueBoundaryScanner {
@@ -307,7 +309,7 @@ public abstract class ValueBoundaryScanner {
     OrderDef orderDef = winFrameDef.getOrderDef();
     int numOrders = orderDef.getExpressions().size();
     if (numOrders != 1) {
-      return new MultiValueBoundaryScanner(winFrameDef.getStart(), winFrameDef.getEnd(), orderDef,
+      return MultiValueBoundaryScanner.getScanner(winFrameDef.getStart(), winFrameDef.getEnd(), orderDef,
           nullsLast);
     } else {
       return SingleValueBoundaryScanner.getScanner(winFrameDef.getStart(), winFrameDef.getEnd(),
@@ -662,8 +664,6 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
    */
   public abstract boolean isEqual(Object v1, Object v2);
 
-
-  @SuppressWarnings("incomplete-switch")
   public static SingleValueBoundaryScanner getScanner(BoundaryDef start, BoundaryDef end,
       OrderDef orderDef, boolean nullsLast) throws HiveException {
     if (orderDef.getExpressions().size() != 1) {
@@ -672,7 +672,20 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     }
     OrderExpressionDef exprDef = orderDef.getExpressions().get(0);
     PrimitiveObjectInspector pOI = (PrimitiveObjectInspector) exprDef.getOI();
-    switch(pOI.getPrimitiveCategory()) {
+
+    if (pOI != null) {// non-vectorized codepath: PTFOperator
+      PrimitiveCategory primitiveCategory = pOI.getPrimitiveCategory();
+      return getBoundaryScanner(start, end, nullsLast, exprDef, primitiveCategory);
+    } else { // vectorized codepath: VectorPTFOperator
+      String typeString = exprDef.getExprNode().getTypeInfo().getTypeName();
+      return getBoundaryScanner(start, end, nullsLast, exprDef, typeString);
+    }
+  }
+
+  public static SingleValueBoundaryScanner getBoundaryScanner(BoundaryDef start, BoundaryDef end,
+      boolean nullsLast, OrderExpressionDef exprDef, PrimitiveCategory primitiveCategory)
+      throws HiveException {
+    switch (primitiveCategory) {
     case BYTE:
     case INT:
     case LONG:
@@ -691,11 +704,69 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
       return new DateValueBoundaryScanner(start, end, exprDef, nullsLast);
     case STRING:
       return new StringValueBoundaryScanner(start, end, exprDef, nullsLast);
+    default:
+      throw new HiveException(String
+          .format("Internal Error: attempt to setup a Window for datatype: '%s'", primitiveCategory));
     }
-    throw new HiveException(
-        String.format("Internal Error: attempt to setup a Window for datatype %s",
-            pOI.getPrimitiveCategory()));
   }
+
+  public static SingleValueBoundaryScanner getBoundaryScanner(BoundaryDef start, BoundaryDef end,
+      boolean nullsLast, OrderExpressionDef exprDef, String typeString) throws HiveException {
+    if (typeString.startsWith("decimal")){
+      typeString = "decimal"; //DecimalTypeInfo.getTypeName() includes scale/precision: "decimal(10,4)"
+    }
+    switch (typeString) {
+    case "int":
+    case "bigint":
+    case "smallint":
+      return new LongPrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
+    case "timestamp":
+      return new TimestampPrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
+    case "double":
+    case "float":
+      return new DoublePrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
+    case "decimal":
+      return new HiveDecimalPrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
+    case "date":
+      return new DatePrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
+    case "string":
+      return new StringPrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
+    default:
+      throw new HiveException(String
+          .format("Internal Error: attempt to setup a Window for typeString: '%s'", typeString));
+    }
+  }
+}
+
+@SuppressWarnings("unchecked")
+abstract class SinglePrimitiveValueBoundaryScanner<T> extends SingleValueBoundaryScanner {
+  public SinglePrimitiveValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
+      OrderExpressionDef expressionDef, boolean nullsLast) {
+    super(start, end, expressionDef, nullsLast);
+  }
+
+  /**
+   * Returns the value without touching ObjectInspector layer. The primary purpose of primitive
+   * value scanners is the usage in vectorized codepaths, where the "primitive" values are already
+   * present in ColumnVectors. The T type parameter for the child classes should be inline with the
+   * return values of VectorPTFGroupBatches.getValue(...) call.
+   */
+  @Override
+  public Object computeValue(Object row) throws HiveException {
+    return ((Object[]) row)[0];
+  }
+
+  public boolean isDistanceGreater(Object l1, Object l2, int amt) {
+    return isDistanceGreaterPrimitive((T) l1, (T) l2, amt);
+  }
+
+  protected abstract boolean isDistanceGreaterPrimitive(T l1, T l2, int amt);
+
+  public boolean isEqual(Object l1, Object l2) {
+    return isEqualPrimitive((T) l1, (T) l2);
+  }
+
+  protected abstract boolean isEqualPrimitive(T l1, T l2);
 }
 
 class LongValueBoundaryScanner extends SingleValueBoundaryScanner {
@@ -728,6 +799,30 @@ class LongValueBoundaryScanner extends SingleValueBoundaryScanner {
     }
 
     return v1 == null && v2 == null; // True if both are null
+  }
+}
+
+class LongPrimitiveValueBoundaryScanner extends SinglePrimitiveValueBoundaryScanner<Long> {
+
+  public LongPrimitiveValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
+      OrderExpressionDef expressionDef, boolean nullsLast) {
+    super(start, end, expressionDef, nullsLast);
+  }
+
+  @Override
+  public boolean isDistanceGreaterPrimitive(Long l1, Long l2, int amt) {
+    if (l1 != null && l2 != null) {
+      return (l1 - l2) > amt;
+    }
+    return l1 != null || l2 != null; // True if only one value is null
+  }
+
+  @Override
+  public boolean isEqualPrimitive(Long l1, Long l2) {
+    if (l1 != null && l2 != null) {
+      return l1.equals(l2);
+    }
+    return l1 == null && l2 == null; // True if both are null
   }
 }
 
@@ -764,6 +859,32 @@ class DoubleValueBoundaryScanner extends SingleValueBoundaryScanner {
   }
 }
 
+class DoublePrimitiveValueBoundaryScanner extends SinglePrimitiveValueBoundaryScanner<Double> {
+
+  public DoublePrimitiveValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
+      OrderExpressionDef expressionDef, boolean nullsLast) {
+    super(start, end, expressionDef, nullsLast);
+  }
+
+  @Override
+  public boolean isDistanceGreaterPrimitive(Double d1, Double d2, int amt) {
+    if (d1 != null && d2 != null) {
+      return (d1 - d2) > amt;
+    }
+
+    return d1 != null || d2 != null; // True if only one value is null
+  }
+
+  @Override
+  public boolean isEqualPrimitive(Double d1, Double d2) {
+    if (d1 != null && d2 != null) {
+      return d1 == d2;
+    }
+
+    return d1 == null && d2 == null; // True if both are null
+  }
+}
+
 class HiveDecimalValueBoundaryScanner extends SingleValueBoundaryScanner {
   public HiveDecimalValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
       OrderExpressionDef expressionDef, boolean nullsLast) {
@@ -797,6 +918,39 @@ class HiveDecimalValueBoundaryScanner extends SingleValueBoundaryScanner {
   }
 }
 
+class HiveDecimalPrimitiveValueBoundaryScanner
+    extends SinglePrimitiveValueBoundaryScanner<HiveDecimalWritable> {
+
+  public HiveDecimalPrimitiveValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
+      OrderExpressionDef expressionDef, boolean nullsLast) {
+    super(start, end, expressionDef, nullsLast);
+  }
+
+  public Object computeValue(Object row) throws HiveException {
+    Object value = ((Object[]) row)[0];
+    return value == null ? null : new HiveDecimalWritable((HiveDecimalWritable) value);
+  }
+
+  @Override
+  public boolean isDistanceGreaterPrimitive(HiveDecimalWritable d1, HiveDecimalWritable d2,
+      int amt) {
+    if (d1 != null && d2 != null) {
+      return d1.getHiveDecimal().subtract(d2.getHiveDecimal()).intValue() > amt;
+    }
+
+    return d1 != null || d2 != null; // True if only one value is null
+  }
+
+  @Override
+  public boolean isEqualPrimitive(HiveDecimalWritable d1, HiveDecimalWritable d2) {
+    if (d1 != null && d2 != null) {
+      return d1.equals(d2);
+    }
+
+    return d1 == null && d2 == null; // True if both are null
+  }
+}
+
 class DateValueBoundaryScanner extends SingleValueBoundaryScanner {
   public DateValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
       OrderExpressionDef expressionDef, boolean nullsLast) {
@@ -810,7 +964,7 @@ class DateValueBoundaryScanner extends SingleValueBoundaryScanner {
     Date l2 = PrimitiveObjectInspectorUtils.getDate(v2,
         (PrimitiveObjectInspector) expressionDef.getOI());
     if (l1 != null && l2 != null) {
-        return (double)(l1.toEpochMilli() - l2.toEpochMilli())/1000 > (long)amt * 24 * 3600; // Converts amt days to milliseconds
+        return (double)(l1.toEpochMilli() - l2.toEpochMilli())/1000 > (long)amt * 24 * 3600; // Converts amt days to seconds
     }
     return l1 != l2; // True if only one date is null
   }
@@ -821,6 +975,28 @@ class DateValueBoundaryScanner extends SingleValueBoundaryScanner {
         (PrimitiveObjectInspector) expressionDef.getOI());
     Date l2 = PrimitiveObjectInspectorUtils.getDate(v2,
         (PrimitiveObjectInspector) expressionDef.getOI());
+    return (l1 == null && l2 == null) || (l1 != null && l1.equals(l2));
+  }
+}
+
+class DatePrimitiveValueBoundaryScanner extends SinglePrimitiveValueBoundaryScanner<Long> {
+
+  public DatePrimitiveValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
+      OrderExpressionDef expressionDef, boolean nullsLast) {
+    super(start, end, expressionDef, nullsLast);
+  }
+
+  @Override
+  public boolean isDistanceGreaterPrimitive(Long l1, Long l2, int amt) {
+    if (l1 != null && l2 != null) {
+      // DateColumnVector contains days, there is no need to convert amt to seconds
+      return l1 - l2 > amt;
+    }
+    return l1 != l2; // True if only one date is null
+  }
+
+  @Override
+  public boolean isEqualPrimitive(Long l1, Long l2) {
     return (l1 == null && l2 == null) || (l1 != null && l1.equals(l2));
   }
 }
@@ -864,6 +1040,35 @@ class TimestampValueBoundaryScanner extends SingleValueBoundaryScanner {
   }
 }
 
+/**
+ * Calculates ranges on doubles representing timestamps in milliseconds returned by
+ * TimestampColumnVector.getDouble(i). Refer to VectorPTFGroupBatches.getValue for TIMESTAMP.
+ */
+class TimestampPrimitiveValueBoundaryScanner extends SinglePrimitiveValueBoundaryScanner<Double> {
+
+  public TimestampPrimitiveValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
+      OrderExpressionDef expressionDef, boolean nullsLast) {
+    super(start, end, expressionDef, nullsLast);
+  }
+
+  @Override
+  public boolean isDistanceGreaterPrimitive(Double l1Seconds, Double l2Seconds, int amt) {
+    if (l1Seconds != null && l2Seconds != null) {
+      // TODO: lossy conversion, distance is considered in seconds
+      return (double) (l1Seconds - l2Seconds) / 1000 > amt;
+    }
+    return l1Seconds != null || l2Seconds != null; // True if only one value is null
+  }
+
+  @Override
+  public boolean isEqualPrimitive(Double l1Seconds, Double l2Seconds) {
+    if (l1Seconds != null && l2Seconds != null) {
+      return l1Seconds.equals(l2Seconds);
+    }
+    return l1Seconds == null && l2Seconds == null; // True if both are null
+  }
+}
+
 class TimestampLocalTZValueBoundaryScanner extends SingleValueBoundaryScanner {
   public TimestampLocalTZValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
       OrderExpressionDef expressionDef, boolean nullsLast) {
@@ -895,6 +1100,36 @@ class TimestampLocalTZValueBoundaryScanner extends SingleValueBoundaryScanner {
   }
 }
 
+/**
+ * Calculates ranges on longs representing localtz timestamps in seconds returned by
+ * IntervalDayTimeColumnVector.getTotalSeconds. Refer to VectorPTFGroupBatches.getValue for
+ * INTERVAL_DAY_TIME.
+ */
+class TimestampTZPrimitiveValueBoundaryScanner extends SinglePrimitiveValueBoundaryScanner<Long> {
+
+  public TimestampTZPrimitiveValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
+      OrderExpressionDef expressionDef, boolean nullsLast) {
+    super(start, end, expressionDef, nullsLast);
+  }
+
+  @Override
+  public boolean isDistanceGreaterPrimitive(Long l1Seconds, Long l2Seconds, int amt) {
+    if (l1Seconds != null && l2Seconds != null) {
+      // TODO: lossy conversion, distance is considered seconds similar to timestamp
+      return (l1Seconds - l2Seconds) > amt;
+    }
+    return l1Seconds != null || l2Seconds != null; // True if only one value is null
+  }
+
+  @Override
+  public boolean isEqualPrimitive(Long l1Seconds, Long l2Seconds) {
+    if (l1Seconds != null && l2Seconds != null) {
+      return l1Seconds.equals(l2Seconds);
+    }
+    return l1Seconds == null && l2Seconds == null; // True if both are null
+  }
+}
+
 class StringValueBoundaryScanner extends SingleValueBoundaryScanner {
   public StringValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
       OrderExpressionDef expressionDef, boolean nullsLast) {
@@ -920,6 +1155,23 @@ class StringValueBoundaryScanner extends SingleValueBoundaryScanner {
   }
 }
 
+class StringPrimitiveValueBoundaryScanner extends SinglePrimitiveValueBoundaryScanner<String> {
+  public StringPrimitiveValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
+      OrderExpressionDef expressionDef, boolean nullsLast) {
+    super(start, end, expressionDef, nullsLast);
+  }
+
+  @Override
+  public boolean isDistanceGreaterPrimitive(String s1, String s2, int amt) {
+    return s1 != null && s2 != null && s1.compareTo(s2) > 0;
+  }
+
+  @Override
+  public boolean isEqualPrimitive(String s1, String s2) {
+    return (s1 == null && s2 == null) || (s1 != null && s1.equals(s2));
+  }
+}
+
 /*
  */
  class MultiValueBoundaryScanner extends ValueBoundaryScanner {
@@ -930,6 +1182,68 @@ class StringValueBoundaryScanner extends SingleValueBoundaryScanner {
     super(start, end, nullsLast);
     this.orderDef = orderDef;
   }
+
+  public static ValueBoundaryScanner getScanner(BoundaryDef start, BoundaryDef end,
+      OrderDef orderDef, boolean nullsLast) throws HiveException {
+    OrderExpressionDef exprDef = orderDef.getExpressions().get(0);
+    PrimitiveObjectInspector pOI = (PrimitiveObjectInspector) exprDef.getOI();
+
+    if (pOI != null) {// non-vectorized codepath: PTFOperator
+      return new MultiValueBoundaryScanner(start, end, orderDef, nullsLast);
+    } else { // vectorized codepath: VectorPTFOperator
+      return new MultiPrimitiveValueBoundaryScanner(start, end, orderDef, nullsLast);
+    }
+  }
+
+  static class MultiPrimitiveValueBoundaryScanner extends MultiValueBoundaryScanner {
+    SingleValueBoundaryScanner[] scanners;
+
+    public MultiPrimitiveValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderDef orderDef,
+        boolean nullsLast) throws HiveException {
+      super(start, end, orderDef, nullsLast);
+
+      scanners = new SingleValueBoundaryScanner[orderDef.getExpressions().size()];
+      for (int i = 0; i < scanners.length; i++) {
+        OrderExpressionDef exprDef = orderDef.getExpressions().get(i);
+        String typeString = exprDef.getExprNode().getTypeInfo().getTypeName();
+        /*
+         * MultiPrimitiveValueBoundaryScanner is a composite container of multiple
+         * SinglePrimitiveValueBoundaryScanner instances, where scanners can compare the individual
+         * values.
+         */
+        scanners[i] = SingleValueBoundaryScanner.getBoundaryScanner(start, end, nullsLast, exprDef,
+            typeString);
+      }
+    }
+
+    /**
+     * Simply returns the Object[] returned by VectorPTFGroupBatches.getAt(i), which contains the
+     * value of the ordering columns.
+     */
+    @Override
+    public Object computeValue(Object row) throws HiveException {
+      return row;
+    }
+
+    @Override
+    public boolean isEqual(Object values1, Object values2) {
+      Object[] arrValues1 = (Object[]) values1;
+      Object[] arrValues2 = (Object[]) values2;
+
+      for (int i = 0; i < arrValues1.length; i++) {
+        if (!scanners[i].isEqual(arrValues1 == null ? null : arrValues1[i],
+            arrValues2 == null ? null : arrValues2[i])) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    public boolean isDistanceGreater(Object l1, Object l2, int amt) {
+      throw new UnsupportedOperationException("Only unbounded ranges supported");
+    }
+  }
+
 
   /*
 |------+----------------+----------------+----------+-------+-----------------------------------|

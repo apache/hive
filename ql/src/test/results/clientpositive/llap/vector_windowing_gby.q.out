@@ -269,6 +269,7 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorRank]
                       functionInputExpressions: [DoubleColDivideDoubleColumn(col 9:double, col 10:double)(children: CastLongToDouble(col 2:bigint) -> 9:double, CastLongToDouble(col 3:bigint) -> 10:double) -> 11:double]

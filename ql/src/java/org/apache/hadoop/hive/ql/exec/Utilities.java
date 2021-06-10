@@ -4128,6 +4128,37 @@ public final class Utilities {
     return null;
   }
 
+  /**
+   * Sets up the job so that all necessary jars ar passed that contain classes from the given argument of this method.
+   * @param conf jobConf instance to setup
+   * @param classes the classes to look in jars for
+   * @throws IOException
+   */
+  public static void addDependencyJars(Configuration conf, Class<?>... classes)
+      throws IOException {
+    FileSystem localFs = FileSystem.getLocal(conf);
+    Set<String> jars = new HashSet<>(conf.getStringCollection("tmpjars"));
+    for (Class<?> clazz : classes) {
+      if (clazz == null) {
+        continue;
+      }
+      final String path = Utilities.jarFinderGetJar(clazz);
+      if (path == null) {
+        throw new RuntimeException("Could not find jar for class " + clazz +
+            " in order to ship it to the cluster.");
+      }
+      if (!localFs.exists(new Path(path))) {
+        throw new RuntimeException("Could not validate jar file " + path + " for class " + clazz);
+      }
+      jars.add(path);
+    }
+    if (jars.isEmpty()) {
+      return;
+    }
+    //noinspection ToArrayCallWithZeroLengthArrayArgument
+    conf.set("tmpjars", org.apache.hadoop.util.StringUtils.arrayToString(jars.toArray(new String[jars.size()])));
+  }
+
   public static int getDPColOffset(FileSinkDesc conf) {
 
     if (conf.getWriteType() == AcidUtils.Operation.DELETE) {

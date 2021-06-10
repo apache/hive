@@ -28,6 +28,10 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.StringAppender;
+import org.apache.hadoop.hive.ql.parse.repl.metric.MetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Stage;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.apache.hadoop.hive.metastore.*;
@@ -76,6 +80,7 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.StringAppender;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
@@ -110,11 +115,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.Base64;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
@@ -122,6 +130,7 @@ import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
 import static org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData.DUMP_METADATA;
+import static org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector.isMetricsEnabledForTests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -1069,7 +1078,7 @@ public class TestReplicationScenarios {
     String bootstrapDb = dbName + "_boot";
 
     //insert data in the additional db
-    String[] unptn_data = new String[]{ "eleven" , "twelve" };
+    String[] unptn_data = new String[]{"eleven", "twelve"};
     String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
     createTestDataFile(unptn_locn, unptn_data);
     run("CREATE DATABASE " + bootstrapDb, driver);
@@ -1088,7 +1097,7 @@ public class TestReplicationScenarios {
 
     //create new database and dump all databases again
     String incDbName1 = dbName + "_inc1";
-    run("CREATE DATABASE " + incDbName1 , driver);
+    run("CREATE DATABASE " + incDbName1, driver);
     run("CREATE TABLE " + incDbName1 + ".unptned(a string) STORED AS TEXTFILE", driver);
     run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + incDbName1 + ".unptned", true, driver);
     verifySetup("SELECT * from " + incDbName1 + ".unptned", unptn_data, driver);
@@ -1102,11 +1111,75 @@ public class TestReplicationScenarios {
 
     //create new database and dump all databases again
     String incDbName2 = dbName + "_inc2";
-    run("CREATE DATABASE " + incDbName2 , driver);
+    run("CREATE DATABASE " + incDbName2, driver);
     run("CREATE TABLE " + incDbName2 + ".unptned(a string) STORED AS TEXTFILE", driver);
     run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + incDbName2 + ".unptned", true, driver);
     verifySetup("SELECT * from " + incDbName2 + ".unptned", unptn_data, driver);
     replDumpAllDbs(metadataOnlyClause);
+  }
+
+  @Test
+  public void testIncrementalLogs() throws IOException {
+    verifySetupSteps = true;
+    String name = testName.getMethodName();
+    org.apache.logging.log4j.Logger logger = LogManager.getLogger("hive.ql.metadata.HIVE");
+    StringAppender appender = StringAppender.createStringAppender("%m");
+    appender.addToLogger(logger.getName(), Level.INFO);
+    appender.start();
+
+    String dbName = createDB(name, driver);
+    String replDbName = dbName + "_dupe";
+
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+    String[] unptn_data = new String[]{ "eleven" , "twelve" };
+    String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
+    String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
+    String[] empty = new String[]{};
+
+    String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
+    String ptn_locn_1 = new Path(TEST_PATH, name + "_ptn1").toUri().getPath();
+    String ptn_locn_2 = new Path(TEST_PATH, name + "_ptn2").toUri().getPath();
+
+    createTestDataFile(unptn_locn, unptn_data);
+    createTestDataFile(ptn_locn_1, ptn_data_1);
+    createTestDataFile(ptn_locn_2, ptn_data_2);
+
+
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", true, driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
+
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", true, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", true, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2, driver);
+
+    run("CREATE TABLE " + dbName + ".ptned_late(a string) PARTITIONED BY (b int) STORED AS TEXTFILE", driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned_late PARTITION(b=1)", true, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=1",ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned_late PARTITION(b=2)", true, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=2", ptn_data_2, driver);
+
+    // Perform REPL-DUMP/LOAD
+    // Set approx load tasks to a low value to trigger REPL_LOAD execution multiple times
+    List<String> replApproxTasksClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS.varname + "'='1'");
+    Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDbName, replApproxTasksClause);
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
+    Path dumpPath = new Path(incrementalDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
+    verifyIncrementalLogs(appender);
+
+    verifyRun("SELECT * from " + replDbName + ".unptned", unptn_data, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=1", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=2", ptn_data_2, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=1", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=2", ptn_data_2, driverMirror);
+    appender.removeFromLogger(logger.getName());
+    verifySetupSteps = false;
   }
 
   @Test
@@ -4510,6 +4583,88 @@ public class TestReplicationScenarios {
     appender.removeFromLogger(logger.getName());
   }
 
+  @Test
+  public void testIncrementalStatisticsMetrics() throws Throwable {
+    isMetricsEnabledForTests(true);
+    MetricCollector collector = MetricCollector.getInstance();
+    String testName = "testIncrementalStatisticsMetrics";
+    String dbName = createDB(testName, driver);
+    String replDbName = dbName + "_dupe";
+
+    // Do a bootstrap dump & load
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+    // Do some operations at the source side so that the count & metrics can be counted at the load side.
+
+    // 10 create table
+    for (int i = 0; i < 10; i++) {
+      run("CREATE TABLE " + dbName + ".ptned" + i + "(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+      for (int j = 0; j < 5; j++) {
+        // Create 5 partitoins per table.
+        run("ALTER TABLE " + dbName + ".ptned" + i + " ADD PARTITION(b=" + j + ")", driver);
+      }
+    }
+    verifyRun("SHOW PARTITIONS " + dbName + ".ptned1", new String[] {"b=0","b=1","b=2","b=3","b=4"}, driver);
+
+    // Do an incremental load & verify the metrics.
+    Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
+
+    String events[] = new String[] { "[[Event Name: EVENT_CREATE_TABLE; " + "Total Number: 10;",
+        "[[Event Name: EVENT_ADD_PARTITION; Total Number: 50;" };
+
+    Iterator<ReplicationMetric> itr = collector.getMetrics().iterator();
+    while (itr.hasNext()) {
+      ReplicationMetric elem = itr.next();
+      assertEquals(Metadata.ReplicationType.INCREMENTAL, elem.getMetadata().getReplicationType());
+      List<Stage> stages = elem.getProgress().getStages();
+      assertTrue(stages.size() != 0);
+      for (Stage stage : stages) {
+        for (String event : events) {
+          assertTrue(stage.getReplStats(), stage.getReplStats().contains(event));
+        }
+      }
+    }
+
+    // Do some drop table/drop partition & rename table operations.
+    for (int i = 0; i < 3; i++) {
+      // Drop 3 tables
+      run("DROP TABLE " + dbName + ".ptned" + i, driver);
+    }
+
+    for (int i = 3; i < 6; i++) {
+      // Rename 3 tables
+      run("ALTER TABLE " + dbName + ".ptned" + i + " RENAME TO " + dbName + ".ptned" + i + "_renamed", driver);
+    }
+
+    for (int i = 6; i < 10; i++) {
+      // Drop partitions from 4 tables
+      run("ALTER TABLE " + dbName + ".ptned DROP PARTITION(b=1)", driver);
+    }
+
+    for (int i = 10; i < 12; i++) {
+      // Create 2 tables
+      run("CREATE TABLE " + dbName + ".ptned" + i + "(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+    }
+
+    events = new String[] { "[[Event Name: EVENT_CREATE_TABLE; " + "Total Number: 2;",
+        "[[Event Name: EVENT_DROP_TABLE; " + "Total Number: 3;",
+        "[[Event Name: EVENT_RENAME_TABLE; " + "Total Number: 3;",
+        "[[Event Name: EVENT_DROP_PARTITION; Total Number: 2;" };
+
+      itr = collector.getMetrics().iterator();
+    while (itr.hasNext()) {
+      ReplicationMetric elem = itr.next();
+      assertEquals(Metadata.ReplicationType.INCREMENTAL, elem.getMetadata().getReplicationType());
+      List<Stage> stages = elem.getProgress().getStages();
+      assertTrue(stages.size() != 0);
+      for (Stage stage : stages) {
+        for (String event : events) {
+          assertTrue(stage.getReplStats(), stage.getReplStats().contains(event));
+        }
+      }
+    }
+  }
+
   private static String createDB(String name, IDriver myDriver) {
     LOG.info("Testing " + name);
     String mgdLocation = System.getProperty("test.warehouse.dir", "file:/tmp/warehouse/managed");
@@ -4790,6 +4945,22 @@ public class TestReplicationScenarios {
       }
     }
     return null;
+  }
+
+  private void verifyIncrementalLogs(StringAppender appender) {
+    String logStr = appender.getOutput();
+    String eventStr = "REPL::EVENT_LOAD:";
+    String eventDurationStr = "eventDuration";
+    String incLoadStageStr = "REPL_INCREMENTAL_LOAD";
+    String incLoadTaskDurationStr = "REPL_INCREMENTAL_LOAD stage duration";
+    String incTaskBuilderDurationStr = "REPL_INCREMENTAL_LOAD task-builder";
+    assertTrue(logStr, logStr.contains(eventStr));
+    //verify for each loaded event, there is the event duration log
+    assertEquals(StringUtils.countMatches(logStr, eventStr), StringUtils.countMatches(logStr, eventDurationStr));
+    //verify for each repl-load stage, there is one log for entire stage-duration and one log for DAG-duration(builder)
+    assertTrue(StringUtils.countMatches(logStr, incLoadStageStr) > 3);
+    assertEquals(StringUtils.countMatches(logStr, incLoadStageStr) / 3, StringUtils.countMatches(logStr, incTaskBuilderDurationStr));
+    assertEquals(StringUtils.countMatches(logStr, incLoadStageStr) / 3, StringUtils.countMatches(logStr, incLoadTaskDurationStr));
   }
 
   private void deleteNewMetadataFields(Tuple dump) throws SemanticException {
