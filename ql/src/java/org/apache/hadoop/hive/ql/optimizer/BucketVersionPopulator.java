@@ -138,7 +138,7 @@ public class BucketVersionPopulator extends Transform {
   /**
    * This class represents the version required by an Operator.
    */
-  private static class OperatorBucketingVersionInfo {
+  static class OperatorBucketingVersionInfo {
 
     public static final Comparator<OperatorBucketingVersionInfo> MANDATORY_FIRST =
         new Comparator<BucketVersionPopulator.OperatorBucketingVersionInfo>() {
