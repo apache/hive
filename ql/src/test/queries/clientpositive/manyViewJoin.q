@@ -255,7 +255,7 @@ select
         ,cast(test_hive_104 as string) as test_hive_104
         ,cast(test_hive_1002 as string) as test_hive_1002
         ,cast(test_hive_1003 as string) as test_hive_1003
-        ,cast(from_unixtime(unix_timestamp(test_hive_25,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_25
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_25,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_25
         ,cast(test_hive_28 as string) as test_hive_28
         ,cast(test_hive_93 as string) as test_hive_93
         ,cast(test_hive_94 as string) as test_hive_94
@@ -294,7 +294,7 @@ select
         ,cast(test_hive_1013_psr as int) as test_hive_1013_psr
         ,cast(test_hive_1013_psr_a_d as int) as test_hive_1013_psr_a_d
         ,cast(test_hive_1013_psr_e as int) as test_hive_1013_psr_e
-        ,cast(from_unixtime(unix_timestamp(test_hive_1034,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1034
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1034,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1034
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -568,7 +568,7 @@ select
         ,cast(test_hive_1043 as string) as test_hive_1043
         ,cast(test_hive_149 as string) as test_hive_149
         ,cast(test_hive_150 as string) as test_hive_150
-        ,cast(from_unixtime(unix_timestamp(test_hive_119,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_119
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_119,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_119
         ,cast(test_hive_118 as string) as test_hive_118
         ,cast(test_hive_120 as string) as test_hive_120
         ,cast(test_hive_151 as string) as test_hive_151

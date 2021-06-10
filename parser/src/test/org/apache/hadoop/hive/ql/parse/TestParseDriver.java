@@ -146,7 +146,7 @@ public class TestParseDriver {
         "\n" +
         "  IF(lower('a') <= lower('a')\n" +
         "  ,'a'\n" +
-        "  ,IF(('a' IS NULL AND from_unixtime(UNIX_TIMESTAMP()) <= 'a')\n" +
+        "  ,IF(('a' IS NULL AND from_unixtime(to_unix_timestamp()) <= 'a')\n" +
         "  ,'a'\n" +
         "  ,IF(if('a' = 'a', TRUE, FALSE) = 1\n" +
         "  ,'a'\n" +
@@ -157,7 +157,7 @@ public class TestParseDriver {
         "  ,'a'\n" +
         "  ,IF(if(lower('a') in ('a', 'a') and 'a'='a', TRUE, FALSE) = 1\n" +
         "  ,'a'\n" +
-        "  ,IF('a'='a' and unix_timestamp(if('a' = 'a',cast('a' as string),coalesce('a',cast('a' as string),from_unixtime(unix_timestamp())))) <= unix_timestamp(concat_ws('a',cast(lower('a') as string),'00:00:00')) + 9*3600\n"
+        "  ,IF('a'='a' and to_unix_timestamp(if('a' = 'a',cast('a' as string),coalesce('a',cast('a' as string),from_unixtime(to_unix_timestamp())))) <= to_unix_timestamp(concat_ws('a',cast(lower('a') as string),'00:00:00')) + 9*3600\n"
         +
         "  ,'a'\n" +
         "\n" +
@@ -178,7 +178,7 @@ public class TestParseDriver {
         "\n" +
         "  ,IF('a' = 1\n" +
         "\n" +
-        "  ,IF('a' in ('a', 'a') and ((unix_timestamp('a')-unix_timestamp('a')) / 60) > 30 and 'a' = 1\n" +
+        "  ,IF('a' in ('a', 'a') and ((to_unix_timestamp('a')-to_unix_timestamp('a')) / 60) > 30 and 'a' = 1\n" +
         "\n" +
         "\n" +
         "  ,'a', 'a')\n" +
@@ -206,7 +206,7 @@ public class TestParseDriver {
         "  ,IF('a' = 1\n" +
         "  ,'a'\n" +
         "\n" +
-        "  ,IF('a' ='a' and 'a' ='a' and cast(unix_timestamp('a') as  int) + 93600 < cast(unix_timestamp()  as int)\n" +
+        "  ,IF('a' ='a' and 'a' ='a' and cast(to_unix_timestamp('a') as  int) + 93600 < cast(to_unix_timestamp()  as int)\n" +
         "  ,'a'\n" +
         "  ,IF('a' = 'a'\n" +
         "  ,'a'\n" +

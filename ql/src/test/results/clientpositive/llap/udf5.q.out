@@ -50,12 +50,12 @@ POSTHOOK: Input: default@dest1_n14
 #### A masked pattern was here ####
 2008-11-11 15:32:20	2008-11-11	1	11	2008	1	11	2008
 PREHOOK: query: EXPLAIN
-SELECT from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss'), from_unixtime(unix_timestamp('2010-01-13 11:57:40')) from dest1_n14
+SELECT from_unixtime(to_unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss'), from_unixtime(to_unix_timestamp('2010-01-13 11:57:40')) from dest1_n14
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1_n14
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
-SELECT from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss'), from_unixtime(unix_timestamp('2010-01-13 11:57:40')) from dest1_n14
+SELECT from_unixtime(to_unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss'), from_unixtime(to_unix_timestamp('2010-01-13 11:57:40')) from dest1_n14
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1_n14
 #### A masked pattern was here ####

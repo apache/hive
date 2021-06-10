@@ -372,7 +372,6 @@ udftolong
 udftoshort
 unbase64
 unhex
-unix_timestamp
 upper
 uuid
 validate_acid_sort_order
@@ -889,7 +888,7 @@ udftolong
 udftoshort
 unbase64
 unhex
-unix_timestamp
+
 upper
 uuid
 validate_acid_sort_order

@@ -1098,11 +1098,11 @@ public class TestJdbcWithMiniHS2 {
     String userName = System.getProperty("user.name");
     Connection conn = getConnection(miniHS2.getJdbcURL(testDbName), userName, "password");
     Statement stmt = conn.createStatement();
-    stmt.execute("select from_unixtime(unix_timestamp())");
+    stmt.execute("select from_unixtime(to_unix_timestamp())");
     // Sleep for longer than server's idletimeout and execute a query
     TimeUnit.SECONDS.sleep(10);
     try {
-      stmt.execute("select from_unixtime(unix_timestamp())");
+      stmt.execute("select from_unixtime(to_unix_timestamp())");
     } catch (Exception e) {
       fail("Not expecting exception: " + e);
     } finally {

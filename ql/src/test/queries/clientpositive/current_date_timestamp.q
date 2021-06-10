@@ -58,8 +58,8 @@ select count(*) from tmp_runtimeconstant
                       and current_date <> d;
 
 
---current_timestamp() as argument for unix_timestamp(), hour(), minute(), second()
-select unix_timestamp(current_timestamp()),
+--current_timestamp() as argument for to_unix_timestamp(), hour(), minute(), second()
+select to_unix_timestamp(current_timestamp()),
                            hour(current_timestamp()),
                            minute(current_timestamp()),
                            second(current_timestamp())

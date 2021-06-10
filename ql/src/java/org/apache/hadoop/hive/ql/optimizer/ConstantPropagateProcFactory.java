@@ -375,7 +375,7 @@ public final class ConstantPropagateProcFactory {
    * the value will be calculated immediately (during compilation time vs. runtime).
    * e.g.:
    *   concat(year, month) => 200112 for year=2001, month=12 since concat is deterministic UDF
-   *   unix_timestamp(time) => unix_timestamp(123) for time=123 since unix_timestamp is nondeterministic UDF
+   *   to_unix_timestamp(time) => to_unix_timestamp(123) for time=123 since to_unix_timestamp is nondeterministic UDF
    * @param desc folding expression
    * @param constants current propagated constant map
    * @param cppCtx

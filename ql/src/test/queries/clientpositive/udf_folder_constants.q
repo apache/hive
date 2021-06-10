@@ -8,5 +8,5 @@ insert into udf_tb1 values(2001, 11);
 insert into udf_tb2 values(11);
 
 explain
-select unix_timestamp(concat(a.year, '-01-01 00:00:00')) from (select * from udf_tb1 where year=2001) a join udf_tb2 b on (a.month=b.month);
-select unix_timestamp(concat(a.year, '-01-01 00:00:00')) from (select * from udf_tb1 where year=2001) a join udf_tb2 b on (a.month=b.month);
+select to_unix_timestamp(concat(a.year, '-01-01 00:00:00')) from (select * from udf_tb1 where year=2001) a join udf_tb2 b on (a.month=b.month);
+select to_unix_timestamp(concat(a.year, '-01-01 00:00:00')) from (select * from udf_tb1 where year=2001) a join udf_tb2 b on (a.month=b.month);

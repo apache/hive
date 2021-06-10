@@ -473,8 +473,6 @@ public class SqlFunctionConverter {
       registerFunction("to_date", HiveToDateSqlOperator.INSTANCE, hToken(HiveParser.Identifier, "to_date"));
       registerFunction("to_unix_timestamp", HiveToUnixTimestampSqlOperator.INSTANCE,
           hToken(HiveParser.Identifier, "to_unix_timestamp"));
-      registerFunction("unix_timestamp", HiveUnixTimestampSqlOperator.INSTANCE,
-          hToken(HiveParser.Identifier, "unix_timestamp"));
       registerFunction("from_unixtime", HiveFromUnixTimeSqlOperator.INSTANCE,
           hToken(HiveParser.Identifier, "from_unixtime"));
       registerFunction("date_add", HiveDateAddSqlOperator.INSTANCE, hToken(HiveParser.Identifier, "date_add"));
