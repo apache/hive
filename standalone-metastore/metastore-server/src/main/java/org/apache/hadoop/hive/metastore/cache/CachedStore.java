@@ -1812,6 +1812,11 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.getDBPrivilegeSet(catName, dbName, userName, groupNames);
   }
 
+  @Override public PrincipalPrivilegeSet getConnectorPrivilegeSet(String catName, String connectorName, String userName,
+      List<String> groupNames) throws InvalidObjectException, MetaException {
+    return rawStore.getDBPrivilegeSet(catName, connectorName, userName, groupNames);
+  }
+
   @Override public PrincipalPrivilegeSet getTablePrivilegeSet(String catName, String dbName, String tableName,
       String userName, List<String> groupNames) throws InvalidObjectException, MetaException {
     return rawStore.getTablePrivilegeSet(catName, dbName, tableName, userName, groupNames);

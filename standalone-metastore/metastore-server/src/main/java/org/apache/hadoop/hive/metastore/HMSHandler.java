@@ -5125,7 +5125,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     try {
       String[] parsedDbName = parseDbName(name, conf);
       Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-      if (db != null && db.getType() == DatabaseType.REMOTE) {
+      if (db != null && db.getType() != null && db.getType() == DatabaseType.REMOTE) {
         return true;
       }
     } catch (Exception e) {
@@ -6003,14 +6003,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     List<String> ret = null;
     Exception ex = null;
-    Database db = null;
     String[] parsedDbName = parseDbName(dbname, conf);
     try {
-      db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-      if (db != null && db.getType() != null) {
-        if (db.getType().equals(DatabaseType.REMOTE)) {
-          return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
-        }
+      if (isDatabaseRemote(dbname)) {
+        Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+        return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
       }
     } catch (Exception e) { /* appears we return empty set instead of throwing an exception */ }
 
@@ -7388,6 +7385,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                                  List<String> groupNames) throws TException {
     firePreEvent(new PreAuthorizationCallEvent(this));
     String catName = hiveObject.isSetCatName() ? hiveObject.getCatName() : getDefaultCatalog(conf);
+    HiveObjectType debug = hiveObject.getObjectType();
     if (hiveObject.getObjectType() == HiveObjectType.COLUMN) {
       String partName = getPartName(hiveObject);
       return this.get_column_privilege_set(catName, hiveObject.getDbName(), hiveObject
@@ -7400,6 +7398,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     } else if (hiveObject.getObjectType() == HiveObjectType.DATABASE) {
       return this.get_db_privilege_set(catName, hiveObject.getDbName(), userName,
           groupNames);
+    } else if (hiveObject.getObjectType() == HiveObjectType.DATACONNECTOR) {
+      return this.get_connector_privilege_set(catName, hiveObject.getObjectName(), userName, groupNames);
     } else if (hiveObject.getObjectType() == HiveObjectType.TABLE) {
       return this.get_table_privilege_set(catName, hiveObject.getDbName(), hiveObject
           .getObjectName(), userName, groupNames);
@@ -7453,6 +7453,22 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw handleException(e).throwIfInstance(MetaException.class).defaultRuntimeException();
     }
     return ret;
+  }
+
+  private PrincipalPrivilegeSet get_connector_privilege_set(String catName, final String connectorName,
+                                                            final String userName, final List<String> groupNames) throws TException {
+    incrementCounter("get_connector_privilege_set");
+
+    PrincipalPrivilegeSet ret;
+    try {
+      ret = getMS().getConnectorPrivilegeSet(catName, connectorName, userName, groupNames);
+    } catch (MetaException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+    return ret;
+
   }
 
   private PrincipalPrivilegeSet get_partition_privilege_set(

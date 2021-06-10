@@ -23,6 +23,7 @@ class HiveObjectType(object):
     TABLE = 3
     PARTITION = 4
     COLUMN = 5
+    DATACONNECTOR = 6
 
     _VALUES_TO_NAMES = {
         1: "GLOBAL",
@@ -30,6 +31,7 @@ class HiveObjectType(object):
         3: "TABLE",
         4: "PARTITION",
         5: "COLUMN",
+        6: "DATACONNECTOR",
     }
 
     _NAMES_TO_VALUES = {
@@ -38,6 +40,7 @@ class HiveObjectType(object):
         "TABLE": 3,
         "PARTITION": 4,
         "COLUMN": 5,
+        "DATACONNECTOR": 6,
     }
 
 
