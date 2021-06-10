@@ -7316,7 +7316,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       destTableId++;
       // Create the work for moving the table
       // NOTE: specify Dynamic partitions in dest_tab for WriteEntity
-      if (!isNonNativeTable || destinationTable.getStorageHandler().useNativeCommit()) {
+      if (!isNonNativeTable || destinationTable.getStorageHandler().commitInMoveTask()) {
         if (destTableIsTransactional) {
           acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest, isMmTable);
           checkAcidConstraints();
@@ -7733,7 +7733,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // this order needs to be enforced because metastore expects a table to exist before we can
         // add any partitions to it.
         isNonNativeTable = tableDescriptor.isNonNative();
-        if (!isNonNativeTable || destinationTable.getStorageHandler().useNativeCommit()) {
+        if (!isNonNativeTable || destinationTable.getStorageHandler().commitInMoveTask()) {
           AcidUtils.Operation acidOp = AcidUtils.Operation.NOT_ACID;
           if (destTableIsTransactional) {
             acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest, isMmTable);

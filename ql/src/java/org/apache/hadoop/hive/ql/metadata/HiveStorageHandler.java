@@ -266,21 +266,22 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
-   * Check if we should use the {@link #nativeCommit(Properties, boolean)} method for committing inserts instead of
-   * using file copy in the {@link org.apache.hadoop.hive.ql.exec.MoveTask}-s.
-   * @return
+   * Checks if we should keep the {@link org.apache.hadoop.hive.ql.exec.MoveTask} and use the
+   * {@link #storageHandlerCommit(Properties, boolean)} method for committing inserts instead of
+   * {@link org.apache.hadoop.hive.metastore.DefaultHiveMetaHook#commitInsertTable(Table, boolean)}.
+   * @return Returns true if we should use the {@link #storageHandlerCommit(Properties, boolean)} method
    */
-  default boolean useNativeCommit() {
+  default boolean commitInMoveTask() {
     return false;
   }
 
   /**
    * Commits the inserts for the non-native tables. Used in the {@link org.apache.hadoop.hive.ql.exec.MoveTask}.
-   * @param commitProperties Commit properties which are needed for the native commit
+   * @param commitProperties Commit properties which are needed for the handler based commit
    * @param overwrite If this is an INSERT OVERWRITE then it is true
    * @throws HiveException If there is an error during commit
    */
-  default void nativeCommit(Properties commitProperties, boolean overwrite) throws HiveException {
+  default void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
     throw new UnsupportedOperationException();
   }
 }

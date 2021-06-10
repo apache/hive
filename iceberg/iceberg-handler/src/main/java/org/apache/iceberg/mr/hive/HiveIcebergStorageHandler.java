@@ -276,22 +276,30 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public boolean useNativeCommit() {
+  public boolean commitInMoveTask() {
     return true;
   }
 
   @Override
-  public void nativeCommit(Properties commitProperties, boolean overwrite) throws HiveException {
+  public void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
     String tableName = commitProperties.getProperty(Catalogs.NAME);
     Configuration configuration = SessionState.getSessionConf();
-    Optional<JobContext> jobContext = getJobContextForCommitOrAbort(configuration, tableName, overwrite);
+    Optional<JobContext> jobContext = generateJobContext(configuration, tableName, overwrite);
     if (jobContext.isPresent()) {
+      OutputCommitter committer = new HiveIcebergOutputCommitter();
       try {
-        OutputCommitter committer = new HiveIcebergOutputCommitter();
+        // Committing the job
         committer.commitJob(jobContext.get());
       } catch (Throwable e) {
-        LOG.error("Error while trying to commit job, starting rollback", e);
-        rollbackInsertTable(configuration, tableName, overwrite);
+        // Aborting the job if the commit has failed
+        LOG.error("Error while trying to commit job: {}, starting rollback changes for table: {}",
+            jobContext.get().getJobID(), tableName, e);
+        try {
+          committer.abortJob(jobContext.get(), JobStatus.State.FAILED);
+        } catch (IOException ioe) {
+          LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", ioe);
+          // no throwing here because the original exception should be propagated
+        }
         throw new HiveException("Error committing job", e);
       }
     }
@@ -489,22 +497,14 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return column;
   }
 
-  private void rollbackInsertTable(Configuration configuration, String tableName, boolean overwrite) {
-    Optional<JobContext> jobContext = getJobContextForCommitOrAbort(configuration, tableName, overwrite);
-    if (jobContext.isPresent()) {
-      OutputCommitter committer = new HiveIcebergOutputCommitter();
-      try {
-        LOG.info("rollbackInsertTable: Aborting job for jobID: {}, table: {}", jobContext.get().getJobID(), tableName);
-        committer.abortJob(jobContext.get(), JobStatus.State.FAILED);
-      } catch (IOException e) {
-        LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", e);
-        // no throwing here because the original commitInsertTable exception should be propagated
-      }
-    }
-  }
-
-  private Optional<JobContext> getJobContextForCommitOrAbort(Configuration configuration, String tableName,
-                                                             boolean overwrite) {
+  /**
+   * Generates a JobContext for the OutputCommitter for the specific table.
+   * @param configuration The configuration used for as a base of the JobConf
+   * @param tableName The name of the table we are planning to commit
+   * @param overwrite If we have to overwrite the existing table or just add the new data
+   * @return The generated JobContext
+   */
+  private Optional<JobContext> generateJobContext(Configuration configuration, String tableName, boolean overwrite) {
     JobConf jobConf = new JobConf(configuration);
     Optional<SessionStateUtil.CommitInfo> commitInfo = SessionStateUtil.getCommitInfo(jobConf, tableName);
     if (commitInfo.isPresent()) {

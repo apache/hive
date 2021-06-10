@@ -320,34 +320,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
 
     try (LocalTableLock lock = acquireLockForFileMove(work.getLoadTableWork())) {
-      String storageHandlerClass = null;
-      Properties commitProperties = null;
-      boolean overwrite = false;
-
-      if (work.getLoadTableWork() != null) {
-        // Get the info from the table data
-        TableDesc tableDesc = work.getLoadTableWork().getTable();
-        storageHandlerClass = tableDesc.getProperties().getProperty(
-            org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE);
-        commitProperties = new Properties(tableDesc.getProperties());
-        overwrite = work.getLoadTableWork().isInsertOverwrite();
-      } else if (work.getLoadFileWork() != null) {
-        // Get the info from the create table data
-        CreateTableDesc createTableDesc = work.getLoadFileWork().getCtasCreateTableDesc();
-        if (createTableDesc != null) {
-          storageHandlerClass = createTableDesc.getStorageHandler();
-          commitProperties = new Properties();
-          commitProperties.put(hive_metastoreConstants.META_TABLE_NAME, createTableDesc.getDbTableName());
-        }
-      }
-
-      // If the storage handler supports native commits the use that instead of moving files
-      if (storageHandlerClass != null) {
-        HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(conf, storageHandlerClass);
-        if (storageHandler.useNativeCommit()) {
-          storageHandler.nativeCommit(commitProperties, overwrite);
-          return 0;
-        }
+      if (checkAndCommitNatively()) {
+        return 0;
       }
 
       Hive db = getHive();
@@ -1013,6 +987,46 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
   @Override
   public boolean canExecuteInParallel() {
+    return false;
+  }
+
+  /**
+   * Checks if the StorageHandler provides methods for committing changes which should be used instead of the file
+   * moves. This commit should be executed here if possible.
+   * @return Returns <code>true</code> if the commit was successfully finished
+   * @throws HiveException If there was an error committing
+   */
+  private boolean checkAndCommitNatively() throws HiveException {
+    String storageHandlerClass = null;
+    Properties commitProperties = null;
+    boolean overwrite = false;
+
+    if (work.getLoadTableWork() != null) {
+      // Get the info from the table data
+      TableDesc tableDesc = work.getLoadTableWork().getTable();
+      storageHandlerClass = tableDesc.getProperties().getProperty(
+          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE);
+      commitProperties = new Properties(tableDesc.getProperties());
+      overwrite = work.getLoadTableWork().isInsertOverwrite();
+    } else if (work.getLoadFileWork() != null) {
+      // Get the info from the create table data
+      CreateTableDesc createTableDesc = work.getLoadFileWork().getCtasCreateTableDesc();
+      if (createTableDesc != null) {
+        storageHandlerClass = createTableDesc.getStorageHandler();
+        commitProperties = new Properties();
+        commitProperties.put(hive_metastoreConstants.META_TABLE_NAME, createTableDesc.getDbTableName());
+      }
+    }
+
+    // If the storage handler supports native commits the use that instead of moving files
+    if (storageHandlerClass != null) {
+      HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(conf, storageHandlerClass);
+      if (storageHandler.commitInMoveTask()) {
+        storageHandler.storageHandlerCommit(commitProperties, overwrite);
+        return true;
+      }
+    }
+
     return false;
   }
 }
