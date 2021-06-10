@@ -300,7 +300,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", ioe);
           // no throwing here because the original exception should be propagated
         }
-        throw new HiveException("Error committing job", e);
+        throw new HiveException("Error committing job: " + jobContext.get().getJobID() + " for table: " + tableName);
       }
     }
   }
