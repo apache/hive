@@ -1347,7 +1347,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           Map<String, PrunedPartitionList> partitionCache,
           StatsSource statsSource,
           ColumnAccessInfo columnAccessInfo) {
-    return new CalcitePlannerAction(partitionCache, statsSource, columnAccessInfo);
+    return new CalcitePlannerAction(partitionCache, statsSource, columnAccessInfo, getQB());
   }
 
   /**
@@ -1588,6 +1588,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private final Map<String, ColumnStatsList>            colStatsCache;
     private final ColumnAccessInfo columnAccessInfo;
     private Map<HiveProject, Table> viewProjectToTableSchema;
+    private final QB rootQB;
 
     // correlated vars across subqueries within same query needs to have different ID
     private int subqueryId;
@@ -1603,11 +1604,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private final StatsSource statsSource;
 
     protected CalcitePlannerAction(
-        Map<String, PrunedPartitionList> partitionCache,
-        StatsSource statsSource,
-        ColumnAccessInfo columnAccessInfo) {
+            Map<String, PrunedPartitionList> partitionCache,
+            StatsSource statsSource,
+            ColumnAccessInfo columnAccessInfo, QB rootQB) {
       this.partitionCache = partitionCache;
       this.statsSource = statsSource;
+      this.rootQB = rootQB;
       this.colStatsCache = ctx.getOpContext().getColStatsCache();
       this.columnAccessInfo = columnAccessInfo;
     }
@@ -1647,11 +1649,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         LOG.debug("Initial CBO Plan:\n" + RelOptUtil.toString(calcitePlan));
       }
 
-      if (isMaterializedViewRewritingByTextEnabled()) {
-        RelNode rewrittenPlan = applyMaterializedViewRewritingByText(calcitePlan, optCluster);
-        if (rewrittenPlan != null) {
-          return rewrittenPlan;
-        }
+      RelNode rewrittenPlan = applyMaterializedViewRewritingByText(ast, calcitePlan, optCluster);
+      if (rewrittenPlan != null) {
+        return rewrittenPlan;
       }
 
       // Create executor
@@ -2065,15 +2065,27 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private boolean isMaterializedViewRewritingByTextEnabled() {
       return conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL) &&
               mvRebuildMode == MaterializationRebuildMode.NONE &&
-              !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS() &&
-              getQB().getIsQuery() &&
-              getQB().hasTableDefined();
+              !rootQB.isMaterializedView() && !ctx.isLoadingMaterializedView() && !rootQB.isCTAS() &&
+              rootQB.getIsQuery() &&
+              rootQB.hasTableDefined();
     }
 
-    private RelNode applyMaterializedViewRewritingByText(RelNode calciteGenPlan, RelOptCluster optCluster) {
+    private RelNode applyMaterializedViewRewritingByText(
+            ASTNode queryToRewrite, RelNode calciteGenPlan, RelOptCluster optCluster) {
+      if (!isMaterializedViewRewritingByTextEnabled()) {
+        return null;
+      }
+
       unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM);
-      String expandedQueryText = ctx.getTokenRewriteStream()
-              .toString(EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM, ast.getTokenStartIndex(), ast.getTokenStopIndex());
+      String expandedQueryText = ctx.getTokenRewriteStream().toString(
+              EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM,
+              queryToRewrite.getTokenStartIndex(),
+              queryToRewrite.getTokenStopIndex());
+      return getMaterializedViewByQueryText(expandedQueryText, calciteGenPlan, optCluster);
+    }
+
+    private RelNode getMaterializedViewByQueryText(
+            String expandedQueryText, RelNode calciteGenPlan, RelOptCluster optCluster) {
       try {
         List<HiveRelOptMaterialization> relOptMaterializationList = db.getMaterializedViewsBySql(
                 expandedQueryText, getTablesUsed(calciteGenPlan), getTxnMgr());
@@ -3394,11 +3406,26 @@ public class CalcitePlanner extends SemanticAnalyzer {
             QB qbSQ = new QB(qb.getId(), sbQueryAlias, true);
             qbSQ.setInsideView(qb.isInsideView());
             Phase1Ctx ctx1 = initPhase1Ctx();
-            doPhase1((ASTNode) next.getChild(1), qbSQ, ctx1, null);
+            ASTNode subQueryRoot = (ASTNode) node.getChild(1);
+            doPhase1(subQueryRoot, qbSQ, ctx1, null);
             getMetaData(qbSQ);
             this.subqueryId++;
             RelNode subQueryRelNode =
                 genLogicalPlan(qbSQ, false, relToHiveColNameCalcitePosMap.get(srcRel), relToHiveRR.get(srcRel));
+
+            if (isMaterializedViewRewritingByTextEnabled()) {
+              unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM);
+              String expandedSubQueryText = ctx.getTokenRewriteStream()
+                      .toString(EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM, subQueryRoot.getTokenStartIndex(), subQueryRoot.getTokenStopIndex());
+
+              expandedSubQueryText = expandedSubQueryText.substring(1, expandedSubQueryText.length() - 1).trim();
+
+              RelNode mv = getMaterializedViewByQueryText(expandedSubQueryText, subQueryRelNode, cluster);
+              if (mv != null) {
+                subQueryRelNode = mv;
+              }
+            }
+
             subQueryToRelNode.put(next, parseInfo.setSubQueryRelNode(subQueryRelNode));
             //keep track of subqueries which are scalar, correlated and contains aggregate
             // subquery expression. This will later be special cased in Subquery remove rule
@@ -4973,6 +5000,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
       for (String subqAlias : qb.getSubqAliases()) {
         QBExpr qbexpr = qb.getSubqForAlias(subqAlias);
         RelNode relNode = genLogicalPlan(qbexpr);
+
+        ASTNode subqueryRoot = qbexpr.getSubQueryRoot();
+        if (subqueryRoot != null) {
+          RelNode mv = applyMaterializedViewRewritingByText(subqueryRoot, relNode, cluster);
+          if (mv != null) {
+            RowResolver rr = relToHiveRR.remove(relNode);
+            relToHiveRR.put(mv, rr);
+            ImmutableMap<String, Integer> tmp = relToHiveColNameCalcitePosMap.remove(relNode);
+            relToHiveColNameCalcitePosMap.put(mv, tmp);
+            relNode = mv;
+          }
+        }
+
         aliasToRel.put(subqAlias, relNode);
         if (qb.getViewToTabSchema().containsKey(subqAlias)) {
           if (relNode instanceof HiveProject) {
