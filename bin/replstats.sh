@@ -13,10 +13,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+if [ $1 = "toHive" ]; then
+#Loading of already generated CSV file into a hive table.
+if [ $# -lt 5 ]; then
+ echo "Invalid Arguments."
+ echo "Usage: replstat.sh [toHive <table-name> <csv location> <hdfs location> <partition name> [beeline args]] |
+ [policyName executionId [pathForFiles]]"
+ echo "toHive mode is to run the script to load csv generated using replstat.sh policyName executionId [pathForFiles] into hive table"
+    exit 1;
+fi
+tablename=$2
+loc=$3
+hdfsloc=$4
+part="$hdfsloc/org=""$5"
+
+#Load data to filesystem
+hdfs dfs -mkdir -p $part;
+hdfs dfs -put -f $loc $part;
+
+#Create table in beeline
+beelineargs=$6
+
+#Run beeline command to create a table, then add the partition, and then create a view from the table in a format on
+# which mathematical operations can be performed.
+beeline $beelineargs -e "create external table IF NOT EXISTS $2 (JobId string, SubmitTime string, LaunchTime string, LaunchDuration string, FinishedTime string, FinishDuration string, Mapper_Success int, Mappers_Failed int, BytesCopied BIGINT, Files int, Status string)  partitioned by (org string) row format delimited fields terminated by ',' stored as textfile location '$hdfsloc' TBLPROPERTIES ('skip.header.line.count'='1');alter table $2 add IF NOT EXISTS partition(org='""$5""');create view IF NOT EXISTS "$2"_view as select org, jobid,  (unix_timestamp(launchtime,'dd-MMM-yyyy HH:mm:ss') - unix_timestamp(submittime,'dd-MMM-yyyy HH:mm:ss')) as launchDuration, (unix_timestamp(finishedtime,'dd-MMM-yyyy HH:mm:ss') - unix_timestamp(launchtime,'dd-MMM-yyyy HH:mm:ss')) as finishDuration, mapper_success, mappers_failed, bytescopied, files, status from "$2
+
+echo "Created table $2 and view ""$2""_view with partition $5"
+
+#Creation of Stats part(CSV & Stats generation)
+else
 #Validate the number of arguments.
 if [ $# -gt 3 ]; then
     echo "Invalid Arguments. Required Max 3, but provided: ""$#"
-    echo  "Usage: replStat.sh policyName executionId [pathForFiles]"
+    echo "Usage: replstat.sh [toHive <table-name> <csv location> <hdfs location> <partition name> [beeline args]] |
+ [policyName executionId [pathForFiles]]"
     exit 1;
 fi
 
@@ -105,3 +135,5 @@ done < $path/$togrep"stats.txt"
 
 #Finished, Print the path of the files.
 echo "Stats File is at "$path/$togrep"stats.txt and CSV file is at "$path/$togrep"values.csv"
+
+fi
