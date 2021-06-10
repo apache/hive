@@ -69,7 +69,8 @@ public class CreateMaterializedViewOperation extends DDLOperation<CreateMaterial
 
       //set lineage info
       DataContainer dc = new DataContainer(tbl.getTTable());
-      context.getQueryState().getLineageState().setLineage(new Path(desc.getViewName()), dc, tbl.getCols());
+      context.getQueryState().getLineageState().setLineage(new Path(dc.getTable().getSd().getLocation()),
+        dc, tbl.getCols());
     }
     return 0;
   }

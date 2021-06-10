@@ -8190,6 +8190,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       queryState.getLineageState()
           .mapDirToOp(tlocation, output);
+    } else if (queryState.getCommandType().equals(HiveOperation.CREATE_MATERIALIZED_VIEW.getOperationName())) {
+      Path tlocation;
+      String [] dbTable = Utilities.getDbTableName(createVwDesc.getViewName());
+      try {
+        Warehouse wh = new Warehouse(conf);
+        tlocation = wh.getDefaultTablePath(db.getDatabase(dbTable[0]), dbTable[1], false);
+      } catch (MetaException|HiveException e) {
+        throw new SemanticException(e);
+      }
+
+      queryState.getLineageState()
+        .mapDirToOp(tlocation, output);
     }
   }
 
