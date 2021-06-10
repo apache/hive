@@ -105,7 +105,9 @@ public class GenericUDFDateFormat extends GenericUDF {
     if (formatter == null) {
       return null;
     }
-    ZoneId id = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf().getLocalTimeZone();
+
+    ZoneId id = (SessionState.get() == null) ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
+        .getLocalTimeZone();
     // the function should support both short date and full timestamp format
     // time part of the timestamp should not be skipped
     Timestamp ts = getTimestampValue(arguments, 0, tsConverters);

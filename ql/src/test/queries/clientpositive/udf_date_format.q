@@ -1,7 +1,7 @@
 DESCRIBE FUNCTION date_format;
 DESC FUNCTION EXTENDED date_format;
 
-set hive.local.time.zone=Asia/Kolkata;
+set hive.local.time.zone=Africa/Johannesburg;
 
 explain select date_format('2015-04-08', 'EEEE');
 
@@ -18,6 +18,7 @@ date_format('2015-04-08', 'D'),
 date_format('2015-04-08', 'd'),
 date_format(cast(null as string), 'dd');
 
+set hive.local.time.zone=Europe/Berlin;
 
 --string timestamp
 select
@@ -31,6 +32,7 @@ date_format('2015-04-08T10:30:45', 'dd'),
 date_format('2015-04-08 10', 'dd'),
 date_format(cast(null as string), 'dd');
 
+set hive.local.time.zone=Australia/Sydney;
 
 --date
 select
@@ -44,6 +46,8 @@ date_format(cast('2015-04-08' as date), 'W'),
 date_format(cast('2015-04-08' as date), 'D'),
 date_format(cast('2015-04-08' as date), 'd'),
 date_format(cast(null as date), 'dd');
+
+set hive.local.time.zone=Asia/Bangkok;
 
 --timestamp
 select
@@ -61,7 +65,14 @@ select
 date_format('2015-04-08', ''),
 date_format('2015-04-08', 'Q');
 
--- with current time stamp
+-- with time zone
+set hive.local.time.zone=Asia/Bangkok;
+select date_format("2015-04-08 10:30:45","yyyy-MM-dd HH:mm:ss.SSS z");
+
+set hive.local.time.zone=Australia/Sydney;
+select date_format("2015-04-08 10:30:45","yyyy-MM-dd HH:mm:ss.SSS z");
+
+set hive.local.time.zone=Europe/Berlin;
 select date_format("2015-04-08 10:30:45","yyyy-MM-dd HH:mm:ss.SSS z");
 
 --julian date
