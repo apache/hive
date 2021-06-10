@@ -78,7 +78,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
@@ -456,7 +455,7 @@ public final class ConstantPropagateProcFactory {
   private static boolean isConstantFoldableUdf(GenericUDF udf,  List<ExprNodeDesc> children) {
     // Runtime constants + deterministic functions can be folded.
     if (!FunctionRegistry.isConsistentWithinQuery(udf)) {
-      if (udf.getClass().equals(GenericUDFUnixTimeStamp.class)
+      if (udf.getClass().equals(GenericUDFToUnixTimeStamp.class)
           && children != null && children.size() > 0) {
         // unix_timestamp is polymorphic (ignore class annotations)
         return true;
@@ -822,7 +821,7 @@ public final class ConstantPropagateProcFactory {
       }
     }
 
-    if (udf instanceof GenericUDFUnixTimeStamp) {
+    if (udf instanceof GenericUDFToUnixTimeStamp) {
       if (newExprs.size() >= 1) {
         // unix_timestamp(args) -> to_unix_timestamp(args)
         return ExprNodeGenericFuncDesc.newInstance(new GenericUDFToUnixTimeStamp(), newExprs);
