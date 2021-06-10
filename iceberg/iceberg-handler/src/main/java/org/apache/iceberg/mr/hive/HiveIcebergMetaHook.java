@@ -92,8 +92,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
       // table commands since by then the HMS info can be stale + Iceberg does not store its partition spec in the props
       InputFormatConfig.PARTITION_SPEC);
   private static final EnumSet<AlterTableType> SUPPORTED_ALTER_OPS = EnumSet.of(
-      AlterTableType.ADDCOLS, AlterTableType.ADDPROPS, AlterTableType.DROPPROPS);
-
+      AlterTableType.ADDCOLS, AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.SETPARTITIONSPEC);
   private final Configuration conf;
   private Table icebergTable = null;
   private Properties catalogProperties;
@@ -102,8 +101,8 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   private TableMetadata deleteMetadata;
   private boolean canMigrateHiveTable;
   private PreAlterTableProperties preAlterTableProperties;
-  private Enum<AlterTableType> currentAlterTableOp;
   private UpdateSchema updateSchema;
+  private AlterTableType currentAlterTableOp;
 
   public HiveIcebergMetaHook(Configuration conf) {
     this.conf = conf;
@@ -291,22 +290,20 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
       HiveTableUtil.importFiles(preAlterTableProperties.tableLocation, preAlterTableProperties.format,
           partitionSpecProxy, preAlterTableProperties.partitionKeys, catalogProperties, conf);
     } else {
-      if (AlterTableType.ADDCOLS.equals(currentAlterTableOp) && updateSchema != null) {
-        updateSchema.commit();
-      } else if (AlterTableType.ADDPROPS.equals(currentAlterTableOp) ||
-          AlterTableType.DROPPROPS.equals(currentAlterTableOp)) {
-
-        Map<String, String> contextProperties = context.getProperties();
-        Map<String, String> hmsTableParameters = hmsTable.getParameters();
-        Splitter splitter = Splitter.on(PROPERTIES_SEPARATOR);
-        UpdateProperties icebergUpdateProperties = icebergTable.updateProperties();
-        if (contextProperties.containsKey(SET_PROPERTIES)) {
-          splitter.splitToList(contextProperties.get(SET_PROPERTIES))
-              .forEach(k -> icebergUpdateProperties.set(k, hmsTableParameters.get(k)));
-        } else if (contextProperties.containsKey(UNSET_PROPERTIES)) {
-          splitter.splitToList(contextProperties.get(UNSET_PROPERTIES)).forEach(icebergUpdateProperties::remove);
-        }
-        icebergUpdateProperties.commit();
+      Map<String, String> contextProperties = context.getProperties();
+      switch (currentAlterTableOp) {
+        case ADDCOLS:
+          if (updateSchema != null) {
+            updateSchema.commit();
+          }
+          break;
+        case ADDPROPS:
+        case DROPPROPS:
+          alterTableProperties(hmsTable, context.getProperties());
+          break;
+        case SETPARTITIONSPEC:
+          IcebergTableUtil.updateSpec(conf, icebergTable);
+          break;
       }
     }
   }
@@ -337,6 +334,21 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
         // the file doesn't exists, do nothing
       }
     }
+  }
+
+
+  private void alterTableProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable,
+      Map<String, String> contextProperties) {
+    Map<String, String> hmsTableParameters = hmsTable.getParameters();
+    Splitter splitter = Splitter.on(PROPERTIES_SEPARATOR);
+    UpdateProperties icebergUpdateProperties = icebergTable.updateProperties();
+    if (contextProperties.containsKey(SET_PROPERTIES)) {
+      splitter.splitToList(contextProperties.get(SET_PROPERTIES))
+          .forEach(k -> icebergUpdateProperties.set(k, hmsTableParameters.get(k)));
+    } else if (contextProperties.containsKey(UNSET_PROPERTIES)) {
+      splitter.splitToList(contextProperties.get(UNSET_PROPERTIES)).forEach(icebergUpdateProperties::remove);
+    }
+    icebergUpdateProperties.commit();
   }
 
   private void setupAlterOperationType(org.apache.hadoop.hive.metastore.api.Table hmsTable,

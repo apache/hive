@@ -72,6 +72,7 @@ alterTableStatementSuffix
     | alterTblPartitionStatementSuffix[false]
     | partitionSpec alterTblPartitionStatementSuffix[true] -> alterTblPartitionStatementSuffix partitionSpec
     | alterStatementSuffixSetOwner
+    | alterStatementSuffixSetPartSpec
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -442,6 +443,13 @@ alterStatementSuffixSetOwner
 @after { gParent.popMsg(state); }
     : KW_SET KW_OWNER principalName
     -> ^(TOK_ALTERTABLE_OWNER principalName)
+    ;
+
+alterStatementSuffixSetPartSpec
+@init { gParent.pushMsg("alter table set partition spec", state); }
+@after { gParent.popMsg(state); }
+    : KW_SET KW_PARTITION KW_SPEC LPAREN (spec = partitionTransformSpec) RPAREN
+    -> ^(TOK_ALTERTABLE_SETPARTSPEC $spec)
     ;
 
 fileFormat
