@@ -13,7 +13,8 @@ public enum HiveObjectType implements org.apache.thrift.TEnum {
   DATABASE(2),
   TABLE(3),
   PARTITION(4),
-  COLUMN(5);
+  COLUMN(5),
+  DATACONNECTOR(6);
 
   private final int value;
 
@@ -45,6 +46,8 @@ public enum HiveObjectType implements org.apache.thrift.TEnum {
         return PARTITION;
       case 5:
         return COLUMN;
+      case 6:
+        return DATACONNECTOR;
       default:
         return null;
     }

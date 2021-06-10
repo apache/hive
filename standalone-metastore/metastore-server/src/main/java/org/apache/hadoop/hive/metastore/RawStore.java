@@ -837,6 +837,19 @@ public interface RawStore extends Configurable {
       List<String> groupNames)  throws InvalidObjectException, MetaException;
 
   /**
+   * Get privileges for a connector for a user.
+   * @param catName catalog name
+   * @param connectorName connector name
+   * @param userName user name
+   * @param groupNames list of groups the user is in
+   * @return privileges for that user on indicated connector
+   * @throws InvalidObjectException no such database
+   * @throws MetaException error accessing the RDBMS
+   */
+  PrincipalPrivilegeSet getConnectorPrivilegeSet (String catName, String connectorName, String userName,
+      List<String> groupNames)  throws InvalidObjectException, MetaException;
+
+  /**
    * Get privileges for a table for a user.
    * @param catName catalog name
    * @param dbName database name

@@ -557,6 +557,13 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public PrincipalPrivilegeSet getConnectorPrivilegeSet(String catName, String connectorName, String userName,
+      List<String> groupNames) throws InvalidObjectException, MetaException {
+
+    return null;
+  }
+
+  @Override
   public PrincipalPrivilegeSet getTablePrivilegeSet(String catName, String dbName, String tableName,
       String userName, List<String> groupNames) throws InvalidObjectException, MetaException {
 

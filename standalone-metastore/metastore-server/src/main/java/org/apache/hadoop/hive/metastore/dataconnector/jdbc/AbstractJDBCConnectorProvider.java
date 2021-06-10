@@ -28,7 +28,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
 
   // duplicate constants from Constants.java to avoid a dependency on hive-common
   public static final String JDBC_HIVE_STORAGE_HANDLER_ID =
-      "org.apache.hive.storage.jdbc.JdbcStorageHandler";
+          "org.apache.hive.storage.jdbc.JdbcStorageHandler";
   public static final String JDBC_CONFIG_PREFIX = "hive.sql";
   public static final String JDBC_CATALOG = JDBC_CONFIG_PREFIX + ".catalog";
   public static final String JDBC_SCHEMA = JDBC_CONFIG_PREFIX + ".schema";
@@ -231,7 +231,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       return table;
     } catch (Exception e) {
       LOG.warn("Exception retrieving remote table " + scoped_db + "." + tableName + " via data connector "
-          + connector.getName());
+              + connector.getName());
       throw new MetaException("Error retrieving remote table:" + e);
     } finally {
       try {

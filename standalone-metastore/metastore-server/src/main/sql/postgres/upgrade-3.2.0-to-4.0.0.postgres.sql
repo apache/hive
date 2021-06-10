@@ -303,6 +303,31 @@ ALTER TABLE "DBS" ADD "DATACONNECTOR_NAME" character varying(128);
 ALTER TABLE "DBS" ADD "REMOTE_DBNAME" character varying(128);
 UPDATE "DBS" SET "TYPE"= 'NATIVE' WHERE "TYPE" IS NULL;
 
+
+CREATE TABLE "DC_PRIVS" (
+                            "DC_GRANT_ID" bigint NOT NULL,
+                            "CREATE_TIME" bigint NOT NULL,
+                            "DC_NAME" character varying(128),
+                            "GRANT_OPTION" smallint NOT NULL,
+                            "GRANTOR" character varying(128) DEFAULT NULL::character varying,
+                            "GRANTOR_TYPE" character varying(128) DEFAULT NULL::character varying,
+                            "PRINCIPAL_NAME" character varying(128) DEFAULT NULL::character varying,
+                            "PRINCIPAL_TYPE" character varying(128) DEFAULT NULL::character varying,
+                            "DC_PRIV" character varying(128) DEFAULT NULL::character varying,
+                            "AUTHORIZER" character varying(128) DEFAULT NULL::character varying
+);
+
+ALTER TABLE ONLY "DC_PRIVS"
+    ADD CONSTRAINT "DCPRIVILEGEINDEX" UNIQUE ("AUTHORIZER", "DC_NAME", "PRINCIPAL_NAME", "PRINCIPAL_TYPE", "DC_PRIV", "GRANTOR", "GRANTOR_TYPE");
+
+ALTER TABLE ONLY "DC_PRIVS"
+    ADD CONSTRAINT "DC_PRIVS_pkey" PRIMARY KEY ("DC_GRANT_ID");
+
+CREATE INDEX "DC_PRIVS_N49" ON "DC_PRIVS" USING btree ("DC_NAME");
+
+ALTER TABLE ONLY "DC_PRIVS"
+    ADD CONSTRAINT "DC_PRIVS_DC_ID_fkey" FOREIGN KEY ("DC_NAME") REFERENCES "DATACONNECTOR"("NAME") DEFERRABLE;
+
 -- HIVE-24911
 CREATE INDEX "SDS_N50" ON "SDS" USING btree ("CD_ID");
 

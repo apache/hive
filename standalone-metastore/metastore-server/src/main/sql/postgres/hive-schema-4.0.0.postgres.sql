@@ -109,6 +109,24 @@ CREATE TABLE "DB_PRIVS" (
 
 
 --
+-- Name: DC_PRIVS; Type: TABLE; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+CREATE TABLE "DC_PRIVS" (
+                            "DC_GRANT_ID" bigint NOT NULL,
+                            "CREATE_TIME" bigint NOT NULL,
+                            "DC_NAME" character varying(128),
+                            "GRANT_OPTION" smallint NOT NULL,
+                            "GRANTOR" character varying(128) DEFAULT NULL::character varying,
+                            "GRANTOR_TYPE" character varying(128) DEFAULT NULL::character varying,
+                            "PRINCIPAL_NAME" character varying(128) DEFAULT NULL::character varying,
+                            "PRINCIPAL_TYPE" character varying(128) DEFAULT NULL::character varying,
+                            "DC_PRIV" character varying(128) DEFAULT NULL::character varying,
+                            "AUTHORIZER" character varying(128) DEFAULT NULL::character varying
+);
+
+
+--
 -- Name: GLOBAL_PRIVS; Type: TABLE; Schema: public; Owner: hiveuser; Tablespace:
 --
 
@@ -760,6 +778,13 @@ ALTER TABLE ONLY "DATABASE_PARAMS"
 ALTER TABLE ONLY "DB_PRIVS"
     ADD CONSTRAINT "DBPRIVILEGEINDEX" UNIQUE ("AUTHORIZER", "DB_ID", "PRINCIPAL_NAME", "PRINCIPAL_TYPE", "DB_PRIV", "GRANTOR", "GRANTOR_TYPE");
 
+--
+-- Name: DCPRIVILEGEINDEX; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+ALTER TABLE ONLY "DC_PRIVS"
+    ADD CONSTRAINT "DCPRIVILEGEINDEX" UNIQUE ("AUTHORIZER", "DC_NAME", "PRINCIPAL_NAME", "PRINCIPAL_TYPE", "DC_PRIV", "GRANTOR", "GRANTOR_TYPE");
+
 
 --
 -- Name: DBS_pkey; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
@@ -775,6 +800,14 @@ ALTER TABLE ONLY "DBS"
 
 ALTER TABLE ONLY "DB_PRIVS"
     ADD CONSTRAINT "DB_PRIVS_pkey" PRIMARY KEY ("DB_GRANT_ID");
+
+
+--
+-- Name: DC_PRIVS_pkey; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+ALTER TABLE ONLY "DC_PRIVS"
+    ADD CONSTRAINT "DC_PRIVS_pkey" PRIMARY KEY ("DC_GRANT_ID");
 
 
 --
@@ -1116,6 +1149,13 @@ CREATE INDEX "DATABASE_PARAMS_N49" ON "DATABASE_PARAMS" USING btree ("DB_ID");
 --
 
 CREATE INDEX "DB_PRIVS_N49" ON "DB_PRIVS" USING btree ("DB_ID");
+
+
+--
+-- Name: DC_PRIVS_N49; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+CREATE INDEX "DC_PRIVS_N49" ON "DC_PRIVS" USING btree ("DC_NAME");
 
 
 --
@@ -1994,6 +2034,9 @@ CREATE TABLE "DATACONNECTOR_PARAMS" (
   PRIMARY KEY ("NAME", "PARAM_KEY"),
   CONSTRAINT "DATACONNECTOR_NAME_FK1" FOREIGN KEY ("NAME") REFERENCES "DATACONNECTORS"("NAME") ON DELETE CASCADE
 );
+
+ALTER TABLE ONLY "DC_PRIVS"
+    ADD CONSTRAINT "DC_PRIVS_DC_ID_fkey" FOREIGN KEY ("DC_NAME") REFERENCES "DATACONNECTOR"("NAME") DEFERRABLE;
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script

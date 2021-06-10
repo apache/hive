@@ -220,6 +220,24 @@ CREATE TABLE DB_PRIVS
 
 ALTER TABLE DB_PRIVS ADD CONSTRAINT DB_PRIVS_PK PRIMARY KEY (DB_GRANT_ID);
 
+-- Table DC_PRIVS for classes [org.apache.hadoop.hive.metastore.model.MDCPrivilege]
+CREATE TABLE DC_PRIVS
+(
+    DC_GRANT_ID bigint NOT NULL,
+    CREATE_TIME int NOT NULL,
+    DC_NAME nvarchar(128) NULL,
+    GRANT_OPTION smallint NOT NULL CHECK (GRANT_OPTION IN (0,1)),
+    GRANTOR nvarchar(128) NULL,
+    GRANTOR_TYPE nvarchar(128) NULL,
+    PRINCIPAL_NAME nvarchar(128) NULL,
+    PRINCIPAL_TYPE nvarchar(128) NULL,
+    DC_PRIV nvarchar(128) NULL,
+    AUTHORIZER nvarchar(128) NULL
+);
+
+ALTER TABLE DC_PRIVS ADD CONSTRAINT DC_PRIVS_PK PRIMARY KEY (DC_GRANT_ID);
+
+
 -- Table TAB_COL_STATS for classes [org.apache.hadoop.hive.metastore.model.MTableColumnStatistics]
 CREATE TABLE TAB_COL_STATS
 (
@@ -1406,6 +1424,13 @@ CREATE TABLE "DATACONNECTOR_PARAMS"(
   PRIMARY KEY ("NAME", "PARAM_KEY"),
   CONSTRAINT DATACONNECTOR_NAME_FK1 FOREIGN KEY ("NAME") REFERENCES "DATACONNECTORS" ("NAME") ON DELETE CASCADE
 );
+
+-- Constraints for table DC_PRIVS for class(es) [org.apache.hadoop.hive.metastore.model.MDCPrivilege]
+ALTER TABLE DC_PRIVS ADD CONSTRAINT DC_PRIVS_FK1 FOREIGN KEY (DC_NAME) REFERENCES DATACONNECTORS (NAME) ;
+
+CREATE UNIQUE INDEX DCPRIVILEGEINDEX ON DC_PRIVS (AUTHORIZER,DC_NAME,PRINCIPAL_NAME,PRINCIPAL_TYPE,DC_PRIV,GRANTOR,GRANTOR_TYPE);
+
+CREATE INDEX DC_PRIVS_N49 ON DC_PRIVS (DC_NAME);
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script

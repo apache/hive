@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationTranslator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
@@ -101,6 +102,8 @@ public class AuthorizationUtils {
       return HivePrivilegeObjectType.FUNCTION;
     case SERVICE_NAME:
       return HivePrivilegeObjectType.SERVICE_NAME;
+    case DATACONNECTOR:
+      return HivePrivilegeObjectType.DATACONNECTOR;
     default:
       return null;
     }
@@ -223,6 +226,8 @@ public class AuthorizationUtils {
       return HiveObjectType.PARTITION;
     case COLUMN:
       return HiveObjectType.COLUMN;
+    case DATACONNECTOR:
+      return HiveObjectType.DATACONNECTOR;
     default:
       throw new HiveException("Unsupported type " + type);
     }
@@ -250,6 +255,8 @@ public class AuthorizationUtils {
           throw new HiveException(ErrorMsg.UNSUPPORTED_AUTHORIZATION_RESOURCE_TYPE_COLUMN);
         }
         return HivePrivilegeObjectType.COLUMN;
+      case DATACONNECTOR:
+        return HivePrivilegeObjectType.DATACONNECTOR;
       default:
         //should not happen as we have accounted for all types
         throw new AssertionError("Unsupported type " + type);
