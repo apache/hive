@@ -72,16 +72,6 @@ public class TestPartitionStat extends MetaStoreClientTest {
   private static final Partition[] PARTITIONS = new Partition[5];
   public static final String HIVE_ENGINE = "hive";
 
-  @BeforeClass
-  public static void startMetaStores() {
-    Map<MetastoreConf.ConfVars, String> msConf = new HashMap<MetastoreConf.ConfVars, String>();
-    // Enable trash, so it can be tested
-    Map<String, String> extraConf = new HashMap<>();
-    extraConf.put("fs.trash.checkpoint.interval", "30");  // FS_TRASH_CHECKPOINT_INTERVAL_KEY
-    extraConf.put("fs.trash.interval", "30");             // FS_TRASH_INTERVAL_KEY (hadoop-2)
-    startMetaStores(msConf, extraConf);
-  }
-
   public TestPartitionStat(String name, AbstractMetaStoreService metaStore) {
     this.metaStore = metaStore;
   }
@@ -100,8 +90,16 @@ public class TestPartitionStat extends MetaStoreClientTest {
         create(client, metaStore.getConf());
 
     // Create test tables with 3 partitions
-    createTable(TABLE_NAME, getYearPartCol(), null);
+    createTable(TABLE_NAME, getYearPartCol());
     createPartitions();
+
+    // Hack to initialize the stats tables. Not sure why the first test run using remote metastore is failing with
+    // error (Unable to update Column stats for  table due to: Table/View 'PART_COL_STATS' does not exist.). This hack
+    // has fixed it. All the tests will be executed first using embedded metastore and then with
+    // remote metastore. For embedded metastore, TRY_DIRECT_SQL is set to false. For remote metastore TRY_DIRECT_SQL is
+    // set to true.
+    client.getPartitionColumnStatistics(DB_NAME, TABLE_NAME,
+            Collections.singletonList("year=2017"), Collections.singletonList(PART_COL_NAME), HIVE_ENGINE);
   }
 
   @After
@@ -120,18 +118,6 @@ public class TestPartitionStat extends MetaStoreClientTest {
     }
   }
 
-  public AbstractMetaStoreService getMetaStore() {
-    return metaStore;
-  }
-
-  public IMetaStoreClient getClient() {
-    return client;
-  }
-
-  public void setClient(IMetaStoreClient client) {
-    this.client = client;
-  }
-
   private void createPartitions() throws Exception {
     PARTITIONS[0] = createPartition(Lists.newArrayList("2017"), getYearPartCol());
     PARTITIONS[1] = createPartition(Lists.newArrayList("2018"), getYearPartCol());
@@ -140,17 +126,9 @@ public class TestPartitionStat extends MetaStoreClientTest {
     PARTITIONS[4] = createPartition(Lists.newArrayList("2021"), getYearPartCol());
   }
 
-  private Table createTable(String tableName, List<FieldSchema> partCols,
-                            Map<String, String> tableParams) throws Exception {
+  private Table createTable(String tableName, List<FieldSchema> partCols) throws Exception {
     String type = "MANAGED_TABLE";
     String location = metaStore.getWarehouseRoot() + "/" + tableName;
-
-    if (tableParams != null) {
-      type = (tableParams.getOrDefault("EXTERNAL", "FALSE").equalsIgnoreCase("TRUE")) ?
-              "EXTERNAL_TABLE" : "MANAGED_TABLE";
-      location = (type.equalsIgnoreCase("EXTERNAL_TABLE")) ?
-              (metaStore.getExternalWarehouseRoot() + "/" + tableName) : (metaStore.getWarehouseRoot() + "/" + tableName);
-    }
 
     Table table = new TableBuilder()
             .setDbName(DB_NAME)
@@ -160,7 +138,6 @@ public class TestPartitionStat extends MetaStoreClientTest {
             .addCol("test_value", "string", "test col value")
             .setPartCols(partCols)
             .setLocation(location)
-            .setTableParams(tableParams)
             .create(client, metaStore.getConf());
     return table;
   }
@@ -244,61 +221,22 @@ public class TestPartitionStat extends MetaStoreClientTest {
 
   @Test
   public void testUpdateStatSingle() throws Exception {
-    // For remote metastore setup is not there for column stats.
-    if (client.isLocalMetaStore()) {
-      metaStore.getConf().set(MetastoreConf.ConfVars.TRY_DIRECT_SQL.getVarname(), "true");
-      client = metaStore.getClient();
-      Map<List<String>, ColumnStatisticsData> partitionStats = new HashMap<>();
-      partitionStats.put(PARTITIONS[0].getValues(), createStatsData(100, 50, 1, 100));
-      List<String> pNameList = updatePartColStat(partitionStats);
-      validateStats(partitionStats, pNameList);
-    }
-  }
-
-  @Test
-  public void testUpdateStatSingleDisableDirectSql() throws Exception {
-    // For remote metastore setup is not there for column stats.
-    if (client.isLocalMetaStore()) {
-      metaStore.getConf().set(MetastoreConf.ConfVars.TRY_DIRECT_SQL.getVarname(), "false");
-      client = metaStore.getClient();
-      Map<List<String>, ColumnStatisticsData> partitionStats = new HashMap<>();
-      partitionStats.put(PARTITIONS[0].getValues(), createStatsData(100, 50, 1, 100));
-      List<String> pNameList = updatePartColStat(partitionStats);
-      validateStats(partitionStats, pNameList);
-    }
+    Map<List<String>, ColumnStatisticsData> partitionStats = new HashMap<>();
+    partitionStats.put(PARTITIONS[0].getValues(), createStatsData(100, 50, 1, 100));
+    List<String> pNameList = updatePartColStat(partitionStats);
+    validateStats(partitionStats, pNameList);
   }
 
   @Test
   public void testUpdateStatMultiple() throws Exception {
-    // For remote metastore setup is not there for column stats.
-    if (client.isLocalMetaStore()) {
-      metaStore.getConf().set(MetastoreConf.ConfVars.TRY_DIRECT_SQL.getVarname(), "true");
-      client = metaStore.getClient();
-      Map<List<String>, ColumnStatisticsData> partitionStats = new HashMap<>();
-      partitionStats.put(PARTITIONS[0].getValues(), createStatsData(100, 50, 1, 100));
-      partitionStats.put(PARTITIONS[1].getValues(), createStatsData(100, 500, 1, 100));
-      partitionStats.put(PARTITIONS[2].getValues(), createStatsData(100, 150, 1, 100));
-      partitionStats.put(PARTITIONS[3].getValues(), createStatsData(100, 50, 2, 100));
-      partitionStats.put(PARTITIONS[4].getValues(), createStatsData(100, 50, 1, 1000));
-      List<String> pNameList = updatePartColStat(partitionStats);
-      validateStats(partitionStats, pNameList);
-    }
+    Map<List<String>, ColumnStatisticsData> partitionStats = new HashMap<>();
+    partitionStats.put(PARTITIONS[0].getValues(), createStatsData(100, 50, 1, 100));
+    partitionStats.put(PARTITIONS[1].getValues(), createStatsData(100, 500, 1, 100));
+    partitionStats.put(PARTITIONS[2].getValues(), createStatsData(100, 150, 1, 100));
+    partitionStats.put(PARTITIONS[3].getValues(), createStatsData(100, 50, 2, 100));
+    partitionStats.put(PARTITIONS[4].getValues(), createStatsData(100, 50, 1, 1000));
+    List<String> pNameList = updatePartColStat(partitionStats);
+    validateStats(partitionStats, pNameList);
   }
 
-  @Test
-  public void testUpdateStatMultipleDisableDirectSql() throws Exception {
-    // For remote metastore setup is not there for column stats.
-    if (client.isLocalMetaStore()) {
-      metaStore.getConf().set(MetastoreConf.ConfVars.TRY_DIRECT_SQL.getVarname(), "false");
-      client = metaStore.getClient();
-      Map<List<String>, ColumnStatisticsData> partitionStats = new HashMap<>();
-      partitionStats.put(PARTITIONS[0].getValues(), createStatsData(100, 50, 1, 100));
-      partitionStats.put(PARTITIONS[1].getValues(), createStatsData(100, 500, 1, 100));
-      partitionStats.put(PARTITIONS[2].getValues(), createStatsData(100, 150, 1, 100));
-      partitionStats.put(PARTITIONS[3].getValues(), createStatsData(100, 50, 2, 100));
-      partitionStats.put(PARTITIONS[4].getValues(), createStatsData(100, 50, 1, 1000));
-      List<String> pNameList = updatePartColStat(partitionStats);
-      validateStats(partitionStats, pNameList);
-    }
-  }
 }
