@@ -31,7 +31,7 @@ public class EmbeddedThriftBinaryCLIService extends ThriftBinaryCLIService {
 
   public EmbeddedThriftBinaryCLIService() {
     // The non-test path that allows connections for the embedded service.
-    super(new CLIService(null, true), null);
+    super(new CLIService(null, true));
     isEmbedded = true;
     HiveConf.setLoadHiveServer2Config(true);
   }

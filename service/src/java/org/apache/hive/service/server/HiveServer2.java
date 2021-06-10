@@ -224,15 +224,14 @@ public class HiveServer2 extends CompositeService {
     cliService = new CLIService(this, false);
     addService(cliService);
     final HiveServer2 hiveServer2 = this;
-    Runnable oomHook = new HiveServer2OomHookRunner(hiveServer2);
     boolean isHttpTransportMode = isHttpTransportMode(hiveConf);
     boolean isAllTransportMode = isAllTransportMode(hiveConf);
     if (isHttpTransportMode || isAllTransportMode) {
-      thriftCLIService = new ThriftHttpCLIService(cliService, oomHook);
+      thriftCLIService = new ThriftHttpCLIService(cliService);
       addService(thriftCLIService);
     }
     if (!isHttpTransportMode || isAllTransportMode)  {
-      thriftCLIService = new ThriftBinaryCLIService(cliService, oomHook);
+      thriftCLIService = new ThriftBinaryCLIService(cliService);
       addService(thriftCLIService); //thriftCliService instance is used for zookeeper purposes
     }
 
