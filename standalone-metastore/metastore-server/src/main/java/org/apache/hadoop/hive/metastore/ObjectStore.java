@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang3.StringUtils.join;
+import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
@@ -181,6 +182,8 @@ import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
+import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.FetchGroups;
@@ -9323,66 +9326,18 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics colStats,
-      List<String> partVals, String validWriteIds, long writeId)
+                                                             List<String> partVals, String validWriteIds, long writeId)
           throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+    String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
     boolean committed = false;
-
     try {
       openTransaction();
-      List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
-      ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
-      String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
       Table table = ensureGetTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
-      Partition partition = convertToPart(getMPartition(
-          catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals), false);
-      List<String> colNames = new ArrayList<>();
-
-      for(ColumnStatisticsObj statsObj : statsObjs) {
-        colNames.add(statsObj.getColName());
-      }
-
-      Map<String, MPartitionColumnStatistics> oldStats = getPartitionColStats(table, statsDesc
-          .getPartName(), colNames, colStats.getEngine());
-
-      MPartition mPartition = getMPartition(
-          catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals);
-      if (partition == null) {
-        throw new NoSuchObjectException("Partition for which stats is gathered doesn't exist.");
-      }
-
-      for (ColumnStatisticsObj statsObj : statsObjs) {
-        MPartitionColumnStatistics mStatsObj =
-            StatObjectConverter.convertToMPartitionColumnStatistics(mPartition, statsDesc, statsObj, colStats.getEngine());
-        writeMPartitionColumnStatistics(table, partition, mStatsObj,
-            oldStats.get(statsObj.getColName()));
-      }
-      // TODO: (HIVE-20109) the col stats stats should be in colstats, not in the partition!
-      Map<String, String> newParams = new HashMap<>(mPartition.getParameters());
-      StatsSetupConst.setColumnStatsState(newParams, colNames);
-      boolean isTxn = TxnUtils.isTransactionalTable(table);
-      if (isTxn) {
-        if (!areTxnStatsSupported) {
-          StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
-        } else {
-          String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(statsDesc.getDbName(),
-                                                                      statsDesc.getTableName()),
-                  mPartition.getParameters(), newParams, writeId, validWriteIds, true);
-          if (errorMsg != null) {
-            throw new MetaException(errorMsg);
-          }
-          if (!isCurrentStatsValidForTheQuery(mPartition, validWriteIds, true)) {
-            // Make sure we set the flag to invalid regardless of the current value.
-            StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
-            LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the partition "
-                    + statsDesc.getDbName() + "." + statsDesc.getTableName() + "." + statsDesc.getPartName());
-          }
-          mPartition.setWriteId(writeId);
-        }
-      }
-
-      mPartition.setParameters(newParams);
+      String partName = Warehouse.makePartName(table.getPartitionKeys(), partVals);
+      Map<String, String> newParams =
+              updatePartitionColumnStatisticsInternal(colStats, table, partName, validWriteIds, writeId);
       committed = commitTransaction();
-      // TODO: what is the "return committed;" about? would it ever return false without throwing?
       return committed ? newParams : null;
     } finally {
       if (!committed) {
@@ -9391,15 +9346,103 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  private Map<String, String> updatePartitionColumnStatisticsInternal(ColumnStatistics colStats, Table table,
+                                                                   String partName, String validWriteIds, long writeId)
+          throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
+    ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+    String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
+    Partition partition = convertToPart(getMPartition(
+            catName, statsDesc.getDbName(), statsDesc.getTableName(), partName), false);
+    List<String> colNames = new ArrayList<>();
+
+    for(ColumnStatisticsObj statsObj : statsObjs) {
+      colNames.add(statsObj.getColName());
+    }
+
+    Map<String, MPartitionColumnStatistics> oldStats = getPartitionColStats(table, statsDesc
+            .getPartName(), colNames, colStats.getEngine());
+
+    MPartition mPartition = getMPartition(
+            catName, statsDesc.getDbName(), statsDesc.getTableName(), partName);
+    if (partition == null) {
+      throw new NoSuchObjectException("Partition for which stats is gathered doesn't exist.");
+    }
+
+    for (ColumnStatisticsObj statsObj : statsObjs) {
+      MPartitionColumnStatistics mStatsObj =
+              StatObjectConverter.convertToMPartitionColumnStatistics(mPartition, statsDesc, statsObj, colStats.getEngine());
+      writeMPartitionColumnStatistics(table, partition, mStatsObj,
+              oldStats.get(statsObj.getColName()));
+    }
+    // TODO: (HIVE-20109) the col stats stats should be in colstats, not in the partition!
+    Map<String, String> newParams = new HashMap<>(mPartition.getParameters());
+    StatsSetupConst.setColumnStatsState(newParams, colNames);
+    boolean isTxn = TxnUtils.isTransactionalTable(table);
+    if (isTxn) {
+      if (!areTxnStatsSupported) {
+        StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
+      } else {
+        String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(statsDesc.getDbName(),
+                statsDesc.getTableName()),
+                mPartition.getParameters(), newParams, writeId, validWriteIds, true);
+        if (errorMsg != null) {
+          throw new MetaException(errorMsg);
+        }
+        if (!isCurrentStatsValidForTheQuery(mPartition, validWriteIds, true)) {
+          // Make sure we set the flag to invalid regardless of the current value.
+          StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
+          LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the partition "
+                  + statsDesc.getDbName() + "." + statsDesc.getTableName() + "." + statsDesc.getPartName());
+        }
+        mPartition.setWriteId(writeId);
+      }
+    }
+
+    mPartition.setParameters(newParams);
+    return newParams;
+  }
+
   @Override
   public Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
-                                                      Map<String, ColumnStatistics> partColStatsMap,
-                                                      Table tbl,
-                                                      List<TransactionalMetaStoreEventListener> listeners,
-                                                      String validWriteIds, long writeId)
+          Map<String, ColumnStatistics> partColStatsMap,
+          Table tbl,
+          List<TransactionalMetaStoreEventListener> listeners,
+          String validWriteIds, long writeId)
           throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    return directSql.updatePartitionColumnStatisticsBatch(partColStatsMap, tbl,
-            listeners, validWriteIds, writeId);
+    if (directSql != null) {
+      return directSql.updatePartitionColumnStatisticsBatch(partColStatsMap, tbl,
+              listeners, validWriteIds, writeId);
+    } else {
+      Map<String, Map<String, String>> result = new HashMap<>();
+      boolean committed = false;
+      try {
+        openTransaction();
+        for (Entry entry : partColStatsMap.entrySet()) {
+          ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
+          String partName = (String) entry.getKey();
+          Map<String, String> parameters = updatePartitionColumnStatisticsInternal(
+                  colStats, tbl, partName, validWriteIds, writeId);
+          MetaStoreListenerNotifier.notifyEvent(listeners,
+                  EventMessage.EventType.UPDATE_PARTITION_COLUMN_STAT,
+                  new UpdatePartitionColumnStatEvent(colStats, getPartValsFromName(tbl, partName), parameters, tbl,
+                          writeId, null));
+          result.put(partName, parameters);
+        }
+        committed = commitTransaction();
+        return committed ? result : null;
+      } catch (Exception ex) {
+        LOG.error("Error retrieving statistics via jdo", ex);
+        if (ex instanceof MetaException) {
+          throw (MetaException) ex;
+        }
+        throw new MetaException(ex.getMessage());
+      } finally {
+        if (!committed) {
+          rollbackTransaction();
+        }
+      }
+    }
   }
 
   private List<MTableColumnStatistics> getMTableColumnStatistics(Table table, List<String> colNames, String engine)
