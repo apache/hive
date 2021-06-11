@@ -172,9 +172,9 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	15                  
-	totalSize           	1145                
+	totalSize           	1155                
 	transactional       	true                
-	transactional_properties	insert_only
+	transactional_properties	insert_only         
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
