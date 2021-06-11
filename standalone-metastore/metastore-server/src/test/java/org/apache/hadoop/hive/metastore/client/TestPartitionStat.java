@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 
@@ -62,15 +61,12 @@ import java.util.Map;
 public class TestPartitionStat extends MetaStoreClientTest {
   private AbstractMetaStoreService metaStore;
   private IMetaStoreClient client;
-  private String directSql = "false";
-
-  protected static final String DB_NAME = "test_part_stat";
-  protected static final String TABLE_NAME = "test_part_stat_table";
+  private static final String DB_NAME = "test_part_stat";
+  private static final String TABLE_NAME = "test_part_stat_table";
   private static final String DEFAULT_COL_TYPE = "int";
   private static final String PART_COL_NAME = "year";
-  protected static final short MAX = -1;
   private static final Partition[] PARTITIONS = new Partition[5];
-  public static final String HIVE_ENGINE = "hive";
+  private static final String HIVE_ENGINE = "hive";
 
   public TestPartitionStat(String name, AbstractMetaStoreService metaStore) {
     this.metaStore = metaStore;
@@ -78,8 +74,7 @@ public class TestPartitionStat extends MetaStoreClientTest {
 
   @Before
   public void setUp() throws Exception {
-    // Get new client, store the original value of directSql to restore it back after test.
-    directSql = metaStore.getConf().get(MetastoreConf.ConfVars.TRY_DIRECT_SQL.getVarname());
+    // Get new client
     client = metaStore.getClient();
 
     // Clean up the database
@@ -98,13 +93,12 @@ public class TestPartitionStat extends MetaStoreClientTest {
     // has fixed it. All the tests will be executed first using embedded metastore and then with
     // remote metastore. For embedded metastore, TRY_DIRECT_SQL is set to false. For remote metastore TRY_DIRECT_SQL is
     // set to true.
-    client.getPartitionColumnStatistics(DB_NAME, TABLE_NAME,
-            Collections.singletonList("year=2017"), Collections.singletonList(PART_COL_NAME), HIVE_ENGINE);
+    //client.getPartitionColumnStatistics(DB_NAME, TABLE_NAME,
+           // Collections.singletonList("year=2017"), Collections.singletonList(PART_COL_NAME), HIVE_ENGINE);
   }
 
   @After
   public void tearDown() throws Exception {
-    metaStore.getConf().set(MetastoreConf.ConfVars.TRY_DIRECT_SQL.getVarname(), directSql);
     try {
       if (client != null) {
         try {
@@ -174,11 +168,10 @@ public class TestPartitionStat extends MetaStoreClientTest {
   private ColumnStatistics createPartColStats(List<String> partValue, ColumnStatisticsData partitionStats) {
     String pName = FileUtils.makePartName(Collections.singletonList(PART_COL_NAME), partValue);
     ColumnStatistics colStats = new ColumnStatistics();
-    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, DB_NAME, TABLE_NAME);
+    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(false, DB_NAME, TABLE_NAME);
     statsDesc.setPartName(pName);
     colStats.setStatsDesc(statsDesc);
     colStats.setEngine(HIVE_ENGINE);
-    statsDesc.setIsTblLevel(false);
     ColumnStatisticsObj statObj = new ColumnStatisticsObj(PART_COL_NAME, "int", partitionStats);
     colStats.addToStatsObj(statObj);
     return colStats;
@@ -194,13 +187,13 @@ public class TestPartitionStat extends MetaStoreClientTest {
 
   private List<String> updatePartColStat(Map<List<String>, ColumnStatisticsData> partitionStats) throws Exception {
     SetPartitionsStatsRequest rqst = new SetPartitionsStatsRequest();
+    rqst.setEngine(HIVE_ENGINE);
     List<String> pNameList = new ArrayList<>();
     for (Map.Entry entry : partitionStats.entrySet()) {
       ColumnStatistics colStats = createPartColStats((List<String>) entry.getKey(),
               (ColumnStatisticsData) entry.getValue());
       String pName = FileUtils.makePartName(Collections.singletonList(PART_COL_NAME), (List<String>) entry.getKey());
       rqst.addToColStats(colStats);
-      rqst.setEngine(HIVE_ENGINE);
       pNameList.add(pName);
     }
     client.setPartitionColumnStatistics(rqst);
