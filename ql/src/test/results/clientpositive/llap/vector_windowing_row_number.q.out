@@ -104,7 +104,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string)
@@ -127,7 +127,7 @@ STAGE PLANS:
                               alias: row_number_window_0
                               name: row_number
                               window function: GenericUDAFRowNumberEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 4904 Data size: 416840 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -142,7 +142,7 @@ STAGE PLANS:
                       Statistics: Num rows: 4904 Data size: 416840 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: row_number_window_0 (type: int)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), KEY.reducesinkkey1 (type: string)
@@ -165,7 +165,7 @@ STAGE PLANS:
                               alias: row_number_window_1
                               name: row_number
                               window function: GenericUDAFRowNumberEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 4904 Data size: 436456 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -180,7 +180,7 @@ STAGE PLANS:
                       Statistics: Num rows: 4904 Data size: 436456 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: row_number_window_1 (type: int), _col0 (type: int)
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), KEY.reducesinkkey0 (type: string)
@@ -203,7 +203,7 @@ STAGE PLANS:
                               alias: row_number_window_2
                               name: row_number
                               window function: GenericUDAFRowNumberEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 4904 Data size: 456072 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -218,7 +218,7 @@ STAGE PLANS:
                       Statistics: Num rows: 4904 Data size: 456072 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: row_number_window_2 (type: int), _col0 (type: int), _col1 (type: int)
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), KEY.reducesinkkey0 (type: string)
@@ -241,7 +241,7 @@ STAGE PLANS:
                               alias: row_number_window_3
                               name: row_number
                               window function: GenericUDAFRowNumberEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 4904 Data size: 475688 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -256,7 +256,7 @@ STAGE PLANS:
                       Statistics: Num rows: 4904 Data size: 475688 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: row_number_window_3 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int)
         Reducer 6 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), KEY.reducesinkkey1 (type: string)
@@ -279,7 +279,7 @@ STAGE PLANS:
                               alias: row_number_window_4
                               name: row_number
                               window function: GenericUDAFRowNumberEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 4904 Data size: 495304 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -294,7 +294,7 @@ STAGE PLANS:
                       Statistics: Num rows: 4904 Data size: 495304 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: row_number_window_4 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int)
         Reducer 7 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), KEY.reducesinkkey0 (type: string)
@@ -317,7 +317,7 @@ STAGE PLANS:
                               alias: row_number_window_5
                               name: row_number
                               window function: GenericUDAFRowNumberEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 4904 Data size: 514920 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -332,7 +332,7 @@ STAGE PLANS:
                       Statistics: Num rows: 4904 Data size: 514920 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: row_number_window_5 (type: int), _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: string)
         Reducer 8 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: string)
@@ -355,7 +355,7 @@ STAGE PLANS:
                               alias: row_number_window_6
                               name: row_number
                               window function: GenericUDAFRowNumberEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 4904 Data size: 534536 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -496,7 +496,7 @@ STAGE PLANS:
                               alias: row_number_window_0
                               name: row_number
                               window function: GenericUDAFRowNumberEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 4904 Data size: 416840 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -534,7 +534,7 @@ STAGE PLANS:
                               alias: row_number_window_1
                               name: row_number
                               window function: GenericUDAFRowNumberEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 4904 Data size: 436456 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -572,7 +572,7 @@ STAGE PLANS:
                               alias: row_number_window_2
                               name: row_number
                               window function: GenericUDAFRowNumberEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 4904 Data size: 456072 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -610,7 +610,7 @@ STAGE PLANS:
                               alias: row_number_window_3
                               name: row_number
                               window function: GenericUDAFRowNumberEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 4904 Data size: 475688 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -648,7 +648,7 @@ STAGE PLANS:
                               alias: row_number_window_4
                               name: row_number
                               window function: GenericUDAFRowNumberEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 4904 Data size: 495304 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -686,7 +686,7 @@ STAGE PLANS:
                               alias: row_number_window_5
                               name: row_number
                               window function: GenericUDAFRowNumberEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 4904 Data size: 514920 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -724,7 +724,7 @@ STAGE PLANS:
                               alias: row_number_window_6
                               name: row_number
                               window function: GenericUDAFRowNumberEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 4904 Data size: 534536 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator

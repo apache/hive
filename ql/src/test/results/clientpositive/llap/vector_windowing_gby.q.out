@@ -225,16 +225,28 @@ STAGE PLANS:
                     Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint), _col2 (type: bigint)
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: rank only CURRENT ROW end frame is supported for RANGE
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:int, KEY.reducesinkkey1:double, VALUE._col1:bigint, VALUE._col2:bigint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, double, double, double, double, double, double]
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col1 (type: bigint), VALUE._col2 (type: bigint)
                 outputColumnNames: _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [2, 3]
                 Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
@@ -254,15 +266,36 @@ STAGE PLANS:
                               arguments: (UDFToDouble(_col1) / UDFToDouble(_col2))
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank]
+                      functionInputExpressions: [DoubleColDivideDoubleColumn(col 9:double, col 10:double)(children: CastLongToDouble(col 2:bigint) -> 9:double, CastLongToDouble(col 3:bigint) -> 10:double) -> 11:double]
+                      functionNames: [rank]
+                      keyInputColumns: []
+                      native: true
+                      nonKeyInputColumns: [2, 3]
+                      orderExpressions: [DoubleColDivideDoubleColumn(col 6:double, col 7:double)(children: CastLongToDouble(col 2:bigint) -> 6:double, CastLongToDouble(col 3:bigint) -> 7:double) -> 8:double]
+                      outputColumns: [4, 2, 3]
+                      outputTypes: [int, bigint, bigint]
+                      partitionExpressions: [ConstantVectorExpression(val 0) -> 5:int]
+                      streamingColumns: [4]
                   Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: rank_window_0 (type: int)
                     outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [4]
                     Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat

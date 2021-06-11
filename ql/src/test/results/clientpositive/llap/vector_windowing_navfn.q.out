@@ -119,12 +119,20 @@ STAGE PLANS:
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [bigint]
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: row_number only CURRENT ROW end frame is supported for RANGE
-                vectorized: false
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: KEY.reducesinkkey0:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint]
             Reduce Operator Tree:
               PTF Operator
                 Function definitions:
@@ -143,15 +151,36 @@ STAGE PLANS:
                             alias: row_number_window_0
                             name: row_number
                             window function: GenericUDAFRowNumberEvaluator
-                            window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                            window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                             isPivotResult: true
+                PTF Vectorization:
+                    allEvaluatorsAreStreaming: true
+                    className: VectorPTFOperator
+                    evaluatorClasses: [VectorPTFEvaluatorRowNumber]
+                    functionInputExpressions: [null]
+                    functionNames: [row_number]
+                    keyInputColumns: []
+                    native: true
+                    nonKeyInputColumns: []
+                    orderExpressions: [ConstantVectorExpression(val 0) -> 3:int]
+                    outputColumns: [1]
+                    outputTypes: [int]
+                    partitionExpressions: [ConstantVectorExpression(val 0) -> 2:int]
+                    streamingColumns: [1]
                 Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: row_number_window_0 (type: int)
                   outputColumnNames: _col0
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [1]
                   Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
                     Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -242,16 +271,28 @@ STAGE PLANS:
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: row_number only CURRENT ROW end frame is supported for RANGE
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:double, KEY.reducesinkkey1:decimal(4,2), VALUE._col6:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: double), VALUE._col6 (type: string), KEY.reducesinkkey1 (type: decimal(4,2))
                 outputColumnNames: _col5, _col7, _col9
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 2, 1]
                 Statistics: Num rows: 1 Data size: 304 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -270,18 +311,42 @@ STAGE PLANS:
                               alias: row_number_window_0
                               name: row_number
                               window function: GenericUDAFRowNumberEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRowNumber]
+                      functionInputExpressions: [null]
+                      functionNames: [row_number]
+                      keyInputColumns: [0, 1]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 1:decimal(4,2)]
+                      outputColumns: [3, 0, 2, 1]
+                      outputTypes: [int, double, string, decimal(4,2)]
+                      partitionExpressions: [col 0:double]
+                      streamingColumns: [3]
                   Statistics: Num rows: 1 Data size: 304 Basic stats: COMPLETE Column stats: NONE
                   Limit
                     Number of rows: 100
+                    Limit Vectorization:
+                        className: VectorLimitOperator
+                        native: true
                     Statistics: Num rows: 1 Data size: 304 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col7 (type: string), row_number_window_0 (type: int)
                       outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [2, 3]
                       Statistics: Num rows: 1 Data size: 304 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
                         Statistics: Num rows: 1 Data size: 304 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -499,7 +564,7 @@ STAGE PLANS:
                               arguments: _col7
                               name: lead
                               window function: GenericUDAFLeadEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 1 Data size: 340 Basic stats: COMPLETE Column stats: NONE
                   Limit
@@ -726,7 +791,7 @@ STAGE PLANS:
                               arguments: _col9
                               name: lag
                               window function: GenericUDAFLagEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Limit

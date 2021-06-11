@@ -144,12 +144,13 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: count only CURRENT ROW end frame is supported for RANGE
-                vectorized: false
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: tinyint), VALUE._col5 (type: double), VALUE._col6 (type: boolean), VALUE._col7 (type: string), VALUE._col8 (type: timestamp), VALUE._col9 (type: decimal(10,0)), VALUE._col10 (type: binary)
@@ -173,56 +174,56 @@ STAGE PLANS:
                               arguments: _col1
                               name: count
                               window function: GenericUDAFCountEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                             window function definition
                               alias: count_window_1
                               arguments: _col6
                               name: count
                               window function: GenericUDAFCountEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                             window function definition
                               alias: count_window_2
                               arguments: _col7
                               name: count
                               window function: GenericUDAFCountEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                             window function definition
                               alias: count_window_3
                               arguments: _col8
                               name: count
                               window function: GenericUDAFCountEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                             window function definition
                               alias: count_window_4
                               arguments: concat('Mr.', _col8)
                               name: count
                               window function: GenericUDAFCountEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                             window function definition
                               alias: count_window_5
                               arguments: _col9
                               name: count
                               window function: GenericUDAFCountEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                             window function definition
                               alias: count_window_6
                               arguments: _col10
                               name: count
                               window function: GenericUDAFCountEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                             window function definition
                               alias: count_window_7
                               arguments: _col11
                               name: count
                               window function: GenericUDAFCountEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                   Statistics: Num rows: 1 Data size: 500 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -390,42 +391,42 @@ STAGE PLANS:
                               arguments: _col1
                               name: sum
                               window function: GenericUDAFSumLong
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                             window function definition
                               alias: sum_window_1
                               arguments: _col6
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                             window function definition
                               alias: sum_window_2
                               arguments: _col8
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                             window function definition
                               alias: sum_window_3
                               arguments: concat('Mr.', _col8)
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                             window function definition
                               alias: sum_window_4
                               arguments: _col9
                               name: sum
                               window function: GenericUDAFSumDouble
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                             window function definition
                               alias: sum_window_5
                               arguments: _col10
                               name: sum
                               window function: GenericUDAFSumHiveDecimal
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                   Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
@@ -589,42 +590,42 @@ STAGE PLANS:
                               arguments: _col1
                               name: avg
                               window function: GenericUDAFAverageEvaluatorDouble
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                             window function definition
                               alias: avg_window_1
                               arguments: _col6
                               name: avg
                               window function: GenericUDAFAverageEvaluatorDouble
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                             window function definition
                               alias: avg_window_2
                               arguments: _col8
                               name: avg
                               window function: GenericUDAFAverageEvaluatorDouble
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                             window function definition
                               alias: avg_window_3
                               arguments: concat('Mr.', _col8)
                               name: avg
                               window function: GenericUDAFAverageEvaluatorDouble
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                             window function definition
                               alias: avg_window_4
                               arguments: _col9
                               name: avg
                               window function: GenericUDAFAverageEvaluatorDouble
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                             window function definition
                               alias: avg_window_5
                               arguments: _col10
                               name: avg
                               window function: GenericUDAFAverageEvaluatorDecimal
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isDistinct: true
                   Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
                   Select Operator

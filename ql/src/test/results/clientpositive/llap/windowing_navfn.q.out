@@ -84,7 +84,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               PTF Operator
                 Function definitions:
@@ -103,7 +103,7 @@ STAGE PLANS:
                             alias: row_number_window_0
                             name: row_number
                             window function: GenericUDAFRowNumberEvaluator
-                            window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                            window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                             isPivotResult: true
                 Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
