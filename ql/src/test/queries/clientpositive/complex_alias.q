@@ -1,5 +1,6 @@
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
+-- SORT_QUERY_RESULTS
 CREATE TABLE agg1 (col0 INT, col1 STRING, col2 DOUBLE);
 
 INSERT INTO TABLE agg1 select key,value,key from src tablesample (1 rows);
