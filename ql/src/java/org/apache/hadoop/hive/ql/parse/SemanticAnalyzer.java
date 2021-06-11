@@ -8195,7 +8195,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String [] dbTable = Utilities.getDbTableName(createVwDesc.getViewName());
       try {
         Warehouse wh = new Warehouse(conf);
-        tlocation = wh.getDefaultTablePath(db.getDatabase(dbTable[0]), dbTable[1], false);
+        Map<String, String> tblProps = createVwDesc.getTblProps();
+        tlocation = wh.getDefaultTablePath(db.getDatabase(dbTable[0]), dbTable[1],
+          tblProps == null || !AcidUtils.isTablePropertyTransactional(tblProps));
       } catch (MetaException|HiveException e) {
         throw new SemanticException(e);
       }
