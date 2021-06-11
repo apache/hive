@@ -297,7 +297,7 @@ STAGE PLANS:
                   Statistics: Num rows: 22 Data size: 3520 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int), _col1 (type: float), _col2 (type: binary), _col3 (type: bigint)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: float), VALUE._col2 (type: binary), VALUE._col3 (type: bigint)
@@ -321,7 +321,7 @@ STAGE PLANS:
                               arguments: _col0
                               name: count
                               window function: GenericUDAFCountEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 22 Data size: 3520 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), (count_window_0 * UDFToLong(UDFToInteger(CASE WHEN ((_col3 < (ceil((ds_kll_rank(_col2, _col1) * _col3)) + 1.0D))) THEN (_col3) ELSE ((ceil((ds_kll_rank(_col2, _col1) * _col3)) + 1.0D)) END))) (type: bigint)

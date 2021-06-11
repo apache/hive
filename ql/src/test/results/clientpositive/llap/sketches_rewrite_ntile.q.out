@@ -630,7 +630,7 @@ STAGE PLANS:
                               arguments: 4
                               name: ntile
                               window function: GenericUDAFNTileEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 24 Data size: 2040 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
