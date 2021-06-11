@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 
@@ -54,7 +55,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Tests for updating partition column stats.
+ * Tests for updating partition column stats. All the tests will be executed first using embedded metastore and then
+ * with remote metastore. For embedded metastore, TRY_DIRECT_SQL is set to false. For remote metastore TRY_DIRECT_SQL
+ * is set to true. setPartitionColumnStatistics is modified to use direct sql in case direct sql is enabled. This tests
+ * makes sure that both the code path (direct sql enabled and disabled) is tested.
  */
 @RunWith(Parameterized.class)
 @Category(MetastoreCheckinTest.class)
@@ -75,26 +79,18 @@ public class TestPartitionStat extends MetaStoreClientTest {
   @Before
   public void setUp() throws Exception {
     // Get new client
+    MetastoreConf.setBoolVar(metaStore.getConf(), MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     client = metaStore.getClient();
 
     // Clean up the database
     client.dropDatabase(DB_NAME, true, true, true);
     metaStore.cleanWarehouseDirs();
-    Database db = new DatabaseBuilder().
-        setName(DB_NAME).
-        create(client, metaStore.getConf());
+    DatabaseBuilder databaseBuilder = new DatabaseBuilder().setName(DB_NAME);
+    databaseBuilder.create(client, metaStore.getConf());
 
     // Create test tables with 3 partitions
     createTable(TABLE_NAME, getYearPartCol());
     createPartitions();
-
-    // Hack to initialize the stats tables. Not sure why the first test run using remote metastore is failing with
-    // error (Unable to update Column stats for  table due to: Table/View 'PART_COL_STATS' does not exist.). This hack
-    // has fixed it. All the tests will be executed first using embedded metastore and then with
-    // remote metastore. For embedded metastore, TRY_DIRECT_SQL is set to false. For remote metastore TRY_DIRECT_SQL is
-    // set to true.
-    //client.getPartitionColumnStatistics(DB_NAME, TABLE_NAME,
-           // Collections.singletonList("year=2017"), Collections.singletonList(PART_COL_NAME), HIVE_ENGINE);
   }
 
   @After
