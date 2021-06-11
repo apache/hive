@@ -151,7 +151,7 @@ public class BucketVersionPopulator extends Transform {
               // mandatory first
               return r;
             }
-            r = i2.bucketingVersion - i1.bucketingVersion;
+            r = Integer.compare(i2.bucketingVersion, i1.bucketingVersion);
             if (r != 0) {
               // prefer higher version if avail
               return r;
