@@ -1,0 +1,305 @@
+Warning: Shuffle Join MERGEJOIN[54][tables = [sq_1_notin_nullcheck]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: select count(1) 
+from (
+  select 1 as c1, array(1, 2, 3) as c2
+  union all
+  select 2 as c1, array(2, 3, 4) as c2
+) T
+lateral view explode(c2) LV as c
+where c = 42
+and T.c1 not in (select 1 union all select 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) 
+from (
+  select 1 as c1, array(1, 2, 3) as c2
+  union all
+  select 2 as c1, array(2, 3, 4) as c2
+) T
+lateral view explode(c2) LV as c
+where c = 42
+and T.c1 not in (select 1 union all select 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+0
+PREHOOK: query: create table service_stat_log(
+  logitems array<struct<dsp:string,iswin:boolean,adid:int,triggerId:string>>
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@service_stat_log
+POSTHOOK: query: create table service_stat_log(
+  logitems array<struct<dsp:string,iswin:boolean,adid:int,triggerId:string>>
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@service_stat_log
+PREHOOK: query: create table ad_info(adid int, subaccountid int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ad_info
+POSTHOOK: query: create table ad_info(adid int, subaccountid int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ad_info
+PREHOOK: query: insert into table service_stat_log values
+  (array(named_struct('dsp', 'delivery', 'iswin', true, 'adid', 1, 'triggerId', 'a'))),
+  (array(named_struct('dsp', 'ocpa', 'iswin', true, 'adid', 2, 'triggerId', 'b'))),
+  (array(named_struct('dsp', 'ocpa', 'iswin', false, 'adid', 3, 'triggerId', 'c'))),
+  (array(named_struct('dsp', 'other', 'iswin', true, 'adid', 4, 'triggerId', 'd'))),
+  (array(named_struct('dsp', 'other', 'iswin', false, 'adid', 5, 'triggerId', 'e')))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@service_stat_log
+POSTHOOK: query: insert into table service_stat_log values
+  (array(named_struct('dsp', 'delivery', 'iswin', true, 'adid', 1, 'triggerId', 'a'))),
+  (array(named_struct('dsp', 'ocpa', 'iswin', true, 'adid', 2, 'triggerId', 'b'))),
+  (array(named_struct('dsp', 'ocpa', 'iswin', false, 'adid', 3, 'triggerId', 'c'))),
+  (array(named_struct('dsp', 'other', 'iswin', true, 'adid', 4, 'triggerId', 'd'))),
+  (array(named_struct('dsp', 'other', 'iswin', false, 'adid', 5, 'triggerId', 'e')))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@service_stat_log
+POSTHOOK: Lineage: service_stat_log.logitems SCRIPT []
+PREHOOK: query: insert into table ad_info values
+  (1, 16010),
+  (2, 14863),
+  (3, 16010),
+  (4, 14863),
+  (5, 16010)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ad_info
+POSTHOOK: query: insert into table ad_info values
+  (1, 16010),
+  (2, 14863),
+  (3, 16010),
+  (4, 14863),
+  (5, 16010)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ad_info
+POSTHOOK: Lineage: ad_info.adid SCRIPT []
+POSTHOOK: Lineage: ad_info.subaccountid SCRIPT []
+PREHOOK: query: explain select count(distinct logItem.triggerId)
+from service_stat_log LATERAL VIEW explode(logItems) LogItemTable AS logItem
+where logItem.dsp in ('delivery', 'ocpa')
+and logItem.iswin = true
+and logItem.adid in (
+    select distinct adId
+    from
+        ad_info
+    where
+        subAccountId in (16010, 14863))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ad_info
+PREHOOK: Input: default@service_stat_log
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(distinct logItem.triggerId)
+from service_stat_log LATERAL VIEW explode(logItems) LogItemTable AS logItem
+where logItem.dsp in ('delivery', 'ocpa')
+and logItem.iswin = true
+and logItem.adid in (
+    select distinct adId
+    from
+        ad_info
+    where
+        subAccountId in (16010, 14863))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ad_info
+POSTHOOK: Input: default@service_stat_log
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 5 <- Map 4 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: service_stat_log
+                  Statistics: Num rows: 5 Data size: 22400 Basic stats: COMPLETE Column stats: NONE
+                  Lateral View Forward
+                    Statistics: Num rows: 5 Data size: 22400 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 5 Data size: 22400 Basic stats: COMPLETE Column stats: NONE
+                      Lateral View Join Operator
+                        outputColumnNames: _col5
+                        Statistics: Num rows: 1 Data size: 8960 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col5.adid (type: int)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col5.adid (type: int)
+                          Statistics: Num rows: 1 Data size: 8960 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col5 (type: struct<dsp:string,iswin:boolean,adid:int,triggerid:string>)
+                    Select Operator
+                      expressions: logitems (type: array<struct<dsp:string,iswin:boolean,adid:int,triggerid:string>>)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 5 Data size: 22400 Basic stats: COMPLETE Column stats: NONE
+                      UDTF Operator
+                        Statistics: Num rows: 5 Data size: 22400 Basic stats: COMPLETE Column stats: NONE
+                        function name: explode
+                        Filter Operator
+                          predicate: (col.adid is not null and (col.dsp) IN ('delivery', 'ocpa') and (col.iswin = true)) (type: boolean)
+                          Statistics: Num rows: 1 Data size: 4480 Basic stats: COMPLETE Column stats: NONE
+                          Lateral View Join Operator
+                            outputColumnNames: _col5
+                            Statistics: Num rows: 1 Data size: 8960 Basic stats: COMPLETE Column stats: NONE
+                            Reduce Output Operator
+                              key expressions: _col5.adid (type: int)
+                              null sort order: z
+                              sort order: +
+                              Map-reduce partition columns: _col5.adid (type: int)
+                              Statistics: Num rows: 1 Data size: 8960 Basic stats: COMPLETE Column stats: NONE
+                              value expressions: _col5 (type: struct<dsp:string,iswin:boolean,adid:int,triggerid:string>)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: ad_info
+                  filterExpr: ((subaccountid) IN (16010, 14863) and adid is not null) (type: boolean)
+                  Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((subaccountid) IN (16010, 14863) and adid is not null) (type: boolean)
+                    Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: adid (type: int)
+                      outputColumnNames: adid
+                      Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: adid (type: int)
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Semi Join 0 to 1
+                keys:
+                  0 _col5.adid (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col5
+                Statistics: Num rows: 5 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count(DISTINCT _col5.triggerid)
+                  keys: _col5.triggerid (type: string)
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 5 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Statistics: Num rows: 5 Data size: 22 Basic stats: COMPLETE Column stats: NONE
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(DISTINCT KEY._col0:0._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 5 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  keys: _col0 (type: int)
+                  minReductionHashAggr: 0.4
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(distinct logItem.triggerId)
+from service_stat_log LATERAL VIEW explode(logItems) LogItemTable AS logItem
+where logItem.dsp in ('delivery', 'ocpa')
+and logItem.iswin = true
+and logItem.adid in (
+    select distinct adId
+    from
+        ad_info
+    where
+        subAccountId in (16010, 14863))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ad_info
+PREHOOK: Input: default@service_stat_log
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct logItem.triggerId)
+from service_stat_log LATERAL VIEW explode(logItems) LogItemTable AS logItem
+where logItem.dsp in ('delivery', 'ocpa')
+and logItem.iswin = true
+and logItem.adid in (
+    select distinct adId
+    from
+        ad_info
+    where
+        subAccountId in (16010, 14863))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ad_info
+POSTHOOK: Input: default@service_stat_log
+#### A masked pattern was here ####
+2
+PREHOOK: query: drop table service_stat_log
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@service_stat_log
+PREHOOK: Output: default@service_stat_log
+POSTHOOK: query: drop table service_stat_log
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@service_stat_log
+POSTHOOK: Output: default@service_stat_log
+PREHOOK: query: drop table ad_info
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ad_info
+PREHOOK: Output: default@ad_info
+POSTHOOK: query: drop table ad_info
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ad_info
+POSTHOOK: Output: default@ad_info
