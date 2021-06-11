@@ -31,7 +31,6 @@ import javax.ws.rs.HttpMethod;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
-import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -119,11 +118,12 @@ public class ThriftHttpCLIService extends ThriftCLIService {
           Connection connection = super.newConnection(connector, endPoint);
           connection.addListener(new Connection.Listener() {
             public void onOpened(Connection connection) {
-              openConnection();
+              MetricsFactory.getInstance().incrementCounter(MetricsConstant.OPEN_CONNECTIONS);
+              MetricsFactory.getInstance().incrementCounter(MetricsConstant.CUMULATIVE_CONNECTION_COUNT);
             }
 
             public void onClosed(Connection connection) {
-              closeConnection();
+              MetricsFactory.getInstance().decrementCounter(MetricsConstant.OPEN_CONNECTIONS);
             }
           });
           return connection;
@@ -238,29 +238,6 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       LOG.info(msg);
     } catch (Exception e) {
       throw new RuntimeException("Failed to init HttpServer", e);
-    }
-  }
-
-  private void openConnection() {
-    Metrics metrics = MetricsFactory.getInstance();
-    if (metrics != null) {
-      try {
-        metrics.incrementCounter(MetricsConstant.OPEN_CONNECTIONS);
-        metrics.incrementCounter(MetricsConstant.CUMULATIVE_CONNECTION_COUNT);
-      } catch (Exception e) {
-        LOG.warn("Error reporting HS2 open connection operation to Metrics system", e);
-      }
-    }
-  }
-
-  private void closeConnection() {
-    Metrics metrics = MetricsFactory.getInstance();
-    if (metrics != null) {
-      try {
-        metrics.decrementCounter(MetricsConstant.OPEN_CONNECTIONS);
-      } catch (Exception e) {
-        LOG.warn("Error reporting HS2 close connection operation to Metrics system", e);
-      }
     }
   }
 

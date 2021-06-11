@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
-import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -118,11 +117,8 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
 
         @Override
         public ServerContext createContext(TProtocol input, TProtocol output) {
-          Metrics metrics = MetricsFactory.getInstance();
-          if (metrics != null) {
-            metrics.incrementCounter(MetricsConstant.OPEN_CONNECTIONS);
-            metrics.incrementCounter(MetricsConstant.CUMULATIVE_CONNECTION_COUNT);
-          }
+          MetricsFactory.getInstance().incrementCounter(MetricsConstant.OPEN_CONNECTIONS);
+          MetricsFactory.getInstance().incrementCounter(MetricsConstant.CUMULATIVE_CONNECTION_COUNT);
           return new ThriftCLIServerContext();
         }
 
@@ -133,10 +129,7 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
          */
         @Override
         public void deleteContext(ServerContext serverContext, TProtocol input, TProtocol output) {
-          Metrics metrics = MetricsFactory.getInstance();
-          if (metrics != null) {
-            metrics.decrementCounter(MetricsConstant.OPEN_CONNECTIONS);
-          }
+          MetricsFactory.getInstance().decrementCounter(MetricsConstant.OPEN_CONNECTIONS);
 
           final ThriftCLIServerContext context = (ThriftCLIServerContext) serverContext;
           final Optional<SessionHandle> sessionHandle = context.getSessionHandle();

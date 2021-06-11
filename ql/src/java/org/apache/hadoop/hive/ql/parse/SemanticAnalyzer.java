@@ -79,6 +79,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -15096,13 +15097,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // The query materialization validation check only occurs in CBO. Thus only cache results if CBO was used.
     if (!ctx.isCboSucceeded()) {
       LOG.info("Caching of query results is disabled if CBO was not run.");
-      QueryResultsCache.incrementMetric(MetricsConstant.QC_INVALID_FOR_CACHING);
+      MetricsFactory.getInstance().incrementCounter(MetricsConstant.QC_INVALID_FOR_CACHING);
       return false;
     }
 
     if (!isValidQueryCaching()) {
       LOG.info("Not eligible for results caching - {}", getInvalidResultCacheReason());
-      QueryResultsCache.incrementMetric(MetricsConstant.QC_INVALID_FOR_CACHING);
+      MetricsFactory.getInstance().incrementCounter(MetricsConstant.QC_INVALID_FOR_CACHING);
       return false;
     }
 

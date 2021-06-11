@@ -134,8 +134,7 @@ public class SQLOperation extends ExecuteStatementOperation {
             getExecutionEngine(), getHandle().getHandleIdentifier().toString());
 
     final Metrics metrics = MetricsFactory.getInstance();
-    this.submittedQryScp =
-        (metrics == null) ? Optional.empty() : Optional.of(metrics.createScope(MetricsConstant.HS2_SUBMITTED_QURIES));
+    this.submittedQryScp = Optional.of(metrics.createScope(MetricsConstant.HS2_SUBMITTED_QURIES));
   }
 
   @Override
@@ -591,23 +590,20 @@ public class SQLOperation extends ExecuteStatementOperation {
         MetricsConstant.SQL_OPERATION_PREFIX,
         MetricsConstant.COMPLETED_SQL_OPERATION_PREFIX, state);
 
-    final Optional<Metrics> metrics = Optional.ofNullable(MetricsFactory.getInstance());
-    if (metrics.isPresent()) {
       // New state is changed to running from something else (user is active)
       if (state == OperationState.RUNNING && prevState != state) {
-        incrementUserQueries(metrics.get());
+        incrementUserQueries(MetricsFactory.getInstance());
       }
       // New state is not running (user not active) any more
       if (prevState == OperationState.RUNNING && prevState != state) {
-        decrementUserQueries(metrics.get());
-      }
+        decrementUserQueries(MetricsFactory.getInstance());
     }
 
     switch (state) {
     case CANCELED:
       queryInfo.setRuntime(getOperationComplete() - getOperationStart());
-      if (metrics.isPresent() && submittedQryScp.isPresent()) {
-        metrics.get().endScope(submittedQryScp.get());
+      if (submittedQryScp.isPresent()) {
+        MetricsFactory.getInstance().endScope(submittedQryScp.get());
       }
       queryInfo.updateState(state.toString());
       break;
@@ -616,16 +612,16 @@ public class SQLOperation extends ExecuteStatementOperation {
       break;
     case ERROR:
       queryInfo.setRuntime(getOperationComplete() - getOperationStart());
-      if (metrics.isPresent() && submittedQryScp.isPresent()) {
-        metrics.get().endScope(submittedQryScp.get());
+      if (submittedQryScp.isPresent()) {
+        MetricsFactory.getInstance().endScope(submittedQryScp.get());
       }
       markQueryMetric(MetricsFactory.getInstance(), MetricsConstant.HS2_FAILED_QUERIES);
       queryInfo.updateState(state.toString());
       break;
     case FINISHED:
       queryInfo.setRuntime(getOperationComplete() - getOperationStart());
-      if (metrics.isPresent() && submittedQryScp.isPresent()) {
-        metrics.get().endScope(submittedQryScp.get());
+      if (submittedQryScp.isPresent()) {
+        MetricsFactory.getInstance().endScope(submittedQryScp.get());
       }
       markQueryMetric(MetricsFactory.getInstance(), MetricsConstant.HS2_SUCCEEDED_QUERIES);
       queryInfo.updateState(state.toString());

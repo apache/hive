@@ -25,7 +25,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.util.Daemon;
@@ -189,27 +188,16 @@ public class JvmPauseMonitor {
           ++numGcWarnThresholdExceeded;
           LOG.warn(formatMessage(
             extraSleepTime, gcTimesAfterSleep, gcTimesBeforeSleep));
-          incrementMetricsCounter(MetricsConstant.JVM_PAUSE_WARN, 1);
+          MetricsFactory.getInstance().incrementCounter(MetricsConstant.JVM_PAUSE_WARN, 1);
         } else if (extraSleepTime > infoThresholdMs) {
           ++numGcInfoThresholdExceeded;
           LOG.info(formatMessage(
             extraSleepTime, gcTimesAfterSleep, gcTimesBeforeSleep));
-          incrementMetricsCounter(MetricsConstant.JVM_PAUSE_INFO, 1);
+          MetricsFactory.getInstance().incrementCounter(MetricsConstant.JVM_PAUSE_INFO, 1);
         }
-        incrementMetricsCounter(MetricsConstant.JVM_EXTRA_SLEEP, extraSleepTime);
+        MetricsFactory.getInstance().incrementCounter(MetricsConstant.JVM_EXTRA_SLEEP, extraSleepTime);
         totalGcExtraSleepTime += extraSleepTime;
         gcTimesBeforeSleep = gcTimesAfterSleep;
-      }
-    }
-
-    private void incrementMetricsCounter(String name, long count) {
-      Metrics metrics = MetricsFactory.getInstance();
-      if (metrics != null) {
-        try {
-          metrics.incrementCounter(name, count);
-        } catch (Exception e) {
-          LOG.warn("Error Reporting JvmPauseMonitor to Metrics system", e);
-        }
       }
     }
   }

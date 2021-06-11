@@ -931,15 +931,12 @@ public class HiveServer2 extends CompositeService {
       }
     }
     // Shutdown Metrics
-    if (MetricsFactory.getInstance() != null) {
-      try {
-        MetricsFactory.close();
-      } catch (Exception e) {
-        LOG.error("error in Metrics deinit: " + e.getClass().getName() + " "
-          + e.getMessage(), e);
-      }
-      DeltaFilesMetricReporter.close();
+    try {
+      MetricsFactory.close();
+    } catch (Exception e) {
+      LOG.error("Error while closing metrics system", e);
     }
+    DeltaFilesMetricReporter.close();
     // Remove this server instance from ZooKeeper if dynamic service discovery is set
     if (serviceDiscovery && !activePassiveHA) {
       try {

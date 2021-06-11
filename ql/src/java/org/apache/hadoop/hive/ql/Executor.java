@@ -182,9 +182,7 @@ public class Executor {
       assert task.getParentTasks() == null || task.getParentTasks().isEmpty();
       taskQueue.addToRunnable(task);
 
-      if (metrics != null) {
-        task.updateTaskMetrics(metrics);
-      }
+      task.updateTaskMetrics(metrics);
     }
   }
 

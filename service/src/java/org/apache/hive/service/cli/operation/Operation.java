@@ -279,10 +279,7 @@ public abstract class Operation {
   public void run() throws HiveSQLException {
     beforeRun();
     try {
-      Metrics metrics = MetricsFactory.getInstance();
-      if (metrics != null) {
-        metrics.incrementCounter(MetricsConstant.OPEN_OPERATIONS);
-      }
+      MetricsFactory.getInstance().incrementCounter(MetricsConstant.OPEN_OPERATIONS);
       runInternal();
     } finally {
       afterRun();
@@ -399,17 +396,15 @@ public abstract class Operation {
   protected final MetricsScope updateOperationStateMetrics(MetricsScope stateScope, String operationPrefix,
       String completedOperationPrefix, OperationState state) {
     Metrics metrics = MetricsFactory.getInstance();
-    if (metrics != null) {
-      if (stateScope != null) {
-        metrics.endScope(stateScope);
-        stateScope = null;
-      }
-      if (scopeStates.contains(state)) {
-        stateScope = metrics.createScope(MetricsConstant.API_PREFIX + operationPrefix + state);
-      }
-      if (terminalStates.contains(state)) {
-        metrics.incrementCounter(completedOperationPrefix + state);
-      }
+    if (stateScope != null) {
+      metrics.endScope(stateScope);
+      stateScope = null;
+    }
+    if (scopeStates.contains(state)) {
+      stateScope = metrics.createScope(MetricsConstant.API_PREFIX + operationPrefix + state);
+    }
+    if (terminalStates.contains(state)) {
+      metrics.incrementCounter(completedOperationPrefix + state);
     }
     return stateScope;
   }

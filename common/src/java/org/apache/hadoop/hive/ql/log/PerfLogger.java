@@ -242,21 +242,15 @@ public class PerfLogger {
   transient Map<String, MetricsScope> openScopes = new HashMap<String, MetricsScope>();
 
   private void beginMetrics(String method) {
-    Metrics metrics = MetricsFactory.getInstance();
-    if (metrics != null) {
-      MetricsScope scope = metrics.createScope(MetricsConstant.API_PREFIX + method);
-      openScopes.put(method, scope);
-    }
-
+    MetricsScope scope = MetricsFactory.getInstance().createScope(MetricsConstant.API_PREFIX + method);
+    openScopes.put(method, scope);
   }
 
   private void endMetrics(String method) {
     Metrics metrics = MetricsFactory.getInstance();
-    if (metrics != null) {
-      MetricsScope scope = openScopes.remove(method);
-      if (scope != null) {
-        metrics.endScope(scope);
-      }
+    MetricsScope scope = openScopes.remove(method);
+    if (scope != null) {
+      metrics.endScope(scope);
     }
   }
 
@@ -265,10 +259,8 @@ public class PerfLogger {
    */
   public void cleanupPerfLogMetrics() {
     Metrics metrics = MetricsFactory.getInstance();
-    if (metrics != null) {
-      for (MetricsScope openScope : openScopes.values()) {
-        metrics.endScope(openScope);
-      }
+    for (MetricsScope openScope : openScopes.values()) {
+      metrics.endScope(openScope);
     }
     openScopes.clear();
   }

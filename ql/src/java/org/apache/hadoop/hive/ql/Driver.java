@@ -427,10 +427,7 @@ public class Driver implements IDriver {
   }
 
   private void compileInternal(String command, boolean deferClose) throws CommandProcessorException {
-    Metrics metrics = MetricsFactory.getInstance();
-    if (metrics != null) {
-      metrics.incrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
-    }
+    MetricsFactory.getInstance().incrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
 
     PerfLogger perfLogger = SessionState.getPerfLogger(true);
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.WAIT_COMPILE);
@@ -440,9 +437,8 @@ public class Driver implements IDriver {
 
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.WAIT_COMPILE);
 
-      if (metrics != null) {
-        metrics.decrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
-      }
+      MetricsFactory.getInstance().decrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
+
       if (!success) {
         String errorMessage = ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCodedMsg();
         throw DriverUtils.createProcessorException(driverContext, ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode(),

@@ -242,13 +242,13 @@ public final class QueryResultsCache {
           invalidationFuture.cancel(false);
         }
         cleanupIfNeeded();
-        decrementMetric(MetricsConstant.QC_VALID_ENTRIES);
+        MetricsFactory.getInstance().decrementCounter(MetricsConstant.QC_VALID_ENTRIES);
       } else if (prevStatus == CacheEntryStatus.PENDING) {
         // Need to notify any queries waiting on the change from pending status.
         synchronized (this) {
           this.notifyAll();
         }
-        decrementMetric(MetricsConstant.QC_PENDING_FAILS);
+        MetricsFactory.getInstance().decrementCounter(MetricsConstant.QC_PENDING_FAILS);
       }
     }
 
@@ -307,12 +307,12 @@ public final class QueryResultsCache {
           switch (status) {
           case VALID:
             endTime = System.nanoTime();
-            incrementMetric(MetricsConstant.QC_PENDING_SUCCESS_WAIT_TIME,
+            MetricsFactory.getInstance().incrementCounter(MetricsConstant.QC_PENDING_SUCCESS_WAIT_TIME,
                 TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS));
             return true;
           case INVALID:
             endTime = System.nanoTime();
-            incrementMetric(MetricsConstant.QC_PENDING_FAILS_WAIT_TIME,
+            MetricsFactory.getInstance().incrementCounter(MetricsConstant.QC_PENDING_FAILS_WAIT_TIME,
                 TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS));
             return false;
           case PENDING:
@@ -395,10 +395,7 @@ public final class QueryResultsCache {
       try {
         instance = new QueryResultsCache(conf);
 
-        Metrics metrics = MetricsFactory.getInstance();
-        if (metrics != null) {
-          registerMetrics(metrics, instance);
-        }
+        registerMetrics(MetricsFactory.getInstance(), instance);
       } catch (Exception err) {
         inited.set(false);
         throw err;
@@ -468,12 +465,12 @@ public final class QueryResultsCache {
     }
 
     LOG.debug("QueryResultsCache lookup result: {}", result);
-    incrementMetric(MetricsConstant.QC_LOOKUPS);
+    MetricsFactory.getInstance().incrementCounter(MetricsConstant.QC_LOOKUPS);
     if (result != null) {
       if (foundPending) {
-        incrementMetric(MetricsConstant.QC_PENDING_HITS);
+        MetricsFactory.getInstance().incrementCounter(MetricsConstant.QC_PENDING_HITS);
       } else {
-        incrementMetric(MetricsConstant.QC_VALID_HITS);
+        MetricsFactory.getInstance().incrementCounter(MetricsConstant.QC_VALID_HITS);
       }
     }
 
@@ -585,8 +582,8 @@ public final class QueryResultsCache {
         cacheEntry.notifyAll();
       }
 
-      incrementMetric(MetricsConstant.QC_VALID_ENTRIES);
-      incrementMetric(MetricsConstant.QC_TOTAL_ENTRIES_ADDED);
+      MetricsFactory.getInstance().incrementCounter(MetricsConstant.QC_VALID_ENTRIES);
+      MetricsFactory.getInstance().incrementCounter(MetricsConstant.QC_TOTAL_ENTRIES_ADDED);
     } catch (Exception err) {
       String queryText = cacheEntry.getQueryText();
       LOG.error("Failed to create cache entry for query results for query: " + queryText, err);
@@ -762,7 +759,7 @@ public final class QueryResultsCache {
     // Assumes the cache lock has already been taken.
     if (maxEntrySize >= 0 && size > maxEntrySize) {
       LOG.debug("Cache entry size {} larger than max entry size ({})", size, maxEntrySize);
-      incrementMetric(MetricsConstant.QC_REJECTED_TOO_LARGE);
+      MetricsFactory.getInstance().incrementCounter(MetricsConstant.QC_REJECTED_TOO_LARGE);
       return false;
     }
 
@@ -903,28 +900,6 @@ public final class QueryResultsCache {
         }
       });
     }
-  }
-
-  public static void incrementMetric(String name, long count) {
-    Metrics metrics = MetricsFactory.getInstance();
-    if (metrics != null) {
-      metrics.incrementCounter(name, count);
-    }
-  }
-
-  public static void decrementMetric(String name, long count) {
-    Metrics metrics = MetricsFactory.getInstance();
-    if (metrics != null) {
-      metrics.decrementCounter(name, count);
-    }
-  }
-
-  public static void incrementMetric(String name) {
-    incrementMetric(name, 1);
-  }
-
-  public static void decrementMetric(String name) {
-    decrementMetric(name, 1);
   }
 
   private static void registerMetrics(Metrics metrics, final QueryResultsCache cache) {

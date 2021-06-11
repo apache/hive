@@ -18,29 +18,33 @@
 package org.apache.hadoop.hive.common.metrics.common;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.util.ReflectionUtils;
 
 import java.lang.reflect.Constructor;
+import java.util.Objects;
 
 /**
  * Class that manages a static Metric instance for this process.
  */
 public class MetricsFactory {
 
-  //Volatile ensures that static access returns Metrics instance in fully-initialized state.
-  //Alternative is to synchronize static access, which has performance penalties.
-  private volatile static Metrics metrics;
+  private static Metrics metrics = new NoOpMetrics();
 
   /**
    * Initializes static Metrics instance.
+   *
+   * @throws ReflectiveOperationException if metrics class fails to load
+   * @throws IllegalStateException if
+   *           {@code MetricsFactory is already initialized}
+   * @throws NullPointerException if {@code conf} is {@code null}
    */
-  public synchronized static void init(HiveConf conf) throws Exception {
-    if (metrics == null) {
-      Class metricsClass = conf.getClassByName(
-        conf.getVar(HiveConf.ConfVars.HIVE_METRICS_CLASS));
-      Constructor constructor = metricsClass.getConstructor(HiveConf.class);
-      metrics = (Metrics) constructor.newInstance(conf);
+  public static void init(HiveConf conf) throws ReflectiveOperationException {
+    Objects.requireNonNull(conf);
+    if (metrics != null) {
+      throw new IllegalStateException("Metrics factory is already initialized");
     }
+    Class<?> metricsClass = conf.getClassByName(conf.getVar(HiveConf.ConfVars.HIVE_METRICS_CLASS));
+    Constructor<?> constructor = metricsClass.getConstructor(HiveConf.class);
+    metrics = Metrics.class.cast(constructor.newInstance(conf));
   }
 
   /**
@@ -52,11 +56,75 @@ public class MetricsFactory {
 
   /**
    * Closes and removes static Metrics instance.
+   *
+   * @throws Exception if the Metrics provider fails to close
    */
-  public synchronized static void close() throws Exception {
-    if (metrics != null) {
-      metrics.close();
-      metrics = null;
+  public static void close() throws Exception {
+    metrics.close();
+  }
+
+  /**
+   * Dummy Metrics class which performs no metrics operations.
+   */
+  private static final class NoOpMetrics implements Metrics {
+
+    @Override
+    public void close() throws Exception {
     }
+
+    @Override
+    public void startStoredScope(String name) {
+    }
+
+    @Override
+    public void endStoredScope(String name) {
+    }
+
+    @Override
+    public MetricsScope createScope(String name) {
+      return new MetricsScope() {
+      };
+    }
+
+    @Override
+    public void endScope(MetricsScope scope) {
+    }
+
+    @Override
+    public Long incrementCounter(String name) {
+      return null;
+    }
+
+    @Override
+    public Long incrementCounter(String name, long increment) {
+      return null;
+    }
+
+    @Override
+    public Long decrementCounter(String name) {
+      return null;
+    }
+
+    @Override
+    public Long decrementCounter(String name, long decrement) {
+      return null;
+    }
+
+    @Override
+    public void addGauge(String name, MetricsVariable<?> variable) {
+    }
+
+    @Override
+    public void removeGauge(String name) {
+    }
+
+    @Override
+    public void addRatio(String name, MetricsVariable<Integer> numerator, MetricsVariable<Integer> denominator) {
+    }
+
+    @Override
+    public void markMeter(String name) {
+    }
+    
   }
 }
