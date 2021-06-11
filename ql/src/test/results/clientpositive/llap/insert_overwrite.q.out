@@ -49,6 +49,49 @@ POSTHOOK: query: drop table ext_non_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ext_non_part
 POSTHOOK: Output: default@ext_non_part
+PREHOOK: query: CREATE TABLE int_non_part (col string) STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@int_non_part
+POSTHOOK: query: CREATE TABLE int_non_part (col string) STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@int_non_part
+PREHOOK: query: INSERT INTO int_non_part VALUES ('first'), ('second')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@int_non_part
+POSTHOOK: query: INSERT INTO int_non_part VALUES ('first'), ('second')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@int_non_part
+POSTHOOK: Lineage: int_non_part.col SCRIPT []
+PREHOOK: query: INSERT OVERWRITE TABLE int_non_part SELECT * FROM b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@b
+PREHOOK: Output: default@int_non_part
+POSTHOOK: query: INSERT OVERWRITE TABLE int_non_part SELECT * FROM b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@b
+POSTHOOK: Output: default@int_non_part
+POSTHOOK: Lineage: int_non_part.col SIMPLE [(b)b.FieldSchema(name:col, type:string, comment:null), ]
+PREHOOK: query: SELECT count(*) FROM int_non_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@int_non_part
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM int_non_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@int_non_part
+#### A masked pattern was here ####
+0
+PREHOOK: query: drop table int_non_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@int_non_part
+PREHOOK: Output: default@int_non_part
+POSTHOOK: query: drop table int_non_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@int_non_part
+POSTHOOK: Output: default@int_non_part
 PREHOOK: query: CREATE TABLE int_non_part (col string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
