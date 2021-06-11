@@ -3737,6 +3737,9 @@ public class HiveConf extends Configuration {
         "SSL certificate keystore password for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_SSL_KEYSTORE_TYPE("hive.server2.webui.keystore.type", "",
         "SSL certificate keystore type for HiveServer2 WebUI."),
+    HIVE_SERVER2_WEBUI_SSL_EXCLUDE_CIPHERSUITES("hive.server2.webui.exclude.ciphersuites", "",
+        "SSL a list of exclude cipher suite names or regular expressions separated by comma"
+        + " for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_SSL_KEYMANAGERFACTORY_ALGORITHM("hive.server2.webui.keymanagerfactory.algorithm",
         "","SSL certificate key manager factory algorithm for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_USE_SPNEGO("hive.server2.webui.use.spnego", false,
@@ -4183,9 +4186,14 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_SSL_KEYSTORE_PASSWORD("hive.server2.keystore.password", "",
         "SSL certificate keystore password."),
     HIVE_SERVER2_SSL_KEYSTORE_TYPE("hive.server2.keystore.type", "",
-            "SSL certificate keystore type."),
+        "SSL certificate keystore type."),
     HIVE_SERVER2_SSL_KEYMANAGERFACTORY_ALGORITHM("hive.server2.keymanagerfactory.algorithm", "",
-            "SSL certificate keystore algorithm."),
+        "SSL certificate keystore algorithm."),
+    HIVE_SERVER2_SSL_HTTP_EXCLUDE_CIPHERSUITES("hive.server2.http.exclude.ciphersuites", "",
+        "SSL a list of exclude cipher suite names or regular expressions separated by comma "
+        + "for HiveServer2 http server."),
+    HIVE_SERVER2_SSL_BINARY_INCLUDE_CIPHERSUITES("hive.server2.binary.include.ciphersuites", "",
+        "SSL a list of include cipher suite names separated by colon for HiveServer2 binary Cli Server"),
     HIVE_SERVER2_BUILTIN_UDF_WHITELIST("hive.server2.builtin.udf.whitelist", "",
         "Comma separated list of builtin udf names allowed in queries.\n" +
         "An empty whitelist allows all builtin udfs to be executed. " +
