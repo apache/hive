@@ -78,10 +78,6 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
         ASTNode nextNode = (ASTNode) root.getChild(i);
         connectorName = ((ASTNode)nextNode).getChild(0).getText();
         outputs.add(toWriteEntity(connectorName));
-        if (managedLocationUri != null) {
-          outputs.remove(toWriteEntity(managedLocationUri));
-          managedLocationUri = null;
-        }
         break;
       default:
         throw new SemanticException("Unrecognized token in CREATE DATABASE statement");
