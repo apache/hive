@@ -1814,7 +1814,7 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override public PrincipalPrivilegeSet getConnectorPrivilegeSet(String catName, String connectorName, String userName,
       List<String> groupNames) throws InvalidObjectException, MetaException {
-    return rawStore.getDBPrivilegeSet(catName, connectorName, userName, groupNames);
+    return rawStore.getConnectorPrivilegeSet(catName, connectorName, userName, groupNames);
   }
 
   @Override public PrincipalPrivilegeSet getTablePrivilegeSet(String catName, String dbName, String tableName,
