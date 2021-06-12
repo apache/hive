@@ -1157,7 +1157,7 @@ createDatabaseStatement
         dbManagedLocation?
         dbConnectorName?
         (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
-    -> {$remote != null}? ^(TOK_CREATEDATABASE $name ifNotExists? databaseComment? $dbprops? dbConnectorName?)
+    -> {$remote != null}? ^(TOK_CREATEDATABASE $name ifNotExists? dbLocation? dbManagedLocation? databaseComment? $dbprops? dbConnectorName?)
     ->                    ^(TOK_CREATEDATABASE $name ifNotExists? dbLocation? dbManagedLocation? databaseComment? $dbprops?)
     ;
 
