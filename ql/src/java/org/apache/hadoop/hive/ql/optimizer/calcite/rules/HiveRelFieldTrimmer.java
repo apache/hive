@@ -550,15 +550,11 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
 
     final RelNode input = aggregate.getInput();
 
-    if (!(input instanceof Project)) {
-      return aggregate;
-    }
-
     final RelDataType rowType = input.getRowType();
     RexBuilder rexBuilder = aggregate.getCluster().getRexBuilder();
     final List<RexNode> newProjects = new ArrayList<>();
 
-    final List<RexNode> inputExprs = ((Project) input).getProjects();
+    final List<RexNode> inputExprs = input instanceof Project ? ((Project) input).getProjects() : null;
     if (inputExprs == null || inputExprs.isEmpty()) {
       return aggregate;
     }

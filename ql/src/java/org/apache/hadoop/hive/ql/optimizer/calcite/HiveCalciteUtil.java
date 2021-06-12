@@ -907,13 +907,8 @@ public class HiveCalciteUtil {
   public static List<ExprNodeDesc> getExprNodes(List<Integer> inputRefs, RelNode inputRel,
       String inputTabAlias) {
     List<ExprNodeDesc> exprNodes = new ArrayList<ExprNodeDesc>();
-
-    if (!(inputRel instanceof Project)) {
-      return exprNodes;
-    }
-
     List<RexNode> rexInputRefs = getInputRef(inputRefs, inputRel);
-    List<RexNode> exprs = ((Project) inputRel).getProjects();
+    List<RexNode> exprs = inputRel instanceof Project ? ((Project) inputRel).getProjects() : null;
     // TODO: Change ExprNodeConverter to be independent of Partition Expr
     ExprNodeConverter exprConv = new ExprNodeConverter(inputTabAlias, inputRel.getRowType(),
         new HashSet<Integer>(), inputRel.getCluster().getTypeFactory());

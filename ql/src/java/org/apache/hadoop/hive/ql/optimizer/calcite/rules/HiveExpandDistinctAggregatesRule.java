@@ -18,7 +18,13 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import com.google.common.base.Preconditions;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import java.util.stream.Collectors;
 import org.apache.calcite.plan.RelOptCluster;
