@@ -138,6 +138,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@masking_test_n_mv
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_view_n_mv
+POSTHOOK: Lineage: masking_test_view_n_mv.key SIMPLE [(masking_test_n_mv)masking_test_n_mv.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: describe formatted `masking_test_view_n_mv`
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@masking_test_view_n_mv
@@ -205,6 +206,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@masking_test_n_mv
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_view_n_mv_masked
+POSTHOOK: Lineage: masking_test_view_n_mv_masked.key SIMPLE [(masking_test_n_mv)masking_test_n_mv.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: explain cbo
 select key from `masking_test_n_mv`
 PREHOOK: type: QUERY
