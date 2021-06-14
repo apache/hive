@@ -212,7 +212,12 @@ if [ "$SKIP_HBASECP" = false ]; then
 
   # perhaps we've located the HBase config. if so, include it on classpath.
   if [[ -d $HBASE_CONF_DIR ]] ; then
-    HBASE_MR_CLASSPATH="${HBASE_CONF_DIR}"
+    if [ "$HBASE_MR_CLASSPATH" != "" ]; then
+      HBASE_MR_CLASSPATH="${HBASE_MR_CLASSPATH},${HBASE_CONF_DIR}"
+    else
+      HBASE_MR_CLASSPATH="${HBASE_CONF_DIR}"
+    fi
+    CLASSPATH="${CLASSPATH}:${HBASE_CONF_DIR}"
   fi
 
   # look for the hbase script. First check HBASE_HOME and then ask PATH.
