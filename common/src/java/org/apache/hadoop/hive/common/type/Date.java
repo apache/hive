@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.common.type;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -99,6 +100,10 @@ public class Date implements Comparable<Date> {
 
   public long toEpochMilli() {
     return localDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
+  }
+
+  public long toEpochMilli(ZoneId id) {
+    return localDate.atStartOfDay().atZone(id).toInstant().toEpochMilli();
   }
 
   public void setYear(int year) {
