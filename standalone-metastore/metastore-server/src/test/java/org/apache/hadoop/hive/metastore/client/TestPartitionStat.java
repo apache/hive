@@ -227,5 +227,4 @@ public class TestPartitionStat extends MetaStoreClientTest {
     List<String> pNameList = updatePartColStat(partitionStats);
     validateStats(partitionStats, pNameList);
   }
-
 }
