@@ -100,7 +100,7 @@ public final class DDLWork implements Serializable {
     return ddlDesc;
   }
 
-  public boolean isExecuteInParallel() {
+  public boolean canExecuteInParallel() {
     return executeInParallel;
   }
 }

@@ -517,7 +517,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private static Task<?> createTableTask(ImportTableDesc tableDesc, EximUtil.SemanticAnalyzerWrapperContext x,
-                                         String dumpRoot, ReplicationMetricCollector metricCollector, boolean e) {
+                                         String dumpRoot, ReplicationMetricCollector metricCollector) {
     return tableDesc.getCreateTableTask(x.getInputs(), x.getOutputs(), x.getConf(), true,
                                         dumpRoot, metricCollector, false);
   }
@@ -1279,7 +1279,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (x.getEventType() == DumpType.EVENT_CREATE_TABLE && !tblDesc.isExternal()) {
           tblDesc.setLocation(null);
         }
-        Task t = createTableTask(tblDesc, x, dumpRoot, metricCollector, false);
+        Task t = createTableTask(tblDesc, x, dumpRoot, metricCollector);
         if (dependentTasks != null) {
           dependentTasks.forEach(task -> t.addDependentTask(task));
         }

@@ -119,6 +119,6 @@ public final class DDLTask extends Task<DDLWork> implements Serializable {
    */
   @Override
   public boolean canExecuteInParallel() {
-   return work.isExecuteInParallel();
+   return work.canExecuteInParallel();
   }
 }
