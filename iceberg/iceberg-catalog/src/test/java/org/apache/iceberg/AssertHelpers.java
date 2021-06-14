@@ -22,7 +22,6 @@ package org.apache.iceberg;
 import java.util.concurrent.Callable;
 import org.assertj.core.api.AbstractThrowableAssert;
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
 
 public class AssertHelpers {
 
@@ -41,12 +40,11 @@ public class AssertHelpers {
                                   Class<? extends Exception> expected,
                                   String containedInMessage,
                                   Callable callable) {
-    try {
-      callable.call();
-      Assert.fail("No exception was thrown (" + message + "), expected: " +
-          expected.getName());
-    } catch (Exception actual) {
-      handleException(message, expected, containedInMessage, actual);
+    AbstractThrowableAssert<?, ? extends Throwable> check = Assertions.assertThatThrownBy(callable::call)
+        .withFailMessage(message)
+        .isInstanceOf(expected);
+    if (null != containedInMessage) {
+      check.hasMessageContaining(containedInMessage);
     }
   }
 
@@ -62,18 +60,12 @@ public class AssertHelpers {
                                   Class<? extends Exception> expected,
                                   String containedInMessage,
                                   Runnable runnable) {
-    AbstractThrowableAssert<?, ? extends Throwable> check =
-            Assertions.assertThatThrownBy(runnable::run).as(message).isInstanceOf(expected);
+    AbstractThrowableAssert<?, ? extends Throwable> check = Assertions.assertThatThrownBy(runnable::run)
+        .withFailMessage(message)
+        .isInstanceOf(expected);
     if (null != containedInMessage) {
       check.hasMessageContaining(containedInMessage);
     }
-//    try {
-//      runnable.run();
-//      Assert.fail("No exception was thrown (" + message + "), expected: " +
-//          expected.getName());
-//    } catch (Exception actual) {
-//      handleException(message, expected, containedInMessage, actual);
-//    }
   }
 
   /**
@@ -112,36 +104,10 @@ public class AssertHelpers {
                                        Class<? extends Exception> expected,
                                        String containedInMessage,
                                        Runnable runnable) {
-    try {
-      runnable.run();
-      Assert.fail("No exception was thrown (" + message + "), expected: " +
-          expected.getName());
-    } catch (Exception actual) {
-      Throwable cause = actual.getCause();
-      if (cause instanceof Exception) {
-        handleException(message, expected, containedInMessage, (Exception) actual.getCause());
-      } else {
-        Assert.fail("Occur non-exception cause: " + cause);
-      }
-    }
-  }
-
-  private static void handleException(String message,
-                                      Class<? extends Exception> expected,
-                                      String containedInMessage,
-                                      Exception actual) {
-    try {
-      Assert.assertEquals(message, expected, actual.getClass());
-      if (containedInMessage != null) {
-        Assert.assertTrue(
-            "Expected exception message (" + containedInMessage + ") missing: " +
-                actual.getMessage(),
-            actual.getMessage().contains(containedInMessage)
-        );
-      }
-    } catch (AssertionError e) {
-      e.addSuppressed(actual);
-      throw e;
-    }
+    Assertions.assertThatThrownBy(runnable::run)
+        .withFailMessage(message)
+        .getCause()
+        .isInstanceOf(expected)
+        .hasMessageContaining(containedInMessage);
   }
 }
