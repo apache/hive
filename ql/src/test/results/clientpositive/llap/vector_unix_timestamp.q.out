@@ -16,39 +16,39 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
 POSTHOOK: Lineage: t.d SCRIPT []
 PREHOOK: query: select 
-  '>' || d || '<' , unix_timestamp(d), from_unixtime(unix_timestamp(d)), to_date(from_unixtime(unix_timestamp(d)))
+  '>' || d || '<' , to_unix_timestamp(d), from_unixtime(to_unix_timestamp(d)), to_date(from_unixtime(to_unix_timestamp(d)))
 from t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: select 
-  '>' || d || '<' , unix_timestamp(d), from_unixtime(unix_timestamp(d)), to_date(from_unixtime(unix_timestamp(d)))
+  '>' || d || '<' , to_unix_timestamp(d), from_unixtime(to_unix_timestamp(d)), to_date(from_unixtime(to_unix_timestamp(d)))
 from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 >2020-11-16 22:18:40 UTC<	1605593920	2020-11-16 22:18:40	2020-11-16
 PREHOOK: query: select 
-  '>' || d || '<' , unix_timestamp(d), from_unixtime(unix_timestamp(d)), to_date(from_unixtime(unix_timestamp(d)))
+  '>' || d || '<' , to_unix_timestamp(d), from_unixtime(to_unix_timestamp(d)), to_date(from_unixtime(to_unix_timestamp(d)))
 from t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: select 
-  '>' || d || '<' , unix_timestamp(d), from_unixtime(unix_timestamp(d)), to_date(from_unixtime(unix_timestamp(d)))
+  '>' || d || '<' , to_unix_timestamp(d), from_unixtime(to_unix_timestamp(d)), to_date(from_unixtime(to_unix_timestamp(d)))
 from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 >2020-11-16 22:18:40 UTC<	1605593920	2020-11-16 22:18:40	2020-11-16
 PREHOOK: query: select 
-  '>' || d || '<' , assert_true(unix_timestamp(d) is not null)
+  '>' || d || '<' , assert_true(to_unix_timestamp(d) is not null)
 from t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: select 
-  '>' || d || '<' , assert_true(unix_timestamp(d) is not null)
+  '>' || d || '<' , assert_true(to_unix_timestamp(d) is not null)
 from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t

@@ -1005,7 +1005,7 @@ PREHOOK: query: explain SELECT          s.idp_warehouse_id AS source_warehouse_i
                                     ELSE s.prmodby
                     END,',',
                     CASE
-                                    WHEN s.prmodtime IS NULL THEN cast(from_unixtime(unix_timestamp('2017-12-08','yyyy-MM-dd') ) AS timestamp)
+                                    WHEN s.prmodtime IS NULL THEN cast(from_unixtime(to_unix_timestamp('2017-12-08','yyyy-MM-dd') ) AS timestamp)
                                     ELSE s.prmodtime
                     END,',',
                     CASE
@@ -1081,7 +1081,7 @@ PREHOOK: query: explain SELECT          s.idp_warehouse_id AS source_warehouse_i
                                     ELSE d.prmodby
                     END,',',
                     CASE
-                                    WHEN d.prmodtime IS NULL THEN cast(from_unixtime(unix_timestamp('2017-12-08','yyyy-MM-dd') ) AS timestamp)
+                                    WHEN d.prmodtime IS NULL THEN cast(from_unixtime(to_unix_timestamp('2017-12-08','yyyy-MM-dd') ) AS timestamp)
                                     ELSE d.prmodtime
                     END,',',
                     CASE
@@ -1170,7 +1170,7 @@ POSTHOOK: query: explain SELECT          s.idp_warehouse_id AS source_warehouse_
                                     ELSE s.prmodby
                     END,',',
                     CASE
-                                    WHEN s.prmodtime IS NULL THEN cast(from_unixtime(unix_timestamp('2017-12-08','yyyy-MM-dd') ) AS timestamp)
+                                    WHEN s.prmodtime IS NULL THEN cast(from_unixtime(to_unix_timestamp('2017-12-08','yyyy-MM-dd') ) AS timestamp)
                                     ELSE s.prmodtime
                     END,',',
                     CASE
@@ -1246,7 +1246,7 @@ POSTHOOK: query: explain SELECT          s.idp_warehouse_id AS source_warehouse_
                                     ELSE d.prmodby
                     END,',',
                     CASE
-                                    WHEN d.prmodtime IS NULL THEN cast(from_unixtime(unix_timestamp('2017-12-08','yyyy-MM-dd') ) AS timestamp)
+                                    WHEN d.prmodtime IS NULL THEN cast(from_unixtime(to_unix_timestamp('2017-12-08','yyyy-MM-dd') ) AS timestamp)
                                     ELSE d.prmodtime
                     END,',',
                     CASE

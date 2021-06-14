@@ -617,7 +617,7 @@ select
         ,cast(test_hive_1046 as int) as test_hive_1046
         ,cast(test_hive_1050 as int) as test_hive_1050
         ,cast(test_hive_1049 as int) as test_hive_1049
-        ,cast(from_unixtime(unix_timestamp(test_hive_1053,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1053
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1053,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1053
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -910,7 +910,7 @@ select
         ,cast(test_hive_212 as string) as test_hive_212
         ,cast(test_hive_213 as string) as test_hive_213
         ,cast(test_hive_178 as string) as test_hive_178
-        ,cast(from_unixtime(unix_timestamp(test_hive_1060,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1060
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1060,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1060
         ,cast(test_hive_1061 as string) as test_hive_1061
         ,cast(test_hive_10612 as string) as test_hive_10612
         ,cast(test_hive_1063 as string) as test_hive_1063
@@ -964,7 +964,7 @@ select
         ,cast(test_hive_1078_cont as int) as test_hive_1078_cont
         ,cast(test_hive_1078_lag as int) as test_hive_1078_lag
         ,cast(test_hive_199 as string) as test_hive_199
-        ,cast(from_unixtime(unix_timestamp(test_hive_1082,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1082
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1082,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1082
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -1201,7 +1201,7 @@ select
         cast(test_hive_1097 as int) as test_hive_1097
         ,cast(test_hive_1095 as int) as test_hive_1095
         ,cast(test_hive_1098 as int) as test_hive_1098
-        ,cast(from_unixtime(unix_timestamp(test_hive_1089,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1089
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1089,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1089
         ,cast(test_hive_1090 as string) as test_hive_1090
         ,cast(test_hive_10902 as string) as test_hive_10902
         ,cast(test_hive_1092 as string) as test_hive_1092
@@ -1209,7 +1209,7 @@ select
         ,cast(test_hive_244 as string) as test_hive_244
         ,cast(test_hive_225 as string) as test_hive_225
         ,cast(test_hive_214 as string) as test_hive_214
-        ,cast(from_unixtime(unix_timestamp(test_hive_215,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_215
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_215,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_215
         ,cast(test_hive_216 as string) as test_hive_216
         ,cast(test_hive_217 as string) as test_hive_217
         ,cast(test_hive_240 as string) as test_hive_240
@@ -1245,7 +1245,7 @@ select
         ,cast(test_hive_239 as string) as test_hive_239
         ,cast(test_hive_1094 as int) as test_hive_1094
         ,cast(test_hive_1096 as int) as test_hive_1096
-        ,cast(from_unixtime(unix_timestamp(test_hive_1099,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1099
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1099,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1099
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -1469,7 +1469,7 @@ select
         ,cast(test_hive_302 as string) as test_hive_302
         ,cast(test_hive_301 as string) as test_hive_301
         ,cast(test_hive_281 as string) as test_hive_281
-        ,cast(from_unixtime(unix_timestamp(test_hive_1233,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1233
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1233,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1233
         ,cast(test_hive_1234 as string) as test_hive_1234
         ,cast(test_hive_12342 as string) as test_hive_12342
         ,cast(test_hive_1236 as string) as test_hive_1236
@@ -1483,7 +1483,7 @@ select
         ,cast(test_hive_1243_lag_bp as double) as test_hive_1243_lag_bp
         ,cast(test_hive_1243_con as double) as test_hive_1243_con
         ,cast(test_hive_1243_lag_con as double) as test_hive_1243_lag_con
-        ,cast(from_unixtime(unix_timestamp(test_hive_1249,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1249
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1249,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1249
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -1710,7 +1710,7 @@ select
         ,cast(test_hive_368 as string) as test_hive_368
         ,cast(test_hive_369 as string) as test_hive_369
         ,cast(test_hive_355 as string) as test_hive_355
-        ,cast(from_unixtime(unix_timestamp(test_hive_342,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_342
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_342,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_342
         ,cast(test_hive_372 as string) as test_hive_372
         ,cast(test_hive_363 as string) as test_hive_363
         ,cast(test_hive_351 as string) as test_hive_351
@@ -1731,7 +1731,7 @@ select
         ,cast(test_hive_343_txt as string) as test_hive_343_txt
         ,cast(test_hive_371 as string) as test_hive_371
         ,cast(test_hive_356 as string) as test_hive_356
-        ,cast(from_unixtime(unix_timestamp(test_hive_1372,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1372
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1372,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1372
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -1973,7 +1973,7 @@ select
         ,cast(test_hive_386 as string) as test_hive_386
         ,cast(test_hive_409 as string) as test_hive_409
         ,cast(test_hive_390 as string) as test_hive_390
-        ,cast(from_unixtime(unix_timestamp(test_hive_381,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_381
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_381,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_381
         ,cast(test_hive_380 as string) as test_hive_380
         ,cast(test_hive_382 as string) as test_hive_382
         ,cast(test_hive_382_txt as string) as test_hive_382_txt
@@ -2005,7 +2005,7 @@ select
         ,cast(test_hive_392 as string) as test_hive_392
         ,cast(test_hive_401 as string) as test_hive_401
         ,cast(test_hive_387 as string) as test_hive_387
-        ,cast(from_unixtime(unix_timestamp(test_hive_1396,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1396
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1396,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1396
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -2149,12 +2149,12 @@ select
         ,cast(test_hive_1412 as int) as test_hive_1412
         ,cast(test_hive_412 as string) as test_hive_412
         ,cast(test_hive_1410 as string) as test_hive_1410
-        ,cast(from_unixtime(unix_timestamp(test_hive_1409,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1409
-        ,cast(from_unixtime(unix_timestamp(test_hive_1408,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1408
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1409,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1409
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1408,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1408
         ,cast(test_hive_1415 as string) as test_hive_1415
         ,cast(test_hive_1414 as string) as test_hive_1414
         ,cast(test_hive_1413 as string) as test_hive_1413
-        ,cast(from_unixtime(unix_timestamp(test_hive_1416,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1416
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1416,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1416
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -2253,7 +2253,7 @@ select
         ,cast(test_hive_1112 as string) as test_hive_1112
         ,cast(test_hive_1111 as string) as test_hive_1111
         ,cast(test_hive_1110 as string) as test_hive_1110
-        ,cast(from_unixtime(unix_timestamp(test_hive_1113,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1113
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1113,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1113
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -2350,7 +2350,7 @@ select
         ,cast(test_hive_1126 as string) as test_hive_1126
         ,cast(test_hive_1125 as string) as test_hive_1125
         ,cast(test_hive_1124 as string) as test_hive_1124
-        ,cast(from_unixtime(unix_timestamp(test_hive_1127,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1127
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1127,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1127
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -2447,7 +2447,7 @@ select
         ,cast(test_hive_1140 as string) as test_hive_1140
         ,cast(test_hive_1139 as string) as test_hive_1139
         ,cast(test_hive_1138 as string) as test_hive_1138
-        ,cast(from_unixtime(unix_timestamp(test_hive_1141,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1141
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1141,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1141
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -2545,12 +2545,12 @@ select
         ,cast(test_hive_1153 as int) as test_hive_1153
         ,cast(test_hive_275 as decimal) as test_hive_275
         ,cast(test_hive_1151 as string) as test_hive_1151
-        ,cast(from_unixtime(unix_timestamp(test_hive_1150,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1150
-        ,cast(from_unixtime(unix_timestamp(test_hive_1149,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1149
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1150,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1150
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1149,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1149
         ,cast(test_hive_1156 as string) as test_hive_1156
         ,cast(test_hive_1155 as string) as test_hive_1155
         ,cast(test_hive_1154 as string) as test_hive_1154
-        ,cast(from_unixtime(unix_timestamp(test_hive_1157,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1157
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1157,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1157
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -2649,7 +2649,7 @@ select
         ,cast(test_hive_1170 as string) as test_hive_1170
         ,cast(test_hive_1169 as string) as test_hive_1169
         ,cast(test_hive_1168 as string) as test_hive_1168
-        ,cast(from_unixtime(unix_timestamp(test_hive_1171,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1171
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1171,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1171
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -2746,7 +2746,7 @@ select
         ,cast(test_hive_1184 as string) as test_hive_1184
         ,cast(test_hive_1183 as string) as test_hive_1183
         ,cast(test_hive_1182 as string) as test_hive_1182
-        ,cast(from_unixtime(unix_timestamp(test_hive_1185,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1185
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1185,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1185
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -2844,12 +2844,12 @@ select
         ,cast(test_hive_1197 as int) as test_hive_1197
         ,cast(test_hive_278 as decimal) as test_hive_278
         ,cast(test_hive_1195 as string) as test_hive_1195
-        ,cast(from_unixtime(unix_timestamp(test_hive_1194,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1194
-        ,cast(from_unixtime(unix_timestamp(test_hive_1193,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1193
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1194,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1194
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1193,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1193
         ,cast(test_hive_1200 as string) as test_hive_1200
         ,cast(test_hive_1199 as string) as test_hive_1199
         ,cast(test_hive_1198 as string) as test_hive_1198
-        ,cast(from_unixtime(unix_timestamp(test_hive_1201,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1201
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1201,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1201
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -2945,7 +2945,7 @@ select
         ,cast(test_hive_1306 as string) as test_hive_1306
         ,cast(test_hive_1310 as string) as test_hive_1310
         ,cast(test_hive_1309 as string) as test_hive_1309
-        ,cast(from_unixtime(unix_timestamp(test_hive_1311,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1311
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1311,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1311
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -3042,12 +3042,12 @@ select
         ,cast(test_hive_1339 as int) as test_hive_1339
         ,cast(test_hive_336 as string) as test_hive_336
         ,cast(test_hive_1337 as string) as test_hive_1337
-        ,cast(from_unixtime(unix_timestamp(test_hive_1336,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1336
-        ,cast(from_unixtime(unix_timestamp(test_hive_1335,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1335
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1336,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1336
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1335,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1335
         ,cast(test_hive_1342 as string) as test_hive_1342
         ,cast(test_hive_1341 as string) as test_hive_1341
         ,cast(test_hive_1340 as string) as test_hive_1340
-        ,cast(from_unixtime(unix_timestamp(test_hive_1343,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1343
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1343,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1343
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -3147,12 +3147,12 @@ select
         ,cast(test_hive_1355 as int) as test_hive_1355
         ,cast(test_hive_337 as string) as test_hive_337
         ,cast(test_hive_1353 as string) as test_hive_1353
-        ,cast(from_unixtime(unix_timestamp(test_hive_1352,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1352
-        ,cast(from_unixtime(unix_timestamp(test_hive_1351,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1351
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1352,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1352
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1351,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1351
         ,cast(test_hive_1358 as string) as test_hive_1358
         ,cast(test_hive_1357 as string) as test_hive_1357
         ,cast(test_hive_1356 as string) as test_hive_1356
-        ,cast(from_unixtime(unix_timestamp(test_hive_1359,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1359
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1359,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1359
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -3252,12 +3252,12 @@ select
         ,cast(test_hive_1428 as int) as test_hive_1428
         ,cast(test_hive_413 as decimal) as test_hive_413
         ,cast(test_hive_1426 as string) as test_hive_1426
-        ,cast(from_unixtime(unix_timestamp(test_hive_1425,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1425
-        ,cast(from_unixtime(unix_timestamp(test_hive_1424,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1424
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1425,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1425
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1424,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1424
         ,cast(test_hive_1431 as string) as test_hive_1431
         ,cast(test_hive_1430 as string) as test_hive_1430
         ,cast(test_hive_1429 as string) as test_hive_1429
-        ,cast(from_unixtime(unix_timestamp(test_hive_1432,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1432
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1432,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1432
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -3356,7 +3356,7 @@ select
         ,cast(test_hive_1445 as string) as test_hive_1445
         ,cast(test_hive_1444 as string) as test_hive_1444
         ,cast(test_hive_1443 as string) as test_hive_1443
-        ,cast(from_unixtime(unix_timestamp(test_hive_1446,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1446
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1446,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1446
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -3454,12 +3454,12 @@ select
         ,cast(test_hive_1458 as int) as test_hive_1458
         ,cast(test_hive_415 as decimal) as test_hive_415
         ,cast(test_hive_1456 as string) as test_hive_1456
-        ,cast(from_unixtime(unix_timestamp(test_hive_1455,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1455
-        ,cast(from_unixtime(unix_timestamp(test_hive_1454,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1454
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1455,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1455
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1454,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1454
         ,cast(test_hive_1461 as string) as test_hive_1461
         ,cast(test_hive_1460 as string) as test_hive_1460
         ,cast(test_hive_1459 as string) as test_hive_1459
-        ,cast(from_unixtime(unix_timestamp(test_hive_1462,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1462
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1462,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1462
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -3558,7 +3558,7 @@ select
         ,cast(test_hive_1475 as string) as test_hive_1475
         ,cast(test_hive_1474 as string) as test_hive_1474
         ,cast(test_hive_1473 as string) as test_hive_1473
-        ,cast(from_unixtime(unix_timestamp(test_hive_1476,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1476
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1476,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1476
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -3655,7 +3655,7 @@ select
         ,cast(test_hive_1489 as string) as test_hive_1489
         ,cast(test_hive_1488 as string) as test_hive_1488
         ,cast(test_hive_1487 as string) as test_hive_1487
-        ,cast(from_unixtime(unix_timestamp(test_hive_1490,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1490
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1490,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1490
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -3753,12 +3753,12 @@ select
         ,cast(test_hive_1502 as int) as test_hive_1502
         ,cast(test_hive_418 as decimal) as test_hive_418
         ,cast(test_hive_1500 as string) as test_hive_1500
-        ,cast(from_unixtime(unix_timestamp(test_hive_1499,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1499
-        ,cast(from_unixtime(unix_timestamp(test_hive_1498,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1498
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1499,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1499
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1498,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1498
         ,cast(test_hive_1505 as string) as test_hive_1505
         ,cast(test_hive_1504 as string) as test_hive_1504
         ,cast(test_hive_1503 as string) as test_hive_1503
-        ,cast(from_unixtime(unix_timestamp(test_hive_1506,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1506
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1506,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1506
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -3857,7 +3857,7 @@ select
         ,cast(test_hive_1519 as string) as test_hive_1519
         ,cast(test_hive_1518 as string) as test_hive_1518
         ,cast(test_hive_1517 as string) as test_hive_1517
-        ,cast(from_unixtime(unix_timestamp(test_hive_1520,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1520
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1520,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1520
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -3955,12 +3955,12 @@ select
         ,cast(test_hive_1532 as int) as test_hive_1532
         ,cast(test_hive_420 as decimal) as test_hive_420
         ,cast(test_hive_1530 as string) as test_hive_1530
-        ,cast(from_unixtime(unix_timestamp(test_hive_1529,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1529
-        ,cast(from_unixtime(unix_timestamp(test_hive_1528,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1528
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1529,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1529
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1528,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1528
         ,cast(test_hive_1535 as string) as test_hive_1535
         ,cast(test_hive_1534 as string) as test_hive_1534
         ,cast(test_hive_1533 as string) as test_hive_1533
-        ,cast(from_unixtime(unix_timestamp(test_hive_1536,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1536
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1536,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1536
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -4053,7 +4053,7 @@ select
         ,cast(test_hive_445 as decimal) as test_hive_445
         ,cast(test_hive_1844 as string) as test_hive_1844
         ,cast(test_hive_1847 as string) as test_hive_1847
-        ,cast(from_unixtime(unix_timestamp(test_hive_1848,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1848
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1848,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1848
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -4142,7 +4142,7 @@ select
         ,cast(test_hive_446 as string) as test_hive_446
         ,cast(test_hive_1856 as string) as test_hive_1856
         ,cast(test_hive_1859 as string) as test_hive_1859
-        ,cast(from_unixtime(unix_timestamp(test_hive_1860,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1860
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1860,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1860
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -4231,7 +4231,7 @@ select
         ,cast(test_hive_447 as string) as test_hive_447
         ,cast(test_hive_1868 as string) as test_hive_1868
         ,cast(test_hive_1871 as string) as test_hive_1871
-        ,cast(from_unixtime(unix_timestamp(test_hive_1872,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1872
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1872,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1872
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -4425,7 +4425,7 @@ select
         ,cast(test_hive_1290_bp_lag as double) as test_hive_1290_bp_lag
         ,cast(test_hive_1290_con as double) as test_hive_1290_con
         ,cast(test_hive_1290_con_lag as double) as test_hive_1290_con_lag
-        ,cast(from_unixtime(unix_timestamp(test_hive_1298,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1298
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1298,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1298
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -4555,7 +4555,7 @@ select
         ,cast(test_hive_2025 as string) as test_hive_2025
         ,cast(test_hive_2024 as string) as test_hive_2024
         ,cast(test_hive_2023 as string) as test_hive_2023
-        ,cast(from_unixtime(unix_timestamp(test_hive_2026,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_2026
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_2026,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_2026
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -4649,7 +4649,7 @@ select
         ,cast(test_hive_2007 as string) as test_hive_2007
         ,cast(test_hive_2011 as string) as test_hive_2011
         ,cast(test_hive_2010 as string) as test_hive_2010
-        ,cast(from_unixtime(unix_timestamp(test_hive_2012,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_2012
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_2012,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_2012
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -4739,7 +4739,7 @@ select
         ,cast(test_hive_456 as string) as test_hive_456
         ,cast(test_hive_1995 as string) as test_hive_1995
         ,cast(test_hive_1998 as string) as test_hive_1998
-        ,cast(from_unixtime(unix_timestamp(test_hive_1999,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1999
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1999,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1999
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -4828,7 +4828,7 @@ select
         ,cast(test_hive_455 as string) as test_hive_455
         ,cast(test_hive_1983 as string) as test_hive_1983
         ,cast(test_hive_1986 as string) as test_hive_1986
-        ,cast(from_unixtime(unix_timestamp(test_hive_1987,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1987
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1987,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1987
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -4923,7 +4923,7 @@ select
         ,cast(test_hive_1974 as string) as test_hive_1974
         ,cast(test_hive_1973 as string) as test_hive_1973
         ,cast(test_hive_1972 as string) as test_hive_1972
-        ,cast(from_unixtime(unix_timestamp(test_hive_1975,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1975
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1975,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1975
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -5014,7 +5014,7 @@ select
         ,cast(test_hive_453 as string) as test_hive_453
         ,cast(test_hive_1957 as string) as test_hive_1957
         ,cast(test_hive_1960 as string) as test_hive_1960
-        ,cast(from_unixtime(unix_timestamp(test_hive_1961,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1961
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1961,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1961
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -5103,7 +5103,7 @@ select
         ,cast(test_hive_452 as string) as test_hive_452
         ,cast(test_hive_1945 as string) as test_hive_1945
         ,cast(test_hive_1948 as string) as test_hive_1948
-        ,cast(from_unixtime(unix_timestamp(test_hive_1949,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1949
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1949,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1949
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -5195,7 +5195,7 @@ select
         ,cast(test_hive_1932 as string) as test_hive_1932
         ,cast(test_hive_1936 as string) as test_hive_1936
         ,cast(test_hive_1935 as string) as test_hive_1935
-        ,cast(from_unixtime(unix_timestamp(test_hive_1937,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1937
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1937,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1937
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -5291,7 +5291,7 @@ select
         ,cast(test_hive_1923 as string) as test_hive_1923
         ,cast(test_hive_1922 as string) as test_hive_1922
         ,cast(test_hive_1921 as string) as test_hive_1921
-        ,cast(from_unixtime(unix_timestamp(test_hive_1924,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1924
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1924,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1924
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -5385,7 +5385,7 @@ select
         ,cast(test_hive_1904 as string) as test_hive_1904
         ,cast(test_hive_1908 as string) as test_hive_1908
         ,cast(test_hive_1907 as string) as test_hive_1907
-        ,cast(from_unixtime(unix_timestamp(test_hive_1909,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1909
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1909,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1909
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -5475,7 +5475,7 @@ select
         ,cast(test_hive_449 as string) as test_hive_449
         ,cast(test_hive_1892 as string) as test_hive_1892
         ,cast(test_hive_1895 as string) as test_hive_1895
-        ,cast(from_unixtime(unix_timestamp(test_hive_1896,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1896
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1896,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1896
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -5564,7 +5564,7 @@ select
         ,cast(test_hive_448 as string) as test_hive_448
         ,cast(test_hive_1880 as string) as test_hive_1880
         ,cast(test_hive_1883 as string) as test_hive_1883
-        ,cast(from_unixtime(unix_timestamp(test_hive_1884,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1884
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1884,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1884
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -5656,7 +5656,7 @@ select
         ,cast(test_hive_1831 as string) as test_hive_1831
         ,cast(test_hive_1835 as string) as test_hive_1835
         ,cast(test_hive_1834 as string) as test_hive_1834
-        ,cast(from_unixtime(unix_timestamp(test_hive_1836,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1836
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1836,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1836
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -5752,7 +5752,7 @@ select
         ,cast(test_hive_1822 as string) as test_hive_1822
         ,cast(test_hive_1821 as string) as test_hive_1821
         ,cast(test_hive_1820 as string) as test_hive_1820
-        ,cast(from_unixtime(unix_timestamp(test_hive_1823,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1823
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1823,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1823
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -5849,7 +5849,7 @@ select
         ,cast(test_hive_1808 as string) as test_hive_1808
         ,cast(test_hive_1807 as string) as test_hive_1807
         ,cast(test_hive_1806 as string) as test_hive_1806
-        ,cast(from_unixtime(unix_timestamp(test_hive_1809,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1809
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1809,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1809
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -5946,7 +5946,7 @@ select
         ,cast(test_hive_1794 as string) as test_hive_1794
         ,cast(test_hive_1793 as string) as test_hive_1793
         ,cast(test_hive_1792 as string) as test_hive_1792
-        ,cast(from_unixtime(unix_timestamp(test_hive_1795,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1795
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1795,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1795
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -6043,7 +6043,7 @@ select
         ,cast(test_hive_1780 as string) as test_hive_1780
         ,cast(test_hive_1779 as string) as test_hive_1779
         ,cast(test_hive_1778 as string) as test_hive_1778
-        ,cast(from_unixtime(unix_timestamp(test_hive_1781,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1781
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1781,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1781
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -6137,7 +6137,7 @@ select
         ,cast(test_hive_439 as string) as test_hive_439
         ,cast(test_hive_1763 as string) as test_hive_1763
         ,cast(test_hive_1766 as string) as test_hive_1766
-        ,cast(from_unixtime(unix_timestamp(test_hive_1767,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1767
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1767,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1767
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -6227,7 +6227,7 @@ select
         ,cast(test_hive_437 as string) as test_hive_437
         ,cast(test_hive_1751 as string) as test_hive_1751
         ,cast(test_hive_1754 as string) as test_hive_1754
-        ,cast(from_unixtime(unix_timestamp(test_hive_1755,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1755
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1755,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1755
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -6316,7 +6316,7 @@ select
         ,cast(test_hive_436 as string) as test_hive_436
         ,cast(test_hive_1739 as string) as test_hive_1739
         ,cast(test_hive_1742 as string) as test_hive_1742
-        ,cast(from_unixtime(unix_timestamp(test_hive_1743,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1743
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1743,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1743
         ,source_file_name
         ,cast(creation_date as timestamp) as creation_date
         ,ds_ts
@@ -6405,7 +6405,7 @@ select
         ,cast(test_hive_435 as string) as test_hive_435
         ,cast(test_hive_1727 as string) as test_hive_1727
         ,cast(test_hive_1730 as string) as test_hive_1730
-        ,cast(from_unixtime(unix_timestamp(test_hive_1731,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1731
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1731,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1731
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -6500,7 +6500,7 @@ select
         ,cast(test_hive_1718 as string) as test_hive_1718
         ,cast(test_hive_1717 as string) as test_hive_1717
         ,cast(test_hive_1716 as string) as test_hive_1716
-        ,cast(from_unixtime(unix_timestamp(test_hive_1719,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1719
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1719,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1719
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -6597,7 +6597,7 @@ select
         ,cast(test_hive_1704 as string) as test_hive_1704
         ,cast(test_hive_1703 as string) as test_hive_1703
         ,cast(test_hive_1702 as string) as test_hive_1702
-        ,cast(from_unixtime(unix_timestamp(test_hive_1705,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1705
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1705,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1705
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -6688,7 +6688,7 @@ select
         ,cast(test_hive_432 as string) as test_hive_432
         ,cast(test_hive_1687 as string) as test_hive_1687
         ,cast(test_hive_1690 as string) as test_hive_1690
-        ,cast(from_unixtime(unix_timestamp(test_hive_1691,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1691
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1691,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1691
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -6777,7 +6777,7 @@ select
         ,cast(test_hive_431 as string) as test_hive_431
         ,cast(test_hive_1675 as string) as test_hive_1675
         ,cast(test_hive_1678 as string) as test_hive_1678
-        ,cast(from_unixtime(unix_timestamp(test_hive_1679,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1679
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1679,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1679
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -6872,7 +6872,7 @@ select
         ,cast(test_hive_1666 as string) as test_hive_1666
         ,cast(test_hive_1665 as string) as test_hive_1665
         ,cast(test_hive_1664 as string) as test_hive_1664
-        ,cast(from_unixtime(unix_timestamp(test_hive_1667,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1667
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1667,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1667
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -6963,7 +6963,7 @@ select
         ,cast(test_hive_429 as string) as test_hive_429
         ,cast(test_hive_1649 as string) as test_hive_1649
         ,cast(test_hive_1652 as string) as test_hive_1652
-        ,cast(from_unixtime(unix_timestamp(test_hive_1653,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1653
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1653,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1653
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -7058,7 +7058,7 @@ select
         ,cast(test_hive_1640 as string) as test_hive_1640
         ,cast(test_hive_1639 as string) as test_hive_1639
         ,cast(test_hive_1638 as string) as test_hive_1638
-        ,cast(from_unixtime(unix_timestamp(test_hive_1641,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1641
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1641,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1641
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -7155,7 +7155,7 @@ select
         ,cast(test_hive_1626 as string) as test_hive_1626
         ,cast(test_hive_1625 as string) as test_hive_1625
         ,cast(test_hive_1624 as string) as test_hive_1624
-        ,cast(from_unixtime(unix_timestamp(test_hive_1627,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1627
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1627,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1627
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -7252,7 +7252,7 @@ select
         ,cast(test_hive_1612 as string) as test_hive_1612
         ,cast(test_hive_1611 as string) as test_hive_1611
         ,cast(test_hive_1610 as string) as test_hive_1610
-        ,cast(from_unixtime(unix_timestamp(test_hive_1613,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1613
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1613,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1613
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -7343,7 +7343,7 @@ select
         ,cast(test_hive_425 as string) as test_hive_425
         ,cast(test_hive_1595 as string) as test_hive_1595
         ,cast(test_hive_1598 as string) as test_hive_1598
-        ,cast(from_unixtime(unix_timestamp(test_hive_1599,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1599
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1599,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1599
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -7432,7 +7432,7 @@ select
         ,cast(test_hive_424 as string) as test_hive_424
         ,cast(test_hive_1583 as string) as test_hive_1583
         ,cast(test_hive_1586 as string) as test_hive_1586
-        ,cast(from_unixtime(unix_timestamp(test_hive_1587,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1587
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1587,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1587
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -7527,7 +7527,7 @@ select
         ,cast(test_hive_1574 as string) as test_hive_1574
         ,cast(test_hive_1573 as string) as test_hive_1573
         ,cast(test_hive_1572 as string) as test_hive_1572
-        ,cast(from_unixtime(unix_timestamp(test_hive_1575,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1575
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1575,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1575
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -7618,7 +7618,7 @@ select
         ,cast(test_hive_422 as string) as test_hive_422
         ,cast(test_hive_1557 as string) as test_hive_1557
         ,cast(test_hive_1560 as string) as test_hive_1560
-        ,cast(from_unixtime(unix_timestamp(test_hive_1561,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1561
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1561,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1561
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -7710,7 +7710,7 @@ select
         ,cast(test_hive_1544 as string) as test_hive_1544
         ,cast(test_hive_1548 as string) as test_hive_1548
         ,cast(test_hive_1547 as string) as test_hive_1547
-        ,cast(from_unixtime(unix_timestamp(test_hive_1549,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1549
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1549,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1549
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -7807,12 +7807,12 @@ select
         ,cast(test_hive_1323 as int) as test_hive_1323
         ,cast(test_hive_335 as string) as test_hive_335
         ,cast(test_hive_1321 as string) as test_hive_1321
-        ,cast(from_unixtime(unix_timestamp(test_hive_1320 ,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1320
-        ,cast(from_unixtime(unix_timestamp(test_hive_1319 ,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1319
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1320 ,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1320
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1319 ,'yyyymmdd'), 'yyyy-mm-dd') as timestamp) as test_hive_1319
         ,cast(test_hive_1326 as string) as test_hive_1326
         ,cast(test_hive_1325 as string) as test_hive_1325
         ,cast(test_hive_1324 as string) as test_hive_1324
-        ,cast(from_unixtime(unix_timestamp(test_hive_1327,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1327
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1327,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1327
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -7905,7 +7905,7 @@ select
         ,cast(test_hive_308 as string) as test_hive_308
         ,cast(test_hive_1271 as string) as test_hive_1271
         ,cast(test_hive_1274 as string) as test_hive_1274
-        ,cast(from_unixtime(unix_timestamp(test_hive_1275,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1275
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1275,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1275
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -8003,7 +8003,7 @@ select
         ,cast(test_hive_1262 as string) as test_hive_1262
         ,cast(test_hive_1261 as string) as test_hive_1261
         ,cast(test_hive_1260 as string) as test_hive_1260
-        ,cast(from_unixtime(unix_timestamp(test_hive_1263,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1263
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1263,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1263
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -8095,7 +8095,7 @@ select
         ,cast(test_hive_280 as string) as test_hive_280
         ,cast(test_hive_1221 as string) as test_hive_1221
         ,cast(test_hive_1224 as string) as test_hive_1224
-        ,cast(from_unixtime(unix_timestamp(test_hive_1225,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1225
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1225,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1225
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -8184,7 +8184,7 @@ select
         ,cast(test_hive_279 as string) as test_hive_279
         ,cast(test_hive_1209 as string) as test_hive_1209
         ,cast(test_hive_1212 as string) as test_hive_1212
-        ,cast(from_unixtime(unix_timestamp(test_hive_1213,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1213
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_1213,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_1213
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts
@@ -8324,7 +8324,7 @@ select
         ,cast(test_hive_468 as string) as test_hive_468
         ,cast(test_hive_469 as string) as test_hive_469
         ,cast(test_hive_466 as string) as test_hive_466
-        ,cast(from_unixtime(unix_timestamp(test_hive_2045,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_2045
+        ,cast(from_unixtime(to_unix_timestamp(test_hive_2045,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') as timestamp) as test_hive_2045
        ,source_file_name
        ,cast(creation_date as timestamp) as creation_date
        ,ds_ts

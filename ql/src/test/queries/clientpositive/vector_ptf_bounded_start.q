@@ -15,8 +15,8 @@ p_int int, p_retailprice double, p_decimal decimal(10,4), rowindex int) stored a
 INSERT INTO TABLE vector_ptf_part_simple_orc 
 SELECT 
 p_mfgr, p_name, p_date, 
-CAST(FROM_UNIXTIME(UNIX_TIMESTAMP(p_date)) as TIMESTAMP), 
-CAST(UNIX_TIMESTAMP(p_date) as int), p_retailprice, 
+CAST(FROM_UNIXTIME(to_unix_timestamp(p_date)) as TIMESTAMP),
+CAST(to_unix_timestamp(p_date) as int), p_retailprice,
 CAST(p_retailprice as DECIMAL(10,4)), 
 rowindex 
 FROM vector_ptf_part_simple_text;
