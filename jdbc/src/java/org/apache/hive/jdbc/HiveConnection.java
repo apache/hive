@@ -186,7 +186,7 @@ public class HiveConnection implements java.sql.Connection {
   private String wmPool = null, wmApp = null;
   private Properties clientInfo;
   private Subject loggedInSubject;
-  private int maxRetries = 1;
+  private int maxRetries = 5;
   private final IJdbcBrowserClient browserClient;
 
   /**
