@@ -1652,7 +1652,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         LOG.debug("Initial CBO Plan:\n" + RelOptUtil.toString(calcitePlan));
       }
 
-      RelNode rewrittenPlan = applyMaterializedViewRewritingByText(ast, calcitePlan, optCluster, ANY);
+      RelNode rewrittenPlan = applyMaterializedViewRewritingByText(
+              ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL, ast, calcitePlan, optCluster, ANY);
       if (rewrittenPlan != null) {
         return rewrittenPlan;
       }
@@ -2065,8 +2066,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
     }
 
-    private boolean isMaterializedViewRewritingByTextEnabled() {
-      return conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL) &&
+    private boolean isMaterializedViewRewritingByTextEnabled(HiveConf.ConfVars confVar) {
+      return conf.getBoolVar(confVar) &&
               mvRebuildMode == MaterializationRebuildMode.NONE &&
               !rootQB.isMaterializedView() && !ctx.isLoadingMaterializedView() && !rootQB.isCTAS() &&
               rootQB.getIsQuery() &&
@@ -2074,9 +2075,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode applyMaterializedViewRewritingByText(
+            HiveConf.ConfVars confVar,
             ASTNode queryToRewrite, RelNode calciteGenPlan, RelOptCluster optCluster,
             Predicate<EnumSet<HiveRelOptMaterialization.RewriteAlgorithm>> filter) {
-      if (!isMaterializedViewRewritingByTextEnabled()) {
+      if (!isMaterializedViewRewritingByTextEnabled(confVar)) {
         return null;
       }
 
@@ -3424,10 +3426,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
             RelNode subQueryRelNode =
                 genLogicalPlan(qbSQ, false, relToHiveColNameCalcitePosMap.get(srcRel), relToHiveRR.get(srcRel));
 
-            if (isMaterializedViewRewritingByTextEnabled()) {
+            if (isMaterializedViewRewritingByTextEnabled(
+                    ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SUBQUERY_SQL)) {
               unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM);
-              String expandedSubQueryText = ctx.getTokenRewriteStream()
-                      .toString(EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM, subQueryRoot.getTokenStartIndex(), subQueryRoot.getTokenStopIndex());
+              String expandedSubQueryText = ctx.getTokenRewriteStream().toString(
+                      EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM,
+                      subQueryRoot.getTokenStartIndex(),
+                      subQueryRoot.getTokenStopIndex());
 
               expandedSubQueryText = expandedSubQueryText.substring(1, expandedSubQueryText.length() - 1).trim();
 
@@ -5014,7 +5019,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         ASTNode subqueryRoot = qbexpr.getSubQueryRoot();
         if (subqueryRoot != null) {
-          RelNode mv = applyMaterializedViewRewritingByText(subqueryRoot, relNode, cluster, NON_CALCITE);
+          RelNode mv = applyMaterializedViewRewritingByText(
+                  ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SUBQUERY_SQL,
+                  subqueryRoot, relNode, cluster, NON_CALCITE);
           if (mv != null) {
             RowResolver rr = relToHiveRR.remove(relNode);
             relToHiveRR.put(mv, rr);
