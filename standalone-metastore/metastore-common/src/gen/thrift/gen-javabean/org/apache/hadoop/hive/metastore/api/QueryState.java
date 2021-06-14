@@ -13,7 +13,8 @@ public enum QueryState implements org.apache.thrift.TEnum {
   EXECUTING(1),
   FAILED(2),
   FINISHED(3),
-  TIMED_OUT(4);
+  TIMED_OUT(4),
+  AUTO_DISABLED(5);
 
   private final int value;
 
@@ -45,6 +46,8 @@ public enum QueryState implements org.apache.thrift.TEnum {
         return FINISHED;
       case 4:
         return TIMED_OUT;
+      case 5:
+        return AUTO_DISABLED;
       default:
         return null;
     }

@@ -862,6 +862,22 @@ public class MetastoreConf {
         "hive.metastore.scheduled.queries.execution.max.age", 30 * 86400, TimeUnit.SECONDS,
         "Maximal age of a scheduled query execution entry before it is removed."),
 
+    SCHEDULED_QUERIES_AUTODISABLE_COUNT("metastore.scheduled.queries.autodisable.count",
+        "metastore.scheduled.queries.autodisable.count", 0,
+        "Scheduled queries will be automatically disabled after this number of consecutive failures."
+            + "Setting it to a non-positive number disables the feature."),
+
+    SCHEDULED_QUERIES_SKIP_OPPORTUNITIES_AFTER_FAILURES(
+        "metastore.scheduled.queries.skip.opportunities.after.failures",
+        "metastore.scheduled.queries.skip.opportunities.after.failures", 0,
+        "Causes to skip schedule opportunities after consequitive failures; taking into account the last N executions. For a scheduled query which have failed its last f execution; it's next schedule will be set to skip f-1 schedule opportunitites."
+            + "Suppose that a scheduled query is scheduled to run every minute.\n"
+            + "Consider this setting to be set to 3 - which means it will only look at the last 3 executions."
+            + "In case the query failed at 1:00 then it will skip 0 opportunities; and the next execution will be scheduled to 1:01\n"
+            + "If that execution also fails it will skip 1 opportunities; next execution will happen at 1:03\n"
+            + "In case that execution fails as well it will skip 2 opportunities; so next execution will be 1:06."
+            + "If the query fails it will skip 2 opportunities again ; because it only cares with the last 3 executions based on the set value."),
+
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener
     METADATA_EXPORT_LOCATION("metastore.metadata.export.location", "hive.metadata.export.location",

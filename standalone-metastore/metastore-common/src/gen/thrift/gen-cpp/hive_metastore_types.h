@@ -393,7 +393,8 @@ struct QueryState {
     EXECUTING = 1,
     FAILED = 2,
     FINISHED = 3,
-    TIMED_OUT = 4
+    TIMED_OUT = 4,
+    AUTO_DISABLED = 5
   };
 };
 
