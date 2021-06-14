@@ -4636,7 +4636,7 @@ public class TestReplicationScenarios {
       }
     }
 
-    verifyMBeanStatistics(testName, replDbName, nameStri, events);
+    verifyMBeanStatistics(testName, replDbName, nameStri, events, incrementalDump);
 
     // Do some drop table/drop partition & rename table operations.
     for (int i = 0; i < 3; i++) {
@@ -4678,19 +4678,28 @@ public class TestReplicationScenarios {
         }
       }
     }
-    verifyMBeanStatistics(testName, replDbName, nameStri, events);
+    verifyMBeanStatistics(testName, replDbName, nameStri, events, incrementalDump);
     // Clean up the test setup.
     ReplLoadWork.setMbeansParamsForTesting(false,false);
     MBeans.unregister(ObjectName.getInstance(nameStri));
   }
 
-  private void verifyMBeanStatistics(String testName, String replDbName, String nameStri, String[] events)
+  private void verifyMBeanStatistics(String testName, String replDbName, String nameStri, String[] events,
+      Tuple incrementalDump)
       throws MalformedObjectNameException, MBeanException, AttributeNotFoundException, InstanceNotFoundException,
       ReflectionException {
     ObjectName name = ObjectName.getInstance(nameStri);
 
-    assertTrue(
-        ManagementFactory.getPlatformMBeanServer().getAttribute(name, "Stage").toString().contains("INCREMENTAL"));
+    assertTrue(ManagementFactory.getPlatformMBeanServer().getAttribute(name, "ReplicationType").toString()
+        .contains("INCREMENTAL"));
+    // Check the dump location is set correctly.
+    assertTrue(ManagementFactory.getPlatformMBeanServer().getAttribute(name, "DumpDirectory").toString()
+        .startsWith(incrementalDump.dumpLocation));
+    // The CurrentEventId should be the last dumped repl id, once the load is complete.
+    assertEquals(incrementalDump.lastReplId,
+        ManagementFactory.getPlatformMBeanServer().getAttribute(name, "CurrentEventId"));
+    assertEquals(Long.parseLong(incrementalDump.lastReplId),
+        ManagementFactory.getPlatformMBeanServer().getAttribute(name, "LastEventId"));
     assertTrue(
         ManagementFactory.getPlatformMBeanServer().getAttribute(name, "SourceDatabase").toString().contains(testName));
     assertTrue(ManagementFactory.getPlatformMBeanServer().getAttribute(name, "TargetDatabase").toString()

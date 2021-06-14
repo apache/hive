@@ -32,10 +32,10 @@ public interface ReplLoadWorkMBean {
   public String getTargetDatabase();
 
   /**
-   * Gets the stage of Replication.
+   * Gets the Replication Type.
    * @return INCREMENTAL or BOOTSTRAP load.
    */
-  public String getStage();
+  public String getReplicationType();
 
   /**
    * Gets the name of scheduled query being run.
@@ -48,6 +48,24 @@ public interface ReplLoadWorkMBean {
    * @return the execution id.
    */
   public String getExecutionId();
+
+  /**
+   * Gets the dump directory.
+   * @return the dump directory.
+   */
+  public String getDumpDirectory();
+
+  /**
+   * Gets the event id that just got processed.
+   * @return last event id.
+   */
+  public String getCurrentEventId();
+
+  /**
+   * Gets the last event id for the load.
+   * @return the last event id
+   */
+  public Long getLastEventId();
 
   /**
    * Gets the string representation of replication statistics

@@ -235,6 +235,7 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
     return rootTask;
   }
 
+  @Override
   public String getDumpDirectory() {return dumpDirectory;}
   
   public void setRootTask(Task<?> rootTask) {
@@ -320,7 +321,7 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
   }
 
   @Override
-  public String getStage() {
+  public String getReplicationType() {
     return isIncrementalLoad() ? "INCREMENTAL" : "BOOTSTRAP";
   }
 
@@ -345,6 +346,27 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
     } catch (Exception e) {
       return "Got Error" + e.getMessage();
     }
+  }
+
+  @Override
+  public String getCurrentEventId() {
+    try {
+      if (replStatsTracker != null) {
+        return replStatsTracker.getLastEventId();
+      } else {
+        return "";
+      }
+    } catch (Exception e) {
+      return "Got Error" + e.getMessage();
+    }
+  }
+
+  @Override
+  public Long getLastEventId() {
+    if (incrementalLoadTasksBuilder != null) {
+      return incrementalLoadTasksBuilder.eventTo();
+    }
+    return -1L;
   }
 
   /**

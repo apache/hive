@@ -32,7 +32,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * Tracks the replication statistics per event type.
  */
 public class ReplStatsTracker {
-  private static final Logger LOG = LoggerFactory.getLogger(ReplStatsTracker.class);
 
   // Maintains the descriptive statistics per event type.
   private ConcurrentHashMap<String, DescriptiveStatistics> descMap;
@@ -41,6 +40,8 @@ public class ReplStatsTracker {
   private ConcurrentHashMap<String, ListOrderedMap<Long, Long>> topKEvents;
   // Number of top events to maintain.
   private final int k;
+
+  private String lastEventId;
 
   public ReplStatsTracker(int k) {
     this.k = k;
@@ -55,6 +56,8 @@ public class ReplStatsTracker {
    * @param timeTaken time taken to process the event.
    */
   public synchronized void addEntry(String eventType, String eventId, long timeTaken) {
+    // Store the last EventId for the JMX.
+    lastEventId = eventId;
     // Update the entry in the descriptive statistics.
     DescriptiveStatistics descStatistics = descMap.get(eventType);
     if (descStatistics == null) {
@@ -104,6 +107,14 @@ public class ReplStatsTracker {
    */
   public ConcurrentHashMap<String, ListOrderedMap<Long, Long>> getTopKEvents() {
     return topKEvents;
+  }
+
+  /**
+   * Gets the last event id processed.
+   * @return the last event id.
+   */
+  public String getLastEventId() {
+    return lastEventId;
   }
 
   @Override
