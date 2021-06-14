@@ -33,6 +33,7 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -13880,7 +13881,80 @@ public class ObjectStore implements RawStore, Configurable {
         throw new InvalidOperationException("invalid state: " + info.getState());
       }
       pm.makePersistent(execution);
+
+      processScheduledQueryPolicies(info);
+
       commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private void processScheduledQueryPolicies(ScheduledQueryProgressInfo info) throws MetaException {
+    if (info.getState() != QueryState.FAILED && info.getState() != QueryState.TIMED_OUT) {
+      return;
+    }
+    int autoDisableCount = MetastoreConf.getIntVar(conf, ConfVars.SCHEDULED_QUERIES_AUTODISABLE_COUNT);
+    int skipCount = MetastoreConf.getIntVar(conf, ConfVars.SCHEDULED_QUERIES_SKIP_OPPORTUNITIES_AFTER_FAILURES);
+
+    int lastN = Math.max(autoDisableCount, skipCount);
+    if (lastN <= 0) {
+      // disabled
+      return;
+    }
+
+    boolean commited = false;
+    try {
+      openTransaction();
+
+      MScheduledExecution lastExecution = pm.getObjectById(MScheduledExecution.class, info.getScheduledExecutionId());
+      MScheduledQuery schq = lastExecution.getScheduledQuery();
+
+      Query query = pm.newQuery(MScheduledExecution.class);
+      query.setFilter("scheduledQuery == currentSchedule");
+      query.setOrdering("scheduledExecutionId descending");
+      query.declareParameters("MScheduledQuery currentSchedule");
+      query.setRange(0, lastN);
+      List<MScheduledExecution> list = (List<MScheduledExecution>) query.execute(schq);
+
+      int failureCount=0;
+      for(int i=0;i<list.size();i++) {
+        if (list.get(i).getState() != QueryState.FAILED && list.get(i).getState() != QueryState.TIMED_OUT) {
+          break;
+        }
+        failureCount++;
+      }
+
+      if (autoDisableCount > 0 && autoDisableCount <= failureCount) {
+        LOG.info("Disabling {} after {} consequtive failures", schq.getScheduleKey(), autoDisableCount);
+        schq.setEnabled(false);
+        int now = (int) (System.currentTimeMillis() / 1000);
+        MScheduledExecution execution = new MScheduledExecution();
+        execution.setScheduledQuery(schq);
+        execution.setState(QueryState.AUTO_DISABLED);
+        execution.setStartTime(now);
+        execution.setEndTime(now);
+        execution.setLastUpdateTime(now);
+        execution.setErrorMessage(String.format("Disabling query after {} consequtive failures", autoDisableCount));
+        pm.makePersistent(execution);
+      }
+      if (skipCount > 0) {
+        int n = Math.min(skipCount, failureCount) - 1;
+        Integer scheduledTime = schq.getNextExecution();
+        for (int i = 0; i < n; i++) {
+          if (scheduledTime != null) {
+            scheduledTime = computeNextExecutionTime(schq.getSchedule(), scheduledTime);
+          }
+        }
+        if (scheduledTime != null) {
+          schq.setNextExecution(scheduledTime);
+        }
+      }
+      commited = commitTransaction();
+    } catch (InvalidInputException e) {
+      throw new MetaException("Unexpected InvalidInputException: " + e.getMessage());
     } finally {
       if (!commited) {
         rollbackTransaction();
@@ -14037,6 +14111,16 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private Integer computeNextExecutionTime(String schedule) throws InvalidInputException {
+    ZonedDateTime now = ZonedDateTime.now();
+    return computeNextExecutionTime(schedule, now);
+  }
+
+  private Integer computeNextExecutionTime(String schedule, Integer time) throws InvalidInputException {
+    ZonedDateTime now = ZonedDateTime.ofInstant(Instant.ofEpochSecond(time), ZoneId.systemDefault());
+    return computeNextExecutionTime(schedule, now);
+  }
+
+  private Integer computeNextExecutionTime(String schedule, ZonedDateTime time) throws InvalidInputException {
     CronType cronType = CronType.QUARTZ;
 
     CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(cronType);
@@ -14044,9 +14128,8 @@ public class ObjectStore implements RawStore, Configurable {
 
     // Get date for last execution
     try {
-      ZonedDateTime now = ZonedDateTime.now();
       ExecutionTime executionTime = ExecutionTime.forCron(parser.parse(schedule));
-      Optional<ZonedDateTime> nextExecution = executionTime.nextExecution(now);
+      Optional<ZonedDateTime> nextExecution = executionTime.nextExecution(time);
       if (!nextExecution.isPresent()) {
         // no valid next execution time.
         return null;

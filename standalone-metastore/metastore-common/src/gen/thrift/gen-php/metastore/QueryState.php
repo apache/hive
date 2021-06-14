@@ -28,12 +28,15 @@ final class QueryState
 
     const TIMED_OUT = 4;
 
+    const AUTO_DISABLED = 5;
+
     static public $__names = array(
         0 => 'INITED',
         1 => 'EXECUTING',
         2 => 'FAILED',
         3 => 'FINISHED',
         4 => 'TIMED_OUT',
+        5 => 'AUTO_DISABLED',
     );
 }
 
