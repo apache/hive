@@ -3864,8 +3864,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RelTraitSet traitSet = cluster.traitSetOf(HiveRelNode.CONVENTION);
       RelCollation canonizedCollation = traitSet.canonize(
               RelCollationImpl.of(obLogicalPlanGenState.getFieldCollation()));
-      RelNode sortRel = new HiveSortLimit(
-              cluster, traitSet, obLogicalPlanGenState.getObInputRel(), canonizedCollation, null, null);
+      RelNode sortRel;
+      if (limit != null) {
+        Integer offset = qb.getParseInfo().getDestLimitOffset(dest);
+        RexNode offsetRN = (offset == null || offset == 0) ?
+            null : cluster.getRexBuilder().makeExactLiteral(BigDecimal.valueOf(offset));
+        RexNode fetchRN = cluster.getRexBuilder().makeExactLiteral(BigDecimal.valueOf(limit));
+        sortRel = new HiveSortLimit(cluster, traitSet, obLogicalPlanGenState.getObInputRel(), canonizedCollation,
+            offsetRN, fetchRN);
+      } else {
+        sortRel = new HiveSortLimit(cluster, traitSet, obLogicalPlanGenState.getObInputRel(), canonizedCollation,
+            null, null);
+      }
 
       return endGenOBLogicalPlan(obLogicalPlanGenState, sortRel);
     }
@@ -5049,15 +5059,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 6. Build Rel for OB Clause
       obRel = genOBLogicalPlan(qb, selPair, outerMostQB);
-      srcRel = (obRel == null) ? srcRel : obRel;
+      if (obRel != null) {
+        srcRel = obRel;
+      } else {
+        // 7. Build Rel for Sort By Clause
+        sbRel = genSBLogicalPlan(qb, selPair, outerMostQB);
+        srcRel = (sbRel == null) ? srcRel : sbRel;
 
-      // 7. Build Rel for Sort By Clause
-      sbRel = genSBLogicalPlan(qb, selPair, outerMostQB);
-      srcRel = (sbRel == null) ? srcRel : sbRel;
-
-      // 8. Build Rel for Limit Clause
-      limitRel = genLimitLogicalPlan(qb, srcRel);
-      srcRel = (limitRel == null) ? srcRel : limitRel;
+        // 8. Build Rel for Limit Clause
+        limitRel = genLimitLogicalPlan(qb, srcRel);
+        srcRel = (limitRel == null) ? srcRel : limitRel;
+      }
 
       // 9. Incase this QB corresponds to subquery then modify its RR to point
       // to subquery alias.
