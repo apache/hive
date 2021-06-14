@@ -217,7 +217,7 @@ public class HiveConnection implements java.sql.Connection {
       openSession();
       executeInitSql();
     } else {
-      int maxRetries = 1;
+      int maxRetries = 5;
       long retryInterval = 1000L;
       try {
         String strRetries = sessConfMap.get(JdbcConnectionParams.RETRIES);

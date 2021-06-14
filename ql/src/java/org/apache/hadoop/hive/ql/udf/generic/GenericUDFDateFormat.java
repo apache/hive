@@ -21,13 +21,19 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.util.DateTimeMath;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -80,7 +86,7 @@ public class GenericUDFDateFormat extends GenericUDF {
       if (fmtStr != null) {
         try {
           formatter = new SimpleDateFormat(fmtStr);
-          formatter.setCalendar(DateTimeMath.getProlepticGregorianCalendarUTC());
+          formatter.setCalendar(DateTimeMath.getTimeZonedProlepticGregorianCalendar());
         } catch (IllegalArgumentException e) {
           // ignore
         }
@@ -99,6 +105,9 @@ public class GenericUDFDateFormat extends GenericUDF {
     if (formatter == null) {
       return null;
     }
+
+    ZoneId id = (SessionState.get() == null) ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
+        .getLocalTimeZone();
     // the function should support both short date and full timestamp format
     // time part of the timestamp should not be skipped
     Timestamp ts = getTimestampValue(arguments, 0, tsConverters);
@@ -107,10 +116,11 @@ public class GenericUDFDateFormat extends GenericUDF {
       if (d == null) {
         return null;
       }
-      ts = Timestamp.ofEpochMilli(d.toEpochMilli());
+      ts = Timestamp.ofEpochMilli(d.toEpochMilli(id), id);
     }
 
-    date.setTime(ts.toEpochMilli());
+
+    date.setTime(ts.toEpochMilli(id));
     String res = formatter.format(date);
     if (res == null) {
       return null;
