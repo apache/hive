@@ -282,7 +282,7 @@ public abstract class CompactorTest {
 
   protected void burnThroughTransactions(String dbName, String tblName, int num, Set<Long> open, Set<Long> aborted)
       throws NoSuchTxnException, TxnAbortedException, MetaException {
-    burnThroughTransactions(dbName, tblName, num, null, null, null);
+    burnThroughTransactions(dbName, tblName, num, open, aborted, null);
   }
 
   protected void burnThroughTransactions(String dbName, String tblName, int num, Set<Long> open, Set<Long> aborted, LockRequest lockReq)
