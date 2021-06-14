@@ -8,21 +8,23 @@ POSTHOOK: query: create table t1(col0 int) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
+Only query text based automatic rewriting is available for materialized view. Statement has unsupported operator: union.
 PREHOOK: query: create materialized view mat1 as
-select col0 from t1 where col0 > 1
+select col0 from t1 where col0 between 1 and 10 union select col0 from t1 where col0 = 20
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@t1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mat1
 POSTHOOK: query: create materialized view mat1 as
-select col0 from t1 where col0 > 1
+select col0 from t1 where col0 between 1 and 10 union select col0 from t1 where col0 = 20
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mat1
+Only query text based automatic rewriting is available for materialized view. Statement has unsupported operator: union.
 PREHOOK: query: create materialized view mat2 as
 select col0 from
-  (select col0 from t1 where col0 > 1) sub
+  (select col0 from t1 where col0 between 1 and 10 union select col0 from t1 where col0 = 20) sub
 where col0 < 100
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@t1
@@ -30,7 +32,7 @@ PREHOOK: Output: database:default
 PREHOOK: Output: default@mat2
 POSTHOOK: query: create materialized view mat2 as
 select col0 from
-  (select col0 from t1 where col0 > 1) sub
+  (select col0 from t1 where col0 between 1 and 10 union select col0 from t1 where col0 = 20) sub
 where col0 < 100
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@t1
@@ -38,7 +40,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mat2
 PREHOOK: query: explain cbo
 select col0 from
-  (select col0 from t1 where col0 > 1) sub
+  (select col0 from t1 where col0 between 1 and 10 union select col0 from t1 where col0 = 20) sub
 where col0 < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mat2
@@ -46,7 +48,7 @@ PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain cbo
 select col0 from
-  (select col0 from t1 where col0 > 1) sub
+  (select col0 from t1 where col0 between 1 and 10 union select col0 from t1 where col0 = 20) sub
 where col0 < 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mat2
@@ -58,7 +60,7 @@ HiveTableScan(table=[[default, mat2]], table:alias=[default.mat2])
 PREHOOK: query: explain cbo
 select col0 from (
 select col0 from
-  (select col0 from t1 where col0 > 1) sub
+  (select col0 from t1 where col0 between 1 and 10 union select col0 from t1 where col0 = 20) sub
 where col0 < 100
 ) sub2
 where col0 = 10
@@ -69,7 +71,7 @@ PREHOOK: Input: default@t1
 POSTHOOK: query: explain cbo
 select col0 from (
 select col0 from
-  (select col0 from t1 where col0 > 1) sub
+  (select col0 from t1 where col0 between 1 and 10 union select col0 from t1 where col0 = 20) sub
 where col0 < 100
 ) sub2
 where col0 = 10
@@ -85,7 +87,7 @@ HiveProject(col0=[CAST(10):INTEGER])
 PREHOOK: query: explain cbo
 select col0 from (
     select col0 from
-      (select col0 from t1 where col0 > 1) sub
+      (select col0 from t1 where col0 between 1 and 10 union select col0 from t1 where col0 = 20) sub
     where col0 < 100
 ) sub2
 where col0 = 10
@@ -96,7 +98,7 @@ PREHOOK: Input: default@t1
 POSTHOOK: query: explain cbo
 select col0 from (
     select col0 from
-      (select col0 from t1 where col0 > 1) sub
+      (select col0 from t1 where col0 between 1 and 10 union select col0 from t1 where col0 = 20) sub
     where col0 < 100
 ) sub2
 where col0 = 10
@@ -111,37 +113,8 @@ HiveProject(col0=[CAST(10):INTEGER])
 
 PREHOOK: query: explain cbo
 select col0 from t1 where col0 in (
-select col0 from
-  (select col0 from t1 where col0 > 1) sub
-where col0 < 100
-)
-PREHOOK: type: QUERY
-PREHOOK: Input: default@mat2
-PREHOOK: Input: default@t1
-#### A masked pattern was here ####
-POSTHOOK: query: explain cbo
-select col0 from t1 where col0 in (
-select col0 from
-  (select col0 from t1 where col0 > 1) sub
-where col0 < 100
-)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mat2
-POSTHOOK: Input: default@t1
-#### A masked pattern was here ####
-CBO PLAN:
-HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
-  HiveProject(col0=[$0])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[default, t1]], table:alias=[t1])
-  HiveProject(col0=[$0])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[default, mat2]], table:alias=[default.mat2])
-
-PREHOOK: query: explain cbo
-select col0 from t1 where col0 in (
   select col0 from
-    (select col0 from t1 where col0 > 1) sub
+    (select col0 from t1 where col0 between 1 and 10 union select col0 from t1 where col0 = 20) sub
 where col0 < 100
 )
 PREHOOK: type: QUERY
@@ -151,7 +124,7 @@ PREHOOK: Input: default@t1
 POSTHOOK: query: explain cbo
 select col0 from t1 where col0 in (
   select col0 from
-    (select col0 from t1 where col0 > 1) sub
+    (select col0 from t1 where col0 between 1 and 10 union select col0 from t1 where col0 = 20) sub
 where col0 < 100
 )
 POSTHOOK: type: QUERY

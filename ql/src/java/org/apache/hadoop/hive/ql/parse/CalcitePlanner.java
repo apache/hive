@@ -29,6 +29,7 @@ import com.google.common.collect.Multimap;
 
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
@@ -340,6 +341,8 @@ import java.util.stream.IntStream;
 import javax.sql.DataSource;
 
 import static java.util.Collections.singletonList;
+import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.ANY;
+import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.NON_CALCITE;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.extractTable;
 
 
@@ -1649,7 +1652,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         LOG.debug("Initial CBO Plan:\n" + RelOptUtil.toString(calcitePlan));
       }
 
-      RelNode rewrittenPlan = applyMaterializedViewRewritingByText(ast, calcitePlan, optCluster);
+      RelNode rewrittenPlan = applyMaterializedViewRewritingByText(ast, calcitePlan, optCluster, ANY);
       if (rewrittenPlan != null) {
         return rewrittenPlan;
       }
@@ -2071,7 +2074,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode applyMaterializedViewRewritingByText(
-            ASTNode queryToRewrite, RelNode calciteGenPlan, RelOptCluster optCluster) {
+            ASTNode queryToRewrite, RelNode calciteGenPlan, RelOptCluster optCluster,
+            Predicate<EnumSet<HiveRelOptMaterialization.RewriteAlgorithm>> filter) {
       if (!isMaterializedViewRewritingByTextEnabled()) {
         return null;
       }
@@ -2081,15 +2085,22 @@ public class CalcitePlanner extends SemanticAnalyzer {
               EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM,
               queryToRewrite.getTokenStartIndex(),
               queryToRewrite.getTokenStopIndex());
-      return getMaterializedViewByQueryText(expandedQueryText, calciteGenPlan, optCluster);
+      return getMaterializedViewByQueryText(expandedQueryText, calciteGenPlan, optCluster, filter);
     }
 
     private RelNode getMaterializedViewByQueryText(
-            String expandedQueryText, RelNode calciteGenPlan, RelOptCluster optCluster) {
+            String expandedQueryText, RelNode calciteGenPlan, RelOptCluster optCluster,
+            Predicate<EnumSet<HiveRelOptMaterialization.RewriteAlgorithm>> filter) {
       try {
         List<HiveRelOptMaterialization> relOptMaterializationList = db.getMaterializedViewsBySql(
                 expandedQueryText, getTablesUsed(calciteGenPlan), getTxnMgr());
         for (HiveRelOptMaterialization relOptMaterialization : relOptMaterializationList) {
+          if (!filter.test(relOptMaterialization.getScope())) {
+            LOG.debug("Filter out materialized view {} scope {}",
+                    relOptMaterialization.qualifiedTableName, relOptMaterialization.getScope());
+            continue;
+          }
+
           try {
             Table hiveTableMD = extractTable(relOptMaterialization);
             if (HiveMaterializedViewUtils.checkPrivilegeForMaterializedViews(singletonList(hiveTableMD))) {
@@ -3420,7 +3431,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
               expandedSubQueryText = expandedSubQueryText.substring(1, expandedSubQueryText.length() - 1).trim();
 
-              RelNode mv = getMaterializedViewByQueryText(expandedSubQueryText, subQueryRelNode, cluster);
+              RelNode mv = getMaterializedViewByQueryText(expandedSubQueryText, subQueryRelNode, cluster, NON_CALCITE);
               if (mv != null) {
                 subQueryRelNode = mv;
               }
@@ -5003,7 +5014,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         ASTNode subqueryRoot = qbexpr.getSubQueryRoot();
         if (subqueryRoot != null) {
-          RelNode mv = applyMaterializedViewRewritingByText(subqueryRoot, relNode, cluster);
+          RelNode mv = applyMaterializedViewRewritingByText(subqueryRoot, relNode, cluster, NON_CALCITE);
           if (mv != null) {
             RowResolver rr = relToHiveRR.remove(relNode);
             relToHiveRR.put(mv, rr);
