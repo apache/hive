@@ -3419,7 +3419,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             QB qbSQ = new QB(qb.getId(), sbQueryAlias, true);
             qbSQ.setInsideView(qb.isInsideView());
             Phase1Ctx ctx1 = initPhase1Ctx();
-            ASTNode subQueryRoot = (ASTNode) node.getChild(1);
+            ASTNode subQueryRoot = (ASTNode) next.getChild(1);
             doPhase1(subQueryRoot, qbSQ, ctx1, null);
             getMetaData(qbSQ);
             this.subqueryId++;
