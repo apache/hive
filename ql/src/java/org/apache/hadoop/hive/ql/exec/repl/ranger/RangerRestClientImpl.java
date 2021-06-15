@@ -79,32 +79,29 @@ public class RangerRestClientImpl implements RangerRestClient {
   public RangerExportPolicyList exportRangerPolicies(String sourceRangerEndpoint,
                                                      String dbName,
                                                      String rangerHiveServiceName,
-                                                     HiveConf hiveConf)throws SemanticException {
+                                                     HiveConf hiveConf)throws Exception {
     LOG.info("Ranger endpoint for cluster " + sourceRangerEndpoint);
     if (StringUtils.isEmpty(rangerHiveServiceName)) {
       throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format("Ranger Service Name " +
         "cannot be empty", ReplUtils.REPL_RANGER_SERVICE));
     }
+    String finalUrl = getRangerExportUrl(sourceRangerEndpoint, rangerHiveServiceName, dbName);
+    LOG.debug("Url to export policies from source Ranger: {}", finalUrl);
     Retryable retryable = Retryable.builder()
       .withHiveConf(hiveConf).withFailOnException(RuntimeException.class)
-      .withRetryOnException(URISyntaxException.class).build();
+      .withRetryOnException(Exception.class).build();
     try {
-      return retryable.executeCallable(() -> exportRangerPoliciesPlain(sourceRangerEndpoint, rangerHiveServiceName,
-        dbName, hiveConf));
+      return retryable.executeCallable(() -> exportRangerPoliciesPlain(finalUrl, hiveConf));
     } catch (RuntimeException e) {
-      throw new SemanticException(e);
+      throw e;
     } catch (Exception e) {
       throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
     }
   }
 
   @VisibleForTesting
-  RangerExportPolicyList exportRangerPoliciesPlain(String sourceRangerEndpoint,
-                                                           String rangerHiveServiceName,
-                                                           String dbName, HiveConf hiveConf)
-          throws URISyntaxException, RuntimeException {
-    String finalUrl = getRangerExportUrl(sourceRangerEndpoint, rangerHiveServiceName, dbName);
-    LOG.debug("Url to export policies from source Ranger: {}", finalUrl);
+  RangerExportPolicyList exportRangerPoliciesPlain(String finalUrl, HiveConf hiveConf) throws Exception {
+
     WebResource.Builder builder = getRangerResourceBuilder(finalUrl, hiveConf);
     RangerExportPolicyList rangerExportPolicyList = new RangerExportPolicyList();
     ClientResponse clientResp = builder.get(ClientResponse.class);
@@ -124,7 +121,7 @@ public class RangerRestClientImpl implements RangerRestClient {
       } else if (clientResp.getStatus() == HttpServletResponse.SC_UNAUTHORIZED) {
         throw new RuntimeException(ErrorMsg.RANGER_AUTHENTICATION_FAILED.getMsg());
       } else if (clientResp.getStatus() == HttpServletResponse.SC_FORBIDDEN) {
-        throw new RuntimeException(ErrorMsg.RANGER_AUTHORISATION_FAILED.getMsg());
+        throw new RuntimeException(ErrorMsg.RANGER_AUTHORIZATION_FAILED.getMsg());
       }
     }
     if (StringUtils.isEmpty(response)) {
@@ -177,7 +174,7 @@ public class RangerRestClientImpl implements RangerRestClient {
     LOG.debug("URL to delete policy on target Ranger: {}", finalUrl);
     Retryable retryable = Retryable.builder()
             .withHiveConf(hiveConf).withFailOnException(RuntimeException.class)
-            .withRetryOnException(SemanticException.class).build();
+            .withRetryOnException(Exception.class).build();
     try {
       retryable.executeCallable(() -> {
         ClientResponse clientResp = null;
@@ -192,7 +189,7 @@ public class RangerRestClientImpl implements RangerRestClient {
               LOG.debug("Ranger policy: {} not found.", policyName);
               break;
             case HttpServletResponse.SC_FORBIDDEN:
-              throw new RuntimeException(ErrorMsg.RANGER_AUTHORISATION_FAILED.getMsg());
+              throw new RuntimeException(ErrorMsg.RANGER_AUTHORIZATION_FAILED.getMsg());
             case HttpServletResponse.SC_UNAUTHORIZED:
               throw new RuntimeException(ErrorMsg.RANGER_AUTHENTICATION_FAILED.getMsg());
             default:
@@ -202,7 +199,7 @@ public class RangerRestClientImpl implements RangerRestClient {
         return null;
       });
     } catch (RuntimeException e) {
-      throw new SemanticException(e);
+      throw e;
     } catch (Exception e) {
       throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
     }
@@ -239,13 +236,13 @@ public class RangerRestClientImpl implements RangerRestClient {
     LOG.debug("URL to import policies on target Ranger: {}", finalUrl);
     Retryable retryable = Retryable.builder()
       .withHiveConf(hiveConf).withFailOnException(RuntimeException.class)
-      .withRetryOnException(SemanticException.class).build();
+      .withRetryOnException(Exception.class).build();
     try {
       return retryable.executeCallable(() -> importRangerPoliciesPlain(jsonRangerExportPolicyList,
               rangerPoliciesJsonFileName,
               serviceMapJsonFileName, jsonServiceMap, finalUrl, rangerExportPolicyList, hiveConf));
     } catch (RuntimeException e) {
-      throw new SemanticException(e);
+      throw e;
     } catch (Exception e) {
       throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
     }
@@ -255,8 +252,7 @@ public class RangerRestClientImpl implements RangerRestClient {
                                                            String rangerPoliciesJsonFileName,
                                                            String serviceMapJsonFileName, String jsonServiceMap,
                                                            String finalUrl, RangerExportPolicyList
-                                                           rangerExportPolicyList, HiveConf hiveConf)
-          throws RuntimeException, SemanticException {
+                                                           rangerExportPolicyList, HiveConf hiveConf) throws Exception {
     ClientResponse clientResp = null;
     StreamDataBodyPart filePartPolicies = new StreamDataBodyPart("file",
       new ByteArrayInputStream(jsonRangerExportPolicyList.getBytes(StandardCharsets.UTF_8)),
@@ -278,7 +274,7 @@ public class RangerRestClientImpl implements RangerRestClient {
         } else if (clientResp.getStatus() == HttpServletResponse.SC_UNAUTHORIZED) {
           throw new RuntimeException(ErrorMsg.RANGER_AUTHENTICATION_FAILED.getMsg());
         } else {
-          throw new SemanticException("Ranger policy import failed, Please refer target Ranger admin logs.");
+          throw new Exception("Ranger policy import failed, Please refer target Ranger admin logs.");
         }
       }
     } finally {
