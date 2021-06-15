@@ -23269,3 +23269,3187 @@ POSTHOOK: Lineage: test_hive_2047.test_hive_467 SIMPLE [(test_hive_2049)test_hiv
 POSTHOOK: Lineage: test_hive_2047.test_hive_468 SIMPLE [(test_hive_2049)test_hive_2049.FieldSchema(name:test_hive_468, type:string, comment:null), ]
 POSTHOOK: Lineage: test_hive_2047.test_hive_469 SIMPLE [(test_hive_2049)test_hive_2049.FieldSchema(name:test_hive_469, type:string, comment:null), ]
 POSTHOOK: Lineage: test_hive_2047.ts EXPRESSION [(test_hive_2049)test_hive_2049.FieldSchema(name:ts, type:int, comment:null), ]
+PREHOOK: query: explain select
+t1.test_hive_1018,
+t1.test_hive_1004,
+t1.test_hive_1025,
+t2.test_hive_1560,
+t4.test_hive_1274,
+t1.test_hive_29,
+t7.test_hive_1948,
+t1.test_hive_97,
+t32.test_hive_1610,
+t1.test_hive_98,
+t34.test_hive_1972,
+t35.test_hive_1792,
+t41.test_hive_1224,
+t43.test_hive_1895,
+t44.test_hive_1907,
+t45.test_hive_1935,
+t46.test_hive_2010,
+t47.test_hive_2023,
+t1.test_hive_78,
+t15.test_hive_1260,
+t1.test_hive_79,
+t1.test_hive_24,
+t3.test_hive_1716,
+t42.test_hive_1224,
+t14.test_hive_1198,
+t23.test_hive_1459,
+t28.test_hive_1533,
+t26.test_hive_1503,
+t11.test_hive_1154,
+t21.test_hive_1429,
+t17.test_hive_1340,
+t18.test_hive_1356,
+t38.test_hive_1847,
+t39.test_hive_1859,
+t40.test_hive_1871,
+t12.test_hive_1168,
+t22.test_hive_1443,
+t13.test_hive_1182,
+t25.test_hive_1487,
+t24.test_hive_1473,
+t27.test_hive_1517,
+t8.test_hive_1110,
+t9.test_hive_1124,
+t10.test_hive_1138,
+t16.test_hive_1309,
+t36.test_hive_1806,
+t1.test_hive_104,
+t1.test_hive_1002,
+t1.test_hive_1003,
+t1.test_hive_25,
+t5.test_hive_1960,
+t29.test_hive_1547,
+t30.test_hive_1224,
+t31.test_hive_1224,
+t33.test_hive_1778,
+t37.test_hive_1834,
+t19.test_hive_1972,
+t20.test_hive_1972,
+t1.test_hive_100,
+t1.test_hive_1023,
+t1.test_hive_1024,
+t1.test_hive_1010,
+t1.test_hive_1010_a_d,
+t1.test_hive_1010_a_g,
+t1.test_hive_1026,
+t1.test_hive_1000,
+t1.test_hive_1001,
+t1.test_hive_1030,
+t1.test_hive_1030_1,
+t1.test_hive_1030_2,
+t1.test_hive_1030_3,
+t1.test_hive_1021,
+t1.test_hive_1020,
+t1.test_hive_1022,
+t1.test_hive_1019,
+t1.test_hive_1027,
+t1.test_hive_1028,
+t1.test_hive_1029,
+t1.test_hive_1005,
+t1.test_hive_1005_a_d,
+t1.test_hive_1005_psr,
+t1.test_hive_1005_psr_a_d,
+t1.test_hive_1005_psr_e,
+t1.test_hive_1013,
+t1.test_hive_1013_a_d,
+t1.test_hive_1013_psr,
+t1.test_hive_1013_psr_a_d,
+t1.test_hive_1013_psr_e,
+t1.test_hive_1034
+from test_hive_1036 t1
+join test_hive_1563 t2 on t1.test_hive_23 = t2.test_hive_422
+join test_hive_1721 t3 on t1.test_hive_26 = t3.test_hive_434
+join test_hive_1277 t4 on t1.test_hive_27 = t4.test_hive_308
+join test_hive_1963 t5 on t1.test_hive_28 = t5.test_hive_453
+join test_hive_1951 t7 on t1.test_hive_30 = t7.test_hive_452
+join test_hive_1115 t8 on t1.test_hive_71 = t8.test_hive_272
+join test_hive_1129 t9 on t1.test_hive_72 = t9.test_hive_273
+join test_hive_1143 t10 on t1.test_hive_73 = t10.test_hive_274
+join test_hive_1159 t11 on t1.test_hive_74 = t11.test_hive_275
+join test_hive_1173 t12 on t1.test_hive_75 = t12.test_hive_276
+join test_hive_1187 t13 on t1.test_hive_76 = t13.test_hive_277
+join test_hive_1203 t14 on t1.test_hive_77 = t14.test_hive_278
+join test_hive_1265 t15 on t1.test_hive_78 = t15.test_hive_306
+join test_hive_1313 t16 on t1.test_hive_80 = t16.test_hive_334
+join test_hive_1345 t17 on t1.test_hive_81 = t17.test_hive_336
+join test_hive_1361 t18 on t1.test_hive_82 = t18.test_hive_337
+join test_hive_1977 t19 on t1.test_hive_83 = t19.test_hive_454
+join test_hive_1977 t20 on t1.test_hive_84 = t20.test_hive_454
+join test_hive_1434 t21 on t1.test_hive_85 = t21.test_hive_413
+join test_hive_1448 t22 on t1.test_hive_86 = t22.test_hive_414
+join test_hive_1464 t23 on t1.test_hive_87 = t23.test_hive_415
+join test_hive_1478 t24 on t1.test_hive_88 = t24.test_hive_416
+join test_hive_1492 t25 on t1.test_hive_89 = t25.test_hive_417
+join test_hive_1508 t26 on t1.test_hive_90 = t26.test_hive_418
+join test_hive_1522 t27 on t1.test_hive_91 = t27.test_hive_419
+join test_hive_1538 t28 on t1.test_hive_92 = t28.test_hive_420
+join test_hive_1551 t29 on t1.test_hive_93 = t29.test_hive_421
+join test_hive_1227 t30 on t1.test_hive_94 = t30.test_hive_280
+join test_hive_1227 t31 on t1.test_hive_95 = t31.test_hive_280
+join test_hive_1615 t32 on t1.test_hive_96 = t32.test_hive_426
+join test_hive_1783 t33 on t1.test_hive_99 = t33.test_hive_440
+join test_hive_1977 t34 on t1.test_hive_101 = t34.test_hive_454
+join test_hive_1797 t35 on t1.test_hive_102 = t35.test_hive_441
+join test_hive_1811 t36 on t1.test_hive_103 = t36.test_hive_442
+join test_hive_1838 t37 on t1.test_hive_105 = t37.test_hive_444
+join test_hive_1850 t38 on t1.test_hive_106 = t38.test_hive_445
+join test_hive_1862 t39 on t1.test_hive_107 = t39.test_hive_446
+join test_hive_1874 t40 on t1.test_hive_108 = t40.test_hive_447
+join test_hive_1227 t41 on t1.test_hive_109 = t41.test_hive_280
+join test_hive_1227 t42 on t1.test_hive_110 = t42.test_hive_280
+join test_hive_1898 t43 on t1.test_hive_111 = t43.test_hive_449
+join test_hive_1911 t44 on t1.test_hive_112 = t44.test_hive_450
+join test_hive_1939 t45 on t1.test_hive_113 = t45.test_hive_451
+join test_hive_2014 t46 on t1.test_hive_114 = t46.test_hive_457
+join test_hive_2028 t47 on t1.test_hive_115 = t47.test_hive_458
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_hive_1036
+PREHOOK: Input: default@test_hive_1037
+PREHOOK: Input: default@test_hive_1038
+PREHOOK: Input: default@test_hive_1039
+PREHOOK: Input: default@test_hive_1040
+PREHOOK: Input: default@test_hive_1115
+PREHOOK: Input: default@test_hive_1116
+PREHOOK: Input: default@test_hive_1117
+PREHOOK: Input: default@test_hive_1118
+PREHOOK: Input: default@test_hive_1119
+PREHOOK: Input: default@test_hive_1129
+PREHOOK: Input: default@test_hive_1130
+PREHOOK: Input: default@test_hive_1131
+PREHOOK: Input: default@test_hive_1132
+PREHOOK: Input: default@test_hive_1133
+PREHOOK: Input: default@test_hive_1143
+PREHOOK: Input: default@test_hive_1144
+PREHOOK: Input: default@test_hive_1145
+PREHOOK: Input: default@test_hive_1146
+PREHOOK: Input: default@test_hive_1147
+PREHOOK: Input: default@test_hive_1159
+PREHOOK: Input: default@test_hive_1160
+PREHOOK: Input: default@test_hive_1161
+PREHOOK: Input: default@test_hive_1162
+PREHOOK: Input: default@test_hive_1163
+PREHOOK: Input: default@test_hive_1173
+PREHOOK: Input: default@test_hive_1174
+PREHOOK: Input: default@test_hive_1175
+PREHOOK: Input: default@test_hive_1176
+PREHOOK: Input: default@test_hive_1177
+PREHOOK: Input: default@test_hive_1187
+PREHOOK: Input: default@test_hive_1188
+PREHOOK: Input: default@test_hive_1189
+PREHOOK: Input: default@test_hive_1190
+PREHOOK: Input: default@test_hive_1191
+PREHOOK: Input: default@test_hive_1203
+PREHOOK: Input: default@test_hive_1204
+PREHOOK: Input: default@test_hive_1205
+PREHOOK: Input: default@test_hive_1206
+PREHOOK: Input: default@test_hive_1207
+PREHOOK: Input: default@test_hive_1227
+PREHOOK: Input: default@test_hive_1228
+PREHOOK: Input: default@test_hive_1229
+PREHOOK: Input: default@test_hive_1230
+PREHOOK: Input: default@test_hive_1231
+PREHOOK: Input: default@test_hive_1265
+PREHOOK: Input: default@test_hive_1266
+PREHOOK: Input: default@test_hive_1267
+PREHOOK: Input: default@test_hive_1268
+PREHOOK: Input: default@test_hive_1269
+PREHOOK: Input: default@test_hive_1277
+PREHOOK: Input: default@test_hive_1278
+PREHOOK: Input: default@test_hive_1279
+PREHOOK: Input: default@test_hive_1280
+PREHOOK: Input: default@test_hive_1281
+PREHOOK: Input: default@test_hive_1313
+PREHOOK: Input: default@test_hive_1314
+PREHOOK: Input: default@test_hive_1315
+PREHOOK: Input: default@test_hive_1316
+PREHOOK: Input: default@test_hive_1317
+PREHOOK: Input: default@test_hive_1345
+PREHOOK: Input: default@test_hive_1346
+PREHOOK: Input: default@test_hive_1347
+PREHOOK: Input: default@test_hive_1348
+PREHOOK: Input: default@test_hive_1349
+PREHOOK: Input: default@test_hive_1361
+PREHOOK: Input: default@test_hive_1362
+PREHOOK: Input: default@test_hive_1363
+PREHOOK: Input: default@test_hive_1364
+PREHOOK: Input: default@test_hive_1365
+PREHOOK: Input: default@test_hive_1434
+PREHOOK: Input: default@test_hive_1435
+PREHOOK: Input: default@test_hive_1436
+PREHOOK: Input: default@test_hive_1437
+PREHOOK: Input: default@test_hive_1438
+PREHOOK: Input: default@test_hive_1448
+PREHOOK: Input: default@test_hive_1449
+PREHOOK: Input: default@test_hive_1450
+PREHOOK: Input: default@test_hive_1451
+PREHOOK: Input: default@test_hive_1452
+PREHOOK: Input: default@test_hive_1464
+PREHOOK: Input: default@test_hive_1465
+PREHOOK: Input: default@test_hive_1466
+PREHOOK: Input: default@test_hive_1467
+PREHOOK: Input: default@test_hive_1468
+PREHOOK: Input: default@test_hive_1478
+PREHOOK: Input: default@test_hive_1479
+PREHOOK: Input: default@test_hive_1480
+PREHOOK: Input: default@test_hive_1481
+PREHOOK: Input: default@test_hive_1482
+PREHOOK: Input: default@test_hive_1492
+PREHOOK: Input: default@test_hive_1493
+PREHOOK: Input: default@test_hive_1494
+PREHOOK: Input: default@test_hive_1495
+PREHOOK: Input: default@test_hive_1496
+PREHOOK: Input: default@test_hive_1508
+PREHOOK: Input: default@test_hive_1509
+PREHOOK: Input: default@test_hive_1510
+PREHOOK: Input: default@test_hive_1511
+PREHOOK: Input: default@test_hive_1512
+PREHOOK: Input: default@test_hive_1522
+PREHOOK: Input: default@test_hive_1523
+PREHOOK: Input: default@test_hive_1524
+PREHOOK: Input: default@test_hive_1525
+PREHOOK: Input: default@test_hive_1526
+PREHOOK: Input: default@test_hive_1538
+PREHOOK: Input: default@test_hive_1539
+PREHOOK: Input: default@test_hive_1540
+PREHOOK: Input: default@test_hive_1541
+PREHOOK: Input: default@test_hive_1542
+PREHOOK: Input: default@test_hive_1551
+PREHOOK: Input: default@test_hive_1552
+PREHOOK: Input: default@test_hive_1553
+PREHOOK: Input: default@test_hive_1554
+PREHOOK: Input: default@test_hive_1555
+PREHOOK: Input: default@test_hive_1563
+PREHOOK: Input: default@test_hive_1564
+PREHOOK: Input: default@test_hive_1565
+PREHOOK: Input: default@test_hive_1566
+PREHOOK: Input: default@test_hive_1567
+PREHOOK: Input: default@test_hive_1615
+PREHOOK: Input: default@test_hive_1616
+PREHOOK: Input: default@test_hive_1617
+PREHOOK: Input: default@test_hive_1618
+PREHOOK: Input: default@test_hive_1619
+PREHOOK: Input: default@test_hive_1721
+PREHOOK: Input: default@test_hive_1722
+PREHOOK: Input: default@test_hive_1723
+PREHOOK: Input: default@test_hive_1724
+PREHOOK: Input: default@test_hive_1725
+PREHOOK: Input: default@test_hive_1783
+PREHOOK: Input: default@test_hive_1784
+PREHOOK: Input: default@test_hive_1785
+PREHOOK: Input: default@test_hive_1786
+PREHOOK: Input: default@test_hive_1787
+PREHOOK: Input: default@test_hive_1797
+PREHOOK: Input: default@test_hive_1798
+PREHOOK: Input: default@test_hive_1799
+PREHOOK: Input: default@test_hive_1800
+PREHOOK: Input: default@test_hive_1801
+PREHOOK: Input: default@test_hive_1811
+PREHOOK: Input: default@test_hive_1812
+PREHOOK: Input: default@test_hive_1813
+PREHOOK: Input: default@test_hive_1814
+PREHOOK: Input: default@test_hive_1815
+PREHOOK: Input: default@test_hive_1838
+PREHOOK: Input: default@test_hive_1839
+PREHOOK: Input: default@test_hive_1840
+PREHOOK: Input: default@test_hive_1841
+PREHOOK: Input: default@test_hive_1842
+PREHOOK: Input: default@test_hive_1850
+PREHOOK: Input: default@test_hive_1851
+PREHOOK: Input: default@test_hive_1852
+PREHOOK: Input: default@test_hive_1853
+PREHOOK: Input: default@test_hive_1854
+PREHOOK: Input: default@test_hive_1862
+PREHOOK: Input: default@test_hive_1863
+PREHOOK: Input: default@test_hive_1864
+PREHOOK: Input: default@test_hive_1865
+PREHOOK: Input: default@test_hive_1866
+PREHOOK: Input: default@test_hive_1874
+PREHOOK: Input: default@test_hive_1875
+PREHOOK: Input: default@test_hive_1876
+PREHOOK: Input: default@test_hive_1877
+PREHOOK: Input: default@test_hive_1878
+PREHOOK: Input: default@test_hive_1898
+PREHOOK: Input: default@test_hive_1899
+PREHOOK: Input: default@test_hive_1900
+PREHOOK: Input: default@test_hive_1901
+PREHOOK: Input: default@test_hive_1902
+PREHOOK: Input: default@test_hive_1911
+PREHOOK: Input: default@test_hive_1912
+PREHOOK: Input: default@test_hive_1913
+PREHOOK: Input: default@test_hive_1914
+PREHOOK: Input: default@test_hive_1915
+PREHOOK: Input: default@test_hive_1939
+PREHOOK: Input: default@test_hive_1940
+PREHOOK: Input: default@test_hive_1941
+PREHOOK: Input: default@test_hive_1942
+PREHOOK: Input: default@test_hive_1943
+PREHOOK: Input: default@test_hive_1951
+PREHOOK: Input: default@test_hive_1952
+PREHOOK: Input: default@test_hive_1953
+PREHOOK: Input: default@test_hive_1954
+PREHOOK: Input: default@test_hive_1955
+PREHOOK: Input: default@test_hive_1963
+PREHOOK: Input: default@test_hive_1964
+PREHOOK: Input: default@test_hive_1965
+PREHOOK: Input: default@test_hive_1966
+PREHOOK: Input: default@test_hive_1967
+PREHOOK: Input: default@test_hive_1977
+PREHOOK: Input: default@test_hive_1978
+PREHOOK: Input: default@test_hive_1979
+PREHOOK: Input: default@test_hive_1980
+PREHOOK: Input: default@test_hive_1981
+PREHOOK: Input: default@test_hive_2014
+PREHOOK: Input: default@test_hive_2015
+PREHOOK: Input: default@test_hive_2016
+PREHOOK: Input: default@test_hive_2017
+PREHOOK: Input: default@test_hive_2018
+PREHOOK: Input: default@test_hive_2028
+PREHOOK: Input: default@test_hive_2029
+PREHOOK: Input: default@test_hive_2030
+PREHOOK: Input: default@test_hive_2031
+PREHOOK: Input: default@test_hive_2032
+#### A masked pattern was here ####
+POSTHOOK: query: explain select
+t1.test_hive_1018,
+t1.test_hive_1004,
+t1.test_hive_1025,
+t2.test_hive_1560,
+t4.test_hive_1274,
+t1.test_hive_29,
+t7.test_hive_1948,
+t1.test_hive_97,
+t32.test_hive_1610,
+t1.test_hive_98,
+t34.test_hive_1972,
+t35.test_hive_1792,
+t41.test_hive_1224,
+t43.test_hive_1895,
+t44.test_hive_1907,
+t45.test_hive_1935,
+t46.test_hive_2010,
+t47.test_hive_2023,
+t1.test_hive_78,
+t15.test_hive_1260,
+t1.test_hive_79,
+t1.test_hive_24,
+t3.test_hive_1716,
+t42.test_hive_1224,
+t14.test_hive_1198,
+t23.test_hive_1459,
+t28.test_hive_1533,
+t26.test_hive_1503,
+t11.test_hive_1154,
+t21.test_hive_1429,
+t17.test_hive_1340,
+t18.test_hive_1356,
+t38.test_hive_1847,
+t39.test_hive_1859,
+t40.test_hive_1871,
+t12.test_hive_1168,
+t22.test_hive_1443,
+t13.test_hive_1182,
+t25.test_hive_1487,
+t24.test_hive_1473,
+t27.test_hive_1517,
+t8.test_hive_1110,
+t9.test_hive_1124,
+t10.test_hive_1138,
+t16.test_hive_1309,
+t36.test_hive_1806,
+t1.test_hive_104,
+t1.test_hive_1002,
+t1.test_hive_1003,
+t1.test_hive_25,
+t5.test_hive_1960,
+t29.test_hive_1547,
+t30.test_hive_1224,
+t31.test_hive_1224,
+t33.test_hive_1778,
+t37.test_hive_1834,
+t19.test_hive_1972,
+t20.test_hive_1972,
+t1.test_hive_100,
+t1.test_hive_1023,
+t1.test_hive_1024,
+t1.test_hive_1010,
+t1.test_hive_1010_a_d,
+t1.test_hive_1010_a_g,
+t1.test_hive_1026,
+t1.test_hive_1000,
+t1.test_hive_1001,
+t1.test_hive_1030,
+t1.test_hive_1030_1,
+t1.test_hive_1030_2,
+t1.test_hive_1030_3,
+t1.test_hive_1021,
+t1.test_hive_1020,
+t1.test_hive_1022,
+t1.test_hive_1019,
+t1.test_hive_1027,
+t1.test_hive_1028,
+t1.test_hive_1029,
+t1.test_hive_1005,
+t1.test_hive_1005_a_d,
+t1.test_hive_1005_psr,
+t1.test_hive_1005_psr_a_d,
+t1.test_hive_1005_psr_e,
+t1.test_hive_1013,
+t1.test_hive_1013_a_d,
+t1.test_hive_1013_psr,
+t1.test_hive_1013_psr_a_d,
+t1.test_hive_1013_psr_e,
+t1.test_hive_1034
+from test_hive_1036 t1
+join test_hive_1563 t2 on t1.test_hive_23 = t2.test_hive_422
+join test_hive_1721 t3 on t1.test_hive_26 = t3.test_hive_434
+join test_hive_1277 t4 on t1.test_hive_27 = t4.test_hive_308
+join test_hive_1963 t5 on t1.test_hive_28 = t5.test_hive_453
+join test_hive_1951 t7 on t1.test_hive_30 = t7.test_hive_452
+join test_hive_1115 t8 on t1.test_hive_71 = t8.test_hive_272
+join test_hive_1129 t9 on t1.test_hive_72 = t9.test_hive_273
+join test_hive_1143 t10 on t1.test_hive_73 = t10.test_hive_274
+join test_hive_1159 t11 on t1.test_hive_74 = t11.test_hive_275
+join test_hive_1173 t12 on t1.test_hive_75 = t12.test_hive_276
+join test_hive_1187 t13 on t1.test_hive_76 = t13.test_hive_277
+join test_hive_1203 t14 on t1.test_hive_77 = t14.test_hive_278
+join test_hive_1265 t15 on t1.test_hive_78 = t15.test_hive_306
+join test_hive_1313 t16 on t1.test_hive_80 = t16.test_hive_334
+join test_hive_1345 t17 on t1.test_hive_81 = t17.test_hive_336
+join test_hive_1361 t18 on t1.test_hive_82 = t18.test_hive_337
+join test_hive_1977 t19 on t1.test_hive_83 = t19.test_hive_454
+join test_hive_1977 t20 on t1.test_hive_84 = t20.test_hive_454
+join test_hive_1434 t21 on t1.test_hive_85 = t21.test_hive_413
+join test_hive_1448 t22 on t1.test_hive_86 = t22.test_hive_414
+join test_hive_1464 t23 on t1.test_hive_87 = t23.test_hive_415
+join test_hive_1478 t24 on t1.test_hive_88 = t24.test_hive_416
+join test_hive_1492 t25 on t1.test_hive_89 = t25.test_hive_417
+join test_hive_1508 t26 on t1.test_hive_90 = t26.test_hive_418
+join test_hive_1522 t27 on t1.test_hive_91 = t27.test_hive_419
+join test_hive_1538 t28 on t1.test_hive_92 = t28.test_hive_420
+join test_hive_1551 t29 on t1.test_hive_93 = t29.test_hive_421
+join test_hive_1227 t30 on t1.test_hive_94 = t30.test_hive_280
+join test_hive_1227 t31 on t1.test_hive_95 = t31.test_hive_280
+join test_hive_1615 t32 on t1.test_hive_96 = t32.test_hive_426
+join test_hive_1783 t33 on t1.test_hive_99 = t33.test_hive_440
+join test_hive_1977 t34 on t1.test_hive_101 = t34.test_hive_454
+join test_hive_1797 t35 on t1.test_hive_102 = t35.test_hive_441
+join test_hive_1811 t36 on t1.test_hive_103 = t36.test_hive_442
+join test_hive_1838 t37 on t1.test_hive_105 = t37.test_hive_444
+join test_hive_1850 t38 on t1.test_hive_106 = t38.test_hive_445
+join test_hive_1862 t39 on t1.test_hive_107 = t39.test_hive_446
+join test_hive_1874 t40 on t1.test_hive_108 = t40.test_hive_447
+join test_hive_1227 t41 on t1.test_hive_109 = t41.test_hive_280
+join test_hive_1227 t42 on t1.test_hive_110 = t42.test_hive_280
+join test_hive_1898 t43 on t1.test_hive_111 = t43.test_hive_449
+join test_hive_1911 t44 on t1.test_hive_112 = t44.test_hive_450
+join test_hive_1939 t45 on t1.test_hive_113 = t45.test_hive_451
+join test_hive_2014 t46 on t1.test_hive_114 = t46.test_hive_457
+join test_hive_2028 t47 on t1.test_hive_115 = t47.test_hive_458
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_hive_1036
+POSTHOOK: Input: default@test_hive_1037
+POSTHOOK: Input: default@test_hive_1038
+POSTHOOK: Input: default@test_hive_1039
+POSTHOOK: Input: default@test_hive_1040
+POSTHOOK: Input: default@test_hive_1115
+POSTHOOK: Input: default@test_hive_1116
+POSTHOOK: Input: default@test_hive_1117
+POSTHOOK: Input: default@test_hive_1118
+POSTHOOK: Input: default@test_hive_1119
+POSTHOOK: Input: default@test_hive_1129
+POSTHOOK: Input: default@test_hive_1130
+POSTHOOK: Input: default@test_hive_1131
+POSTHOOK: Input: default@test_hive_1132
+POSTHOOK: Input: default@test_hive_1133
+POSTHOOK: Input: default@test_hive_1143
+POSTHOOK: Input: default@test_hive_1144
+POSTHOOK: Input: default@test_hive_1145
+POSTHOOK: Input: default@test_hive_1146
+POSTHOOK: Input: default@test_hive_1147
+POSTHOOK: Input: default@test_hive_1159
+POSTHOOK: Input: default@test_hive_1160
+POSTHOOK: Input: default@test_hive_1161
+POSTHOOK: Input: default@test_hive_1162
+POSTHOOK: Input: default@test_hive_1163
+POSTHOOK: Input: default@test_hive_1173
+POSTHOOK: Input: default@test_hive_1174
+POSTHOOK: Input: default@test_hive_1175
+POSTHOOK: Input: default@test_hive_1176
+POSTHOOK: Input: default@test_hive_1177
+POSTHOOK: Input: default@test_hive_1187
+POSTHOOK: Input: default@test_hive_1188
+POSTHOOK: Input: default@test_hive_1189
+POSTHOOK: Input: default@test_hive_1190
+POSTHOOK: Input: default@test_hive_1191
+POSTHOOK: Input: default@test_hive_1203
+POSTHOOK: Input: default@test_hive_1204
+POSTHOOK: Input: default@test_hive_1205
+POSTHOOK: Input: default@test_hive_1206
+POSTHOOK: Input: default@test_hive_1207
+POSTHOOK: Input: default@test_hive_1227
+POSTHOOK: Input: default@test_hive_1228
+POSTHOOK: Input: default@test_hive_1229
+POSTHOOK: Input: default@test_hive_1230
+POSTHOOK: Input: default@test_hive_1231
+POSTHOOK: Input: default@test_hive_1265
+POSTHOOK: Input: default@test_hive_1266
+POSTHOOK: Input: default@test_hive_1267
+POSTHOOK: Input: default@test_hive_1268
+POSTHOOK: Input: default@test_hive_1269
+POSTHOOK: Input: default@test_hive_1277
+POSTHOOK: Input: default@test_hive_1278
+POSTHOOK: Input: default@test_hive_1279
+POSTHOOK: Input: default@test_hive_1280
+POSTHOOK: Input: default@test_hive_1281
+POSTHOOK: Input: default@test_hive_1313
+POSTHOOK: Input: default@test_hive_1314
+POSTHOOK: Input: default@test_hive_1315
+POSTHOOK: Input: default@test_hive_1316
+POSTHOOK: Input: default@test_hive_1317
+POSTHOOK: Input: default@test_hive_1345
+POSTHOOK: Input: default@test_hive_1346
+POSTHOOK: Input: default@test_hive_1347
+POSTHOOK: Input: default@test_hive_1348
+POSTHOOK: Input: default@test_hive_1349
+POSTHOOK: Input: default@test_hive_1361
+POSTHOOK: Input: default@test_hive_1362
+POSTHOOK: Input: default@test_hive_1363
+POSTHOOK: Input: default@test_hive_1364
+POSTHOOK: Input: default@test_hive_1365
+POSTHOOK: Input: default@test_hive_1434
+POSTHOOK: Input: default@test_hive_1435
+POSTHOOK: Input: default@test_hive_1436
+POSTHOOK: Input: default@test_hive_1437
+POSTHOOK: Input: default@test_hive_1438
+POSTHOOK: Input: default@test_hive_1448
+POSTHOOK: Input: default@test_hive_1449
+POSTHOOK: Input: default@test_hive_1450
+POSTHOOK: Input: default@test_hive_1451
+POSTHOOK: Input: default@test_hive_1452
+POSTHOOK: Input: default@test_hive_1464
+POSTHOOK: Input: default@test_hive_1465
+POSTHOOK: Input: default@test_hive_1466
+POSTHOOK: Input: default@test_hive_1467
+POSTHOOK: Input: default@test_hive_1468
+POSTHOOK: Input: default@test_hive_1478
+POSTHOOK: Input: default@test_hive_1479
+POSTHOOK: Input: default@test_hive_1480
+POSTHOOK: Input: default@test_hive_1481
+POSTHOOK: Input: default@test_hive_1482
+POSTHOOK: Input: default@test_hive_1492
+POSTHOOK: Input: default@test_hive_1493
+POSTHOOK: Input: default@test_hive_1494
+POSTHOOK: Input: default@test_hive_1495
+POSTHOOK: Input: default@test_hive_1496
+POSTHOOK: Input: default@test_hive_1508
+POSTHOOK: Input: default@test_hive_1509
+POSTHOOK: Input: default@test_hive_1510
+POSTHOOK: Input: default@test_hive_1511
+POSTHOOK: Input: default@test_hive_1512
+POSTHOOK: Input: default@test_hive_1522
+POSTHOOK: Input: default@test_hive_1523
+POSTHOOK: Input: default@test_hive_1524
+POSTHOOK: Input: default@test_hive_1525
+POSTHOOK: Input: default@test_hive_1526
+POSTHOOK: Input: default@test_hive_1538
+POSTHOOK: Input: default@test_hive_1539
+POSTHOOK: Input: default@test_hive_1540
+POSTHOOK: Input: default@test_hive_1541
+POSTHOOK: Input: default@test_hive_1542
+POSTHOOK: Input: default@test_hive_1551
+POSTHOOK: Input: default@test_hive_1552
+POSTHOOK: Input: default@test_hive_1553
+POSTHOOK: Input: default@test_hive_1554
+POSTHOOK: Input: default@test_hive_1555
+POSTHOOK: Input: default@test_hive_1563
+POSTHOOK: Input: default@test_hive_1564
+POSTHOOK: Input: default@test_hive_1565
+POSTHOOK: Input: default@test_hive_1566
+POSTHOOK: Input: default@test_hive_1567
+POSTHOOK: Input: default@test_hive_1615
+POSTHOOK: Input: default@test_hive_1616
+POSTHOOK: Input: default@test_hive_1617
+POSTHOOK: Input: default@test_hive_1618
+POSTHOOK: Input: default@test_hive_1619
+POSTHOOK: Input: default@test_hive_1721
+POSTHOOK: Input: default@test_hive_1722
+POSTHOOK: Input: default@test_hive_1723
+POSTHOOK: Input: default@test_hive_1724
+POSTHOOK: Input: default@test_hive_1725
+POSTHOOK: Input: default@test_hive_1783
+POSTHOOK: Input: default@test_hive_1784
+POSTHOOK: Input: default@test_hive_1785
+POSTHOOK: Input: default@test_hive_1786
+POSTHOOK: Input: default@test_hive_1787
+POSTHOOK: Input: default@test_hive_1797
+POSTHOOK: Input: default@test_hive_1798
+POSTHOOK: Input: default@test_hive_1799
+POSTHOOK: Input: default@test_hive_1800
+POSTHOOK: Input: default@test_hive_1801
+POSTHOOK: Input: default@test_hive_1811
+POSTHOOK: Input: default@test_hive_1812
+POSTHOOK: Input: default@test_hive_1813
+POSTHOOK: Input: default@test_hive_1814
+POSTHOOK: Input: default@test_hive_1815
+POSTHOOK: Input: default@test_hive_1838
+POSTHOOK: Input: default@test_hive_1839
+POSTHOOK: Input: default@test_hive_1840
+POSTHOOK: Input: default@test_hive_1841
+POSTHOOK: Input: default@test_hive_1842
+POSTHOOK: Input: default@test_hive_1850
+POSTHOOK: Input: default@test_hive_1851
+POSTHOOK: Input: default@test_hive_1852
+POSTHOOK: Input: default@test_hive_1853
+POSTHOOK: Input: default@test_hive_1854
+POSTHOOK: Input: default@test_hive_1862
+POSTHOOK: Input: default@test_hive_1863
+POSTHOOK: Input: default@test_hive_1864
+POSTHOOK: Input: default@test_hive_1865
+POSTHOOK: Input: default@test_hive_1866
+POSTHOOK: Input: default@test_hive_1874
+POSTHOOK: Input: default@test_hive_1875
+POSTHOOK: Input: default@test_hive_1876
+POSTHOOK: Input: default@test_hive_1877
+POSTHOOK: Input: default@test_hive_1878
+POSTHOOK: Input: default@test_hive_1898
+POSTHOOK: Input: default@test_hive_1899
+POSTHOOK: Input: default@test_hive_1900
+POSTHOOK: Input: default@test_hive_1901
+POSTHOOK: Input: default@test_hive_1902
+POSTHOOK: Input: default@test_hive_1911
+POSTHOOK: Input: default@test_hive_1912
+POSTHOOK: Input: default@test_hive_1913
+POSTHOOK: Input: default@test_hive_1914
+POSTHOOK: Input: default@test_hive_1915
+POSTHOOK: Input: default@test_hive_1939
+POSTHOOK: Input: default@test_hive_1940
+POSTHOOK: Input: default@test_hive_1941
+POSTHOOK: Input: default@test_hive_1942
+POSTHOOK: Input: default@test_hive_1943
+POSTHOOK: Input: default@test_hive_1951
+POSTHOOK: Input: default@test_hive_1952
+POSTHOOK: Input: default@test_hive_1953
+POSTHOOK: Input: default@test_hive_1954
+POSTHOOK: Input: default@test_hive_1955
+POSTHOOK: Input: default@test_hive_1963
+POSTHOOK: Input: default@test_hive_1964
+POSTHOOK: Input: default@test_hive_1965
+POSTHOOK: Input: default@test_hive_1966
+POSTHOOK: Input: default@test_hive_1967
+POSTHOOK: Input: default@test_hive_1977
+POSTHOOK: Input: default@test_hive_1978
+POSTHOOK: Input: default@test_hive_1979
+POSTHOOK: Input: default@test_hive_1980
+POSTHOOK: Input: default@test_hive_1981
+POSTHOOK: Input: default@test_hive_2014
+POSTHOOK: Input: default@test_hive_2015
+POSTHOOK: Input: default@test_hive_2016
+POSTHOOK: Input: default@test_hive_2017
+POSTHOOK: Input: default@test_hive_2018
+POSTHOOK: Input: default@test_hive_2028
+POSTHOOK: Input: default@test_hive_2029
+POSTHOOK: Input: default@test_hive_2030
+POSTHOOK: Input: default@test_hive_2031
+POSTHOOK: Input: default@test_hive_2032
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 is a root stage
+  Stage-3 is a root stage
+  Stage-4 is a root stage
+  Stage-5 is a root stage
+  Stage-6 is a root stage
+  Stage-7 is a root stage
+  Stage-8 is a root stage
+  Stage-9 is a root stage
+  Stage-10 is a root stage
+  Stage-11 is a root stage
+  Stage-12 is a root stage
+  Stage-13 is a root stage
+  Stage-14 is a root stage
+  Stage-15 is a root stage
+  Stage-16 is a root stage
+  Stage-17 is a root stage
+  Stage-18 is a root stage
+  Stage-19 is a root stage
+  Stage-20 is a root stage
+  Stage-21 is a root stage
+  Stage-22 is a root stage
+  Stage-23 is a root stage
+  Stage-24 is a root stage
+  Stage-25 is a root stage
+  Stage-26 is a root stage
+  Stage-27 is a root stage
+  Stage-28 is a root stage
+  Stage-29 is a root stage
+  Stage-30 is a root stage
+  Stage-31 is a root stage
+  Stage-32 is a root stage
+  Stage-33 is a root stage
+  Stage-34 is a root stage
+  Stage-35 is a root stage
+  Stage-36 is a root stage
+  Stage-37 is a root stage
+  Stage-38 is a root stage
+  Stage-39 is a root stage
+  Stage-40 is a root stage
+  Stage-41 is a root stage
+  Stage-42 is a root stage
+  Stage-43 is a root stage
+  Stage-44 is a root stage
+  Stage-45 is a root stage
+  Stage-46 is a root stage
+  Stage-47 depends on stages: Stage-1
+  Stage-48 depends on stages: Stage-2
+  Stage-49 depends on stages: Stage-3
+  Stage-50 depends on stages: Stage-4
+  Stage-51 depends on stages: Stage-5
+  Stage-52 depends on stages: Stage-6
+  Stage-53 depends on stages: Stage-7
+  Stage-54 depends on stages: Stage-8
+  Stage-55 depends on stages: Stage-9
+  Stage-56 depends on stages: Stage-10
+  Stage-57 depends on stages: Stage-11
+  Stage-58 depends on stages: Stage-12
+  Stage-59 depends on stages: Stage-13
+  Stage-60 depends on stages: Stage-14
+  Stage-61 depends on stages: Stage-15
+  Stage-62 depends on stages: Stage-16
+  Stage-63 depends on stages: Stage-17
+  Stage-64 depends on stages: Stage-18
+  Stage-65 depends on stages: Stage-19
+  Stage-66 depends on stages: Stage-20
+  Stage-67 depends on stages: Stage-21
+  Stage-68 depends on stages: Stage-22
+  Stage-69 depends on stages: Stage-23
+  Stage-70 depends on stages: Stage-24
+  Stage-71 depends on stages: Stage-25
+  Stage-72 depends on stages: Stage-26
+  Stage-73 depends on stages: Stage-27
+  Stage-74 depends on stages: Stage-28
+  Stage-75 depends on stages: Stage-29
+  Stage-76 depends on stages: Stage-30
+  Stage-77 depends on stages: Stage-31
+  Stage-78 depends on stages: Stage-32
+  Stage-79 depends on stages: Stage-33
+  Stage-80 depends on stages: Stage-34
+  Stage-81 depends on stages: Stage-35
+  Stage-82 depends on stages: Stage-36
+  Stage-83 depends on stages: Stage-37
+  Stage-84 depends on stages: Stage-38
+  Stage-85 depends on stages: Stage-39
+  Stage-86 depends on stages: Stage-40
+  Stage-87 depends on stages: Stage-41
+  Stage-88 depends on stages: Stage-42
+  Stage-89 depends on stages: Stage-43
+  Stage-90 depends on stages: Stage-44
+  Stage-91 depends on stages: Stage-45
+  Stage-92 depends on stages: Stage-46
+  Stage-93 depends on stages: Stage-47, Stage-48 , consists of Stage-407, Stage-408, Stage-2
+  Stage-94 depends on stages: Stage-138, Stage-139, Stage-46
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t1:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t1:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col90 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-2
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t2:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t2:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col9 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-3
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t3:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t3:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col11 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t4:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t4:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col9 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t5:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t5:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col9 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-6
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t7:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t7:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col9 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-7
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t8:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t8:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col11 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-8
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t9:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t9:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col11 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-9
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t10:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t10:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col11 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-10
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t11:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t11:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col13 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-11
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t12:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t12:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col11 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-12
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t13:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t13:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col11 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-13
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t14:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t14:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col13 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-14
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t15:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t15:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col12 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-15
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t16:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t16:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col10 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-16
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t17:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t17:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col13 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-17
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t18:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t18:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col13 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-18
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t19:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t19:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col11 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-19
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t20:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t20:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col11 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-20
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t21:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t21:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col13 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-21
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t22:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t22:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col11 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-22
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t23:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t23:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col13 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-23
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t24:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t24:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col11 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-24
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t25:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t25:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col11 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-25
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t26:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t26:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col13 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-26
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t27:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t27:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col11 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-27
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t28:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t28:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col13 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-28
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t29:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t29:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col10 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-29
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t30:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t30:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col9 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-30
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t31:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t31:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col9 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-31
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t32:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t32:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col11 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-32
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t33:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t33:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col11 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-33
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t34:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t34:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col11 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-34
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t35:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t35:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col11 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-35
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t36:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t36:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col11 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-36
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t37:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t37:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col10 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-37
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t38:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t38:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col9 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-38
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t39:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t39:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col9 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-39
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t40:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t40:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col9 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-40
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t41:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t41:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col9 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-41
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t42:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t42:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col9 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-42
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t43:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t43:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col9 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-43
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t44:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t44:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col10 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-44
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t45:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t45:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col10 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-45
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t46:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t46:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col10 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-46
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        t47:t2
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        t47:t2
+          TableScan
+            alias: t2
+            filterExpr: max_partition is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: max_partition is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col11 (type: bigint)
+                  1 max_partition (type: bigint)
+
+  Stage: Stage-47
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1038
+            filterExpr: (ds_ts is not null and test_hive_23 is not null and test_hive_26 is not null and test_hive_27 is not null and test_hive_28 is not null and test_hive_30 is not null and test_hive_71 is not null and test_hive_72 is not null and test_hive_73 is not null and UDFToDouble(test_hive_74) is not null and test_hive_75 is not null and test_hive_76 is not null and UDFToDouble(test_hive_77) is not null and test_hive_78 is not null and test_hive_80 is not null and test_hive_81 is not null and test_hive_82 is not null and test_hive_83 is not null and test_hive_84 is not null and UDFToDouble(test_hive_85) is not null and test_hive_86 is not null and UDFToDouble(test_hive_87) is not null and test_hive_88 is not null and test_hive_89 is not null and UDFToDouble(test_hive_90) is not null and test_hive_91 is not null and UDFToDouble(test_hive_92) is not null and test_hive_93 is not null and test_hive_94 is not null and test_hive_95 is not null and test_hive_96 is not null and test_hive_99 is not null and test_hive_101 is not null and test_hive_102 is not null and test_hive_103 is not null and test_hive_105 is not null and UDFToDouble(test_hive_106) is not null and test_hive_107 is not null and test_hive_108 is not null and test_hive_109 is not null and test_hive_110 is not null and test_hive_111 is not null and test_hive_112 is not null and test_hive_113 is not null and test_hive_114 is not null and test_hive_115 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 16200 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_23 is not null and test_hive_26 is not null and test_hive_27 is not null and test_hive_28 is not null and test_hive_30 is not null and test_hive_71 is not null and test_hive_72 is not null and test_hive_73 is not null and UDFToDouble(test_hive_74) is not null and test_hive_75 is not null and test_hive_76 is not null and UDFToDouble(test_hive_77) is not null and test_hive_78 is not null and test_hive_80 is not null and test_hive_81 is not null and test_hive_82 is not null and test_hive_83 is not null and test_hive_84 is not null and UDFToDouble(test_hive_85) is not null and test_hive_86 is not null and UDFToDouble(test_hive_87) is not null and test_hive_88 is not null and test_hive_89 is not null and UDFToDouble(test_hive_90) is not null and test_hive_91 is not null and UDFToDouble(test_hive_92) is not null and test_hive_93 is not null and test_hive_94 is not null and test_hive_95 is not null and test_hive_96 is not null and test_hive_99 is not null and test_hive_101 is not null and test_hive_102 is not null and test_hive_103 is not null and test_hive_105 is not null and UDFToDouble(test_hive_106) is not null and test_hive_107 is not null and test_hive_108 is not null and test_hive_109 is not null and test_hive_110 is not null and test_hive_111 is not null and test_hive_112 is not null and test_hive_113 is not null and test_hive_114 is not null and test_hive_115 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 16200 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: UDFToInteger(test_hive_1018) (type: int), UDFToInteger(test_hive_1004) (type: int), UDFToInteger(test_hive_1025) (type: int), test_hive_23 (type: string), test_hive_27 (type: string), test_hive_29 (type: string), test_hive_30 (type: string), test_hive_97 (type: string), test_hive_96 (type: string), test_hive_98 (type: string), test_hive_101 (type: string), test_hive_102 (type: string), test_hive_109 (type: string), test_hive_111 (type: string), test_hive_112 (type: string), test_hive_113 (type: string), test_hive_114 (type: string), test_hive_115 (type: string), test_hive_78 (type: string), test_hive_79 (type: string), test_hive_24 (type: string), test_hive_26 (type: string), test_hive_110 (type: string), test_hive_77 (type: string), test_hive_87 (type: string), test_hive_92 (type: string), test_hive_90 (type: string), test_hive_74 (type: string), test_hive_85 (type: string), test_hive_81 (type: string), test_hive_82 (type: string), test_hive_106 (type: string), test_hive_107 (type: string), test_hive_108 (type: string), test_hive_75 (type: string), test_hive_86 (type: string), test_hive_76 (type: string), test_hive_89 (type: string), test_hive_88 (type: string), test_hive_91 (type: string), test_hive_71 (type: string), test_hive_72 (type: string), test_hive_73 (type: string), test_hive_80 (type: string), test_hive_103 (type: string), test_hive_104 (type: string), test_hive_1002 (type: string), test_hive_1003 (type: string), CAST( from_unixtime(to_unix_timestamp(test_hive_25,'yyyymmdd'), 'yyyy-mm-dd') AS TIMESTAMP) (type: timestamp), test_hive_28 (type: string), test_hive_93 (type: string), test_hive_94 (type: string), test_hive_95 (type: string), test_hive_99 (type: string), test_hive_105 (type: string), test_hive_83 (type: string), test_hive_84 (type: string), test_hive_100 (type: string), UDFToInteger(test_hive_1023) (type: int), UDFToInteger(test_hive_1024) (type: int), UDFToInteger(test_hive_1010) (type: int), UDFToInteger(test_hive_1010_a_d) (type: int), UDFToInteger(test_hive_1010_a_g) (type: int), UDFToDouble(test_hive_1026) (type: double), UDFToDouble(test_hive_1000) (type: double), UDFToDouble(test_hive_1001) (type: double), UDFToInteger(test_hive_1030) (type: int), UDFToInteger(test_hive_1030_1) (type: int), UDFToInteger(test_hive_1030_2) (type: int), UDFToInteger(test_hive_1030_3) (type: int), UDFToDouble(test_hive_1021) (type: double), UDFToDouble(test_hive_1020) (type: double), UDFToInteger(test_hive_1022) (type: int), UDFToInteger(test_hive_1019) (type: int), UDFToDouble(test_hive_1027) (type: double), UDFToDouble(test_hive_1028) (type: double), UDFToDouble(test_hive_1029) (type: double), UDFToInteger(test_hive_1005) (type: int), UDFToInteger(test_hive_1005_a_d) (type: int), UDFToInteger(test_hive_1005_psr) (type: int), UDFToInteger(test_hive_1005_psr_a_d) (type: int), UDFToInteger(test_hive_1005_psr_e) (type: int), UDFToInteger(test_hive_1013) (type: int), UDFToInteger(test_hive_1013_a_d) (type: int), UDFToInteger(test_hive_1013_psr) (type: int), UDFToInteger(test_hive_1013_psr_a_d) (type: int), UDFToInteger(test_hive_1013_psr_e) (type: int), CAST( from_unixtime(to_unix_timestamp(test_hive_1034,'yyyymmddhhmmss'), 'yyyy-mm-dd hh:mm:ss') AS TIMESTAMP) (type: timestamp), ds_ts (type: bigint)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41, _col42, _col43, _col44, _col45, _col46, _col47, _col48, _col49, _col50, _col51, _col52, _col53, _col54, _col55, _col56, _col57, _col58, _col59, _col60, _col61, _col62, _col63, _col64, _col65, _col66, _col67, _col68, _col69, _col70, _col71, _col72, _col73, _col74, _col75, _col76, _col77, _col78, _col79, _col80, _col81, _col82, _col83, _col84, _col85, _col86, _col87, _col90
+                Statistics: Num rows: 1 Data size: 16200 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col90 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41, _col42, _col43, _col44, _col45, _col46, _col47, _col48, _col49, _col50, _col51, _col52, _col53, _col54, _col55, _col56, _col57, _col58, _col59, _col60, _col61, _col62, _col63, _col64, _col65, _col66, _col67, _col68, _col69, _col70, _col71, _col72, _col73, _col74, _col75, _col76, _col77, _col78, _col79, _col80, _col81, _col82, _col83, _col84, _col85, _col86, _col87
+                  Statistics: Num rows: 1 Data size: 17820 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-48
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1565
+            filterExpr: (ds_ts is not null and test_hive_422 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_422 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_422 (type: string), test_hive_1560 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col5, _col9
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col9 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col5
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-49
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1723
+            filterExpr: (ds_ts is not null and test_hive_434 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_434 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_434 (type: string), test_hive_1716 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col7, _col11
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col11 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col7
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-50
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1279
+            filterExpr: (ds_ts is not null and test_hive_308 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_308 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_308 (type: string), test_hive_1274 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col5, _col9
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col9 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col5
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-51
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1965
+            filterExpr: (ds_ts is not null and test_hive_453 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_453 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_453 (type: string), test_hive_1960 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col5, _col9
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col9 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col5
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-52
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1953
+            filterExpr: (ds_ts is not null and test_hive_452 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_452 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_452 (type: string), test_hive_1948 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col5, _col9
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col9 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col5
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-53
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1117
+            filterExpr: (ds_ts is not null and test_hive_272 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_272 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_272 (type: string), test_hive_1110 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col7, _col11
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col11 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col7
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-54
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1131
+            filterExpr: (ds_ts is not null and test_hive_273 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_273 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_273 (type: string), test_hive_1124 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col7, _col11
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col11 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col7
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-55
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1145
+            filterExpr: (ds_ts is not null and test_hive_274 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_274 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_274 (type: string), test_hive_1138 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col7, _col11
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col11 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col7
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-56
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1161
+            filterExpr: (ds_ts is not null and UDFToDouble(CAST( test_hive_275 AS decimal(10,0))) is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and UDFToDouble(CAST( test_hive_275 AS decimal(10,0))) is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: CAST( test_hive_275 AS decimal(10,0)) (type: decimal(10,0)), test_hive_1154 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col9, _col13
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col13 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col9
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-57
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1175
+            filterExpr: (ds_ts is not null and test_hive_276 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_276 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_276 (type: string), test_hive_1168 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col7, _col11
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col11 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col7
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-58
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1189
+            filterExpr: (ds_ts is not null and test_hive_277 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_277 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_277 (type: string), test_hive_1182 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col7, _col11
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col11 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col7
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-59
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1205
+            filterExpr: (ds_ts is not null and UDFToDouble(CAST( test_hive_278 AS decimal(10,0))) is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and UDFToDouble(CAST( test_hive_278 AS decimal(10,0))) is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: CAST( test_hive_278 AS decimal(10,0)) (type: decimal(10,0)), test_hive_1198 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col9, _col13
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col13 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col9
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-60
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1267
+            filterExpr: (ds_ts is not null and test_hive_306 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_306 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_306 (type: string), test_hive_1260 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col4, _col8, _col12
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col12 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col4, _col8
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-61
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1315
+            filterExpr: (ds_ts is not null and test_hive_334 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_334 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_334 (type: string), test_hive_1309 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col6, _col10
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col10 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col6
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-62
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1347
+            filterExpr: (ds_ts is not null and test_hive_336 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_336 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_336 (type: string), test_hive_1340 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col9, _col13
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col13 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col9
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-63
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1363
+            filterExpr: (ds_ts is not null and test_hive_337 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_337 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_337 (type: string), test_hive_1356 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col9, _col13
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col13 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col9
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-64
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1979
+            filterExpr: (ds_ts is not null and test_hive_454 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_454 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_454 (type: string), test_hive_1972 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col7, _col11
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col11 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col7
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-65
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1979
+            filterExpr: (ds_ts is not null and test_hive_454 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_454 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_454 (type: string), test_hive_1972 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col7, _col11
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col11 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col7
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-66
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1436
+            filterExpr: (ds_ts is not null and UDFToDouble(CAST( test_hive_413 AS decimal(10,0))) is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and UDFToDouble(CAST( test_hive_413 AS decimal(10,0))) is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: CAST( test_hive_413 AS decimal(10,0)) (type: decimal(10,0)), test_hive_1429 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col9, _col13
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col13 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col9
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-67
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1450
+            filterExpr: (ds_ts is not null and test_hive_414 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_414 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_414 (type: string), test_hive_1443 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col7, _col11
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col11 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col7
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-68
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1466
+            filterExpr: (ds_ts is not null and UDFToDouble(CAST( test_hive_415 AS decimal(10,0))) is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and UDFToDouble(CAST( test_hive_415 AS decimal(10,0))) is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: CAST( test_hive_415 AS decimal(10,0)) (type: decimal(10,0)), test_hive_1459 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col9, _col13
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col13 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col9
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-69
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1480
+            filterExpr: (ds_ts is not null and test_hive_416 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_416 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_416 (type: string), test_hive_1473 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col7, _col11
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col11 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col7
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-70
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1494
+            filterExpr: (ds_ts is not null and test_hive_417 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_417 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_417 (type: string), test_hive_1487 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col7, _col11
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col11 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col7
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-71
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1510
+            filterExpr: (ds_ts is not null and UDFToDouble(CAST( test_hive_418 AS decimal(10,0))) is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and UDFToDouble(CAST( test_hive_418 AS decimal(10,0))) is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: CAST( test_hive_418 AS decimal(10,0)) (type: decimal(10,0)), test_hive_1503 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col9, _col13
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col13 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col9
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-72
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1524
+            filterExpr: (ds_ts is not null and test_hive_419 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_419 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_419 (type: string), test_hive_1517 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col7, _col11
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col11 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col7
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-73
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1540
+            filterExpr: (ds_ts is not null and UDFToDouble(CAST( test_hive_420 AS decimal(10,0))) is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and UDFToDouble(CAST( test_hive_420 AS decimal(10,0))) is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: CAST( test_hive_420 AS decimal(10,0)) (type: decimal(10,0)), test_hive_1533 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col9, _col13
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col13 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col9
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-74
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1553
+            filterExpr: (ds_ts is not null and test_hive_421 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_421 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_421 (type: string), test_hive_1547 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col6, _col10
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col10 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col6
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-75
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1229
+            filterExpr: (ds_ts is not null and test_hive_280 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_280 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_280 (type: string), test_hive_1224 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col5, _col9
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col9 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col5
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-76
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1229
+            filterExpr: (ds_ts is not null and test_hive_280 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_280 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_280 (type: string), test_hive_1224 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col5, _col9
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col9 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col5
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-77
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1617
+            filterExpr: (ds_ts is not null and test_hive_426 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_426 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_426 (type: string), test_hive_1610 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col7, _col11
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col11 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col7
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-78
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1785
+            filterExpr: (ds_ts is not null and test_hive_440 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_440 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_440 (type: string), test_hive_1778 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col7, _col11
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col11 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col7
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-79
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1979
+            filterExpr: (ds_ts is not null and test_hive_454 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_454 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_454 (type: string), test_hive_1972 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col7, _col11
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col11 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col7
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-80
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1799
+            filterExpr: (ds_ts is not null and test_hive_441 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_441 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_441 (type: string), test_hive_1792 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col7, _col11
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col11 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col7
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-81
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1813
+            filterExpr: (ds_ts is not null and test_hive_442 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_442 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_442 (type: string), test_hive_1806 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col7, _col11
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col11 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col7
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-82
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1840
+            filterExpr: (ds_ts is not null and test_hive_444 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_444 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_444 (type: string), test_hive_1834 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col6, _col10
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col10 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col6
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-83
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1852
+            filterExpr: (ds_ts is not null and UDFToDouble(CAST( test_hive_445 AS decimal(10,0))) is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and UDFToDouble(CAST( test_hive_445 AS decimal(10,0))) is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: CAST( test_hive_445 AS decimal(10,0)) (type: decimal(10,0)), test_hive_1847 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col5, _col9
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col9 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col5
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-84
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1864
+            filterExpr: (ds_ts is not null and test_hive_446 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_446 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_446 (type: string), test_hive_1859 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col5, _col9
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col9 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col5
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-85
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1876
+            filterExpr: (ds_ts is not null and test_hive_447 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_447 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_447 (type: string), test_hive_1871 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col5, _col9
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col9 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col5
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-86
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1229
+            filterExpr: (ds_ts is not null and test_hive_280 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_280 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_280 (type: string), test_hive_1224 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col5, _col9
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col9 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col5
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-87
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1229
+            filterExpr: (ds_ts is not null and test_hive_280 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_280 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_280 (type: string), test_hive_1224 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col5, _col9
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col9 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col5
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-88
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1900
+            filterExpr: (ds_ts is not null and test_hive_449 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_449 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_449 (type: string), test_hive_1895 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col5, _col9
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col9 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col5
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-89
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1913
+            filterExpr: (ds_ts is not null and test_hive_450 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_450 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_450 (type: string), test_hive_1907 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col6, _col10
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col10 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col6
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-90
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_1941
+            filterExpr: (ds_ts is not null and test_hive_451 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_451 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_451 (type: string), test_hive_1935 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col6, _col10
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col10 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col6
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-91
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_2016
+            filterExpr: (ds_ts is not null and test_hive_457 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_457 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_457 (type: string), test_hive_2010 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col6, _col10
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col10 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col6
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-92
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_hive_2030
+            filterExpr: (ds_ts is not null and test_hive_458 is not null) (type: boolean)
+            Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (ds_ts is not null and test_hive_458 is not null) (type: boolean)
+              Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: test_hive_458 (type: string), test_hive_2023 (type: string), ds_ts (type: bigint)
+                outputColumnNames: _col3, _col7, _col11
+                Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col11 (type: bigint)
+                    1 max_partition (type: bigint)
+                  outputColumnNames: _col3, _col7
+                  Statistics: Num rows: 1 Data size: 413 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-93
+    Conditional Operator
+
+  Stage: Stage-94
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
