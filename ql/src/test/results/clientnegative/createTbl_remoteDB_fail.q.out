@@ -39,4 +39,4 @@ PREHOOK: query: create table bees (id int, name string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:mysql_db
 PREHOOK: Output: mysql_db@bees
-FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Could not instantiate a provider for database mysql_db)
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Create table in REMOTE database mysql_db is not allowed)

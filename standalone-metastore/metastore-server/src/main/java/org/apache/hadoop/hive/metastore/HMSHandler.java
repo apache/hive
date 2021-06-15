@@ -2381,7 +2381,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     Database db = get_database_core(tbl.getCatName(), tbl.getDbName());
     if (db != null && db.getType().equals(DatabaseType.REMOTE)) {
-      // HIVE-24396: Create table in REMOTE db should fail
+      // HIVE-24425: Create table in REMOTE db should fail
       throw new MetaException("Create table in REMOTE database " + db.getName() + " is not allowed");
     }
 
