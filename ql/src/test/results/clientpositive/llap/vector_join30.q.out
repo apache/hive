@@ -55,7 +55,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -108,7 +108,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -150,13 +150,13 @@ STAGE PLANS:
                           Select Vectorization:
                               className: VectorSelectOperator
                               native: true
-                              projectedOutputColumnNums: [3]
-                              selectExpressions: VectorUDFAdaptor(hash(_col1,_col2)) -> 3:int
+                              projectedOutputColumnNums: [4]
+                              selectExpressions: VectorUDFAdaptor(hash(_col1,_col2)) -> 4:int
                           Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: sum(_col0)
                             Group By Vectorization:
-                                aggregators: VectorUDAFSumLong(col 3:int) -> bigint
+                                aggregators: VectorUDAFSumLong(col 4:int) -> bigint
                                 className: VectorGroupByOperator
                                 groupByMode: HASH
                                 native: false
@@ -282,7 +282,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: _col0
@@ -303,9 +303,9 @@ STAGE PLANS:
                           className: VectorMapJoinOuterStringOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                          outerSmallTableKeyMapping: 0 -> 3
-                          projectedOutput: 3:string, 4:string
-                          smallTableValueMapping: 4:string
+                          outerSmallTableKeyMapping: 0 -> 4
+                          projectedOutput: 4:string, 5:string
+                          smallTableValueMapping: 5:string
                           hashTableImplementationType: OPTIMIZED
                       outputColumnNames: _col1, _col2
                       input vertices:
@@ -317,13 +317,13 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [5]
-                            selectExpressions: VectorUDFAdaptor(hash(_col1,_col2)) -> 5:int
+                            projectedOutputColumnNums: [6]
+                            selectExpressions: VectorUDFAdaptor(hash(_col1,_col2)) -> 6:int
                         Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: sum(_col0)
                           Group By Vectorization:
-                              aggregators: VectorUDAFSumLong(col 5:int) -> bigint
+                              aggregators: VectorUDAFSumLong(col 6:int) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
                               native: false
@@ -368,7 +368,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -504,7 +504,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -555,7 +555,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
@@ -589,13 +589,13 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [3]
-                            selectExpressions: VectorUDFAdaptor(hash(_col1,_col2)) -> 3:int
+                            projectedOutputColumnNums: [4]
+                            selectExpressions: VectorUDFAdaptor(hash(_col1,_col2)) -> 4:int
                         Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: sum(_col0)
                           Group By Vectorization:
-                              aggregators: VectorUDAFSumLong(col 3:int) -> bigint
+                              aggregators: VectorUDAFSumLong(col 4:int) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
                               native: false
@@ -721,7 +721,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: _col0
@@ -765,7 +765,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
@@ -931,7 +931,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -980,8 +980,8 @@ STAGE PLANS:
                               native: true
                               nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                               nonOuterSmallTableKeyMapping: [0]
-                              projectedOutput: 0:string, 3:string
-                              smallTableValueMapping: 3:string
+                              projectedOutput: 0:string, 4:string
+                              smallTableValueMapping: 4:string
                               hashTableImplementationType: OPTIMIZED
                           outputColumnNames: _col2, _col3
                           input vertices:
@@ -993,13 +993,13 @@ STAGE PLANS:
                             Select Vectorization:
                                 className: VectorSelectOperator
                                 native: true
-                                projectedOutputColumnNums: [4]
-                                selectExpressions: VectorUDFAdaptor(hash(_col2,_col3)) -> 4:int
+                                projectedOutputColumnNums: [5]
+                                selectExpressions: VectorUDFAdaptor(hash(_col2,_col3)) -> 5:int
                             Statistics: Num rows: 1251 Data size: 222678 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: sum(_col0)
                               Group By Vectorization:
-                                  aggregators: VectorUDAFSumLong(col 4:int) -> bigint
+                                  aggregators: VectorUDAFSumLong(col 5:int) -> bigint
                                   className: VectorGroupByOperator
                                   groupByMode: HASH
                                   native: false
@@ -1044,7 +1044,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1240,7 +1240,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1288,8 +1288,8 @@ STAGE PLANS:
                               native: true
                               nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                               nonOuterSmallTableKeyMapping: [0]
-                              projectedOutput: 0:string, 3:string
-                              smallTableValueMapping: 3:string
+                              projectedOutput: 0:string, 4:string
+                              smallTableValueMapping: 4:string
                               hashTableImplementationType: OPTIMIZED
                           outputColumnNames: _col2, _col3
                           input vertices:
@@ -1301,13 +1301,13 @@ STAGE PLANS:
                             Select Vectorization:
                                 className: VectorSelectOperator
                                 native: true
-                                projectedOutputColumnNums: [4]
-                                selectExpressions: VectorUDFAdaptor(hash(_col2,_col3)) -> 4:int
+                                projectedOutputColumnNums: [5]
+                                selectExpressions: VectorUDFAdaptor(hash(_col2,_col3)) -> 5:int
                             Statistics: Num rows: 1251 Data size: 222678 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: sum(_col0)
                               Group By Vectorization:
-                                  aggregators: VectorUDAFSumLong(col 4:int) -> bigint
+                                  aggregators: VectorUDAFSumLong(col 5:int) -> bigint
                                   className: VectorGroupByOperator
                                   groupByMode: HASH
                                   native: false
@@ -1352,7 +1352,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1547,7 +1547,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: _col0
@@ -1569,9 +1569,9 @@ STAGE PLANS:
                           className: VectorMapJoinOuterStringOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                          outerSmallTableKeyMapping: 0 -> 3
-                          projectedOutput: 0:string, 3:string, 4:string
-                          smallTableValueMapping: 4:string
+                          outerSmallTableKeyMapping: 0 -> 4
+                          projectedOutput: 0:string, 4:string, 5:string
+                          smallTableValueMapping: 5:string
                           hashTableImplementationType: OPTIMIZED
                       outputColumnNames: _col0, _col1, _col2
                       input vertices:
@@ -1585,12 +1585,12 @@ STAGE PLANS:
                           1 _col0 (type: string)
                         Map Join Vectorization:
                             bigTableKeyColumns: 0:string
-                            bigTableRetainColumnNums: [3, 4]
-                            bigTableValueColumns: 3:string, 4:string
+                            bigTableRetainColumnNums: [4, 5]
+                            bigTableValueColumns: 4:string, 5:string
                             className: VectorMapJoinOuterStringOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                            projectedOutput: 3:string, 4:string
+                            projectedOutput: 4:string, 5:string
                             hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col1, _col2
                         input vertices:
@@ -1602,13 +1602,13 @@ STAGE PLANS:
                           Select Vectorization:
                               className: VectorSelectOperator
                               native: true
-                              projectedOutputColumnNums: [5]
-                              selectExpressions: VectorUDFAdaptor(hash(_col1,_col2)) -> 5:int
+                              projectedOutputColumnNums: [6]
+                              selectExpressions: VectorUDFAdaptor(hash(_col1,_col2)) -> 6:int
                           Statistics: Num rows: 1251 Data size: 222678 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: sum(_col0)
                             Group By Vectorization:
-                                aggregators: VectorUDAFSumLong(col 5:int) -> bigint
+                                aggregators: VectorUDAFSumLong(col 6:int) -> bigint
                                 className: VectorGroupByOperator
                                 groupByMode: HASH
                                 native: false
@@ -1653,7 +1653,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1849,7 +1849,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1878,9 +1878,9 @@ STAGE PLANS:
                             className: VectorMapJoinOuterStringOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                            outerSmallTableKeyMapping: 0 -> 3
-                            projectedOutput: 0:string, 3:string, 4:string
-                            smallTableValueMapping: 4:string
+                            outerSmallTableKeyMapping: 0 -> 4
+                            projectedOutput: 0:string, 4:string, 5:string
+                            smallTableValueMapping: 5:string
                             hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col0, _col1, _col2
                         input vertices:
@@ -1896,7 +1896,7 @@ STAGE PLANS:
                               keyColumns: 0:string
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              valueColumns: 3:string, 4:string
+                              valueColumns: 4:string, 5:string
                           Statistics: Num rows: 791 Data size: 209615 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: string), _col2 (type: string)
             Execution mode: vectorized, llap
@@ -1924,7 +1924,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1977,7 +1977,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: _col0
@@ -1998,8 +1998,8 @@ STAGE PLANS:
                           className: VectorMapJoinOuterStringOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                          projectedOutput: 3:string, 4:string
-                          smallTableValueMapping: 3:string, 4:string
+                          projectedOutput: 4:string, 5:string
+                          smallTableValueMapping: 4:string, 5:string
                           hashTableImplementationType: OPTIMIZED
                       outputColumnNames: _col1, _col2
                       input vertices:
@@ -2011,13 +2011,13 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [5]
-                            selectExpressions: VectorUDFAdaptor(hash(_col1,_col2)) -> 5:int
+                            projectedOutputColumnNums: [6]
+                            selectExpressions: VectorUDFAdaptor(hash(_col1,_col2)) -> 6:int
                         Statistics: Num rows: 1251 Data size: 222678 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: sum(_col0)
                           Group By Vectorization:
-                              aggregators: VectorUDAFSumLong(col 5:int) -> bigint
+                              aggregators: VectorUDAFSumLong(col 6:int) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
                               native: false
@@ -2151,7 +2151,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -2204,7 +2204,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -2277,7 +2277,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: _col0
@@ -2298,8 +2298,8 @@ STAGE PLANS:
                           className: VectorMapJoinOuterStringOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                          projectedOutput: 3:string, 4:string
-                          smallTableValueMapping: 3:string, 4:string
+                          projectedOutput: 4:string, 5:string
+                          smallTableValueMapping: 4:string, 5:string
                           hashTableImplementationType: OPTIMIZED
                       outputColumnNames: _col1, _col2
                       input vertices:
@@ -2311,13 +2311,13 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [5]
-                            selectExpressions: VectorUDFAdaptor(hash(_col1,_col2)) -> 5:int
+                            projectedOutputColumnNums: [6]
+                            selectExpressions: VectorUDFAdaptor(hash(_col1,_col2)) -> 6:int
                         Statistics: Num rows: 1251 Data size: 222678 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: sum(_col0)
                           Group By Vectorization:
-                              aggregators: VectorUDAFSumLong(col 5:int) -> bigint
+                              aggregators: VectorUDAFSumLong(col 6:int) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
                               native: false
@@ -2452,7 +2452,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -2525,7 +2525,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: _col0
@@ -2713,7 +2713,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: _col0
@@ -2768,7 +2768,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
@@ -2953,7 +2953,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: _col0
@@ -3023,7 +3023,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
@@ -3231,7 +3231,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: _col0
@@ -3253,9 +3253,9 @@ STAGE PLANS:
                           className: VectorMapJoinOuterStringOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                          outerSmallTableKeyMapping: 0 -> 3
-                          projectedOutput: 0:string, 3:string, 4:string
-                          smallTableValueMapping: 4:string
+                          outerSmallTableKeyMapping: 0 -> 4
+                          projectedOutput: 0:string, 4:string, 5:string
+                          smallTableValueMapping: 5:string
                           hashTableImplementationType: OPTIMIZED
                       outputColumnNames: _col0, _col1, _col2
                       input vertices:
@@ -3271,7 +3271,7 @@ STAGE PLANS:
                             keyColumns: 0:string
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumns: 3:string, 4:string
+                            valueColumns: 4:string, 5:string
                         Statistics: Num rows: 791 Data size: 209615 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string), _col2 (type: string)
             Execution mode: vectorized, llap
@@ -3298,7 +3298,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -3489,7 +3489,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -3518,9 +3518,9 @@ STAGE PLANS:
                             className: VectorMapJoinOuterStringOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                            outerSmallTableKeyMapping: 0 -> 3
-                            projectedOutput: 0:string, 3:string, 4:string
-                            smallTableValueMapping: 4:string
+                            outerSmallTableKeyMapping: 0 -> 4
+                            projectedOutput: 0:string, 4:string, 5:string
+                            smallTableValueMapping: 5:string
                             hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col0, _col1, _col2
                         input vertices:
@@ -3536,7 +3536,7 @@ STAGE PLANS:
                               keyColumns: 0:string
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                              valueColumns: 3:string, 4:string
+                              valueColumns: 4:string, 5:string
                           Statistics: Num rows: 791 Data size: 209615 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: string), _col2 (type: string)
             Execution mode: vectorized, llap
@@ -3564,7 +3564,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -3617,7 +3617,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: string)
                     outputColumnNames: _col0
@@ -3638,8 +3638,8 @@ STAGE PLANS:
                           className: VectorMapJoinOuterStringOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                          projectedOutput: 3:string, 4:string
-                          smallTableValueMapping: 3:string, 4:string
+                          projectedOutput: 4:string, 5:string
+                          smallTableValueMapping: 4:string, 5:string
                           hashTableImplementationType: OPTIMIZED
                       outputColumnNames: _col1, _col2
                       input vertices:
@@ -3651,13 +3651,13 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [5]
-                            selectExpressions: VectorUDFAdaptor(hash(_col1,_col2)) -> 5:int
+                            projectedOutputColumnNums: [6]
+                            selectExpressions: VectorUDFAdaptor(hash(_col1,_col2)) -> 6:int
                         Statistics: Num rows: 1251 Data size: 222678 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: sum(_col0)
                           Group By Vectorization:
-                              aggregators: VectorUDAFSumLong(col 5:int) -> bigint
+                              aggregators: VectorUDAFSumLong(col 6:int) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
                               native: false
@@ -3790,7 +3790,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -3860,7 +3860,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
@@ -3882,8 +3882,8 @@ STAGE PLANS:
                           className: VectorMapJoinOuterStringOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                          outerSmallTableKeyMapping: 0 -> 3
-                          projectedOutput: 3:string, 0:string, 1:string
+                          outerSmallTableKeyMapping: 0 -> 4
+                          projectedOutput: 4:string, 0:string, 1:string
                           hashTableImplementationType: OPTIMIZED
                       outputColumnNames: _col0, _col1, _col2
                       input vertices:
@@ -3896,7 +3896,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkStringOperator
-                            keyColumns: 3:string
+                            keyColumns: 4:string
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: 0:string, 1:string

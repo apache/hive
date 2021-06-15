@@ -91,7 +91,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 1522994 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 13:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -105,13 +105,13 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [3, 10, 6, 5, 13, 16, 17]
-                          selectExpressions: CastLongToDouble(col 3:bigint) -> 13:double, DoubleColMultiplyDoubleColumn(col 14:double, col 15:double)(children: CastLongToDouble(col 3:bigint) -> 14:double, CastLongToDouble(col 3:bigint) -> 15:double) -> 16:double, DoubleColMultiplyDoubleColumn(col 5:double, col 5:double) -> 17:double
+                          projectedOutputColumnNums: [3, 10, 6, 5, 14, 17, 18]
+                          selectExpressions: CastLongToDouble(col 3:bigint) -> 14:double, DoubleColMultiplyDoubleColumn(col 15:double, col 16:double)(children: CastLongToDouble(col 3:bigint) -> 15:double, CastLongToDouble(col 3:bigint) -> 16:double) -> 17:double, DoubleColMultiplyDoubleColumn(col 5:double, col 5:double) -> 18:double
                       Statistics: Num rows: 1903 Data size: 236052 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count(_col0), sum(_col5), sum(_col4), sum(_col3), count(_col3), sum(_col0), sum(_col6)
                         Group By Vectorization:
-                            aggregators: VectorUDAFCount(col 3:bigint) -> bigint, VectorUDAFSumDouble(col 16:double) -> double, VectorUDAFSumDouble(col 13:double) -> double, VectorUDAFSumDouble(col 5:double) -> double, VectorUDAFCount(col 5:double) -> bigint, VectorUDAFSumLong(col 3:bigint) -> bigint, VectorUDAFSumDouble(col 17:double) -> double
+                            aggregators: VectorUDAFCount(col 3:bigint) -> bigint, VectorUDAFSumDouble(col 17:double) -> double, VectorUDAFSumDouble(col 14:double) -> double, VectorUDAFSumDouble(col 5:double) -> double, VectorUDAFCount(col 5:double) -> bigint, VectorUDAFSumLong(col 3:bigint) -> bigint, VectorUDAFSumDouble(col 18:double) -> double
                             className: VectorGroupByOperator
                             groupByMode: HASH
                             keyExpressions: col 5:double, col 3:bigint, col 6:string, col 10:boolean

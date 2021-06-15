@@ -399,13 +399,13 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [12]
-                        selectExpressions: VectorUDFAdaptor(hash(t,si,i,b,f,d,bo,s,ts,dec,bin)) -> 12:int
+                        projectedOutputColumnNums: [13]
+                        selectExpressions: VectorUDFAdaptor(hash(t,si,i,b,f,d,bo,s,ts,dec,bin)) -> 13:int
                     Statistics: Num rows: 1050 Data size: 358026 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col0)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 12:int) -> bigint
+                          aggregators: VectorUDAFSumLong(col 13:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           native: false

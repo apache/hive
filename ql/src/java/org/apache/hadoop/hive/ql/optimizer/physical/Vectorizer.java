@@ -295,7 +295,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   // The set of virtual columns that vectorized readers *MAY* support.
   public static final ImmutableSet<VirtualColumn> vectorizableVirtualColumns =
-      ImmutableSet.of(VirtualColumn.ROWID);
+      ImmutableSet.of(VirtualColumn.ROWID, VirtualColumn.ROWISDELETED);
 
   private HiveConf hiveConf;
 

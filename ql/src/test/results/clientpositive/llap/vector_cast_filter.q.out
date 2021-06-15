@@ -337,7 +337,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsFalse(col 13:boolean)(children: CastStringToBoolean(col 6) -> 13:boolean)
+                        predicateExpression: SelectColumnIsFalse(col 14:boolean)(children: CastStringToBoolean(col 6) -> 14:boolean)
                     predicate: (not UDFToBoolean(cstring1)) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 449620 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -511,7 +511,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsTrue(col 13:boolean)(children: CastLongToBooleanViaLongToLong(col 2:int) -> 13:boolean), SelectColumnIsTrue(col 14:boolean)(children: CastStringToBoolean(col 6) -> 14:boolean))
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsTrue(col 14:boolean)(children: CastLongToBooleanViaLongToLong(col 2:int) -> 14:boolean), SelectColumnIsTrue(col 15:boolean)(children: CastStringToBoolean(col 6) -> 15:boolean))
                     predicate: (UDFToBoolean(cint) and UDFToBoolean(cstring1)) (type: boolean)
                     Statistics: Num rows: 3072 Data size: 224812 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -685,7 +685,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: SelectColumnIsTrue(col 13:boolean)(children: CastDoubleToBooleanViaDoubleToLong(col 4:float) -> 13:boolean), SelectColumnIsTrue(col 14:boolean)(children: CastLongToBooleanViaLongToLong(col 2:int) -> 14:boolean))
+                        predicateExpression: FilterExprOrExpr(children: SelectColumnIsTrue(col 14:boolean)(children: CastDoubleToBooleanViaDoubleToLong(col 4:float) -> 14:boolean), SelectColumnIsTrue(col 15:boolean)(children: CastLongToBooleanViaLongToLong(col 2:int) -> 15:boolean))
                     predicate: (UDFToBoolean(cfloat) or UDFToBoolean(cint)) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 73392 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator

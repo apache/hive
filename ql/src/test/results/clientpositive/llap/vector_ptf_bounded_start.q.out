@@ -240,7 +240,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 11100 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_date (type: date)
                     null sort order: az
@@ -1513,7 +1513,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 11100 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_date (type: date)
                     null sort order: az
@@ -2070,7 +2070,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12420 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -2294,7 +2294,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12420 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_name (type: string)
                     null sort order: a
@@ -2541,7 +2541,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12420 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -2556,8 +2556,8 @@ STAGE PLANS:
                       Map-reduce partition columns: 'almond antique chartreuse lavender yellow' (type: string)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkStringOperator
-                          keyColumns: 9:string
-                          keyExpressions: ConstantVectorExpression(val almond antique chartreuse lavender yellow) -> 9:string
+                          keyColumns: 10:string
+                          keyExpressions: ConstantVectorExpression(val almond antique chartreuse lavender yellow) -> 10:string
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 0:string, 2:date, 3:timestamp, 5:double, 7:int
@@ -2793,7 +2793,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12420 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_timestamp (type: timestamp)
                     null sort order: az
@@ -3017,7 +3017,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12420 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_timestamp (type: timestamp)
                     null sort order: a
@@ -3243,7 +3243,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12420 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -3258,8 +3258,8 @@ STAGE PLANS:
                       Map-reduce partition columns: TIMESTAMP'1970-01-03 00:00:00' (type: timestamp)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkMultiKeyOperator
-                          keyColumns: 9:timestamp
-                          keyExpressions: ConstantVectorExpression(val 1970-01-03 00:00:00) -> 9:timestamp
+                          keyColumns: 10:timestamp
+                          keyExpressions: ConstantVectorExpression(val 1970-01-03 00:00:00) -> 10:timestamp
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 0:string, 1:string, 2:date, 5:double, 7:int
@@ -3518,7 +3518,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12420 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_date (type: date)
                     null sort order: az
@@ -3742,7 +3742,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12420 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_date (type: date)
                     null sort order: a
@@ -3968,7 +3968,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12420 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -3983,8 +3983,8 @@ STAGE PLANS:
                       Map-reduce partition columns: DATE'1970-01-03' (type: date)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkLongOperator
-                          keyColumns: 9:date
-                          keyExpressions: ConstantVectorExpression(val 2) -> 9:date
+                          keyColumns: 10:date
+                          keyExpressions: ConstantVectorExpression(val 2) -> 10:date
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 0:string, 1:string, 3:timestamp, 5:double, 7:int
@@ -4243,7 +4243,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12552 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_int (type: int)
                     null sort order: az
@@ -4467,7 +4467,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12552 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_int (type: int)
                     null sort order: a
@@ -4693,12 +4693,12 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12552 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterStringGroupColEqualStringScalar(col 9:string, val 115200)(children: CastDateToString(col 2:date) -> 9:string)
+                        predicateExpression: FilterStringGroupColEqualStringScalar(col 10:string, val 115200)(children: CastDateToString(col 2:date) -> 10:string)
                     predicate: (CAST( p_date AS STRING) = '115200') (type: boolean)
                     Statistics: Num rows: 20 Data size: 6328 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
@@ -4966,7 +4966,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 16676 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_decimal (type: decimal(10,4))
                     null sort order: az
@@ -5190,7 +5190,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 16676 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_decimal (type: decimal(10,4))
                     null sort order: a
@@ -5416,7 +5416,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 16676 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:rowindex:int, 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -5431,8 +5431,8 @@ STAGE PLANS:
                       Map-reduce partition columns: CAST( 1800.7 AS decimal(10,4)) (type: decimal(10,4))
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkMultiKeyOperator
-                          keyColumns: 9:decimal(10,4)
-                          keyExpressions: ConstantVectorExpression(val 1800.7) -> 9:decimal(10,4)
+                          keyColumns: 10:decimal(10,4)
+                          keyExpressions: ConstantVectorExpression(val 1800.7) -> 10:decimal(10,4)
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 0:string, 1:string, 2:date, 3:timestamp, 5:double, 7:int
