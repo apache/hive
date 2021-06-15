@@ -1344,23 +1344,23 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColumnInList(col 5:int, values [413, 43])(children: CastStringToLong(col 0:string) -> 5:int)
+                        predicateExpression: FilterLongColumnInList(col 6:int, values [413, 43])(children: CastStringToLong(col 0:string) -> 6:int)
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [4, 0, 6, 2]
-                          selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 6:string
+                          projectedOutputColumnNums: [4, 0, 7, 2]
+                          selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 7:string
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
                             keyColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            partitionColumns: 5:int
-                            valueColumns: 0:string, 6:string, 2:string
+                            partitionColumns: 6:int
+                            valueColumns: 0:string, 7:string, 2:string
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -1570,7 +1570,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
@@ -1584,7 +1584,7 @@ STAGE PLANS:
                             keyColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            partitionColumns: 5:int
+                            partitionColumns: 6:int
                             valueColumns: 2:string, 3:string
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
@@ -1758,7 +1758,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
@@ -1796,7 +1796,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
@@ -2230,24 +2230,24 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColumnInList(col 5:int, values [413, 43])(children: CastStringToLong(col 0:string) -> 5:int)
+                        predicateExpression: FilterLongColumnInList(col 6:int, values [413, 43])(children: CastStringToLong(col 0:string) -> 6:int)
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [4, 0, 6, 2]
-                          selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 6:string
+                          projectedOutputColumnNums: [4, 0, 7, 2]
+                          selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 7:string
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
                             keyColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            partitionColumns: 5:int
-                            valueColumns: 0:string, 6:string, 2:string, 7:string
-                            valueExpressions: ConstantVectorExpression(val 11) -> 7:string
+                            partitionColumns: 6:int
+                            valueColumns: 0:string, 7:string, 2:string, 8:string
+                            valueExpressions: ConstantVectorExpression(val 11) -> 8:string
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -2456,7 +2456,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
@@ -2470,7 +2470,7 @@ STAGE PLANS:
                             keyColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            partitionColumns: 5:int
+                            partitionColumns: 6:int
                             valueColumns: 2:string, 3:string
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
@@ -2645,7 +2645,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
@@ -2683,7 +2683,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:value:string, 2:ds:string, 3:hr:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true

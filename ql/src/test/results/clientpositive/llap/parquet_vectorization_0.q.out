@@ -1045,7 +1045,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterDecimal64ColNotEqualDecimal64Scalar(col 13:decimal(13,3)/DECIMAL_64, val 79553)(children: CastLongToDecimal64(col 2:int) -> 13:decimal(13,3)/DECIMAL_64), FilterDoubleColLessDoubleColumn(col 14:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 14:double), FilterExprAndExpr(children: FilterLongColGreaterEqualLongColumn(col 0:smallint, col 1:smallint)(children: col 0:tinyint), FilterLongColEqualLongScalar(col 11:boolean, val 1), FilterLongColEqualLongScalar(col 0:int, val 3569)(children: col 0:tinyint)), FilterStringColLikeStringScalar(col 7:string, pattern %b%))
+                        predicateExpression: FilterExprOrExpr(children: FilterDecimal64ColNotEqualDecimal64Scalar(col 14:decimal(13,3)/DECIMAL_64, val 79553)(children: CastLongToDecimal64(col 2:int) -> 14:decimal(13,3)/DECIMAL_64), FilterDoubleColLessDoubleColumn(col 15:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 15:double), FilterExprAndExpr(children: FilterLongColGreaterEqualLongColumn(col 0:smallint, col 1:smallint)(children: col 0:tinyint), FilterLongColEqualLongScalar(col 11:boolean, val 1), FilterLongColEqualLongScalar(col 0:int, val 3569)(children: col 0:tinyint)), FilterStringColLikeStringScalar(col 7:string, pattern %b%))
                     predicate: ((CAST( cint AS decimal(13,3)) <> 79.553) or (UDFToDouble(cbigint) < cdouble) or ((UDFToShort(ctinyint) >= csmallint) and (cboolean2 = 1) and (UDFToInteger(ctinyint) = 3569)) or (cstring2 like '%b%')) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 1210980 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1054,13 +1054,13 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [3, 4, 0, 15, 18]
-                          selectExpressions: CastLongToDouble(col 3:bigint) -> 15:double, DoubleColMultiplyDoubleColumn(col 16:double, col 17:double)(children: CastLongToDouble(col 3:bigint) -> 16:double, CastLongToDouble(col 3:bigint) -> 17:double) -> 18:double
+                          projectedOutputColumnNums: [3, 4, 0, 16, 19]
+                          selectExpressions: CastLongToDouble(col 3:bigint) -> 16:double, DoubleColMultiplyDoubleColumn(col 17:double, col 18:double)(children: CastLongToDouble(col 3:bigint) -> 17:double, CastLongToDouble(col 3:bigint) -> 18:double) -> 19:double
                       Statistics: Num rows: 12288 Data size: 1210980 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col0), count(_col0), sum(_col4), sum(_col3), count(), sum(_col1), min(_col2)
                         Group By Vectorization:
-                            aggregators: VectorUDAFSumLong(col 3:bigint) -> bigint, VectorUDAFCount(col 3:bigint) -> bigint, VectorUDAFSumDouble(col 18:double) -> double, VectorUDAFSumDouble(col 15:double) -> double, VectorUDAFCountStar(*) -> bigint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFMinLong(col 0:tinyint) -> tinyint
+                            aggregators: VectorUDAFSumLong(col 3:bigint) -> bigint, VectorUDAFCount(col 3:bigint) -> bigint, VectorUDAFSumDouble(col 19:double) -> double, VectorUDAFSumDouble(col 16:double) -> double, VectorUDAFCountStar(*) -> bigint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFMinLong(col 0:tinyint) -> tinyint
                             className: VectorGroupByOperator
                             groupByMode: HASH
                             native: false

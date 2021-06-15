@@ -200,7 +200,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:decimal0801_col:decimal(8,1)/DECIMAL_64, 1:int_col_1:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:decimal0801_col:decimal(8,1)/DECIMAL_64, 1:int_col_1:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -270,7 +270,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:int_col_0:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:int_col_0:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: int_col_0 (type: int)
                     outputColumnNames: int_col_0
@@ -414,7 +414,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:decimal0801_col:decimal(8,1)/DECIMAL_64, 1:int_col_1:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:decimal0801_col:decimal(8,1)/DECIMAL_64, 1:int_col_1:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -484,7 +484,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:int_col_0:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:int_col_0:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: int_col_0 (type: int)
                     outputColumnNames: int_col_0
@@ -641,7 +641,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:decimal0801_col:decimal(8,1)/DECIMAL_64, 1:int_col_1:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:decimal0801_col:decimal(8,1)/DECIMAL_64, 1:int_col_1:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -711,7 +711,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:int_col_0:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:int_col_0:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: int_col_0 (type: int)
                     outputColumnNames: int_col_0
@@ -909,7 +909,7 @@ STAGE PLANS:
                   Statistics: Num rows: 10 Data size: 5520 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t_id:string, 1:f_id:string, 2:type:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t_id:string, 1:f_id:string, 2:type:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator

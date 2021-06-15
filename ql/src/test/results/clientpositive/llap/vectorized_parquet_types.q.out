@@ -299,13 +299,13 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [1, 0, 2, 5, 3, 4, 10, 12]
-                        selectExpressions: DoubleColMultiplyDoubleColumn(col 4:double, col 4:double) -> 12:double
+                        projectedOutputColumnNums: [1, 0, 2, 5, 3, 4, 10, 13]
+                        selectExpressions: DoubleColMultiplyDoubleColumn(col 4:double, col 4:double) -> 13:double
                     Statistics: Num rows: 22 Data size: 4906 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: max(_col1), min(_col2), count(_col3), sum(_col4), count(_col4), sum(_col7), sum(_col5), count(_col5), max(_col6)
                       Group By Vectorization:
-                          aggregators: VectorUDAFMaxLong(col 0:int) -> int, VectorUDAFMinLong(col 2:smallint) -> smallint, VectorUDAFCount(col 5:string) -> bigint, VectorUDAFSumDouble(col 3:float) -> double, VectorUDAFCount(col 3:float) -> bigint, VectorUDAFSumDouble(col 12:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 4:double) -> bigint, VectorUDAFMaxDecimal(col 10:decimal(4,2)) -> decimal(4,2)
+                          aggregators: VectorUDAFMaxLong(col 0:int) -> int, VectorUDAFMinLong(col 2:smallint) -> smallint, VectorUDAFCount(col 5:string) -> bigint, VectorUDAFSumDouble(col 3:float) -> double, VectorUDAFCount(col 3:float) -> bigint, VectorUDAFSumDouble(col 13:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 4:double) -> bigint, VectorUDAFMaxDecimal(col 10:decimal(4,2)) -> decimal(4,2)
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 1:tinyint

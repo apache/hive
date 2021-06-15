@@ -48,7 +48,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 480 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:string, 1:name:string, 2:event_dt:date, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:string, 1:name:string, 2:event_dt:date, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: name (type: string), event_dt (type: date)
                     null sort order: az

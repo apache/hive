@@ -157,7 +157,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 99 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:bigint_col_18:bigint, 1:int_col_19:int, 2:string_col_7:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:bigint_col_18:bigint, 1:int_col_19:int, 2:string_col_7:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -186,8 +186,8 @@ STAGE PLANS:
                             className: VectorMapJoinOuterLongOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                            projectedOutput: 1:int, 4:int, 5:smallint, 6:int
-                            smallTableValueMapping: 4:int, 5:smallint, 6:int
+                            projectedOutput: 1:int, 5:int, 6:smallint, 7:int
+                            smallTableValueMapping: 5:int, 6:smallint, 7:int
                             hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col1, _col3, _col4, _col5
                         input vertices:
@@ -197,7 +197,7 @@ STAGE PLANS:
                           Filter Vectorization:
                               className: VectorFilterOperator
                               native: true
-                              predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 1:int, val 5), FilterLongColEqualLongScalar(col 6:int, val 10), FilterLongColEqualLongScalar(col 6:bigint, val 571)(children: col 6:int))
+                              predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 1:int, val 5), FilterLongColEqualLongScalar(col 7:int, val 10), FilterLongColEqualLongScalar(col 7:bigint, val 571)(children: col 7:int))
                           predicate: ((_col1 = 5) or (_col5 = 10) or (UDFToLong(_col5) = 571L)) (type: boolean)
                           Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
@@ -206,8 +206,8 @@ STAGE PLANS:
                             Select Vectorization:
                                 className: VectorSelectOperator
                                 native: true
-                                projectedOutputColumnNums: [4, 6, 8]
-                                selectExpressions: IfExprColumnCondExpr(col 7:boolean, col 4:intcol 5:smallint)(children: IsNotNull(col 4:int) -> 7:boolean, col 4:int, col 5:smallint) -> 8:int
+                                projectedOutputColumnNums: [5, 7, 9]
+                                selectExpressions: IfExprColumnCondExpr(col 8:boolean, col 5:intcol 6:smallint)(children: IsNotNull(col 5:int) -> 8:boolean, col 5:int, col 6:smallint) -> 9:int
                             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                             Map Join Operator
                               condition map:
@@ -216,13 +216,13 @@ STAGE PLANS:
                                 0 
                                 1 
                               Map Join Vectorization:
-                                  bigTableRetainColumnNums: [4, 6, 8]
-                                  bigTableValueColumns: 4:int, 6:int, 8:int
+                                  bigTableRetainColumnNums: [5, 7, 9]
+                                  bigTableValueColumns: 5:int, 7:int, 9:int
                                   className: VectorMapJoinInnerBigOnlyMultiKeyOperator
                                   native: true
                                   nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                                   nonOuterSmallTableKeyMapping: []
-                                  projectedOutput: 4:int, 6:int, 8:int
+                                  projectedOutput: 5:int, 7:int, 9:int
                                   hashTableImplementationType: OPTIMIZED
                               outputColumnNames: _col0, _col1, _col2
                               input vertices:
@@ -236,7 +236,7 @@ STAGE PLANS:
                                 top n: 100
                                 Top N Key Vectorization:
                                     className: VectorTopNKeyOperator
-                                    keyExpressions: col 4:int
+                                    keyExpressions: col 5:int
                                     native: true
                                 Select Operator
                                   expressions: _col0 (type: int), _col2 (type: int), _col1 (type: int)
@@ -244,7 +244,7 @@ STAGE PLANS:
                                   Select Vectorization:
                                       className: VectorSelectOperator
                                       native: true
-                                      projectedOutputColumnNums: [4, 8, 6]
+                                      projectedOutputColumnNums: [5, 9, 7]
                                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                                   Reduce Output Operator
                                     key expressions: _col0 (type: int)
@@ -252,10 +252,10 @@ STAGE PLANS:
                                     sort order: -
                                     Reduce Sink Vectorization:
                                         className: VectorReduceSinkObjectHashOperator
-                                        keyColumns: 4:int
+                                        keyColumns: 5:int
                                         native: true
                                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                                        valueColumns: 8:int, 6:int
+                                        valueColumns: 9:int, 7:int
                                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                                     value expressions: _col1 (type: int), _col2 (type: int)
             Execution mode: vectorized, llap
@@ -283,12 +283,12 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:smallint_col_22:smallint, 1:int_col_5:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:smallint_col_22:smallint, 1:int_col_5:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 4:bigint)(children: IfExprColumnCondExpr(col 3:boolean, col 1:intcol 0:smallint)(children: IsNotNull(col 1:int) -> 3:boolean, col 1:int, col 0:smallint) -> 4:int)
+                        predicateExpression: SelectColumnIsNotNull(col 5:bigint)(children: IfExprColumnCondExpr(col 4:boolean, col 1:intcol 0:smallint)(children: IsNotNull(col 1:int) -> 4:boolean, col 1:int, col 0:smallint) -> 5:int)
                     predicate: UDFToLong(CASE WHEN (int_col_5 is not null) THEN (int_col_5) ELSE (UDFToInteger(smallint_col_22)) END) is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -297,8 +297,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [1, 0, 6]
-                          selectExpressions: IfExprColumnCondExpr(col 5:boolean, col 1:intcol 0:smallint)(children: IsNotNull(col 1:int) -> 5:boolean, col 1:int, col 0:smallint) -> 6:int
+                          projectedOutputColumnNums: [1, 0, 7]
+                          selectExpressions: IfExprColumnCondExpr(col 6:boolean, col 1:intcol 0:smallint)(children: IsNotNull(col 1:int) -> 6:boolean, col 1:int, col 0:smallint) -> 7:int
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: UDFToLong(_col2) (type: bigint)
@@ -307,10 +307,10 @@ STAGE PLANS:
                         Map-reduce partition columns: UDFToLong(_col2) (type: bigint)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyColumns: 6:bigint
+                            keyColumns: 7:bigint
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumns: 1:int, 0:smallint, 6:int
+                            valueColumns: 1:int, 0:smallint, 7:int
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: smallint), _col2 (type: int)
             Execution mode: vectorized, llap
@@ -338,7 +338,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:bigint_col_3:bigint, 1:int_col_10:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:bigint_col_3:bigint, 1:int_col_10:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator

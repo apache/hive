@@ -91,7 +91,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 1:ss_item_sk:bigint, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 1:ss_item_sk:bigint, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -121,8 +121,8 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                             nonOuterSmallTableKeyMapping: []
-                            projectedOutput: 0:decimal(7,2), 3:char(50)
-                            smallTableValueMapping: 3:char(50)
+                            projectedOutput: 0:decimal(7,2), 4:char(50)
+                            smallTableValueMapping: 4:char(50)
                             hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col0, _col2
                         input vertices:
@@ -134,7 +134,7 @@ STAGE PLANS:
                               aggregators: VectorUDAFSumDecimal64(col 0:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
                               className: VectorGroupByOperator
                               groupByMode: HASH
-                              keyExpressions: ConvertDecimal64ToDecimal(col 0:decimal(7,2)/DECIMAL_64) -> 4:decimal(7,2), col 3:char(50)
+                              keyExpressions: ConvertDecimal64ToDecimal(col 0:decimal(7,2)/DECIMAL_64) -> 5:decimal(7,2), col 4:char(50)
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0]
@@ -181,7 +181,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 98 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:i_class:char(50), 1:i_item_sk:bigint, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:i_class:char(50), 1:i_item_sk:bigint, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator

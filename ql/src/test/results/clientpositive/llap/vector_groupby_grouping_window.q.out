@@ -61,7 +61,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:category:int, 1:live:int, 2:comments:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:category:int, 1:live:int, 2:comments:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: category (type: int), live (type: int), comments (type: int)
                     outputColumnNames: category, live, comments
@@ -76,7 +76,7 @@ STAGE PLANS:
                           aggregators: VectorUDAFMaxLong(col 1:int) -> int, VectorUDAFMaxLong(col 2:int) -> int
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 0:int, ConstantVectorExpression(val 0) -> 4:bigint
+                          keyExpressions: col 0:int, ConstantVectorExpression(val 0) -> 5:bigint
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0, 1]

@@ -85,13 +85,13 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [2, 5, 0, 13]
-                          selectExpressions: DoubleColMultiplyDoubleColumn(col 5:double, col 5:double) -> 13:double
+                          projectedOutputColumnNums: [2, 5, 0, 14]
+                          selectExpressions: DoubleColMultiplyDoubleColumn(col 5:double, col 5:double) -> 14:double
                       Statistics: Num rows: 12288 Data size: 256884 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col0), sum(_col3), sum(_col1), count(_col1), min(_col2)
                         Group By Vectorization:
-                            aggregators: VectorUDAFSumLong(col 2:int) -> bigint, VectorUDAFSumDouble(col 13:double) -> double, VectorUDAFSumDouble(col 5:double) -> double, VectorUDAFCount(col 5:double) -> bigint, VectorUDAFMinLong(col 0:tinyint) -> tinyint
+                            aggregators: VectorUDAFSumLong(col 2:int) -> bigint, VectorUDAFSumDouble(col 14:double) -> double, VectorUDAFSumDouble(col 5:double) -> double, VectorUDAFCount(col 5:double) -> bigint, VectorUDAFMinLong(col 0:tinyint) -> tinyint
                             className: VectorGroupByOperator
                             groupByMode: HASH
                             native: false

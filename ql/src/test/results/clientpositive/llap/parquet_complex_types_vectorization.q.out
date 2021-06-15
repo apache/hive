@@ -124,8 +124,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [2, 6, 7, 8, 4]
-                          selectExpressions: ListIndexColScalar(col 2:array<int>, col 0:int) -> 6:int, ListIndexColScalar(col 2:array<int>, col 1:int) -> 7:int, ListIndexColColumn(col 2:array<int>, col 4:int) -> 8:int
+                          projectedOutputColumnNums: [2, 7, 8, 9, 4]
+                          selectExpressions: ListIndexColScalar(col 2:array<int>, col 0:int) -> 7:int, ListIndexColScalar(col 2:array<int>, col 1:int) -> 8:int, ListIndexColColumn(col 2:array<int>, col 4:int) -> 9:int
                       Statistics: Num rows: 10 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -210,7 +210,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColGreaterLongScalar(col 6:int, val 1000)(children: ListIndexColScalar(col 2:array<int>, col 0:int) -> 6:int)
+                        predicateExpression: FilterLongColGreaterLongScalar(col 7:int, val 1000)(children: ListIndexColScalar(col 2:array<int>, col 0:int) -> 7:int)
                     predicate: (l1[0] > 1000) (type: boolean)
                     Statistics: Num rows: 341 Data size: 38920 Basic stats: COMPLETE Column stats: NONE
                     Top N Key Operator
@@ -221,7 +221,7 @@ STAGE PLANS:
                       top n: 10
                       Top N Key Vectorization:
                           className: VectorTopNKeyOperator
-                          keyExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 7:int
+                          keyExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 8:int
                           native: true
                       Select Operator
                         expressions: l1[1] (type: int), l1[0] (type: int)
@@ -229,16 +229,16 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [6, 8]
-                            selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 6:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 8:int
+                            projectedOutputColumnNums: [7, 9]
+                            selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 7:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 9:int
                         Statistics: Num rows: 341 Data size: 38920 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: sum(_col1)
                           Group By Vectorization:
-                              aggregators: VectorUDAFSumLong(col 8:int) -> bigint
+                              aggregators: VectorUDAFSumLong(col 9:int) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
-                              keyExpressions: col 6:int
+                              keyExpressions: col 7:int
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0]
@@ -432,8 +432,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [2, 6, 7, 8, 4]
-                          selectExpressions: ListIndexColScalar(col 2:array<int>, col 0:int) -> 6:int, ListIndexColScalar(col 2:array<int>, col 1:int) -> 7:int, ListIndexColColumn(col 2:array<int>, col 4:int) -> 8:int
+                          projectedOutputColumnNums: [2, 7, 8, 9, 4]
+                          selectExpressions: ListIndexColScalar(col 2:array<int>, col 0:int) -> 7:int, ListIndexColScalar(col 2:array<int>, col 1:int) -> 8:int, ListIndexColColumn(col 2:array<int>, col 4:int) -> 9:int
                       Statistics: Num rows: 10 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -518,7 +518,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColGreaterLongScalar(col 6:int, val 1000)(children: ListIndexColScalar(col 2:array<int>, col 0:int) -> 6:int)
+                        predicateExpression: FilterLongColGreaterLongScalar(col 7:int, val 1000)(children: ListIndexColScalar(col 2:array<int>, col 0:int) -> 7:int)
                     predicate: (l1[0] > 1000) (type: boolean)
                     Statistics: Num rows: 341 Data size: 38921 Basic stats: COMPLETE Column stats: NONE
                     Top N Key Operator
@@ -529,7 +529,7 @@ STAGE PLANS:
                       top n: 10
                       Top N Key Vectorization:
                           className: VectorTopNKeyOperator
-                          keyExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 7:int
+                          keyExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 8:int
                           native: true
                       Select Operator
                         expressions: l1[1] (type: int), l1[0] (type: int)
@@ -537,16 +537,16 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [6, 8]
-                            selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 6:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 8:int
+                            projectedOutputColumnNums: [7, 9]
+                            selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 7:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 9:int
                         Statistics: Num rows: 341 Data size: 38921 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: sum(_col1)
                           Group By Vectorization:
-                              aggregators: VectorUDAFSumLong(col 8:int) -> bigint
+                              aggregators: VectorUDAFSumLong(col 9:int) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
-                              keyExpressions: col 6:int
+                              keyExpressions: col 7:int
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0]
@@ -740,8 +740,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [2, 6, 7, 8, 4]
-                          selectExpressions: ListIndexColScalar(col 2:array<int>, col 0:int) -> 6:int, ListIndexColScalar(col 2:array<int>, col 1:int) -> 7:int, ListIndexColColumn(col 2:array<int>, col 4:int) -> 8:int
+                          projectedOutputColumnNums: [2, 7, 8, 9, 4]
+                          selectExpressions: ListIndexColScalar(col 2:array<int>, col 0:int) -> 7:int, ListIndexColScalar(col 2:array<int>, col 1:int) -> 8:int, ListIndexColColumn(col 2:array<int>, col 4:int) -> 9:int
                       Statistics: Num rows: 10 Data size: 1170 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -826,7 +826,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColGreaterLongScalar(col 6:int, val 1000)(children: ListIndexColScalar(col 2:array<int>, col 0:int) -> 6:int)
+                        predicateExpression: FilterLongColGreaterLongScalar(col 7:int, val 1000)(children: ListIndexColScalar(col 2:array<int>, col 0:int) -> 7:int)
                     predicate: (l1[0] > 1000) (type: boolean)
                     Statistics: Num rows: 341 Data size: 38923 Basic stats: COMPLETE Column stats: NONE
                     Top N Key Operator
@@ -837,7 +837,7 @@ STAGE PLANS:
                       top n: 10
                       Top N Key Vectorization:
                           className: VectorTopNKeyOperator
-                          keyExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 7:int
+                          keyExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 8:int
                           native: true
                       Select Operator
                         expressions: l1[1] (type: int), l1[0] (type: int)
@@ -845,16 +845,16 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [6, 8]
-                            selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 6:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 8:int
+                            projectedOutputColumnNums: [7, 9]
+                            selectExpressions: ListIndexColScalar(col 2:array<int>, col 1:int) -> 7:int, ListIndexColScalar(col 2:array<int>, col 0:int) -> 9:int
                         Statistics: Num rows: 341 Data size: 38923 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: sum(_col1)
                           Group By Vectorization:
-                              aggregators: VectorUDAFSumLong(col 8:int) -> bigint
+                              aggregators: VectorUDAFSumLong(col 9:int) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
-                              keyExpressions: col 6:int
+                              keyExpressions: col 7:int
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0]

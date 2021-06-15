@@ -553,7 +553,7 @@ STAGE PLANS:
                           Select Vectorization:
                               className: VectorSelectOperator
                               native: true
-                              projectedOutputColumnNums: [0, 1, 3, 1]
+                              projectedOutputColumnNums: [0, 1, 4, 1]
                           Statistics: Num rows: 3 Data size: 549 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             key expressions: _col0 (type: int)

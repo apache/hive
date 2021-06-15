@@ -65,7 +65,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: a (type: string), b (type: string)
                     outputColumnNames: a, b
@@ -265,7 +265,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: a (type: string), b (type: string)
                     outputColumnNames: a, b
@@ -492,7 +492,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: a (type: string), b (type: string)
                     outputColumnNames: a, b

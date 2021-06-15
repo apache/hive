@@ -104,7 +104,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 185 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ssn:int, 1:name:string, 2:city:string, 3:email:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ssn:int, 1:name:string, 2:city:string, 3:email:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -185,7 +185,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ssn:int, 1:name:string, 2:city:string, 3:email:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ssn:int, 1:name:string, 2:city:string, 3:email:string, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -203,7 +203,7 @@ STAGE PLANS:
                         Group By Vectorization:
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: ConstantVectorExpression(val 1) -> 5:boolean
+                            keyExpressions: ConstantVectorExpression(val 1) -> 6:boolean
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: []
