@@ -21,5 +21,5 @@ PREHOOK: type: SHOWDATACONNECTORS
 POSTHOOK: query: SHOW CONNECTORS
 POSTHOOK: type: SHOWDATACONNECTORS
 mysql_test
-FAILED: ParseException line 4:33 missing USING at 'location' near 'location'
+FAILED: ParseException line 4:33 missing USING at 'managedlocation' near 'managedlocation'
 #### A masked pattern was here ####

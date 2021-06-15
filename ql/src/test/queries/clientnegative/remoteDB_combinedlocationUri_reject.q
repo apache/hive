@@ -9,4 +9,4 @@ WITH DCPROPERTIES (
 SHOW CONNECTORS;
 
 -- reject location and managedlocation config in remote database
-create REMOTE database mysql_rej location '/tmp/rej1.db' using mysql_test with DBPROPERTIES("connector.remoteDbName"="hive1");
+create REMOTE database mysql_rej location '/tmp/rej1.db' managedlocation '/tmp/rej2.db' using mysql_test with DBPROPERTIES("connector.remoteDbName"="hive1");

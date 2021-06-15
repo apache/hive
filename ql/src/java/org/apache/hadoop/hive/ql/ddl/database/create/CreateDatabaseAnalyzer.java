@@ -78,17 +78,6 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
         ASTNode nextNode = (ASTNode) root.getChild(i);
         connectorName = ((ASTNode)nextNode).getChild(0).getText();
         outputs.add(toWriteEntity(connectorName));
-
-        // HIVE-2436: Reject location and managed locations in DDL for REMOTE databases.
-        if (locationUri != null || managedLocationUri != null ) {
-          if (locationUri == null) {
-            outputs.remove(toWriteEntity(locationUri));
-          } else {
-            outputs.remove(toWriteEntity(managedLocationUri));
-          }
-          throw new SemanticException("REMOTE database does not support location nor managedlocation");
-        }
-
         break;
       default:
         throw new SemanticException("Unrecognized token in CREATE DATABASE statement");
