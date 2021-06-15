@@ -58,7 +58,7 @@ public class OrcProbeLongHashSet extends OrcProbeHashTable {
 
   @Override
   public void filterColumnVector(ColumnVector cv, MutableFilterContext cntx, int batchSize) {
-    int[] selected = null;
+    int[] selected = cntx.updateSelected(batchSize);
     int newSize = 0;
     boolean selectedInUse = false;
     LongColumnVector probeCol = (LongColumnVector) cv;
@@ -81,7 +81,6 @@ public class OrcProbeLongHashSet extends OrcProbeHashTable {
         }
       } else {
         // Non-repeating values case
-        selected = cntx.updateSelected(batchSize);
         // We optimize performance by only looking up the first key in a series of equal keys.
         boolean haveSaveKey = false;
         boolean saveKeyMatch = false;
@@ -107,12 +106,12 @@ public class OrcProbeLongHashSet extends OrcProbeHashTable {
             }
           }
         }
-        selectedInUse = true;
+        selectedInUse = newSize != batchSize;
       }
       cntx.setFilterContext(selectedInUse, selected, newSize);
-      LlapIoImpl.LOG.debug("ProbeDecode Long Matched: {} selectedInUse {} batchSize {}", newSize, selectedInUse, batchSize);
+      LlapIoImpl.LOG.debug("ProbeDecode LongSet Matched: {} selectedInUse {} batchSize {}", newSize, selectedInUse, batchSize);
     } catch (IOException e) {
-      LlapIoImpl.LOG.error("ProbeDecode MultiKey Filter failed: {}", e);
+      LlapIoImpl.LOG.error("ProbeDecode LongSet Filter failed: {}", e);
       e.printStackTrace();
     }
   }
