@@ -177,7 +177,7 @@ STAGE PLANS:
                       Statistics: Num rows: 142560596394 Data size: 87389645589522 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int), _col3 (type: string), _col4 (type: char(50)), _col5 (type: char(50)), _col7 (type: char(50))
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: string), VALUE._col4 (type: char(50)), VALUE._col5 (type: char(50)), KEY.reducesinkkey0 (type: char(50)), VALUE._col6 (type: char(50)), KEY.reducesinkkey1 (type: decimal(28,2))
@@ -201,7 +201,7 @@ STAGE PLANS:
                               arguments: _col8
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 142560596394 Data size: 87389645589522 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator

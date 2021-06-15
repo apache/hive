@@ -153,7 +153,7 @@ STAGE PLANS:
                                 arguments: _col2
                                 name: avg
                                 window function: GenericUDAFAverageEvaluatorDecimal
-                                window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                                window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                     Statistics: Num rows: 108 Data size: 12528 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: avg_window_0 (type: decimal(21,6)), _col0 (type: int), _col2 (type: decimal(17,2))

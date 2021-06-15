@@ -168,7 +168,7 @@ STAGE PLANS:
                   Statistics: Num rows: 39600 Data size: 22849200 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: char(50)), _col3 (type: int), _col6 (type: decimal(17,2))
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: char(50)), VALUE._col0 (type: char(50)), KEY.reducesinkkey0 (type: char(50)), VALUE._col1 (type: int), KEY.reducesinkkey2 (type: varchar(50)), KEY.reducesinkkey3 (type: varchar(50)), VALUE._col2 (type: decimal(17,2))
@@ -192,7 +192,7 @@ STAGE PLANS:
                               arguments: _col6
                               name: avg
                               window function: GenericUDAFAverageEvaluatorDecimal
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 39600 Data size: 22849200 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: avg_window_0 (type: decimal(21,6)), _col0 (type: char(50)), _col1 (type: char(50)), _col2 (type: char(50)), _col3 (type: int), _col4 (type: varchar(50)), _col5 (type: varchar(50)), _col6 (type: decimal(17,2))

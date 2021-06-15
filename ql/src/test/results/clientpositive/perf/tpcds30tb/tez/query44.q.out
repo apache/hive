@@ -147,7 +147,7 @@ STAGE PLANS:
                             Statistics: Num rows: 154937 Data size: 35945384 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: bigint)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: bigint), KEY.reducesinkkey1 (type: decimal(11,6))
@@ -171,7 +171,7 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 154937 Data size: 18592440 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
@@ -245,7 +245,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: bigint), KEY.reducesinkkey1 (type: decimal(11,6))
@@ -269,7 +269,7 @@ STAGE PLANS:
                               arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 154937 Data size: 18592440 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
