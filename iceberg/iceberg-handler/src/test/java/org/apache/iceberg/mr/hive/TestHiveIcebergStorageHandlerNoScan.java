@@ -860,6 +860,46 @@ public class TestHiveIcebergStorageHandlerNoScan {
     verifyAlterTableAddColumnsTests();
   }
 
+  @Test
+  public void testAlterTableReplaceColumns() throws TException, InterruptedException {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    Schema schema = new Schema(
+        optional(1, "customer_id", Types.IntegerType.get()),
+        optional(2, "first_name", Types.StringType.get(), "This is first name"),
+        optional(3, "last_name", Types.StringType.get(), "This is last name"),
+        optional(4, "address",  Types.StructType.of(
+            optional(5, "city", Types.StringType.get()),
+            optional(6, "street", Types.StringType.get())), null)
+    );
+    testTables.createTable(shell, identifier.name(), schema, SPEC, FileFormat.PARQUET, ImmutableList.of());
+
+    shell.executeStatement("ALTER TABLE default.customers REPLACE COLUMNS " +
+        "(customer_id bigint, last_name string COMMENT 'This is last name', " +
+        "address struct<city:string,street:string> COMMENT 'Adding some comment', " +
+        "new_col string COMMENT 'This is a new column added')");
+
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "customers");
+
+    List<FieldSchema> icebergSchema = HiveSchemaUtil.convert(icebergTable.schema());
+    List<FieldSchema> hmsSchema = hmsTable.getSd().getCols();
+
+    List<FieldSchema> expectedSchema = Lists.newArrayList(
+        // customer_id: type promotion (int -> bigint), no change in comment
+        new FieldSchema("customer_id", "bigint", null),
+        // first_name column is dropped
+        // last_name: no changes
+        new FieldSchema("last_name", "string", "This is last name"),
+        // address: comment added, no change in type
+        new FieldSchema("address", "struct<city:string,street:string>", "Adding some comment"),
+        // new_col: brand new column
+        new FieldSchema("new_col", "string", "This is a new column added"));
+
+    Assert.assertEquals(expectedSchema, icebergSchema);
+    Assert.assertEquals(expectedSchema, hmsSchema);
+  }
+
   /**
    * Checks that the new schema has newintcol and newstring col columns on both HMS and Iceberg sides
    * @throws Exception - any test error

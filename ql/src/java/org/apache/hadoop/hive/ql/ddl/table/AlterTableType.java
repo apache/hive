@@ -77,7 +77,7 @@ public enum AlterTableType {
   }
 
   public static final List<AlterTableType> NON_NATIVE_TABLE_ALLOWED =
-      ImmutableList.of(ADDPROPS, DROPPROPS, ADDCOLS);
+      ImmutableList.of(ADDPROPS, DROPPROPS, ADDCOLS, REPLACE_COLUMNS);
 
   public static final Set<AlterTableType> SUPPORT_PARTIAL_PARTITION_SPEC =
       ImmutableSet.of(ADDCOLS, REPLACE_COLUMNS, RENAME_COLUMN, ADDPROPS, DROPPROPS, SET_SERDE,

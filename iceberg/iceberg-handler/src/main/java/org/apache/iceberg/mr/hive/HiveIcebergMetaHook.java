@@ -76,6 +76,7 @@ import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.types.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +93,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
       // table commands since by then the HMS info can be stale + Iceberg does not store its partition spec in the props
       InputFormatConfig.PARTITION_SPEC);
   private static final EnumSet<AlterTableType> SUPPORTED_ALTER_OPS = EnumSet.of(
-      AlterTableType.ADDCOLS, AlterTableType.ADDPROPS, AlterTableType.DROPPROPS);
+      AlterTableType.ADDCOLS, AlterTableType.REPLACE_COLUMNS, AlterTableType.ADDPROPS, AlterTableType.DROPPROPS);
 
   private final Configuration conf;
   private Table icebergTable = null;
@@ -222,6 +223,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   }
 
   @Override
+  @SuppressWarnings("checkstyle:CyclomaticComplexity")
   public void preAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws MetaException {
     setupAlterOperationType(hmsTable, context);
@@ -262,16 +264,51 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
 
     if (AlterTableType.ADDCOLS.equals(currentAlterTableOp)) {
       Collection<FieldSchema> addedCols =
-          HiveSchemaUtil.schemaDifference(hmsTable.getSd().getCols(), HiveSchemaUtil.convert(icebergTable.schema()));
+          HiveSchemaUtil.newColumns(hmsTable.getSd().getCols(), HiveSchemaUtil.convert(icebergTable.schema()));
+      if (!addedCols.isEmpty()) {
+        updateSchema = icebergTable.updateSchema();
+      }
       for (FieldSchema addedCol : addedCols) {
-        if (updateSchema == null) {
-          updateSchema = icebergTable.updateSchema();
-        }
         updateSchema.addColumn(
             addedCol.getName(),
             HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType())),
             addedCol.getComment()
         );
+      }
+    } else if (AlterTableType.REPLACE_COLUMNS.equals(currentAlterTableOp)) {
+      List<FieldSchema> icebergSchema = HiveSchemaUtil.convert(icebergTable.schema());
+      List<FieldSchema> hmsSchema = hmsTable.getSd().getCols();
+      Collection<FieldSchema> droppedCols = HiveSchemaUtil.newColumns(icebergSchema, hmsSchema);
+      Collection<FieldSchema> addedCols = HiveSchemaUtil.newColumns(hmsSchema, icebergSchema);
+      Collection<FieldSchema> typeUpdated = HiveSchemaUtil.updatedTypeColumns(hmsSchema, icebergSchema);
+      Collection<FieldSchema> commentUpdated = HiveSchemaUtil.updatedCommentColumns(hmsSchema, icebergSchema);
+      if (!droppedCols.isEmpty() || !addedCols.isEmpty() || !typeUpdated.isEmpty() || !commentUpdated.isEmpty()) {
+        updateSchema = icebergTable.updateSchema();
+      }
+
+      for (FieldSchema droppedCol : droppedCols) {
+        updateSchema.deleteColumn(droppedCol.getName());
+      }
+
+      for (FieldSchema addedCol : addedCols) {
+        updateSchema.addColumn(
+            addedCol.getName(),
+            HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType())),
+            addedCol.getComment()
+        );
+      }
+
+      for (FieldSchema updatedCol : typeUpdated) {
+        Type newType = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(updatedCol.getType()));
+        if (!(newType instanceof Type.PrimitiveType)) {
+          throw new MetaException(String.format("Cannot promote type of column: '%s' to a non-primitive type: %s.",
+              updatedCol.getName(), newType));
+        }
+        updateSchema.updateColumn(updatedCol.getName(), (Type.PrimitiveType) newType, updatedCol.getComment());
+      }
+
+      for (FieldSchema updatedCol : commentUpdated) {
+        updateSchema.updateColumnDoc(updatedCol.getName(), updatedCol.getComment());
       }
     }
   }
@@ -291,7 +328,8 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
       HiveTableUtil.importFiles(preAlterTableProperties.tableLocation, preAlterTableProperties.format,
           partitionSpecProxy, preAlterTableProperties.partitionKeys, catalogProperties, conf);
     } else {
-      if (AlterTableType.ADDCOLS.equals(currentAlterTableOp) && updateSchema != null) {
+      if ((AlterTableType.ADDCOLS.equals(currentAlterTableOp) ||
+          AlterTableType.REPLACE_COLUMNS.equals(currentAlterTableOp)) && updateSchema != null) {
         updateSchema.commit();
       } else if (AlterTableType.ADDPROPS.equals(currentAlterTableOp) ||
           AlterTableType.DROPPROPS.equals(currentAlterTableOp)) {
