@@ -233,7 +233,7 @@ const char* _kStageTypeNames[] = {
   "ATLAS_DUMP",
   "ATLAS_LOAD"
 };
-const std::map<int, const char*> _StageType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(23, _kStageTypeValues, _kStageTypeNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+const std::map<int, const char*> _StageType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(24, _kStageTypeValues, _kStageTypeNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
 
 std::ostream& operator<<(std::ostream& out, const StageType::type& val) {
   std::map<int, const char*>::const_iterator it = _StageType_VALUES_TO_NAMES.find(val);
