@@ -1248,7 +1248,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
         pst.setLong(1, nextNLId);
         pst.setLong(2, nextEventId);
-        pst.setLong(3, now());
+        pst.setLong(3, event.getEventTime());
         pst.setString(4, event.getEventType());
         pst.setString(5, event.getMessage());
         pst.setString(6, event.getMessageFormat());
