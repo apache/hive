@@ -888,7 +888,6 @@ udftolong
 udftoshort
 unbase64
 unhex
-
 upper
 uuid
 validate_acid_sort_order
