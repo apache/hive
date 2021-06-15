@@ -1,4 +1,5 @@
 -- SORT_QUERY_RESULTS
+--! qt:disabled:disabled because of flakyness, should be fixed in CDPD-27098
 
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
