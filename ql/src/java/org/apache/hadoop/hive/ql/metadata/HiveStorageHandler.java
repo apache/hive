@@ -247,4 +247,20 @@ public interface HiveStorageHandler extends Configurable {
   default boolean alwaysUnpartitioned() {
     return false;
   }
+
+  /**
+   * Check if the underlying storage handler implementation support partition transformations.
+   * @return true if the storage handler can support it
+   */
+  default boolean supportsPartitionTransform() {
+    return false;
+  }
+
+  /**
+   * Get file format property key, if the file format is configured through a table property.
+   * @return table property key, can be null
+   */
+  default String getFileFormatPropertyKey() {
+    return null;
+  }
 }

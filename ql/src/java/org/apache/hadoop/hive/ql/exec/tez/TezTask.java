@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hive.common.util.Ref;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
 import java.io.IOException;
@@ -102,11 +103,9 @@ import com.google.common.annotations.VisibleForTesting;
 @SuppressWarnings({"serial"})
 public class TezTask extends Task<TezWork> {
 
-  public static final String HIVE_TEZ_COMMIT_JOB_ID_PREFIX = "hive.tez.commit.job.id.";
-  public static final String HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX = "hive.tez.commit.task.count.";
-
   private static final String CLASS_NAME = TezTask.class.getName();
   private static final String JOB_ID_TEMPLATE = "job_%s%d_%s";
+  private static final String ICEBERG_SERIALIZED_TABLE_PREFIX = "iceberg.mr.serialized.table.";
   private static final String ICEBERG_TABLE_LOCATION = "iceberg.mr.table.location";
   private static transient Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
@@ -357,7 +356,6 @@ public class TezTask extends Task<TezWork> {
   }
 
   private void collectCommitInformation(TezWork work) throws IOException, TezException {
-    HiveConf sessionConf = SessionState.get().getConf();
     for (BaseWork w : work.getAllWork()) {
       JobConf jobConf = workToConf.get(w);
       Vertex vertex = workToVertex.get(w);
@@ -381,27 +379,24 @@ public class TezTask extends Task<TezWork> {
             if (child.isDirectory() && child.getPath().getName().contains(jobIdPrefix)) {
               // folder name pattern is queryID-jobID, we're removing the queryID part to get the jobID
               String jobIdStr = child.getPath().getName().substring(jobConf.get("hive.query.id").length() + 1);
-              // get all target tables this vertex wrote to
+
               List<String> tables = new ArrayList<>();
+              Map<String, String> icebergProperties = new HashMap<>();
               for (Map.Entry<String, String> entry : jobConf) {
-                if (entry.getKey().startsWith("iceberg.mr.serialized.table.")) {
-                  tables.add(entry.getKey().substring("iceberg.mr.serialized.table.".length()));
+                if (entry.getKey().startsWith(ICEBERG_SERIALIZED_TABLE_PREFIX)) {
+                  // get all target tables this vertex wrote to
+                  tables.add(entry.getKey().substring(ICEBERG_SERIALIZED_TABLE_PREFIX.length()));
+                } else if (entry.getKey().startsWith("iceberg.mr.")) {
+                  // find iceberg props in jobConf as they can be needed, but not available, during job commit
+                  icebergProperties.put(entry.getKey(), entry.getValue());
                 }
               }
-              // save information for each target table (jobID, task num, query state)
-              for (String table : tables) {
-                sessionConf.set(HIVE_TEZ_COMMIT_JOB_ID_PREFIX + table, jobIdStr);
-                sessionConf.setInt(HIVE_TEZ_COMMIT_TASK_COUNT_PREFIX + table,
-                    status.getProgress().getSucceededTaskCount());
-              }
+
+              // save information for each target table
+              tables.forEach(table -> SessionStateUtil.addCommitInfo(jobConf, table, jobIdStr,
+                  status.getProgress().getSucceededTaskCount(), icebergProperties));
             }
           }
-          // save iceberg mr props as they can be needed during job commit (e.g. serialized table)
-          jobConf.forEach(e -> {
-            if (e.getKey().startsWith("iceberg.mr.")) {
-              sessionConf.set(e.getKey(), e.getValue());
-            }
-          });
         } else {
           LOG.warn("Table location not found in config for base work: " + w.getName());
         }

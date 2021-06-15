@@ -65,20 +65,20 @@ STAGE PLANS:
                   Statistics: Num rows: 1000 Data size: 448000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(7,2)/DECIMAL_64, 2:ss_ext_discount_amt:decimal(7,2)/DECIMAL_64, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(7,2)/DECIMAL_64, 2:ss_ext_discount_amt:decimal(7,2)/DECIMAL_64, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: ((((ss_ext_list_price - ss_ext_wholesale_cost) - ss_ext_discount_amt) + ss_ext_sales_price) / 2.268767) (type: decimal(24,10))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [8]
-                        selectExpressions: DecimalColDivideDecimalScalar(col 9:decimal(10,2), val 2.268767)(children: ConvertDecimal64ToDecimal(col 7:decimal(10,2)/DECIMAL_64)(children: Decimal64ColAddDecimal64Column(col 6:decimal(9,2)/DECIMAL_64, col 3:decimal(7,2)/DECIMAL_64)(children: Decimal64ColSubtractDecimal64Column(col 5:decimal(8,2)/DECIMAL_64, col 2:decimal(7,2)/DECIMAL_64)(children: Decimal64ColSubtractDecimal64Column(col 0:decimal(7,2)/DECIMAL_64, col 1:decimal(7,2)/DECIMAL_64) -> 5:decimal(8,2)/DECIMAL_64) -> 6:decimal(9,2)/DECIMAL_64) -> 7:decimal(10,2)/DECIMAL_64) -> 9:decimal(10,2)) -> 8:decimal(24,10)
+                        projectedOutputColumnNums: [9]
+                        selectExpressions: DecimalColDivideDecimalScalar(col 10:decimal(10,2), val 2.268767)(children: ConvertDecimal64ToDecimal(col 8:decimal(10,2)/DECIMAL_64)(children: Decimal64ColAddDecimal64Column(col 7:decimal(9,2)/DECIMAL_64, col 3:decimal(7,2)/DECIMAL_64)(children: Decimal64ColSubtractDecimal64Column(col 6:decimal(8,2)/DECIMAL_64, col 2:decimal(7,2)/DECIMAL_64)(children: Decimal64ColSubtractDecimal64Column(col 0:decimal(7,2)/DECIMAL_64, col 1:decimal(7,2)/DECIMAL_64) -> 6:decimal(8,2)/DECIMAL_64) -> 7:decimal(9,2)/DECIMAL_64) -> 8:decimal(10,2)/DECIMAL_64) -> 10:decimal(10,2)) -> 9:decimal(24,10)
                     Statistics: Num rows: 1000 Data size: 448000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col0)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDecimal(col 8:decimal(24,10)) -> decimal(34,10)
+                          aggregators: VectorUDAFSumDecimal(col 9:decimal(24,10)) -> decimal(34,10)
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           native: false
@@ -200,20 +200,20 @@ STAGE PLANS:
                   Statistics: Num rows: 1000 Data size: 448000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(7,2)/DECIMAL_64, 2:ss_ext_discount_amt:decimal(7,2)/DECIMAL_64, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(7,2)/DECIMAL_64, 2:ss_ext_discount_amt:decimal(7,2)/DECIMAL_64, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: ((((ss_ext_list_price - ss_ext_wholesale_cost) - ss_ext_discount_amt) + ss_ext_sales_price) / 2.2) (type: decimal(15,6))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [8]
-                        selectExpressions: Decimal64ColDivideDecimal64Scalar(col 7:decimal(10,2)/DECIMAL_64, decimal64Val 220, decimalVal 2.2)(children: Decimal64ColAddDecimal64Column(col 6:decimal(9,2)/DECIMAL_64, col 3:decimal(7,2)/DECIMAL_64)(children: Decimal64ColSubtractDecimal64Column(col 5:decimal(8,2)/DECIMAL_64, col 2:decimal(7,2)/DECIMAL_64)(children: Decimal64ColSubtractDecimal64Column(col 0:decimal(7,2)/DECIMAL_64, col 1:decimal(7,2)/DECIMAL_64) -> 5:decimal(8,2)/DECIMAL_64) -> 6:decimal(9,2)/DECIMAL_64) -> 7:decimal(10,2)/DECIMAL_64) -> 8:decimal(15,6)/DECIMAL_64
+                        projectedOutputColumnNums: [9]
+                        selectExpressions: Decimal64ColDivideDecimal64Scalar(col 8:decimal(10,2)/DECIMAL_64, decimal64Val 220, decimalVal 2.2)(children: Decimal64ColAddDecimal64Column(col 7:decimal(9,2)/DECIMAL_64, col 3:decimal(7,2)/DECIMAL_64)(children: Decimal64ColSubtractDecimal64Column(col 6:decimal(8,2)/DECIMAL_64, col 2:decimal(7,2)/DECIMAL_64)(children: Decimal64ColSubtractDecimal64Column(col 0:decimal(7,2)/DECIMAL_64, col 1:decimal(7,2)/DECIMAL_64) -> 6:decimal(8,2)/DECIMAL_64) -> 7:decimal(9,2)/DECIMAL_64) -> 8:decimal(10,2)/DECIMAL_64) -> 9:decimal(15,6)/DECIMAL_64
                     Statistics: Num rows: 1000 Data size: 448000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col0)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDecimal64ToDecimal(col 8:decimal(15,6)/DECIMAL_64) -> decimal(25,6)
+                          aggregators: VectorUDAFSumDecimal64ToDecimal(col 9:decimal(15,6)/DECIMAL_64) -> decimal(25,6)
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           native: false

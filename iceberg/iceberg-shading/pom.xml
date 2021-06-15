@@ -108,10 +108,6 @@
                                             <pattern>com.fasterxml</pattern>
                                             <shadedPattern>${shade.relocation.package.prefix}.com.fasterxml</shadedPattern>
                                         </relocation>
-                                        <relocation>
-                                            <pattern>com.github.benmanes</pattern>
-                                            <shadedPattern>${shade.relocation.package.prefix}.com.github.benmanes</shadedPattern>
-                                        </relocation>
                                     </relocations>
                                     <artifactSet>
                                         <includes>

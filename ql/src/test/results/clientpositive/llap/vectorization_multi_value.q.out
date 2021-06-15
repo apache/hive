@@ -58,15 +58,15 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: if(true, map('a':'b'), null) (type: map<string,string>)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: IfExprCondExprNull(col 2:boolean, col 3:map<string,string>, null)(children: ConstantVectorExpression(val 1) -> 2:boolean, VectorUDFAdaptor(map('a':'b')) -> 3:map<string,string>) -> 4:map<string,string>
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: IfExprCondExprNull(col 3:boolean, col 4:map<string,string>, null)(children: ConstantVectorExpression(val 1) -> 3:boolean, VectorUDFAdaptor(map('a':'b')) -> 4:map<string,string>) -> 5:map<string,string>
                     Statistics: Num rows: 3 Data size: 326 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -140,15 +140,15 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: if(true, map('a':map('b':'c')), null) (type: map<string,map<string,string>>)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: IfExprCondExprNull(col 2:boolean, col 4:map<string,map<string,string>>, null)(children: ConstantVectorExpression(val 1) -> 2:boolean, VectorUDFAdaptor(map('a':map('b':'c')))(children: VectorUDFAdaptor(map('b':'c')) -> 3:map<string,string>) -> 4:map<string,map<string,string>>) -> 5:map<string,map<string,string>>
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: IfExprCondExprNull(col 3:boolean, col 5:map<string,map<string,string>>, null)(children: ConstantVectorExpression(val 1) -> 3:boolean, VectorUDFAdaptor(map('a':map('b':'c')))(children: VectorUDFAdaptor(map('b':'c')) -> 4:map<string,string>) -> 5:map<string,map<string,string>>) -> 6:map<string,map<string,string>>
                     Statistics: Num rows: 3 Data size: 241 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -222,15 +222,15 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: if(true, map('a':a), null) (type: map<string,string>)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: IfExprCondExprNull(col 2:boolean, col 3:map<string,string>, null)(children: ConstantVectorExpression(val 1) -> 2:boolean, VectorUDFAdaptor(map('a':a)) -> 3:map<string,string>) -> 4:map<string,string>
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: IfExprCondExprNull(col 3:boolean, col 4:map<string,string>, null)(children: ConstantVectorExpression(val 1) -> 3:boolean, VectorUDFAdaptor(map('a':a)) -> 4:map<string,string>) -> 5:map<string,string>
                     Statistics: Num rows: 3 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -304,15 +304,15 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: if(true, map('a':map('b':a)), null) (type: map<string,map<string,string>>)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: IfExprCondExprNull(col 2:boolean, col 4:map<string,map<string,string>>, null)(children: ConstantVectorExpression(val 1) -> 2:boolean, VectorUDFAdaptor(map('a':map('b':a)))(children: VectorUDFAdaptor(map('b':a)) -> 3:map<string,string>) -> 4:map<string,map<string,string>>) -> 5:map<string,map<string,string>>
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: IfExprCondExprNull(col 3:boolean, col 5:map<string,map<string,string>>, null)(children: ConstantVectorExpression(val 1) -> 3:boolean, VectorUDFAdaptor(map('a':map('b':a)))(children: VectorUDFAdaptor(map('b':a)) -> 4:map<string,string>) -> 5:map<string,map<string,string>>) -> 6:map<string,map<string,string>>
                     Statistics: Num rows: 3 Data size: 1656 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -386,15 +386,15 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: if(true, array('a','b'), null) (type: array<string>)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: IfExprCondExprNull(col 2:boolean, col 3:array<string>, null)(children: ConstantVectorExpression(val 1) -> 2:boolean, VectorUDFAdaptor(array('a','b')) -> 3:array<string>) -> 4:array<string>
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: IfExprCondExprNull(col 3:boolean, col 4:array<string>, null)(children: ConstantVectorExpression(val 1) -> 3:boolean, VectorUDFAdaptor(array('a','b')) -> 4:array<string>) -> 5:array<string>
                     Statistics: Num rows: 3 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -468,15 +468,15 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: if(true, array(array('a','b'),array('c','d')), null) (type: array<array<string>>)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [6]
-                        selectExpressions: IfExprCondExprNull(col 2:boolean, col 5:array<array<string>>, null)(children: ConstantVectorExpression(val 1) -> 2:boolean, VectorUDFAdaptor(array(array('a','b'),array('c','d')))(children: VectorUDFAdaptor(array('a','b')) -> 3:array<string>, VectorUDFAdaptor(array('c','d')) -> 4:array<string>) -> 5:array<array<string>>) -> 6:array<array<string>>
+                        projectedOutputColumnNums: [7]
+                        selectExpressions: IfExprCondExprNull(col 3:boolean, col 6:array<array<string>>, null)(children: ConstantVectorExpression(val 1) -> 3:boolean, VectorUDFAdaptor(array(array('a','b'),array('c','d')))(children: VectorUDFAdaptor(array('a','b')) -> 4:array<string>, VectorUDFAdaptor(array('c','d')) -> 5:array<string>) -> 6:array<array<string>>) -> 7:array<array<string>>
                     Statistics: Num rows: 3 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -550,15 +550,15 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: if(true, array('a',a), null) (type: array<string>)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: IfExprCondExprNull(col 2:boolean, col 3:array<string>, null)(children: ConstantVectorExpression(val 1) -> 2:boolean, VectorUDFAdaptor(array('a',a)) -> 3:array<string>) -> 4:array<string>
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: IfExprCondExprNull(col 3:boolean, col 4:array<string>, null)(children: ConstantVectorExpression(val 1) -> 3:boolean, VectorUDFAdaptor(array('a',a)) -> 4:array<string>) -> 5:array<string>
                     Statistics: Num rows: 3 Data size: 1920 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -632,15 +632,15 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: if(true, array(array('a',a),array('b','c')), null) (type: array<array<string>>)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [6]
-                        selectExpressions: IfExprCondExprNull(col 2:boolean, col 5:array<array<string>>, null)(children: ConstantVectorExpression(val 1) -> 2:boolean, VectorUDFAdaptor(array(array('a',a),array('b','c')))(children: VectorUDFAdaptor(array('a',a)) -> 3:array<string>, VectorUDFAdaptor(array('b','c')) -> 4:array<string>) -> 5:array<array<string>>) -> 6:array<array<string>>
+                        projectedOutputColumnNums: [7]
+                        selectExpressions: IfExprCondExprNull(col 3:boolean, col 6:array<array<string>>, null)(children: ConstantVectorExpression(val 1) -> 3:boolean, VectorUDFAdaptor(array(array('a',a),array('b','c')))(children: VectorUDFAdaptor(array('a',a)) -> 4:array<string>, VectorUDFAdaptor(array('b','c')) -> 5:array<string>) -> 6:array<array<string>>) -> 7:array<array<string>>
                     Statistics: Num rows: 3 Data size: 19280 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false

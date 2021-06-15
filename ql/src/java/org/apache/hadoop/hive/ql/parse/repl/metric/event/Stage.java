@@ -35,6 +35,7 @@ public class Stage {
   private Map<String, Metric> metrics = new HashMap<>();
   private String errorLogPath;
   private SnapshotUtils.ReplSnapshotCount replSnapshotCount = new SnapshotUtils.ReplSnapshotCount();
+  private String replStats;
 
   public Stage() {
 
@@ -56,6 +57,7 @@ public class Stage {
     }
     this.errorLogPath = stage.errorLogPath;
     this.replSnapshotCount = stage.replSnapshotCount;
+    this.replStats = stage.replStats;
   }
 
   public String getName() {
@@ -117,6 +119,15 @@ public class Stage {
 
   public SnapshotUtils.ReplSnapshotCount getReplSnapshotCount() {
     return replSnapshotCount;
+  }
+
+
+  public String getReplStats() {
+    return replStats;
+  }
+
+  public void setReplStats(String replStats) {
+    this.replStats = replStats;
   }
 
 }

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.log.state;
 
+import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -41,12 +42,8 @@ public class IncrementalLoadEvent extends ReplState {
 
   private long loadTimeMillis;
 
-  public IncrementalLoadEvent(String dbName,
-                              String eventId,
-                              String eventType,
-                              long eventSeqNo,
-                              long numEvents,
-                              long previousTimestamp) {
+  public IncrementalLoadEvent(String dbName, String eventId, String eventType, long eventSeqNo, long numEvents,
+      long previousTimestamp, ReplStatsTracker replStatsTracker) {
     this.dbName = dbName;
     this.eventId = eventId;
     this.eventType = eventType;
@@ -55,6 +52,7 @@ public class IncrementalLoadEvent extends ReplState {
     this.loadTimeMillis = System.currentTimeMillis();
     this.loadTime = loadTimeMillis / 1000;
     this.eventDuration = (this.loadTimeMillis - previousTimestamp) + " ms";
+    replStatsTracker.addEntry(eventType,eventId,(this.loadTimeMillis - previousTimestamp));
   }
 
   public long getLoadTimeMillis() {

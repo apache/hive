@@ -71,13 +71,13 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [1, 5]
-                        selectExpressions: CastStringToLong(col 4:string)(children: IfExprStringGroupColumnStringScalar(col 3:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string) -> 5:int
+                        projectedOutputColumnNums: [1, 6]
+                        selectExpressions: CastStringToLong(col 5:string)(children: IfExprStringGroupColumnStringScalar(col 4:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 4:boolean) -> 5:string) -> 6:int
                     Statistics: Num rows: 5 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 5:int) -> bigint
+                          aggregators: VectorUDAFSumLong(col 6:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 1:string
@@ -215,8 +215,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: IfExprStringGroupColumnStringScalar(col 3:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: IfExprStringGroupColumnStringScalar(col 4:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 4:boolean) -> 5:string
                     Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -306,13 +306,13 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [1, 5]
-                        selectExpressions: CastStringToLong(col 4:string)(children: IfExprStringGroupColumnStringScalar(col 3:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string) -> 5:int
+                        projectedOutputColumnNums: [1, 6]
+                        selectExpressions: CastStringToLong(col 5:string)(children: IfExprStringGroupColumnStringScalar(col 4:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 4:boolean) -> 5:string) -> 6:int
                     Statistics: Num rows: 5 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 5:int) -> bigint
+                          aggregators: VectorUDAFSumLong(col 6:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 1:string
@@ -450,8 +450,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: IfExprStringGroupColumnStringScalar(col 3:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: IfExprStringGroupColumnStringScalar(col 4:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 4:boolean) -> 5:string
                     Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false

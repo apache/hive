@@ -83,7 +83,7 @@ STAGE PLANS:
                           aggregators: VectorUDAFCountStar(*) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: ConvertDecimal64ToDecimal(col 2:decimal(4,0)/DECIMAL_64) -> 4:decimal(4,0)
+                          keyExpressions: ConvertDecimal64ToDecimal(col 2:decimal(4,0)/DECIMAL_64) -> 5:decimal(4,0)
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]

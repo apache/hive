@@ -302,6 +302,10 @@ public class MetaStoreListenerNotifier {
       .put(EventType.COMMIT_COMPACTION,
         (listener, event, dbConn, sqlGenerator) -> listener
             .onCommitCompaction((CommitCompactionEvent) event, dbConn, sqlGenerator))
+      .put(EventType.UPDATE_PARTITION_COLUMN_STAT,
+              (listener, event, dbConn, sqlGenerator) ->
+                      listener.onUpdatePartitionColumnStatDirectSql((UpdatePartitionColumnStatEvent) event,
+                            dbConn, sqlGenerator))
       .build()
   );
 

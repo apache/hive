@@ -44,7 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -298,7 +298,7 @@ public class LlapServiceDriver {
     int rc;
     String version = System.getenv("HIVE_VERSION");
     if (StringUtils.isEmpty(version)) {
-      version = DateTimeFormatter.BASIC_ISO_DATE.format(Instant.now());
+      version = DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now());
     }
 
     String outputDir = cl.getOutput();

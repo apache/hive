@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UDTFOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -1741,8 +1742,8 @@ public class StatsRulesProcFactory {
         float hashAggMem = conf.getFloatVar(HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
         float hashAggMaxThreshold = conf.getFloatVar(HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
 
-        // get available map memory
-        long totalMemory = StatsUtils.getAvailableMemory(conf) * 1000L * 1000L;
+        // get available map memory in bytes
+        long totalMemory = DagUtils.getContainerResource(conf).getMemorySize() * 1024L * 1024L;
         long maxMemHashAgg = Math.round(totalMemory * hashAggMem * hashAggMaxThreshold);
 
         // estimated number of rows will be product of NDVs

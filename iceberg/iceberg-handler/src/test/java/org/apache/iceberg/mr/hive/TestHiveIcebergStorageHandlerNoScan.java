@@ -156,6 +156,41 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
+  public void testPartitionTransform() {
+    Schema schema = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "year_field", Types.DateType.get()),
+        optional(3, "month_field", Types.TimestampType.withZone()),
+        optional(4, "day_field", Types.TimestampType.withoutZone()),
+        optional(5, "hour_field", Types.TimestampType.withoutZone()),
+        optional(6, "truncate_field", Types.StringType.get()),
+        optional(7, "bucket_field", Types.StringType.get()),
+        optional(8, "identity_field", Types.StringType.get())
+    );
+    PartitionSpec spec = PartitionSpec.builderFor(schema)
+        .year("year_field")
+        .month("month_field")
+        .day("day_field")
+        .hour("hour_field")
+        .truncate("truncate_field", 2)
+        .bucket("bucket_field", 2)
+        .identity("identity_field")
+        .build();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "part_test");
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier +
+        " PARTITIONED BY SPEC (year(year_field), month(month_field), day(day_field), hour(hour_field), " +
+        "truncate(2, truncate_field), bucket(2, bucket_field), identity_field)" +
+        " STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) +
+        "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
+        SchemaParser.toJson(schema) + "', " +
+        "'" + InputFormatConfig.CATALOG_NAME + "'='" + Catalogs.ICEBERG_DEFAULT_CATALOG_NAME + "')");
+    Table table = testTables.loadTable(identifier);
+    Assert.assertEquals(spec, table.spec());
+  }
+
+  @Test
   public void testCreateDropTable() throws TException, IOException, InterruptedException {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 

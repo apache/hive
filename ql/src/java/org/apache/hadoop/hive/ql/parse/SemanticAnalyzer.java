@@ -170,6 +170,7 @@ import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -250,6 +251,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -347,6 +349,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private final Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner;
   private Map<SelectOperator, Table> viewProjectToTableSchema;
   private Operator<? extends OperatorDesc> sinkOp;
+  private final CacheTableHelper cacheTableHelper = new CacheTableHelper();
+
   /**
    * a map for the split sampling, from alias to an instance of SplitSample
    * that describes percentage and number.
@@ -2659,6 +2663,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String viewText = tab.getViewExpandedText();
       TableMask viewMask = new TableMask(this, conf, false);
       viewTree = ParseUtils.parse(viewText, ctx, tab.getCompleteName());
+      cacheTableHelper.populateCacheForView(ctx.getParsedTables(), conf,
+          getTxnMgr(), tab.getDbName(), tab.getTableName());
       if (viewMask.isEnabled() && analyzeRewrite == null) {
         ParseResult parseResult = rewriteASTWithMaskAndFilter(viewMask, viewTree,
             ctx.getViewTokenRewriteStream(viewFullyQualifiedName),
@@ -12271,12 +12277,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         Context rewriteCtx = new Context(conf);
         ctx.addSubContext(rewriteCtx);
         rewrittenTree = ParseUtils.parse(rewrittenQuery, rewriteCtx);
-        return new ParseResult(rewrittenTree, rewriteCtx.getTokenRewriteStream());
+        return new ParseResult(rewrittenTree, rewriteCtx.getTokenRewriteStream(),
+            rewriteCtx.getParsedTables());
       } catch (ParseException e) {
         throw new SemanticException(e);
       }
     } else {
-      return new ParseResult(ast, ctx.getTokenRewriteStream());
+      return new ParseResult(ast, ctx.getTokenRewriteStream(), ctx.getParsedTables());
     }
   }
 
@@ -12455,6 +12462,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean needsTransform = needsTransform();
     //change the location of position alias process here
     processPositionAlias(ast);
+    cacheTableHelper.populateCache(ctx.getParsedTables(), conf, getTxnMgr());
     PlannerContext plannerCtx = pcf.get();
     if (!genResolvedParseTree(ast, plannerCtx)) {
       return;
@@ -12970,8 +12978,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       String[] tmp = input.reverseLookup(columnDesc.getColumn());
       // in subquery case, tmp may be from outside.
-      if (tmp[0] != null && columnDesc.getTabAlias() != null
-          && !tmp[0].equals(columnDesc.getTabAlias()) && tcCtx.getOuterRR() != null) {
+      // check if outer present && (tmp is null || tmp not null - contains tbl info)
+      if (tcCtx.getOuterRR() != null && (tmp == null || (tmp[0] != null && columnDesc.getTabAlias() != null
+          && !tmp[0].equals(columnDesc.getTabAlias())))) {
         tmp = tcCtx.getOuterRR().reverseLookup(columnDesc.getColumn());
       }
       StringBuilder replacementText = new StringBuilder();
@@ -13298,6 +13307,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<List<String>, String> listBucketColValuesMapping = new HashMap<List<String>, String>();
     boolean storedAsDirs = false;
     boolean isUserStorageFormat = false;
+    boolean partitionTransformSpecExists = false;
 
     RowFormatParams rowFormatParams = new RowFormatParams();
     StorageFormat storageFormat = new StorageFormat(conf);
@@ -13403,6 +13413,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                                       "partition columns. "));
         }
         break;
+      case HiveParser.TOK_TABLEPARTCOLSBYSPEC:
+        List<PartitionTransform.PartitionTransformSpec> partitionTransformSpec =
+            PartitionTransform.getPartitionTransformSpec(child);
+
+        if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC,
+            partitionTransformSpec)) {
+          throw new SemanticException("Query state attached to Session state must be not null. " +
+              "Partition transform metadata cannot be saved.");
+        }
+
+        partitionTransformSpecExists = true;
+        break;
       case HiveParser.TOK_TABLEPARTCOLNAMES:
         partColNames = getColumnNames(child);
         break;
@@ -13452,6 +13474,31 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       default:
         throw new AssertionError("Unknown token: " + child.getToken());
+      }
+    }
+
+    HiveStorageHandler handler;
+    try {
+      handler = HiveUtils.getStorageHandler(conf, storageFormat.getStorageHandler());
+    } catch (HiveException e) {
+      throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
+    }
+
+    if (handler != null) {
+      if (partitionTransformSpecExists && !handler.supportsPartitionTransform()) {
+        throw new SemanticException("Partition transform is not supported for " + handler.getClass().getName());
+      }
+
+      String fileFormatPropertyKey = handler.getFileFormatPropertyKey();
+      if (fileFormatPropertyKey != null) {
+        if (tblProps != null && tblProps.containsKey(fileFormatPropertyKey) && storageFormat.getSerdeProps() != null &&
+            storageFormat.getSerdeProps().containsKey(fileFormatPropertyKey)) {
+          String fileFormat = tblProps.get(fileFormatPropertyKey);
+          throw new SemanticException(
+              "Provide only one of the following: STORED BY " + fileFormat + " or WITH SERDEPROPERTIES('" +
+              fileFormatPropertyKey + "'='" + fileFormat + "') or" + " TBLPROPERTIES('" + fileFormatPropertyKey
+              + "'='" + fileFormat + "')");
+        }
       }
     }
 

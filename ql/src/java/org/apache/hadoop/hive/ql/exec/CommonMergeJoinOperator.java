@@ -179,12 +179,18 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
         }
       }
       nullOrdering = NullOrdering.defaultNullOrder(hconf);
-      if (parentOperators != null && !parentOperators.isEmpty()) {
-        // Tell ReduceRecordSource to flush last record as this is a reduce
-        // side SMB
-        for (RecordSource source : sources) {
-          ((ReduceRecordSource) source).setFlushLastRecord(true);
-        }
+    }
+
+    if (parentOperators != null && !parentOperators.isEmpty()) {
+      // Tell RecordSource to flush last record even if its a map side SMB. SMB expect its
+      // parent group by operators to emit the record as and when aggregation is done.
+      // In case of group by with FINAL/MERGE_PARTIAL mode, the records are expected to come
+      // in a sorted order to group by operator and the group by operator is suppose to
+      // emit the aggregated value to next node once a record with different value
+      // is received. In case we dont flush here, the last aggregate value will not be
+      // emitted as it will keep waiting for the next different record.
+      for (RecordSource source : sources) {
+        source.setFlushLastRecord(true);
       }
     }
   }

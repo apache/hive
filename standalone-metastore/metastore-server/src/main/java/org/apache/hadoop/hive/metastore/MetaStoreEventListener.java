@@ -367,6 +367,16 @@ public abstract class MetaStoreEventListener implements Configurable {
   }
 
   /**
+   * This will be called to update partition column stats to execute the sql using direct sql mode.
+   * @param updatePartColStatEvent event to be processed
+   * @throws MetaException
+   */
+  public void onUpdatePartitionColumnStatDirectSql(UpdatePartitionColumnStatEvent updatePartColStatEvent,
+                                                   Connection dbConn, SQLGenerator sqlGenerator)
+          throws MetaException {
+  }
+
+  /**
    * This will be called to delete partition column stats
    * @param deletePartColStatEvent event to be processed
    * @throws MetaException

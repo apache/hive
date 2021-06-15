@@ -22,6 +22,7 @@ import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.core.Filter;
+import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexCorrelVariable;
@@ -103,10 +104,12 @@ public class HiveFilter extends Filter implements HiveRelNode {
           RelNode input = ((RexSubQuery)node).rel.getInput(0);
           while(input != null && !(input instanceof HiveFilter)
                   && input.getInputs().size() >=1) {
-              //we don't expect corr vars withing JOIN or UNION for now
-              // we only expect cor vars in top level filter
+              //we don't expect corr vars within UNION for now
               if(input.getInputs().size() > 1) {
-                  return;
+                if (input instanceof HiveJoin) {
+                  findCorrelatedVar(((HiveJoin) input).getJoinFilter(), allVars);
+                }
+                return;
               }
               input = input.getInput(0);
           }

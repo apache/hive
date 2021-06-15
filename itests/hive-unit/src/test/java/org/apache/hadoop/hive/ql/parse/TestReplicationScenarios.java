@@ -28,6 +28,10 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.StringAppender;
+import org.apache.hadoop.hive.ql.parse.repl.metric.MetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Stage;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.apache.hadoop.hive.metastore.*;
@@ -111,6 +115,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.nio.charset.StandardCharsets;
@@ -125,6 +130,7 @@ import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
 import static org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData.DUMP_METADATA;
+import static org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector.isMetricsEnabledForTests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -4575,6 +4581,88 @@ public class TestReplicationScenarios {
     loggerConfig.setLevel(oldLevel);
     ctx.updateLoggers();
     appender.removeFromLogger(logger.getName());
+  }
+
+  @Test
+  public void testIncrementalStatisticsMetrics() throws Throwable {
+    isMetricsEnabledForTests(true);
+    MetricCollector collector = MetricCollector.getInstance();
+    String testName = "testIncrementalStatisticsMetrics";
+    String dbName = createDB(testName, driver);
+    String replDbName = dbName + "_dupe";
+
+    // Do a bootstrap dump & load
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+    // Do some operations at the source side so that the count & metrics can be counted at the load side.
+
+    // 10 create table
+    for (int i = 0; i < 10; i++) {
+      run("CREATE TABLE " + dbName + ".ptned" + i + "(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+      for (int j = 0; j < 5; j++) {
+        // Create 5 partitoins per table.
+        run("ALTER TABLE " + dbName + ".ptned" + i + " ADD PARTITION(b=" + j + ")", driver);
+      }
+    }
+    verifyRun("SHOW PARTITIONS " + dbName + ".ptned1", new String[] {"b=0","b=1","b=2","b=3","b=4"}, driver);
+
+    // Do an incremental load & verify the metrics.
+    Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
+
+    String events[] = new String[] { "[[Event Name: EVENT_CREATE_TABLE; " + "Total Number: 10;",
+        "[[Event Name: EVENT_ADD_PARTITION; Total Number: 50;" };
+
+    Iterator<ReplicationMetric> itr = collector.getMetrics().iterator();
+    while (itr.hasNext()) {
+      ReplicationMetric elem = itr.next();
+      assertEquals(Metadata.ReplicationType.INCREMENTAL, elem.getMetadata().getReplicationType());
+      List<Stage> stages = elem.getProgress().getStages();
+      assertTrue(stages.size() != 0);
+      for (Stage stage : stages) {
+        for (String event : events) {
+          assertTrue(stage.getReplStats(), stage.getReplStats().contains(event));
+        }
+      }
+    }
+
+    // Do some drop table/drop partition & rename table operations.
+    for (int i = 0; i < 3; i++) {
+      // Drop 3 tables
+      run("DROP TABLE " + dbName + ".ptned" + i, driver);
+    }
+
+    for (int i = 3; i < 6; i++) {
+      // Rename 3 tables
+      run("ALTER TABLE " + dbName + ".ptned" + i + " RENAME TO " + dbName + ".ptned" + i + "_renamed", driver);
+    }
+
+    for (int i = 6; i < 10; i++) {
+      // Drop partitions from 4 tables
+      run("ALTER TABLE " + dbName + ".ptned DROP PARTITION(b=1)", driver);
+    }
+
+    for (int i = 10; i < 12; i++) {
+      // Create 2 tables
+      run("CREATE TABLE " + dbName + ".ptned" + i + "(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+    }
+
+    events = new String[] { "[[Event Name: EVENT_CREATE_TABLE; " + "Total Number: 2;",
+        "[[Event Name: EVENT_DROP_TABLE; " + "Total Number: 3;",
+        "[[Event Name: EVENT_RENAME_TABLE; " + "Total Number: 3;",
+        "[[Event Name: EVENT_DROP_PARTITION; Total Number: 2;" };
+
+      itr = collector.getMetrics().iterator();
+    while (itr.hasNext()) {
+      ReplicationMetric elem = itr.next();
+      assertEquals(Metadata.ReplicationType.INCREMENTAL, elem.getMetadata().getReplicationType());
+      List<Stage> stages = elem.getProgress().getStages();
+      assertTrue(stages.size() != 0);
+      for (Stage stage : stages) {
+        for (String event : events) {
+          assertTrue(stage.getReplStats(), stage.getReplStats().contains(event));
+        }
+      }
+    }
   }
 
   private static String createDB(String name, IDriver myDriver) {

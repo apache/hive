@@ -79,15 +79,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:x:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:x:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: 'a' (type: string)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [2]
-                        selectExpressions: ConstantVectorExpression(val a) -> 2:string
+                        projectedOutputColumnNums: [3]
+                        selectExpressions: ConstantVectorExpression(val a) -> 3:string
                     Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: string)
@@ -95,15 +95,15 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [2]
+                          projectedOutputColumnNums: [3]
                       Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: min(_col1)
                         Group By Vectorization:
-                            aggregators: VectorUDAFMinString(col 2:string) -> string
+                            aggregators: VectorUDAFMinString(col 3:string) -> string
                             className: VectorGroupByOperator
                             groupByMode: HASH
-                            keyExpressions: ConstantVectorExpression(val 1) -> 3:boolean
+                            keyExpressions: ConstantVectorExpression(val 1) -> 4:boolean
                             native: false
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: [0]

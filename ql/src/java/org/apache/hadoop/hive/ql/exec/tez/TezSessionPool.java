@@ -131,13 +131,14 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
       poolLock.lock();
       try {
         while ((result = pool.poll()) == null) {
-          notEmpty.await(100, TimeUnit.MILLISECONDS);
+          LOG.info("Awaiting Tez session to become available in session pool");
+          notEmpty.await(10, TimeUnit.SECONDS);
         }
       } finally {
         poolLock.unlock();
       }
       if (result.tryUse(false)) return result;
-      LOG.info("Couldn't use a session [" + result + "]; attempting another one");
+      LOG.info("Failed to use a session [" + result + "]; attempting another one");
     }
   }
 
