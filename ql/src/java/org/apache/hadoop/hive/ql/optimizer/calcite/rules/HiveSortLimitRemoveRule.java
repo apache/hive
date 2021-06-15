@@ -48,10 +48,11 @@ public final class HiveSortLimitRemoveRule extends RelOptRule {
         // We only have only LIMIT: Remove if the input is producing less or
         // equal number of rows.
         return maxRowCount <= RexLiteral.intValue(sortLimit.getFetchExpr());
+      } else if (HiveCalciteUtil.pureOrderRelNode(sortLimit)) {
+        // We only have ORDER BY: Remove if the input is producing at
+        // most one row.
+        return maxRowCount <= 1;
       }
-      // We do not have only LIMIT: Remove if the input is producing at
-      // most one row.
-      return maxRowCount <= 1;
     }
     return false;
   }
