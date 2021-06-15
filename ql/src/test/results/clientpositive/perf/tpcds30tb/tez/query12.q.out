@@ -135,7 +135,7 @@ STAGE PLANS:
                   Statistics: Num rows: 126000 Data size: 86940000 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: char(50)), _col2 (type: string), _col3 (type: varchar(200)), _col4 (type: decimal(7,2)), _col5 (type: decimal(17,2))
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: char(50)), KEY.reducesinkkey0 (type: char(50)), VALUE._col1 (type: string), VALUE._col2 (type: varchar(200)), VALUE._col3 (type: decimal(7,2)), VALUE._col4 (type: decimal(17,2))
@@ -159,7 +159,7 @@ STAGE PLANS:
                               arguments: _col5
                               name: sum
                               window function: GenericUDAFSumHiveDecimal
-                              window frame: RANGE PRECEDING(MAX)~FOLLOWING(MAX)
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                   Statistics: Num rows: 126000 Data size: 86940000 Basic stats: COMPLETE Column stats: COMPLETE
                   Top N Key Operator
                     sort order: +++++
