@@ -22,8 +22,8 @@ package org.apache.iceberg.hive;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
+import java.util.Objects;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -138,20 +138,48 @@ public final class HiveSchemaUtil {
   }
 
   /**
-   * Produces the difference of two FieldSchema lists by only taking into account the field name and type.
+   * Returns only those field schemas from the minuendCollection, which appear in the subtrahendCollection by name, but
+   * have a different type in the minuendCollection than in the subtrahendCollection.
    * @param minuendCollection Collection of fields to subtract from
    * @param subtrahendCollection Collection of fields to subtract
    * @return the result list of difference
    */
-  public static Collection<FieldSchema> schemaDifference(
+  public static Collection<FieldSchema> updatedTypeColumns(
       Collection<FieldSchema> minuendCollection, Collection<FieldSchema> subtrahendCollection) {
-
-    Function<FieldSchema, FieldSchema> unsetCommentFunc = fs -> new FieldSchema(fs.getName(), fs.getType(), null);
-    Set<FieldSchema> subtrahendWithoutComment =
-        subtrahendCollection.stream().map(unsetCommentFunc).collect(Collectors.toSet());
-
+    BiPredicate<FieldSchema, FieldSchema> typeChanged = (first, second) ->
+        first.getName().equals(second.getName()) && !Objects.equals(first.getType(), second.getType());
     return minuendCollection.stream()
-        .filter(fs -> !subtrahendWithoutComment.contains(unsetCommentFunc.apply(fs))).collect(Collectors.toList());
+        .filter(first -> subtrahendCollection.stream().anyMatch(second -> typeChanged.test(first, second)))
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Returns only those field schemas from the minuendCollection, which appear in the subtrahendCollection by name, but
+   * have a different comment in the minuendCollection than in the subtrahendCollection.
+   * @param minuendCollection Collection of fields to subtract from
+   * @param subtrahendCollection Collection of fields to subtract
+   * @return the result list of difference
+   */
+  public static Collection<FieldSchema> updatedCommentColumns(
+      Collection<FieldSchema> minuendCollection, Collection<FieldSchema> subtrahendCollection) {
+    BiPredicate<FieldSchema, FieldSchema> commentChanged = (first, second) ->
+        first.getName().equals(second.getName()) && !Objects.equals(first.getComment(), second.getComment());
+    return minuendCollection.stream()
+        .filter(first -> subtrahendCollection.stream().anyMatch(second -> commentChanged.test(first, second)))
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Returns only those field schemas from the minuendCollection, which don't appear in subtrahendCollection by name.
+   * @param minuendCollection Collection of fields to subtract from
+   * @param subtrahendCollection Collection of fields to subtract
+   * @return the result list of difference
+   */
+  public static Collection<FieldSchema> newColumns(
+      Collection<FieldSchema> minuendCollection, Collection<FieldSchema> subtrahendCollection) {
+    return minuendCollection.stream()
+        .filter(first -> subtrahendCollection.stream().noneMatch(second -> second.getName().equals(first.getName())))
+        .collect(Collectors.toList());
   }
 
   private static String convertToTypeString(Type type) {
