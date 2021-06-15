@@ -58,11 +58,19 @@ public class TestMiniLlapVectorArrowWithLlapIODisabled extends BaseJdbcWithMiniL
     createDataTypesTable("datatypes");
     RowCollector2 rowCollector = new RowCollector2();
     // c8 struct<r:string,s:int,t:double>
-    String query = "select c8 from datatypes";
+    // c15 struct<r:int,s:struct<a:int,b:string>>
+    // c16 array<struct<m:map<string,string>,n:int>>
+    String query = "select c8, c15, c16 from datatypes";
     int rowCount = processQuery(query, 1, rowCollector);
     assertEquals(3, rowCount);
   }
 
+  @Override
+  public void testDataTypes() throws Exception {
+    // the test should be exactly identical to TestJdbcWithMiniLlapVectorArrow
+    TestJdbcWithMiniLlapVectorArrow testJdbcWithMiniLlapVectorArrow = new TestJdbcWithMiniLlapVectorArrow();
+    testJdbcWithMiniLlapVectorArrow.testDataTypes();
+  }
 
   @Override
   @Ignore
@@ -100,11 +108,6 @@ public class TestMiniLlapVectorArrowWithLlapIODisabled extends BaseJdbcWithMiniL
     // To be implemented
   }
 
-  @Override
-  @Ignore
-  public void testDataTypes() throws Exception {
-    // To be implemented
-  }
 
   @Override
   @Ignore

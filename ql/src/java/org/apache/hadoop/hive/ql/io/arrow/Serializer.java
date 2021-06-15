@@ -356,6 +356,7 @@ public class Serializer {
         if (hiveVector.isNull[i]) {
           for (ColumnVector fieldVector : hiveFieldVectors) {
             fieldVector.isNull[i] = true;
+            fieldVector.noNulls = false;
           }
         }
       }
