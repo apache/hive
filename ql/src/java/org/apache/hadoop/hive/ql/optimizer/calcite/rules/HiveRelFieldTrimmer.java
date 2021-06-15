@@ -219,7 +219,6 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
         new LinkedHashSet<RelDataTypeField>(extraFields);
     RelOptUtil.InputFinder inputFinder =
         new RelOptUtil.InputFinder(combinedInputExtraFields, fieldsUsed);
-//    inputFinder.inputBitSet.addAll(fieldsUsed);
     conditionExpr.accept(inputFinder);
     final ImmutableBitSet fieldsUsedPlus = inputFinder.build();
 
