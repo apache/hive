@@ -79,17 +79,14 @@ public class TestPartitionStat extends MetaStoreClientTest {
   @BeforeClass
   public static void startMetaStores() {
     Map<MetastoreConf.ConfVars, String> msConf = new HashMap<MetastoreConf.ConfVars, String>();
-    // Enable trash, so it can be tested
     Map<String, String> extraConf = new HashMap<>();
-    extraConf.put("fs.trash.checkpoint.interval", "30");  // FS_TRASH_CHECKPOINT_INTERVAL_KEY
-    extraConf.put("fs.trash.interval", "30");             // FS_TRASH_INTERVAL_KEY (hadoop-2)
+    extraConf.put(MetastoreConf.ConfVars.HIVE_IN_TEST.getVarname(), "true");
     startMetaStores(msConf, extraConf);
   }
 
   @Before
   public void setUp() throws Exception {
     // Get new client
-    MetastoreConf.setBoolVar(metaStore.getConf(), MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     client = metaStore.getClient();
 
     // Clean up the database
