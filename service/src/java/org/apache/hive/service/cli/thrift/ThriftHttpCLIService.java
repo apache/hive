@@ -24,10 +24,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.Set;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.ws.rs.HttpMethod;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -158,6 +161,15 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         sslContextFactory.setKeyStorePassword(keyStorePassword);
         sslContextFactory.setKeyStoreType(keyStoreType);
         sslContextFactory.setKeyManagerFactoryAlgorithm(keyStoreAlgorithm);
+        String excludeCiphersuites = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_HTTP_EXCLUDE_CIPHERSUITES).trim();
+        if (!excludeCiphersuites.trim().isEmpty()) {
+          Set<String> excludeCS = Sets.newHashSet(
+                  Splitter.on(",").trimResults().omitEmptyStrings().split(excludeCiphersuites.trim()));
+          int eSize = excludeCS.size();
+          if (eSize > 0) {
+            sslContextFactory.setExcludeCipherSuites(excludeCS.toArray(new String[eSize]));
+          }
+        }
         connector = new ServerConnector(server, sslContextFactory, http);
       } else {
         connector = new ServerConnector(server, http);
