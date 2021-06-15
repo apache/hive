@@ -1258,6 +1258,7 @@ public class TestLlapTaskSchedulerService {
   }
 
   @Test(timeout = 10000)
+  @org.junit.Ignore("HIVE-25248")
   public void testForcedLocalityMultiplePreemptionsSameHost1() throws IOException,
       InterruptedException {
     Priority priority1 = Priority.newInstance(1);

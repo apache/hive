@@ -75,6 +75,7 @@ import static org.mockito.Mockito.doReturn;
  * Delta files created by SQL should have [N,N] range (and a suffix in v1.3 and later)
  * Need to change some of these to have better test coverage.
  */
+@org.junit.Ignore("HIVE-25249")
 public class TestWorker extends CompactorTest {
 
   private static final String CLASS_NAME = TestWorker.class.getName();
