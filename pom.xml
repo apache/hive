@@ -128,7 +128,7 @@
     <httpcomponents.core.version>4.4.10</httpcomponents.core.version>
     <impala.version>3.4.0.7.2.12.0-SNAPSHOT</impala.version>
     <ivy.version>2.4.0</ivy.version>
-    <jackson.version>2.10.5</jackson.version>
+    <jackson.version>2.10.5.20201202</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
     <jamon-runtime.version>2.3.1</jamon-runtime.version>
     <javaewah.version>0.3.2</javaewah.version>
