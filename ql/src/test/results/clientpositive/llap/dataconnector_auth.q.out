@@ -2,10 +2,6 @@ PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ADMIN
 POSTHOOK: type: SHOW_ROLES
-PREHOOK: query: SHOW CONNECTORS
-PREHOOK: type: SHOWDATACONNECTORS
-POSTHOOK: query: SHOW CONNECTORS
-POSTHOOK: type: SHOWDATACONNECTORS
 PREHOOK: query: CREATE CONNECTOR derby_auth_dc
 TYPE 'derby'
 #### A masked pattern was here ####
@@ -48,20 +44,20 @@ POSTHOOK: query: SHOW CONNECTORS
 POSTHOOK: type: SHOWDATACONNECTORS
 derby_auth_dc
 mysql_auth_dc
-PREHOOK: query: CREATE REMOTE DATABASE db_derby_auth USING derby_auth_dc with DBPROPERTIES("connector.remoteDbName"="APP")
+PREHOOK: query: CREATE REMOTE DATABASE mysql_db USING mysql_auth_dc with DBPROPERTIES("connector.remoteDbName"="hive1")
 PREHOOK: type: CREATEDATABASE
-PREHOOK: Output: database:db_derby_auth
+PREHOOK: Output: database:mysql_db
 #### A masked pattern was here ####
-POSTHOOK: query: CREATE REMOTE DATABASE db_derby_auth USING derby_auth_dc with DBPROPERTIES("connector.remoteDbName"="APP")
+POSTHOOK: query: CREATE REMOTE DATABASE mysql_db USING mysql_auth_dc with DBPROPERTIES("connector.remoteDbName"="hive1")
 POSTHOOK: type: CREATEDATABASE
-POSTHOOK: Output: database:db_derby_auth
+POSTHOOK: Output: database:mysql_db
 #### A masked pattern was here ####
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
-db_derby_auth
 default
+mysql_db
 PREHOOK: query: alter connector mysql_auth_dc set URL 'jdbc:mysql://nightly1.apache.org:3306/hive2'
 PREHOOK: type: ALTERDATACONNECTOR_
 PREHOOK: Output: connector:mysql_auth_dc
@@ -101,14 +97,14 @@ POSTHOOK: query: DESCRIBE CONNECTOR extended mysql_auth_dc
 POSTHOOK: type: DESCDATACONNECTOR
 POSTHOOK: Input: connector:mysql_auth_dc
 mysql_auth_dc	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	newuser	USER	test connector	{hive.sql.dbcp.password=hive2, hive.sql.dbcp.username=hive2}
-PREHOOK: query: DROP DATABASE db_derby_auth
+PREHOOK: query: DROP DATABASE mysql_db
 PREHOOK: type: DROPDATABASE
-PREHOOK: Input: database:db_derby_auth
-PREHOOK: Output: database:db_derby_auth
-POSTHOOK: query: DROP DATABASE db_derby_auth
+PREHOOK: Input: database:mysql_db
+PREHOOK: Output: database:mysql_db
+POSTHOOK: query: DROP DATABASE mysql_db
 POSTHOOK: type: DROPDATABASE
-POSTHOOK: Input: database:db_derby_auth
-POSTHOOK: Output: database:db_derby_auth
+POSTHOOK: Input: database:mysql_db
+POSTHOOK: Output: database:mysql_db
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES

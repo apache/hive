@@ -2036,7 +2036,7 @@ CREATE TABLE "DATACONNECTOR_PARAMS" (
 );
 
 ALTER TABLE ONLY "DC_PRIVS"
-    ADD CONSTRAINT "DC_PRIVS_DC_ID_fkey" FOREIGN KEY ("DC_NAME") REFERENCES "DATACONNECTOR"("NAME") DEFERRABLE;
+    ADD CONSTRAINT "DC_PRIVS_DC_ID_fkey" FOREIGN KEY ("DC_NAME") REFERENCES "DATACONNECTORS"("NAME") DEFERRABLE;
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script

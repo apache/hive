@@ -7,9 +7,6 @@ set role ADMIN;
 
 SET hive.security.authorization.enabled=true;
 
--- SORT_QUERY_RESULTS
-SHOW CONNECTORS;
-
 -- CREATE CONNECTOR
 CREATE CONNECTOR derby_auth_dc
 TYPE 'derby'
@@ -29,7 +26,7 @@ WITH DCPROPERTIES (
 "hive.sql.dbcp.password"="hive1");
 SHOW CONNECTORS;
 
-CREATE REMOTE DATABASE db_derby_auth USING derby_auth_dc with DBPROPERTIES("connector.remoteDbName"="APP");
+CREATE REMOTE DATABASE mysql_db USING mysql_auth_dc with DBPROPERTIES("connector.remoteDbName"="hive1");
 SHOW DATABASES;
 
 -- alter connector set URL
@@ -44,7 +41,7 @@ DESCRIBE CONNECTOR extended mysql_auth_dc;
 alter connector mysql_auth_dc set OWNER USER newuser;
 DESCRIBE CONNECTOR extended mysql_auth_dc;
 
-DROP DATABASE db_derby_auth;
+DROP DATABASE mysql_db;
 SHOW DATABASES;
 DROP CONNECTOR mysql_auth_dc;
 SHOW CONNECTORS;
