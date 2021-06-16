@@ -3432,7 +3432,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
                       subQueryRoot.getTokenStartIndex(),
                       subQueryRoot.getTokenStopIndex());
 
-              expandedSubQueryText = expandedSubQueryText.substring(1, expandedSubQueryText.length() - 1).trim();
+              if (expandedSubQueryText.length() >= 2) {
+                expandedSubQueryText = expandedSubQueryText.substring(1, expandedSubQueryText.length() - 1).trim();
+              }
 
               RelNode mv = getMaterializedViewByQueryText(expandedSubQueryText, subQueryRelNode, cluster, NON_CALCITE);
               if (mv != null) {
