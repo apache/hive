@@ -2530,6 +2530,43 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public boolean addPartitions(String catName, String dbName, String tblName, List<Partition> parts)
       throws InvalidObjectException, MetaException {
+    for (Partition part : parts) {
+      if (!part.getTableName().equals(tblName) || !part.getDbName().equals(dbName)) {
+        throw new MetaException("Partition does not belong to target table "
+                + dbName + "." + tblName + ": " + part);
+      }
+    }
+    try {
+      return new GetHelper<Boolean>(catName, dbName, tblName, true, false) {
+        @Override
+        protected String describeResult() {
+          return null;
+        }
+
+        @Override
+        protected Boolean getSqlResult(GetHelper<Boolean> ctx) throws MetaException {
+          Table table = getTable();
+          return directSql.addPartitions(table.getId(), table.getPartitionKeys(), parts);
+        }
+
+        @Override
+        protected Boolean getJdoResult(GetHelper<Boolean> ctx) throws MetaException, NoSuchObjectException {
+          try {
+            return addPartitionsInternal(catName, dbName, tblName, parts);
+          } catch (Exception e) {
+            LOG.error("Failed to addPartitionsInternal ", e);
+            throw new MetaException(e.getMessage());
+          }
+        }
+      }.run(true);
+    } catch (NoSuchObjectException e) {
+      LOG.error("Failed to addPartitionsInternal ", e);
+      throw new MetaException(e.getMessage());
+    }
+  }
+
+  private boolean addPartitionsInternal(String catName, String dbName, String tblName, List<Partition> parts)
+          throws InvalidObjectException, MetaException {
     boolean success = false;
     openTransaction();
     try {
@@ -2542,10 +2579,6 @@ public class ObjectStore implements RawStore, Configurable {
       }
       List<Object> toPersist = new ArrayList<>();
       for (Partition part : parts) {
-        if (!part.getTableName().equals(tblName) || !part.getDbName().equals(dbName)) {
-          throw new MetaException("Partition does not belong to target table "
-              + dbName + "." + tblName + ": " + part);
-        }
         MPartition mpart = convertToMPart(part, table, true);
 
         toPersist.add(mpart);

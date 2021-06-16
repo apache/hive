@@ -632,7 +632,7 @@ class DirectSqlUpdateStat {
    * Gets the next CS id from sequence MPartitionColumnStatistics and increment the CS id by numStats.
    * @return The CD id before update.
    */
-  public long getNextCSIdForMPartitionColumnStatistics(long numStats) throws MetaException {
+  public long getNextValueFromSequenceTable(String seqName, long numValues, boolean doCommit) throws MetaException {
     Statement statement = null;
     ResultSet rs = null;
     long maxCsId = 0;
@@ -682,7 +682,7 @@ class DirectSqlUpdateStat {
         }
       }
 
-      long nextMaxCsId = maxCsId + numStats + 1;
+      long nextMaxCsId = maxCsId + numValues + 1;
       closeStmt(statement);
       statement = dbConn.createStatement();
       String query = "UPDATE \"SEQUENCE_TABLE\" SET \"NEXT_VAL\" = "
@@ -690,7 +690,9 @@ class DirectSqlUpdateStat {
               + " WHERE \"SEQUENCE_NAME\" = "
               + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics");
       statement.executeUpdate(query);
-      dbConn.commit();
+      if (doCommit) {
+        dbConn.commit();
+      }
       committed = true;
       return maxCsId;
     } catch (Exception e) {
@@ -698,7 +700,7 @@ class DirectSqlUpdateStat {
       throw new MetaException("Unable to getNextCSIdForMPartitionColumnStatistics  "
               + " due to: " + e.getMessage());
     } finally {
-      if (!committed) {
+      if (!committed && doCommit) {
         rollbackDBConn(dbConn);
       }
       close(rs, statement, jdoConn);

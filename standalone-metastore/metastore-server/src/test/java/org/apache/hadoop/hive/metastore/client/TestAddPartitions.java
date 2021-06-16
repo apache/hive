@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
@@ -44,11 +45,13 @@ import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -77,6 +80,15 @@ public class TestAddPartitions extends MetaStoreClientTest {
 
   public TestAddPartitions(String name, AbstractMetaStoreService metaStore) {
     this.metaStore = metaStore;
+  }
+
+  @BeforeClass
+  public static void startMetaStores() {
+    Map<MetastoreConf.ConfVars, String> msConf = new HashMap<MetastoreConf.ConfVars, String>();
+    Map<String, String> extraConf = new HashMap<>();
+    extraConf.put(MetastoreConf.ConfVars.HIVE_IN_TEST.getVarname(), "true");
+    extraConf.put("hive.metastore.transactional.event.listeners", TestHMSDbNotificationListener.class.getName());
+    startMetaStores(msConf, extraConf);
   }
 
   @Before
@@ -1522,6 +1534,29 @@ public class TestAddPartitions extends MetaStoreClientTest {
     List<Partition> partitions = new ArrayList<>();
     partitions.add(null);
     client.add_partitions(partitions, false, false);
+  }
+
+  @Test
+  public void testAddPartitionFailNotification() throws Exception {
+    Table table = createTable();
+    Partition partition =
+            buildPartition(Lists.newArrayList(DEFAULT_YEAR_VALUE), getYearPartCol(), 1);
+
+    TestHMSDbNotificationListener.throwException = true;
+    try {
+      client.add_partition(partition);
+    } catch (MetaException e) {
+      Assert.assertTrue(e.getMessage().equalsIgnoreCase("Add partition failed in onAddPartition"));
+    } finally {
+      TestHMSDbNotificationListener.throwException = false;
+    }
+
+    try {
+      Partition part = client.getPartition(table.getDbName(), table.getTableName(), "year=2017");
+      Assert.assertNull(part);
+    } catch (NoSuchObjectException e) {
+      Assert.assertTrue(e.getMessage().equalsIgnoreCase("partition values=[2017]"));
+    }
   }
 
   // Helper methods
