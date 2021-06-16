@@ -300,9 +300,9 @@ public class MessageBuilder {
   }
 
   public AllocWriteIdMessage buildAllocWriteIdMessage(List<TxnToWriteId> txnToWriteIdList,
-      String dbName, String tableName) {
+      String dbName, String tableName, Long tableId) {
     return new JSONAllocWriteIdMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, txnToWriteIdList,
-        dbName, tableName, now());
+        dbName, tableName, tableId, now());
   }
 
   public AcidWriteMessage buildAcidWriteMessage(AcidWriteEvent acidWriteEvent,

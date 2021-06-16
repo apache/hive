@@ -829,8 +829,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
           throws MetaException {
     String tableName = allocWriteIdEvent.getTableName();
     String dbName = allocWriteIdEvent.getDbName();
+    Long tableId = allocWriteIdEvent.getTableId();
     AllocWriteIdMessage msg = MessageBuilder.getInstance()
-        .buildAllocWriteIdMessage(allocWriteIdEvent.getTxnToWriteIdList(), dbName, tableName);
+        .buildAllocWriteIdMessage(allocWriteIdEvent.getTxnToWriteIdList(), dbName, tableName, tableId);
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ALLOC_WRITE_ID.toString(),
             msgEncoder.getSerializer().serialize(msg)

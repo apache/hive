@@ -2003,6 +2003,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   public AllocateTableWriteIdsResponse allocateTableWriteIds(AllocateTableWriteIdsRequest rqst)
           throws MetaException {
     List<Long> txnIds;
+    String catalog = MetaStoreUtils.getDefaultCatalog(conf);
     String dbName = rqst.getDbName().toLowerCase();
     String tblName = rqst.getTableName().toLowerCase();
     try {
@@ -2059,6 +2060,23 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
         }
 
+        // Check if the table exists
+        List<String> params = Arrays.asList(catalog, dbName, tblName);
+        String s = "SELECT \"TBLS\".\"TBL_ID\" FROM \"TBLS\"" +
+            " INNER JOIN \"DBS\" ON \"TBLS\".\"DB_ID\" = \"DBS\".\"DB_ID\"" +
+            " WHERE \"DBS\".\"CTLG_NAME\" = ? AND \"DBS\".\"NAME\" = ? AND \"TBLS\".\"TBL_NAME\" = ?";
+        pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
+        LOG.debug("Going to execute select <" + s.replaceAll("\\?", "{}") + ">",
+            quoteString(catalog), quoteString(dbName), quoteString(tblName));
+        Long tableId;
+        rs = pStmt.executeQuery();
+        if (rs.next()) {
+          tableId = rs.getLong(1);
+          closeStmt(pStmt);
+        } else {
+          throw new MetaException(String.format("Table not found: %s.%s", dbName, tblName));
+        }
+
         List<String> queries = new ArrayList<>();
         StringBuilder prefix = new StringBuilder();
         StringBuilder suffix = new StringBuilder();
@@ -2074,7 +2092,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         long allocatedTxnsCount = 0;
         long writeId;
-        List<String> params = Arrays.asList(dbName, tblName);
+        params = Arrays.asList(dbName, tblName);
         for (String query : queries) {
           pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
           LOG.debug("Going to execute query <" + query.replaceAll("\\?", "{}") + ">",
@@ -2111,7 +2129,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         // There are some txns in the list which does not have write id allocated and hence go ahead and do it.
         // Get the next write id for the given table and update it with new next write id.
         // This is select for update query which takes a lock if the table entry is already there in NEXT_WRITE_ID
-        String s = sqlGenerator.addForUpdateClause(
+        s = sqlGenerator.addForUpdateClause(
             "SELECT \"NWI_NEXT\" FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\" = ? AND \"NWI_TABLE\" = ?");
         closeStmt(pStmt);
         pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
@@ -2185,7 +2203,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         if (transactionalListeners != null) {
           MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
                   EventMessage.EventType.ALLOC_WRITE_ID,
-                  new AllocWriteIdEvent(txnToWriteIds, dbName, tblName),
+                  new AllocWriteIdEvent(txnToWriteIds, dbName, tblName, tableId),
                   dbConn, sqlGenerator);
         }
 
