@@ -90,6 +90,7 @@ import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
+import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEventBatch;
 import org.apache.hadoop.hive.metastore.events.UpdateTableColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.DeleteTableColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
@@ -161,6 +162,8 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
   private static CleanerThread cleaner = null;
 
+  private int maxBatchSize;
+
   private Configuration conf;
   private MessageEncoder msgEncoder;
 
@@ -189,6 +192,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     conf = config;
     DbNotificationListener.init(conf);
     msgEncoder = MessageFactory.getDefaultInstance(conf);
+    maxBatchSize = MetastoreConf.getIntVar(conf, ConfVars.JDBC_MAX_BATCH_SIZE);
   }
 
   /**
@@ -905,25 +909,32 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   }
 
   @Override
-  public void onUpdatePartitionColumnStatDirectSql(UpdatePartitionColumnStatEvent updatePartColStatEvent,
-                                                   Connection dbConn, SQLGenerator sqlGenerator)
+  public void onUpdatePartitionColumnStatInBatch(UpdatePartitionColumnStatEventBatch updatePartColStatEventBatch,
+                                                 Connection dbConn, SQLGenerator sqlGenerator)
           throws MetaException {
-    UpdatePartitionColumnStatMessage msg = MessageBuilder.getInstance()
-            .buildUpdatePartitionColumnStatMessage(updatePartColStatEvent.getPartColStats(),
-                    updatePartColStatEvent.getPartVals(),
-                    updatePartColStatEvent.getPartParameters(),
-                    updatePartColStatEvent.getTableObj(),
-                    updatePartColStatEvent.getWriteId());
+    List<NotificationEvent> eventBatch = new ArrayList<>();
+    List<ListenerEvent> listenerEventBatch = new ArrayList<>();
+    for (int i = 0; i < updatePartColStatEventBatch.getNumEntries(); i++) {
+      UpdatePartitionColumnStatEvent updatePartColStatEvent = updatePartColStatEventBatch.getPartColStatEvent(i);
+      UpdatePartitionColumnStatMessage msg = MessageBuilder.getInstance()
+              .buildUpdatePartitionColumnStatMessage(updatePartColStatEvent.getPartColStats(),
+                      updatePartColStatEvent.getPartVals(),
+                      updatePartColStatEvent.getPartParameters(),
+                      updatePartColStatEvent.getTableObj(),
+                      updatePartColStatEvent.getWriteId());
 
-    NotificationEvent event =
-            new NotificationEvent(0, now(), EventType.UPDATE_PARTITION_COLUMN_STAT.toString(),
-                    msgEncoder.getSerializer().serialize(msg));
-    ColumnStatisticsDesc statDesc = updatePartColStatEvent.getPartColStats().getStatsDesc();
-    event.setCatName(statDesc.isSetCatName() ? statDesc.getCatName() : DEFAULT_CATALOG_NAME);
-    event.setDbName(statDesc.getDbName());
-    event.setTableName(statDesc.getTableName());
+      ColumnStatisticsDesc statDesc = updatePartColStatEvent.getPartColStats().getStatsDesc();
+      NotificationEvent event =
+              new NotificationEvent(0, now(), EventType.UPDATE_PARTITION_COLUMN_STAT.toString(),
+                      msgEncoder.getSerializer().serialize(msg));
+      event.setCatName(statDesc.isSetCatName() ? statDesc.getCatName() : DEFAULT_CATALOG_NAME);
+      event.setDbName(statDesc.getDbName());
+      event.setTableName(statDesc.getTableName());
+      eventBatch.add(event);
+      listenerEventBatch.add(updatePartColStatEvent);
+    }
     try {
-      addNotificationLog(event, updatePartColStatEvent, dbConn, sqlGenerator);
+      addNotificationLogBatch(eventBatch, listenerEventBatch, dbConn, sqlGenerator);
     } catch (SQLException e) {
       throw new MetaException("Unable to execute direct SQL " + StringUtils.stringifyException(e));
     }
@@ -1013,7 +1024,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
    *           called on a closed connection
    * @throws MetaException if the sequence table is not properly initialized
    */
-  private long getNextNLId(Connection con, SQLGenerator sqlGenerator, String sequence)
+  private long getNextNLId(Connection con, SQLGenerator sqlGenerator, String sequence, long numValues)
           throws SQLException, MetaException {
 
     final String sfuSql = sqlGenerator.addForUpdateClause(NL_SEL_SQL);
@@ -1028,7 +1039,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       }
     }
 
-    final long updatedNLId = 1L + nextSequenceValue.orElseThrow(
+    final long updatedNLId = numValues + nextSequenceValue.orElseThrow(
         () -> new MetaException("Transaction database not properly configured, failed to determine next NL ID"));
 
     LOG.debug("Going to execute query [{}][1={}][2={}]", NL_UPD_SQL, updatedNLId, sequence);
@@ -1050,7 +1061,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
    *           called on a closed connection
    * @throws MetaException if the sequence table is not properly initialized
    */
-  private long getNextEventId(Connection con, SQLGenerator sqlGenerator)
+  private long getNextEventId(Connection con, SQLGenerator sqlGenerator, long numValues)
       throws SQLException, MetaException {
 
     /*
@@ -1080,7 +1091,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       }
     }
 
-    final long updatedEventId = 1L + nextSequenceValue.orElseThrow(
+    final long updatedEventId = numValues + nextSequenceValue.orElseThrow(
         () -> new MetaException("Transaction database not properly configured, failed to determine next event ID"));
 
     LOG.debug("Going to execute query [{}][1={}]", EV_UPD_SQL, updatedEventId);
@@ -1128,7 +1139,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       if (!rs.next()) {
         // if rs is empty then no lock is taken and thus it can not cause deadlock.
         long nextNLId = getNextNLId(dbConn, sqlGenerator,
-                "org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog");
+                "org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog", 1L);
         s = "insert into \"TXN_WRITE_NOTIFICATION_LOG\" " +
                 "(\"WNL_ID\", \"WNL_TXNID\", \"WNL_WRITEID\", \"WNL_DATABASE\", \"WNL_TABLE\", " +
                 "\"WNL_PARTITION\", \"WNL_TABLE_OBJ\", \"WNL_PARTITION_OBJ\", " +
@@ -1194,108 +1205,82 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   private void addNotificationLog(NotificationEvent event, ListenerEvent listenerEvent, Connection dbConn,
                                   SQLGenerator sqlGenerator) throws MetaException, SQLException {
     LOG.debug("DbNotificationListener: adding notification log for : {}", event.getMessage());
+    addNotificationLogBatch(Collections.singletonList(event), Collections.singletonList(listenerEvent),
+            dbConn, sqlGenerator);
+  }
+
+  private void addNotificationLogBatch(List<NotificationEvent> eventList, List<ListenerEvent> listenerEventList,
+                                 Connection dbConn, SQLGenerator sqlGenerator) throws MetaException, SQLException {
     if ((dbConn == null) || (sqlGenerator == null)) {
       LOG.info("connection or sql generator is not set so executing sql via DN");
-      process(event, listenerEvent);
+      for (int idx = 0; idx < eventList.size(); idx++) {
+        LOG.debug("DbNotificationListener: adding notification log for : {}", eventList.get(idx).getMessage());
+        process(eventList.get(idx), listenerEventList.get(idx));
+      }
       return;
     }
-    Statement stmt = null;
-    PreparedStatement pst = null;
-    ResultSet rs = null;
-    try {
-      stmt = dbConn.createStatement();
-      event.setMessageFormat(msgEncoder.getMessageFormat());
 
+    try (Statement stmt = dbConn.createStatement()) {
       if (sqlGenerator.getDbProduct().isMYSQL()) {
         stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
       }
+    }
 
-      long nextEventId = getNextEventId(dbConn, sqlGenerator); 
+    long nextEventId = getNextEventId(dbConn, sqlGenerator, eventList.size());
+    long nextNLId = getNextNLId(dbConn, sqlGenerator,
+            "org.apache.hadoop.hive.metastore.model.MNotificationLog", eventList.size());
 
-      long nextNLId = getNextNLId(dbConn, sqlGenerator,
-              "org.apache.hadoop.hive.metastore.model.MNotificationLog");
+    String columns = "\"NL_ID\"" + ", \"EVENT_ID\"" + ", \"EVENT_TIME\"" + ", \"EVENT_TYPE\"" + ", \"MESSAGE\""
+            + ", \"MESSAGE_FORMAT\"" + ", \"DB_NAME\"" + ", \"TBL_NAME\"" + ", \"CAT_NAME\"";
+    String insertVal = "insert into \"NOTIFICATION_LOG\" (" + columns + ") VALUES ("
+            + "?,?,?,?,?,?,?,?,?"
+            + ")";
 
-      String insertVal;
-      String columns;
-      List<String> params = new ArrayList<String>();
+    try (PreparedStatement pst = dbConn.prepareStatement(insertVal)) {
+      int numRows = 0;
 
-      // Construct the values string, parameters and column string step by step simultaneously so
-      // that the positions of columns and of their corresponding values do not go out of sync.
+      for (int idx = 0; idx < eventList.size(); idx++) {
+        NotificationEvent event = eventList.get(idx);
+        ListenerEvent listenerEvent = listenerEventList.get(idx);
 
-      // Notification log id
-      columns = "\"NL_ID\"";
-      insertVal = "" + nextNLId;
+        LOG.debug("DbNotificationListener: adding notification log for : {}", event.getMessage());
+        event.setMessageFormat(msgEncoder.getMessageFormat());
 
-      // Event id
-      columns = columns + ", \"EVENT_ID\"";
-      insertVal = insertVal + "," + nextEventId;
+        pst.setLong(1, nextNLId);
+        pst.setLong(2, nextEventId);
+        pst.setLong(3, event.getEventTime());
+        pst.setString(4, event.getEventType());
+        pst.setString(5, event.getMessage());
+        pst.setString(6, event.getMessageFormat());
+        pst.setString(7, event.getDbName());
+        pst.setString(8, event.getTableName());
+        pst.setString(9, event.getCatName());
 
-      // Event time
-      columns = columns + ", \"EVENT_TIME\"";
-      insertVal = insertVal + "," + event.getEventTime();
+        LOG.debug("Going to execute insert <" + insertVal + ">");
+        pst.addBatch();
+        numRows++;
 
-      // Event type
-      columns = columns + ", \"EVENT_TYPE\"";
-      insertVal = insertVal + ", ?";
-      params.add(event.getEventType());
+        if (numRows == maxBatchSize) {
+          pst.executeBatch();
+          numRows = 0;
+        }
 
-      // Message
-      columns = columns + ", \"MESSAGE\"";
-      insertVal = insertVal + ", ?";
-      params.add(event.getMessage());
-
-      // Message format
-      columns = columns + ", \"MESSAGE_FORMAT\"";
-      insertVal = insertVal + ", ?";
-      params.add(event.getMessageFormat());
-
-      // Database name, optional
-      String dbName = event.getDbName();
-      if (dbName != null) {
-        assert dbName.equals(dbName.toLowerCase());
-        columns = columns + ", \"DB_NAME\"";
-        insertVal = insertVal + ", ?";
-        params.add(dbName);
+        event.setEventId(nextEventId);
+        // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
+        if (event.isSetEventId()) {
+          listenerEvent.putParameter(
+                  MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME,
+                  Long.toString(event.getEventId()));
+        }
+        nextNLId++;
+        nextEventId++;
       }
-
-      // Table name, optional
-      String tableName = event.getTableName();
-      if (tableName != null) {
-        assert tableName.equals(tableName.toLowerCase());
-        columns = columns + ", \"TBL_NAME\"";
-        insertVal = insertVal + ", ?";
-        params.add(tableName);
-      }
-
-      // Catalog name, optional
-      String catName = event.getCatName();
-      if (catName != null) {
-        assert catName.equals(catName.toLowerCase());
-        columns = columns + ", \"CAT_NAME\"";
-        insertVal = insertVal + ", ?";
-        params.add(catName);
-      }
-
-      String s = "insert into \"NOTIFICATION_LOG\" (" + columns + ") VALUES (" + insertVal + ")";
-      pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
-      LOG.debug("Going to execute insert <" + s + "> with parameters (" +
-              String.join(", ", params) + ")");
-      pst.execute();
-
-      event.setEventId(nextEventId);
-      // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
-      if (event.isSetEventId()) {
-        listenerEvent.putParameter(
-                MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME,
-                Long.toString(event.getEventId()));
+      if (numRows != 0) {
+        pst.executeBatch();
       }
     } catch (SQLException e) {
-      LOG.warn("failed to add notification log" + e.getMessage());
+      LOG.warn("failed to add notification log ", e);
       throw e;
-    } finally {
-      closeStmt(stmt);
-      closeStmt(pst);
-      close(rs);
     }
   }
 
