@@ -384,12 +384,12 @@ PREHOOK: query: explain vectorization expression
 select count(*) from tbl_dates where to_date(concat(year, '-', month, '-', day)) between to_date('2018-12-01') and to_date('2021-03-01')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_dates
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain vectorization expression
 select count(*) from tbl_dates where to_date(concat(year, '-', month, '-', day)) between to_date('2018-12-01') and to_date('2021-03-01')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_dates
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -418,7 +418,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColumnBetween(col 6:date, left 17866, right 18687)(children: VectorUDFDateTimestamp(col 5:timestamp)(children: CastStringToTimestamp(col 4:string)(children: VectorUDFAdaptor(concat(year, '-', month, '-', day)) -> 4:string) -> 5:timestamp) -> 6:date)
+                        predicateExpression: FilterLongColumnBetween(col 7:date, left 17866, right 18687)(children: VectorUDFDateTimestamp(col 6:timestamp)(children: CastStringToTimestamp(col 5:string)(children: VectorUDFAdaptor(concat(year, '-', month, '-', day)) -> 5:string) -> 6:timestamp) -> 7:date)
                     predicate: to_date(CAST( concat(year, '-', month, '-', day) AS TIMESTAMP)) BETWEEN DATE'2018-12-01' AND DATE'2021-03-01' (type: boolean)
                     Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
