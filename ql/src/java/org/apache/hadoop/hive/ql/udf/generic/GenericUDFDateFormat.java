@@ -17,30 +17,31 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.DATE_GROUP;
-import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
-
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.util.DateTimeMath;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
+
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.DATE_GROUP;
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
 
 /**
  * GenericUDFDateFormat.
@@ -60,9 +61,10 @@ public class GenericUDFDateFormat extends GenericUDF {
   private transient PrimitiveCategory[] tsInputTypes = new PrimitiveCategory[2];
   private transient Converter[] dtConverters = new Converter[2];
   private transient PrimitiveCategory[] dtInputTypes = new PrimitiveCategory[2];
-  private final java.util.Date date = new java.util.Date();
+
   private final Text output = new Text();
-  private transient SimpleDateFormat formatter;
+  private transient ZoneId timeZone;
+  private transient DateTimeFormatter formatter;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -85,19 +87,29 @@ public class GenericUDFDateFormat extends GenericUDF {
       String fmtStr = getConstantStringValue(arguments, 1);
       if (fmtStr != null) {
         try {
-          formatter = new SimpleDateFormat(fmtStr);
-          formatter.setCalendar(DateTimeMath.getTimeZonedProlepticGregorianCalendar());
+          if (timeZone == null) {
+            timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
+                .getLocalTimeZone();
+          }
+          formatter = DateTimeFormatter.ofPattern(fmtStr).withZone(timeZone);
         } catch (IllegalArgumentException e) {
           // ignore
         }
       }
     } else {
-      throw new UDFArgumentTypeException(1, getFuncName() + " only takes constant as "
-          + getArgOrder(1) + " argument");
+      throw new UDFArgumentTypeException(1, getFuncName() + " only takes constant as " + getArgOrder(1) + " argument");
     }
 
     ObjectInspector outputOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
     return outputOI;
+  }
+
+  @Override
+  public void configure(MapredContext context) {
+    if (context != null) {
+      String timeZoneStr = HiveConf.getVar(context.getJobConf(), HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE);
+      timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
+    }
   }
 
   @Override
@@ -111,6 +123,7 @@ public class GenericUDFDateFormat extends GenericUDF {
     // the function should support both short date and full timestamp format
     // time part of the timestamp should not be skipped
     Timestamp ts = getTimestampValue(arguments, 0, tsConverters);
+
     if (ts == null) {
       Date d = getDateValue(arguments, 0, dtInputTypes, dtConverters);
       if (d == null) {
@@ -118,10 +131,10 @@ public class GenericUDFDateFormat extends GenericUDF {
       }
       ts = Timestamp.ofEpochMilli(d.toEpochMilli(id), id);
     }
-
-
-    date.setTime(ts.toEpochMilli(id));
-    String res = formatter.format(date);
+    Timestamp ts2 = TimestampTZUtil.convertTimestampToZone(ts, timeZone, ZoneId.of("UTC"));
+    Instant instant = Instant.ofEpochSecond(ts2.toEpochSecond(), ts2.getNanos());
+    ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneOffset.UTC);
+    String res = formatter.format(zonedDateTime);
     if (res == null) {
       return null;
     }
