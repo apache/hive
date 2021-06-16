@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
+import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEventBatch;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.events.UpdateTableColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.DeleteTableColumnStatEvent;
@@ -259,9 +260,9 @@ public class MetaStoreListenerNotifier {
       .put(EventType.ACID_WRITE,
         (listener, event, dbConn, sqlGenerator) ->
                 listener.onAcidWrite((AcidWriteEvent) event, dbConn, sqlGenerator))
-      .put(EventType.UPDATE_PARTITION_COLUMN_STAT,
+      .put(EventType.UPDATE_PARTITION_COLUMN_STAT_BATCH,
               (listener, event, dbConn, sqlGenerator) ->
-                      listener.onUpdatePartitionColumnStatDirectSql((UpdatePartitionColumnStatEvent) event,
+                      listener.onUpdatePartitionColumnStatInBatch((UpdatePartitionColumnStatEventBatch) event,
                               dbConn, sqlGenerator))
       .build()
   );

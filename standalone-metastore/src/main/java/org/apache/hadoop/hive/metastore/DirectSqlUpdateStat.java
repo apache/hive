@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
+import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEventBatch;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
@@ -598,16 +599,18 @@ class DirectSqlUpdateStat {
         updatePartColStatTable(updateMap, dbConn);
       }
 
-      for (Map.Entry entry : result.entrySet()) {
-        Map<String, String> parameters = (Map<String, String>) entry.getValue();
-        ColumnStatistics colStats = partColStatsMap.get(entry.getKey());
-        List<String> partVals = getPartValsFromName(tbl, colStats.getStatsDesc().getPartName());
-        if (transactionalListeners != null) {
-          MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
-                  EventMessage.EventType.UPDATE_PARTITION_COLUMN_STAT,
-                  new UpdatePartitionColumnStatEvent(colStats, partVals, parameters,
-                          tbl, writeId, null), dbConn, sqlGenerator);
+      if (transactionalListeners != null) {
+        UpdatePartitionColumnStatEventBatch eventBatch = new UpdatePartitionColumnStatEventBatch(null);
+        for (Map.Entry entry : result.entrySet()) {
+          Map<String, String> parameters = (Map<String, String>) entry.getValue();
+          ColumnStatistics colStats = partColStatsMap.get(entry.getKey());
+          List<String> partVals = getPartValsFromName(tbl, colStats.getStatsDesc().getPartName());
+          UpdatePartitionColumnStatEvent event = new UpdatePartitionColumnStatEvent(colStats, partVals, parameters,
+                  tbl, writeId, null);
+          eventBatch.addPartColStatEvent(event);
         }
+        MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
+                EventMessage.EventType.UPDATE_PARTITION_COLUMN_STAT_BATCH, eventBatch, dbConn, sqlGenerator);
       }
       dbConn.commit();
       committed = true;

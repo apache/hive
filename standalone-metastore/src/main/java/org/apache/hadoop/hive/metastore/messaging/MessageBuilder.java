@@ -119,6 +119,7 @@ public class MessageBuilder {
   public static final String UPDATE_TBL_COL_STAT_EVENT = "UPDATE_TBL_COL_STAT_EVENT";
   public static final String DELETE_TBL_COL_STAT_EVENT = "DELETE_TBL_COL_STAT_EVENT";
   public static final String UPDATE_PART_COL_STAT_EVENT = "UPDATE_PART_COL_STAT_EVENT";
+  public static final String UPDATE_PART_COL_STAT_EVENT_BATCH = "UPDATE_PART_COL_STAT_EVENT_BATCH";
   public static final String DELETE_PART_COL_STAT_EVENT = "DELETE_PART_COL_STAT_EVENT";
 
   protected static final Configuration conf = MetastoreConf.newMetastoreConf();
