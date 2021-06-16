@@ -28,6 +28,7 @@ import java.nio.ByteOrder;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
+//copy of org.apache.tez.runtime.library.utils.FastByteComparisons
 abstract public class FastByteComparisons {
   static final Logger LOG = LoggerFactory.getLogger(FastByteComparisons.class);
 

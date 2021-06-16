@@ -1836,10 +1836,10 @@ public class HiveConf extends Configuration {
     HIVEMAPSIDEAGGREGATE("hive.map.aggr", true, "Whether to use map-side aggregation in Hive Group By queries"),
     HIVEGROUPBYSKEW("hive.groupby.skewindata", false, "Whether there is skew in data to optimize group by queries"),
 
-    HIVE_ENABLE_COMBINER_FOR_GROUP_BY("hive.enable.combiner.for.groupby", true,
+    HIVE_ENABLE_COMBINER_FOR_MAP_GROUP_BY("hive.enable.combiner.for.map.groupby", true,
         "Whether to enable tez combiner to aggregate the records after sorting is done. It is supported "
-        + "only for map side aggregation. This will be useful where the map side hash aggregation is converted to "
-        + " streaming mode due to issue with memory utilization etc."),
+        + "only for map side aggregation. Mostly useful when map side hash aggregation switches to streaming mode"
+        + "due to high memory utilization etc."),
 
     HIVEJOINEMITINTERVAL("hive.join.emit.interval", 1000,
         "How many rows in the right-most join operand Hive should buffer before emitting the join result."),
