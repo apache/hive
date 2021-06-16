@@ -645,7 +645,7 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.valueOf(isSetValidWriteIdList()).compareTo(other.isSetValidWriteIdList());
+    lastComparison = java.lang.Boolean.compare(isSetValidWriteIdList(), other.isSetValidWriteIdList());
     if (lastComparison != 0) {
       return lastComparison;
     }
@@ -655,7 +655,7 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.valueOf(isSetTableId()).compareTo(other.isSetTableId());
+    lastComparison = java.lang.Boolean.compare(isSetTableId(), other.isSetTableId());
     if (lastComparison != 0) {
       return lastComparison;
     }
