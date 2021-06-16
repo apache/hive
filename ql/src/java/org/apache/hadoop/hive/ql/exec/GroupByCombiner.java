@@ -56,18 +56,18 @@ import static org.apache.hadoop.hive.ql.exec.Utilities.REDUCE_PLAN_NAME;
 public class GroupByCombiner extends VectorGroupByCombiner {
 
   private static final Logger LOG = LoggerFactory.getLogger(
-          org.apache.hadoop.hive.ql.exec.GroupByCombiner.class.getName());
+          org.apache.hadoop.hive.ql.exec.GroupByCombiner.class);
 
   private transient GenericUDAFEvaluator[] aggregationEvaluators;
-  AbstractSerDe valueSerializer;
-  GenericUDAFEvaluator.AggregationBuffer[] aggregationBuffers;
-  GroupByOperator groupByOperator;
-  ObjectInspector aggrObjectInspector;
-  DataInputBuffer valueBuffer;
-  Object[] cachedValues;
-  DataInputBuffer prevKey;
-  BytesWritable valWritable;
-  DataInputBuffer prevVal;
+  private AbstractSerDe valueSerializer;
+  private GenericUDAFEvaluator.AggregationBuffer[] aggregationBuffers;
+  private GroupByOperator groupByOperator;
+  private ObjectInspector aggrObjectInspector;
+  private DataInputBuffer valueBuffer;
+  private Object[] cachedValues;
+  private DataInputBuffer prevKey;
+  private BytesWritable valWritable;
+  private DataInputBuffer prevVal;
 
   public GroupByCombiner(TaskContext taskContext) throws HiveException, IOException {
     super(taskContext);
@@ -205,7 +205,7 @@ public class GroupByCombiner extends VectorGroupByCombiner {
   }
 
   public static JobConf setCombinerInConf(BaseWork dest, JobConf conf, JobConf destConf) {
-    if (conf == null || !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ENABLE_COMBINER_FOR_GROUP_BY)) {
+    if (conf == null || !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ENABLE_COMBINER_FOR_MAP_GROUP_BY)) {
       return conf;
     }
 
@@ -257,8 +257,6 @@ public class GroupByCombiner extends VectorGroupByCombiner {
     // In the combiner we use the aggregation functions used at the reducer to aggregate
     // the records. The mapper node (plan for map work) will not have these info so we will get
     // this from reduce plan.
-    //TODO Need to check if we can get the aggregate info from map plan if its map side
-    //aggregate.
     if (destConf.getBoolean(HiveConf.ConfVars.HIVE_RPC_QUERY_PLAN.varname, false)) {
       conf.set(getConfigPrefix(dest.getName()) + HiveConf.ConfVars.HIVE_RPC_QUERY_PLAN.varname, "true");
       Path planPath = new Path(plan);

@@ -59,13 +59,12 @@ import static org.apache.hadoop.hive.ql.exec.Utilities.REDUCE_PLAN_NAME;
 // aggregation is not done, then here the aggregation can be done cheaply as the records
 // are sorted based on group by key.
 public class VectorGroupByCombiner extends MRCombiner {
-  private static final Logger LOG = LoggerFactory.getLogger(
-      VectorGroupByCombiner.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(VectorGroupByCombiner.class);
   protected final Configuration conf;
   protected final TezCounter combineInputRecordsCounter;
   protected final TezCounter combineOutputRecordsCounter;
-  VectorAggregateExpression[] aggregators;
-  VectorAggregationBufferRow aggregationBufferRow;
+  private VectorAggregateExpression[] aggregators;
+  private VectorAggregationBufferRow aggregationBufferRow;
   protected transient LazyBinarySerializeWrite valueLazyBinarySerializeWrite;
 
   // This helper object serializes LazyBinary format reducer values from columns of a row
@@ -74,19 +73,19 @@ public class VectorGroupByCombiner extends MRCombiner {
 
   // The output buffer used to serialize a value into.
   protected transient ByteStream.Output valueOutput;
-  DataInputBuffer valueBytesWritable;
+  private DataInputBuffer valueBytesWritable;
 
   // Only required minimal configs are copied to the worker nodes. This hack (file.) is
   // done to include these configs to be copied to the worker node.
   protected static String confPrefixForWorker = "file.";
 
-  VectorDeserializeRow<LazyBinaryDeserializeRead> batchValueDeserializer;
-  int firstValueColumnOffset;
-  VectorizedRowBatchCtx batchContext = null;
+  private VectorDeserializeRow<LazyBinaryDeserializeRead> batchValueDeserializer;
+  private int firstValueColumnOffset;
+  private VectorizedRowBatchCtx batchContext = null;
   protected int numValueCol = 0;
   protected ReduceWork rw;
-  VectorizedRowBatch outputBatch = null;
-  VectorizedRowBatch inputBatch = null;
+  private VectorizedRowBatch outputBatch = null;
+  private VectorizedRowBatch inputBatch = null;
   protected AbstractSerDe inputKeyDeserializer = null;
   protected ObjectInspector keyObjectInspector = null;
   protected ObjectInspector valueObjectInspector = null;
@@ -116,6 +115,7 @@ public class VectorGroupByCombiner extends MRCombiner {
       if ((aggregators == null) || (aggregators.length != numValueCol)) {
         //TODO : Need to support distinct. The logic has to be changed to extract only
         // those aggregates which are not part of distinct.
+        // https://issues.apache.org/jira/browse/HIVE-24580
         LOG.info(" Combiner is disabled as the number of value columns does" +
                 " not match with number of aggregators");
         rw = null;
@@ -195,15 +195,6 @@ public class VectorGroupByCombiner extends MRCombiner {
 
   void initVectorBatches() throws HiveException {
     inputBatch = batchContext.createVectorizedRowBatch();
-
-    // Create data buffers for value bytes column vectors.
-    for (int i = firstValueColumnOffset; i < inputBatch.numCols; i++) {
-      ColumnVector colVector = inputBatch.cols[i];
-      if (colVector instanceof BytesColumnVector) {
-        BytesColumnVector bytesColumnVector = (BytesColumnVector) colVector;
-        bytesColumnVector.initBuffer();
-      }
-    }
 
     batchValueDeserializer =
             new VectorDeserializeRow<>(
