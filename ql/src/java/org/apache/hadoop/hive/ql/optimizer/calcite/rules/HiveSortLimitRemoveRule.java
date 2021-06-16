@@ -52,6 +52,14 @@ public final class HiveSortLimitRemoveRule extends RelOptRule {
         // We only have ORDER BY: Remove if the input is producing at
         // most one row.
         return maxRowCount <= 1;
+      } else {
+        // ORDER BY + LIMIT: Remove if the input is producing at most
+        // one row and the limit is larger or equal than the number of
+        // rows.
+        // TODO: If the second condition was not true, we could still
+        //       rewrite the operator (rather than removing it).
+        return maxRowCount <= 1 &&
+            RexLiteral.intValue(sortLimit.getFetchExpr()) >= maxRowCount;
       }
     }
     return false;

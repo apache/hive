@@ -656,21 +656,6 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-<<<<<<< HEAD
-                          projectedOutputColumnNums: [4, 5]
-                          selectExpressions: ConstantVectorExpression(val 65) -> 4:interval_year_month, ConstantVectorExpression(val -13) -> 5:interval_year_month
-                      Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
-                      File Output Operator
-                        compressed: false
-                        File Sink Vectorization:
-                            className: VectorFileSinkOperator
-                            native: false
-                        Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
-                        table:
-                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-=======
                           projectedOutputColumnNums: []
                       Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
@@ -682,7 +667,6 @@ STAGE PLANS:
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
->>>>>>> Order by-limit with constant can produce incorrect results
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
