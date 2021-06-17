@@ -7,15 +7,6 @@ set role ADMIN;
 
 SET hive.security.authorization.enabled=true;
 
--- CREATE CONNECTOR
-CREATE CONNECTOR derby_auth_dc
-TYPE 'derby'
-URL 'jdbc:derby:./target/tmp/junit_metastore_db;create=true'
-COMMENT 'test derby connector'
-WITH DCPROPERTIES (
-"hive.sql.dbcp.username"="APP",
-"hive.sql.dbcp.password"="mine");
-
 -- CREATE IF NOT EXISTS already
 CREATE CONNECTOR IF NOT EXISTS mysql_auth_dc
 TYPE 'mysql'
@@ -25,9 +16,6 @@ WITH DCPROPERTIES (
 "hive.sql.dbcp.username"="hive1",
 "hive.sql.dbcp.password"="hive1");
 SHOW CONNECTORS;
-
-CREATE REMOTE DATABASE mysql_db USING mysql_auth_dc with DBPROPERTIES("connector.remoteDbName"="hive1");
-SHOW DATABASES;
 
 -- alter connector set URL
 alter connector mysql_auth_dc set URL 'jdbc:mysql://nightly1.apache.org:3306/hive2';
@@ -41,10 +29,6 @@ DESCRIBE CONNECTOR extended mysql_auth_dc;
 alter connector mysql_auth_dc set OWNER USER newuser;
 DESCRIBE CONNECTOR extended mysql_auth_dc;
 
-DROP DATABASE mysql_db;
-SHOW DATABASES;
 DROP CONNECTOR mysql_auth_dc;
-SHOW CONNECTORS;
-DROP CONNECTOR derby_auth_dc;
 SHOW CONNECTORS;
 
