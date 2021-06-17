@@ -28,7 +28,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
 
   // duplicate constants from Constants.java to avoid a dependency on hive-common
   public static final String JDBC_HIVE_STORAGE_HANDLER_ID =
-          "org.apache.hive.storage.jdbc.JdbcStorageHandler";
+      "org.apache.hive.storage.jdbc.JdbcStorageHandler";
   public static final String JDBC_CONFIG_PREFIX = "hive.sql";
   public static final String JDBC_CATALOG = JDBC_CONFIG_PREFIX + ".catalog";
   public static final String JDBC_SCHEMA = JDBC_CONFIG_PREFIX + ".schema";
@@ -53,7 +53,6 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   private static final String JDBC_OUTPUTFORMAT_CLASS = "org.apache.hive.storage.jdbc.JdbcOutputFormat".intern();
 
   String type = null; // MYSQL, POSTGRES, ORACLE, DERBY, MSSQL, DB2 etc.
-  //String driverClassName = null;
   String jdbcUrl = null;
   String username = null;
   String password = null; // TODO convert to byte array
@@ -136,7 +135,9 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       if (rs != null) {
         List<Table> tables = new ArrayList<Table>();
         while(rs.next()) {
-          tables.add(getTable(rs.getString(3)));
+          try {
+            tables.add(getTable(rs.getString(3)));
+          } catch (MetaException e) { /* IGNORE */ }
         }
         return tables;
       }
@@ -198,7 +199,6 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     ResultSet rs = null;
     Table table = null;
     try {
-      // rs = fetchTableMetadata(tableName);
       rs = fetchColumnsViaDBMetaData(tableName);
       List<FieldSchema> cols = new ArrayList<>();
       while (rs.next()) {
@@ -232,7 +232,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       return table;
     } catch (Exception e) {
       LOG.warn("Exception retrieving remote table " + scoped_db + "." + tableName + " via data connector "
-              + connector.getName());
+          + connector.getName());
       throw new MetaException("Error retrieving remote table:" + e);
     } finally {
       try {

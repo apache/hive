@@ -3726,19 +3726,23 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         req.getTblNames(), req.getCapabilities(), req.getProjectionSpec(), req.getTablesPattern()));
   }
 
-  private String tableNames2regex(List<String> tableNames) {
-    return "/^(" + String.join("|", tableNames) + ")$/";
+  private List<Table> filterTablesByName(List<Table> tables, List<String> tableNames) {
+    List<Table> filteredTables = new ArrayList<>();
+    for (Table table : tables) {
+      if (tableNames.contains(table.getTableName())) {
+        filteredTables.add(table);
+      }
+    }
+    return filteredTables;
   }
 
   private List<Table> getRemoteTableObjectsInternal(String dbname, List<String> tableNames, String pattern) throws MetaException {
     String[] parsedDbName = parseDbName(dbname, conf);
     try {
       Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-      List<Table> tables = null;
-      if (tableNames == null || pattern.equals(".*")) {
-        tables = DataConnectorProviderFactory.getDataConnectorProvider(db).getTables(null);
-      } else {
-        tables = DataConnectorProviderFactory.getDataConnectorProvider(db).getTables(tableNames2regex(tableNames));
+      List<Table> tables = DataConnectorProviderFactory.getDataConnectorProvider(db).getTables(null);
+      if (tableNames != null) {
+        tables = filterTablesByName(tables, tableNames);
       }
       return FilterUtils.filterTablesIfEnabled(isServerFilterEnabled, filterHook, tables);
     } catch (Exception e) {
