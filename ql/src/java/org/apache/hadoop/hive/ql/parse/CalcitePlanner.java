@@ -1790,26 +1790,37 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Plan generation");
       markEvent("Calcite - Plan created");
 
-      if (isMaterializedViewRewritingByTextEnabled()) {
-        RelNode rewrittenPlan = applyMaterializedViewRewritingByText(calciteGenPlan, optCluster);
-        if (rewrittenPlan != null) {
-          return CalcitePlan.of(rewrittenPlan, rewrittenPlan);
-        }
-      }
-
-
       // Create executor
       RexExecutor executorProvider = functionHelper.getRexExecutor();
       calciteGenPlan.getCluster().getPlanner().setExecutor(executorProvider);
+
+      // Create and set MD provider
+      HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf, HIVE_REL_NODE_CLASSES);
+      optCluster.invalidateMetadataQuery();
+      RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
+
+      if (isMaterializedViewRewritingByTextEnabled()) {
+        calciteOptimizedPlan = applyMaterializedViewRewritingByText(calciteGenPlan, optCluster);
+        if (calciteOptimizedPlan != null) {
+          // We need to execute the partition prune rule to make sure
+          // the metadata for the tables is correctly retrieved.
+          callAndCacheValidTxnWriteIdList(calciteOptimizedPlan);
+          HepProgramBuilder program = new HepProgramBuilder();
+          generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+              HivePartitionPruneRule.createRules(conf));
+          calciteOptimizedPlan = executeProgram(calciteOptimizedPlan, program.build(),
+              mdProvider.getMetadataProvider(), executorProvider);
+          // We generate the engine-specific plan (if needed).
+          calciteEnginePlan = generateEnginePlan ?
+              generateEnginePlan(calciteOptimizedPlan, mdProvider.getMetadataProvider(), executorProvider) : null;
+          return CalcitePlan.of(calciteOptimizedPlan, calciteEnginePlan);
+        }
+      }
 
       // We need to get the ColumnAccessInfo and viewToTableSchema for views.
       HiveRelFieldTrimmer.get()
           .trim(HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
               calciteGenPlan, this.columnAccessInfo, this.viewProjectToTableSchema);
-
-      // Create and set MD provider
-      HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf, HIVE_REL_NODE_CLASSES);
-      RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
 
       //Remove subquery
       if (LOG.isDebugEnabled()) {
@@ -1881,60 +1892,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       if (generateEnginePlan) {
-        switch (conf.getEngine()) {
-        case IMPALA:
-          perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
-          HepProgram hepProgram = impalaHelper.getHepProgram(getDb());
-          // The last parameter here (noDag="true") allows for the creation of separate nodes
-          // even if they are equivalent.
-          // While this does have the potential to have a bigger memory footprint, the nodes being
-          // replaced in these rules are 1:1, so it should be ok here.
-          calciteEnginePlan =
-              executeProgram(calciteOptimizedPlan, hepProgram, mdProvider.getMetadataProvider(),
-                  executorProvider, null, true, null);
-          perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Impala transformation rules");
-
-          if (LOG.isDebugEnabled() && !conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
-            LOG.debug("Impala plan:\n{}", RelOptUtil.toString(calciteEnginePlan));
-          }
-          break;
-        case HIVE:
-          if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
-            final HepProgramBuilder program = new HepProgramBuilder();
-            // Merge join into multijoin operators (if possible)
-            generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
-                HiveJoinProjectTransposeRule.BOTH_PROJECT_INCLUDE_OUTER,
-                HiveJoinProjectTransposeRule.LEFT_PROJECT_INCLUDE_OUTER,
-                HiveJoinProjectTransposeRule.RIGHT_PROJECT_INCLUDE_OUTER,
-                HiveJoinToMultiJoinRule.INSTANCE, HiveProjectMergeRule.INSTANCE);
-            // The previous rules can pull up projections through join operators,
-            // thus we run the field trimmer again to push them back down
-            generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN,
-                new HiveFieldTrimmerRule(false));
-            generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-                ProjectRemoveRule.INSTANCE, new ProjectMergeRule(false, HiveRelFactories.HIVE_BUILDER));
-            generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN,
-                HiveFilterProjectTSTransposeRule.INSTANCE, HiveFilterProjectTSTransposeRule.INSTANCE_DRUID,
-                HiveProjectFilterPullUpConstantsRule.INSTANCE);
-
-            // Introduce exchange operators below join/multijoin operators
-            generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-                HiveInsertExchange4JoinRule.EXCHANGE_BELOW_JOIN, HiveInsertExchange4JoinRule.EXCHANGE_BELOW_MULTIJOIN);
-
-            // Trigger program
-            perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
-            calciteEnginePlan = executeProgram(calciteOptimizedPlan, program.build(), mdProvider.getMetadataProvider(),
-                executorProvider);
-            perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
-                "Calcite: Hive transformation rules");
-
-            if (LOG.isDebugEnabled() && !conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
-              LOG.debug("Hive plan:\n{}", RelOptUtil.toString(calciteEnginePlan));
-            }
-          }
-        default:
-          // Nothing to do for other engines for the time being
-        }
+        calciteEnginePlan = generateEnginePlan(calciteOptimizedPlan,
+            mdProvider.getMetadataProvider(), executorProvider);
       }
 
       return CalcitePlan.of(calciteOptimizedPlan, calciteEnginePlan);
@@ -2556,6 +2515,67 @@ public class CalcitePlanner extends SemanticAnalyzer {
           "Calcite: Postjoin ordering transformation");
 
       return basePlan;
+    }
+
+    private RelNode generateEnginePlan(RelNode calciteOptimizedPlan,
+        RelMetadataProvider metadataProvider, RexExecutor executorProvider) {
+      RelNode calciteEnginePlan = null;
+      PerfLogger perfLogger = SessionState.getPerfLogger();
+      switch (conf.getEngine()) {
+      case IMPALA:
+        perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+        HepProgram hepProgram = impalaHelper.getHepProgram(getDb());
+        // The last parameter here (noDag="true") allows for the creation of separate nodes
+        // even if they are equivalent.
+        // While this does have the potential to have a bigger memory footprint, the nodes being
+        // replaced in these rules are 1:1, so it should be ok here.
+        calciteEnginePlan =
+            executeProgram(calciteOptimizedPlan, hepProgram, metadataProvider,
+                executorProvider, null, true, null);
+        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Impala transformation rules");
+
+        if (LOG.isDebugEnabled() && !conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
+          LOG.debug("Impala plan:\n{}", RelOptUtil.toString(calciteEnginePlan));
+        }
+        break;
+      case HIVE:
+        if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
+          final HepProgramBuilder program = new HepProgramBuilder();
+          // Merge join into multijoin operators (if possible)
+          generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
+              HiveJoinProjectTransposeRule.BOTH_PROJECT_INCLUDE_OUTER,
+              HiveJoinProjectTransposeRule.LEFT_PROJECT_INCLUDE_OUTER,
+              HiveJoinProjectTransposeRule.RIGHT_PROJECT_INCLUDE_OUTER,
+              HiveJoinToMultiJoinRule.INSTANCE, HiveProjectMergeRule.INSTANCE);
+          // The previous rules can pull up projections through join operators,
+          // thus we run the field trimmer again to push them back down
+          generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN,
+              new HiveFieldTrimmerRule(false));
+          generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+              ProjectRemoveRule.INSTANCE, new ProjectMergeRule(false, HiveRelFactories.HIVE_BUILDER));
+          generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN,
+              HiveFilterProjectTSTransposeRule.INSTANCE, HiveFilterProjectTSTransposeRule.INSTANCE_DRUID,
+              HiveProjectFilterPullUpConstantsRule.INSTANCE);
+
+          // Introduce exchange operators below join/multijoin operators
+          generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+              HiveInsertExchange4JoinRule.EXCHANGE_BELOW_JOIN, HiveInsertExchange4JoinRule.EXCHANGE_BELOW_MULTIJOIN);
+
+          // Trigger program
+          perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+          calciteEnginePlan = executeProgram(calciteOptimizedPlan, program.build(), metadataProvider,
+              executorProvider);
+          perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
+              "Calcite: Hive transformation rules");
+
+          if (LOG.isDebugEnabled() && !conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
+            LOG.debug("Hive plan:\n{}", RelOptUtil.toString(calciteEnginePlan));
+          }
+        }
+      default:
+        // Nothing to do for other engines for the time being
+      }
+      return calciteEnginePlan;
     }
 
     // Get all non-dummy tables used in plan
