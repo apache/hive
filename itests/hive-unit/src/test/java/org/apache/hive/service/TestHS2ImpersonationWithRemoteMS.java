@@ -39,7 +39,7 @@ import java.util.HashMap;
 /**
  * Test HiveServer2 sends correct user name to remote MetaStore server for user impersonation.
  */
-@org.junit.Ignore("HIVE-25250")
+
 public class TestHS2ImpersonationWithRemoteMS {
 
   private static MiniHS2 miniHS2 = null;
