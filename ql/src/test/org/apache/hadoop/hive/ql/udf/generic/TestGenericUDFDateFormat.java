@@ -164,7 +164,7 @@ public class TestGenericUDFDateFormat {
   public void testWrongFmt() throws HiveException {
     GenericUDFDateFormat udf = new GenericUDFDateFormat();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-    Text fmtText = new Text("Q");
+    Text fmtText = new Text("B");
     ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory
         .getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo, fmtText);
     ObjectInspector[] arguments = { valueOI0, valueOI1 };
@@ -176,7 +176,6 @@ public class TestGenericUDFDateFormat {
 
 
   @Test
-  @Ignore
   public void testJulianDates() throws HiveException {
     GenericUDFDateFormat udf = new GenericUDFDateFormat();
     ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
