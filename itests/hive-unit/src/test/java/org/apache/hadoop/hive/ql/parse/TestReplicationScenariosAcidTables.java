@@ -107,6 +107,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
         put("hive.metastore.disallow.incompatible.col.type.changes", "false");
         put("metastore.warehouse.tenant.colocation", "true");
         put("hive.in.repl.test", "true");
+        put("hive.txn.readonly.enabled", "true");
         put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
         put(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET.varname, "false");
       }};
@@ -174,6 +175,27 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     replica.loadFailure(replicatedDbName, primaryDbName);
     currentEventId = replica.getCurrentNotificationEventId().getEventId();
     assert lastEventId == currentEventId;
+  }
+
+  @Test
+  public void testREADOperationsNotCapturedInNotificationLog() throws Throwable {
+    //Perform empty bootstrap dump and load
+    primary.hiveConf.set("hive.txn.readonly.enabled", "true");
+    primary.run("create table " + primaryDbName + ".t1 (id int)");
+    primary.dump(primaryDbName);
+    replica.run("REPL LOAD " + primaryDbName + " INTO " + replicatedDbName);
+    //Perform empty incremental dump and load so that all db level properties are altered.
+    primary.dump(primaryDbName);
+    replica.run("REPL LOAD " + primaryDbName + " INTO " + replicatedDbName);
+    primary.run("insert into " + primaryDbName + ".t1 values(1)");
+    long lastEventId = primary.getCurrentNotificationEventId().getEventId();
+    primary.run("DESCRIBE DATABASE " + primaryDbName );
+    primary.run("SELECT * from " + primaryDbName + ".t1");
+    primary.run("SHOW tables " + primaryDbName);
+    primary.run("use " + primaryDbName);
+    primary.run("SHOW table extended like 't1'");
+    long currentEventId = primary.getCurrentNotificationEventId().getEventId();
+    Assert.assertEquals(lastEventId, currentEventId);
   }
 
   @Test
