@@ -74,7 +74,7 @@ import static org.junit.Assert.fail;
 /**
  * TestReplicationScenariosAcidTables - test replication for ACID tables.
  */
-@org.junit.Ignore("HIVE-25267")
+//@org.junit.Ignore("HIVE-25267")
 public class TestReplicationScenariosAcidTables extends BaseReplicationScenariosAcidTables {
 
   @BeforeClass
@@ -194,6 +194,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     primary.run("SHOW tables " + primaryDbName);
     primary.run("use " + primaryDbName);
     primary.run("SHOW table extended like 't1'");
+    primary.run("EXPLAIN SELECT * from " + primaryDbName + ".t1");
     long currentEventId = primary.getCurrentNotificationEventId().getEventId();
     Assert.assertEquals(lastEventId, currentEventId);
   }
