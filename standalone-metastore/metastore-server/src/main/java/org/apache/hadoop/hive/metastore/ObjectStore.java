@@ -2553,15 +2553,15 @@ public class ObjectStore implements RawStore, Configurable {
         protected Boolean getJdoResult(GetHelper<Boolean> ctx) throws MetaException, NoSuchObjectException {
           try {
             return addPartitionsInternal(catName, dbName, tblName, parts);
-          } catch (Exception e) {
+          } catch (InvalidObjectException e) {
             LOG.error("Failed to addPartitionsInternal ", e);
-            throw new MetaException(e.getMessage());
+            throw new NoSuchObjectException(e.getMessage());
           }
         }
       }.run(true);
     } catch (NoSuchObjectException e) {
       LOG.error("Failed to addPartitionsInternal ", e);
-      throw new MetaException(e.getMessage());
+      throw new InvalidObjectException(e.getMessage());
     }
   }
 

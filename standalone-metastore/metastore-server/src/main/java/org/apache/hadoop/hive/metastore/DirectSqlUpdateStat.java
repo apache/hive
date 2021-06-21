@@ -39,6 +39,7 @@ import org.apache.hadoop.conf.Configuration;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.datastore.JDOConnection;
+import javax.jdo.Transaction;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -628,83 +629,31 @@ class DirectSqlUpdateStat {
     }
   }
 
-  /**
-   * Gets the next CS id from sequence MPartitionColumnStatistics and increment the CS id by numStats.
-   * @return The CD id before update.
-   */
-  public long getNextValueFromSequenceTable(String seqName, long numValues, boolean doCommit) throws MetaException {
-    Statement statement = null;
-    ResultSet rs = null;
-    long maxCsId = 0;
-    boolean committed = false;
-    Connection dbConn = null;
+  public long getNextCSIdForMPartitionColumnStatistics(long numStats) throws MetaException {
+    assert (pm.currentTransaction().isActive() == false);
     JDOConnection jdoConn = null;
 
     try {
-      lockInternal();
       jdoConn = pm.getDataStoreConnection();
-      dbConn = (Connection) (jdoConn.getNativeConnection());
-
-      // This loop will be iterated at max twice. If there is no records, it will first insert and then do a select.
-      // We are not using any upsert operations as select for update and then update is required to make sure that
-      // the caller gets a reserved range for CSId not used by any other thread.
-      boolean insertDone = false;
-      while (maxCsId == 0) {
-        String query = "SELECT \"NEXT_VAL\" FROM \"SEQUENCE_TABLE\" WHERE \"SEQUENCE_NAME\"= "
-                + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics")
-                + " FOR UPDATE";
-        LOG.debug("Going to execute query " + query);
-        statement = dbConn.createStatement();
-        rs = statement.executeQuery(query);
-        if (rs.next()) {
-          maxCsId = rs.getLong(1);
-        } else if (insertDone) {
-          throw new MetaException("Invalid state of SEQUENCE_TABLE for MPartitionColumnStatistics");
+      Connection dbConn = (Connection) (jdoConn.getNativeConnection());
+      Transaction currentTransaction = pm.currentTransaction();
+      currentTransaction.begin();
+      long csId = -1;
+      try {
+        csId = PartitionHelper.getNextValueFromSequenceTable(
+                dbConn, "org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics", numStats, dbType);
+      } finally {
+        if (csId == -1) {
+          currentTransaction.rollback();
         } else {
-          insertDone = true;
-          closeStmt(statement);
-          statement = dbConn.createStatement();
-          query = "INSERT INTO \"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\", \"NEXT_VAL\")  VALUES ( "
-                  + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics") + "," + 1
-                  + ")";
-          try {
-            statement.executeUpdate(query);
-          } catch (SQLException e) {
-            // If the record is already inserted by some other thread continue to select.
-            if (dbType.isDuplicateKeyError(e)) {
-              continue;
-            }
-            LOG.error("Unable to insert into SEQUENCE_TABLE for MPartitionColumnStatistics.", e);
-            throw e;
-          } finally {
-            closeStmt(statement);
-          }
+          currentTransaction.commit();
         }
       }
-
-      long nextMaxCsId = maxCsId + numValues + 1;
-      closeStmt(statement);
-      statement = dbConn.createStatement();
-      String query = "UPDATE \"SEQUENCE_TABLE\" SET \"NEXT_VAL\" = "
-              + nextMaxCsId
-              + " WHERE \"SEQUENCE_NAME\" = "
-              + quoteString("org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics");
-      statement.executeUpdate(query);
-      if (doCommit) {
-        dbConn.commit();
-      }
-      committed = true;
-      return maxCsId;
-    } catch (Exception e) {
-      LOG.error("Unable to getNextCSIdForMPartitionColumnStatistics", e);
-      throw new MetaException("Unable to getNextCSIdForMPartitionColumnStatistics  "
-              + " due to: " + e.getMessage());
+      return csId;
     } finally {
-      if (!committed && doCommit) {
-        rollbackDBConn(dbConn);
+      if (jdoConn != null) {
+        jdoConn.close();
       }
-      close(rs, statement, jdoConn);
-      unlockInternal();
     }
   }
 }
