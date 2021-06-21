@@ -187,6 +187,19 @@ public class TestGenericUDFDateFormat {
     runAndVerifyStr("1001-01-05", fmtText, "05---01--1001", udf);
   }
 
+  @Test
+  public void testTimestampPriorTo1900() throws HiveException {
+    GenericUDFDateFormat udf = new GenericUDFDateFormat();
+    ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    Text fmtText = new Text("yyyy-MM-dd HH:mm:ss.SSS z");
+    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory
+        .getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo, fmtText);
+    ObjectInspector[] arguments = { valueOI0, valueOI1 };
+    udf.initialize(arguments);
+    runAndVerifyStr("1400-01-14 01:01:10.123", fmtText, "1400-01-14 01:01:10.123 PST", udf);
+    runAndVerifyStr("1800-01-14 01:01:10.123", fmtText, "1800-01-14 01:01:10.123 PST", udf);
+  }
+
   private void runAndVerifyStr(String str, Text fmtText, String expResult, GenericUDF udf)
       throws HiveException {
     DeferredObject valueObj0 = new DeferredJavaObject(str != null ? new Text(str) : null);
