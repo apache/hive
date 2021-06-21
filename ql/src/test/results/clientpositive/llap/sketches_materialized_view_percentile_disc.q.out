@@ -36,6 +36,8 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@sketch_input
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv_1
+POSTHOOK: Lineage: mv_1._c1 EXPRESSION [(sketch_input)sketch_input.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: mv_1.category SIMPLE [(sketch_input)sketch_input.FieldSchema(name:category, type:char(1), comment:null), ]
 PREHOOK: query: explain
 select 'rewrite; mv matching', category, percentile_disc(0.2) within group (order by id) from sketch_input group by category
 PREHOOK: type: QUERY

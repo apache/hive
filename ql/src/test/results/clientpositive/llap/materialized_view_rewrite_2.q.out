@@ -150,6 +150,8 @@ POSTHOOK: Input: default@depts_n0
 POSTHOOK: Input: default@emps_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n0
+POSTHOOK: Lineage: mv1_n0.deptno SIMPLE [(depts_n0)depts_n0.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n0.empid SIMPLE [(emps_n0)emps_n0.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select empid from emps_n0
 join depts_n0 using (deptno) where depts_n0.deptno > 20
@@ -228,6 +230,8 @@ POSTHOOK: Input: default@depts_n0
 POSTHOOK: Input: default@emps_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n0
+POSTHOOK: Lineage: mv1_n0.deptno SIMPLE [(depts_n0)depts_n0.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n0.empid SIMPLE [(emps_n0)emps_n0.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select empid from emps_n0
 join depts_n0 using (deptno) where depts_n0.deptno > 20
@@ -306,6 +310,8 @@ POSTHOOK: Input: default@depts_n0
 POSTHOOK: Input: default@emps_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n0
+POSTHOOK: Lineage: mv1_n0.deptno SIMPLE [(depts_n0)depts_n0.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n0.empid SIMPLE [(emps_n0)emps_n0.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select empid from emps_n0
 join depts_n0 using (deptno) where depts_n0.deptno > 20
@@ -384,6 +390,8 @@ POSTHOOK: Input: default@depts_n0
 POSTHOOK: Input: default@emps_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n0
+POSTHOOK: Lineage: mv1_n0.deptno SIMPLE [(emps_n0)emps_n0.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n0.empid SIMPLE [(emps_n0)emps_n0.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select depts_n0.deptno from depts_n0
 join emps_n0 using (deptno) where emps_n0.empid > 15
@@ -467,6 +475,8 @@ POSTHOOK: Input: default@depts_n0
 POSTHOOK: Input: default@emps_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n0
+POSTHOOK: Lineage: mv1_n0.deptno SIMPLE [(emps_n0)emps_n0.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n0.empid SIMPLE [(emps_n0)emps_n0.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select depts_n0.deptno from depts_n0
 join emps_n0 using (deptno) where emps_n0.empid > 15
@@ -616,6 +626,11 @@ POSTHOOK: Input: default@depts_n0
 POSTHOOK: Input: default@emps_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n0
+POSTHOOK: Lineage: mv1_n0.deptno SIMPLE [(emps_n0)emps_n0.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n0.deptno2 SIMPLE [(depts_n0)depts_n0.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n0.empid SIMPLE [(dependents_n0)dependents_n0.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n0.name SIMPLE [(depts_n0)depts_n0.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_n0.name2 SIMPLE [(dependents_n0)dependents_n0.FieldSchema(name:name, type:varchar(256), comment:null), ]
 PREHOOK: query: explain
 select dependents_n0.empid
 from depts_n0
