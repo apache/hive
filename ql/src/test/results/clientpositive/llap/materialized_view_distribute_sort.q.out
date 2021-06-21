@@ -159,6 +159,8 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@distribute_mv_1
+POSTHOOK: Lineage: distribute_mv_1.key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: distribute_mv_1.value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: DESCRIBE FORMATTED distribute_mv_1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@distribute_mv_1
@@ -441,6 +443,8 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@distribute_mv_2
+POSTHOOK: Lineage: distribute_mv_2.key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: distribute_mv_2.value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: DESCRIBE FORMATTED distribute_mv_2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@distribute_mv_2
@@ -985,6 +989,8 @@ POSTHOOK: Input: default@src_txn
 POSTHOOK: Input: default@src_txn_2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@distribute_mv_3
+POSTHOOK: Lineage: distribute_mv_3.key SIMPLE [(src_txn)src_txn.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: distribute_mv_3.value SIMPLE [(src_txn)src_txn.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: DESCRIBE FORMATTED distribute_mv_3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@distribute_mv_3

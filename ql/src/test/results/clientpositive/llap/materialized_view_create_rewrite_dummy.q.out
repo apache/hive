@@ -40,6 +40,9 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view_n0
+POSTHOOK: Lineage: cmv_mat_view_n0.a SIMPLE []
+POSTHOOK: Lineage: cmv_mat_view_n0.b SIMPLE [(cmv_basetable_n0)cmv_basetable_n0.FieldSchema(name:b, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view_n0.c SIMPLE [(cmv_basetable_n0)cmv_basetable_n0.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: select * from cmv_mat_view_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view_n0
@@ -74,6 +77,8 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view2
+POSTHOOK: Lineage: cmv_mat_view2.a SIMPLE []
+POSTHOOK: Lineage: cmv_mat_view2.c SIMPLE [(cmv_basetable_n0)cmv_basetable_n0.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: select * from cmv_mat_view2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view2

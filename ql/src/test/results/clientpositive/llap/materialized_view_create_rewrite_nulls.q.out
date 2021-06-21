@@ -59,6 +59,11 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mat1
+POSTHOOK: Lineage: mat1._c2 EXPRESSION [(t1)t1.FieldSchema(name:d, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1._c3 EXPRESSION [(t1)t1.FieldSchema(name:d, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1._c4 EXPRESSION [(t1)t1.FieldSchema(name:d, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1.a SIMPLE [(t1)t1.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1.b SIMPLE [(t1)t1.FieldSchema(name:b, type:varchar(256), comment:null), ]
 a	b	_c2	_c3	_c4
 PREHOOK: query: INSERT INTO t1 VALUES
  (NULL, 'new row with NULL GBY key', 100.77, 35),
