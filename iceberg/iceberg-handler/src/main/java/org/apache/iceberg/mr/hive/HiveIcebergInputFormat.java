@@ -65,8 +65,7 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
       }
     }
 
-    String[] selectedColumns = ColumnProjectionUtils.getReadColumnNames(job);
-    job.setStrings(InputFormatConfig.SELECTED_COLUMNS, selectedColumns);
+    job.set(InputFormatConfig.SELECTED_COLUMNS, job.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, ""));
 
     String location = job.get(InputFormatConfig.TABLE_LOCATION);
     return Arrays.stream(super.getSplits(job, numSplits))
@@ -77,8 +76,7 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
   @Override
   public RecordReader<Void, Container<Record>> getRecordReader(InputSplit split, JobConf job,
                                                                Reporter reporter) throws IOException {
-    String[] selectedColumns = ColumnProjectionUtils.getReadColumnNames(job);
-    job.setStrings(InputFormatConfig.SELECTED_COLUMNS, selectedColumns);
+    job.set(InputFormatConfig.SELECTED_COLUMNS, job.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, ""));
     return super.getRecordReader(split, job, reporter);
   }
 
