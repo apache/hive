@@ -65,20 +65,20 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(19,1), 2:ss_ext_discount_amt:int, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(19,1), 2:ss_ext_discount_amt:int, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: COALESCE(ss_ext_list_price,1) (type: decimal(12,2))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [7]
-                        selectExpressions: VectorCoalesce(columns [5, 6])(children: ConvertDecimal64ToDecimal(col 0:decimal(12,2)/DECIMAL_64) -> 5:decimal(12,2), ConstantVectorExpression(val 1) -> 6:decimal(10,0)) -> 7:decimal(12,2)
+                        projectedOutputColumnNums: [8]
+                        selectExpressions: VectorCoalesce(columns [6, 7])(children: ConvertDecimal64ToDecimal(col 0:decimal(12,2)/DECIMAL_64) -> 6:decimal(12,2), ConstantVectorExpression(val 1) -> 7:decimal(10,0)) -> 8:decimal(12,2)
                     Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col0)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDecimal(col 7:decimal(12,2)) -> decimal(22,2)
+                          aggregators: VectorUDAFSumDecimal(col 8:decimal(12,2)) -> decimal(22,2)
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           native: false
@@ -200,20 +200,20 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(19,1), 2:ss_ext_discount_amt:int, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(19,1), 2:ss_ext_discount_amt:int, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: COALESCE(ss_ext_list_price,1.1) (type: decimal(7,2))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [6]
-                        selectExpressions: VectorCoalesce(columns [0, 5])(children: col 0:decimal(7,2)/DECIMAL_64, ConstantVectorExpression(val 1.1) -> 5:decimal(7,2)/DECIMAL_64) -> 6:decimal(7,2)/DECIMAL_64
+                        projectedOutputColumnNums: [7]
+                        selectExpressions: VectorCoalesce(columns [0, 6])(children: col 0:decimal(7,2)/DECIMAL_64, ConstantVectorExpression(val 1.1) -> 6:decimal(7,2)/DECIMAL_64) -> 7:decimal(7,2)/DECIMAL_64
                     Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col0)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDecimal64(col 6:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
+                          aggregators: VectorUDAFSumDecimal64(col 7:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           native: false
@@ -335,20 +335,20 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(19,1), 2:ss_ext_discount_amt:int, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(19,1), 2:ss_ext_discount_amt:int, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: COALESCE(ss_ext_list_price,1.1) (type: decimal(7,2))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [6]
-                        selectExpressions: VectorCoalesce(columns [0, 5])(children: col 0:decimal(7,2)/DECIMAL_64, ConstantVectorExpression(val 1.1) -> 5:decimal(7,2)/DECIMAL_64) -> 6:decimal(7,2)/DECIMAL_64
+                        projectedOutputColumnNums: [7]
+                        selectExpressions: VectorCoalesce(columns [0, 6])(children: col 0:decimal(7,2)/DECIMAL_64, ConstantVectorExpression(val 1.1) -> 6:decimal(7,2)/DECIMAL_64) -> 7:decimal(7,2)/DECIMAL_64
                     Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col0)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDecimal64(col 6:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
+                          aggregators: VectorUDAFSumDecimal64(col 7:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           native: false

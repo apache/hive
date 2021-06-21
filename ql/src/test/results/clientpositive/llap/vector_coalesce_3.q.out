@@ -89,7 +89,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:member:bigint, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:member:bigint, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: member (type: bigint)
                     outputColumnNames: _col0
@@ -111,8 +111,8 @@ STAGE PLANS:
                           className: VectorMapJoinOuterLongOperator
                           native: true
                           nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
-                          projectedOutput: 0:bigint, 2:bigint
-                          smallTableValueMapping: 2:bigint
+                          projectedOutput: 0:bigint, 3:bigint
+                          smallTableValueMapping: 3:bigint
                           hashTableImplementationType: OPTIMIZED
                       outputColumnNames: _col0, _col2
                       input vertices:
@@ -124,7 +124,7 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [0, 2]
+                            projectedOutputColumnNums: [0, 3]
                         Statistics: Num rows: 7 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
@@ -161,7 +161,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:member:bigint, 1:attr:bigint, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:member:bigint, 1:attr:bigint, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -175,8 +175,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0, 6]
-                          selectExpressions: IfExprColumnNull(col 5:boolean, col 1:bigint, null)(children: ColOrCol(col 3:boolean, col 4:boolean)(children: LongColGreaterLongScalar(col 1:bigint, val 1) -> 3:boolean, IsNull(col 1:bigint) -> 4:boolean) -> 5:boolean, col 1:bigint) -> 6:bigint
+                          projectedOutputColumnNums: [0, 7]
+                          selectExpressions: IfExprColumnNull(col 6:boolean, col 1:bigint, null)(children: ColOrCol(col 4:boolean, col 5:boolean)(children: LongColGreaterLongScalar(col 1:bigint, val 1) -> 4:boolean, IsNull(col 1:bigint) -> 5:boolean) -> 6:boolean, col 1:bigint) -> 7:bigint
                       Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
@@ -188,7 +188,7 @@ STAGE PLANS:
                             keyColumns: 0:bigint
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumns: 6:bigint
+                            valueColumns: 7:bigint
                         Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap

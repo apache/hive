@@ -33,8 +33,10 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.orc.TestVectorizedOrcAcidRowBatchReader;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
+import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,8 +45,10 @@ import java.util.BitSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2.swapTxnManager;
+import static org.mockito.Matchers.any;
 
 public class TestTxnCommands3 extends TxnCommandsBaseForTests {
   static final private Logger LOG = LoggerFactory.getLogger(TestTxnCommands3.class);
@@ -459,6 +463,101 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
             (TxnStore.CLEANING_RESPONSE.equalsIgnoreCase(resp.getCompacts().get(0).getState()) &&
                 TxnStore.FAILED_RESPONSE.equalsIgnoreCase(resp.getCompacts().get(1).getState())));
 
+    //delete metadata about aborted txn from txn_components and files (if any)
+    runCleaner(hiveConf);
+  }
+
+  @Test
+  public void testMajorCompactionAbortLeftoverFiles() throws Exception {
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
+
+    dropTable(new String[] {"T"});
+    //note: transaction names T1, T2, etc below, are logical, the actual txnid will be different
+    runStatementOnDriver("create table T (a int, b int) stored as orc");
+    runStatementOnDriver("insert into T values(0,2)"); //makes delta_1_1 in T1
+    runStatementOnDriver("insert into T values(1,4)"); //makes delta_2_2 in T2
+
+    runStatementOnDriver("alter table T compact 'minor'");
+    //create failed compaction attempt so that compactor txn is aborted
+    Worker worker = Mockito.spy(new Worker());
+    worker.setConf(hiveConf);
+    worker.init(new AtomicBoolean(true));
+    Mockito.doThrow(new RuntimeException(
+      "Will cause CompactorMR to fail all opening txn and creating directories for compaction."))
+      .when(worker).verifyTableIdHasNotChanged(any(), any());
+    worker.run();
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history",
+        1, resp.getCompactsSize());
+    Assert.assertEquals("Unexpected 0th compaction state",
+        TxnStore.FAILED_RESPONSE, resp.getCompacts().get(0).getState());
+    GetOpenTxnsResponse openResp =  txnHandler.getOpenTxns();
+    Assert.assertEquals(openResp.toString(), 1, openResp.getOpen_txnsSize());
+    //check that the compactor txn is aborted
+    Assert.assertTrue(openResp.toString(), BitSet.valueOf(openResp.getAbortedBits()).get(0));
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    Path warehousePath = new Path(getWarehouseDir());
+    FileStatus[] actualList = fs.listStatus(new Path(warehousePath + "/t"),
+        FileUtils.HIDDEN_FILES_PATH_FILTER);
+
+    // we expect all the t/base_* files to be removed by the compactor failure
+    String[] expectedList = new String[] {
+        "/t/delta_0000001_0000001_0000",
+        "/t/delta_0000002_0000002_0000",
+    };
+    checkExpectedFiles(actualList, expectedList, warehousePath.toString());
+    //delete metadata about aborted txn from txn_components and files (if any)
+    runCleaner(hiveConf);
+  }
+
+  @Test
+  public void testMinorCompactionAbortLeftoverFiles() throws Exception {
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
+
+    dropTable(new String[] {"T"});
+    //note: transaction names T1, T2, etc below, are logical, the actual txnid will be different
+    runStatementOnDriver("create table T (a int, b int) stored as orc");
+    runStatementOnDriver("insert into T values(0,2)"); //makes delta_1_1 in T1
+    runStatementOnDriver("insert into T values(1,4)"); //makes delta_2_2 in T2
+    runStatementOnDriver("update T set a=3 where b=2"); //makes delta/(delete_delta)_3_3 in T3
+
+    runStatementOnDriver("alter table T compact 'minor'");
+    //create failed compaction attempt so that compactor txn is aborted
+    Worker worker = Mockito.spy(new Worker());
+    worker.setConf(hiveConf);
+    worker.init(new AtomicBoolean(true));
+    Mockito.doThrow(new RuntimeException(
+      "Will cause CompactorMR to fail all opening txn and creating directories for compaction."))
+      .when(worker).verifyTableIdHasNotChanged(any(), any());
+    worker.run();
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history",
+        1, resp.getCompactsSize());
+    Assert.assertEquals("Unexpected 0th compaction state",
+        TxnStore.FAILED_RESPONSE, resp.getCompacts().get(0).getState());
+    GetOpenTxnsResponse openResp =  txnHandler.getOpenTxns();
+    Assert.assertEquals(openResp.toString(), 1, openResp.getOpen_txnsSize());
+    //check that the compactor txn is aborted
+    Assert.assertTrue(openResp.toString(), BitSet.valueOf(openResp.getAbortedBits()).get(0));
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    Path warehousePath = new Path(getWarehouseDir());
+    FileStatus[] actualList = fs.listStatus(new Path(warehousePath + "/t"),
+        FileUtils.HIDDEN_FILES_PATH_FILTER);
+
+    // we expect all the t/base_* files to be removed by the compactor failure
+    String[] expectedList = new String[] {
+        "/t/delta_0000001_0000001_0000",
+        "/t/delta_0000002_0000002_0000",
+        "/t/delete_delta_0000003_0000003_0000",
+        "/t/delta_0000003_0000003_0000",
+    };
+    checkExpectedFiles(actualList, expectedList, warehousePath.toString());
     //delete metadata about aborted txn from txn_components and files (if any)
     runCleaner(hiveConf);
   }

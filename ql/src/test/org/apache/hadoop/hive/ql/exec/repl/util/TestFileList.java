@@ -18,85 +18,46 @@
 
 package org.apache.hadoop.hive.ql.exec.repl.util;
 
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 
 /**
  * Tests the File List implementation.
  */
 
-@RunWith(PowerMockRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 @PrepareForTest({LoggerFactory.class})
 public class TestFileList {
 
-  @Mock
-  private BufferedWriter bufferedWriter;
-
-
-  @Test
-  public void testNoStreaming() throws Exception {
-    Object tuple[] =  setupAndGetTuple(100, false);
-    FileList fileList = (FileList) tuple[0];
-    FileListStreamer fileListStreamer = (FileListStreamer) tuple[1];
-    fileList.add("Entry1");
-    fileList.add("Entry2");
-    assertFalse(isStreamingToFile(fileListStreamer));
-  }
-
-  @Test
-  public void testAlwaysStreaming() throws Exception {
-    Object tuple[] =  setupAndGetTuple(100, true);
-    FileList fileList = (FileList) tuple[0];
-    FileListStreamer fileListStreamer = (FileListStreamer) tuple[1];
-    assertFalse(fileListStreamer.isInitialized());
-    fileList.add("Entry1");
-    waitForStreamingInitialization(fileListStreamer);
-    assertTrue(isStreamingToFile(fileListStreamer));
-    fileList.close();
-    waitForStreamingClosure(fileListStreamer);
-  }
-
-  @Test
-  public void testStreaminOnCacheHit() throws Exception {
-    Object tuple[] =  setupAndGetTuple(5, false);
-    FileList fileList = (FileList) tuple[0];
-    FileListStreamer fileListStreamer = (FileListStreamer) tuple[1];
-    fileList.add("Entry1");
-    fileList.add("Entry2");
-    fileList.add("Entry3");
-    Thread.sleep(5000L);
-    assertFalse(fileListStreamer.isInitialized());
-    fileList.add("Entry4");
-    fileList.add("Entry5");
-    waitForStreamingInitialization(fileListStreamer);
-    fileList.close();
-    waitForStreamingClosure(fileListStreamer);
-  }
+  HiveConf conf = new HiveConf();
+  private FSDataOutputStream outStream;
+  private FSDataOutputStream testFileStream;
+  final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
+          File.separator + TestFileList.class.getCanonicalName() + "-" + System.currentTimeMillis()
+  ).getPath().replaceAll("\\\\", "/");
+  private Exception testException = new IOException("test");
 
   @Test
   public void testConcurrentAdd() throws Exception {
-    Object tuple[] =  setupAndGetTuple(100, false);
-    FileList fileList = (FileList) tuple[0];
-    FileListStreamer fileListStreamer = (FileListStreamer) tuple[1];
+    FileList fileList = setupFileList();
     int numOfEntries = 1000;
     int numOfThreads = 10;
     ExecutorService executorService = Executors.newFixedThreadPool(numOfThreads);
@@ -105,60 +66,218 @@ public class TestFileList {
       executorService.submit(() -> {
         try {
           fileList.add("someEntry");
-        } catch (SemanticException e) {
+        } catch (IOException e) {
           throw new RuntimeException("Unbale to add to file list.");
         }
       });
     }
     executorService.awaitTermination(1, TimeUnit.MINUTES);
-    waitForStreamingInitialization(fileListStreamer);
     fileList.close();
-    waitForStreamingClosure(fileListStreamer);
     ArgumentCaptor<String> entryArgs = ArgumentCaptor.forClass(String.class);
-    Mockito.verify(bufferedWriter, Mockito.times(numOfEntries)).write(entryArgs.capture());
+    Mockito.verify(testFileStream, Mockito.times(numOfEntries)).writeBytes(entryArgs.capture());
   }
 
-  private void waitForStreamingInitialization(FileListStreamer fileListStreamer) throws InterruptedException {
-    long sleepTime = 1000L;
-    int iter = 0;
-    while (!fileListStreamer.isInitialized()) {
-      Thread.sleep(sleepTime);
-      iter++;
-      if (iter == 5) {
-        throw new IllegalStateException("File Streamer not initialized till 5s.");
+  @Test
+  public void testConcurrentAddWithAbort() throws Exception {
+    FileList fileList = setupFileList(false, false, false);
+    int numOfEntries = 1000;
+    int numOfThreads = 10;
+    ExecutorService executorService = Executors.newFixedThreadPool(numOfThreads);
+    final String retryExhaustedMsg = ErrorMsg.REPL_RETRY_EXHAUSTED
+            .format(testException.getMessage());
+
+    for (int i=1; i<=numOfEntries; i++) {
+      executorService.submit(() -> {
+        try {
+          fileList.add("someEntry");
+        } catch (IOException e) {
+          Assert.assertTrue(e.getMessage().contains(retryExhaustedMsg));
+        }
+      });
+    }
+    executorService.awaitTermination(1, TimeUnit.MINUTES);
+    fileList.close();
+    ArgumentCaptor<String> entryArgs = ArgumentCaptor.forClass(String.class);
+    //retry exhausted should be encountered by the first thread, so the other threads do not write.
+    Mockito.verify(outStream, Mockito.times(1)).writeBytes(entryArgs.capture());
+  }
+
+  @Test
+  public void testWriteRetryCreateFailure() throws Exception {
+    String testEntry = "someEntry";
+    boolean retryOnCreate = true;
+    FileList fileList = setupFileList(retryOnCreate);
+    final String retryExhaustedMsg = ErrorMsg.REPL_RETRY_EXHAUSTED
+            .format(testException.getMessage());
+
+    try {
+      fileList.add(testEntry);
+    } catch (IOException e) {
+      Assert.assertTrue(e.getMessage().contains(retryExhaustedMsg));
+    }
+
+    //the create keeps failing, so create should be called at least twice,
+    //writes and appends do not happen
+    Mockito.verify(fileList, Mockito.atLeast(2)).getWriterCreateMode();
+    Mockito.verify(fileList, Mockito.times(0)).getWriterAppendMode();
+  }
+
+  @Test
+  public void testWriteNoRetry() throws Exception {
+    String testEntry = "someEntry";
+    boolean retryOnCreate = false, retryOnWrite = false;
+    FileList fileList = setupFileList(retryOnCreate, retryOnWrite);
+    final String retryExhaustedMsg = ErrorMsg.REPL_RETRY_EXHAUSTED
+            .format(testException.getMessage());
+
+    try {
+      fileList.add(testEntry);
+    } catch (IOException e) {
+      Assert.assertFalse(e.getMessage().contains(retryExhaustedMsg));
+      Assert.assertTrue(e.getMessage().contains("test"));
+    }
+
+    //the first write fails and no retries are made
+    Mockito.verify(fileList, Mockito.times(1)).getWriterCreateMode();
+    Mockito.verify(outStream, Mockito.times(1)).writeBytes(Mockito.anyString());
+    Mockito.verify(fileList, Mockito.times(0)).getWriterAppendMode();
+  }
+
+  @Test
+  public void testReadWithDuplicateEntries() throws Exception {
+    conf = new HiveConf();
+    String testEntry = "someEntry";
+    int numUniqueEntries = 100;
+    Path testFilePath =  new Path(new Path(TEST_DATA_DIR), "testFile");
+    FileList fileList = new FileList(testFilePath, conf);
+
+    for (int i = 1; i <= numUniqueEntries; i++) {
+      String currentUniqueEntry = testEntry + i;
+      for (int duplicateFactor = 0; duplicateFactor < i; duplicateFactor++) {
+        fileList.add(currentUniqueEntry);
       }
     }
-  }
+    fileList.close();
 
-  private void waitForStreamingClosure(FileListStreamer fileListStreamer) throws InterruptedException {
-    long sleepTime = 1000L;
-    int iter = 0;
-    while (!isStreamingClosedProperly(fileListStreamer)) {
-      Thread.sleep(sleepTime);
-      iter++;
-      if (iter == 5) {
-        throw new IllegalStateException("File Streamer not getting closed till 5s.");
-      }
+    int currentCount = 1;
+    while (fileList.hasNext()) {
+      String entry = fileList.next();
+      Assert.assertEquals(testEntry + currentCount, entry);
+      currentCount++;
     }
+    Assert.assertEquals(currentCount - 1, numUniqueEntries);
   }
 
-  private Object[] setupAndGetTuple(int cacheSize, boolean lazyDataCopy) throws Exception {
+  @Test
+  public void testReadWithAllDistinctEntries() throws Exception {
+    conf = new HiveConf();
+    String testEntry = "someEntry";
+    int numUniqueEntries = 100;
+    Path testFilePath =  new Path(new Path(TEST_DATA_DIR), "testFile");
+    FileList fileList = new FileList(testFilePath, conf);
+
+    for (int i = 1; i <= numUniqueEntries; i++) {
+      String currentUniqueEntry = testEntry + i;
+      fileList.add(currentUniqueEntry);
+    }
+    fileList.close();
+
+    int currentCount = 1;
+    while (fileList.hasNext()) {
+      String entry = fileList.next();
+      Assert.assertEquals(testEntry + currentCount, entry);
+      currentCount++;
+    }
+    Assert.assertEquals(currentCount - 1, numUniqueEntries);
+  }
+
+  @Test
+  public void testWriteIntermediateRetry() throws Exception {
+    String testEntry = "someEntry";
+    boolean retryOnCreate = false; // create passes, write operation keeps failing
+    FileList fileList = setupFileList(retryOnCreate);
+    final String retryExhaustedMsg = ErrorMsg.REPL_RETRY_EXHAUSTED
+            .format(testException.getMessage());
+
+    try{
+      fileList.add(testEntry);
+    } catch (IOException e) {
+      Assert.assertTrue(e.getMessage().contains(retryExhaustedMsg));
+    }
+
+    //file-creation done once
+    Mockito.verify(fileList, Mockito.times(1)).getWriterCreateMode();
+    //writes fail after creation, subsequent attempts should only call append, verify 2 such attempts
+    Mockito.verify(fileList, Mockito.atLeast(2)).getWriterAppendMode();
+    Mockito.verify(outStream, Mockito.atLeast(2)).writeBytes(Mockito.anyString());
+  }
+
+  private FileList setupFileList(boolean... retryParams) throws Exception {
     HiveConf hiveConf = Mockito.mock(HiveConf.class);
-    Mockito.when(hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET)).thenReturn(lazyDataCopy);
-    Path backingFile = new Path("/tmp/backingFile");
-    LinkedBlockingQueue<String> cache =  new LinkedBlockingQueue<>(cacheSize);
-    FileListStreamer fileListStreamer = Mockito.spy(new FileListStreamer(cache, backingFile, hiveConf));
-    FileList fileList = new FileList(backingFile, fileListStreamer, cache, hiveConf);
-    Mockito.doReturn(bufferedWriter).when(fileListStreamer).lazyInitWriter();
-    Object[] tuple  = new Object[] {fileList, fileListStreamer};
-    return tuple;
-  }
+    FileSystem mockFs = Mockito.mock(FileSystem.class);
+    Path backingFile = Mockito.spy(new Path("/tmp/backingFile"));
+    FileList fileList = Mockito.spy(new FileList(backingFile, hiveConf));
+    outStream = Mockito.spy(new FSDataOutputStream(null, null));
+    Retryable retryable = Retryable.builder()
+            .withTotalDuration(60)
+            .withInitialDelay(1)
+            .withBackoff(1.0)
+            .withRetryOnException(IOException.class).build();
 
-  private boolean isStreamingToFile(FileListStreamer fileListStreamer) {
-    return fileListStreamer.isInitialized() && fileListStreamer.isAlive();
-  }
+    if(retryParams.length == 0) {
+      //setup for normal flow, without failures
+      Path noRetryPath = new Path(new Path(TEST_DATA_DIR), "noRetry");
+      testFileStream = Mockito.spy(noRetryPath.getFileSystem(conf).create(noRetryPath));
+      Mockito.doReturn(retryable)
+              .when(fileList).buildRetryable();
+      Mockito.doReturn(true)
+              .when(hiveConf).getBoolVar(HiveConf.ConfVars.REPL_COPY_FILE_LIST_ITERATOR_RETRY);
+      Mockito.doReturn(testFileStream).when(fileList).initWriter();
+    }
+    else if (retryParams.length == 1) {
+      //setup for retries
+      Mockito.doReturn(true)
+              .when(hiveConf).getBoolVar(HiveConf.ConfVars.REPL_COPY_FILE_LIST_ITERATOR_RETRY);
+      Mockito.doReturn(retryable)
+              .when(fileList).buildRetryable();
+      Mockito.doReturn(mockFs)
+              .when(backingFile).getFileSystem(hiveConf);
 
-  private boolean isStreamingClosedProperly(FileListStreamer fileListStreamer) {
-    return fileListStreamer.isInitialized() && !fileListStreamer.isAlive() && fileListStreamer.isValid();
+      if(retryParams[0]) {
+        //setup for retry because of create-failure
+        Mockito.doReturn(false)
+                .when(mockFs).exists(backingFile);
+        Mockito.doThrow(testException)
+                .when(fileList).getWriterCreateMode();
+      }
+      else {
+        //setup for retry because of failure during writes
+        Mockito.when(mockFs.exists(backingFile))
+                .thenReturn(false)
+                .thenReturn(true);
+        Mockito.doReturn(outStream)
+                .when(fileList).getWriterAppendMode();
+        Mockito.doReturn(outStream)
+                .when(fileList).getWriterCreateMode();
+        Mockito.doThrow(testException)
+                .when(outStream).writeBytes(Mockito.anyString());
+      }
+    } else if (retryParams.length == 2) {
+      //setup for failure but no retry
+      Mockito.doReturn(false)
+              .when(hiveConf).getBoolVar(HiveConf.ConfVars.REPL_COPY_FILE_LIST_ITERATOR_RETRY);
+      Mockito.doReturn(outStream)
+              .when(fileList).getWriterCreateMode();
+      Mockito.doThrow(testException)
+              .when(outStream).writeBytes(Mockito.anyString());
+    } else if (retryParams.length == 3) {
+      //setup for abort case
+      Mockito.doReturn(true)
+              .when(hiveConf)
+              .getBoolVar(HiveConf.ConfVars.REPL_COPY_FILE_LIST_ITERATOR_RETRY);
+      Mockito.doReturn(outStream)
+              .when(fileList).initWriter();
+    }
+    return fileList;
   }
 }

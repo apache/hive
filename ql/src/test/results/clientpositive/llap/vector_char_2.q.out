@@ -113,13 +113,13 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [1, 3]
-                          selectExpressions: CastStringToLong(col 0:char(10)) -> 3:int
+                          projectedOutputColumnNums: [1, 4]
+                          selectExpressions: CastStringToLong(col 0:char(10)) -> 4:int
                       Statistics: Num rows: 501 Data size: 89178 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col1), count()
                         Group By Vectorization:
-                            aggregators: VectorUDAFSumLong(col 3:int) -> bigint, VectorUDAFCountStar(*) -> bigint
+                            aggregators: VectorUDAFSumLong(col 4:int) -> bigint, VectorUDAFCountStar(*) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
                             keyExpressions: col 1:char(20)
@@ -324,13 +324,13 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [1, 3]
-                          selectExpressions: CastStringToLong(col 0:char(10)) -> 3:int
+                          projectedOutputColumnNums: [1, 4]
+                          selectExpressions: CastStringToLong(col 0:char(10)) -> 4:int
                       Statistics: Num rows: 501 Data size: 89178 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col1), count()
                         Group By Vectorization:
-                            aggregators: VectorUDAFSumLong(col 3:int) -> bigint, VectorUDAFCountStar(*) -> bigint
+                            aggregators: VectorUDAFSumLong(col 4:int) -> bigint, VectorUDAFCountStar(*) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
                             keyExpressions: col 1:char(20)

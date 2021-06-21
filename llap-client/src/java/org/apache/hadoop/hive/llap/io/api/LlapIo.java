@@ -87,4 +87,15 @@ public interface LlapIo<T> {
    */
   RecordReader<NullWritable, VectorizedRowBatch> llapVectorizedOrcReaderForPath(Object fileKey, Path path, CacheTag tag,
       List<Integer> tableIncludedCols, JobConf conf, long offset, long length) throws IOException;
+
+  /**
+   * Extract and return the cache content metadata.
+   */
+  LlapDaemonProtocolProtos.CacheEntryList fetchCachedContentInfo();
+
+  /**
+   * Load the actual data into the cache based on the provided metadata.
+   */
+  void loadDataIntoCache(LlapDaemonProtocolProtos.CacheEntryList metadata);
+
 }

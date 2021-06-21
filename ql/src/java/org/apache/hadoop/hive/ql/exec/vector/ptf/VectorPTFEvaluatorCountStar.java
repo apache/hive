@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
+import org.apache.hadoop.hive.ql.udf.ptf.Range;
 
 /**
  * This class evaluates count(*) for a PTF group.
@@ -44,8 +45,19 @@ public class VectorPTFEvaluatorCountStar extends VectorPTFEvaluatorBase {
     // evaluateInputExpr(batch);
 
     // Count all rows.
-
     count += batch.size;
+  }
+
+  @Override
+  public boolean canRunOptimizedCalculation(int rowNum, Range range) {
+    return true;
+  }
+
+  /* This is the vectorized counterpart of HIVE-24710. */
+  @Override
+  public Object runOnRange(int rowNum, Range range, VectorPTFGroupBatches batches) {
+    count = range.getEnd() - range.getStart();
+    return count;
   }
 
   @Override
@@ -65,7 +77,7 @@ public class VectorPTFEvaluatorCountStar extends VectorPTFEvaluatorBase {
   }
 
   @Override
-  public long getLongGroupResult() {
+  public Object getGroupResult() {
     return count;
   }
 

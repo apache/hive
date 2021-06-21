@@ -52,7 +52,6 @@ import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocolException;
-import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -104,6 +103,8 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     extraConf.put("fs.trash.checkpoint.interval", "30");  // FS_TRASH_CHECKPOINT_INTERVAL_KEY
     extraConf.put("fs.trash.interval", "30");             // FS_TRASH_INTERVAL_KEY (hadoop-2)
     extraConf.put(ConfVars.HIVE_IN_TEST.getVarname(), "true");
+    extraConf.put(ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS.getVarname(), " ");
+
     startMetaStores(msConf, extraConf);
   }
 
@@ -153,7 +154,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
         new TableBuilder()
             .setTableName("external_table_for_test")
             .addCol("test_col", "int")
-            .setLocation(metaStore.getWarehouseRoot() + "/external/table_dir")
+            .setLocation(metaStore.getExternalWarehouseRoot() + "/external/table_dir")
             .addTableParam("EXTERNAL", "TRUE")
             .setType("EXTERNAL_TABLE")
             .create(client, metaStore.getConf());
@@ -1182,9 +1183,13 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
           .addCol("col1_" + i, ColumnType.STRING_TYPE_NAME)
           .addCol("col2_" + i, ColumnType.INT_TYPE_NAME);
       // Make one have a non-standard location
-      if (i == 0) builder.setLocation(MetaStoreTestUtils.getTestWarehouseDir(tableNames[i]));
+      if (i == 0) {
+        builder.setLocation(MetaStoreTestUtils.getTestWarehouseDir(tableNames[i]));
+      }
       // Make one partitioned
-      if (i == 2) builder.addPartCol("pcol1", ColumnType.STRING_TYPE_NAME);
+      if (i == 2) {
+        builder.addPartCol("pcol1", ColumnType.STRING_TYPE_NAME);
+      }
       // Make one a materialized view
       if (i == 3) {
         builder.setType(TableType.MATERIALIZED_VIEW.name())
@@ -1232,10 +1237,14 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     // test getAllTables
     Set<String> fetchedNames = new HashSet<>(client.getAllTables(catName, dbName));
     Assert.assertEquals(tableNames.length, fetchedNames.size());
-    for (String tableName : tableNames) Assert.assertTrue(fetchedNames.contains(tableName));
+    for (String tableName : tableNames) {
+      Assert.assertTrue(fetchedNames.contains(tableName));
+    }
 
     fetchedNames = new HashSet<>(client.getAllTables(DEFAULT_DATABASE_NAME));
-    for (String tableName : tableNames) Assert.assertFalse(fetchedNames.contains(tableName));
+    for (String tableName : tableNames) {
+      Assert.assertFalse(fetchedNames.contains(tableName));
+    }
 
     // test getMaterializedViewsForRewriting
     List<String> materializedViews = client.getMaterializedViewsForRewriting(catName, dbName);
@@ -1279,7 +1288,9 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     client.updateCreationMetadata(catName, dbName, tableNames[3], cm);
 
     List<String> partNames = new ArrayList<>();
-    for (String partVal : partVals) partNames.add("pcol1=" + partVal);
+    for (String partVal : partVals) {
+      partNames.add("pcol1=" + partVal);
+    }
     // Truncate a table
     client.truncateTable(catName, dbName, tableNames[0], partNames);
 

@@ -307,7 +307,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 3:int)(children: ListIndexColScalar(col 0:array<int>, col 1:int) -> 3:int)
+                        predicateExpression: SelectColumnIsNotNull(col 4:int)(children: ListIndexColScalar(col 0:array<int>, col 1:int) -> 4:int)
                     predicate: a[1] is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -316,8 +316,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0, 1, 4]
-                          selectExpressions: ListIndexColScalar(col 0:array<int>, col 1:int) -> 4:int
+                          projectedOutputColumnNums: [0, 1, 5]
+                          selectExpressions: ListIndexColScalar(col 0:array<int>, col 1:int) -> 5:int
                       Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col2 (type: int)
@@ -460,7 +460,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 3:int)(children: ListIndexColColumn(col 0:array<int>, col 1:int) -> 3:int)
+                        predicateExpression: SelectColumnIsNotNull(col 4:int)(children: ListIndexColColumn(col 0:array<int>, col 1:int) -> 4:int)
                     predicate: a[index] is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -469,8 +469,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0, 1, 4]
-                          selectExpressions: ListIndexColColumn(col 0:array<int>, col 1:int) -> 4:int
+                          projectedOutputColumnNums: [0, 1, 5]
+                          selectExpressions: ListIndexColColumn(col 0:array<int>, col 1:int) -> 5:int
                       Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col2 (type: int)

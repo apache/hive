@@ -68,7 +68,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -81,8 +81,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: StringGroupConcatColCol(col 0:string, col 1:string) -> 9:string, StringGroupConcatColCol(col 2:varchar(10), col 3:varchar(20)) -> 10:varchar(30), StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: StringGroupConcatColCol(col 0:string, col 1:string) -> 11:string, StringGroupConcatColCol(col 2:varchar(10), col 3:varchar(20)) -> 12:varchar(30)) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: StringGroupConcatColCol(col 0:string, col 1:string) -> 10:string, StringGroupConcatColCol(col 2:varchar(10), col 3:varchar(20)) -> 11:varchar(30), StringGroupColEqualStringGroupColumn(col 12:string, col 13:string)(children: StringGroupConcatColCol(col 0:string, col 1:string) -> 12:string, StringGroupConcatColCol(col 2:varchar(10), col 3:varchar(20)) -> 13:varchar(30)) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 302 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -173,7 +173,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -186,8 +186,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: StringUpper(col 1:string) -> 9:string, StringUpper(col 3:varchar(20)) -> 10:varchar(20), StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: StringUpper(col 1:string) -> 11:string, StringUpper(col 3:varchar(20)) -> 12:varchar(20)) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: StringUpper(col 1:string) -> 10:string, StringUpper(col 3:varchar(20)) -> 11:varchar(20), StringGroupColEqualStringGroupColumn(col 12:string, col 13:string)(children: StringUpper(col 1:string) -> 12:string, StringUpper(col 3:varchar(20)) -> 13:varchar(20)) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 292 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -278,7 +278,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -291,8 +291,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: StringLower(col 1:string) -> 9:string, StringLower(col 3:varchar(20)) -> 10:varchar(20), StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: StringLower(col 1:string) -> 11:string, StringLower(col 3:varchar(20)) -> 12:varchar(20)) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: StringLower(col 1:string) -> 10:string, StringLower(col 3:varchar(20)) -> 11:varchar(20), StringGroupColEqualStringGroupColumn(col 12:string, col 13:string)(children: StringLower(col 1:string) -> 12:string, StringLower(col 3:varchar(20)) -> 13:varchar(20)) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 292 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -383,7 +383,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -396,8 +396,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: VectorUDFAdaptor(ascii(c2)) -> 9:int, VectorUDFAdaptor(ascii(c4)) -> 10:int, LongColEqualLongColumn(col 11:int, col 12:int)(children: VectorUDFAdaptor(ascii(c2)) -> 11:int, VectorUDFAdaptor(ascii(c4)) -> 12:int) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: VectorUDFAdaptor(ascii(c2)) -> 10:int, VectorUDFAdaptor(ascii(c4)) -> 11:int, LongColEqualLongColumn(col 12:int, col 13:int)(children: VectorUDFAdaptor(ascii(c2)) -> 12:int, VectorUDFAdaptor(ascii(c4)) -> 13:int) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -488,7 +488,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -501,8 +501,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: VectorUDFAdaptor(concat_ws('|', c1, c2)) -> 9:string, VectorUDFAdaptor(concat_ws('|', c3, c4)) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: VectorUDFAdaptor(concat_ws('|', c1, c2)) -> 11:string, VectorUDFAdaptor(concat_ws('|', c3, c4)) -> 12:string) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: VectorUDFAdaptor(concat_ws('|', c1, c2)) -> 10:string, VectorUDFAdaptor(concat_ws('|', c3, c4)) -> 11:string, StringGroupColEqualStringGroupColumn(col 12:string, col 13:string)(children: VectorUDFAdaptor(concat_ws('|', c1, c2)) -> 12:string, VectorUDFAdaptor(concat_ws('|', c3, c4)) -> 13:string) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -593,7 +593,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -606,8 +606,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [10, 12, 17]
-                          selectExpressions: VectorUDFAdaptor(decode(encode(c2,'US-ASCII'),'US-ASCII'))(children: VectorUDFAdaptor(encode(c2,'US-ASCII')) -> 9:binary) -> 10:string, VectorUDFAdaptor(decode(encode(c4,'US-ASCII'),'US-ASCII'))(children: VectorUDFAdaptor(encode(c4,'US-ASCII')) -> 11:binary) -> 12:string, StringGroupColEqualStringGroupColumn(col 14:string, col 16:string)(children: VectorUDFAdaptor(decode(encode(c2,'US-ASCII'),'US-ASCII'))(children: VectorUDFAdaptor(encode(c2,'US-ASCII')) -> 13:binary) -> 14:string, VectorUDFAdaptor(decode(encode(c4,'US-ASCII'),'US-ASCII'))(children: VectorUDFAdaptor(encode(c4,'US-ASCII')) -> 15:binary) -> 16:string) -> 17:boolean
+                          projectedOutputColumnNums: [11, 13, 18]
+                          selectExpressions: VectorUDFAdaptor(decode(encode(c2,'US-ASCII'),'US-ASCII'))(children: VectorUDFAdaptor(encode(c2,'US-ASCII')) -> 10:binary) -> 11:string, VectorUDFAdaptor(decode(encode(c4,'US-ASCII'),'US-ASCII'))(children: VectorUDFAdaptor(encode(c4,'US-ASCII')) -> 12:binary) -> 13:string, StringGroupColEqualStringGroupColumn(col 15:string, col 17:string)(children: VectorUDFAdaptor(decode(encode(c2,'US-ASCII'),'US-ASCII'))(children: VectorUDFAdaptor(encode(c2,'US-ASCII')) -> 14:binary) -> 15:string, VectorUDFAdaptor(decode(encode(c4,'US-ASCII'),'US-ASCII'))(children: VectorUDFAdaptor(encode(c4,'US-ASCII')) -> 16:binary) -> 17:string) -> 18:boolean
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -698,7 +698,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -711,8 +711,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: VectorUDFAdaptor(instr(c2, '_')) -> 9:int, VectorUDFAdaptor(instr(c4, '_')) -> 10:int, LongColEqualLongColumn(col 11:int, col 12:int)(children: VectorUDFAdaptor(instr(c2, '_')) -> 11:int, VectorUDFAdaptor(instr(c4, '_')) -> 12:int) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: VectorUDFAdaptor(instr(c2, '_')) -> 10:int, VectorUDFAdaptor(instr(c4, '_')) -> 11:int, LongColEqualLongColumn(col 12:int, col 13:int)(children: VectorUDFAdaptor(instr(c2, '_')) -> 12:int, VectorUDFAdaptor(instr(c4, '_')) -> 13:int) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -803,7 +803,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 356 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -816,8 +816,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: VectorUDFAdaptor(replace(c1, '_', c2)) -> 9:string, VectorUDFAdaptor(replace(c3, '_', c4)) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: VectorUDFAdaptor(replace(c1, '_', c2)) -> 11:string, VectorUDFAdaptor(replace(c3, '_', c4)) -> 12:string) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: VectorUDFAdaptor(replace(c1, '_', c2)) -> 10:string, VectorUDFAdaptor(replace(c3, '_', c4)) -> 11:string, StringGroupColEqualStringGroupColumn(col 12:string, col 13:string)(children: VectorUDFAdaptor(replace(c1, '_', c2)) -> 12:string, VectorUDFAdaptor(replace(c3, '_', c4)) -> 13:string) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -908,7 +908,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -921,8 +921,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: VectorUDFAdaptor(reverse(c2)) -> 9:string, VectorUDFAdaptor(reverse(c4)) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: VectorUDFAdaptor(reverse(c2)) -> 11:string, VectorUDFAdaptor(reverse(c4)) -> 12:string) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: VectorUDFAdaptor(reverse(c2)) -> 10:string, VectorUDFAdaptor(reverse(c4)) -> 11:string, StringGroupColEqualStringGroupColumn(col 12:string, col 13:string)(children: VectorUDFAdaptor(reverse(c2)) -> 12:string, VectorUDFAdaptor(reverse(c4)) -> 13:string) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -1013,7 +1013,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -1026,8 +1026,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: VectorUDFAdaptor(next_day(d1, 'TU')) -> 9:string, VectorUDFAdaptor(next_day(d4, 'WE')) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: VectorUDFAdaptor(next_day(d1, 'TU')) -> 11:string, VectorUDFAdaptor(next_day(d4, 'WE')) -> 12:string) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: VectorUDFAdaptor(next_day(d1, 'TU')) -> 10:string, VectorUDFAdaptor(next_day(d4, 'WE')) -> 11:string, StringGroupColEqualStringGroupColumn(col 12:string, col 13:string)(children: VectorUDFAdaptor(next_day(d1, 'TU')) -> 12:string, VectorUDFAdaptor(next_day(d4, 'WE')) -> 13:string) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -1118,7 +1118,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -1131,8 +1131,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: VectorUDFAdaptor(months_between(d1, d3)) -> 9:double, VectorUDFAdaptor(months_between(d2, d4)) -> 10:double, DoubleColEqualDoubleColumn(col 11:double, col 12:double)(children: VectorUDFAdaptor(months_between(d1, d3)) -> 11:double, VectorUDFAdaptor(months_between(d2, d4)) -> 12:double) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: VectorUDFAdaptor(months_between(d1, d3)) -> 10:double, VectorUDFAdaptor(months_between(d2, d4)) -> 11:double, DoubleColEqualDoubleColumn(col 12:double, col 13:double)(children: VectorUDFAdaptor(months_between(d1, d3)) -> 12:double, VectorUDFAdaptor(months_between(d2, d4)) -> 13:double) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -1223,7 +1223,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -1236,8 +1236,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: StringLength(col 1:string) -> 9:int, StringLength(col 3:varchar(20)) -> 10:int, LongColEqualLongColumn(col 11:int, col 12:int)(children: StringLength(col 1:string) -> 11:int, StringLength(col 3:varchar(20)) -> 12:int) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: StringLength(col 1:string) -> 10:int, StringLength(col 3:varchar(20)) -> 11:int, LongColEqualLongColumn(col 12:int, col 13:int)(children: StringLength(col 1:string) -> 12:int, StringLength(col 3:varchar(20)) -> 13:int) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -1328,7 +1328,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 732 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -1341,8 +1341,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 11]
-                          selectExpressions: ConstantVectorExpression(val 5) -> 9:int, ConstantVectorExpression(val 5) -> 10:int, ConstantVectorExpression(val 1) -> 11:boolean
+                          projectedOutputColumnNums: [10, 11, 12]
+                          selectExpressions: ConstantVectorExpression(val 5) -> 10:int, ConstantVectorExpression(val 5) -> 11:int, ConstantVectorExpression(val 1) -> 12:boolean
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -1433,7 +1433,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -1446,8 +1446,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: VectorUDFAdaptor(lpad(c2, 15, ' ')) -> 9:string, VectorUDFAdaptor(lpad(c4, 15, ' ')) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: VectorUDFAdaptor(lpad(c2, 15, ' ')) -> 11:string, VectorUDFAdaptor(lpad(c4, 15, ' ')) -> 12:string) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: VectorUDFAdaptor(lpad(c2, 15, ' ')) -> 10:string, VectorUDFAdaptor(lpad(c4, 15, ' ')) -> 11:string, StringGroupColEqualStringGroupColumn(col 12:string, col 13:string)(children: VectorUDFAdaptor(lpad(c2, 15, ' ')) -> 12:string, VectorUDFAdaptor(lpad(c4, 15, ' ')) -> 13:string) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -1538,7 +1538,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -1551,8 +1551,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: StringLTrimCol(col 1:string) -> 9:string, StringLTrimCol(col 3:varchar(20)) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: StringLTrimCol(col 1:string) -> 11:string, StringLTrimCol(col 3:varchar(20)) -> 12:string) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: StringLTrimCol(col 1:string) -> 10:string, StringLTrimCol(col 3:varchar(20)) -> 11:string, StringGroupColEqualStringGroupColumn(col 12:string, col 13:string)(children: StringLTrimCol(col 1:string) -> 12:string, StringLTrimCol(col 3:varchar(20)) -> 13:string) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -1643,7 +1643,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -1656,8 +1656,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: VectorUDFAdaptor(c2 regexp 'val') -> 9:boolean, VectorUDFAdaptor(c4 regexp 'val') -> 10:boolean, LongColEqualLongColumn(col 11:boolean, col 12:boolean)(children: VectorUDFAdaptor(c2 regexp 'val') -> 11:boolean, VectorUDFAdaptor(c4 regexp 'val') -> 12:boolean) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: VectorUDFAdaptor(c2 regexp 'val') -> 10:boolean, VectorUDFAdaptor(c4 regexp 'val') -> 11:boolean, LongColEqualLongColumn(col 12:boolean, col 13:boolean)(children: VectorUDFAdaptor(c2 regexp 'val') -> 12:boolean, VectorUDFAdaptor(c4 regexp 'val') -> 13:boolean) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -1748,7 +1748,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -1761,8 +1761,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: VectorUDFAdaptor(regexp_extract(c2, 'val_([0-9]+)', 1)) -> 9:string, VectorUDFAdaptor(regexp_extract(c4, 'val_([0-9]+)', 1)) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: VectorUDFAdaptor(regexp_extract(c2, 'val_([0-9]+)', 1)) -> 11:string, VectorUDFAdaptor(regexp_extract(c4, 'val_([0-9]+)', 1)) -> 12:string) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: VectorUDFAdaptor(regexp_extract(c2, 'val_([0-9]+)', 1)) -> 10:string, VectorUDFAdaptor(regexp_extract(c4, 'val_([0-9]+)', 1)) -> 11:string, StringGroupColEqualStringGroupColumn(col 12:string, col 13:string)(children: VectorUDFAdaptor(regexp_extract(c2, 'val_([0-9]+)', 1)) -> 12:string, VectorUDFAdaptor(regexp_extract(c4, 'val_([0-9]+)', 1)) -> 13:string) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -1853,7 +1853,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -1866,8 +1866,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: VectorUDFAdaptor(regexp_replace(c2, 'val', 'replaced')) -> 9:string, VectorUDFAdaptor(regexp_replace(c4, 'val', 'replaced')) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: VectorUDFAdaptor(regexp_replace(c2, 'val', 'replaced')) -> 11:string, VectorUDFAdaptor(regexp_replace(c4, 'val', 'replaced')) -> 12:string) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: VectorUDFAdaptor(regexp_replace(c2, 'val', 'replaced')) -> 10:string, VectorUDFAdaptor(regexp_replace(c4, 'val', 'replaced')) -> 11:string, StringGroupColEqualStringGroupColumn(col 12:string, col 13:string)(children: VectorUDFAdaptor(regexp_replace(c2, 'val', 'replaced')) -> 12:string, VectorUDFAdaptor(regexp_replace(c4, 'val', 'replaced')) -> 13:string) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -1958,7 +1958,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -1971,8 +1971,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: VectorUDFAdaptor(reverse(c2)) -> 9:string, VectorUDFAdaptor(reverse(c4)) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: VectorUDFAdaptor(reverse(c2)) -> 11:string, VectorUDFAdaptor(reverse(c4)) -> 12:string) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: VectorUDFAdaptor(reverse(c2)) -> 10:string, VectorUDFAdaptor(reverse(c4)) -> 11:string, StringGroupColEqualStringGroupColumn(col 12:string, col 13:string)(children: VectorUDFAdaptor(reverse(c2)) -> 12:string, VectorUDFAdaptor(reverse(c4)) -> 13:string) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -2063,7 +2063,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -2076,8 +2076,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: VectorUDFAdaptor(rpad(c2, 15, ' ')) -> 9:string, VectorUDFAdaptor(rpad(c4, 15, ' ')) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: VectorUDFAdaptor(rpad(c2, 15, ' ')) -> 11:string, VectorUDFAdaptor(rpad(c4, 15, ' ')) -> 12:string) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: VectorUDFAdaptor(rpad(c2, 15, ' ')) -> 10:string, VectorUDFAdaptor(rpad(c4, 15, ' ')) -> 11:string, StringGroupColEqualStringGroupColumn(col 12:string, col 13:string)(children: VectorUDFAdaptor(rpad(c2, 15, ' ')) -> 12:string, VectorUDFAdaptor(rpad(c4, 15, ' ')) -> 13:string) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -2168,7 +2168,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -2181,8 +2181,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: StringRTrimCol(col 1:string) -> 9:string, StringRTrimCol(col 3:varchar(20)) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: StringRTrimCol(col 1:string) -> 11:string, StringRTrimCol(col 3:varchar(20)) -> 12:string) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: StringRTrimCol(col 1:string) -> 10:string, StringRTrimCol(col 3:varchar(20)) -> 11:string, StringGroupColEqualStringGroupColumn(col 12:string, col 13:string)(children: StringRTrimCol(col 1:string) -> 12:string, StringRTrimCol(col 3:varchar(20)) -> 13:string) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -2271,7 +2271,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 732 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -2284,8 +2284,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10]
-                          selectExpressions: VectorUDFAdaptor(sentences('See spot run.  See jane run.')) -> 9:array<array<string>>, VectorUDFAdaptor(sentences('See spot run.  See jane run.')) -> 10:array<array<string>>
+                          projectedOutputColumnNums: [10, 11]
+                          selectExpressions: VectorUDFAdaptor(sentences('See spot run.  See jane run.')) -> 10:array<array<string>>, VectorUDFAdaptor(sentences('See spot run.  See jane run.')) -> 11:array<array<string>>
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -2372,7 +2372,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -2385,8 +2385,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10]
-                          selectExpressions: VectorUDFAdaptor(split(c2, '_')) -> 9:array<string>, VectorUDFAdaptor(split(c4, '_')) -> 10:array<string>
+                          projectedOutputColumnNums: [10, 11]
+                          selectExpressions: VectorUDFAdaptor(split(c2, '_')) -> 10:array<string>, VectorUDFAdaptor(split(c4, '_')) -> 11:array<string>
                       Statistics: Num rows: 1 Data size: 3840 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -2473,7 +2473,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 732 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -2486,8 +2486,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10]
-                          selectExpressions: VectorUDFAdaptor(str_to_map('a:1,b:2,c:3',',',':')) -> 9:map<string,string>, VectorUDFAdaptor(str_to_map('a:1,b:2,c:3',',',':')) -> 10:map<string,string>
+                          projectedOutputColumnNums: [10, 11]
+                          selectExpressions: VectorUDFAdaptor(str_to_map('a:1,b:2,c:3',',',':')) -> 10:map<string,string>, VectorUDFAdaptor(str_to_map('a:1,b:2,c:3',',',':')) -> 11:map<string,string>
                       Statistics: Num rows: 1 Data size: 1508 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -2576,7 +2576,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -2589,8 +2589,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: StringSubstrColStartLen(col 1:string, start 0, length 3) -> 9:string, StringSubstrColStartLen(col 3:varchar(20), start 0, length 3) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: StringSubstrColStartLen(col 1:string, start 0, length 3) -> 11:string, StringSubstrColStartLen(col 3:varchar(20), start 0, length 3) -> 12:string) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: StringSubstrColStartLen(col 1:string, start 0, length 3) -> 10:string, StringSubstrColStartLen(col 3:varchar(20), start 0, length 3) -> 11:string, StringGroupColEqualStringGroupColumn(col 12:string, col 13:string)(children: StringSubstrColStartLen(col 1:string, start 0, length 3) -> 12:string, StringSubstrColStartLen(col 3:varchar(20), start 0, length 3) -> 13:string) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -2681,7 +2681,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Limit
                     Number of rows: 1
                     Limit Vectorization:
@@ -2694,8 +2694,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [9, 10, 13]
-                          selectExpressions: StringTrimCol(col 1:string) -> 9:string, StringTrimCol(col 3:varchar(20)) -> 10:string, StringGroupColEqualStringGroupColumn(col 11:string, col 12:string)(children: StringTrimCol(col 1:string) -> 11:string, StringTrimCol(col 3:varchar(20)) -> 12:string) -> 13:boolean
+                          projectedOutputColumnNums: [10, 11, 14]
+                          selectExpressions: StringTrimCol(col 1:string) -> 10:string, StringTrimCol(col 3:varchar(20)) -> 11:string, StringGroupColEqualStringGroupColumn(col 12:string, col 13:string)(children: StringTrimCol(col 1:string) -> 12:string, StringTrimCol(col 3:varchar(20)) -> 13:string) -> 14:boolean
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -2889,7 +2889,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: c2 (type: string), c4 (type: varchar(20))
                     outputColumnNames: c2, c4
@@ -3037,7 +3037,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c1:string, 1:c2:string, 2:c3:varchar(10), 3:c4:varchar(20), 4:d1:string, 5:d2:string, 6:d3:varchar(10), 7:d4:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: c2 (type: string), c4 (type: varchar(20))
                     outputColumnNames: c2, c4

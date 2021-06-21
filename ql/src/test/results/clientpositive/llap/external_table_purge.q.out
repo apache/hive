@@ -451,7 +451,6 @@ LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'discover.partitions'='true', 
   'external.table.purge'='false', 
 #### A masked pattern was here ####
 PREHOOK: query: alter table etp_2 add partition (p1='part1')
@@ -521,7 +520,6 @@ LOCATION
   'hdfs://### HDFS PATH ###'
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'discover.partitions'='true', 
   'external.table.purge'='true', 
 #### A masked pattern was here ####
 PREHOOK: query: alter table etp_2 add partition (p1='part1')

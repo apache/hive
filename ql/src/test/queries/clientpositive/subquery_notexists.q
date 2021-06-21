@@ -64,6 +64,8 @@ where not exists
 ;
 
 --  bug in decorrelation where HiveProject gets multiple column with same name
+explain cbo SELECT p1.p_name FROM part p1 LEFT JOIN (select p_type as p_col from part ) p2 WHERE NOT EXISTS
+                (select pp1.p_type as p_col from part pp1 where pp1.p_partkey = p2.p_col);
 explain SELECT p1.p_name FROM part p1 LEFT JOIN (select p_type as p_col from part ) p2 WHERE NOT EXISTS
                 (select pp1.p_type as p_col from part pp1 where pp1.p_partkey = p2.p_col);
 SELECT p1.p_name FROM part p1 LEFT JOIN (select p_type as p_col from part ) p2 WHERE NOT EXISTS

@@ -32,13 +32,20 @@ public class SimpleGenericUDAFParameterInfo implements GenericUDAFParameterInfo
   private final boolean isWindowing;
   private final boolean distinct;
   private final boolean allColumns;
+  private final boolean respectNulls;
 
   public SimpleGenericUDAFParameterInfo(ObjectInspector[] params, boolean isWindowing, boolean distinct,
       boolean allColumns) {
+    this(params, isWindowing, distinct, allColumns, true);
+  }
+
+  public SimpleGenericUDAFParameterInfo(ObjectInspector[] params, boolean isWindowing, boolean distinct,
+      boolean allColumns, boolean respectNulls) {
     this.parameters = params;
     this.isWindowing = isWindowing;
     this.distinct = distinct;
     this.allColumns = allColumns;
+    this.respectNulls = respectNulls;
   }
 
   @Override
@@ -69,5 +76,10 @@ public class SimpleGenericUDAFParameterInfo implements GenericUDAFParameterInfo
   @Override
   public boolean isWindowing() {
     return isWindowing;
+  }
+
+  @Override
+  public boolean respectNulls() {
+    return respectNulls;
   }
 }

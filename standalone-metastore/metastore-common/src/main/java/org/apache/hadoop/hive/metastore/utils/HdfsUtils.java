@@ -185,7 +185,7 @@ public class HdfsUtils {
         return false;
       }
     } catch (Exception e) {
-      throw new IOException("Cannot execute DistCp process: " + e, e);
+      throw new IOException("Cannot execute DistCp process: ", e);
     } finally {
       conf.setBoolean("mapred.mapper.new-api", false);
     }

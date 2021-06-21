@@ -47,6 +47,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -57,6 +59,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionsSpecByExprResult;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -123,17 +126,13 @@ public class MetaStoreUtils {
   };
 
   /**
-   * Catches exceptions that can't be handled and bundles them to MetaException
+   * Catches exceptions that cannot be handled and wraps them in MetaException.
    *
    * @param e exception to wrap.
    * @throws MetaException wrapper for the exception
    */
-  public static void logAndThrowMetaException(Exception e) throws MetaException {
-    String exInfo = "Got exception: " + e.getClass().getName() + " "
-        + e.getMessage();
-    LOG.error(exInfo, e);
-    LOG.error("Converting exception to MetaException");
-    throw new MetaException(exInfo);
+  public static void throwMetaException(Exception e) throws MetaException {
+    throw new MetaException("Got exception: " + e.getClass().getName() + " " + e.getMessage());
   }
 
   public static String encodeTableName(String name) {
@@ -230,6 +229,30 @@ public class MetaStoreUtils {
     }
 
     return isExternal(params);
+  }
+
+  public static boolean isDbBeingFailedOver(Database db) {
+    assert (db != null);
+    Map<String, String> dbParameters = db.getParameters();
+    return dbParameters != null && ReplConst.TRUE.equalsIgnoreCase(dbParameters.get(ReplConst.REPL_FAILOVER_ENABLED));
+  }
+
+  public static boolean isTargetOfReplication(Database db) {
+    assert (db != null);
+    Map<String, String> dbParameters = db.getParameters();
+    return dbParameters != null && !StringUtils.isEmpty(dbParameters.get(ReplConst.TARGET_OF_REPLICATION));
+  }
+
+  public static boolean checkIfDbNeedsToBeSkipped(Database db) {
+    assert (db != null);
+    if (isDbBeingFailedOver(db)) {
+      LOG.info("Skipping all the tables which belong to database: {} as it is being failed over", db.getName());
+      return true;
+    } else if (isTargetOfReplication(db)) {
+      LOG.info("Skipping all the tables which belong to replicated database: {}", db.getName());
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -781,15 +804,20 @@ public class MetaStoreUtils {
    * Convert FieldSchemas to columnTypes.
    */
   public static String getColumnTypesFromFieldSchema(
-      List<FieldSchema> fieldSchemas) {
+      List<FieldSchema> fieldSchemas, String delimiter) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < fieldSchemas.size(); i++) {
       if (i > 0) {
-        sb.append(",");
+        sb.append(delimiter);
       }
       sb.append(fieldSchemas.get(i).getType());
     }
     return sb.toString();
+  }
+
+  public static String getColumnTypesFromFieldSchema(
+      List<FieldSchema> fieldSchemas) {
+    return getColumnTypesFromFieldSchema(fieldSchemas, ",");
   }
 
   public static String getColumnCommentsFromFieldSchema(List<FieldSchema> fieldSchemas) {
@@ -1021,5 +1049,23 @@ public class MetaStoreUtils {
 
   public static boolean hasUnknownPartitions(PartitionsSpecByExprResult r) {
     return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions();
+  }
+
+  public static TableName getTableNameFor(Table table) {
+    return TableName.fromString(table.getTableName(), table.getCatName(), table.getDbName());
+  }
+
+  /**
+   * Because TABLE_NO_AUTO_COMPACT was originally assumed to be NO_AUTO_COMPACT and then was moved
+   * to no_auto_compact, we need to check it in both cases.
+   */
+  public static boolean isNoAutoCompactSet(Map<String, String> parameters) {
+    String noAutoCompact =
+            parameters.get(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT);
+    if (noAutoCompact == null) {
+      noAutoCompact =
+              parameters.get(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT.toUpperCase());
+    }
+    return noAutoCompact != null && noAutoCompact.equalsIgnoreCase("true");
   }
 }

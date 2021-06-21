@@ -31,13 +31,16 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.exec.vector.VectorSelectOperator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.io.IOContextMap;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.optimizer.physical.LlapClusterStateForCompile;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
-import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -51,6 +54,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.VectorSelectDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
@@ -601,6 +605,41 @@ public class TestOperators {
     op = new GroupByOperator(new CompilationOpContext());
     op.setConf(desc);
     testHashAggr(op, hconf, input, groupingSetsExpectSize);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void testSetDoneFromChildOperators() throws HiveException {
+    VectorSelectDesc vectorSelectDesc = new VectorSelectDesc();
+    vectorSelectDesc.setProjectedOutputColumns(new int[0]);
+    vectorSelectDesc.setSelectExpressions(new VectorExpression[0]);
+    VectorSelectOperator selOp = new VectorSelectOperator(new CompilationOpContext(),
+        new SelectDesc(), new VectorizationContext("dummy"), vectorSelectDesc);
+    VectorSelectOperator childOp = new VectorSelectOperator(new CompilationOpContext(),
+        new SelectDesc(), new VectorizationContext("dummy"), vectorSelectDesc);
+
+    selOp.childOperatorsArray = new Operator[1];
+    selOp.childOperatorsArray[0] = childOp;
+    selOp.childOperatorsTag = new int[1];
+    selOp.childOperatorsTag[0] = 0;
+
+    childOp.childOperatorsArray = new Operator[0];
+
+    Assert.assertFalse(selOp.getDone());
+    Assert.assertFalse(childOp.getDone());
+
+    selOp.process(new VectorizedRowBatch(1), 0);
+    childOp.setDone(true);
+
+    // selOp is not done, it will detect child's done=true during the next process(batch) call
+    Assert.assertFalse(selOp.getDone());
+    Assert.assertTrue(childOp.getDone());
+
+    selOp.process(new VectorizedRowBatch(1), 0);
+
+    // selOp detects child's done=true, so it turns to done=true
+    Assert.assertTrue(selOp.getDone());
+    Assert.assertTrue(childOp.getDone());
   }
 
   private void testHashAggr(GroupByOperator op, HiveConf hconf, InspectableObject[] r, int expectOutputSize)

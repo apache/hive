@@ -222,12 +222,12 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 120 Data size: 79280 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 119 Data size: 79280 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 114 Data size: 75316 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 114 Data size: 75948 Basic stats: PARTIAL Column stats: NONE
               Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -235,7 +235,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 Position of Big Table: 1
-                Statistics: Num rows: 125 Data size: 82847 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 125 Data size: 83542 Basic stats: PARTIAL Column stats: NONE
                 BucketMapJoin: true
                 Group By Operator
                   aggregations: count()
@@ -383,12 +383,12 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr: key is not null (type: boolean)
-            Statistics: Num rows: 120 Data size: 79280 Basic stats: PARTIAL Column stats: NONE
+            Statistics: Num rows: 119 Data size: 79280 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: key is not null (type: boolean)
-              Statistics: Num rows: 114 Data size: 75316 Basic stats: PARTIAL Column stats: NONE
+              Statistics: Num rows: 114 Data size: 75948 Basic stats: PARTIAL Column stats: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -396,7 +396,7 @@ STAGE PLANS:
                   0 key (type: string)
                   1 key (type: string)
                 Position of Big Table: 1
-                Statistics: Num rows: 125 Data size: 82847 Basic stats: PARTIAL Column stats: NONE
+                Statistics: Num rows: 125 Data size: 83542 Basic stats: PARTIAL Column stats: NONE
                 BucketMapJoin: true
                 Group By Operator
                   aggregations: count()

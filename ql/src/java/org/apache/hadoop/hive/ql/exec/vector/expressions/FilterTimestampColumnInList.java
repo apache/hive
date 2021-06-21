@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
  */
 public class FilterTimestampColumnInList extends VectorExpression implements ITimestampInExpr {
   private static final long serialVersionUID = 1L;
-  private final int inputColumn;
   private Timestamp[] inListValues;
 
   // Transient members initialized by transientInit method.
@@ -43,16 +42,13 @@ public class FilterTimestampColumnInList extends VectorExpression implements ITi
 
   public FilterTimestampColumnInList() {
     super();
-
-    // Dummy final assignments.
-    inputColumn = -1;
   }
 
   /**
    * After construction you must call setInListValues() to add the values to the IN set.
    */
   public FilterTimestampColumnInList(int colNum) {
-    this.inputColumn = colNum;
+    super(colNum, -1);
   }
 
   @Override
@@ -72,7 +68,7 @@ public class FilterTimestampColumnInList extends VectorExpression implements ITi
       super.evaluateChildren(batch);
     }
 
-    TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[inputColumn];
+    TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector.isNull;
     int n = batch.size;
@@ -170,7 +166,7 @@ public class FilterTimestampColumnInList extends VectorExpression implements ITi
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumn) + ", values " + Arrays.toString(inListValues);
+    return getColumnParamString(0, inputColumnNum[0]) + ", values " + Arrays.toString(inListValues);
   }
 
 }

@@ -45,6 +45,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: (value is not null and key is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_45_container, bigKeyColName:key, smallTablePos:1, keyRatio:1.1
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -435,6 +436,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: ((value > 'val_450') and key is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_45_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.366
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((value > 'val_450') and key is not null) (type: boolean)
@@ -560,6 +562,7 @@ STAGE PLANS:
                 TableScan
                   alias: srcpart
                   filterExpr: (value is not null and key is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_49_container, bigKeyColName:value, smallTablePos:1, keyRatio:1.1
                   Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: (value is not null and key is not null) (type: boolean)

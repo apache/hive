@@ -109,7 +109,7 @@ public class Meta {
             if (name.startsWith("t.")) {
               name = name.substring(2);
             }
-            row.addColumn(name, query.metadata().columnTypeName(i));
+            row.addColumnDefinition(name, query.metadata().columnTypeName(i));
           }
         } 
         catch (Exception e) {
@@ -133,7 +133,7 @@ public class Meta {
             if (row == null) {
               row = new Row();
             }
-            row.addColumn(col.toUpperCase(), typ);
+            row.addColumnDefinition(col.toUpperCase(), typ);
           }
         }
         catch (Exception e) {
@@ -166,7 +166,7 @@ public class Meta {
             if (typ == null) {
               break;
             }
-            row.addColumn(col.toUpperCase(), typ);
+            row.addColumnDefinition(col.toUpperCase(), typ);
           } 
           map.put(table, row);
         } 
@@ -191,7 +191,7 @@ public class Meta {
             if (row == null) {
               row = new Row();
             }
-            row.addColumn(col.toUpperCase(), typ);
+            row.addColumnDefinition(col.toUpperCase(), typ);
           }
           map.put(table, row);
         }

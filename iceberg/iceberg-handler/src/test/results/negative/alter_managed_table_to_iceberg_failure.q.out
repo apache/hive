@@ -1,0 +1,17 @@
+PREHOOK: query: drop table if exists tbl_orc
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tbl_orc
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tbl_orc(a int, b string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: create table tbl_orc(a int, b string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_orc
+PREHOOK: query: alter table tbl_orc set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: default@tbl_orc
+FAILED: Execution Error, return code 40013 from org.apache.hadoop.hive.ql.ddl.DDLTask. Unable to alter table. Converting non-external, temporary or transactional hive table to iceberg table is not allowed.

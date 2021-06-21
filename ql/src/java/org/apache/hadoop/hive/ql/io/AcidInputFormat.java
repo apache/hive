@@ -26,6 +26,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.io.Writable;
@@ -395,7 +396,7 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
   }
 
   public static interface RowReader<V>
-      extends RecordReader<RecordIdentifier, V> {
+      extends RecordReader<OrcRawRecordMerger.ReaderKey, V> {
     public ObjectInspector getObjectInspector();
   }
 
@@ -445,6 +446,6 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
    * RecordReader returned by AcidInputFormat working in row-at-a-time mode should AcidRecordReader.
    */
   public interface AcidRecordReader<K,V> extends RecordReader<K,V> {
-    RecordIdentifier getRecordIdentifier();
+    OrcRawRecordMerger.ReaderKey getRecordIdentifier();
   }
 }

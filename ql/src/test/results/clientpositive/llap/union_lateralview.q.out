@@ -83,10 +83,10 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: string), _col1 (type: string)
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1000 Data size: 290000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col1, _col3
-                          Statistics: Num rows: 1000 Data size: 346000 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1000 Data size: 234000 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
                             expressions: _col3 (type: int), _col0 (type: string), _col1 (type: string)
                             outputColumnNames: _col0, _col1, _col2
@@ -107,7 +107,7 @@ STAGE PLANS:
                           function name: explode
                           Lateral View Join Operator
                             outputColumnNames: _col0, _col1, _col3
-                            Statistics: Num rows: 1000 Data size: 346000 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1000 Data size: 234000 Basic stats: COMPLETE Column stats: COMPLETE
                             Select Operator
                               expressions: _col3 (type: int), _col0 (type: string), _col1 (type: string)
                               outputColumnNames: _col0, _col1, _col2
@@ -136,10 +136,10 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: string), _col1 (type: string)
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1000 Data size: 290000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
                         Lateral View Join Operator
                           outputColumnNames: _col0, _col1, _col3
-                          Statistics: Num rows: 1000 Data size: 346000 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1000 Data size: 234000 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
                             expressions: _col3 (type: int), _col0 (type: string), _col1 (type: string)
                             outputColumnNames: _col0, _col1, _col2
@@ -160,7 +160,7 @@ STAGE PLANS:
                           function name: explode
                           Lateral View Join Operator
                             outputColumnNames: _col0, _col1, _col3
-                            Statistics: Num rows: 1000 Data size: 346000 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1000 Data size: 234000 Basic stats: COMPLETE Column stats: COMPLETE
                             Select Operator
                               expressions: _col3 (type: int), _col0 (type: string), _col1 (type: string)
                               outputColumnNames: _col0, _col1, _col2

@@ -539,11 +539,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
     // Store the previous value for the path specification
     String oldPaths = job.get(org.apache.hadoop.mapreduce.lib.input.FileInputFormat.INPUT_DIR);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("The received input paths are: [" + oldPaths +
-          "] against the property "
-          + org.apache.hadoop.mapreduce.lib.input.FileInputFormat.INPUT_DIR);
-    }
+    LOG.debug("The received input paths are: [{}] against the property {}", oldPaths,
+        org.apache.hadoop.mapreduce.lib.input.FileInputFormat.INPUT_DIR);
 
     // Process the normal splits
     if (nonCombinablePaths.size() > 0) {

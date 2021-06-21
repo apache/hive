@@ -227,7 +227,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[count()])
-  HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
     HiveProject(p_partkey=[$0])
       HiveFilter(condition=[IS NOT NULL($0)])
         HiveTableScan(table=[[default, part]], table:alias=[part])
@@ -308,7 +308,7 @@ POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 26
-Warning: Shuffle Join MERGEJOIN[39][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[37][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select count(*) from part where (p_size= ANY (select p_partkey from part_null_n0)) is null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -320,8 +320,8 @@ POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 26
-Warning: Shuffle Join MERGEJOIN[39][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-Warning: Shuffle Join MERGEJOIN[40][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[37][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select count(*) from part where (p_partkey = ANY (select p_partkey from part_null_n0 where p_partkey is null)) is null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -376,7 +376,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 26
-Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain cbo select count(*) from part where p_partkey >= ANY (select p_partkey from part) 
 	AND p_size = ANY (select p_size from part group by p_size)
 PREHOOK: type: QUERY
@@ -389,20 +389,19 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[count()])
-  HiveJoin(condition=[AND(=($1, $2), OR(AND(>=($0, $3), <>($4, 0)), AND(>=($0, $3), <>($4, 0), IS NOT TRUE(>=($0, $3)), <=($4, $5))))], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject(p_partkey=[$0], p_size=[$5])
-      HiveFilter(condition=[IS NOT NULL($5)])
-        HiveTableScan(table=[[default, part]], table:alias=[part])
-    HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
-      HiveProject(p_size=[$0])
-        HiveAggregate(group=[{5}])
-          HiveFilter(condition=[IS NOT NULL($5)])
-            HiveTableScan(table=[[default, part]], table:alias=[part])
+  HiveSemiJoin(condition=[=($1, $5)], joinType=[semi])
+    HiveJoin(condition=[OR(AND(>=($0, $2), <>($3, 0)), AND(>=($0, $2), <>($3, 0), IS NOT TRUE(>=($0, $2)), <=($3, $4)))], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(p_partkey=[$0], p_size=[$5])
+        HiveFilter(condition=[IS NOT NULL($5)])
+          HiveTableScan(table=[[default, part]], table:alias=[part])
       HiveProject(m=[$0], c=[$1], d=[$2])
         HiveAggregate(group=[{}], m=[MIN($0)], c=[COUNT()], d=[COUNT($0)])
           HiveTableScan(table=[[default, part]], table:alias=[part])
+    HiveProject(p_size=[$5])
+      HiveFilter(condition=[IS NOT NULL($5)])
+        HiveTableScan(table=[[default, part]], table:alias=[part])
 
-Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[41][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select count(*) from part where p_partkey >= ANY (select p_partkey from part) 
 	AND p_size = ANY (select p_size from part group by p_size)
 PREHOOK: type: QUERY
@@ -1472,10 +1471,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null_n1
-                  filterExpr: (p_type is not null and p_name is not null) (type: boolean)
+                  filterExpr: (p_name is not null and p_type is not null) (type: boolean)
                   Statistics: Num rows: 27 Data size: 16713 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (p_type is not null and p_name is not null) (type: boolean)
+                    predicate: (p_name is not null and p_type is not null) (type: boolean)
                     Statistics: Num rows: 25 Data size: 15475 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
@@ -1672,10 +1671,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null_n1
-                  filterExpr: (p_type is not null and p_name is not null) (type: boolean)
+                  filterExpr: (p_name is not null and p_type is not null) (type: boolean)
                   Statistics: Num rows: 27 Data size: 16713 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (p_type is not null and p_name is not null) (type: boolean)
+                    predicate: (p_name is not null and p_type is not null) (type: boolean)
                     Statistics: Num rows: 25 Data size: 15475 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)

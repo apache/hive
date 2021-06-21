@@ -91,7 +91,7 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4032 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(14,5)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(14,5)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -105,8 +105,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [3, 4, 5, 6, 7, 8, 9]
-                          selectExpressions: ConstantVectorExpression(val null) -> 3:double, ConstantVectorExpression(val null) -> 4:double, ConstantVectorExpression(val 1.4711276743037347) -> 5:double, ConstantVectorExpression(val -0.8390715290764524) -> 6:double, ConstantVectorExpression(val -0.5440211108893698) -> 7:double, ConstantVectorExpression(val 0.6483608274590866) -> 8:double, ConstantVectorExpression(val 0.17453292519943295) -> 9:double
+                          projectedOutputColumnNums: [4, 5, 6, 7, 8, 9, 10]
+                          selectExpressions: ConstantVectorExpression(val null) -> 4:double, ConstantVectorExpression(val null) -> 5:double, ConstantVectorExpression(val 1.4711276743037347) -> 6:double, ConstantVectorExpression(val -0.8390715290764524) -> 7:double, ConstantVectorExpression(val -0.5440211108893698) -> 8:double, ConstantVectorExpression(val 0.6483608274590866) -> 9:double, ConstantVectorExpression(val 0.17453292519943295) -> 10:double
                       Statistics: Num rows: 2 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -205,7 +205,7 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4188 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(14,5)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(14,5)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -219,8 +219,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [3, 4, 5, 6, 7, 8, 9, 10]
-                          selectExpressions: ConstantVectorExpression(val 22026.465794806718) -> 3:double, ConstantVectorExpression(val 2.302585092994046) -> 4:double, ConstantVectorExpression(val 2.302585092994046) -> 5:double, ConstantVectorExpression(val 1.0) -> 6:double, FuncLogWithBaseLongToDouble(col 1:double) -> 7:double, VectorUDFAdaptor(log(value, 10)) -> 8:double, ConstantVectorExpression(val 1.0) -> 9:double, ConstantVectorExpression(val 3.1622776601683795) -> 10:double
+                          projectedOutputColumnNums: [4, 5, 6, 7, 8, 9, 10, 11]
+                          selectExpressions: ConstantVectorExpression(val 22026.465794806718) -> 4:double, ConstantVectorExpression(val 2.302585092994046) -> 5:double, ConstantVectorExpression(val 2.302585092994046) -> 6:double, ConstantVectorExpression(val 1.0) -> 7:double, FuncLogWithBaseLongToDouble(col 1:double) -> 8:double, VectorUDFAdaptor(log(value, 10)) -> 9:double, ConstantVectorExpression(val 1.0) -> 10:double, ConstantVectorExpression(val 3.1622776601683795) -> 11:double
                       Statistics: Num rows: 2 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -325,7 +325,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(14,5)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(14,5)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -339,8 +339,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [3, 4, 5, 6, 7, 8, 9]
-                          selectExpressions: ConstantVectorExpression(val null) -> 3:double, ConstantVectorExpression(val null) -> 4:double, ConstantVectorExpression(val 1.4711276743037347) -> 5:double, ConstantVectorExpression(val -0.8390715290764524) -> 6:double, ConstantVectorExpression(val -0.5440211108893698) -> 7:double, ConstantVectorExpression(val 0.6483608274590866) -> 8:double, ConstantVectorExpression(val 0.17453292519943295) -> 9:double
+                          projectedOutputColumnNums: [4, 5, 6, 7, 8, 9, 10]
+                          selectExpressions: ConstantVectorExpression(val null) -> 4:double, ConstantVectorExpression(val null) -> 5:double, ConstantVectorExpression(val 1.4711276743037347) -> 6:double, ConstantVectorExpression(val -0.8390715290764524) -> 7:double, ConstantVectorExpression(val -0.5440211108893698) -> 8:double, ConstantVectorExpression(val 0.6483608274590866) -> 9:double, ConstantVectorExpression(val 0.17453292519943295) -> 10:double
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -439,7 +439,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(14,5)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(14,5)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -453,8 +453,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [3, 4, 5, 6, 7, 8, 9, 10]
-                          selectExpressions: ConstantVectorExpression(val 22026.465794806718) -> 3:double, ConstantVectorExpression(val 2.302585092994046) -> 4:double, ConstantVectorExpression(val 2.302585092994046) -> 5:double, ConstantVectorExpression(val 1.0) -> 6:double, FuncLogWithBaseLongToDouble(col 1:double) -> 7:double, VectorUDFAdaptor(log(value, 10)) -> 8:double, ConstantVectorExpression(val 1.0) -> 9:double, ConstantVectorExpression(val 3.1622776601683795) -> 10:double
+                          projectedOutputColumnNums: [4, 5, 6, 7, 8, 9, 10, 11]
+                          selectExpressions: ConstantVectorExpression(val 22026.465794806718) -> 4:double, ConstantVectorExpression(val 2.302585092994046) -> 5:double, ConstantVectorExpression(val 2.302585092994046) -> 6:double, ConstantVectorExpression(val 1.0) -> 7:double, FuncLogWithBaseLongToDouble(col 1:double) -> 8:double, VectorUDFAdaptor(log(value, 10)) -> 9:double, ConstantVectorExpression(val 1.0) -> 10:double, ConstantVectorExpression(val 3.1622776601683795) -> 11:double
                       Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false

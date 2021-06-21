@@ -60,6 +60,8 @@ public class TestHiveAlterHandler {
         getDefaultCatalog(conf), oldTable.getDbName(), oldTable.getTableName(), Arrays.asList("col1", "col2", "col3"));
     HiveAlterHandler handler = new HiveAlterHandler();
     handler.setConf(conf);
+    Deadline.registerIfNot(100_000);
+    Deadline.startTimer("alterTableUpdateTableColumnStats");
     handler.alterTableUpdateTableColumnStats(msdb, oldTable, newTable, null, null, conf, null);
   }
 
@@ -85,6 +87,8 @@ public class TestHiveAlterHandler {
     RawStore msdb = Mockito.mock(RawStore.class);
     HiveAlterHandler handler = new HiveAlterHandler();
     handler.setConf(conf);
+    Deadline.registerIfNot(100_000);
+    Deadline.startTimer("alterTableUpdateTableColumnStats");
     try {
       handler.alterTableUpdateTableColumnStats(msdb, oldTable, newTable, null, null, conf, null);
     } catch (Throwable t) {
@@ -121,6 +125,8 @@ public class TestHiveAlterHandler {
         getDefaultCatalog(conf), oldTable.getDbName(), oldTable.getTableName(), Arrays.asList("col1", "col2", "col3", "col4"));
     HiveAlterHandler handler = new HiveAlterHandler();
     handler.setConf(conf);
+    Deadline.registerIfNot(100_000);
+    Deadline.startTimer("alterTableUpdateTableColumnStats");
     handler.alterTableUpdateTableColumnStats(msdb, oldTable, newTable, null, null, conf, null);
   }
 

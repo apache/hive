@@ -136,8 +136,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [1, 2, 3, 8, 9, 10, 11, 12, 13]
-                          selectExpressions: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k2) -> 8:string, VectorUDFMapIndexLongScalar(col 2:map<int,int>, key: 456) -> 9:int, VectorUDFMapIndexDecimalScalar(col 3:map<double,double>, key: 123.123) -> 10:double, VectorUDFMapIndexStringCol(col 1:map<string,string>, key: col 4:string) -> 11:string, VectorUDFMapIndexLongCol(col 2:map<int,int>, key: col 5:int) -> 12:int, VectorUDFMapIndexDoubleCol(col 3:map<double,double>, key: col 6:double) -> 13:double
+                          projectedOutputColumnNums: [1, 2, 3, 9, 10, 11, 12, 13, 14]
+                          selectExpressions: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k2) -> 9:string, VectorUDFMapIndexLongScalar(col 2:map<int,int>, key: 456) -> 10:int, VectorUDFMapIndexDecimalScalar(col 3:map<double,double>, key: 123.123) -> 11:double, VectorUDFMapIndexStringCol(col 1:map<string,string>, key: col 4:string) -> 12:string, VectorUDFMapIndexLongCol(col 2:map<int,int>, key: col 5:int) -> 13:int, VectorUDFMapIndexDoubleCol(col 3:map<double,double>, key: col 6:double) -> 14:double
                       Statistics: Num rows: 10 Data size: 21340 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -226,7 +226,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterStringColLikeStringScalar(col 8:string, pattern v100%)(children: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k1) -> 8:string)
+                        predicateExpression: FilterStringColLikeStringScalar(col 9:string, pattern v100%)(children: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k1) -> 9:string)
                     predicate: (stringmap['k1'] like 'v100%') (type: boolean)
                     Statistics: Num rows: 511 Data size: 995378 Basic stats: COMPLETE Column stats: NONE
                     Top N Key Operator
@@ -237,7 +237,7 @@ STAGE PLANS:
                       top n: 10
                       Top N Key Vectorization:
                           className: VectorTopNKeyOperator
-                          keyExpressions: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k1) -> 9:string
+                          keyExpressions: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k1) -> 10:string
                           native: true
                       Select Operator
                         expressions: stringmap['k1'] (type: string), intmap[123] (type: int), doublemap[123.123] (type: double)
@@ -245,16 +245,16 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [8, 10, 11]
-                            selectExpressions: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k1) -> 8:string, VectorUDFMapIndexLongScalar(col 2:map<int,int>, key: 123) -> 10:int, VectorUDFMapIndexDecimalScalar(col 3:map<double,double>, key: 123.123) -> 11:double
+                            projectedOutputColumnNums: [9, 11, 12]
+                            selectExpressions: VectorUDFMapIndexStringScalar(col 1:map<string,string>, key: k1) -> 9:string, VectorUDFMapIndexLongScalar(col 2:map<int,int>, key: 123) -> 11:int, VectorUDFMapIndexDecimalScalar(col 3:map<double,double>, key: 123.123) -> 12:double
                         Statistics: Num rows: 511 Data size: 995378 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: sum(_col1), sum(_col2)
                           Group By Vectorization:
-                              aggregators: VectorUDAFSumLong(col 10:int) -> bigint, VectorUDAFSumDouble(col 11:double) -> double
+                              aggregators: VectorUDAFSumLong(col 11:int) -> bigint, VectorUDAFSumDouble(col 12:double) -> double
                               className: VectorGroupByOperator
                               groupByMode: HASH
-                              keyExpressions: col 8:string
+                              keyExpressions: col 9:string
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0, 1]

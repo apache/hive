@@ -4,6 +4,22 @@
     <value>128</value>
   </property>
   <property>
+    <name>tez.task.resource.memory.mb</name>
+    <value>128</value>
+  </property>
+  <property>
+    <name>tez.runtime.io.sort.mb</name>
+    <value>24</value>
+  </property>
+  <property>
+    <name>tez.runtime.unordered.output.buffer.size-mb</name>
+    <value>10</value>
+  </property>
+  <property>
+    <name>tez.runtime.shuffle.fetch.buffer.percent</name>
+    <value>0.4</value>
+  </property>
+  <property>
     <name>tez.am.dag.scheduler.class</name>
     <value>org.apache.tez.dag.app.dag.impl.DAGSchedulerNaturalOrderControlled</value>
   </property>

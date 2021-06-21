@@ -16,4 +16,5 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@t
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@export_materialized_view
+POSTHOOK: Lineage: export_materialized_view.a SIMPLE [(t)t.FieldSchema(name:a, type:int, comment:null), ]
 FAILED: SemanticException Views and Materialized Views can not be exported.

@@ -37,18 +37,13 @@ import org.apache.hadoop.hive.serde2.lazy.fast.StringToDouble;
  */
 public class CastStringToDouble extends VectorExpression {
   private static final long serialVersionUID = 1L;
-  int inputColumn;
 
   public CastStringToDouble(int inputColumn, int outputColumnNum) {
-    super(outputColumnNum);
-    this.inputColumn = inputColumn;
+    super(inputColumn, outputColumnNum);
   }
 
   public CastStringToDouble() {
     super();
-
-    // Dummy final assignments.
-    inputColumn = -1;
   }
 
   /**
@@ -83,7 +78,7 @@ public class CastStringToDouble extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumn];
+    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     int n = batch.size;
     DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumnNum];
@@ -179,7 +174,7 @@ public class CastStringToDouble extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumn);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

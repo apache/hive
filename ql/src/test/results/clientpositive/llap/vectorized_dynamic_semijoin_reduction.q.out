@@ -1109,7 +1109,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:int), FilterStringColumnBetweenDynamicValue(col 0:string, left NULL, right NULL), FilterLongColumnBetweenDynamicValue(col 2:int, left 0, right 0), VectorInBloomFilterColDynamicValue(children: MurmurHashStringColIntCol(col 0:string, col 2:int) -> 6:int))
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:int), FilterStringColumnBetweenDynamicValue(col 0:string, left NULL, right NULL), FilterLongColumnBetweenDynamicValue(col 2:int, left 0, right 0), VectorInBloomFilterColDynamicValue(children: MurmurHashStringColIntCol(col 0:string, col 2:int) -> 7:int))
                     predicate: (key_str is not null and key_int is not null and key_str BETWEEN DynamicValue(RS[43]_col0) AND DynamicValue(RS[43]_col1) and key_int BETWEEN DynamicValue(RS[43]_col2) AND DynamicValue(RS[43]_col3) and in_bloom_filter(hash(key_str,key_int), DynamicValue(RS[43]_col4))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1180,13 +1180,13 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [0, 2, 6]
-                            selectExpressions: MurmurHashStringColIntCol(col 0:string, col 2:int) -> 6:int
+                            projectedOutputColumnNums: [0, 2, 7]
+                            selectExpressions: MurmurHashStringColIntCol(col 0:string, col 2:int) -> 7:int
                         Statistics: Num rows: 57 Data size: 5358 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), min(_col1), max(_col1), bloom_filter(_col3, expectedEntries=57)
                           Group By Vectorization:
-                              aggregators: VectorUDAFMinString(col 0:string) -> string, VectorUDAFMaxString(col 0:string) -> string, VectorUDAFMinLong(col 2:int) -> int, VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFBloomFilter(col 6:int) -> binary
+                              aggregators: VectorUDAFMinString(col 0:string) -> string, VectorUDAFMaxString(col 0:string) -> string, VectorUDAFMinLong(col 2:int) -> int, VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFBloomFilter(col 7:int) -> binary
                               className: VectorGroupByOperator
                               groupByMode: HASH
                               native: false
@@ -1369,7 +1369,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 2:int), SelectColumnIsNotNull(col 0:string), FilterStringColumnBetweenDynamicValue(col 0:string, left NULL, right NULL), FilterLongColumnBetweenDynamicValue(col 2:int, left 0, right 0), VectorInBloomFilterColDynamicValue(children: MurmurHashStringColIntCol(col 0:string, col 2:int) -> 6:int))
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 2:int), SelectColumnIsNotNull(col 0:string), FilterStringColumnBetweenDynamicValue(col 0:string, left NULL, right NULL), FilterLongColumnBetweenDynamicValue(col 2:int, left 0, right 0), VectorInBloomFilterColDynamicValue(children: MurmurHashStringColIntCol(col 0:string, col 2:int) -> 7:int))
                     predicate: (key_int is not null and key_str is not null and key_str BETWEEN DynamicValue(RS[43]_col0) AND DynamicValue(RS[43]_col1) and key_int BETWEEN DynamicValue(RS[43]_col2) AND DynamicValue(RS[43]_col3) and in_bloom_filter(hash(key_str,key_int), DynamicValue(RS[43]_col4))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1440,13 +1440,13 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [0, 2, 6]
-                            selectExpressions: MurmurHashStringColIntCol(col 0:string, col 2:int) -> 6:int
+                            projectedOutputColumnNums: [0, 2, 7]
+                            selectExpressions: MurmurHashStringColIntCol(col 0:string, col 2:int) -> 7:int
                         Statistics: Num rows: 57 Data size: 5358 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), min(_col1), max(_col1), bloom_filter(_col3, expectedEntries=57)
                           Group By Vectorization:
-                              aggregators: VectorUDAFMinString(col 0:string) -> string, VectorUDAFMaxString(col 0:string) -> string, VectorUDAFMinLong(col 2:int) -> int, VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFBloomFilter(col 6:int) -> binary
+                              aggregators: VectorUDAFMinString(col 0:string) -> string, VectorUDAFMaxString(col 0:string) -> string, VectorUDAFMinLong(col 2:int) -> int, VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFBloomFilter(col 7:int) -> binary
                               className: VectorGroupByOperator
                               groupByMode: HASH
                               native: false
@@ -1629,7 +1629,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 2:int), SelectColumnIsNotNull(col 3:int), FilterLongColumnBetweenDynamicValue(col 2:int, left 0, right 0), FilterLongColumnBetweenDynamicValue(col 3:int, left 0, right 0), VectorInBloomFilterColDynamicValue(children: MurmurHashIntColIntCol(col 2:int, col 3:int) -> 6:int))
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 2:int), SelectColumnIsNotNull(col 3:int), FilterLongColumnBetweenDynamicValue(col 2:int, left 0, right 0), FilterLongColumnBetweenDynamicValue(col 3:int, left 0, right 0), VectorInBloomFilterColDynamicValue(children: MurmurHashIntColIntCol(col 2:int, col 3:int) -> 7:int))
                     predicate: (key_int is not null and key_int2 is not null and key_int BETWEEN DynamicValue(RS[43]_col0) AND DynamicValue(RS[43]_col1) and key_int2 BETWEEN DynamicValue(RS[43]_col2) AND DynamicValue(RS[43]_col3) and in_bloom_filter(hash(key_int,key_int2), DynamicValue(RS[43]_col4))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1700,13 +1700,13 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [2, 3, 6]
-                            selectExpressions: MurmurHashIntColIntCol(col 2:int, col 3:int) -> 6:int
+                            projectedOutputColumnNums: [2, 3, 7]
+                            selectExpressions: MurmurHashIntColIntCol(col 2:int, col 3:int) -> 7:int
                         Statistics: Num rows: 57 Data size: 684 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), min(_col1), max(_col1), bloom_filter(_col3, expectedEntries=57)
                           Group By Vectorization:
-                              aggregators: VectorUDAFMinLong(col 2:int) -> int, VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFMinLong(col 3:int) -> int, VectorUDAFMaxLong(col 3:int) -> int, VectorUDAFBloomFilter(col 6:int) -> binary
+                              aggregators: VectorUDAFMinLong(col 2:int) -> int, VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFMinLong(col 3:int) -> int, VectorUDAFMaxLong(col 3:int) -> int, VectorUDAFBloomFilter(col 7:int) -> binary
                               className: VectorGroupByOperator
                               groupByMode: HASH
                               native: false
@@ -1889,7 +1889,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 1:string), FilterStringColumnBetweenDynamicValue(col 0:string, left NULL, right NULL), FilterStringColumnBetweenDynamicValue(col 1:string, left NULL, right NULL), VectorInBloomFilterColDynamicValue(children: MurmurHashStringColStringCol(col 0:string, col 1:string) -> 6:int))
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 1:string), FilterStringColumnBetweenDynamicValue(col 0:string, left NULL, right NULL), FilterStringColumnBetweenDynamicValue(col 1:string, left NULL, right NULL), VectorInBloomFilterColDynamicValue(children: MurmurHashStringColStringCol(col 0:string, col 1:string) -> 7:int))
                     predicate: (key_str is not null and key_str2 is not null and key_str BETWEEN DynamicValue(RS[43]_col0) AND DynamicValue(RS[43]_col1) and key_str2 BETWEEN DynamicValue(RS[43]_col2) AND DynamicValue(RS[43]_col3) and in_bloom_filter(hash(key_str,key_str2), DynamicValue(RS[43]_col4))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1960,13 +1960,13 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [0, 1, 6]
-                            selectExpressions: MurmurHashStringColStringCol(col 0:string, col 1:string) -> 6:int
+                            projectedOutputColumnNums: [0, 1, 7]
+                            selectExpressions: MurmurHashStringColStringCol(col 0:string, col 1:string) -> 7:int
                         Statistics: Num rows: 57 Data size: 10032 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), min(_col1), max(_col1), bloom_filter(_col3, expectedEntries=57)
                           Group By Vectorization:
-                              aggregators: VectorUDAFMinString(col 0:string) -> string, VectorUDAFMaxString(col 0:string) -> string, VectorUDAFMinString(col 1:string) -> string, VectorUDAFMaxString(col 1:string) -> string, VectorUDAFBloomFilter(col 6:int) -> binary
+                              aggregators: VectorUDAFMinString(col 0:string) -> string, VectorUDAFMaxString(col 0:string) -> string, VectorUDAFMinString(col 1:string) -> string, VectorUDAFMaxString(col 1:string) -> string, VectorUDAFBloomFilter(col 7:int) -> binary
                               className: VectorGroupByOperator
                               groupByMode: HASH
                               native: false

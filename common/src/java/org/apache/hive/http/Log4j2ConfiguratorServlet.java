@@ -239,15 +239,11 @@ public class Log4j2ConfiguratorServlet extends HttpServlet {
         // that user requested.
         if (!loggerName.equals(LogManager.ROOT_LOGGER_NAME) &&
           loggerConfig.getName().equals(LogManager.ROOT_LOGGER_NAME)) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Requested logger ({}) not found. Adding as new logger with {} level", loggerName, logLevel);
-          }
+          LOG.debug("Requested logger ({}) not found. Adding as new logger with {} level", loggerName, logLevel);
           // requested logger not found. Add the new logger with the requested level
           conf.addLogger(loggerName, new LoggerConfig(loggerName, logLevel, true));
         } else {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Updating logger ({}) to {} level", loggerName, logLevel);
-          }
+          LOG.debug("Updating logger ({}) to {} level", loggerName, logLevel);
           // update the log level for the specified logger
           loggerConfig.setLevel(logLevel);
         }

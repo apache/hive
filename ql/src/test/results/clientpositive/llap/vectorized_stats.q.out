@@ -36,7 +36,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 13:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: cstring1 (type: string)
                     outputColumnNames: _col0
@@ -67,7 +67,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: max(length(col1)), avg(COALESCE(length(col1),0)), count(1), count(col1), compute_bit_vector_hll(col1)
                         Group By Vectorization:
-                            aggregators: VectorUDAFMaxLong(StringLength(col 6:string) -> 13:int) -> int, VectorUDAFAvgLong(VectorCoalesce(columns [14, 15])(children: StringLength(col 6:string) -> 14:int, ConstantVectorExpression(val 0) -> 15:int) -> 16:int) -> struct<count:bigint,sum:double,input:int>, VectorUDAFCount(ConstantVectorExpression(val 1) -> 17:int) -> bigint, VectorUDAFCount(col 6:string) -> bigint, VectorUDAFComputeBitVectorString(col 6:string) -> binary
+                            aggregators: VectorUDAFMaxLong(StringLength(col 6:string) -> 14:int) -> int, VectorUDAFAvgLong(VectorCoalesce(columns [15, 16])(children: StringLength(col 6:string) -> 15:int, ConstantVectorExpression(val 0) -> 16:int) -> 17:int) -> struct<count:bigint,sum:double,input:int>, VectorUDAFCount(ConstantVectorExpression(val 1) -> 18:int) -> bigint, VectorUDAFCount(col 6:string) -> bigint, VectorUDAFComputeBitVectorString(col 6:string) -> binary
                             className: VectorGroupByOperator
                             groupByMode: HASH
                             native: false
@@ -346,7 +346,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 73392 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 13:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: cbigint (type: bigint)
                     outputColumnNames: _col0
@@ -377,7 +377,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: min(col1), max(col1), count(1), count(col1), compute_bit_vector_hll(col1)
                         Group By Vectorization:
-                            aggregators: VectorUDAFMinLong(col 3:bigint) -> bigint, VectorUDAFMaxLong(col 3:bigint) -> bigint, VectorUDAFCount(ConstantVectorExpression(val 1) -> 13:int) -> bigint, VectorUDAFCount(col 3:bigint) -> bigint, VectorUDAFComputeBitVectorLong(col 3:bigint) -> binary
+                            aggregators: VectorUDAFMinLong(col 3:bigint) -> bigint, VectorUDAFMaxLong(col 3:bigint) -> bigint, VectorUDAFCount(ConstantVectorExpression(val 1) -> 14:int) -> bigint, VectorUDAFCount(col 3:bigint) -> bigint, VectorUDAFComputeBitVectorLong(col 3:bigint) -> binary
                             className: VectorGroupByOperator
                             groupByMode: HASH
                             native: false
@@ -656,7 +656,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 73400 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 13:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: cdouble (type: double)
                     outputColumnNames: _col0
@@ -687,7 +687,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: min(col1), max(col1), count(1), count(col1), compute_bit_vector_hll(col1)
                         Group By Vectorization:
-                            aggregators: VectorUDAFMinDouble(col 5:double) -> double, VectorUDAFMaxDouble(col 5:double) -> double, VectorUDAFCount(ConstantVectorExpression(val 1) -> 13:int) -> bigint, VectorUDAFCount(col 5:double) -> bigint, VectorUDAFComputeBitVectorDouble(col 5:double) -> binary
+                            aggregators: VectorUDAFMinDouble(col 5:double) -> double, VectorUDAFMaxDouble(col 5:double) -> double, VectorUDAFCount(ConstantVectorExpression(val 1) -> 14:int) -> bigint, VectorUDAFCount(col 5:double) -> bigint, VectorUDAFComputeBitVectorDouble(col 5:double) -> binary
                             className: VectorGroupByOperator
                             groupByMode: HASH
                             native: false
@@ -966,7 +966,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 366960 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 13:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: ctimestamp1 (type: timestamp)
                     outputColumnNames: _col0
@@ -997,7 +997,7 @@ STAGE PLANS:
                       Group By Operator
                         aggregations: min(col1), max(col1), count(1), count(col1), compute_bit_vector_hll(col1)
                         Group By Vectorization:
-                            aggregators: VectorUDAFMinTimestamp(col 8:timestamp) -> timestamp, VectorUDAFMaxTimestamp(col 8:timestamp) -> timestamp, VectorUDAFCount(ConstantVectorExpression(val 1) -> 13:int) -> bigint, VectorUDAFCount(col 8:timestamp) -> bigint, VectorUDAFComputeBitVectorTimestamp(col 8:timestamp) -> binary
+                            aggregators: VectorUDAFMinTimestamp(col 8:timestamp) -> timestamp, VectorUDAFMaxTimestamp(col 8:timestamp) -> timestamp, VectorUDAFCount(ConstantVectorExpression(val 1) -> 14:int) -> bigint, VectorUDAFCount(col 8:timestamp) -> bigint, VectorUDAFComputeBitVectorTimestamp(col 8:timestamp) -> binary
                             className: VectorGroupByOperator
                             groupByMode: HASH
                             native: false
@@ -1276,15 +1276,15 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 73392 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 13:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: CAST( cbigint AS decimal(10,2)) (type: decimal(10,2))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [13]
-                        selectExpressions: CastLongToDecimal(col 3:bigint) -> 13:decimal(10,2)
+                        projectedOutputColumnNums: [14]
+                        selectExpressions: CastLongToDecimal(col 3:bigint) -> 14:decimal(10,2)
                     Statistics: Num rows: 12288 Data size: 1027488 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -1303,12 +1303,12 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [13]
+                          projectedOutputColumnNums: [14]
                       Statistics: Num rows: 12288 Data size: 1027488 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: min(col1), max(col1), count(1), count(col1), compute_bit_vector_hll(col1)
                         Group By Vectorization:
-                            aggregators: VectorUDAFMinDecimal(col 13:decimal(10,2)) -> decimal(10,2), VectorUDAFMaxDecimal(col 13:decimal(10,2)) -> decimal(10,2), VectorUDAFCount(ConstantVectorExpression(val 1) -> 14:int) -> bigint, VectorUDAFCount(col 13:decimal(10,2)) -> bigint, VectorUDAFComputeBitVectorDecimal(col 13:decimal(10,2)) -> binary
+                            aggregators: VectorUDAFMinDecimal(col 14:decimal(10,2)) -> decimal(10,2), VectorUDAFMaxDecimal(col 14:decimal(10,2)) -> decimal(10,2), VectorUDAFCount(ConstantVectorExpression(val 1) -> 15:int) -> bigint, VectorUDAFCount(col 14:decimal(10,2)) -> bigint, VectorUDAFComputeBitVectorDecimal(col 14:decimal(10,2)) -> binary
                             className: VectorGroupByOperator
                             groupByMode: HASH
                             native: false
@@ -1587,15 +1587,15 @@ STAGE PLANS:
                   Statistics: Num rows: 100 Data size: 9400 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:l_orderkey:int, 1:l_partkey:int, 2:l_suppkey:int, 3:l_linenumber:int, 4:l_quantity:double, 5:l_extendedprice:double, 6:l_discount:double, 7:l_tax:double, 8:l_returnflag:string, 9:l_linestatus:string, 10:l_shipdate:string, 11:l_commitdate:string, 12:l_receiptdate:string, 13:l_shipinstruct:string, 14:l_shipmode:string, 15:l_comment:string, 16:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:l_orderkey:int, 1:l_partkey:int, 2:l_suppkey:int, 3:l_linenumber:int, 4:l_quantity:double, 5:l_extendedprice:double, 6:l_discount:double, 7:l_tax:double, 8:l_returnflag:string, 9:l_linestatus:string, 10:l_shipdate:string, 11:l_commitdate:string, 12:l_receiptdate:string, 13:l_shipinstruct:string, 14:l_shipmode:string, 15:l_comment:string, 16:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 17:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: CAST( l_commitdate AS DATE) (type: date)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [17]
-                        selectExpressions: CastStringToDate(col 11:string) -> 17:date
+                        projectedOutputColumnNums: [18]
+                        selectExpressions: CastStringToDate(col 11:string) -> 18:date
                     Statistics: Num rows: 100 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -1614,12 +1614,12 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [17]
+                          projectedOutputColumnNums: [18]
                       Statistics: Num rows: 100 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: min(col1), max(col1), count(1), count(col1), compute_bit_vector_hll(col1)
                         Group By Vectorization:
-                            aggregators: VectorUDAFMinLong(col 17:date) -> date, VectorUDAFMaxLong(col 17:date) -> date, VectorUDAFCount(ConstantVectorExpression(val 1) -> 18:int) -> bigint, VectorUDAFCount(col 17:date) -> bigint, VectorUDAFComputeBitVectorLong(col 17:date) -> binary
+                            aggregators: VectorUDAFMinLong(col 18:date) -> date, VectorUDAFMaxLong(col 18:date) -> date, VectorUDAFCount(ConstantVectorExpression(val 1) -> 19:int) -> bigint, VectorUDAFCount(col 18:date) -> bigint, VectorUDAFComputeBitVectorLong(col 18:date) -> binary
                             className: VectorGroupByOperator
                             groupByMode: HASH
                             native: false

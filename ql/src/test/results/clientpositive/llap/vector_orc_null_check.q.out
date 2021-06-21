@@ -74,8 +74,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [2]
-                          selectExpressions: VectorUDFAdaptor(size(l)) -> 2:int
+                          projectedOutputColumnNums: [3]
+                          selectExpressions: VectorUDFAdaptor(size(l)) -> 3:int
                       Statistics: Num rows: 10 Data size: 18270 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false

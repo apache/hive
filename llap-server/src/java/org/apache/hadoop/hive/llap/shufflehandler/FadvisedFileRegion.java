@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.io.ReadaheadPool;
 import org.apache.hadoop.io.ReadaheadPool.ReadaheadRequest;
 import org.apache.hadoop.io.nativeio.NativeIO;
-import org.jboss.netty.channel.DefaultFileRegion;
+import io.netty.channel.DefaultFileRegion;
 
 public class FadvisedFileRegion extends DefaultFileRegion {
 
@@ -46,6 +46,7 @@ public class FadvisedFileRegion extends DefaultFileRegion {
   private final boolean canEvictAfterTransfer;
   
   private ReadaheadRequest readaheadRequest;
+  private boolean transferred = false;
 
   public FadvisedFileRegion(RandomAccessFile file, long position, long count,
       boolean manageOsCache, int readaheadLength, ReadaheadPool readaheadPool,
@@ -71,15 +72,39 @@ public class FadvisedFileRegion extends DefaultFileRegion {
       throws IOException {
     if (manageOsCache && readaheadPool != null) {
       readaheadRequest = readaheadPool.readaheadStream(identifier, fd,
-          getPosition() + position, readaheadLength,
-          getPosition() + getCount(), readaheadRequest);
+          position() + position, readaheadLength,
+          position() + count(), readaheadRequest);
     }
-    
+    long written = 0;
     if(this.shuffleTransferToAllowed) {
-      return super.transferTo(target, position);
+      written = super.transferTo(target, position);
     } else {
-      return customShuffleTransfer(target, position);
-    } 
+      written = customShuffleTransfer(target, position);
+    }
+    /*
+     * At this point, we can assume that the transfer was successful.
+     */
+    transferred = true;
+    return written;
+  }
+
+  /**
+   * Since Netty4, deallocate() is called automatically during cleanup, but before the
+   * ChannelFutureListeners. Deallocate calls FileChannel.close() and makes the file descriptor
+   * invalid, so every OS cache operation (e.g. posix_fadvice) with the original file descriptor
+   * will fail after this operation, so we need to take care of cleanup operations here (before
+   * deallocating) instead of listeners outside.
+   */
+  @Override
+  protected void deallocate() {
+    if (readaheadRequest != null) {
+      readaheadRequest.cancel();
+    }
+
+    if (transferred) {
+      transferSuccessful();
+    }
+    super.deallocate();
   }
 
   /**
@@ -103,11 +128,11 @@ public class FadvisedFileRegion extends DefaultFileRegion {
     if (actualCount == 0) {
       return 0L;
     }
-    
+
     long trans = actualCount;
     int readSize;
     ByteBuffer byteBuffer = ByteBuffer.allocate(this.shuffleBufferSize);
-    
+
     while(trans > 0L &&
         (readSize = fileChannel.read(byteBuffer, this.position+position)) > 0) {
       //adjust counters and buffer limit
@@ -124,7 +149,7 @@ public class FadvisedFileRegion extends DefaultFileRegion {
         position += trans; 
         trans = 0;
       }
-      
+
       //write data to the target
       while(byteBuffer.hasRemaining()) {
         target.write(byteBuffer);
@@ -132,31 +157,20 @@ public class FadvisedFileRegion extends DefaultFileRegion {
       
       byteBuffer.clear();
     }
-    
+
     return actualCount - trans;
   }
 
-  
-  @Override
-  public void releaseExternalResources() {
-    if (readaheadRequest != null) {
-      readaheadRequest.cancel();
-    }
-    super.releaseExternalResources();
-  }
-  
   /**
    * Call when the transfer completes successfully so we can advise the OS that
    * we don't need the region to be cached anymore.
    */
   public void transferSuccessful() {
-    if (manageOsCache && getCount() > 0) {
+    if (manageOsCache && count() > 0) {
       try {
         if (canEvictAfterTransfer) {
-          LOG.debug("shuffleBufferSize: {}, path: {}", shuffleBufferSize, identifier);
-          NativeIO.POSIX.getCacheManipulator().posixFadviseIfPossible(identifier,
-              fd, getPosition(), getCount(),
-              NativeIO.POSIX.POSIX_FADV_DONTNEED);
+          NativeIO.POSIX.getCacheManipulator().posixFadviseIfPossible(identifier, fd, position(),
+              count(), NativeIO.POSIX.POSIX_FADV_DONTNEED);
         }
       } catch (Throwable t) {
         LOG.warn("Failed to manage OS cache for " + identifier, t);

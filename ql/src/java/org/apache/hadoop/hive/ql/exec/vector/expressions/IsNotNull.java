@@ -32,18 +32,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 public class IsNotNull extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private final int colNum;
-
   public IsNotNull(int colNum, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum = colNum;
+    super(colNum, outputColumnNum);
   }
 
   public IsNotNull() {
     super();
-
-    // Dummy final assignments.
-    colNum = -1;
   }
 
   @Override
@@ -53,7 +47,7 @@ public class IsNotNull extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    ColumnVector inputColVector = batch.cols[colNum];
+    ColumnVector inputColVector = batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     int n = batch.size;
@@ -101,7 +95,7 @@ public class IsNotNull extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

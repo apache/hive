@@ -391,9 +391,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       }
     }
 
-    if (LOG.isInfoEnabled()) {
-      LOG.info("JOIN " + outputObjInspector.getTypeName() + " totalsz = " + totalSz);
-    }
+    LOG.info("JOIN " + outputObjInspector.getTypeName() + " totalsz = " + totalSz);
   }
 
   transient boolean newGroupStarted = false;

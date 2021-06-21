@@ -86,7 +86,7 @@ public class MaterializedViewsCache {
 
     dbMap.compute(materializedViewTable.getTableName(), (mvTableName, existingMaterialization) -> {
       List<HiveRelOptMaterialization> optMaterializationList = sqlToMaterializedView.computeIfAbsent(
-              materializedViewTable.getViewExpandedText(), s -> new ArrayList<>());
+          materializedViewTable.getViewExpandedText(), s -> new ArrayList<>());
 
       if (existingMaterialization == null) {
         // If it was not existing, we just create it
@@ -104,9 +104,18 @@ public class MaterializedViewsCache {
       return existingMaterialization;
     });
 
-    LOG.debug("Refreshed materialized view {}.{} -> {}.{}",
-            oldMaterializedViewTable.getDbName(), oldMaterializedViewTable.getTableName(),
-            materializedViewTable.getDbName(), materializedViewTable.getTableName());
+    if (LOG.isDebugEnabled()) {
+      String oldViewName;
+      if (oldMaterializedViewTable == null) {
+        oldViewName = "";
+      } else {
+        oldViewName = String.format("%s.%s -> ",
+            oldMaterializedViewTable.getDbName(), oldMaterializedViewTable.getTableName());
+      }
+      LOG.debug("Refreshed materialized view {}{}.{}",
+          oldViewName,
+          materializedViewTable.getDbName(), materializedViewTable.getTableName());
+    }
   }
 
   public void remove(Table materializedViewTable) {

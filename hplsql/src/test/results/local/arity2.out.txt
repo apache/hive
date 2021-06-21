@@ -1,0 +1,10 @@
+Ln:1 CREATE PROCEDURE P
+Ln:7 EXEC PROCEDURE P
+Ln:7 SET PARAM a = 1
+Ln:7 SET PARAM b = 2
+Ln:3 PRINT
+a=1
+Ln:4 PRINT
+b=2
+Ln:8 EXEC PROCEDURE P
+Ln:8 wrong number of arguments in call to 'P'. Expected 2 got 3.

@@ -85,9 +85,7 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
     try {
       value = (T) registry.getIfPresent(key);
       if (value != null) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Found " + key + " in cache");
-        }
+        LOG.debug("Found {} in cache", key);
         return value;
       }
 
@@ -107,9 +105,7 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
       try {
         value = (T) registry.getIfPresent(key);
         if (value != null) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Found " + key + " in cache");
-          }
+          LOG.debug("Found {} in cache", key);
           return value;
         }
       } finally {
@@ -124,10 +120,7 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
 
       lock.lock();
       try {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Caching new object for key: " + key);
-        }
-
+        LOG.debug("Caching new object for key: {}", key);
         registry.put(key, value);
         locks.remove(key);
       } finally {
@@ -151,9 +144,7 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
 
   @Override
   public void remove(String key) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Removing key: " + key);
-    }
+    LOG.debug("Removing key: {}", key);
     registry.invalidate(key);
   }
 }

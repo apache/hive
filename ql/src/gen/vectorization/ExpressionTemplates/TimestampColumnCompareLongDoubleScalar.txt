@@ -38,12 +38,10 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private final int colNum;
   private final <OperandType> value;
 
   public <ClassName>(int colNum, <OperandType> value, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum = colNum;
+    super(colNum, outputColumnNum);
     this.value = value;
   }
 
@@ -51,7 +49,6 @@ public class <ClassName> extends VectorExpression {
      super();
 
     // Dummy final assignments.
-    colNum = -1;
     value = 0;
   }
 
@@ -68,7 +65,7 @@ public class <ClassName> extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[colNum];
+    TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[inputColumnNum[0]];
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
@@ -158,7 +155,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum) + ", val " + value;
+    return getColumnParamString(0, inputColumnNum[0]) + ", val " + value;
   }
 
   @Override

@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.MaterializedViewIncrementalRewritingRelVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.CBOPlan;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
@@ -235,7 +236,20 @@ public final class HiveMaterializedViewsRegistry {
     return new HiveRelOptMaterialization(viewScan, plan.getPlan(),
             null, viewScan.getTable().getQualifiedName(),
         isBlank(plan.getInvalidAutomaticRewritingMaterializationReason()) ?
-            EnumSet.allOf(HiveRelOptMaterialization.RewriteAlgorithm.class) : EnumSet.of(TEXT));
+            EnumSet.allOf(HiveRelOptMaterialization.RewriteAlgorithm.class) : EnumSet.of(TEXT),
+            determineIncrementalRebuildMode(plan.getPlan()));
+  }
+
+  private HiveRelOptMaterialization.IncrementalRebuildMode determineIncrementalRebuildMode(RelNode definitionPlan) {
+    MaterializedViewIncrementalRewritingRelVisitor visitor = new MaterializedViewIncrementalRewritingRelVisitor();
+    visitor.go(definitionPlan);
+    if (!visitor.isRewritingAllowed()) {
+      return HiveRelOptMaterialization.IncrementalRebuildMode.NOT_AVAILABLE;
+    }
+    if (visitor.isContainsAggregate() && !visitor.hasCountStar()) {
+      return HiveRelOptMaterialization.IncrementalRebuildMode.INSERT_ONLY;
+    }
+    return HiveRelOptMaterialization.IncrementalRebuildMode.AVAILABLE;
   }
 
   /**
@@ -328,7 +342,7 @@ public final class HiveMaterializedViewsRegistry {
    *
    * @return the collection of materialized views, or the empty collection if none
    */
-  HiveRelOptMaterialization getRewritingMaterializedView(String dbName, String viewName,
+  public HiveRelOptMaterialization getRewritingMaterializedView(String dbName, String viewName,
                                                          EnumSet<HiveRelOptMaterialization.RewriteAlgorithm> scope) {
     HiveRelOptMaterialization materialization = materializedViewsCache.get(dbName, viewName);
     if (materialization == null) {

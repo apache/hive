@@ -171,3 +171,5 @@ group by t;
 set hive.exec.orc.split.strategy=BI;
 select t, count(*) from over10k_orc
 group by t;
+
+select oo.ROW__ID.writeId, oo.ROW__IS__DELETED, oo.* from over10k_orc('acid.fetch.deleted.rows'='true') oo order by si;

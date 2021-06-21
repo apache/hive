@@ -1,3 +1,4 @@
+--! qt:disabled:HIVE-24816
 --! qt:dataset:druid_table_alltypesorc
 SET hive.vectorized.execution.enabled=true ;
 SET hive.ctas.external.tables=true;

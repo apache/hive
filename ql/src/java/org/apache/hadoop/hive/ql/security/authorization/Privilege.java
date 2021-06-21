@@ -120,4 +120,7 @@ public class Privilege {
   public static Privilege SHOW_DATABASE = new Privilege(PrivilegeType.SHOW_DATABASE,
       EnumSet.of(PrivilegeScope.USER_LEVEL_SCOPE));
 
+  public static Privilege SHOW_DATACONNECTOR = new Privilege(PrivilegeType.SHOW_DATABASE,
+      EnumSet.of(PrivilegeScope.USER_LEVEL_SCOPE));
+
 }

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.util.HashMap;
 import java.util.Map;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -58,6 +59,11 @@ public class QueryState {
   private long numModifiedRows = 0;
 
   static public final String USERID_TAG = "userid";
+
+  /**
+   * map of resources involved in the query.
+   */
+  private final Map<String, Object> resourceMap = new HashMap<>();
 
   /**
    * Private constructor, use QueryState.Builder instead.
@@ -139,6 +145,14 @@ public class QueryState {
     }
     queryConf.set(MRJobConfig.JOB_TAGS, jobTag);
     queryConf.set(TezConfiguration.TEZ_APPLICATION_TAGS, jobTag);
+  }
+
+  public void addResource(String resourceIdentifier, Object resource) {
+    resourceMap.put(resourceIdentifier, resource);
+  }
+
+  public Object getResource(String resourceIdentifier) {
+    return resourceMap.get(resourceIdentifier);
   }
 
   /**

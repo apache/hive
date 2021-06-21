@@ -44,7 +44,8 @@ public class FunctionDatetime extends BuiltinFunctions {
     f.map.put("TIMESTAMP_ISO", this::timestampIso);
     f.map.put("TO_TIMESTAMP", this::toTimestamp);
     f.map.put("UNIX_TIMESTAMP", this::unixTimestamp);
-  
+    f.map.put("CURRENT_TIME_MILLIS", this::currentTimeMillis);
+
     f.specMap.put("CURRENT_DATE", this::currentDate);
     f.specMap.put("CURRENT_TIMESTAMP", this::currentTimestamp);
     f.specMap.put("SYSDATE", this::currentTimestamp);
@@ -188,5 +189,9 @@ public class FunctionDatetime extends BuiltinFunctions {
    */
   void unixTimestamp(HplsqlParser.Expr_func_paramsContext ctx) {
     evalVar(new Var(System.currentTimeMillis()/1000));
+  }
+
+  public void currentTimeMillis(HplsqlParser.Expr_func_paramsContext ctx) {
+    evalVar(new Var(System.currentTimeMillis()));
   }
 }  

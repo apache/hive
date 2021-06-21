@@ -69,6 +69,7 @@ public class TestPartitionManagement {
     conf = MetastoreConf.newMetastoreConf();
     conf.setClass(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(),
       MsckPartitionExpressionProxy.class, PartitionExpressionProxy.class);
+    MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS, " ");
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     conf.setBoolean(ConfVars.MULTITHREADED.getVarname(), false);
     conf.setBoolean(ConfVars.HIVE_IN_TEST.getVarname(), true);
@@ -379,6 +380,16 @@ public class TestPartitionManagement {
     runPartitionManagementTask(conf);
     partitions = client.listPartitions(dbName, tableName, (short) -1);
     assertEquals(5, partitions.size());
+
+    fs.mkdirs(new Path(tablePath, "state=MG/dt=2021-28-05"));
+    assertEquals(6, fs.listStatus(tablePath).length);
+    Database db = client.getDatabase(table.getDbName());
+    //PartitionManagementTask would not run for the database which is being failed over.
+    db.putToParameters(ReplConst.REPL_FAILOVER_ENABLED, ReplConst.TRUE);
+    client.alterDatabase(dbName, db);
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(5, partitions.size());
   }
 
   @Test
@@ -524,6 +535,18 @@ public class TestPartitionManagement {
     partitions = client.listPartitions(dbName, tableName, (short) -1);
     assertEquals(5, partitions.size());
 
+    Database db = client.getDatabase(table.getDbName());
+    db.putToParameters(ReplConst.REPL_FAILOVER_ENABLED, ReplConst.TRUE);
+    client.alterDatabase(table.getDbName(), db);
+    // PartitionManagementTask would not do anything because the db is being failed over.
+    Thread.sleep(30 * 1000);
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(5, partitions.size());
+
+    db.putToParameters(ReplConst.REPL_FAILOVER_ENABLED, "");
+    client.alterDatabase(table.getDbName(), db);
+
     // after 30s all partitions should have been gone
     Thread.sleep(30 * 1000);
     runPartitionManagementTask(conf);
@@ -596,7 +619,9 @@ public class TestPartitionManagement {
     // table property is set to true, but the table is marked as replication target. The new
     // partitions should not be created
     table.getParameters().put(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
-    table.getParameters().put(ReplConst.REPL_TARGET_TABLE_PROPERTY, "1");
+    Database db = client.getDatabase(table.getDbName());
+    db.putToParameters(ReplConst.TARGET_OF_REPLICATION, "true");
+    client.alterDatabase(table.getDbName(), db);
     client.alter_table(dbName, tableName, table);
     runPartitionManagementTask(conf);
     partitions = client.listPartitions(dbName, tableName, (short) -1);
@@ -640,8 +665,10 @@ public class TestPartitionManagement {
     table.getParameters().put(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
     table.getParameters().put(PartitionManagementTask.PARTITION_RETENTION_PERIOD_TBLPROPERTY,
             partitionRetentionPeriodMs + "ms");
-    table.getParameters().put(ReplConst.REPL_TARGET_TABLE_PROPERTY, "1");
     client.alter_table(dbName, tableName, table);
+    Database db = client.getDatabase(table.getDbName());
+    db.putToParameters(ReplConst.TARGET_OF_REPLICATION, "true");
+    client.alterDatabase(table.getDbName(), db);
 
     runPartitionManagementTask(conf);
     partitions = client.listPartitions(dbName, tableName, (short) -1);

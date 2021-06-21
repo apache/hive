@@ -74,12 +74,12 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 1522990 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 13:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColGreaterLongScalar(col 3:bigint, val -23), FilterExprOrExpr(children: FilterLongColGreaterEqualLongScalar(col 0:tinyint, val 33), FilterLongColGreaterEqualLongColumn(col 1:bigint, col 3:bigint)(children: col 1:smallint), FilterDoubleColEqualDoubleColumn(col 4:double, col 5:double)(children: col 4:float)), FilterExprOrExpr(children: FilterDoubleColNotEqualDoubleScalar(col 5:double, val 988888.0), FilterDecimal64ColGreaterDecimal64Scalar(col 13:decimal(13,3)/DECIMAL_64, val -863257)(children: CastLongToDecimal64(col 2:int) -> 13:decimal(13,3)/DECIMAL_64)))
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColGreaterLongScalar(col 3:bigint, val -23), FilterExprOrExpr(children: FilterLongColGreaterEqualLongScalar(col 0:tinyint, val 33), FilterLongColGreaterEqualLongColumn(col 1:bigint, col 3:bigint)(children: col 1:smallint), FilterDoubleColEqualDoubleColumn(col 4:double, col 5:double)(children: col 4:float)), FilterExprOrExpr(children: FilterDoubleColNotEqualDoubleScalar(col 5:double, val 988888.0), FilterDecimal64ColGreaterDecimal64Scalar(col 14:decimal(13,3)/DECIMAL_64, val -863257)(children: CastLongToDecimal64(col 2:int) -> 14:decimal(13,3)/DECIMAL_64)))
                     predicate: ((cbigint > -23L) and ((ctinyint >= 33Y) or (UDFToLong(csmallint) >= cbigint) or (UDFToDouble(cfloat) = cdouble)) and ((cdouble <> 988888.0D) or (CAST( cint AS decimal(13,3)) > -863.257))) (type: boolean)
                     Statistics: Num rows: 6141 Data size: 761216 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -88,8 +88,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [4, 6, 2, 8, 5, 3, 15, 16, 17, 20, 22, 24, 26, 29]
-                          selectExpressions: DoubleColDivideDoubleColumn(col 4:double, col 14:double)(children: col 4:float, CastLongToDouble(col 0:tinyint) -> 14:double) -> 15:double, LongColModuloLongColumn(col 2:bigint, col 3:bigint)(children: col 2:int) -> 16:bigint, DoubleColUnaryMinus(col 5:double) -> 17:double, DoubleColAddDoubleColumn(col 5:double, col 19:double)(children: DoubleColDivideDoubleColumn(col 4:double, col 18:double)(children: col 4:float, CastLongToDouble(col 0:tinyint) -> 18:double) -> 19:double) -> 20:double, DoubleColDivideDoubleColumn(col 5:double, col 21:double)(children: CastLongToDouble(col 2:int) -> 21:double) -> 22:double, DoubleColUnaryMinus(col 23:double)(children: DoubleColUnaryMinus(col 5:double) -> 23:double) -> 24:double, DecimalScalarModuloDecimalColumn(val 9763215.5639, col 25:decimal(19,0))(children: CastLongToDecimal(col 3:bigint) -> 25:decimal(19,0)) -> 26:decimal(11,4), DoubleScalarAddDoubleColumn(val 2563.58, col 28:double)(children: DoubleColUnaryMinus(col 27:double)(children: DoubleColUnaryMinus(col 5:double) -> 27:double) -> 28:double) -> 29:double
+                          projectedOutputColumnNums: [4, 6, 2, 8, 5, 3, 16, 17, 18, 21, 23, 25, 27, 30]
+                          selectExpressions: DoubleColDivideDoubleColumn(col 4:double, col 15:double)(children: col 4:float, CastLongToDouble(col 0:tinyint) -> 15:double) -> 16:double, LongColModuloLongColumn(col 2:bigint, col 3:bigint)(children: col 2:int) -> 17:bigint, DoubleColUnaryMinus(col 5:double) -> 18:double, DoubleColAddDoubleColumn(col 5:double, col 20:double)(children: DoubleColDivideDoubleColumn(col 4:double, col 19:double)(children: col 4:float, CastLongToDouble(col 0:tinyint) -> 19:double) -> 20:double) -> 21:double, DoubleColDivideDoubleColumn(col 5:double, col 22:double)(children: CastLongToDouble(col 2:int) -> 22:double) -> 23:double, DoubleColUnaryMinus(col 24:double)(children: DoubleColUnaryMinus(col 5:double) -> 24:double) -> 25:double, DecimalScalarModuloDecimalColumn(val 9763215.5639, col 26:decimal(19,0))(children: CastLongToDecimal(col 3:bigint) -> 26:decimal(19,0)) -> 27:decimal(11,4), DoubleScalarAddDoubleColumn(val 2563.58, col 29:double)(children: DoubleColUnaryMinus(col 28:double)(children: DoubleColUnaryMinus(col 5:double) -> 28:double) -> 29:double) -> 30:double
                       Statistics: Num rows: 6141 Data size: 1756220 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col5 (type: bigint), _col0 (type: float)
@@ -100,7 +100,7 @@ STAGE PLANS:
                             keyColumns: 3:bigint, 4:float
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            valueColumns: 6:string, 2:int, 8:timestamp, 5:double, 15:double, 16:bigint, 17:double, 20:double, 22:double, 24:double, 26:decimal(11,4), 29:double
+                            valueColumns: 6:string, 2:int, 8:timestamp, 5:double, 16:double, 17:bigint, 18:double, 21:double, 23:double, 25:double, 27:decimal(11,4), 30:double
                         Statistics: Num rows: 6141 Data size: 1756220 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: timestamp), _col4 (type: double), _col6 (type: double), _col7 (type: bigint), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: decimal(11,4)), _col13 (type: double)
             Execution mode: vectorized, llap

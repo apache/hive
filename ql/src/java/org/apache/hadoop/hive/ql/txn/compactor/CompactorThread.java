@@ -17,11 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -58,6 +60,8 @@ public abstract class CompactorThread extends Thread implements Configurable {
   protected AtomicBoolean stop;
 
   protected int threadId;
+  protected String hostName;
+  protected String runtimeVersion;
 
   public void setThreadId(int threadId) {
     this.threadId = threadId;
@@ -82,6 +86,8 @@ public abstract class CompactorThread extends Thread implements Configurable {
     setPriority(MIN_PRIORITY);
     setDaemon(true); // this means the process will exit without waiting for this thread
     this.stop = stop;
+    this.hostName = ServerUtils.hostname();
+    this.runtimeVersion = getRuntimeVersion();
   }
 
   /**
@@ -238,5 +244,10 @@ public abstract class CompactorThread extends Thread implements Configurable {
       LOG.info("Compaction is disabled for table " + tbl.getTableName());
     }
     return isCompactDisabled;
+  }
+
+  @VisibleForTesting
+  protected String getRuntimeVersion() {
+    return this.getClass().getPackage().getImplementationVersion();
   }
 }

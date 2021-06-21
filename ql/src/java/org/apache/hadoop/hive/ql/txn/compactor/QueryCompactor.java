@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,6 @@ import java.util.List;
 abstract class QueryCompactor {
 
   private static final Logger LOG = LoggerFactory.getLogger(QueryCompactor.class.getName());
-  private static final String TMPDIR = "_tmp";
 
   /**
    * Start a query based compaction.
@@ -94,6 +94,10 @@ abstract class QueryCompactor {
       ValidWriteIdList writeIds, CompactionInfo compactionInfo, List<Path> resultDirs,
       List<String> createQueries, List<String> compactionQueries, List<String> dropQueries)
       throws IOException {
+    String queueName = HiveConf.getVar(conf, HiveConf.ConfVars.COMPACTOR_JOB_QUEUE);
+    if (queueName != null && queueName.length() > 0) {
+      conf.set(TezConfiguration.TEZ_QUEUE_NAME, queueName);
+    }
     Util.disableLlapCaching(conf);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_HDFS_ENCRYPTION_SHIM_CACHE_ON, false);

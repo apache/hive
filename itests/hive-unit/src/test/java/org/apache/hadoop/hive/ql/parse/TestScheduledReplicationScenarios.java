@@ -61,6 +61,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * TestScheduledReplicationScenarios - test scheduled replication .
  */
+@org.junit.Ignore("HIVE-24766")
 public class TestScheduledReplicationScenarios extends BaseReplicationScenariosAcidTables {
   private static final long DEFAULT_PROBE_TIMEOUT = 5 * 60 * 1000L; // 5 minutes
 
@@ -305,6 +306,20 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
           primary.run("DESCRIBE DATABASE EXTENDED " + primaryDbName);
           return primary.getOutput().get(0)
               .contains("repl.source.for=s1_t2, s1_t2_new");
+        } catch (Throwable e) {
+          return false;
+        }
+      }, 100, 10000);
+
+      // Remove the SOURCE_OF_REPLICATION property from the database.
+      primary.run("ALTER DATABASE " + primaryDbName + " Set DBPROPERTIES ( '"
+              + SOURCE_OF_REPLICATION + "' = '')");
+
+      GenericTestUtils.waitFor(() -> {
+        try {
+          primary.run("DESCRIBE DATABASE EXTENDED " + primaryDbName);
+          return primary.getOutput().get(0)
+                  .contains("repl.source.for=s1_t2_new");
         } catch (Throwable e) {
           return false;
         }

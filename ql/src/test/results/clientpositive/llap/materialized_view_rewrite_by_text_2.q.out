@@ -18,6 +18,8 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view2
+POSTHOOK: Lineage: cmv_mat_view2.a SIMPLE []
+POSTHOOK: Lineage: cmv_mat_view2.c SIMPLE [(cmv_basetable_n0)cmv_basetable_n0.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: explain cbo
 select a, c from cmv_basetable_n0 where a = 3
 PREHOOK: type: QUERY

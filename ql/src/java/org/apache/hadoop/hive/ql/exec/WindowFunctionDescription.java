@@ -84,4 +84,13 @@ public @interface WindowFunctionDescription {
    * @return true if the function can be used as an ordered-set aggregate
    */
   boolean orderedAggregate() default false;
+
+  /**
+   * Some aggregate functions allow specifying null treatment.
+   * Example:
+   *   SELECT last_value(b) IGNORE NULLS OVER (ORDER BY b) FROM table1;
+   *
+   * @return true if this aggregate functions support null treatment.
+   */
+  boolean supportsNullTreatment() default false;
 }

@@ -98,4 +98,56 @@ public class TestBucketCodec {
         .encode(new AcidOutputFormat.Options(null).bucket(7).statementId(BucketCodec.MAX_STATEMENT_ID + 1));
   }
 
+  @Test
+  public void testBucketIdTakesExtra8BitsFromStmtId() {
+    AcidOutputFormat.Options options = new AcidOutputFormat
+            .Options(null)
+            .bucket(5000)             // 1|001110001000
+            .statementId(12)          //   000000001100
+            .maxStmtId(100); //        1100100
+    int encode = BucketCodec.getCodec(1).encode(options);
+    assertEquals("10001100", Integer.toString(BucketCodec.V1.decodeStatementId(encode), 2));
+    assertEquals("1110001000", Integer.toString(BucketCodec.V1.decodeWriterId(encode), 2));
+  }
+
+  @Test
+  public void testBucketIdTakesExtra4BitsFromStmtId() {
+    AcidOutputFormat.Options options = new AcidOutputFormat
+            .Options(null)
+            .bucket(65535)
+            .statementId(150)         //   000010010110
+            .maxStmtId(150); //       10010110
+    int encode = BucketCodec.getCodec(1).encode(options);
+    assertEquals("111110010110", Integer.toString(BucketCodec.V1.decodeStatementId(encode), 2));
+    assertEquals("111111111111", Integer.toString(BucketCodec.V1.decodeWriterId(encode), 2));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testNoRoomToOverflowBucketId() {
+    BucketCodec.getCodec(1).encode(new AcidOutputFormat
+            .Options(null)
+            .bucket(65536)
+            .statementId(1)
+            .maxStmtId(150));   //   000010010110
+  }
+
+  @Test
+  public void testBucketIdRollOver() {
+    for (int i = 0; i < 16384; i++) {
+      int encode = BucketCodec.getCodec(1).encode(new AcidOutputFormat
+              .Options(null)
+              .bucket(i)
+              .statementId(10)
+              .maxStmtId(0b001000000000)); // 2 bit free
+      assertEquals(i % 4096, BucketCodec.getCodec(1).decodeWriterId(encode));
+      if (i < 4096)
+        assertEquals(10, BucketCodec.getCodec(1).decodeStatementId(encode));
+      else if (i < 8192)
+        assertEquals(0b010000001010, BucketCodec.getCodec(1).decodeStatementId(encode));
+      else if (i < 12288)
+        assertEquals(0b100000001010, BucketCodec.getCodec(1).decodeStatementId(encode));
+      else
+        assertEquals(0b110000001010, BucketCodec.getCodec(1).decodeStatementId(encode));
+    }
+  }
 }

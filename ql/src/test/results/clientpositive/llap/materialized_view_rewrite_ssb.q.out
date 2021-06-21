@@ -600,6 +600,24 @@ POSTHOOK: Input: default@ssb_part_n0
 POSTHOOK: Input: default@supplier_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ssb_mv_n0
+POSTHOOK: Lineage: ssb_mv_n0.c_city SIMPLE [(customer_n1)customer_n1.FieldSchema(name:c_city, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.c_nation SIMPLE [(customer_n1)customer_n1.FieldSchema(name:c_nation, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.c_region SIMPLE [(customer_n1)customer_n1.FieldSchema(name:c_region, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.d_weeknuminyear SIMPLE [(dates_n0)dates_n0.FieldSchema(name:d_weeknuminyear, type:int, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.d_year SIMPLE [(dates_n0)dates_n0.FieldSchema(name:d_year, type:int, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.d_yearmonth SIMPLE [(dates_n0)dates_n0.FieldSchema(name:d_yearmonth, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.d_yearmonthnum SIMPLE [(dates_n0)dates_n0.FieldSchema(name:d_yearmonthnum, type:int, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.discounted_price EXPRESSION [(lineorder_n0)lineorder_n0.FieldSchema(name:lo_extendedprice, type:double, comment:null), (lineorder_n0)lineorder_n0.FieldSchema(name:lo_discount, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.lo_discount SIMPLE [(lineorder_n0)lineorder_n0.FieldSchema(name:lo_discount, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.lo_quantity SIMPLE [(lineorder_n0)lineorder_n0.FieldSchema(name:lo_quantity, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.lo_revenue SIMPLE [(lineorder_n0)lineorder_n0.FieldSchema(name:lo_revenue, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.net_revenue EXPRESSION [(lineorder_n0)lineorder_n0.FieldSchema(name:lo_revenue, type:double, comment:null), (lineorder_n0)lineorder_n0.FieldSchema(name:lo_supplycost, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.p_brand1 SIMPLE [(ssb_part_n0)ssb_part_n0.FieldSchema(name:p_brand1, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.p_category SIMPLE [(ssb_part_n0)ssb_part_n0.FieldSchema(name:p_category, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.p_mfgr SIMPLE [(ssb_part_n0)ssb_part_n0.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.s_city SIMPLE [(supplier_n0)supplier_n0.FieldSchema(name:s_city, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.s_nation SIMPLE [(supplier_n0)supplier_n0.FieldSchema(name:s_nation, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n0.s_region SIMPLE [(supplier_n0)supplier_n0.FieldSchema(name:s_region, type:string, comment:null), ]
 PREHOOK: query: explain
 select 
     sum(lo_extendedprice*lo_discount) as revenue

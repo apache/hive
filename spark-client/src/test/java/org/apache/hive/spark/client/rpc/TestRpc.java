@@ -131,6 +131,7 @@ public class TestRpc {
   }
 
   @Test
+  @org.junit.Ignore("HIVE-25271")
   public void testServerAddress() throws Exception {
     String hostAddress = InetAddress.getLocalHost().getHostName();
     Map<String, String> config = new HashMap<String, String>();
@@ -178,6 +179,7 @@ public class TestRpc {
   }
 
   @Test
+  @org.junit.Ignore("HIVE-25271")
   public void testServerPort() throws Exception {
     Map<String, String> config = new HashMap<String, String>();
 

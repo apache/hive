@@ -33,9 +33,7 @@ public class LlapServerSecurityInfo extends SecurityInfo {
 
   @Override
   public KerberosInfo getKerberosInfo(Class<?> protocol, Configuration conf) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Trying to get KerberosInfo for " + protocol);
-    }
+    LOG.debug("Trying to get KerberosInfo for " + protocol);
     if (!LlapProtocolBlockingPB.class.isAssignableFrom(protocol)
         && !LlapManagementProtocolPB.class.isAssignableFrom(protocol)) return null;
     return new KerberosInfo() {
@@ -58,9 +56,7 @@ public class LlapServerSecurityInfo extends SecurityInfo {
 
   @Override
   public TokenInfo getTokenInfo(Class<?> protocol, Configuration conf) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Trying to get TokenInfo for " + protocol);
-    }
+    LOG.debug("Trying to get TokenInfo for {}", protocol);
     // Tokens cannot be used for the management protocol (for now).
     if (!LlapProtocolBlockingPB.class.isAssignableFrom(protocol)) return null;
     return new TokenInfo() {

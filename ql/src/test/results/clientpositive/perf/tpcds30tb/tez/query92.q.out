@@ -160,8 +160,8 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col2 (type: bigint), VALUE._col1 (type: decimal(7,2)), KEY.reducesinkkey0 (type: bigint)
-                outputColumnNames: _col2, _col1, _col3
+                expressions: KEY.reducesinkkey0 (type: bigint), VALUE._col1 (type: decimal(7,2)), VALUE._col2 (type: bigint)
+                outputColumnNames: _col3, _col1, _col2
                 Reduce Output Operator
                   key expressions: _col3 (type: bigint)
                   null sort order: z

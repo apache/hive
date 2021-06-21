@@ -229,9 +229,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
        * requires changes in the Tez API with regard to finding bucket id and
        * also ability to schedule tasks to re-use containers that have cached the specific bucket.
        */
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("This is not bucket map join, so cache");
-      }
+      LOG.debug("This is not bucket map join, so cache");
 
       Future<Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]>> future =
           cache.retrieveAsync(
@@ -384,9 +382,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     try {
       loader.load(mapJoinTables, mapJoinTableSerdes);
     } catch (HiveException e) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Exception loading hash tables. Clearing partially loaded hash table containers.");
-      }
+      LOG.info("Exception loading hash tables. Clearing partially loaded hash table containers");
 
       // there could be some spilled partitions which needs to be cleaned up
       clearAllTableContainers();
@@ -831,9 +827,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         }
       }
 
-      if (LOG.isInfoEnabled()) {
-        LOG.info("spilled: " + spilled + " abort: " + abort + ". Clearing spilled partitions.");
-      }
+      LOG.info("spilled: " + spilled + " abort: " + abort + ". Clearing spilled partitions.");
 
       // spilled tables are loaded always (no sharing), so clear it
       clearAllTableContainers();
@@ -845,9 +839,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         && (this.getExecContext().getLocalWork().getInputFileChangeSensitive())
         && !(HiveConf.getVar(hconf, ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")
             && SparkUtilities.isDedicatedCluster(hconf))) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("MR: Clearing all map join table containers.");
-      }
+      LOG.info("MR: Clearing all map join table containers.");
       clearAllTableContainers();
     }
 

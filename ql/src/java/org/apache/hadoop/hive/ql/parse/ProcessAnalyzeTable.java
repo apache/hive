@@ -85,8 +85,8 @@ public class ProcessAnalyzeTable implements SemanticNodeProcessor {
 
       assert alias != null;
       TezWork tezWork = context.currentTask.getWork();
-      if (BasicStatsNoJobTask.canUseFooterScan(table, inputFormat)) {
-        // For ORC & Parquet, all the following statements are the same
+      if (BasicStatsNoJobTask.canUseBasicStats(table, inputFormat)) {
+        // For ORC, Parquet and Iceberg tables, all the following statements are the same
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
 

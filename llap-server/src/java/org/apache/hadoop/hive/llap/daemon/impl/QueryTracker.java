@@ -205,9 +205,7 @@ public class QueryTracker extends AbstractService {
 
       queryIdentifierToHiveQueryId.putIfAbsent(queryIdentifier, hiveQueryIdString);
 
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Registering request for {} with the ShuffleHandler", queryIdentifier);
-      }
+      LOG.debug("Registering request for {} with the ShuffleHandler", queryIdentifier);
       if (!vertex.getIsExternalSubmission()) {
         String[] localDirs = (ShuffleHandler.get().isDirWatcherEnabled()) ? queryInfo.getLocalDirs() : null;
         ShuffleHandler.get()
@@ -459,9 +457,7 @@ public class QueryTracker extends AbstractService {
     @Override
     protected Void callInternal() {
       Path pathToDelete = new Path(dirToDelete);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Deleting path: " + pathToDelete);
-      }
+      LOG.debug("Deleting path: {}", pathToDelete);
       try {
         localFs.delete(new Path(dirToDelete), true);
       } catch (IOException e) {
@@ -503,17 +499,13 @@ public class QueryTracker extends AbstractService {
       LOG.info("External cleanup callable for {}", queryIdentifier);
       ReadWriteLock dagLock = getDagLockNoCreate(queryIdentifier);
       if (dagLock == null) {
-        if (LOG.isTraceEnabled()) {
-          LOG.trace("null dagLock. No cleanup required at the moment for {}", queryIdString);
-        }
+        LOG.trace("null dagLock. No cleanup required at the moment for {}", queryIdString);
         return null;
       }
       boolean locked = dagLock.writeLock().tryLock();
       if (!locked) {
         // Something else holds the lock at the moment. Don't bother cleaning up.
-        if (LOG.isTraceEnabled()) {
-          LOG.trace("Lock not obtained. Skipping cleanup for {}", queryIdString);
-        }
+        LOG.trace("Lock not obtained. Skipping cleanup for {}", queryIdString);
         return null;
       }
       try {
@@ -522,9 +514,7 @@ public class QueryTracker extends AbstractService {
         QueryInfo queryInfo = queryInfoMap.get(queryIdentifier);
         if (queryInfo != null) {
           // QueryInfo will only exist if more work came in, after this was scheduled.
-          if (LOG.isTraceEnabled()) {
-            LOG.info("QueryInfo found for {}. Expecting future cleanup", queryIdString);
-          }
+          LOG.trace("QueryInfo found for {}. Expecting future cleanup", queryIdString);
           return null;
         }
         LOG.info("Processing cleanup for {}", queryIdString);

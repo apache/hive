@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.ql.Driver;
@@ -3071,7 +3072,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     txnManager1.commitTxn();
     txnMgr.commitTxn();
 
-    long replTxnId = txnMgr.openTxn(ctx, "u0", TxnType.REPL_CREATED);
+    long replTxnId = txnMgr.replOpenTxn("default.*", Arrays.asList(1L), "u0").get(0);
     txnManager1 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     txnManager1.openTxn(ctx, "u0");
     //Excludes open read only txns by default
@@ -3087,7 +3088,10 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     validTxns = txnManager1.getValidTxns(Arrays.asList(TxnType.READ_ONLY));
     Assert.assertEquals(1, validTxns.getInvalidTransactions().length);
     Assert.assertEquals(replTxnId, validTxns.getInvalidTransactions()[0]);
-    txnMgr.commitTxn();
+    CommitTxnRequest commitTxnRequest = new CommitTxnRequest(1L);
+    commitTxnRequest.setReplPolicy("default.*");
+    commitTxnRequest.setTxn_type(TxnType.REPL_CREATED);
+    txnMgr.replCommitTxn(commitTxnRequest);
 
     //Transaction is committed. So no open txn
     validTxns = txnManager1.getValidTxns();

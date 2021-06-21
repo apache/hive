@@ -276,12 +276,12 @@ STAGE PLANS:
                   Statistics: Num rows: 100 Data size: 11200 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:partkey_bigint:bigint, 1:partkey_decimal:decimal(10,1)/DECIMAL_64, 2:partkey_double:double, 3:shipdate_date:date, 4:shipdate_ts:timestamp, 5:shipdate_string:string, 6:shipdate_char:char(10), 7:shipdate_varchar:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:partkey_bigint:bigint, 1:partkey_decimal:decimal(10,1)/DECIMAL_64, 2:partkey_double:double, 3:shipdate_date:date, 4:shipdate_ts:timestamp, 5:shipdate_string:string, 6:shipdate_char:char(10), 7:shipdate_varchar:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1:decimal(10,1)/DECIMAL_64), FilterDecimalColumnBetweenDynamicValue(col 9:decimal(10,1), left 0, right 0)(children: ConvertDecimal64ToDecimal(col 1:decimal(10,1)/DECIMAL_64) -> 9:decimal(10,1)), VectorInBloomFilterColDynamicValue(children: ConvertDecimal64ToDecimal(col 1:decimal(10,1)/DECIMAL_64) -> 10:decimal(10,1)))
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1:decimal(10,1)/DECIMAL_64), FilterDecimalColumnBetweenDynamicValue(col 10:decimal(10,1), left 0, right 0)(children: ConvertDecimal64ToDecimal(col 1:decimal(10,1)/DECIMAL_64) -> 10:decimal(10,1)), VectorInBloomFilterColDynamicValue(children: ConvertDecimal64ToDecimal(col 1:decimal(10,1)/DECIMAL_64) -> 11:decimal(10,1)))
                     predicate: (partkey_decimal is not null and partkey_decimal BETWEEN DynamicValue(RS_7_b_partkey_decimal_min) AND DynamicValue(RS_7_b_partkey_decimal_max) and in_bloom_filter(partkey_decimal, DynamicValue(RS_7_b_partkey_decimal_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 100 Data size: 11200 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -328,7 +328,7 @@ STAGE PLANS:
                   Statistics: Num rows: 20 Data size: 2240 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:partkey_bigint:bigint, 1:partkey_decimal:decimal(10,1)/DECIMAL_64, 2:partkey_double:double, 3:shipdate_date:date, 4:shipdate_ts:timestamp, 5:shipdate_string:string, 6:shipdate_char:char(10), 7:shipdate_varchar:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:partkey_bigint:bigint, 1:partkey_decimal:decimal(10,1)/DECIMAL_64, 2:partkey_double:double, 3:shipdate_date:date, 4:shipdate_ts:timestamp, 5:shipdate_string:string, 6:shipdate_char:char(10), 7:shipdate_varchar:varchar(10), 8:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 9:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -366,7 +366,7 @@ STAGE PLANS:
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
                           Group By Vectorization:
-                              aggregators: VectorUDAFMinDecimal64(col 1:decimal(10,1)/DECIMAL_64) -> decimal(10,1)/DECIMAL_64, VectorUDAFMaxDecimal64(col 1:decimal(10,1)/DECIMAL_64) -> decimal(10,1)/DECIMAL_64, VectorUDAFBloomFilter(ConvertDecimal64ToDecimal(col 1:decimal(10,1)/DECIMAL_64) -> 9:decimal(10,1)) -> binary
+                              aggregators: VectorUDAFMinDecimal64(col 1:decimal(10,1)/DECIMAL_64) -> decimal(10,1)/DECIMAL_64, VectorUDAFMaxDecimal64(col 1:decimal(10,1)/DECIMAL_64) -> decimal(10,1)/DECIMAL_64, VectorUDAFBloomFilter(ConvertDecimal64ToDecimal(col 1:decimal(10,1)/DECIMAL_64) -> 10:decimal(10,1)) -> binary
                               className: VectorGroupByOperator
                               groupByMode: HASH
                               native: false

@@ -34,4 +34,7 @@ public abstract class BaseLlapDataBuffer extends LlapAllocatorBuffer {
     return fileCache != null ? fileCache.getTag() : null;
   }
 
+  public Object getFileKey() {
+    return fileCache != null ? fileCache.getFileKey() : null;
+  }
 }

@@ -45,8 +45,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [10, 13]
-                          selectExpressions: IfExprStringScalarStringScalar(col 10:boolean, val first, val second) -> 13:string
+                          projectedOutputColumnNums: [10, 14]
+                          selectExpressions: IfExprStringScalarStringScalar(col 10:boolean, val first, val second) -> 14:string
                       Statistics: Num rows: 4587 Data size: 426534 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: boolean)

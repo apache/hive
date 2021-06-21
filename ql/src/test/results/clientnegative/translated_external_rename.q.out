@@ -1,0 +1,31 @@
+PREHOOK: query: create external table t (a integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create external table t (a integer)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: insert into t values(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a SCRIPT []
+PREHOOK: query: alter table t rename to t2
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: alter table t rename to t2
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+POSTHOOK: Output: default@t2
+PREHOOK: query: create table t (a integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+#### A masked pattern was here ####

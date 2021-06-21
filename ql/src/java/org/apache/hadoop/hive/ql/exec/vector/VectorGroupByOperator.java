@@ -500,11 +500,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
         //Validate that some progress is being made
         if (!(numEntriesHashTable < preFlushEntriesCount)) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Flush did not progress: %d entries before, %d entries after",
-                preFlushEntriesCount,
-                numEntriesHashTable));
-          }
+          LOG.debug("Flush did not progress: {} entries before, {} entries after", preFlushEntriesCount,
+              numEntriesHashTable);
           break;
         }
         preFlushEntriesCount = numEntriesHashTable;

@@ -1921,7 +1921,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 13243096 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:csmallint:smallint, 1:cint:int, 2:cbigint:bigint, 3:cfloat:float, 4:cdouble:double, 5:cstring1:string, 6:cchar1:char(255), 7:cvchar1:varchar(255), 8:cboolean1:boolean, 9:cboolean2:boolean, 10:ctinyint:tinyint, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:csmallint:smallint, 1:cint:int, 2:cbigint:bigint, 3:cfloat:float, 4:cdouble:double, 5:cstring1:string, 6:cchar1:char(255), 7:cvchar1:varchar(255), 8:cboolean1:boolean, 9:cboolean2:boolean, 10:ctinyint:tinyint, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 12:ROW__IS__DELETED:boolean]
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
@@ -1985,7 +1985,7 @@ STAGE PLANS:
                   Statistics: Num rows: 10 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:csmallint:smallint, 1:cint:int, 2:cbigint:bigint, 3:cfloat:float, 4:cdouble:double, 5:cstring1:string, 6:cchar1:char(255), 7:cvchar1:varchar(255), 8:cboolean1:boolean, 9:cboolean2:boolean, 10:ctinyint:tinyint, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:csmallint:smallint, 1:cint:int, 2:cbigint:bigint, 3:cfloat:float, 4:cdouble:double, 5:cstring1:string, 6:cchar1:char(255), 7:cvchar1:varchar(255), 8:cboolean1:boolean, 9:cboolean2:boolean, 10:ctinyint:tinyint, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 12:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: ctinyint (type: tinyint)
                     null sort order: z
@@ -2377,7 +2377,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1509 Data size: 984410 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:cint:int, 2:cchar1:char(255), 3:cvchar1:varchar(255), 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:cint:int, 2:cchar1:char(255), 3:cvchar1:varchar(255), 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: ctinyint (type: tinyint), cint (type: int), cchar1 (type: char(255)), cvchar1 (type: varchar(255))
                     outputColumnNames: ctinyint, cint, cchar1, cvchar1
@@ -2389,7 +2389,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(hash(ctinyint,cint,cchar1,cvchar1))
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(VectorUDFAdaptor(hash(ctinyint,cint,cchar1,cvchar1)) -> 5:int) -> bigint
+                          aggregators: VectorUDAFSumLong(VectorUDFAdaptor(hash(ctinyint,cint,cchar1,cvchar1)) -> 6:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           native: false

@@ -64,8 +64,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
-                        selectExpressions: StringSubstrColStartLen(col 1:string, start 4, length 1) -> 3:string
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: StringSubstrColStartLen(col 1:string, start 4, length 1) -> 4:string
                     Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)

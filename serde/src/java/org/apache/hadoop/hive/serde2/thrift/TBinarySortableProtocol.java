@@ -91,6 +91,11 @@ public class TBinarySortableProtocol extends TProtocol implements
     stackLevel = 0;
   }
 
+  @Override
+  public int getMinSerializedSize(byte b) throws TException {
+    return -1;
+  }
+
   /**
    * The stack level of the current field. Top-level fields have a stackLevel
    * value of 1. Each nested struct/list/map will increase the stackLevel value

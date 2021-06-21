@@ -160,3 +160,39 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 	NULL
+PREHOOK: query: select date_format("2015-04-08 10:30:45","yyyy-MM-dd HH:mm:ss.SSS z")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select date_format("2015-04-08 10:30:45","yyyy-MM-dd HH:mm:ss.SSS z")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2015-04-08 10:30:45.000 ICT
+PREHOOK: query: select date_format("2015-04-08 10:30:45","yyyy-MM-dd HH:mm:ss.SSS z")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select date_format("2015-04-08 10:30:45","yyyy-MM-dd HH:mm:ss.SSS z")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2015-04-08 10:30:45.000 AEST
+PREHOOK: query: select date_format("2015-04-08 10:30:45","yyyy-MM-dd HH:mm:ss.SSS z")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select date_format("2015-04-08 10:30:45","yyyy-MM-dd HH:mm:ss.SSS z")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2015-04-08 10:30:45.000 CEST
+PREHOOK: query: select date_format("1001-01-05","dd---MM--yyyy")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select date_format("1001-01-05","dd---MM--yyyy")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+05---01--1001

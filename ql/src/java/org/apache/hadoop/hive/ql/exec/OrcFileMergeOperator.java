@@ -110,9 +110,7 @@ public class OrcFileMergeOperator extends
       if (prevPath == null) {
         prevPath = k.getInputPath();
         reader = OrcFile.createReader(fs, k.getInputPath());
-        if (LOG.isInfoEnabled()) {
-          LOG.info("ORC merge file input path: " + k.getInputPath());
-        }
+        LOG.info("ORC merge file input path: " + k.getInputPath());
       }
 
       // store the orc configuration from the first file. All other files should
@@ -146,9 +144,7 @@ public class OrcFileMergeOperator extends
           outPath = getOutPath(bucketId);
         }
         outWriters.put(bucketId, OrcFile.createWriter(outPath, options));
-        if (LOG.isDebugEnabled()) {
-          LOG.info("ORC merge file output path: " + outPath);
-        }
+        LOG.info("ORC merge file output path: {}", outPath);
       }
 
       if (!checkCompatibility(k)) {

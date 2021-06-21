@@ -40,6 +40,9 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view_n0
+POSTHOOK: Lineage: cmv_mat_view_n0.a SIMPLE []
+POSTHOOK: Lineage: cmv_mat_view_n0.b SIMPLE [(cmv_basetable_n0)cmv_basetable_n0.FieldSchema(name:b, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view_n0.c SIMPLE [(cmv_basetable_n0)cmv_basetable_n0.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: select * from cmv_mat_view_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view_n0
@@ -74,6 +77,8 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view2
+POSTHOOK: Lineage: cmv_mat_view2.a SIMPLE []
+POSTHOOK: Lineage: cmv_mat_view2.c SIMPLE [(cmv_basetable_n0)cmv_basetable_n0.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: select * from cmv_mat_view2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view2
@@ -394,10 +399,10 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col5
+                outputColumnNames: _col0, _col1, _col6
                 Statistics: Num rows: 2 Data size: 456 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: int), _col1 (type: decimal(10,2)), _col0 (type: int), _col5 (type: decimal(10,2))
+                  expressions: _col0 (type: int), _col1 (type: decimal(10,2)), _col0 (type: int), _col6 (type: decimal(10,2))
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 2 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator

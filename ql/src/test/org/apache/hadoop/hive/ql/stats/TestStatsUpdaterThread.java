@@ -227,7 +227,6 @@ public class TestStatsUpdaterThread {
     msClient.close();
   }
 
-
   @Test
   public void testTxnPartitions() throws Exception {
     StatsUpdaterThread su = createUpdater();
@@ -563,7 +562,8 @@ public class TestStatsUpdaterThread {
     String tblWithStats = tblNamePrefix + "_repl_trgt_stats";
     String ptnTblWOStats = tblNamePrefix + "_ptn_repl_trgt_nostats";
     String ptnTblWithStats = tblNamePrefix + "_ptn_repl_trgt_stats";
-
+    String dbName = ss.getCurrentDatabase();
+    executeQuery("alter database " + dbName + " set dbproperties('" + ReplConst.TARGET_OF_REPLICATION + "'='true')");
     StatsUpdaterThread su = createUpdater();
     su.startWorkers();
     IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
@@ -571,29 +571,21 @@ public class TestStatsUpdaterThread {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
 
     executeQuery("create table " + tblWOStats + "(i int, s string) " + txnProperty);
-    // Mark this table as being replicated into
-    setTableReplTargetProperty(tblWOStats);
     executeQuery("insert into " + tblWOStats + "(i, s) values (1, 'test')");
     verifyStatsUpToDate(tblWOStats, Lists.newArrayList("i"), msClient, false);
 
     executeQuery("create table " + ptnTblWOStats + "(s string) partitioned by (i int) " + txnProperty);
-    // Mark this table as being replicated into
-    setTableReplTargetProperty(ptnTblWOStats);
     executeQuery("insert into " + ptnTblWOStats + "(i, s) values (1, 'test')");
     executeQuery("insert into " + ptnTblWOStats + "(i, s) values (2, 'test2')");
     executeQuery("insert into " + ptnTblWOStats + "(i, s) values (3, 'test3')");
     verifyPartStatsUpToDate(3, 1, msClient, ptnTblWOStats, false);
 
     executeQuery("create table " + tblWithStats + "(i int, s string)" + txnProperty);
-    // Mark this table as being replicated into
-    setTableReplTargetProperty(tblWithStats);
     executeQuery("insert into " + tblWithStats + "(i, s) values (1, 'test')");
     executeQuery("analyze table " + tblWithStats + " compute statistics for columns");
     verifyStatsUpToDate(tblWithStats, Lists.newArrayList("i"), msClient, true);
 
     executeQuery("create table " + ptnTblWithStats + "(s string) partitioned by (i int) " + txnProperty);
-    // Mark this table as being replicated into
-    setTableReplTargetProperty(ptnTblWithStats);
     executeQuery("insert into " + ptnTblWithStats + "(i, s) values (1, 'test')");
     executeQuery("insert into " + ptnTblWithStats + "(i, s) values (2, 'test2')");
     executeQuery("insert into " + ptnTblWithStats + "(i, s) values (3, 'test3')");
@@ -607,6 +599,75 @@ public class TestStatsUpdaterThread {
     verifyPartStatsUpToDate(3, 1, msClient, ptnTblWOStats, false);
     verifyPartStatsUpToDate(3, 1, msClient, ptnTblWithStats, true);
 
+    executeQuery("alter database " + dbName + " set dbproperties('" + ReplConst.TARGET_OF_REPLICATION + "'='')");
+    executeQuery("drop table " + tblWOStats);
+    executeQuery("drop table " + tblWithStats);
+    executeQuery("drop table " + ptnTblWOStats);
+    executeQuery("drop table " + ptnTblWithStats);
+    msClient.close();
+  }
+
+  @Test(timeout=80000)
+  public void testNoStatsUpdateForSimpleFailoverDb() throws Exception {
+    testNoStatsUpdateForFailoverDb("simple", "");
+  }
+
+  @Test(timeout=80000)
+  public void testNoStatsUpdateForTxnFailoverDb() throws Exception {
+    testNoStatsUpdateForFailoverDb("txn",
+            "TBLPROPERTIES (\"transactional\"=\"true\",\"transactional_properties\"=\"insert_only\")");
+  }
+
+  private void testNoStatsUpdateForFailoverDb(String tblNamePrefix, String txnProperty) throws Exception {
+    // Set high worker count so we get a longer queue.
+    hiveConf.setInt(MetastoreConf.ConfVars.STATS_AUTO_UPDATE_WORKER_COUNT.getVarname(), 4);
+    String tblWOStats = tblNamePrefix + "_repl_failover_nostats";
+    String ptnTblWOStats = tblNamePrefix + "_ptn_repl_failover_nostats";
+    String newTable = "new_table";
+    String dbName = ss.getCurrentDatabase();
+    StatsUpdaterThread su = createUpdater();
+    IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
+
+    executeQuery("create table " + tblWOStats + "(i int, s string) " + txnProperty);
+    executeQuery("insert into " + tblWOStats + "(i, s) values (1, 'test')");
+    verifyStatsUpToDate(tblWOStats, Lists.newArrayList("i"), msClient, false);
+
+    executeQuery("create table " + ptnTblWOStats + "(s string) partitioned by (i int) " + txnProperty);
+    executeQuery("insert into " + ptnTblWOStats + "(i, s) values (1, 'test')");
+    executeQuery("insert into " + ptnTblWOStats + "(i, s) values (2, 'test2')");
+    executeQuery("insert into " + ptnTblWOStats + "(i, s) values (3, 'test3')");
+    verifyPartStatsUpToDate(3, 1, msClient, ptnTblWOStats, false);
+
+    assertTrue(su.runOneIteration());
+    Assert.assertEquals(2, su.getQueueLength());
+    executeQuery("alter database " + dbName + " set dbproperties('" + ReplConst.REPL_FAILOVER_ENABLED + "'='true')");
+    //StatsUpdaterThread would not run analyze commands for the tables which were inserted before
+    //failover property was enabled for that database
+    drainWorkQueue(su, 2);
+    verifyStatsUpToDate(tblWOStats, Lists.newArrayList("i"), msClient, false);
+    verifyPartStatsUpToDate(3, 1, msClient, ptnTblWOStats, false);
+    Assert.assertEquals(0, su.getQueueLength());
+
+    executeQuery("create table " + newTable + "(i int, s string) " + txnProperty);
+    executeQuery("insert into "+ newTable + "(i, s) values (4, 'test4')");
+
+    assertFalse(su.runOneIteration());
+    Assert.assertEquals(0, su.getQueueLength());
+    verifyStatsUpToDate(tblWOStats, Lists.newArrayList("i"), msClient, false);
+    verifyPartStatsUpToDate(3, 1, msClient, ptnTblWOStats, false);
+
+    executeQuery("alter database " + dbName + " set dbproperties('" + ReplConst.REPL_FAILOVER_ENABLED + "'='')");
+    assertTrue(su.runOneIteration());
+    Assert.assertEquals(3, su.getQueueLength());
+    drainWorkQueue(su, 3);
+    verifyStatsUpToDate(newTable, Lists.newArrayList("i"), msClient, true);
+    verifyStatsUpToDate(tblWOStats, Lists.newArrayList("i"), msClient, true);
+    verifyPartStatsUpToDate(3, 1, msClient, ptnTblWOStats, true);
+    executeQuery("drop table " + tblWOStats);
+    executeQuery("drop table " + ptnTblWOStats);
+    executeQuery("drop table " + newTable);
     msClient.close();
   }
 
@@ -634,11 +695,6 @@ public class TestStatsUpdaterThread {
     Table table = msClient.getTable(ss.getCurrentDatabase(), tbl);
     table.getParameters().put(StatsUpdaterThread.SKIP_STATS_AUTOUPDATE_PROPERTY, val);
     msClient.alter_table(table.getDbName(), table.getTableName(), table);
-  }
-
-  private void setTableReplTargetProperty(String tblName) throws Exception {
-    executeQuery("alter table " + tblName +
-            " set tblproperties ('" + ReplConst.REPL_TARGET_TABLE_PROPERTY + "' = '1')");
   }
 
   private void setPartitionSkipProperty(

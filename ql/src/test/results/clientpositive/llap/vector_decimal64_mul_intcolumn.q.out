@@ -65,20 +65,20 @@ STAGE PLANS:
                   Statistics: Num rows: 1000 Data size: 116000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(19,1), 2:ss_ext_discount_amt:int, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(19,1), 2:ss_ext_discount_amt:int, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (ss_ext_list_price * CAST( ss_ext_discount_amt AS decimal(10,0))) (type: decimal(18,2))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [6]
-                        selectExpressions: Decimal64ColMultiplyDecimal64Column(col 0:decimal(7,2)/DECIMAL_64, col 5:decimal(10,0)/DECIMAL_64)(children: CastLongToDecimal64(col 2:int) -> 5:decimal(10,0)/DECIMAL_64) -> 6:decimal(18,2)/DECIMAL_64
+                        projectedOutputColumnNums: [7]
+                        selectExpressions: Decimal64ColMultiplyDecimal64Column(col 0:decimal(7,2)/DECIMAL_64, col 6:decimal(10,0)/DECIMAL_64)(children: CastLongToDecimal64(col 2:int) -> 6:decimal(10,0)/DECIMAL_64) -> 7:decimal(18,2)/DECIMAL_64
                     Statistics: Num rows: 1000 Data size: 116000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col0)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDecimal64ToDecimal(col 6:decimal(18,2)/DECIMAL_64) -> decimal(28,2)
+                          aggregators: VectorUDAFSumDecimal64ToDecimal(col 7:decimal(18,2)/DECIMAL_64) -> decimal(28,2)
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           native: false
@@ -200,20 +200,20 @@ STAGE PLANS:
                   Statistics: Num rows: 1000 Data size: 116000 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(19,1), 2:ss_ext_discount_amt:int, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ss_ext_list_price:decimal(7,2)/DECIMAL_64, 1:ss_ext_wholesale_cost:decimal(19,1), 2:ss_ext_discount_amt:int, 3:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 5:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (ss_ext_wholesale_cost * CAST( ss_ext_discount_amt AS decimal(10,0))) (type: decimal(30,1))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [6]
-                        selectExpressions: DecimalColMultiplyDecimalColumn(col 1:decimal(19,1), col 5:decimal(10,0))(children: CastLongToDecimal(col 2:int) -> 5:decimal(10,0)) -> 6:decimal(30,1)
+                        projectedOutputColumnNums: [7]
+                        selectExpressions: DecimalColMultiplyDecimalColumn(col 1:decimal(19,1), col 6:decimal(10,0))(children: CastLongToDecimal(col 2:int) -> 6:decimal(10,0)) -> 7:decimal(30,1)
                     Statistics: Num rows: 1000 Data size: 116000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col0)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDecimal(col 6:decimal(30,1)) -> decimal(38,1)
+                          aggregators: VectorUDAFSumDecimal(col 7:decimal(30,1)) -> decimal(38,1)
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           native: false

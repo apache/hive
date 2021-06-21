@@ -61,12 +61,10 @@ public class <ClassName> extends VectorExpression {
     1_000_000_000_000_000_000L, // 18
   };
 
-  private final int colNum;
   private final long value;
 
   public <ClassName>(int colNum, long value, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum = colNum;
+    super(colNum, outputColumnNum);
     this.value = value;
   }
 
@@ -74,7 +72,6 @@ public class <ClassName> extends VectorExpression {
     super();
 
     // Dummy final assignments.
-    colNum = -1;
     value = 0;
   }
 
@@ -112,7 +109,7 @@ public class <ClassName> extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    Decimal64ColumnVector inputColVector = (Decimal64ColumnVector) batch.cols[colNum];
+    Decimal64ColumnVector inputColVector = (Decimal64ColumnVector) batch.cols[inputColumnNum[0]];
     Decimal64ColumnVector outputColVector = (Decimal64ColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
@@ -249,7 +246,7 @@ public class <ClassName> extends VectorExpression {
     DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) inputTypeInfos[0];
     HiveDecimalWritable writable = new HiveDecimalWritable();
     writable.deserialize64(value, decimalTypeInfo.scale());
-    return getColumnParamString(0, colNum) + ", decimal64Val " + value +
+    return getColumnParamString(0, inputColumnNum[0]) + ", decimal64Val " + value +
         ", decimalVal " + writable.toString();
   }
 

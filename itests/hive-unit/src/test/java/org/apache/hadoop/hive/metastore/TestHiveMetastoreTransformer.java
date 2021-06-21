@@ -48,6 +48,7 @@ import org.apache.hadoop.conf.Configuration;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_NONE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READONLY;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READWRITE;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -552,6 +553,30 @@ public class TestHiveMetastoreTransformer {
       resetHMSClient();
 
       LOG.info("Test execution complete:testTransformerManagedTable");
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail("testTransformerManagedTable failed with " + e.getMessage());
+    } finally {
+      resetHMSClient();
+    }
+  }
+
+
+  @Test
+  public void testLeavesCtasTableAlone() throws Exception {
+    try {
+      resetHMSClient();
+      final String dbName = "db1";
+      String basetblName = "oldstylemgdtable";
+      Map<String, Object> tProps = new HashMap<>();
+      String tblName = basetblName;
+      tProps.put("DBNAME", dbName);
+      tProps.put("TBLNAME", tblName);
+      tProps.put("TBLTYPE", TableType.MANAGED_TABLE);
+      tProps.put("PROPERTIES", TABLE_IS_CTAS + "=true;transactional=false");
+      createTableWithCapabilities(tProps);
+      Table tbl2 = client.getTable(dbName, tblName);
+      assertEquals(TableType.MANAGED_TABLE.name(), tbl2.getTableType());
     } catch (Exception e) {
       e.printStackTrace();
       fail("testTransformerManagedTable failed with " + e.getMessage());

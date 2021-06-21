@@ -170,6 +170,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   private ScheduledFuture<?> heartbeatTask = null;
   private static final int SHUTDOWN_HOOK_PRIORITY = 0;
   private final ReentrantLock heartbeatTaskLock = new ReentrantLock();
+  //Contains database under replication name for hive replication transactions (dump and load operation)
+  private String replPolicy;
 
   /**
    * We do this on every call to make sure TM uses same MS connection as is used by the caller (Driver,
@@ -211,7 +213,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   @Override
   public List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user)  throws LockException {
     try {
-      return getMS().replOpenTxn(replPolicy, srcTxnIds, user);
+      return getMS().replOpenTxn(replPolicy, srcTxnIds, user, TxnType.REPL_CREATED);
     } catch (TException e) {
       throw new LockException(e, ErrorMsg.METASTORE_COMMUNICATION_FAILED);
     }
@@ -240,7 +242,12 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw new LockException("Transaction already opened. " + JavaUtils.txnIdToString(txnId));
     }
     try {
-      txnId = getMS().openTxn(user, txnType);
+      replPolicy = ctx.getReplPolicy();
+      if (replPolicy != null) {
+        txnId = getMS().replOpenTxn(replPolicy, null, user, txnType).get(0);
+      } else {
+        txnId = getMS().openTxn(user, txnType);
+      }
       stmtId = 0;
       numStatements = 0;
       tableWriteIds.clear();
@@ -483,6 +490,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     numStatements = 0;
     tableWriteIds.clear();
     queryId = null;
+    replPolicy = null;
   }
 
   @Override
@@ -525,6 +533,10 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       LOG.debug("Committing txn " + JavaUtils.txnIdToString(txnId));
       CommitTxnRequest commitTxnRequest = new CommitTxnRequest(txnId);
       commitTxnRequest.setExclWriteEnabled(conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
+      if (replPolicy != null) {
+        commitTxnRequest.setReplPolicy(replPolicy);
+        commitTxnRequest.setTxn_type(TxnType.DEFAULT);
+      }
       getMS().commitTxn(commitTxnRequest);
     } catch (NoSuchTxnException e) {
       LOG.error("Metastore could not find " + JavaUtils.txnIdToString(txnId));
@@ -544,7 +556,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   @Override
   public void replRollbackTxn(String replPolicy, long srcTxnId) throws LockException {
     try {
-      getMS().replRollbackTxn(srcTxnId, replPolicy);
+      getMS().replRollbackTxn(srcTxnId, replPolicy, TxnType.REPL_CREATED);
     } catch (NoSuchTxnException e) {
       LOG.error("Metastore could not find " + JavaUtils.txnIdToString(srcTxnId));
       throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(srcTxnId));
@@ -570,7 +582,11 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
 
       // Re-checking as txn could have been closed, in the meantime, by a competing thread.
       if (isTxnOpen()) {
-        getMS().rollbackTxn(txnId);
+        if (replPolicy != null) {
+          getMS().replRollbackTxn(txnId, replPolicy, TxnType.DEFAULT);
+        } else {
+          getMS().rollbackTxn(txnId);
+        }
       } else {
         LOG.warn("Transaction is already closed.");
       }
@@ -618,9 +634,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
     if(!isTxnOpen() && locks.isEmpty()) {
       // No locks, no txn, we outta here.
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("No need to send heartbeat as there is no transaction and no locks.");
-      }
+      LOG.debug("No need to send heartbeat as there is no transaction and no locks.");
       return;
     }
     for (HiveLock lock : locks) {

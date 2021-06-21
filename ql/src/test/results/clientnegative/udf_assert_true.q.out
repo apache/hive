@@ -24,11 +24,11 @@ STAGE PLANS:
           Lateral View Forward
             Select Operator
               Lateral View Join Operator
-                outputColumnNames: _col5
+                outputColumnNames: _col6
                 Limit
                   Number of rows: 2
                   Select Operator
-                    expressions: assert_true((_col5 > 0)) (type: void)
+                    expressions: assert_true((_col6 > 0)) (type: void)
                     outputColumnNames: _col0
                     ListSink
             Select Operator
@@ -37,11 +37,11 @@ STAGE PLANS:
               UDTF Operator
                 function name: explode
                 Lateral View Join Operator
-                  outputColumnNames: _col5
+                  outputColumnNames: _col6
                   Limit
                     Number of rows: 2
                     Select Operator
-                      expressions: assert_true((_col5 > 0)) (type: void)
+                      expressions: assert_true((_col6 > 0)) (type: void)
                       outputColumnNames: _col0
                       ListSink
 
@@ -76,11 +76,11 @@ STAGE PLANS:
           Lateral View Forward
             Select Operator
               Lateral View Join Operator
-                outputColumnNames: _col5
+                outputColumnNames: _col6
                 Limit
                   Number of rows: 2
                   Select Operator
-                    expressions: assert_true((_col5 < 2)) (type: void)
+                    expressions: assert_true((_col6 < 2)) (type: void)
                     outputColumnNames: _col0
                     ListSink
             Select Operator
@@ -89,11 +89,11 @@ STAGE PLANS:
               UDTF Operator
                 function name: explode
                 Lateral View Join Operator
-                  outputColumnNames: _col5
+                  outputColumnNames: _col6
                   Limit
                     Number of rows: 2
                     Select Operator
-                      expressions: assert_true((_col5 < 2)) (type: void)
+                      expressions: assert_true((_col6 < 2)) (type: void)
                       outputColumnNames: _col0
                       ListSink
 

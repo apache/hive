@@ -72,6 +72,8 @@ POSTHOOK: Input: default@cmv_basetable_2_n100
 POSTHOOK: Input: default@cmv_basetable_n100
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view_n300
+POSTHOOK: Lineage: cmv_mat_view_n300.a SIMPLE [(cmv_basetable_n100)cmv_basetable_n100.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view_n300.c SIMPLE [(cmv_basetable_2_n100)cmv_basetable_2_n100.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: DESCRIBE FORMATTED cmv_mat_view_n300
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@cmv_mat_view_n300

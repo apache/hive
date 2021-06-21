@@ -222,22 +222,15 @@ public class TestJdbcWithMiniKdc {
    * it's not allowed to impersonate
    * @throws Exception
    */
-  @Test
+  @Test(expected = HiveSQLException.class)
   public void testNegativeTokenAuth() throws Exception {
     miniHiveKdc.loginUser(MiniHiveKdc.HIVE_TEST_SUPER_USER);
     hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL());
 
     try {
       // retrieve token and store in the cache
-      String token = ((HiveConnection)hs2Conn).getDelegationToken(
+      ((HiveConnection)hs2Conn).getDelegationToken(
           MiniHiveKdc.HIVE_TEST_USER_2, MiniHiveKdc.HIVE_SERVICE_PRINCIPAL);
-
-      fail(MiniHiveKdc.HIVE_TEST_SUPER_USER + " shouldn't be allowed to retrieve token for " +
-          MiniHiveKdc.HIVE_TEST_USER_2);
-    } catch (SQLException e) {
-      // Expected error
-      assertEquals("Unexpected type of exception class thrown", HiveSQLException.class, e.getClass());
-      assertTrue(e.getCause().getCause().getMessage().contains("is not allowed to impersonate"));
     } finally {
       hs2Conn.close();
     }
@@ -261,22 +254,11 @@ public class TestJdbcWithMiniKdc {
    * impersonate the given user
    * @throws Exception
    */
-  @Test
+  @Test(expected = SQLException.class)
   public void testNegativeProxyAuth() throws Exception {
     miniHiveKdc.loginUser(MiniHiveKdc.HIVE_TEST_SUPER_USER);
-    try {
-      hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL("default",
-          ";hive.server2.proxy.user=" + MiniHiveKdc.HIVE_TEST_USER_2));
-      verifyProperty(SESSION_USER_NAME, MiniHiveKdc.HIVE_TEST_USER_2);
-      fail(MiniHiveKdc.HIVE_TEST_SUPER_USER + " shouldn't be allowed proxy connection for "
-          + MiniHiveKdc.HIVE_TEST_USER_2);
-    } catch (SQLException e) {
-      // Expected error
-      e.printStackTrace();
-      assertTrue(e.getMessage().contains("Failed to validate proxy privilege"));
-      assertTrue(e.getCause().getCause().getCause().getMessage()
-              .contains("is not allowed to impersonate"));
-    }
+    hs2Conn = DriverManager
+        .getConnection(miniHS2.getJdbcURL("default", ";hive.server2.proxy.user=" + MiniHiveKdc.HIVE_TEST_USER_2));
   }
 
   /**

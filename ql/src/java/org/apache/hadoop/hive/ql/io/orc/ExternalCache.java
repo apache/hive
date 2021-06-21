@@ -297,9 +297,7 @@ public class ExternalCache implements FooterCache {
       String newColName = RecordReaderImpl.encodeTranslatedSargColumn(rootColumn, colId);
       SearchArgumentFactory.setPredicateLeafColumn(pl, newColName);
     }
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("SARG translated into " + sarg);
-    }
+    LOG.debug("SARG translated into {}", sarg);
   }
 
   private static OrcTail createOrcTailFromMs(

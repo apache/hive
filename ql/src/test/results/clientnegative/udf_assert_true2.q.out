@@ -19,11 +19,11 @@ STAGE PLANS:
           Lateral View Forward
             Select Operator
               Lateral View Join Operator
-                outputColumnNames: _col5
+                outputColumnNames: _col6
                 Limit
                   Number of rows: 2
                   Select Operator
-                    expressions: (1 + assert_true((_col5 < 2))) (type: int)
+                    expressions: (1 + assert_true((_col6 < 2))) (type: int)
                     outputColumnNames: _col0
                     ListSink
             Select Operator
@@ -32,11 +32,11 @@ STAGE PLANS:
               UDTF Operator
                 function name: explode
                 Lateral View Join Operator
-                  outputColumnNames: _col5
+                  outputColumnNames: _col6
                   Limit
                     Number of rows: 2
                     Select Operator
-                      expressions: (1 + assert_true((_col5 < 2))) (type: int)
+                      expressions: (1 + assert_true((_col6 < 2))) (type: int)
                       outputColumnNames: _col0
                       ListSink
 

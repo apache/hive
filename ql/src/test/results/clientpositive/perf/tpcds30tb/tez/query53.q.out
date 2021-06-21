@@ -134,7 +134,7 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: int), _col2 (type: decimal(17,2))
                   outputColumnNames: _col0, _col2
-                  Statistics: Num rows: 36 Data size: 4320 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 36 Data size: 4176 Basic stats: COMPLETE Column stats: COMPLETE
                   PTF Operator
                     Function definitions:
                         Input definition

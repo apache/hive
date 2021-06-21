@@ -247,7 +247,7 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        selectExpressions: LongColumnBetween(col 0:int, left 100, right 102) -> 4:boolean
+                        selectExpressions: LongColumnBetween(col 0:int, left 100, right 102) -> 5:boolean
                     Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
@@ -418,7 +418,7 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        selectExpressions: LongColumnBetween(col 0:int, left 100, right 102) -> 4:boolean
+                        selectExpressions: LongColumnBetween(col 0:int, left 100, right 102) -> 5:boolean
                     Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:
@@ -738,7 +738,7 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        selectExpressions: LongColumnBetween(col 0:int, left 100, right 102) -> 4:boolean
+                        selectExpressions: LongColumnBetween(col 0:int, left 100, right 102) -> 5:boolean
                     Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
                       condition map:

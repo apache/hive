@@ -1,0 +1,40 @@
+PREHOOK: query: create external table test_sp_chars_decimal (id int, value decimal) ROW FORMAT DELIMITED
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_sp_chars_decimal
+POSTHOOK: query: create external table test_sp_chars_decimal (id int, value decimal) ROW FORMAT DELIMITED
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_sp_chars_decimal
+PREHOOK: query: select * from test_sp_chars_decimal
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_sp_chars_decimal
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_sp_chars_decimal
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_sp_chars_decimal
+#### A masked pattern was here ####
+0	0
+0	0
+1	1
+1	1
+2	2
+2	2
+3	3
+3	3
+PREHOOK: query: select distinct(value) from test_sp_chars_decimal
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_sp_chars_decimal
+#### A masked pattern was here ####
+POSTHOOK: query: select distinct(value) from test_sp_chars_decimal
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_sp_chars_decimal
+#### A masked pattern was here ####
+0
+2
+1
+3

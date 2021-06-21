@@ -432,9 +432,7 @@ public class LlapTaskUmbilicalExternalClient implements Closeable {
 
       // This also provides completion information, and a possible notification when task actually starts running (first heartbeat)
 
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Received heartbeat from container, request=" + request);
-      }
+      LOG.debug("Received heartbeat from container, request={}", request);
 
       // Incoming events can be ignored until the point when shuffle needs to be handled, instead of just scans.
       TezHeartbeatResponse response = new TezHeartbeatResponse();

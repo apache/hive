@@ -94,7 +94,7 @@ STAGE PLANS:
                   Statistics: Num rows: 10 Data size: 1920 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:vs:varchar(10), 1:c1:int, 2:c2:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:vs:varchar(10), 1:c1:int, 2:c2:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: vs (type: varchar(10)), c1 (type: int), c2 (type: string)
                     outputColumnNames: _col0, _col1, _col2

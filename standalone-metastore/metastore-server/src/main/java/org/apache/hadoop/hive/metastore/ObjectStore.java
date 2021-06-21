@@ -33,6 +33,7 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -53,7 +54,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOException;
@@ -89,10 +89,15 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
+import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
+import org.apache.hadoop.hive.metastore.api.DatabaseType;
+import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.FunctionType;
+import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -104,6 +109,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
+import org.apache.hadoop.hive.metastore.api.ListPackageRequest;
 import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -113,6 +119,7 @@ import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.NotificationEventsCountRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventsCountResponse;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
@@ -182,6 +189,7 @@ import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
 import org.apache.hadoop.hive.metastore.model.MCreationMetadata;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
+import org.apache.hadoop.hive.metastore.model.MDataConnector;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MDelegationToken;
 import org.apache.hadoop.hive.metastore.model.MFieldSchema;
@@ -193,6 +201,7 @@ import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
 import org.apache.hadoop.hive.metastore.model.MOrder;
+import org.apache.hadoop.hive.metastore.model.MPackage;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
@@ -683,7 +692,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> getCatalogs() throws MetaException {
+  public List<String> getCatalogs() {
     LOG.debug("Fetching all catalog names");
     boolean commited = false;
     List<String> catalogs = null;
@@ -775,6 +784,13 @@ public class ObjectStore implements RawStore, Configurable {
     mdb.setDescription(db.getDescription());
     mdb.setParameters(db.getParameters());
     mdb.setOwnerName(db.getOwnerName());
+    mdb.setDataConnectorName(db.getConnector_name());
+    mdb.setRemoteDatabaseName(db.getRemote_dbname());
+    if (db.getType() == null) {
+      mdb.setType(DatabaseType.NATIVE.name());
+    } else {
+      mdb.setType(db.getType().name());
+    }
     PrincipalType ownerType = db.getOwnerType();
     mdb.setOwnerType((null == ownerType ? PrincipalType.USER.name() : ownerType.name()));
     mdb.setCreateTime(db.getCreateTime());
@@ -865,13 +881,20 @@ public class ObjectStore implements RawStore, Configurable {
     Database db = new Database();
     db.setName(mdb.getName());
     db.setDescription(mdb.getDescription());
-    db.setLocationUri(mdb.getLocationUri());
-    db.setManagedLocationUri(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getManagedLocationUri(), null));
     db.setParameters(convertMap(mdb.getParameters()));
     db.setOwnerName(mdb.getOwnerName());
     String type = org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getOwnerType(), null);
     PrincipalType principalType = (type == null) ? null : PrincipalType.valueOf(type);
     db.setOwnerType(principalType);
+    if (mdb.getType().equalsIgnoreCase(DatabaseType.NATIVE.name())) {
+      db.setType(DatabaseType.NATIVE);
+      db.setLocationUri(mdb.getLocationUri());
+      db.setManagedLocationUri(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getManagedLocationUri(), null));
+    } else {
+      db.setType(DatabaseType.REMOTE);
+      db.setConnector_name(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getDataConnectorName(), null));
+      db.setRemote_dbname(org.apache.commons.lang3.StringUtils.defaultIfBlank(mdb.getRemoteDatabaseName(), null));
+    }
     db.setCatalogName(catName);
     db.setCreateTime(mdb.getCreateTime());
     return db;
@@ -995,6 +1018,203 @@ public class ObjectStore implements RawStore, Configurable {
     Collections.sort(databases);
     return databases;
   }
+
+  @Override
+  public void createDataConnector(DataConnector connector) throws InvalidObjectException, MetaException {
+    boolean commited = false;
+    MDataConnector mDataConnector = new MDataConnector();
+    mDataConnector.setName(connector.getName().toLowerCase());
+    mDataConnector.setType(connector.getType());
+    mDataConnector.setUrl(connector.getUrl());
+    mDataConnector.setDescription(connector.getDescription());
+    mDataConnector.setParameters(connector.getParameters());
+    mDataConnector.setOwnerName(connector.getOwnerName());
+    PrincipalType ownerType = connector.getOwnerType();
+    mDataConnector.setOwnerType((null == ownerType ? PrincipalType.USER.name() : ownerType.name()));
+    mDataConnector.setCreateTime(connector.getCreateTime());
+    try {
+      openTransaction();
+      pm.makePersistent(mDataConnector);
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @SuppressWarnings("nls")
+  private MDataConnector getMDataConnector(String name) throws NoSuchObjectException {
+    MDataConnector mdc = null;
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      name = normalizeIdentifier(name);
+      query = pm.newQuery(MDataConnector.class, "name == dcname");
+      query.declareParameters("java.lang.String dcname");
+      query.setUnique(true);
+      mdc = (MDataConnector) query.execute(name);
+      pm.retrieve(mdc);
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    if (mdc == null) {
+      throw new NoSuchObjectException("There is no dataconnector " + name);
+    }
+    return mdc;
+  }
+
+  @Override
+  public DataConnector getDataConnector(String name) throws NoSuchObjectException {
+    MDataConnector mdc = null;
+    boolean commited = false;
+    try {
+      openTransaction();
+      mdc = getMDataConnector(name);
+      commited = commitTransaction();
+    } catch (NoSuchObjectException no) {
+      throw new NoSuchObjectException("Dataconnector named " + name + " does not exist:" + no.getCause());
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+    DataConnector connector = new DataConnector();
+    connector.setName(mdc.getName());
+    connector.setType(mdc.getType());
+    connector.setUrl(mdc.getUrl());
+    connector.setDescription(mdc.getDescription());
+    connector.setParameters(convertMap(mdc.getParameters()));
+    connector.setOwnerName(mdc.getOwnerName());
+    String type = org.apache.commons.lang3.StringUtils.defaultIfBlank(mdc.getOwnerType(), null);
+    PrincipalType principalType = (type == null) ? null : PrincipalType.valueOf(type);
+    connector.setOwnerType(principalType);
+    connector.setCreateTime(mdc.getCreateTime());
+    return connector;
+  }
+
+  @Override
+  public List<String> getAllDataConnectorNames() throws MetaException {
+    boolean commited = false;
+    List<String> connectors = null;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MDataConnector.class);
+      query.setResult("name");
+      query.setOrdering("name ascending");
+      Collection<String> names = (Collection<String>) query.executeWithArray();
+      connectors = new ArrayList<>(names);
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    return connectors;
+  }
+
+  /**
+   * Alter the dataconnector object in metastore. Currently only the parameters
+   * of the dataconnector or the owner can be changed.
+   * @param dcName the dataconnector name
+   * @param connector the Hive DataConnector object
+   */
+  @Override
+  public boolean alterDataConnector(String dcName, DataConnector connector)
+      throws MetaException, NoSuchObjectException {
+
+    MDataConnector mdc = null;
+    boolean committed = false;
+    try {
+      mdc = getMDataConnector(dcName);
+      mdc.setUrl(connector.getUrl());
+      mdc.setParameters(connector.getParameters());
+      mdc.setOwnerName(connector.getOwnerName());
+      if (connector.getOwnerType() != null) {
+        mdc.setOwnerType(connector.getOwnerType().name());
+      }
+      if (org.apache.commons.lang3.StringUtils.isNotBlank(connector.getDescription())) {
+        mdc.setDescription(connector.getDescription());
+      }
+      openTransaction();
+      pm.makePersistent(mdc);
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @Override
+  public boolean dropDataConnector(String dcname)
+      throws NoSuchObjectException, MetaException {
+    boolean success = false;
+    LOG.info("Dropping dataconnector {} ", dcname);
+    dcname = normalizeIdentifier(dcname);
+    try {
+      openTransaction();
+
+      // then drop the dataconnector
+      MDataConnector mdb = getMDataConnector(dcname);
+      pm.retrieve(mdb);
+      pm.deletePersistent(mdb);
+      success = commitTransaction();
+    } catch (Exception e) {
+      throw new MetaException(e.getMessage() + " " + org.apache.hadoop.hive.metastore.utils.StringUtils.stringifyException(e));
+    } finally {
+      rollbackAndCleanup(success, null);
+    }
+    return success;
+  }
+
+  /*
+  public DataConnector getDataConnectorInternal(String name)
+      throws MetaException, NoSuchObjectException {
+    return new GetDcHelper(name, true, true) {
+      @Override
+      protected DataConnector getSqlResult(GetHelper<DataConnector> ctx) throws MetaException {
+        try {
+        return getJDODataConnector(name);
+      }
+
+      @Override
+      protected DataConnector getJdoResult(GetHelper<DataConnector> ctx) throws MetaException, NoSuchObjectException {
+        return getJDODataConnector(name);
+      }
+    }.run(false);
+  }
+
+  private DataConnector getDataConnectorInternal(String name) throws NoSuchObjectException {
+    MDataConnector mdc = null;
+    boolean commited = false;
+    try {
+      openTransaction();
+      mdc = getMDataConnector(name);
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+    DataConnector connector = new DataConnector();
+    connector.setName(mdc.getName());
+    connector.setType(mdc.getType());
+    connector.setUrl(mdc.getUrl());
+    connector.setDescription(mdc.getDescription());
+    connector.setParameters(convertMap(mdc.getParameters()));
+    connector.setOwnerName(mdc.getOwnerName());
+    String type = org.apache.commons.lang3.StringUtils.defaultIfBlank(mdc.getOwnerType(), null);
+    PrincipalType principalType = (type == null) ? null : PrincipalType.valueOf(type);
+    connector.setOwnerType(principalType);
+    connector.setCreateTime(mdc.getCreateTime());
+    return connector;
+  }
+   */
+
 
   private MType getMType(Type type) {
     List<MFieldSchema> fields = new ArrayList<>();
@@ -1412,6 +1632,12 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     return tbl;
+  }
+
+  @Override
+  public Table getTable(String catalogName, String dbName, String tableName, String writeIdList, long tableId)
+      throws MetaException {
+    return getTable( catalogName, dbName, tableName, writeIdList);
   }
 
   @Override
@@ -1842,7 +2068,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<Table> getTableObjectsByName(String catName, String db, List<String> tbl_names,
-      GetProjectionsSpec projectionSpec) throws MetaException, UnknownDBException {
+      GetProjectionsSpec projectionSpec, String tablePattern) throws MetaException, UnknownDBException {
     List<Table> tables = new ArrayList<>();
     boolean committed = false;
     Query query = null;
@@ -1853,15 +2079,25 @@ public class ObjectStore implements RawStore, Configurable {
       db = normalizeIdentifier(db);
       catName = normalizeIdentifier(catName);
 
-      List<String> lowered_tbl_names = new ArrayList<>(tbl_names.size());
-      for (String t : tbl_names) {
-        lowered_tbl_names.add(normalizeIdentifier(t));
+      List<String> lowered_tbl_names = new ArrayList<>();
+      if(tbl_names != null) {
+        lowered_tbl_names = new ArrayList<>(tbl_names.size());
+        for (String t : tbl_names) {
+          lowered_tbl_names.add(normalizeIdentifier(t));
+        }
       }
 
-      query = pm.newQuery(MTable.class);
-      query.setFilter("database.name == db && database.catalogName == cat && tbl_names.contains(tableName)");
-      query.declareParameters("java.lang.String db, java.lang.String cat, java.util.Collection tbl_names");
-
+      StringBuilder filterBuilder = new StringBuilder();
+      List<String> parameterVals = new ArrayList<>();
+      appendSimpleCondition(filterBuilder, "database.name", new String[] {db}, parameterVals);
+      appendSimpleCondition(filterBuilder, "database.catalogName", new String[] {catName}, parameterVals);
+      if(tbl_names != null){
+        appendSimpleCondition(filterBuilder, "tableName", lowered_tbl_names.toArray(new String[0]), parameterVals);
+      }
+      if(tablePattern != null){
+        appendPatternCondition(filterBuilder, "tableName", tablePattern, parameterVals);
+      }
+      query = pm.newQuery(MTable.class, filterBuilder.toString()) ;
       List<String> projectionFields = null;
 
       // If a projection specification has been set, validate it and translate it to JDO columns.
@@ -1877,11 +2113,11 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       if (projectionFields == null) {
-        mtables = (List<MTable>) query.execute(db, catName, lowered_tbl_names);
+        mtables = (List<MTable>) query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
       } else {
         if (projectionFields.size() > 1) {
           // Execute the query to fetch the partial results.
-          List<Object[]> results = (List<Object[]>) query.execute(db, catName, lowered_tbl_names);
+          List<Object[]> results = (List<Object[]>) query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
           // Declare the tables array to return the list of tables
           mtables = new ArrayList<>(results.size());
           // Iterate through each row of the result and create the MTable object.
@@ -1896,7 +2132,7 @@ public class ObjectStore implements RawStore, Configurable {
           }
         } else if (projectionFields.size() == 1) {
           // Execute the query to fetch the partial results.
-          List<Object> results = (List<Object>) query.execute(db, catName, lowered_tbl_names);
+          List<Object[]> results = (List<Object[]>) query.executeWithArray(parameterVals.toArray(new String[parameterVals.size()]));
           // Iterate through each row of the result and create the MTable object.
           mtables = new ArrayList<>(results.size());
           for (Object row : results) {
@@ -1943,7 +2179,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<Table> getTableObjectsByName(String catName, String db, List<String> tbl_names)
           throws MetaException, UnknownDBException {
-    return getTableObjectsByName(catName, db, tbl_names, null);
+    return getTableObjectsByName(catName, db, tbl_names, null, null);
   }
 
   /** Makes shallow copy of a list to avoid DataNucleus mucking with our objects. */
@@ -3466,6 +3702,27 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  /**
+   * If partVals all the values are empty strings, it means we are returning
+   * all the partitions and hence we can attempt to use a directSQL equivalent API which
+   * is considerably faster.
+   * @param partVals The partitions values used to filter out the partitions.
+   * @return true if partVals is empty or if all the values in partVals is empty strings.
+   * other wise false. If user or groups is valid then returns false since the directSQL
+   * doesn't support partition privileges.
+   */
+  private boolean canTryDirectSQL(List<String> partVals) {
+    if (partVals.isEmpty()) {
+      return false;
+    }
+    for (String val : partVals) {
+      if (val != null && !val.isEmpty()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   @Override
   public List<Partition> listPartitionsPsWithAuth(String catName, String db_name, String tbl_name,
       List<String> part_vals, short max_parts, String userName, List<String> groupNames)
@@ -3475,15 +3732,28 @@ public class ObjectStore implements RawStore, Configurable {
 
     try {
       openTransaction();
+
+      MTable mtbl = getMTable(catName, db_name, tbl_name);
+      if (mtbl == null) {
+        throw new NoSuchObjectException(
+            TableName.getQualified(catName, db_name, tbl_name) + " table not found");
+      }
+      boolean getauth = null != userName && null != groupNames &&
+          "TRUE".equalsIgnoreCase(
+              mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"));
+      if (!getauth && canTryDirectSQL(part_vals)) {
+        LOG.info(
+            "Redirecting to directSQL enabled API: db: {} tbl: {} partVals: {}",
+            db_name, tbl_name, Joiner.on(',').join(part_vals));
+        return getPartitions(catName, db_name, tbl_name, -1);
+      }
       LOG.debug("executing listPartitionNamesPsWithAuth");
       Collection parts = getPartitionPsQueryResults(catName, db_name, tbl_name,
           part_vals, max_parts, null);
-      MTable mtbl = getMTable(catName, db_name, tbl_name);
       for (Object o : parts) {
         Partition part = convertToPart((MPartition) o, false);
         //set auth privileges
-        if (null != userName && null != groupNames &&
-            "TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
+        if (getauth) {
           String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
               .getPartitionKeys()), part.getValues());
           PrincipalPrivilegeSet partAuth = getPartitionPrivilegeSet(catName, db_name,
@@ -4694,6 +4964,7 @@ public class ObjectStore implements RawStore, Configurable {
       mcm.setTxnList(newMcm.getTxnList());
       // commit the changes
       success = commitTransaction();
+      cm.setMaterializationTime(newMcm.getMaterializationTime());
     } finally {
       if (!success) {
         rollbackTransaction();
@@ -4825,14 +5096,18 @@ public class ObjectStore implements RawStore, Configurable {
       Iterator<List<String>> part_val_itr = part_vals.iterator();
       Set<MColumnDescriptor> oldCds = new HashSet<>();
       Ref<MColumnDescriptor> oldCdRef = new Ref<>();
+      MTable table = null;
       for (Partition tmpPart: newParts) {
         List<String> tmpPartVals = part_val_itr.next();
         if (writeId > 0) {
           tmpPart.setWriteId(writeId);
         }
         oldCdRef.t = null;
+        if (table == null) {
+          table = this.getMTable(tmpPart.getCatName(), tmpPart.getDbName(), tmpPart.getTableName());
+        }
         Partition result = alterPartitionNoTxn(
-            catName, dbname, name, tmpPartVals, tmpPart, queryWriteIdList, oldCdRef);
+            catName, dbname, name, tmpPartVals, tmpPart, queryWriteIdList, oldCdRef, table);
         results.add(result);
         if (oldCdRef.t != null) {
           oldCds.add(oldCdRef.t);
@@ -9116,6 +9391,17 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  @Override
+  public Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
+                                                      Map<String, ColumnStatistics> partColStatsMap,
+                                                      Table tbl,
+                                                      List<TransactionalMetaStoreEventListener> listeners,
+                                                      String validWriteIds, long writeId)
+          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return directSql.updatePartitionColumnStatisticsBatch(partColStatsMap, tbl,
+            listeners, validWriteIds, writeId);
+  }
+
   private List<MTableColumnStatistics> getMTableColumnStatistics(Table table, List<String> colNames, String engine)
       throws MetaException {
 
@@ -10508,10 +10794,10 @@ public class ObjectStore implements RawStore, Configurable {
       pm.retrieve(mProc);
       if (mProc == null) { // create new
         mProc = new MStoredProc();
-        populate(proc, db, mProc);
+        MStoredProc.populate(mProc, proc, db);
         pm.makePersistent(mProc);
       } else { // update existing
-        populate(proc, db, mProc);
+        MStoredProc.populate(mProc, proc, db);
       }
       committed = commitTransaction();
     } finally {
@@ -10519,15 +10805,8 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private static void populate(StoredProcedure proc, MDatabase mDatabase, MStoredProc result) throws MetaException {
-    result.setName(proc.getName());
-    result.setOwner(proc.getOwnerName());
-    result.setSource(proc.getSource());
-    result.setDatabase(mDatabase);
-  }
-
   @Override
-  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException, NoSuchObjectException {
+  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException {
     MStoredProc proc = getMStoredProcedure(catName, db, name);
     return proc == null ? null : convertToStoredProc(catName, proc);
   }
@@ -10558,6 +10837,14 @@ public class ObjectStore implements RawStore, Configurable {
     return query;
   }
 
+  private Query findPackageQuery() {
+    Query query = pm.newQuery(MPackage.class,
+            "name == packageName && database.name == db && database.catalogName == catName");
+    query.declareParameters("java.lang.String packageName, java.lang.String db, java.lang.String catName");
+    query.setUnique(true);
+    return query;
+  }
+
   private StoredProcedure convertToStoredProc(String catName, MStoredProc proc) {
     return new StoredProcedure(
             proc.getName(),
@@ -10568,7 +10855,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException {
+  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException {
     boolean success = false;
     try {
       openTransaction();
@@ -10612,6 +10899,101 @@ public class ObjectStore implements RawStore, Configurable {
       rollbackAndCleanup(committed, query);
     }
     return names;
+  }
+
+  @Override
+  public void addPackage(AddPackageRequest request) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    MPackage mPkg;
+    Query query = null;
+    String catName = normalizeIdentifier(request.getCatName());
+    String dbName = normalizeIdentifier(request.getDbName());
+    MDatabase db = getMDatabase(catName, dbName);
+    try {
+      openTransaction();
+      query = findPackageQuery();
+      mPkg = (MPackage) query.execute(request.getPackageName(), dbName, catName);
+      pm.retrieve(mPkg);
+      if (mPkg == null) { // create new
+        mPkg = new MPackage();
+        MPackage.populate(mPkg, db, request);
+        pm.makePersistent(mPkg);
+      } else { // update existing
+        MPackage.populate(mPkg, db, request);
+      }
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public Package findPackage(GetPackageRequest request) {
+    MPackage mPkg = findMPackage(request.getCatName(), request.getDbName(), request.getPackageName());
+    return mPkg == null ? null : mPkg.toPackage();
+  }
+
+  public List<String> listPackages(ListPackageRequest request) {
+    boolean committed = false;
+    Query query = null;
+    final String catName = normalizeIdentifier(request.getCatName());
+    final String dbName = request.isSetDbName() ? normalizeIdentifier(request.getDbName()) : null;
+    List<String> names;
+    try {
+      openTransaction();
+      if (request.isSetDbName()) {
+        query = pm.newQuery("SELECT name FROM org.apache.hadoop.hive.metastore.model.MPackage " +
+                "WHERE database.catalogName == catName && database.name == db");
+        query.declareParameters("java.lang.String catName, java.lang.String db");
+        query.setResult("name");
+        names = new ArrayList<>((Collection<String>) query.execute(catName, dbName));
+      } else {
+        query = pm.newQuery("SELECT name FROM org.apache.hadoop.hive.metastore.model.MPackage " +
+                "WHERE database.catalogName == catName");
+        query.declareParameters("java.lang.String catName");
+        query.setResult("name");
+        names = new ArrayList<>((Collection<String>) query.execute(catName));
+      }
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+    return names;
+  }
+
+  public void dropPackage(DropPackageRequest request) {
+    boolean success = false;
+    try {
+      openTransaction();
+      MPackage proc = findMPackage(request.getCatName(), request.getDbName(), request.getPackageName());
+      pm.retrieve(proc);
+      if (proc != null) {
+        pm.deletePersistentAll(proc);
+      }
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private MPackage findMPackage(String catName, String db, String packageName) {
+    MPackage pkg;
+    catName = normalizeIdentifier(catName);
+    db = normalizeIdentifier(db);
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = findPackageQuery();
+      pkg = (MPackage) query.execute(packageName, db, catName);
+      pm.retrieve(pkg);
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+    return pkg;
   }
 
   @Override
@@ -13499,7 +13881,80 @@ public class ObjectStore implements RawStore, Configurable {
         throw new InvalidOperationException("invalid state: " + info.getState());
       }
       pm.makePersistent(execution);
+
+      processScheduledQueryPolicies(info);
+
       commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private void processScheduledQueryPolicies(ScheduledQueryProgressInfo info) throws MetaException {
+    if (info.getState() != QueryState.FAILED && info.getState() != QueryState.TIMED_OUT) {
+      return;
+    }
+    int autoDisableCount = MetastoreConf.getIntVar(conf, ConfVars.SCHEDULED_QUERIES_AUTODISABLE_COUNT);
+    int skipCount = MetastoreConf.getIntVar(conf, ConfVars.SCHEDULED_QUERIES_SKIP_OPPORTUNITIES_AFTER_FAILURES);
+
+    int lastN = Math.max(autoDisableCount, skipCount);
+    if (lastN <= 0) {
+      // disabled
+      return;
+    }
+
+    boolean commited = false;
+    try {
+      openTransaction();
+
+      MScheduledExecution lastExecution = pm.getObjectById(MScheduledExecution.class, info.getScheduledExecutionId());
+      MScheduledQuery schq = lastExecution.getScheduledQuery();
+
+      Query query = pm.newQuery(MScheduledExecution.class);
+      query.setFilter("scheduledQuery == currentSchedule");
+      query.setOrdering("scheduledExecutionId descending");
+      query.declareParameters("MScheduledQuery currentSchedule");
+      query.setRange(0, lastN);
+      List<MScheduledExecution> list = (List<MScheduledExecution>) query.execute(schq);
+
+      int failureCount=0;
+      for(int i=0;i<list.size();i++) {
+        if (list.get(i).getState() != QueryState.FAILED && list.get(i).getState() != QueryState.TIMED_OUT) {
+          break;
+        }
+        failureCount++;
+      }
+
+      if (autoDisableCount > 0 && autoDisableCount <= failureCount) {
+        LOG.info("Disabling {} after {} consequtive failures", schq.getScheduleKey(), autoDisableCount);
+        schq.setEnabled(false);
+        int now = (int) (System.currentTimeMillis() / 1000);
+        MScheduledExecution execution = new MScheduledExecution();
+        execution.setScheduledQuery(schq);
+        execution.setState(QueryState.AUTO_DISABLED);
+        execution.setStartTime(now);
+        execution.setEndTime(now);
+        execution.setLastUpdateTime(now);
+        execution.setErrorMessage(String.format("Disabling query after {} consequtive failures", autoDisableCount));
+        pm.makePersistent(execution);
+      }
+      if (skipCount > 0) {
+        int n = Math.min(skipCount, failureCount) - 1;
+        Integer scheduledTime = schq.getNextExecution();
+        for (int i = 0; i < n; i++) {
+          if (scheduledTime != null) {
+            scheduledTime = computeNextExecutionTime(schq.getSchedule(), scheduledTime);
+          }
+        }
+        if (scheduledTime != null) {
+          schq.setNextExecution(scheduledTime);
+        }
+      }
+      commited = commitTransaction();
+    } catch (InvalidInputException e) {
+      throw new MetaException("Unexpected InvalidInputException: " + e.getMessage());
     } finally {
       if (!commited) {
         rollbackTransaction();
@@ -13656,6 +14111,16 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private Integer computeNextExecutionTime(String schedule) throws InvalidInputException {
+    ZonedDateTime now = ZonedDateTime.now();
+    return computeNextExecutionTime(schedule, now);
+  }
+
+  private Integer computeNextExecutionTime(String schedule, Integer time) throws InvalidInputException {
+    ZonedDateTime now = ZonedDateTime.ofInstant(Instant.ofEpochSecond(time), ZoneId.systemDefault());
+    return computeNextExecutionTime(schedule, now);
+  }
+
+  private Integer computeNextExecutionTime(String schedule, ZonedDateTime time) throws InvalidInputException {
     CronType cronType = CronType.QUARTZ;
 
     CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(cronType);
@@ -13663,9 +14128,8 @@ public class ObjectStore implements RawStore, Configurable {
 
     // Get date for last execution
     try {
-      ZonedDateTime now = ZonedDateTime.now();
       ExecutionTime executionTime = ExecutionTime.forCron(parser.parse(schedule));
-      Optional<ZonedDateTime> nextExecution = executionTime.nextExecution(now);
+      Optional<ZonedDateTime> nextExecution = executionTime.nextExecution(time);
       if (!nextExecution.isPresent()) {
         // no valid next execution time.
         return null;

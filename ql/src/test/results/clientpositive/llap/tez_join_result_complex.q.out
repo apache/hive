@@ -256,6 +256,7 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: cnctevn_id is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:cnctevn_id, smallTablePos:0, keyRatio:1.0
                   Statistics: Num rows: 1 Data size: 4944 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
@@ -1237,6 +1238,7 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: cnctevn_id is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:cnctevn_id, smallTablePos:0, keyRatio:1.0
                   Statistics: Num rows: 1 Data size: 4944 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

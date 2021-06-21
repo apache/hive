@@ -193,16 +193,10 @@ public class HiveAlterHandler implements AlterHandler {
         isPartitionedTable = true;
       }
 
-      // Views derive the column type from the base table definition.  So the view definition
-      // can be altered to change the column types.  The column type compatibility checks should
-      // be done only for non-views.
-      if (MetastoreConf.getBoolVar(handler.getConf(),
-            MetastoreConf.ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES) &&
-          !oldt.getTableType().equals(TableType.VIRTUAL_VIEW.toString())) {
-        // Throws InvalidOperationException if the new column types are not
-        // compatible with the current column types.
-        checkColTypeChangeCompatible(oldt.getSd().getCols(), newt.getSd().getCols());
-      }
+      // Throws InvalidOperationException if the new column types are not
+      // compatible with the current column types.
+      DefaultIncompatibleTableChangeHandler.get()
+          .allowChange(handler.getConf(), oldt, newt);
 
       //check that partition keys have not changed, except for virtual views
       //however, allow the partition comments to change
@@ -210,8 +204,13 @@ public class HiveAlterHandler implements AlterHandler {
           newt.getPartitionKeys());
 
       if(!oldt.getTableType().equals(TableType.VIRTUAL_VIEW.toString())){
-        if (!partKeysPartiallyEqual) {
-          throw new InvalidOperationException("partition keys can not be changed.");
+        Map<String, String> properties = environmentContext.getProperties();
+        if (properties == null || (properties != null &&
+            !Boolean.parseBoolean(properties.getOrDefault(HiveMetaHook.ALLOW_PARTITION_KEY_CHANGE,
+                "false")))) {
+          if (!partKeysPartiallyEqual) {
+            throw new InvalidOperationException("partition keys can not be changed.");
+          }
         }
       }
 
@@ -346,7 +345,7 @@ public class HiveAlterHandler implements AlterHandler {
                   partBatch, newt.getWriteId(), writeIdList);
             }
           }
-
+          Deadline.checkTimeout();
           for (Entry<Partition, ColumnStatistics> partColStats : columnStatsNeedUpdated.entries()) {
             ColumnStatistics newPartColStats = partColStats.getValue();
             newPartColStats.getStatsDesc().setDbName(newDbName);
@@ -389,6 +388,7 @@ public class HiveAlterHandler implements AlterHandler {
                 List<ColumnStatistics> colStats = updateOrGetPartitionColumnStats(msdb, catName, dbname, name,
                     part.getValues(), oldCols, oldt, part, null, null);
                 assert (colStats.isEmpty());
+                Deadline.checkTimeout();
                 if (cascade) {
                   msdb.alterPartition(
                     catName, dbname, name, part.getValues(), part, writeIdList);
@@ -562,6 +562,7 @@ public class HiveAlterHandler implements AlterHandler {
           updateOrGetPartitionColumnStats(msdb, catName, dbname, name, new_part.getValues(),
               oldPart.getSd().getCols(), tbl, new_part, null, null);
         }
+        Deadline.checkTimeout();
         msdb.alterPartition(
             catName, dbname, name, new_part.getValues(), new_part, validWriteIds);
         if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
@@ -1062,8 +1063,8 @@ public class HiveAlterHandler implements AlterHandler {
           }
         }
       }
-
       if (doAlterTable) {
+        Deadline.checkTimeout();
         // Change to new table and append stats for the new table
         msdb.alterTable(catName, dbName, tableName, newTable, validWriteIds);
         if (updateColumnStats) {
@@ -1131,6 +1132,7 @@ public class HiveAlterHandler implements AlterHandler {
                 break;
               }
             }
+            Deadline.checkTimeout();
             if (found) {
               if (rename) {
                 if (updateColumnStats) {
@@ -1167,25 +1169,4 @@ public class HiveAlterHandler implements AlterHandler {
 
     return newPartsColStats;
   }
-
-  private void checkColTypeChangeCompatible(List<FieldSchema> oldCols, List<FieldSchema> newCols)
-      throws InvalidOperationException {
-    List<String> incompatibleCols = new ArrayList<>();
-    int maxCols = Math.min(oldCols.size(), newCols.size());
-    for (int i = 0; i < maxCols; i++) {
-      if (!ColumnType.areColTypesCompatible(
-          ColumnType.getTypeName(oldCols.get(i).getType()),
-          ColumnType.getTypeName(newCols.get(i).getType()))) {
-        incompatibleCols.add(newCols.get(i).getName());
-      }
-    }
-    if (!incompatibleCols.isEmpty()) {
-      throw new InvalidOperationException(
-          "The following columns have types incompatible with the existing " +
-              "columns in their respective positions :\n" +
-              org.apache.commons.lang3.StringUtils.join(incompatibleCols, ',')
-      );
-    }
-  }
-
 }

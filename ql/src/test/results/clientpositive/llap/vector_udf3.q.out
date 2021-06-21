@@ -38,8 +38,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [13]
-                        selectExpressions: VectorStringRot13(col 6:string) -> 13:string
+                        projectedOutputColumnNums: [14]
+                        selectExpressions: VectorStringRot13(col 6:string) -> 14:string
                     Statistics: Num rows: 12288 Data size: 2260992 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false

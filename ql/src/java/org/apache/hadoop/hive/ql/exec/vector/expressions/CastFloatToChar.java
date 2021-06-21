@@ -49,6 +49,6 @@ public class CastFloatToChar extends CastFloatToString implements TruncStringOut
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumn) + ", maxLength " + maxLength;
+    return getColumnParamString(0, inputColumnNum[0]) + ", maxLength " + maxLength;
   }
 }

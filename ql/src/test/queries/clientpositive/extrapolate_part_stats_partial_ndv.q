@@ -70,6 +70,42 @@ describe formatted loc_orc_1d_n0 PARTITION(year='2000') zip;
 
 describe formatted loc_orc_1d_n0 PARTITION(year='2003') zip;
 
+-- compute stats for all partitions together
+
+analyze table loc_orc_1d_n0 partition(year) compute statistics for columns state,locid,cnt,zip;
+
+describe formatted loc_orc_1d_n0 PARTITION(year='2001') state;
+
+describe formatted loc_orc_1d_n0 PARTITION(year='2002') state;
+
+describe formatted loc_orc_1d_n0 PARTITION(year='2001') locid;
+
+describe formatted loc_orc_1d_n0 PARTITION(year='2002') locid;
+
+describe formatted loc_orc_1d_n0 PARTITION(year='2001') cnt;
+
+describe formatted loc_orc_1d_n0 PARTITION(year='2002') cnt;
+
+describe formatted loc_orc_1d_n0 PARTITION(year='2001') zip;
+
+describe formatted loc_orc_1d_n0 PARTITION(year='2002') zip;
+
+describe formatted loc_orc_1d_n0 PARTITION(year='2000') state;
+
+describe formatted loc_orc_1d_n0 PARTITION(year='2003') state;
+
+describe formatted loc_orc_1d_n0 PARTITION(year='2000') locid;
+
+describe formatted loc_orc_1d_n0 PARTITION(year='2003') locid;
+
+describe formatted loc_orc_1d_n0 PARTITION(year='2000') cnt;
+
+describe formatted loc_orc_1d_n0 PARTITION(year='2003') cnt;
+
+describe formatted loc_orc_1d_n0 PARTITION(year='2000') zip;
+
+describe formatted loc_orc_1d_n0 PARTITION(year='2003') zip;
+
 explain extended select state,locid,cnt,zip from loc_orc_1d_n0;
 
 drop table if exists loc_orc_2d_n0;
@@ -85,6 +121,22 @@ insert overwrite table loc_orc_2d_n0 partition(zip, year) select * from ext_loc_
 analyze table loc_orc_2d_n0 partition(zip=94086, year='2001') compute statistics for columns state,locid,cnt;
 
 analyze table loc_orc_2d_n0 partition(zip=94087, year='2002') compute statistics for columns state,locid,cnt;
+
+describe formatted loc_orc_2d_n0 partition(zip=94086, year='2001') state;
+
+describe formatted loc_orc_2d_n0 partition(zip=94087, year='2002') state;
+
+describe formatted loc_orc_2d_n0 partition(zip=94086, year='2001') locid;
+
+describe formatted loc_orc_2d_n0 partition(zip=94087, year='2002') locid;
+
+describe formatted loc_orc_2d_n0 partition(zip=94086, year='2001') cnt;
+
+describe formatted loc_orc_2d_n0 partition(zip=94087, year='2002') cnt;
+
+-- compute stats for all partitions together
+
+analyze table loc_orc_2d_n0 partition(zip, year) compute statistics for columns state,locid,cnt;
 
 describe formatted loc_orc_2d_n0 partition(zip=94086, year='2001') state;
 

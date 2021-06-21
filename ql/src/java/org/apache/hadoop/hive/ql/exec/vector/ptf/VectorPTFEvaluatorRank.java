@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
  */
 public class VectorPTFEvaluatorRank extends VectorPTFEvaluatorBase {
 
-  private int rank;
+  private long rank;
   private int groupCount;
 
   public VectorPTFEvaluatorRank(WindowFrameDef windowFrameDef, int outputColumnNum) {
@@ -49,7 +49,6 @@ public class VectorPTFEvaluatorRank extends VectorPTFEvaluatorBase {
     /*
      * Do careful maintenance of the outputColVector.noNulls flag.
      */
-
     LongColumnVector longColVector = (LongColumnVector) batch.cols[outputColumnNum];
     longColVector.isRepeating = true;
     longColVector.isNull[0] = false;
@@ -70,8 +69,18 @@ public class VectorPTFEvaluatorRank extends VectorPTFEvaluatorBase {
   }
 
   @Override
+  public boolean isGroupResultNull() {
+    return false;
+  }
+
+  @Override
   public Type getResultColumnVectorType() {
     return Type.LONG;
+  }
+
+  @Override
+  public Object getGroupResult() {
+    return rank;
   }
 
   @Override

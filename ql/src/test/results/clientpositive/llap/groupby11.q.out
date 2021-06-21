@@ -124,13 +124,13 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int)
                     outputColumnNames: key, val1, val2
-                    Statistics: Num rows: 307 Data size: 57102 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: '111' (type: string)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: rand() (type: double)
-                      Statistics: Num rows: 307 Data size: 57102 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: length(key) (type: int), COALESCE(length(key),0) (type: int), key (type: string), val1 (type: int), val2 (type: int)
         Reducer 4 
             Execution mode: vectorized, llap
@@ -208,13 +208,13 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int)
                     outputColumnNames: key, val1, val2
-                    Statistics: Num rows: 307 Data size: 55567 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 307 Data size: 28858 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: '111' (type: string)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: rand() (type: double)
-                      Statistics: Num rows: 307 Data size: 55567 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 307 Data size: 28858 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: length(key) (type: int), COALESCE(length(key),0) (type: int), key (type: string), val1 (type: int), val2 (type: int)
         Reducer 8 
             Execution mode: vectorized, llap

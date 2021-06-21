@@ -33,22 +33,18 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
  */
 public abstract class MurmurHashExpression extends VectorExpression {
   private static final long serialVersionUID = 1L;
-  private int colNumFirst;
-  private int colNumSecond;
 
   public MurmurHashExpression() {
     super();
   }
 
   public MurmurHashExpression(int colNumFirst, int colNumSecond, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNumFirst = colNumFirst;
-    this.colNumSecond = colNumSecond;
+    super(colNumFirst, colNumSecond, outputColumnNum);
   }
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNumFirst) + ", " + getColumnParamString(1, colNumSecond);
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getColumnParamString(1, inputColumnNum[1]);
   }
 
   @Override
@@ -57,8 +53,8 @@ public abstract class MurmurHashExpression extends VectorExpression {
       this.evaluateChildren(batch);
     }
 
-    ColumnVector inputColVector1 = batch.cols[colNumFirst];
-    ColumnVector inputColVector2 = batch.cols[colNumSecond];
+    ColumnVector inputColVector1 = batch.cols[inputColumnNum[0]];
+    ColumnVector inputColVector2 = batch.cols[inputColumnNum[1]];
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
 
     int[] sel = batch.selected;

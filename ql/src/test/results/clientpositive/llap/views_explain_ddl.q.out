@@ -1,0 +1,873 @@
+PREHOOK: query: CREATE DATABASE db1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
+POSTHOOK: query: CREATE DATABASE db1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
+PREHOOK: query: USE db1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db1
+POSTHOOK: query: USE db1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db1
+PREHOOK: query: CREATE TABLE table1_n19 (key STRING, value STRING)
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@table1_n19
+POSTHOOK: query: CREATE TABLE table1_n19 (key STRING, value STRING)
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@table1_n19
+PREHOOK: query: CREATE TABLE table2_n13 (key STRING, value STRING)
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@table2_n13
+POSTHOOK: query: CREATE TABLE table2_n13 (key STRING, value STRING)
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@table2_n13
+PREHOOK: query: CREATE VIEW v1_n17 AS SELECT * FROM table1_n19
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: db1@table1_n19
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@v1_n17
+POSTHOOK: query: CREATE VIEW v1_n17 AS SELECT * FROM table1_n19
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: db1@table1_n19
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@v1_n17
+POSTHOOK: Lineage: v1_n17.key SIMPLE [(table1_n19)table1_n19.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v1_n17.value SIMPLE [(table1_n19)table1_n19.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE VIEW v2_n10 AS SELECT t1.* FROM table1_n19 t1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: db1@table1_n19
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@v2_n10
+POSTHOOK: query: CREATE VIEW v2_n10 AS SELECT t1.* FROM table1_n19 t1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: db1@table1_n19
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@v2_n10
+POSTHOOK: Lineage: v2_n10.key SIMPLE [(table1_n19)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v2_n10.value SIMPLE [(table1_n19)t1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE VIEW v3_n3 AS SELECT t1.*, t2.key k FROM table1_n19 t1 JOIN table2_n13 t2 ON t1.key = t2.key
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: db1@table1_n19
+PREHOOK: Input: db1@table2_n13
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@v3_n3
+POSTHOOK: query: CREATE VIEW v3_n3 AS SELECT t1.*, t2.key k FROM table1_n19 t1 JOIN table2_n13 t2 ON t1.key = t2.key
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: db1@table1_n19
+POSTHOOK: Input: db1@table2_n13
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@v3_n3
+POSTHOOK: Lineage: v3_n3.k SIMPLE [(table2_n13)t2.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v3_n3.key SIMPLE [(table1_n19)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v3_n3.value SIMPLE [(table1_n19)t1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE VIEW v4_n3 AS SELECT * FROM db1.table1_n19
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: db1@table1_n19
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@v4_n3
+POSTHOOK: query: CREATE VIEW v4_n3 AS SELECT * FROM db1.table1_n19
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: db1@table1_n19
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@v4_n3
+POSTHOOK: Lineage: v4_n3.key SIMPLE [(table1_n19)table1_n19.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v4_n3.value SIMPLE [(table1_n19)table1_n19.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE VIEW v5_n1 AS SELECT t1.* FROM db1.table1_n19 t1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: db1@table1_n19
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@v5_n1
+POSTHOOK: query: CREATE VIEW v5_n1 AS SELECT t1.* FROM db1.table1_n19 t1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: db1@table1_n19
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@v5_n1
+POSTHOOK: Lineage: v5_n1.key SIMPLE [(table1_n19)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v5_n1.value SIMPLE [(table1_n19)t1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE VIEW v6 AS SELECT t1.*, t2.key k FROM db1.table1_n19 t1 JOIN db1.table2_n13 t2 ON t1.key = t2.key
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: db1@table1_n19
+PREHOOK: Input: db1@table2_n13
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@v6
+POSTHOOK: query: CREATE VIEW v6 AS SELECT t1.*, t2.key k FROM db1.table1_n19 t1 JOIN db1.table2_n13 t2 ON t1.key = t2.key
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: db1@table1_n19
+POSTHOOK: Input: db1@table2_n13
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@v6
+POSTHOOK: Lineage: v6.k SIMPLE [(table2_n13)t2.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v6.key SIMPLE [(table1_n19)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v6.value SIMPLE [(table1_n19)t1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE VIEW v7 AS SELECT key from table1_n19
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: db1@table1_n19
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@v7
+POSTHOOK: query: CREATE VIEW v7 AS SELECT key from table1_n19
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: db1@table1_n19
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@v7
+POSTHOOK: Lineage: v7.key SIMPLE [(table1_n19)table1_n19.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: CREATE VIEW v8 AS SELECT key from db1.table1_n19
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: db1@table1_n19
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@v8
+POSTHOOK: query: CREATE VIEW v8 AS SELECT key from db1.table1_n19
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: db1@table1_n19
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@v8
+POSTHOOK: Lineage: v8.key SIMPLE [(table1_n19)table1_n19.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: CREATE DATABASE db2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db2
+POSTHOOK: query: CREATE DATABASE db2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db2
+PREHOOK: query: USE db2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db2
+POSTHOOK: query: USE db2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db2
+PREHOOK: query: explain ddl select  * FROM db1.v1_n17
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@table1_n19
+PREHOOK: Input: db1@v1_n17
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select  * FROM db1.v1_n17
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@table1_n19
+POSTHOOK: Input: db1@v1_n17
+#### A masked pattern was here ####
+CREATE DATABASE IF NOT EXISTS db1;
+CREATE TABLE `db1`.`table1_n19`(
+  `key` string, 
+  `value` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+CREATE VIEW `db1`.`v1_n17` AS SELECT `table1_n19`.`key`, `table1_n19`.`value` FROM `db1`.`table1_n19`;
+
+
+EXPLAIN select  * FROM db1.v1_n17;
+
+
+EXPLAIN CBO select  * FROM db1.v1_n17;
+
+
+EXPLAIN VECTORIZED select  * FROM db1.v1_n17;
+CBO PLAN:HiveProject(key=[$0], value=[$1])
+  HiveTableScan(table=[[db1, table1_n19]], table:alias=[table1_n19])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: table1_n19
+          properties:
+            insideView TRUE
+          Select Operator
+            expressions: key (type: string), value (type: string)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: explain ddl select  * FROM db1.v2_n10
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@table1_n19
+PREHOOK: Input: db1@v2_n10
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select  * FROM db1.v2_n10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@table1_n19
+POSTHOOK: Input: db1@v2_n10
+#### A masked pattern was here ####
+CREATE DATABASE IF NOT EXISTS db1;
+CREATE TABLE `db1`.`table1_n19`(
+  `key` string, 
+  `value` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+CREATE VIEW `db1`.`v2_n10` AS SELECT `t1`.`key`, `t1`.`value` FROM `db1`.`table1_n19` `t1`;
+
+EXPLAIN select  * FROM db1.v2_n10;
+
+EXPLAIN CBO select  * FROM db1.v2_n10;
+
+EXPLAIN VECTORIZED select  * FROM db1.v2_n10;
+CBO PLAN:HiveProject(key=[$0], value=[$1])
+  HiveTableScan(table=[[db1, table1_n19]], table:alias=[t1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t1
+          properties:
+            insideView TRUE
+          Select Operator
+            expressions: key (type: string), value (type: string)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: explain ddl select  * FROM db1.v3_n3
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@table1_n19
+PREHOOK: Input: db1@table2_n13
+PREHOOK: Input: db1@v3_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select  * FROM db1.v3_n3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@table1_n19
+POSTHOOK: Input: db1@table2_n13
+POSTHOOK: Input: db1@v3_n3
+#### A masked pattern was here ####
+CREATE DATABASE IF NOT EXISTS db1;
+CREATE TABLE `db1`.`table2_n13`(
+  `key` string, 
+  `value` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+CREATE TABLE `db1`.`table1_n19`(
+  `key` string, 
+  `value` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE db1.table2_n13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+CREATE VIEW `db1`.`v3_n3` AS SELECT `t1`.`key`, `t1`.`value`, `t2`.`key` `k` FROM `db1`.`table1_n19` `t1` JOIN `db1`.`table2_n13` `t2` ON `t1`.`key` = `t2`.`key`;
+
+EXPLAIN select  * FROM db1.v3_n3;
+
+EXPLAIN CBO select  * FROM db1.v3_n3;
+
+EXPLAIN VECTORIZED select  * FROM db1.v3_n3;
+CBO PLAN:HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveProject(key=[$0], value=[$1])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[db1, table1_n19]], table:alias=[t1])
+  HiveProject(key=[$0])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[db1, table2_n13]], table:alias=[t2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  filterExpr: key is not null (type: boolean)
+                  properties:
+                    insideView TRUE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  filterExpr: key is not null (type: boolean)
+                  properties:
+                    insideView TRUE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain ddl select  * FROM db1.v4_n3
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@table1_n19
+PREHOOK: Input: db1@v4_n3
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select  * FROM db1.v4_n3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@table1_n19
+POSTHOOK: Input: db1@v4_n3
+#### A masked pattern was here ####
+CREATE DATABASE IF NOT EXISTS db1;
+CREATE TABLE `db1`.`table1_n19`(
+  `key` string, 
+  `value` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+CREATE VIEW `db1`.`v4_n3` AS SELECT `table1_n19`.`key`, `table1_n19`.`value` FROM `db1`.`table1_n19`;
+
+EXPLAIN select  * FROM db1.v4_n3;
+
+EXPLAIN CBO select  * FROM db1.v4_n3;
+
+EXPLAIN VECTORIZED select  * FROM db1.v4_n3;
+CBO PLAN:HiveProject(key=[$0], value=[$1])
+  HiveTableScan(table=[[db1, table1_n19]], table:alias=[table1_n19])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: table1_n19
+          properties:
+            insideView TRUE
+          Select Operator
+            expressions: key (type: string), value (type: string)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: explain ddl select  * FROM db1.v5_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@table1_n19
+PREHOOK: Input: db1@v5_n1
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select  * FROM db1.v5_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@table1_n19
+POSTHOOK: Input: db1@v5_n1
+#### A masked pattern was here ####
+CREATE DATABASE IF NOT EXISTS db1;
+CREATE TABLE `db1`.`table1_n19`(
+  `key` string, 
+  `value` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+CREATE VIEW `db1`.`v5_n1` AS SELECT `t1`.`key`, `t1`.`value` FROM `db1`.`table1_n19` `t1`;
+
+EXPLAIN select  * FROM db1.v5_n1;
+
+EXPLAIN CBO select  * FROM db1.v5_n1;
+
+EXPLAIN VECTORIZED select  * FROM db1.v5_n1;
+CBO PLAN:HiveProject(key=[$0], value=[$1])
+  HiveTableScan(table=[[db1, table1_n19]], table:alias=[t1])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t1
+          properties:
+            insideView TRUE
+          Select Operator
+            expressions: key (type: string), value (type: string)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: explain ddl select  * FROM db1.v6
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@table1_n19
+PREHOOK: Input: db1@table2_n13
+PREHOOK: Input: db1@v6
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select  * FROM db1.v6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@table1_n19
+POSTHOOK: Input: db1@table2_n13
+POSTHOOK: Input: db1@v6
+#### A masked pattern was here ####
+CREATE DATABASE IF NOT EXISTS db1;
+CREATE TABLE `db1`.`table2_n13`(
+  `key` string, 
+  `value` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+CREATE TABLE `db1`.`table1_n19`(
+  `key` string, 
+  `value` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE db1.table2_n13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+CREATE VIEW `db1`.`v6` AS SELECT `t1`.`key`, `t1`.`value`, `t2`.`key` `k` FROM `db1`.`table1_n19` `t1` JOIN `db1`.`table2_n13` `t2` ON `t1`.`key` = `t2`.`key`;
+
+EXPLAIN select  * FROM db1.v6;
+
+EXPLAIN CBO select  * FROM db1.v6;
+
+EXPLAIN VECTORIZED select  * FROM db1.v6;
+CBO PLAN:HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveProject(key=[$0], value=[$1])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[db1, table1_n19]], table:alias=[t1])
+  HiveProject(key=[$0])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[db1, table2_n13]], table:alias=[t2])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  filterExpr: key is not null (type: boolean)
+                  properties:
+                    insideView TRUE
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  filterExpr: key is not null (type: boolean)
+                  properties:
+                    insideView TRUE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            MergeJoin Vectorization:
+                enabled: false
+                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain ddl select  * FROM db1.v7
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@table1_n19
+PREHOOK: Input: db1@v7
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select  * FROM db1.v7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@table1_n19
+POSTHOOK: Input: db1@v7
+#### A masked pattern was here ####
+CREATE DATABASE IF NOT EXISTS db1;
+CREATE TABLE `db1`.`table1_n19`(
+  `key` string, 
+  `value` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+CREATE VIEW `db1`.`v7` AS SELECT `table1_n19`.`key` from `db1`.`table1_n19`;
+
+EXPLAIN select  * FROM db1.v7;
+
+EXPLAIN CBO select  * FROM db1.v7;
+
+EXPLAIN VECTORIZED select  * FROM db1.v7;
+CBO PLAN:HiveProject(key=[$0])
+  HiveTableScan(table=[[db1, table1_n19]], table:alias=[table1_n19])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: table1_n19
+          properties:
+            insideView TRUE
+          Select Operator
+            expressions: key (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: explain ddl select  * FROM db1.v8
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@table1_n19
+PREHOOK: Input: db1@v8
+#### A masked pattern was here ####
+POSTHOOK: query: explain ddl select  * FROM db1.v8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@table1_n19
+POSTHOOK: Input: db1@v8
+#### A masked pattern was here ####
+CREATE DATABASE IF NOT EXISTS db1;
+CREATE TABLE `db1`.`table1_n19`(
+  `key` string, 
+  `value` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+ALTER TABLE db1.table1_n19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+
+CREATE VIEW `db1`.`v8` AS SELECT `table1_n19`.`key` from `db1`.`table1_n19`;
+
+EXPLAIN select  * FROM db1.v8;
+
+EXPLAIN CBO select  * FROM db1.v8;
+
+EXPLAIN VECTORIZED select  * FROM db1.v8;
+CBO PLAN:HiveProject(key=[$0])
+  HiveTableScan(table=[[db1, table1_n19]], table:alias=[table1_n19])
+
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: table1_n19
+          properties:
+            insideView TRUE
+          Select Operator
+            expressions: key (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: drop database db1 cascade
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:db1
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@table1_n19
+PREHOOK: Output: db1@table2_n13
+PREHOOK: Output: db1@v1_n17
+PREHOOK: Output: db1@v2_n10
+PREHOOK: Output: db1@v3_n3
+PREHOOK: Output: db1@v4_n3
+PREHOOK: Output: db1@v5_n1
+PREHOOK: Output: db1@v6
+PREHOOK: Output: db1@v7
+PREHOOK: Output: db1@v8
+POSTHOOK: query: drop database db1 cascade
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:db1
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@table1_n19
+POSTHOOK: Output: db1@table2_n13
+POSTHOOK: Output: db1@v1_n17
+POSTHOOK: Output: db1@v2_n10
+POSTHOOK: Output: db1@v3_n3
+POSTHOOK: Output: db1@v4_n3
+POSTHOOK: Output: db1@v5_n1
+POSTHOOK: Output: db1@v6
+POSTHOOK: Output: db1@v7
+POSTHOOK: Output: db1@v8
+PREHOOK: query: drop database db2 cascade
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:db2
+PREHOOK: Output: database:db2
+POSTHOOK: query: drop database db2 cascade
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:db2
+POSTHOOK: Output: database:db2

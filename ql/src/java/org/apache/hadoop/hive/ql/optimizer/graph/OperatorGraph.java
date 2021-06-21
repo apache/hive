@@ -38,8 +38,6 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-
-import com.google.common.base.Function;
 import com.google.common.collect.Sets;
 
 /**
@@ -83,6 +81,11 @@ public class OperatorGraph {
 
   }
 
+  public static interface OperatorEdgePredicate {
+
+    boolean accept(Operator<?> s, Operator<?> t, OpEdge opEdge);
+
+  }
 
   Map<Operator<?>, Cluster> nodeCluster = new HashMap<>();
 
@@ -105,7 +108,7 @@ public class OperatorGraph {
       members.add(curr);
     }
 
-    public Set<Cluster> parentClusters(Function<OpEdge, Boolean> traverseEdge) {
+    public Set<Cluster> parentClusters(OperatorEdgePredicate traverseEdge) {
       Set<Cluster> ret = new HashSet<Cluster>();
       for (Operator<?> operator : members) {
         for (Operator<? extends OperatorDesc> p : operator.getParentOperators()) {
@@ -113,7 +116,7 @@ public class OperatorGraph {
             continue;
           }
           Optional<OpEdge> e = g.getEdge(p, operator);
-          if (traverseEdge.apply(e.get())) {
+          if (traverseEdge.accept(p, operator, e.get())) {
             ret.add(nodeCluster.get(p));
           }
         }
@@ -121,7 +124,7 @@ public class OperatorGraph {
       return ret;
     }
 
-    public Set<Cluster> childClusters(Function<OpEdge, Boolean> traverseEdge) {
+    public Set<Cluster> childClusters(OperatorEdgePredicate traverseEdge) {
       Set<Cluster> ret = new HashSet<Cluster>();
       for (Operator<?> operator : members) {
         for (Operator<? extends OperatorDesc> p : operator.getChildOperators()) {
@@ -129,7 +132,7 @@ public class OperatorGraph {
             continue;
           }
           Optional<OpEdge> e = g.getEdge(operator, p);
-          if (traverseEdge.apply(e.get())) {
+          if (traverseEdge.accept(operator, p, e.get())) {
             ret.add(nodeCluster.get(p));
           }
         }
@@ -247,4 +250,14 @@ public class OperatorGraph {
   public Set<Cluster> getClusters() {
     return new HashSet<>(nodeCluster.values());
   }
+
+  public Operator<?> findOperator(String name) {
+    for (Operator<?> o : g.nodes()) {
+      if (name.equals(o.toString())) {
+        return o;
+      }
+    }
+    return null;
+  }
+
 }

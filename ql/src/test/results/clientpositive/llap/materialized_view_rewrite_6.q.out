@@ -162,6 +162,11 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1
+POSTHOOK: Lineage: mv1.c EXPRESSION [(emps)emps.null, ]
+POSTHOOK: Lineage: mv1.deptno SIMPLE [(emps)emps.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.name SIMPLE [(emps)emps.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1.s EXPRESSION [(emps)emps.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.salary SIMPLE [(emps)emps.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select salary, sum(empid) + 1 as s
 from emps where deptno > 10 group by salary
@@ -279,6 +284,11 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1
+POSTHOOK: Lineage: mv1.c EXPRESSION [(emps)emps.null, ]
+POSTHOOK: Lineage: mv1.deptno SIMPLE [(emps)emps.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.name SIMPLE [(emps)emps.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1.s EXPRESSION [(emps)emps.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.salary SIMPLE [(emps)emps.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select salary + 1, sum(empid) + 1 as s
 from emps where deptno > 15 group by salary
@@ -400,6 +410,7 @@ POSTHOOK: Input: default@depts
 POSTHOOK: Input: default@emps
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1
+POSTHOOK: Lineage: mv1.name SIMPLE [(depts)depts.FieldSchema(name:name, type:varchar(256), comment:null), ]
 PREHOOK: query: explain
 select dependents.empid
 from emps
@@ -552,6 +563,7 @@ POSTHOOK: Input: default@depts
 POSTHOOK: Input: default@emps
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1
+POSTHOOK: Lineage: mv1.name SIMPLE [(depts)depts.FieldSchema(name:name, type:varchar(256), comment:null), ]
 PREHOOK: query: explain
 select dependents.empid
 from depts
@@ -749,6 +761,12 @@ POSTHOOK: Input: default@dependents
 POSTHOOK: Input: default@emps
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1
+POSTHOOK: Lineage: mv1.commission SIMPLE [(emps)emps.FieldSchema(name:commission, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.deptno SIMPLE [(emps)emps.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.empid SIMPLE [(emps)emps.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.name1 SIMPLE [(emps)emps.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1.name2 SIMPLE [(dependents)dependents.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1.salary SIMPLE [(emps)emps.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select emps.empid, dependents.empid, emps.deptno
 from emps

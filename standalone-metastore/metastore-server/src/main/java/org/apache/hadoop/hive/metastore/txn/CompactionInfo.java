@@ -48,6 +48,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public char state;
   public CompactionType type;
   public String workerId;
+  public String workerVersion;
+  public String initiatorId;
+  public String initiatorVersion;
   public long enqueueTime;
   public long start;
   public String runAs;
@@ -129,7 +132,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       "tooManyAborts:" + tooManyAborts + "," +
       "hasOldAbort:" + hasOldAbort + "," +
       "highestWriteId:" + highestWriteId + "," +
-      "errorMessage:" + errorMessage;
+      "errorMessage:" + errorMessage + "," +
+      "workerId: " + workerId + "," +
+      "initiatorId: " + initiatorId;
   }
 
   @Override
@@ -173,6 +178,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     fullCi.hadoopJobId = rs.getString(13);
     fullCi.errorMessage = rs.getString(14);
     fullCi.enqueueTime = rs.getLong(15);
+    fullCi.workerVersion = rs.getString(16);
+    fullCi.initiatorId = rs.getString(17);
+    fullCi.initiatorVersion = rs.getString(18);
     return fullCi;
   }
   static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException, MetaException {
@@ -192,6 +200,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     pStmt.setString(14, ci.hadoopJobId);
     pStmt.setString(15, ci.errorMessage);
     pStmt.setLong(16, ci.enqueueTime);
+    pStmt.setString(17, ci.workerVersion);
+    pStmt.setString(18, ci.initiatorId);
+    pStmt.setString(19, ci.initiatorVersion);
   }
 
   public static CompactionInfo compactionStructToInfo(CompactionInfoStruct cr) {

@@ -55,9 +55,7 @@ public class DropTableEvent extends HiveMetaStoreAuthorizableEvent {
   }
 
   private List<HivePrivilegeObject> getInputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> DropTableEvent.getInputHObjs()");
-    }
+    LOG.debug("==> DropTableEvent.getInputHObjs()");
 
     List<HivePrivilegeObject> ret   = new ArrayList<>();
     PreDropTableEvent         event = (PreDropTableEvent) preEventContext;
@@ -66,9 +64,7 @@ public class DropTableEvent extends HiveMetaStoreAuthorizableEvent {
 
     COMMAND_STR = buildCommandString(COMMAND_STR, table);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("<== DropTableEvent.getInputHObjs(): ret=" + ret);
-    }
+    LOG.debug("<== DropTableEvent.getInputHObjs(): ret={}", ret);
 
     return ret;
   }

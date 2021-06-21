@@ -564,9 +564,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
   /** Called by TezSessionPoolSession when closed. */
   @Override
   public void unregisterOpenSession(TezSessionPoolSession session) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Closed a pool session [" + this + "]");
-    }
+    LOG.debug("Closed a pool session [{}]", this);
     synchronized (openSessions) {
       openSessions.remove(session);
       updateSessions();

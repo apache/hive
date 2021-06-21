@@ -24,7 +24,7 @@ select key from `masking_test_n_mv`;
 
 
 create materialized view `masking_test_view_n_mv_masked` as
-select `masking_test_n_mv`.`key` from (SELECT `masking_test_n_mv`.`key`, CAST(reverse(`masking_test_n_mv`.`value`) AS string) AS `value`, `masking_test_n_mv`.`block__offset__inside__file`, `masking_test_n_mv`.`input__file__name`, `masking_test_n_mv`.`row__id` FROM `default`.`masking_test_n_mv`  WHERE `masking_test_n_mv`.`key` % 2 = 0 and `masking_test_n_mv`.`key` < 10)`masking_test_n_mv`;
+select `masking_test_n_mv`.`key` from (SELECT `masking_test_n_mv`.`key`, CAST(reverse(`masking_test_n_mv`.`value`) AS string) AS `value`, `masking_test_n_mv`.`block__offset__inside__file`, `masking_test_n_mv`.`input__file__name`, `masking_test_n_mv`.`row__id`, `masking_test_n_mv`.`row__is__deleted` FROM `default`.`masking_test_n_mv`  WHERE `masking_test_n_mv`.`key` % 2 = 0 and `masking_test_n_mv`.`key` < 10)`masking_test_n_mv`;
 
 -- This will use the MV `masking_test_view_n_mv_masked` because it already has the required masking/filtering for the following query
 explain cbo

@@ -198,10 +198,6 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
 
   // UTF-8 byte constants used by string/UTF-8 bytes to decimal and decimal to String/UTF-8 byte
   // conversion.
-
-  // There is only one blank in UTF-8.
-  private static final byte BYTE_BLANK = (byte) ' ';
-
   private static final byte BYTE_DIGIT_ZERO = (byte) '0';
   private static final byte BYTE_DIGIT_NINE = (byte) '9';
 
@@ -273,7 +269,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
     int index = offset;
 
     if (trimBlanks) {
-      while (bytes[index] == BYTE_BLANK) {
+      while (isValidSpecialCharacter(bytes[index])) {
         if (++index >= end) {
           return false;
         }
@@ -373,9 +369,9 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
     }
 
     // Try to eat trailing blank padding.
-    if (trimBlanks && index < end && bytes[index] == BYTE_BLANK) {
+    if (trimBlanks && index < end && isValidSpecialCharacter(bytes[index])) {
       index++;
-      while (index < end && bytes[index] == BYTE_BLANK) {
+      while (index < end && isValidSpecialCharacter(bytes[index])) {
         index++;
       }
       if (index < end) {
@@ -555,9 +551,9 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
     if (!haveExponent) {
 
       // Try to eat trailing blank padding.
-      if (trimBlanks && index < end && bytes[index] == BYTE_BLANK) {
+      if (trimBlanks && index < end && isValidSpecialCharacter(bytes[index])) {
         index++;
-        while (index < end && bytes[index] == BYTE_BLANK) {
+        while (index < end && isValidSpecialCharacter(bytes[index])) {
           index++;
         }
       }
@@ -611,9 +607,9 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
     }
 
     // Try to eat trailing blank padding.
-    if (trimBlanks && index < end && bytes[index] == BYTE_BLANK) {
+    if (trimBlanks && index < end && isValidSpecialCharacter(bytes[index])) {
       index++;
-      while (index < end && bytes[index] == BYTE_BLANK) {
+      while (index < end && isValidSpecialCharacter(bytes[index])) {
         index++;
       }
     }
@@ -9427,6 +9423,40 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
         " fastSignum " + fastResult.fastSignum + " fast0 " + fastResult.fast0 + " fast1 " + fastResult.fast1 + " fast2 " + fastResult.fast2 +
             " fastIntegerDigitCount " + fastResult.fastIntegerDigitCount + " fastScale " + fastResult.fastScale +
         " stack trace: " + getStackTraceAsSingleLine(Thread.currentThread().getStackTrace()));
+  }
+
+  /**
+   * Determines if the specified character can be treated as valid while handling decimals
+   *
+   * @param b the character to be tested.
+   * @return returns true if the character is one of the characters listed below
+   * List of characters that are supported in regular RDBMS databases(MySQL, PostgreSQL) while handling decimals
+   * are considered valid in Hive as well. The list include
+   * '\u0009' - HORIZONTAL TABULATION (\t)
+   * '\u000B' - VERTICAL TABULATION
+   * '\u000C' - FORM FEED
+   * '\u0020' - SPACE SEPARATOR
+   */
+  public static boolean isValidSpecialCharacter(byte b) {
+    return Arrays.stream(SpecialCharacters.values()).anyMatch(splCharacters -> splCharacters.getValue() == b);
+  }
+
+  private enum SpecialCharacters {
+
+    HORIZONTAL_TABULATION('\u0009'),
+    VERTICAL_TABULATION('\u000B'),
+    FORM_FEED('\u000C'),
+    SPACE_SEPARATOR('\u0020');
+
+    private char character;
+
+    SpecialCharacters(char c) {
+      this.character = c;
+    }
+
+    public byte getValue() {
+      return (byte) this.character;
+    }
   }
 
   //************************************************************************************************

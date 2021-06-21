@@ -19,6 +19,8 @@
 package org.apache.hive.hplsql;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * HPL/SQL block scope
@@ -27,7 +29,7 @@ public class Scope {
   
   public enum Type { GLOBAL, BEGIN_END, LOOP, HANDLER, PACKAGE, ROUTINE };
   
-  ArrayList<Var> vars = new ArrayList<Var>();
+  Map<String, Var> vars = new HashMap<>();
   ArrayList<Handler> handlers = new ArrayList<Handler>();
   Scope parent;
   Type type;
@@ -55,7 +57,7 @@ public class Scope {
    * Add a local variable
    */
   void addVariable(Var var) {
-    vars.add(var);
+    vars.put(var.name.toUpperCase(), var);
   }
   
   /**

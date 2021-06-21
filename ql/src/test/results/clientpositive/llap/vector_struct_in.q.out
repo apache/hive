@@ -202,8 +202,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 4]
-                        selectExpressions: StructColumnInList(structExpressions [col 0:string, col 1:string], fieldVectorColumnTypes [BYTES, BYTES], structColumnMap [0, 1]) -> 4:boolean
+                        projectedOutputColumnNums: [0, 1, 5]
+                        selectExpressions: StructColumnInList(structExpressions [col 0:string, col 1:string], fieldVectorColumnTypes [BYTES, BYTES], structColumnMap [0, 1]) -> 5:boolean
                     Statistics: Num rows: 2 Data size: 354 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -469,8 +469,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 4]
-                        selectExpressions: StructColumnInList(structExpressions [col 0:int, col 1:int], fieldVectorColumnTypes [LONG, LONG], structColumnMap [0, 1]) -> 4:boolean
+                        projectedOutputColumnNums: [0, 1, 5]
+                        selectExpressions: StructColumnInList(structExpressions [col 0:int, col 1:int], fieldVectorColumnTypes [LONG, LONG], structColumnMap [0, 1]) -> 5:boolean
                     Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -736,8 +736,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 4]
-                        selectExpressions: StructColumnInList(structExpressions [col 0:string, col 1:int], fieldVectorColumnTypes [BYTES, LONG], structColumnMap [0, 1]) -> 4:boolean
+                        projectedOutputColumnNums: [0, 1, 5]
+                        selectExpressions: StructColumnInList(structExpressions [col 0:string, col 1:int], fieldVectorColumnTypes [BYTES, LONG], structColumnMap [0, 1]) -> 5:boolean
                     Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -1009,8 +1009,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 1, 2, 5]
-                        selectExpressions: StructColumnInList(structExpressions [col 0:bigint, col 1:string, col 2:double], fieldVectorColumnTypes [LONG, BYTES, DOUBLE], structColumnMap [0, 1, 2]) -> 5:boolean
+                        projectedOutputColumnNums: [0, 1, 2, 6]
+                        selectExpressions: StructColumnInList(structExpressions [col 0:bigint, col 1:string, col 2:double], fieldVectorColumnTypes [LONG, BYTES, DOUBLE], structColumnMap [0, 1, 2]) -> 6:boolean
                     Statistics: Num rows: 3 Data size: 315 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false

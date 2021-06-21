@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TestHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.Context;
@@ -42,6 +43,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -120,6 +122,30 @@ public class TestHiveMetaStoreClientApiArgumentsChecker {
   @Test
   public void testGetPartitionNames2() throws HiveException {
     hive.getPartitionNames(t, null, null, (short) -1);
+  }
+
+  @Test
+  public void testGetPartitionsByNames1() throws HiveException {
+    GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
+    req.setDb_name(DB_NAME);
+    req.setTbl_name(TABLE_NAME);
+    hive.getPartitionsByNames(req, t);
+  }
+
+  @Test
+  public void testGetPartitionsByNames2() throws HiveException {
+    GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
+    req.setDb_name(DB_NAME);
+    req.setTbl_name(TABLE_NAME);
+    hive.getPartitionsByNames(DB_NAME,TABLE_NAME,null, t);
+  }
+
+  @Test
+  public void testGetPartitionsByNames3() throws HiveException {
+    GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest();
+    req.setDb_name(DB_NAME);
+    req.setTbl_name(TABLE_NAME);
+    hive.getPartitionsByNames(t, new ArrayList<>(), true);
   }
 
   @Test

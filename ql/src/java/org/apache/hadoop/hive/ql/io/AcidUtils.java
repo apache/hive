@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
@@ -1470,16 +1471,15 @@ public class AcidUtils {
     return dirToSnapshots;
   }
 
-  private static boolean isChildOfDelta(Path childDir, Path rootPath) {
+  public static boolean isChildOfDelta(Path childDir, Path rootPath) {
     if (childDir.toUri().toString().length() <= rootPath.toUri().toString().length()) {
       return false;
     }
     // We do not want to look outside the original directory
     String fullName = childDir.toUri().toString().substring(rootPath.toUri().toString().length() + 1);
     String dirName = childDir.getName();
-    return (fullName.startsWith(BASE_PREFIX) && !dirName.startsWith(BASE_PREFIX)) ||
-        (fullName.startsWith(DELTA_PREFIX) && !dirName.startsWith(DELTA_PREFIX)) ||
-        (fullName.startsWith(DELETE_DELTA_PREFIX) && !dirName.startsWith(DELETE_DELTA_PREFIX));
+    return !dirName.startsWith(BASE_PREFIX) && !dirName.startsWith(DELTA_PREFIX) && !dirName.startsWith(DELETE_DELTA_PREFIX)
+          && (fullName.contains(BASE_PREFIX) || fullName.contains(DELTA_PREFIX) || fullName.contains(DELETE_DELTA_PREFIX));
   }
 
   /**
@@ -1937,6 +1937,11 @@ public class AcidUtils {
     return !props.isInsertOnly();
   }
 
+  public static void setAcidOperationalProperties(
+      Configuration conf, boolean isTxnTable, AcidOperationalProperties properties) {
+    setAcidOperationalProperties(conf, isTxnTable, properties, false);
+  }
+
   /**
    * Sets the acidOperationalProperties in the configuration object argument.
    * @param conf Mutable configuration object
@@ -1944,15 +1949,17 @@ public class AcidUtils {
    *                   we assume this is a full transactional table.
    */
   public static void setAcidOperationalProperties(
-      Configuration conf, boolean isTxnTable, AcidOperationalProperties properties) {
+      Configuration conf, boolean isTxnTable, AcidOperationalProperties properties, boolean fetchDeletedRows) {
     if (isTxnTable) {
       HiveConf.setBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, isTxnTable);
       if (properties != null) {
         HiveConf.setIntVar(conf, ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES, properties.toInt());
       }
+      conf.setBoolean(Constants.ACID_FETCH_DELETED_ROWS, fetchDeletedRows);
     } else {
       conf.unset(ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN.varname);
       conf.unset(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname);
+      conf.unset(Constants.ACID_FETCH_DELETED_ROWS);
     }
   }
 

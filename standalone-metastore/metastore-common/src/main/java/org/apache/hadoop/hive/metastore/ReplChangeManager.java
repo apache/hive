@@ -244,7 +244,12 @@ public class ReplChangeManager {
       }
     } else {
       String fileCheckSum = checksumFor(path, fs);
-      Path cmPath = getCMPath(conf, path.getName(), fileCheckSum, getCmRoot(path).toString());
+      Path cmRootPath = getCmRoot(path);
+      String cmRoot = null;
+      if (cmRootPath != null) {
+        cmRoot = FileUtils.makeQualified(cmRootPath, conf).toString();
+      }
+      Path cmPath = getCMPath(conf, path.getName(), fileCheckSum, cmRoot);
 
       // set timestamp before moving to cmroot, so we can
       // avoid race condition CM remove the file before setting

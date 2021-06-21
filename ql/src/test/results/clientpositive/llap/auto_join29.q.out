@@ -749,8 +749,8 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col1, _col0
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: z
@@ -1369,8 +1369,8 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col1, _col0
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: z
@@ -2690,8 +2690,8 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
-                outputColumnNames: _col1, _col0
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: z
@@ -3435,6 +3435,7 @@ STAGE PLANS:
                 TableScan
                   alias: src3
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_47_container, bigKeyColName:key, smallTablePos:0, keyRatio:0.002
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
@@ -3737,6 +3738,7 @@ STAGE PLANS:
                 TableScan
                   alias: src3
                   filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_47_container, bigKeyColName:key, smallTablePos:0, keyRatio:0.002
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (UDFToDouble(key) < 10.0D) (type: boolean)

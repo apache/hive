@@ -165,7 +165,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1080 Data size: 109984 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:float_col_1:float, 1:varchar0037_col_2:varchar(37), 2:decimal2912_col_3:decimal(29,12), 3:decimal0801_col_4:decimal(8,1)/DECIMAL_64, 4:timestamp_col_5:timestamp, 5:boolean_col_6:boolean, 6:string_col_7:string, 7:tinyint_col_8:tinyint, 8:boolean_col_9:boolean, 9:decimal1614_col_10:decimal(16,14)/DECIMAL_64, 10:boolean_col_11:boolean, 11:float_col_12:float, 12:char0116_col_13:char(116), 13:boolean_col_14:boolean, 14:string_col_15:string, 15:double_col_16:double, 16:string_col_17:string, 17:bigint_col_18:bigint, 18:int_col_19:int, 19:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:float_col_1:float, 1:varchar0037_col_2:varchar(37), 2:decimal2912_col_3:decimal(29,12), 3:decimal0801_col_4:decimal(8,1)/DECIMAL_64, 4:timestamp_col_5:timestamp, 5:boolean_col_6:boolean, 6:string_col_7:string, 7:tinyint_col_8:tinyint, 8:boolean_col_9:boolean, 9:decimal1614_col_10:decimal(16,14)/DECIMAL_64, 10:boolean_col_11:boolean, 11:float_col_12:float, 12:char0116_col_13:char(116), 13:boolean_col_14:boolean, 14:string_col_15:string, 15:double_col_16:double, 16:string_col_17:string, 17:bigint_col_18:bigint, 18:int_col_19:int, 19:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 20:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -188,15 +188,15 @@ STAGE PLANS:
                           0 _col0 (type: decimal(9,2))
                           1 _col1 (type: decimal(9,2))
                         Map Join Vectorization:
-                            bigTableKeyColumns: 20:decimal(9,2)
-                            bigTableKeyExpressions: ConvertDecimal64ToDecimal(col 3:decimal(9,2)/DECIMAL_64) -> 20:decimal(9,2)
+                            bigTableKeyColumns: 21:decimal(9,2)
+                            bigTableKeyExpressions: ConvertDecimal64ToDecimal(col 3:decimal(9,2)/DECIMAL_64) -> 21:decimal(9,2)
                             bigTableRetainColumnNums: []
                             className: VectorMapJoinInnerMultiKeyOperator
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                             nonOuterSmallTableKeyMapping: []
-                            projectedOutput: 21:smallint
-                            smallTableValueMapping: 21:smallint
+                            projectedOutput: 22:smallint
+                            smallTableValueMapping: 22:smallint
                             hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col1
                         input vertices:
@@ -205,7 +205,7 @@ STAGE PLANS:
                         Group By Operator
                           aggregations: count(_col1)
                           Group By Vectorization:
-                              aggregators: VectorUDAFCount(col 21:smallint) -> bigint
+                              aggregators: VectorUDAFCount(col 22:smallint) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
                               native: false
@@ -250,7 +250,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1000 Data size: 103844 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:tinyint_col_1:tinyint, 1:float_col_2:float, 2:bigint_col_3:bigint, 3:boolean_col_4:boolean, 4:decimal0202_col_5:decimal(2,2)/DECIMAL_64, 5:decimal1612_col_6:decimal(16,12)/DECIMAL_64, 6:double_col_7:double, 7:char0205_col_8:char(205), 8:bigint_col_9:bigint, 9:decimal1202_col_10:decimal(12,2)/DECIMAL_64, 10:boolean_col_11:boolean, 11:double_col_12:double, 12:decimal2208_col_13:decimal(22,8), 13:decimal3722_col_14:decimal(37,22), 14:smallint_col_15:smallint, 15:decimal2824_col_16:decimal(28,24), 16:boolean_col_17:boolean, 17:float_col_18:float, 18:timestamp_col_19:timestamp, 19:decimal0402_col_20:decimal(4,2)/DECIMAL_64, 20:char0208_col_21:char(208), 21:char0077_col_22:char(77), 22:decimal2915_col_23:decimal(29,15), 23:char0234_col_24:char(234), 24:timestamp_col_25:timestamp, 25:tinyint_col_26:tinyint, 26:decimal3635_col_27:decimal(36,35), 27:boolean_col_28:boolean, 28:float_col_29:float, 29:smallint_col_30:smallint, 30:varchar0200_col_31:varchar(200), 31:boolean_col_32:boolean, 32:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:tinyint_col_1:tinyint, 1:float_col_2:float, 2:bigint_col_3:bigint, 3:boolean_col_4:boolean, 4:decimal0202_col_5:decimal(2,2)/DECIMAL_64, 5:decimal1612_col_6:decimal(16,12)/DECIMAL_64, 6:double_col_7:double, 7:char0205_col_8:char(205), 8:bigint_col_9:bigint, 9:decimal1202_col_10:decimal(12,2)/DECIMAL_64, 10:boolean_col_11:boolean, 11:double_col_12:double, 12:decimal2208_col_13:decimal(22,8), 13:decimal3722_col_14:decimal(37,22), 14:smallint_col_15:smallint, 15:decimal2824_col_16:decimal(28,24), 16:boolean_col_17:boolean, 17:float_col_18:float, 18:timestamp_col_19:timestamp, 19:decimal0402_col_20:decimal(4,2)/DECIMAL_64, 20:char0208_col_21:char(208), 21:char0077_col_22:char(77), 22:decimal2915_col_23:decimal(29,15), 23:char0234_col_24:char(234), 24:timestamp_col_25:timestamp, 25:tinyint_col_26:tinyint, 26:decimal3635_col_27:decimal(36,35), 27:boolean_col_28:boolean, 28:float_col_29:float, 29:smallint_col_30:smallint, 30:varchar0200_col_31:varchar(200), 31:boolean_col_32:boolean, 32:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 33:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -388,7 +388,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1080 Data size: 109984 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:float_col_1:float, 1:varchar0037_col_2:varchar(37), 2:decimal2912_col_3:decimal(29,12), 3:decimal0801_col_4:decimal(8,1), 4:timestamp_col_5:timestamp, 5:boolean_col_6:boolean, 6:string_col_7:string, 7:tinyint_col_8:tinyint, 8:boolean_col_9:boolean, 9:decimal1614_col_10:decimal(16,14), 10:boolean_col_11:boolean, 11:float_col_12:float, 12:char0116_col_13:char(116), 13:boolean_col_14:boolean, 14:string_col_15:string, 15:double_col_16:double, 16:string_col_17:string, 17:bigint_col_18:bigint, 18:int_col_19:int, 19:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:float_col_1:float, 1:varchar0037_col_2:varchar(37), 2:decimal2912_col_3:decimal(29,12), 3:decimal0801_col_4:decimal(8,1), 4:timestamp_col_5:timestamp, 5:boolean_col_6:boolean, 6:string_col_7:string, 7:tinyint_col_8:tinyint, 8:boolean_col_9:boolean, 9:decimal1614_col_10:decimal(16,14), 10:boolean_col_11:boolean, 11:float_col_12:float, 12:char0116_col_13:char(116), 13:boolean_col_14:boolean, 14:string_col_15:string, 15:double_col_16:double, 16:string_col_17:string, 17:bigint_col_18:bigint, 18:int_col_19:int, 19:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 20:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -417,8 +417,8 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                             nonOuterSmallTableKeyMapping: []
-                            projectedOutput: 20:smallint
-                            smallTableValueMapping: 20:smallint
+                            projectedOutput: 21:smallint
+                            smallTableValueMapping: 21:smallint
                             hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col1
                         input vertices:
@@ -427,7 +427,7 @@ STAGE PLANS:
                         Group By Operator
                           aggregations: count(_col1)
                           Group By Vectorization:
-                              aggregators: VectorUDAFCount(col 20:smallint) -> bigint
+                              aggregators: VectorUDAFCount(col 21:smallint) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
                               native: false
@@ -473,7 +473,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1000 Data size: 103844 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:tinyint_col_1:tinyint, 1:float_col_2:float, 2:bigint_col_3:bigint, 3:boolean_col_4:boolean, 4:decimal0202_col_5:decimal(2,2), 5:decimal1612_col_6:decimal(16,12), 6:double_col_7:double, 7:char0205_col_8:char(205), 8:bigint_col_9:bigint, 9:decimal1202_col_10:decimal(12,2), 10:boolean_col_11:boolean, 11:double_col_12:double, 12:decimal2208_col_13:decimal(22,8), 13:decimal3722_col_14:decimal(37,22), 14:smallint_col_15:smallint, 15:decimal2824_col_16:decimal(28,24), 16:boolean_col_17:boolean, 17:float_col_18:float, 18:timestamp_col_19:timestamp, 19:decimal0402_col_20:decimal(4,2), 20:char0208_col_21:char(208), 21:char0077_col_22:char(77), 22:decimal2915_col_23:decimal(29,15), 23:char0234_col_24:char(234), 24:timestamp_col_25:timestamp, 25:tinyint_col_26:tinyint, 26:decimal3635_col_27:decimal(36,35), 27:boolean_col_28:boolean, 28:float_col_29:float, 29:smallint_col_30:smallint, 30:varchar0200_col_31:varchar(200), 31:boolean_col_32:boolean, 32:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:tinyint_col_1:tinyint, 1:float_col_2:float, 2:bigint_col_3:bigint, 3:boolean_col_4:boolean, 4:decimal0202_col_5:decimal(2,2), 5:decimal1612_col_6:decimal(16,12), 6:double_col_7:double, 7:char0205_col_8:char(205), 8:bigint_col_9:bigint, 9:decimal1202_col_10:decimal(12,2), 10:boolean_col_11:boolean, 11:double_col_12:double, 12:decimal2208_col_13:decimal(22,8), 13:decimal3722_col_14:decimal(37,22), 14:smallint_col_15:smallint, 15:decimal2824_col_16:decimal(28,24), 16:boolean_col_17:boolean, 17:float_col_18:float, 18:timestamp_col_19:timestamp, 19:decimal0402_col_20:decimal(4,2), 20:char0208_col_21:char(208), 21:char0077_col_22:char(77), 22:decimal2915_col_23:decimal(29,15), 23:char0234_col_24:char(234), 24:timestamp_col_25:timestamp, 25:tinyint_col_26:tinyint, 26:decimal3635_col_27:decimal(36,35), 27:boolean_col_28:boolean, 28:float_col_29:float, 29:smallint_col_30:smallint, 30:varchar0200_col_31:varchar(200), 31:boolean_col_32:boolean, 32:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 33:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator

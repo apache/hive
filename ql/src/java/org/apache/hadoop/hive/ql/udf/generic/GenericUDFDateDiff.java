@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TimestampConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hive.common.util.DateParser;
 
 import javax.annotation.Nullable;
 
@@ -110,17 +111,18 @@ public class GenericUDFDateDiff extends GenericUDF {
     switch (inputType) {
     case STRING:
     case VARCHAR:
-    case CHAR:
+    case CHAR: {
       String dateString = converter.convert(argument.get()).toString();
-      try {
-        return Date.valueOf(dateString);
-      } catch (IllegalArgumentException e) {
-        Timestamp ts = PrimitiveObjectInspectorUtils.getTimestampFromString(dateString);
-        if (ts != null) {
-          return Date.ofEpochMilli(ts.toEpochMilli());
-        }
-        return null;
+      Date date = DateParser.parseDate(dateString);
+      if (date != null) {
+        return date;
       }
+      Timestamp ts = PrimitiveObjectInspectorUtils.getTimestampFromString(dateString);
+      if (ts != null) {
+        return Date.ofEpochMilli(ts.toEpochMilli());
+      }
+      return null;
+    }
     case TIMESTAMP:
       Timestamp ts = ((TimestampWritableV2) converter.convert(argument.get()))
         .getTimestamp();

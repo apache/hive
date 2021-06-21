@@ -135,7 +135,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 264 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:nokey:int, 1:key2:int, 2:dt:timestamp, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:nokey:int, 1:key2:int, 2:dt:timestamp, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -165,8 +165,8 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Fast Hash Table and No Hybrid Hash Join IS true
                             nonOuterSmallTableKeyMapping: []
-                            projectedOutput: 1:int, 2:timestamp, 1:int, 4:string
-                            smallTableValueMapping: 4:string
+                            projectedOutput: 1:int, 2:timestamp, 1:int, 5:string
+                            smallTableValueMapping: 5:string
                             hashTableImplementationType: FAST
                         outputColumnNames: _col0, _col1, _col2, _col3
                         input vertices:
@@ -178,7 +178,7 @@ STAGE PLANS:
                           Select Vectorization:
                               className: VectorSelectOperator
                               native: true
-                              projectedOutputColumnNums: [1, 1, 4, 2]
+                              projectedOutputColumnNums: [1, 1, 5, 2]
                           Statistics: Num rows: 6 Data size: 290 Basic stats: COMPLETE Column stats: NONE
                           File Output Operator
                             compressed: false
@@ -215,7 +215,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key1:int, 1:name:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key1:int, 1:name:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator

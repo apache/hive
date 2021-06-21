@@ -173,16 +173,12 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       }
       if (memoryMonitorInfo.doMemoryMonitoring()) {
         doMemCheck = true;
-        if (LOG.isInfoEnabled()) {
-          LOG.info("Memory monitoring for hash table loader enabled. {}", memoryMonitorInfo);
-        }
+        LOG.info("Memory monitoring for hash table loader enabled. {}", memoryMonitorInfo);
       }
     }
 
     if (!doMemCheck) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Not doing hash table memory monitoring. {}", memoryMonitorInfo);
-      }
+      LOG.info("Not doing hash table memory monitoring. {}", memoryMonitorInfo);
     }
     for (int pos = 0; pos < mapJoinTables.length; pos++) {
       if (pos == desc.getPosBigTable()) {
@@ -273,11 +269,10 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
               LOG.error(msg);
               throw new MapJoinMemoryExhaustionError(msg);
             } else {
-              if (LOG.isInfoEnabled()) {
-                LOG.info("Checking hash table loader memory usage for input: {} numEntries: {} " +
-                  "estimatedMemoryUsage: {} effectiveThreshold: {}", inputName, numEntries, estMemUsage,
-                  effectiveThreshold);
-              }
+              LOG.info(
+                  "Checking hash table loader memory usage for input: {} numEntries: {} "
+                      + "estimatedMemoryUsage: {} effectiveThreshold: {}",
+                  inputName, numEntries, estMemUsage, effectiveThreshold);
             }
           }
         }

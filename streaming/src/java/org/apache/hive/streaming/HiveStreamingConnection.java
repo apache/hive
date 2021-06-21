@@ -699,9 +699,7 @@ public class HiveStreamingConnection implements StreamingConnection {
         ShutdownHookManager.removeShutdownHook(this.onShutdownRunner);
       }
     }
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Closed streaming connection. Agent: {} Stats: {}", getAgentInfo(), getConnectionStats());
-    }
+    LOG.info("Closed streaming connection. Agent: {} Stats: {}", getAgentInfo(), getConnectionStats());
   }
 
   @Override

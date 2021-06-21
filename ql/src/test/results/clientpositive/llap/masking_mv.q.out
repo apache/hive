@@ -138,6 +138,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@masking_test_n_mv
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_view_n_mv
+POSTHOOK: Lineage: masking_test_view_n_mv.key SIMPLE [(masking_test_n_mv)masking_test_n_mv.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: describe formatted `masking_test_view_n_mv`
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@masking_test_view_n_mv
@@ -234,6 +235,8 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@masking_test_n_mv
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_view_n_mv_3
+POSTHOOK: Lineage: masking_test_view_n_mv_3._c1 EXPRESSION [(masking_test_n_mv)masking_test_n_mv.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: masking_test_view_n_mv_3.value SIMPLE [(masking_test_n_mv)masking_test_n_mv.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain
 select key from `masking_test_n_mv` group by key
 PREHOOK: type: QUERY
@@ -506,6 +509,8 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@masking_test_n_mv
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_view_n_mv_4
+POSTHOOK: Lineage: masking_test_view_n_mv_4.key SIMPLE [(masking_test_n_mv)masking_test_n_mv.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: masking_test_view_n_mv_4.value SIMPLE [(masking_test_n_mv)masking_test_n_mv.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain
 select value from `masking_test_n_mv` group by value
 PREHOOK: type: QUERY
@@ -831,6 +836,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@srctnx
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_view_n_mv_2
+POSTHOOK: Lineage: masking_test_view_n_mv_2.key SIMPLE [(srctnx)srctnx.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: describe formatted `masking_test_view_n_mv_2`
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@masking_test_view_n_mv_2

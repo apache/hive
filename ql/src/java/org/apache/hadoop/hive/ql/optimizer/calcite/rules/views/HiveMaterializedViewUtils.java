@@ -185,7 +185,7 @@ public class HiveMaterializedViewUtils {
     augmentMaterializationPlanner.setRoot(materialization.queryRel);
     final RelNode modifiedQueryRel = augmentMaterializationPlanner.findBestExp();
     return new HiveRelOptMaterialization(materialization.tableRel, modifiedQueryRel,
-        null, materialization.qualifiedTableName, materialization.getScope());
+        null, materialization.qualifiedTableName, materialization.getScope(), materialization.getRebuildMode());
   }
 
   /**
@@ -307,7 +307,7 @@ public class HiveMaterializedViewUtils {
       materializationList.add(
           new HiveRelOptMaterialization(newTableRel, newQueryRel, null,
               ImmutableList.of(scanTable.getDbName(), scanTable.getTableName(),
-                  "#" + materializationList.size()), materialization.getScope()));
+                  "#" + materializationList.size()), materialization.getScope(), materialization.getRebuildMode()));
     }
     return materializationList;
   }
@@ -325,20 +325,11 @@ public class HiveMaterializedViewUtils {
     return value;
   }
 
-  public static RelOptMaterialization copyMaterializationToNewCluster(
-      RelOptCluster optCluster, RelOptMaterialization materialization) {
-    final RelNode viewScan = materialization.tableRel;
-    final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(
-            optCluster, viewScan);
-    return new RelOptMaterialization(newViewScan, materialization.queryRel, null,
-            materialization.qualifiedTableName);
-  }
-
   /**
    * Method that will recreate the plan rooted at node using the cluster given
    * as a parameter.
    */
-  private static RelNode copyNodeNewCluster(RelOptCluster optCluster, RelNode node) {
+  public static RelNode copyNodeNewCluster(RelOptCluster optCluster, RelNode node) {
     if (node instanceof Filter) {
       final Filter f = (Filter) node;
       return new HiveFilter(optCluster, f.getTraitSet(),
@@ -404,5 +395,4 @@ public class HiveMaterializedViewUtils {
     }
     return newScan;
   }
-
 }

@@ -42,9 +42,10 @@ public class DBSerializer implements JsonWriter.Serializer {
         ReplicationSpec.KEY.CURR_STATE_ID.toString(),
         additionalPropertiesProvider.getCurrentReplicationState()
     );
-    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+
     try {
-      String value = serializer.toString(dbObject, UTF_8);
+      TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+      String value = serializer.toString(dbObject);
       writer.jsonGenerator.writeStringField(FIELD_NAME, value);
     } catch (TException e) {
       throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METASTORE.getMsg(), e);

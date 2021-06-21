@@ -21,7 +21,12 @@
 package org.apache.hive.hplsql.executor;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.apache.hive.hplsql.HplValidationException;
 
 public interface QueryExecutor {
   QueryResult executeQuery(String sql, ParserRuleContext ctx);
+
+  QueryExecutor DISABLED = (sql, ctx) -> {
+    throw new HplValidationException(ctx, "Query execution is disabled in this context. Can not execute: " + sql);
+  };
 }

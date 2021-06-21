@@ -104,6 +104,14 @@ public class TestMetaStoreEventListener {
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
 
+    HiveMetaStoreClient.setProcessorIdentifier("test@TestMetaStoreEventListener");
+    HiveMetaStoreClient.setProcessorCapabilities(new String[] {
+        "HIVEFULLACIDREAD",
+        "EXTWRITE",
+        "EXTREAD",
+        "HIVEBUCKET2"
+    });
+
     msc = new HiveMetaStoreClient(conf);
 
     msc.dropDatabase(dbName, true, true, true);
@@ -131,6 +139,8 @@ public class TestMetaStoreEventListener {
   }
 
   private void validateTableInAddPartition(Table expectedTable, Table actualTable) {
+    // AccessType is not set on the table object from the event. We want to compare everything else.
+    actualTable.setAccessType(expectedTable.getAccessType());
     assertEquals(expectedTable, actualTable);
   }
 
@@ -221,7 +231,7 @@ public class TestMetaStoreEventListener {
         .addCol("a", "string")
         .addPartCol("b", "string")
         .create(msc, conf);
-    PreCreateTableEvent preTblEvent = (PreCreateTableEvent)(preNotifyList.get(preNotifyList.size() - 1));
+    PreCreateTableEvent preTblEvent = (PreCreateTableEvent) (preNotifyList.get(preNotifyList.size() - 1));
     listSize++;
     Table tbl = msc.getTable(dbName, tblName);
     validateCreateTable(tbl, preTblEvent.getTable());
@@ -262,7 +272,7 @@ public class TestMetaStoreEventListener {
     hmsClient.add_partitions(Arrays.asList(partition1, partition2, partition3));
     ++listSize;
     AddPartitionEvent multiplePartitionEvent = (AddPartitionEvent)(notifyList.get(listSize-1));
-    assertEquals("Unexpected table value.", table, multiplePartitionEvent.getTable());
+    validateTableInAddPartition(table, multiplePartitionEvent.getTable());
     List<Partition> multiParts = Lists.newArrayList(multiplePartitionEvent.getPartitionIterator());
     assertEquals("Unexpected number of partitions in event!", 3, multiParts.size());
     assertEquals("Unexpected partition value.", partition1.getValues(), multiParts.get(0).getValues());

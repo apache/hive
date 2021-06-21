@@ -61,3 +61,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 8b44d559dc5d60e4453c9b4edf2a455fbce054bb8504cd3eb9b5f391bd239c90	8b44d559dc5d60e4453c9b4edf2a455fbce054bb8504cd3eb9b5f391bd239c90	30a88603135d3a6f7a66b4f9193da1ab4423aed45fb8fe736c2f2a08977f2bdd                                                                                                                                                                                               	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: select mask_hash('01-28-2021')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select mask_hash('01-28-2021')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+7b375ec2327810383a3c6cfb871b5e433feda829cb882b8880a38f17039a34d71900de20b17884e703e411c483c47bec54fd9e8ef06adf1269202776e5b3c607

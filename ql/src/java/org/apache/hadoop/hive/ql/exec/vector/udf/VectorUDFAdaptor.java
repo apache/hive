@@ -59,7 +59,7 @@ public class VectorUDFAdaptor extends VectorExpression {
       String resultType,
       VectorUDFArgDesc[] argDescs) throws HiveException {
 
-    super(outputColumnNum);
+    super(-1, outputColumnNum);
     this.expr = expr;
     this.resultType = resultType;
     this.argDescs = argDescs;

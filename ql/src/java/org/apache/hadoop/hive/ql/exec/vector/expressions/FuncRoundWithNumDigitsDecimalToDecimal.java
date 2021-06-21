@@ -32,20 +32,15 @@ import java.util.Arrays;
 public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private final int colNum;
   private int decimalPlaces;
 
   public FuncRoundWithNumDigitsDecimalToDecimal(int colNum, int scalarValue, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum = colNum;
+    super(colNum, outputColumnNum);
     this.decimalPlaces = scalarValue;
   }
 
   public FuncRoundWithNumDigitsDecimalToDecimal() {
     super();
-
-    // Dummy final assignments.
-    colNum = -1;
   }
 
   @Override
@@ -55,7 +50,7 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
       this.evaluateChildren(batch);
     }
 
-    DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[colNum];
+    DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[inputColumnNum[0]];
     DecimalColumnVector outputColVector = (DecimalColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
@@ -135,7 +130,7 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
   }
 
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum) + ", decimalPlaces " + decimalPlaces;
+    return getColumnParamString(0, inputColumnNum[0]) + ", decimalPlaces " + decimalPlaces;
   }
 
   @Override

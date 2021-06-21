@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.commons.lang3.StringUtils.normalizeSpace;
 import static org.apache.commons.lang3.StringUtils.repeat;
+import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.throwMetaOrRuntimeException;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -51,6 +53,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -139,6 +142,7 @@ class MetaStoreDirectSql {
   private final boolean isAggregateStatsCacheEnabled;
   private final ImmutableMap<String, String> fieldnameToTableName;
   private AggregateStatsCache aggrStatsCache;
+  private DirectSqlUpdateStat updateStat;
 
   /**
    * This method returns a comma separated string consisting of String values of a given list.
@@ -179,6 +183,7 @@ class MetaStoreDirectSql {
       batchSize = dbType.needsInBatching() ? 1000 : NO_BATCHING;
     }
     this.batchSize = batchSize;
+    this.updateStat = new DirectSqlUpdateStat(pm, conf, dbType, batchSize);
     ImmutableMap.Builder<String, String> fieldNameToTableNameBuilder =
         new ImmutableMap.Builder<>();
 
@@ -371,8 +376,9 @@ class MetaStoreDirectSql {
 
       String queryTextDbSelector= "select "
           + "\"DB_ID\", \"NAME\", \"DB_LOCATION_URI\", \"DESC\", "
-          + "\"OWNER_NAME\", \"OWNER_TYPE\", \"CTLG_NAME\" , \"CREATE_TIME\", \"DB_MANAGED_LOCATION_URI\""
-          + " FROM "+ DBS
+          + "\"OWNER_NAME\", \"OWNER_TYPE\", \"CTLG_NAME\" , \"CREATE_TIME\", \"DB_MANAGED_LOCATION_URI\", "
+          + "\"TYPE\", \"DATACONNECTOR_NAME\", \"REMOTE_DBNAME\""
+          + "FROM "+ DBS
           + " where \"NAME\" = ? and \"CTLG_NAME\" = ? ";
       Object[] params = new Object[] { dbName, catName };
       queryDbSelector = pm.newQuery("javax.jdo.query.SQL", queryTextDbSelector);
@@ -429,6 +435,14 @@ class MetaStoreDirectSql {
         db.setCreateTime(MetastoreDirectSqlUtils.extractSqlInt(dbline[7]));
       }
       db.setManagedLocationUri(MetastoreDirectSqlUtils.extractSqlString(dbline[8]));
+      String dbType = MetastoreDirectSqlUtils.extractSqlString(dbline[9]);
+      if (dbType != null && dbType.equalsIgnoreCase(DatabaseType.REMOTE.name())) {
+        db.setType(DatabaseType.REMOTE);
+        db.setConnector_name(MetastoreDirectSqlUtils.extractSqlString(dbline[10]));
+        db.setRemote_dbname(MetastoreDirectSqlUtils.extractSqlString(dbline[11]));
+      } else {
+        db.setType(DatabaseType.NATIVE);
+      }
       db.setParameters(MetaStoreServerUtils.trimMapNulls(dbParams,convertMapNullsToEmptyStrings));
       if (LOG.isDebugEnabled()){
         LOG.debug("getDatabase: directsql returning db " + db.getName()
@@ -1760,9 +1774,8 @@ class MetaStoreDirectSql {
     String queryText = null;
     long start = 0;
     long end = 0;
-    Query query = null;
+
     boolean doTrace = LOG.isDebugEnabled();
-    Object qResult = null;
     ForwardQueryResult<?> fqr = null;
     // Check if the status of all the columns of all the partitions exists
     // Extrapolation is not needed.
@@ -1772,23 +1785,29 @@ class MetaStoreDirectSql {
           + " and \"ENGINE\" = ? "
           + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
       start = doTrace ? System.nanoTime() : 0;
-      query = pm.newQuery("javax.jdo.query.SQL", queryText);
-      qResult = executeWithArray(query, prepareParams(catName, dbName, tableName, partNames, colNames, engine),
-          queryText);
-      if (qResult == null) {
-        query.closeAll();
+      try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
+        Object qResult = executeWithArray(query,
+            prepareParams(catName, dbName, tableName, partNames, colNames,
+                engine), queryText);
+        if (qResult == null) {
+          query.closeAll();
+          return Collections.emptyList();
+        }
+        end = doTrace ? System.nanoTime() : 0;
+        MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
+        List<Object[]> list = MetastoreDirectSqlUtils.ensureList(qResult);
+        List<ColumnStatisticsObj> colStats =
+            new ArrayList<ColumnStatisticsObj>(list.size());
+        for (Object[] row : list) {
+          colStats.add(prepareCSObjWithAdjustedNDV(row, 0,
+              useDensityFunctionForNDVEstimation, ndvTuner));
+          Deadline.checkTimeout();
+        }
+        return colStats;
+      } catch (Exception e) {
+        throwMetaOrRuntimeException(e);
         return Collections.emptyList();
       }
-      end = doTrace ? System.nanoTime() : 0;
-      MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
-      List<Object[]> list = MetastoreDirectSqlUtils.ensureList(qResult);
-      List<ColumnStatisticsObj> colStats = new ArrayList<ColumnStatisticsObj>(list.size());
-      for (Object[] row : list) {
-        colStats.add(prepareCSObjWithAdjustedNDV(row, 0, useDensityFunctionForNDVEstimation, ndvTuner));
-        Deadline.checkTimeout();
-      }
-      query.closeAll();
-      return colStats;
     } else {
       // Extrapolation is needed for some columns.
       // In this case, at least a column status for a partition is missing.
@@ -1802,35 +1821,40 @@ class MetaStoreDirectSql {
           + " and \"ENGINE\" = ? "
           + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
       start = doTrace ? System.nanoTime() : 0;
-      query = pm.newQuery("javax.jdo.query.SQL", queryText);
-      qResult = executeWithArray(query, prepareParams(catName, dbName, tableName, partNames, colNames, engine),
-          queryText);
-      end = doTrace ? System.nanoTime() : 0;
-      MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
-      if (qResult == null) {
-        query.closeAll();
-        return Collections.emptyList();
-      }
       List<String> noExtraColumnNames = new ArrayList<String>();
       Map<String, String[]> extraColumnNameTypeParts = new HashMap<String, String[]>();
-      List<Object[]> list = MetastoreDirectSqlUtils.ensureList(qResult);
-      for (Object[] row : list) {
-        String colName = (String) row[0];
-        String colType = (String) row[1];
-        // Extrapolation is not needed for this column if
-        // count(\"PARTITION_NAME\")==partNames.size()
-        // Or, extrapolation is not possible for this column if
-        // count(\"PARTITION_NAME\")<2
-        Long count = MetastoreDirectSqlUtils.extractSqlLong(row[2]);
-        if (count == partNames.size() || count < 2) {
-          noExtraColumnNames.add(colName);
-        } else {
-          extraColumnNameTypeParts.put(colName, new String[] { colType, String.valueOf(count) });
+      try(Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
+        Object qResult = executeWithArray(query,
+            prepareParams(catName, dbName, tableName, partNames, colNames,
+                engine), queryText);
+        end = doTrace ? System.nanoTime() : 0;
+        MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
+        if (qResult == null) {
+          query.closeAll();
+          return Collections.emptyList();
         }
-        Deadline.checkTimeout();
+
+        List<Object[]> list = MetastoreDirectSqlUtils.ensureList(qResult);
+        for (Object[] row : list) {
+          String colName = (String) row[0];
+          String colType = (String) row[1];
+          // Extrapolation is not needed for this column if
+          // count(\"PARTITION_NAME\")==partNames.size()
+          // Or, extrapolation is not possible for this column if
+          // count(\"PARTITION_NAME\")<2
+          Long count = MetastoreDirectSqlUtils.extractSqlLong(row[2]);
+          if (count == partNames.size() || count < 2) {
+            noExtraColumnNames.add(colName);
+          } else {
+            extraColumnNameTypeParts.put(colName, new String[] {colType, String.valueOf(count)});
+          }
+          Deadline.checkTimeout();
+        }
+      } catch (Exception e) {
+        throwMetaOrRuntimeException(e);
       }
-      query.closeAll();
       // Extrapolation is not needed for columns noExtraColumnNames
+      List<Object[]> list;
       if (noExtraColumnNames.size() != 0) {
         queryText = commonPrefix + " and \"COLUMN_NAME\" in ("
             + makeParams(noExtraColumnNames.size()) + ")" + " and \"PARTITION_NAME\" in ("
@@ -1838,21 +1862,25 @@ class MetaStoreDirectSql {
             + " and \"ENGINE\" = ? "
             + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
         start = doTrace ? System.nanoTime() : 0;
-        query = pm.newQuery("javax.jdo.query.SQL", queryText);
-        qResult = executeWithArray(query,
-            prepareParams(catName, dbName, tableName, partNames, noExtraColumnNames, engine), queryText);
-        if (qResult == null) {
-          query.closeAll();
-          return Collections.emptyList();
+
+        try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
+          Object qResult = executeWithArray(query,
+              prepareParams(catName, dbName, tableName, partNames, noExtraColumnNames, engine), queryText);
+          if (qResult == null) {
+            query.closeAll();
+            return Collections.emptyList();
+          }
+          list = MetastoreDirectSqlUtils.ensureList(qResult);
+          for (Object[] row : list) {
+            colStats.add(prepareCSObjWithAdjustedNDV(row, 0,
+                useDensityFunctionForNDVEstimation, ndvTuner));
+            Deadline.checkTimeout();
+          }
+          end = doTrace ? System.nanoTime() : 0;
+          MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
+        } catch (Exception e) {
+          throwMetaOrRuntimeException(e);
         }
-        list = MetastoreDirectSqlUtils.ensureList(qResult);
-        for (Object[] row : list) {
-          colStats.add(prepareCSObjWithAdjustedNDV(row, 0, useDensityFunctionForNDVEstimation, ndvTuner));
-          Deadline.checkTimeout();
-        }
-        end = doTrace ? System.nanoTime() : 0;
-        MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
-        query.closeAll();
       }
       // Extrapolation is needed for extraColumnNames.
       // give a sequence number for all the partitions
@@ -1870,30 +1898,33 @@ class MetaStoreDirectSql {
             + " and \"ENGINE\" = ? "
             + " group by \"COLUMN_NAME\"";
         start = doTrace ? System.nanoTime() : 0;
-        query = pm.newQuery("javax.jdo.query.SQL", queryText);
-        List<String> extraColumnNames = new ArrayList<String>();
-        extraColumnNames.addAll(extraColumnNameTypeParts.keySet());
-        qResult = executeWithArray(query,
-            prepareParams(catName, dbName, tableName, partNames, extraColumnNames, engine), queryText);
-        if (qResult == null) {
-          query.closeAll();
-          return Collections.emptyList();
-        }
-        list = MetastoreDirectSqlUtils.ensureList(qResult);
-        // see the indexes for colstats in IExtrapolatePartStatus
-        Integer[] sumIndex = new Integer[] { 6, 10, 11, 15 };
-        for (Object[] row : list) {
-          Map<Integer, Object> indexToObject = new HashMap<Integer, Object>();
-          for (int ind = 1; ind < row.length; ind++) {
-            indexToObject.put(sumIndex[ind - 1], row[ind]);
+        try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
+          List<String> extraColumnNames = new ArrayList<String>();
+          extraColumnNames.addAll(extraColumnNameTypeParts.keySet());
+          Object qResult = executeWithArray(query,
+              prepareParams(catName, dbName, tableName, partNames,
+                  extraColumnNames, engine), queryText);
+          if (qResult == null) {
+            query.closeAll();
+            return Collections.emptyList();
           }
-          // row[0] is the column name
-          sumMap.put((String) row[0], indexToObject);
-          Deadline.checkTimeout();
+          list = MetastoreDirectSqlUtils.ensureList(qResult);
+          // see the indexes for colstats in IExtrapolatePartStatus
+          Integer[] sumIndex = new Integer[] {6, 10, 11, 15};
+          for (Object[] row : list) {
+            Map<Integer, Object> indexToObject = new HashMap<Integer, Object>();
+            for (int ind = 1; ind < row.length; ind++) {
+              indexToObject.put(sumIndex[ind - 1], row[ind]);
+            }
+            // row[0] is the column name
+            sumMap.put((String) row[0], indexToObject);
+            Deadline.checkTimeout();
+          }
+          end = doTrace ? System.nanoTime() : 0;
+          MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
+        } catch (Exception e) {
+          throwMetaOrRuntimeException(e);
         }
-        end = doTrace ? System.nanoTime() : 0;
-        MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
-        query.closeAll();
         for (Map.Entry<String, String[]> entry : extraColumnNameTypeParts.entrySet()) {
           Object[] row = new Object[IExtrapolatePartStatus.colStatNames.length + 2];
           String colName = entry.getKey();
@@ -1951,24 +1982,27 @@ class MetaStoreDirectSql {
                     + " order by cast(\"" + colStatName + "\" as decimal)";
               }
               start = doTrace ? System.nanoTime() : 0;
-              query = pm.newQuery("javax.jdo.query.SQL", queryText);
-              qResult = executeWithArray(query,
-                  prepareParams(catName, dbName, tableName, partNames, Arrays.asList(colName), engine), queryText);
-              if (qResult == null) {
+              try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
+                Object qResult = executeWithArray(query,
+                    prepareParams(catName, dbName, tableName, partNames, Arrays.asList(colName), engine), queryText);
+                if (qResult == null) {
+                  query.closeAll();
+                  return Collections.emptyList();
+                }
+                fqr = (ForwardQueryResult<?>) qResult;
+                Object[] min = (Object[]) (fqr.get(0));
+                Object[] max = (Object[]) (fqr.get(fqr.size() - 1));
+                end = doTrace ? System.nanoTime() : 0;
+                MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
                 query.closeAll();
-                return Collections.emptyList();
-              }
-              fqr = (ForwardQueryResult<?>) qResult;
-              Object[] min = (Object[]) (fqr.get(0));
-              Object[] max = (Object[]) (fqr.get(fqr.size() - 1));
-              end = doTrace ? System.nanoTime() : 0;
-              MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
-              query.closeAll();
-              if (min[0] == null || max[0] == null) {
-                row[2 + colStatIndex] = null;
-              } else {
-                row[2 + colStatIndex] = extrapolateMethod.extrapolate(min, max, colStatIndex,
-                    indexMap);
+                if (min[0] == null || max[0] == null) {
+                  row[2 + colStatIndex] = null;
+                } else {
+                  row[2 + colStatIndex] = extrapolateMethod
+                      .extrapolate(min, max, colStatIndex, indexMap);
+                }
+              } catch (Exception e) {
+                throwMetaOrRuntimeException(e);
               }
             } else {
               // if the aggregation type is avg, we use the average on the existing ones.
@@ -1982,21 +2016,24 @@ class MetaStoreDirectSql {
                   + " and \"ENGINE\" = ? "
                   + " group by \"COLUMN_NAME\"";
               start = doTrace ? System.nanoTime() : 0;
-              query = pm.newQuery("javax.jdo.query.SQL", queryText);
-              qResult = executeWithArray(query,
-                  prepareParams(catName, dbName, tableName, partNames, Arrays.asList(colName), engine), queryText);
-              if (qResult == null) {
+              try(Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
+                Object qResult = executeWithArray(query,
+                    prepareParams(catName, dbName, tableName, partNames, Arrays.asList(colName), engine), queryText);
+                if (qResult == null) {
+                  query.closeAll();
+                  return Collections.emptyList();
+                }
+                fqr = (ForwardQueryResult<?>) qResult;
+                Object[] avg = (Object[]) (fqr.get(0));
+                // colStatIndex=12,13,14 respond to "AVG_LONG", "AVG_DOUBLE",
+                // "AVG_DECIMAL"
+                row[2 + colStatIndex] = avg[colStatIndex - 12];
+                end = doTrace ? System.nanoTime() : 0;
+                MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
                 query.closeAll();
-                return Collections.emptyList();
+              } catch (Exception e) {
+                throwMetaOrRuntimeException(e);
               }
-              fqr = (ForwardQueryResult<?>) qResult;
-              Object[] avg = (Object[]) (fqr.get(0));
-              // colStatIndex=12,13,14 respond to "AVG_LONG", "AVG_DOUBLE",
-              // "AVG_DECIMAL"
-              row[2 + colStatIndex] = avg[colStatIndex - 12];
-              end = doTrace ? System.nanoTime() : 0;
-              MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
-              query.closeAll();
             }
           }
           colStats.add(prepareCSObjWithAdjustedNDV(row, 0, useDensityFunctionForNDVEstimation, ndvTuner));
@@ -2094,22 +2131,26 @@ class MetaStoreDirectSql {
         Math.min(list.size(), partNames.size()));
     String lastPartName = null;
     int from = 0;
-    for (int i = 0; i <= list.size(); ++i) {
-      boolean isLast = i == list.size();
-      String partName = isLast ? null : (String)list.get(i)[0];
-      if (!isLast && partName.equals(lastPartName)) {
-        continue;
-      } else if (from != i) {
-        ColumnStatisticsDesc csd = new ColumnStatisticsDesc(false, dbName, tableName);
-        csd.setCatName(catName);
-        csd.setPartName(lastPartName);
-        result.add(makeColumnStats(list.subList(from, i), csd, 1, engine));
+    try {
+      for (int i = 0; i <= list.size(); ++i) {
+        boolean isLast = i == list.size();
+        String partName = isLast ? null : (String) list.get(i)[0];
+        if (!isLast && partName.equals(lastPartName)) {
+          continue;
+        } else if (from != i) {
+          ColumnStatisticsDesc csd =
+              new ColumnStatisticsDesc(false, dbName, tableName);
+          csd.setCatName(catName);
+          csd.setPartName(lastPartName);
+          result.add(makeColumnStats(list.subList(from, i), csd, 1, engine));
+        }
+        lastPartName = partName;
+        from = i;
+        Deadline.checkTimeout();
       }
-      lastPartName = partName;
-      from = i;
-      Deadline.checkTimeout();
+    } finally {
+      b.closeAllQueries();
     }
-    b.closeAllQueries();
     return result;
   }
 
@@ -2980,5 +3021,20 @@ class MetaStoreDirectSql {
     } catch (SQLException e) {
       throw new MetaException("Error removing column stat states:" + e.getMessage());
     }
+  }
+
+  public Map<String, Map<String, String>> updatePartitionColumnStatisticsBatch(
+                                                      Map<String, ColumnStatistics> partColStatsMap,
+                                                      Table tbl,
+                                                      List<TransactionalMetaStoreEventListener> listeners,
+                                                      String validWriteIds, long writeId)
+          throws MetaException {
+    long numStats = 0;
+    for (Map.Entry entry : partColStatsMap.entrySet()) {
+      ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
+      numStats += colStats.getStatsObjSize();
+    }
+    long csId = updateStat.getNextCSIdForMPartitionColumnStatistics(numStats);
+    return updateStat.updatePartitionColumnStatistics(partColStatsMap, tbl, csId, validWriteIds, writeId, listeners);
   }
 }

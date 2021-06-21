@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.ddl.table.partition.drop;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.common.TableName;
@@ -63,7 +64,7 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
     if (replicationSpec.isInReplicationScope()) {
       dropPartitionForReplication(table, replicationSpec);
     } else {
-      dropPartitions();
+      dropPartitions(false);
     }
 
     return 0;
@@ -76,26 +77,35 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
      * So, we check each partition that matches our DropTableDesc.getPartSpecs(), and drop it only
      * if it's older than the event that spawned this replicated request to drop partition
      */
-    // TODO: Current implementation of replication will result in DROP_PARTITION under replication
-    // scope being called per-partition instead of multiple partitions. However, to be robust, we
-    // must still handle the case of multiple partitions in case this assumption changes in the
-    // future. However, if this assumption changes, we will not be very performant if we fetch
-    // each partition one-by-one, and then decide on inspection whether or not this is a candidate
-    // for dropping. Thus, we need a way to push this filter (replicationSpec.allowEventReplacementInto)
-    // to the  metastore to allow it to do drop a partition or not, depending on a Predicate on the
-    // parameter key values.
-
     if (table == null) {
       // If table is missing, then partitions are also would've been dropped. Just no-op.
       return;
     }
 
+    Map<String, String> dbParams = context.getDb().getDatabase(table.getDbName()).getParameters();
     for (AlterTableDropPartitionDesc.PartitionDesc partSpec : desc.getPartSpecs()) {
       List<Partition> partitions = new ArrayList<>();
       try {
         context.getDb().getPartitionsByExpr(table, partSpec.getPartSpec(), context.getConf(), partitions);
-        for (Partition p : Iterables.filter(partitions, replicationSpec.allowEventReplacementInto())) {
-          context.getDb().dropPartition(table.getDbName(), table.getTableName(), p.getValues(), true);
+        // Check if that is a comeback from a checkpoint, if not call normal drop partition.
+        boolean modifySinglePartition = false;
+        for (Partition p : partitions) {
+          if (p != null && !replicationSpec.allowEventReplacementInto(dbParams)) {
+            modifySinglePartition = true;
+            break;
+          }
+        }
+        // If there is no partition which has an older state. we are in normal flow, we can go ahead with calling the
+        // regular drop partition with all the partitions specified in one go.
+        if (!modifySinglePartition) {
+          LOG.info("Replication calling normal drop partitions for regular partition drops {}", partitions);
+          dropPartitions(true);
+        } else {
+          for (Partition p : partitions) {
+            if (replicationSpec.allowEventReplacementInto(dbParams)) {
+              context.getDb().dropPartition(table.getDbName(), table.getTableName(), p.getValues(), true);
+            }
+          }
         }
       } catch (NoSuchObjectException e) {
         // ignore NSOE because that means there's nothing to drop.
@@ -105,7 +115,7 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
     }
   }
 
-  private void dropPartitions() throws HiveException {
+  private void dropPartitions(boolean isRepl) throws HiveException {
     // ifExists is currently verified in AlterTableDropPartitionAnalyzer
     TableName tablenName = HiveTableName.of(desc.getTableName());
 
@@ -119,6 +129,12 @@ public class AlterTableDropPartitionOperation extends DDLOperation<AlterTableDro
         PartitionDropOptions.instance().deleteData(true).ifExists(true).purgeData(desc.getIfPurge());
     List<Partition> droppedPartitions = context.getDb().dropPartitions(tablenName.getDb(), tablenName.getTable(),
         partitionExpressions, options);
+
+    if (isRepl) {
+      LOG.info("Dropped {} partitions for replication.", droppedPartitions.size());
+      // If replaying an event, we need not to bother about the further steps, we can return from here itself.
+      return;
+    }
 
     ProactiveEviction.Request.Builder llapEvictRequestBuilder = LlapHiveUtils.isLlapMode(context.getConf()) ?
         ProactiveEviction.Request.Builder.create() : null;

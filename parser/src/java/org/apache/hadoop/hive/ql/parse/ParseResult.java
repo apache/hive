@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.List;
 import org.antlr.runtime.TokenRewriteStream;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Contains result of {@link ParseDriver#parse(String)}.
@@ -25,10 +27,13 @@ import org.antlr.runtime.TokenRewriteStream;
 public class ParseResult {
   private final ASTNode tree;
   private final TokenRewriteStream tokenRewriteStream;
+  private final List<Pair<String, String>> tables;
 
-  public ParseResult(ASTNode tree, TokenRewriteStream tokenRewriteStream) {
+  public ParseResult(ASTNode tree, TokenRewriteStream tokenRewriteStream,
+      List<Pair<String, String>> tables) {
     this.tree = tree;
     this.tokenRewriteStream = tokenRewriteStream;
+    this.tables = tables;
   }
 
   public ASTNode getTree() {
@@ -37,5 +42,9 @@ public class ParseResult {
 
   public TokenRewriteStream getTokenRewriteStream() {
     return tokenRewriteStream;
+  }
+
+  public List<Pair<String, String>> getTables() {
+    return tables;
   }
 }

@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.ql.parse.type;
 
-import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.QBSubQueryParseInfo;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.UnparseTranslator;
 import org.slf4j.Logger;
@@ -55,7 +55,7 @@ public class TypeCheckCtx implements NodeProcessorCtx {
   /**
    * Map from astnode of a subquery to it's logical plan.
    */
-  private Map<ASTNode, RelNode> subqueryToRelNode;
+  private Map<ASTNode, QBSubQueryParseInfo> subqueryToRelNode;
 
   private final boolean useCaching;
 
@@ -186,14 +186,14 @@ public class TypeCheckCtx implements NodeProcessorCtx {
    * @param subqueryToRelNode
    *          the subqueryToRelNode to set
    */
-  public void setSubqueryToRelNode(Map<ASTNode, RelNode> subqueryToRelNode) {
+  public void setSubqueryToRelNode(Map<ASTNode, QBSubQueryParseInfo> subqueryToRelNode) {
     this.subqueryToRelNode = subqueryToRelNode;
   }
 
   /**
    * @return the outerRR
    */
-  public Map<ASTNode, RelNode> getSubqueryToRelNode() {
+  public Map<ASTNode, QBSubQueryParseInfo> getSubqueryToRelNode() {
     return subqueryToRelNode;
   }
 

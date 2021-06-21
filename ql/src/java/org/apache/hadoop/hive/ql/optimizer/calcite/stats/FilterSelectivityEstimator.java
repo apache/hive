@@ -39,11 +39,18 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
+
+  protected static final Logger LOG = LoggerFactory.getLogger(FilterSelectivityEstimator.class);
+
   private final RelNode childRel;
   private final double  childCardinality;
   private final RelMetadataQuery mq;
@@ -110,7 +117,17 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         if (totalNoOfTuples >= noOfNulls) {
           selectivity = (totalNoOfTuples - noOfNulls) / Math.max(totalNoOfTuples, 1);
         } else {
-          throw new RuntimeException("Invalid Stats number of null > no of tuples");
+          // If we are running explain, we will print the warning in the console
+          // and the log files. Otherwise, we just print it in the log files.
+          HiveConfPlannerContext ctx = childRel.getCluster().getPlanner().getContext().unwrap(HiveConfPlannerContext.class);
+          String msg = "Invalid statistics: Number of null values > number of tuples. " +
+              "Consider recomputing statistics for table: " +
+              ((RelOptHiveTable) childRel.getTable()).getHiveTableMD().getFullyQualifiedName();
+          if (ctx.isExplainPlan()) {
+            SessionState.getConsole().printError("WARNING: " + msg);
+          }
+          LOG.warn(msg);
+          selectivity = ((double) 1 / (double) 3);
         }
       } else {
         selectivity = computeNotEqualitySelectivity(call);

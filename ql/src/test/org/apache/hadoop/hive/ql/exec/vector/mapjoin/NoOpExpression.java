@@ -32,7 +32,7 @@ public class NoOpExpression extends VectorExpression {
   }
 
   public NoOpExpression(int colNum) {
-    super(colNum);
+    super(-1, colNum);
   }
 
   @Override

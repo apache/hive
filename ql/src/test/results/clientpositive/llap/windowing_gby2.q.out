@@ -62,13 +62,13 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col1 (type: bigint)
                   outputColumnNames: _col1
-                  Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: 0 (type: int), _col1 (type: bigint)
                     null sort order: az
                     sort order: ++
                     Map-reduce partition columns: 0 (type: int)
-                    Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -595,13 +595,13 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col1 (type: bigint), _col2 (type: bigint)
                   outputColumnNames: _col1, _col2
-                  Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: 0 (type: int), (UDFToDouble(_col1) / UDFToDouble(_col2)) (type: double)
                     null sort order: az
                     sort order: ++
                     Map-reduce partition columns: 0 (type: int)
-                    Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint), _col2 (type: bigint)
         Reducer 4 
             Execution mode: vectorized, llap

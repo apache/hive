@@ -249,7 +249,7 @@ public class QueryPlan implements Serializable {
    * @return The dynamic partition specifications from the FileSinkOperator with the given writeId, moveTaskId, operation and path.
    * null if there are multiple FileSinkOperators with the same value of these parameters.
    */
-  public Set<String> getDynamicPartitionSpecs(long writeId, String moveTaskId, AcidUtils.Operation acidOperation, Path path) {
+  public Map<String, List<Path>> getDynamicPartitionSpecs(long writeId, String moveTaskId, AcidUtils.Operation acidOperation, Path path) {
     FileSinkDesc result = null;
     for (FileSinkDesc acidSink : acidSinks) {
       if (acidOperation.equals(acidSink.getAcidOperation()) && path.equals(acidSink.getDestPath())
@@ -746,32 +746,31 @@ public class QueryPlan implements Serializable {
 
   public String toThriftJSONString() throws IOException {
     org.apache.hadoop.hive.ql.plan.api.Query q = getQueryPlan();
-    TMemoryBuffer tmb = new TMemoryBuffer(q.toString().length() * 5);
-    TJSONProtocol oprot = new TJSONProtocol(tmb);
     try {
+      TMemoryBuffer tmb = new TMemoryBuffer(q.toString().length() * 5);
+      TJSONProtocol oprot = new TJSONProtocol(tmb);
       q.write(oprot);
+      return tmb.toString(StandardCharsets.UTF_8);
     } catch (TException e) {
       LOG.warn("Unable to produce query plan Thrift string", e);
       return q.toString();
     }
-    return tmb.toString(StandardCharsets.UTF_8);
+
   }
 
   public String toBinaryString() throws IOException {
     org.apache.hadoop.hive.ql.plan.api.Query q = getQueryPlan();
-    TMemoryBuffer tmb = new TMemoryBuffer(q.toString().length() * 5);
-    TBinaryProtocol oprot = new TBinaryProtocol(tmb);
     try {
+      TMemoryBuffer tmb = new TMemoryBuffer(q.toString().length() * 5);
+      TBinaryProtocol oprot = new TBinaryProtocol(tmb);
       q.write(oprot);
+      byte[] buf = new byte[tmb.length()];
+      tmb.read(buf, 0, tmb.length());
+      return new String(buf);
     } catch (TException e) {
       LOG.warn("Unable to produce query plan binary string", e);
       return q.toString();
     }
-    byte[] buf = new byte[tmb.length()];
-    tmb.read(buf, 0, tmb.length());
-    return new String(buf);
-    // return getQueryPlan().toString();
-
   }
 
   public void setStarted() {

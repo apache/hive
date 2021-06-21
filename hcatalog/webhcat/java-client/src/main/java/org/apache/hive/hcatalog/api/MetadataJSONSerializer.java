@@ -49,7 +49,7 @@ class MetadataJSONSerializer extends MetadataSerializer {
   public String serializeTable(HCatTable hcatTable) throws HCatException {
     try {
       return new TSerializer(new TJSONProtocol.Factory())
-          .toString(hcatTable.toHiveTable(), "UTF-8");
+          .toString(hcatTable.toHiveTable());
     }
     catch (TException exception) {
       throw new HCatException("Could not serialize HCatTable: " + hcatTable, exception);
@@ -74,7 +74,7 @@ class MetadataJSONSerializer extends MetadataSerializer {
   public String serializePartition(HCatPartition hcatPartition) throws HCatException {
     try {
       return new TSerializer(new TJSONProtocol.Factory())
-          .toString(hcatPartition.toHivePartition(), "UTF-8");
+          .toString(hcatPartition.toHivePartition());
     }
     catch (TException exception) {
       throw new HCatException("Could not serialize HCatPartition: " + hcatPartition, exception);
@@ -103,7 +103,7 @@ class MetadataJSONSerializer extends MetadataSerializer {
       List<String> stringReps = new ArrayList<String>();
       TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
       for (PartitionSpec partitionSpec : hcatPartitionSpec.partitionSpecProxy.toPartitionSpec()) {
-        stringReps.add(serializer.toString(partitionSpec, "UTF-8"));
+        stringReps.add(serializer.toString(partitionSpec));
       }
       return stringReps;
     }

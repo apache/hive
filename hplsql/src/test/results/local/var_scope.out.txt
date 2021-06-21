@@ -2,25 +2,23 @@ Ln:1 INCLUDE src/test/queries/local/var_scope_include.sql
 INCLUDE CONTENT src/test/queries/local/var_scope_include.sql (non-empty)
 Ln:3 DECLARE i int = 3
 Ln:5 CREATE PROCEDURE P1
-Ln:13 CREATE PROCEDURE P2
+Ln:12 CREATE PROCEDURE P2
 EXEC PROCEDURE P2
-Ln:15 DECLARE j int = 5
-Ln:16 PRINT
+Ln:14 DECLARE j int = 5
+Ln:15 PRINT
 i: 3
-Ln:17 PRINT
+Ln:16 PRINT
 j: 5
-Ln:18 PRINT
+Ln:17 PRINT
 k: 7
 EXEC PROCEDURE P1
 Ln:7 PRINT
 i: 3
 Ln:8 PRINT
-j: 
-Ln:9 PRINT
 k: 7
-Ln:23 PRINT
+Ln:22 PRINT
 i: 3
-Ln:24 PRINT
-j: 
-Ln:25 PRINT
+Ln:23 PRINT
 k: 7
+Ln:24 PRINT
+Ln:24 identifier 'J' must be declared.

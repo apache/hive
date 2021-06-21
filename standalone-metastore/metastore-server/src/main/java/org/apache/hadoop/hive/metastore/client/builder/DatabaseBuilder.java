@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -42,6 +43,8 @@ public class DatabaseBuilder {
   private String ownerName;
   private PrincipalType ownerType;
   private int createTime;
+  private DatabaseType type;
+  private String connectorName, remoteDBName;
 
   public DatabaseBuilder() {
   }
@@ -101,6 +104,22 @@ public class DatabaseBuilder {
     return this;
   }
 
+  public DatabaseBuilder setType(DatabaseType type) {
+    if (type != null)
+      this.type = type;
+    return this;
+  }
+
+  public DatabaseBuilder setConnectorName(String connectorName) {
+    this.connectorName = connectorName;
+    return this;
+  }
+
+  public DatabaseBuilder setRemoteDBName(String remoteDBName) {
+    this.remoteDBName = remoteDBName;
+    return this;
+  }
+
   public Database build(Configuration conf) throws MetaException {
     if (name == null) throw new MetaException("You must name the database");
     if (catalogName == null) catalogName = MetaStoreUtils.getDefaultCatalog(conf);
@@ -114,6 +133,20 @@ public class DatabaseBuilder {
       db.setOwnerName(ownerName);
       if (ownerType == null) ownerType = PrincipalType.USER;
       db.setOwnerType(ownerType);
+      if (type == null) {
+        type = DatabaseType.NATIVE;
+        if (connectorName != null || remoteDBName != null) {
+          throw new MetaException("connector name or remoteDBName cannot be set for database of type NATIVE");
+        }
+      } else if (type == DatabaseType.REMOTE) {
+        if (connectorName == null)
+          throw new MetaException("connector name cannot be null for database of type REMOTE");
+        db.setConnector_name(connectorName);
+        if (remoteDBName != null) {
+          db.setRemote_dbname(remoteDBName);
+        }
+      }
+      db.setType(type);
       return db;
     } catch (IOException e) {
       throw MetaStoreUtils.newMetaException(e);

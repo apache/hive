@@ -53,6 +53,7 @@ public enum VirtualColumn {
    * {@link org.apache.hadoop.hive.ql.io.RecordIdentifier} 
    */
   ROWID("ROW__ID", RecordIdentifier.StructInfo.typeInfo, true, RecordIdentifier.StructInfo.oi),
+  ROWISDELETED("ROW__IS__DELETED", TypeInfoFactory.booleanTypeInfo),
 
   /**
    * GROUPINGID is used with GROUP BY GROUPINGS SETS, ROLLUP and CUBE.
@@ -109,6 +110,7 @@ public enum VirtualColumn {
       l.add(ROWOFFSET);
     }
     l.add(ROWID);
+    l.add(ROWISDELETED);
 
     return l;
   }

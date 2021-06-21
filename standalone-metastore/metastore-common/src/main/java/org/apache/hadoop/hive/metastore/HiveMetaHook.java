@@ -23,7 +23,7 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
-
+import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
@@ -47,6 +47,12 @@ public interface HiveMetaHook {
   // These should remain in sync with AlterTableType enum
   public List<String> allowedAlterTypes = ImmutableList.of("ADDPROPS", "DROPPROPS");
   String ALTERLOCATION = "ALTERLOCATION";
+  String ALLOW_PARTITION_KEY_CHANGE = "allow_partition_key_change";
+  String SET_PROPERTIES = "set_properties";
+  String UNSET_PROPERTIES = "unset_properties";
+  String PROPERTIES_SEPARATOR = "'";
+  String MIGRATE_HIVE_TO_ICEBERG = "migrate_hive_to_iceberg";
+  String INITIALIZE_ROLLBACK_MIGRATION = "initialize_rollback_migration";
 
   /**
    * Called before a new table definition is added to the metastore
@@ -85,6 +91,18 @@ public interface HiveMetaHook {
     throws MetaException;
 
   /**
+   * Called before a table definition is removed from the metastore
+   * during DROP TABLE
+   *
+   * @param table table definition
+   * @param deleteData whether to delete data as well; this should typically
+   * be ignored in the case of an external table
+   */
+  default void preDropTable(Table table, boolean deleteData) throws MetaException {
+    preDropTable(table);
+  }
+
+  /**
    * Called after failure removing a table definition from the metastore
    * during DROP TABLE.
    *
@@ -120,6 +138,26 @@ public interface HiveMetaHook {
       throw new MetaException(
           "ALTER TABLE can not be used for " + alterOpType + " to a non-native table ");
     }
+  }
+
+  /**
+   * Called after a table is altered in the metastore during ALTER TABLE.
+   * @param table new table definition
+   * @param context environment context, containing information about the alter operation type
+   * @param partitionSpecProxy list of partitions wrapped in {@link PartitionSpecProxy}
+   */
+  default void commitAlterTable(Table table, EnvironmentContext context, PartitionSpecProxy partitionSpecProxy) throws MetaException {
+    // Do nothing
+  }
+
+  /**
+   * Called after failure altering a table definition from the metastore
+   * during ALTER TABLE
+   * @param table new table definition
+   * @param context context of the alter operation
+   */
+  default void rollbackAlterTable(Table table, EnvironmentContext context) throws MetaException {
+    // Do nothing
   }
 
 }

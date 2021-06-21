@@ -19,7 +19,9 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.Set;
 
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -66,7 +68,10 @@ public class UpdateInputAccessTimeHook {
           String tblName = re.getTable().getTableName();
           Table t = db.getTable(dbName, tblName);
           t.setLastAccessTime(lastAccessTime);
-          db.alterTable(dbName + "." + tblName, t, false, null, false);
+          EnvironmentContext ec = new EnvironmentContext();
+          /*we are not modifying any data so stats should be exactly the same*/
+          ec.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+          db.alterTable(dbName + "." + tblName, t, false, ec, false);
           break;
         }
         case PARTITION: {
@@ -78,7 +83,10 @@ public class UpdateInputAccessTimeHook {
           p.setLastAccessTime(lastAccessTime);
           db.alterPartition(null, dbName, tblName, p, null, false);
           t.setLastAccessTime(lastAccessTime);
-          db.alterTable(dbName + "." + tblName, t, false, null, false);
+          EnvironmentContext ec = new EnvironmentContext();
+          /*we are not modifying any data so stats should be exactly the same*/
+          ec.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+          db.alterTable(dbName + "." + tblName, t, false, ec, false);
           break;
         }
         default:

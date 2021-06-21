@@ -99,6 +99,7 @@ public abstract class NonCatCallsWithCatalog {
   public void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setBoolVar(this.conf, ConfVars.HIVE_IN_TEST, true);
+    MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS, " ");
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
     // Get new client
@@ -234,11 +235,15 @@ public abstract class NonCatCallsWithCatalog {
     Assert.assertEquals(expectedCatalog(), fetched.getCatalogName());
 
     Set<String> fetchedDbs = new HashSet<>(client.getAllDatabases());
-    for (String dbName : dbNames) Assert.assertTrue(fetchedDbs.contains(dbName));
+    for (String dbName : dbNames) {
+      Assert.assertTrue(fetchedDbs.contains(dbName));
+    }
 
     fetchedDbs = new HashSet<>(client.getDatabases("db*"));
     Assert.assertEquals(2, fetchedDbs.size());
-    for (String dbName : dbNames) Assert.assertTrue(fetchedDbs.contains(dbName));
+    for (String dbName : dbNames) {
+      Assert.assertTrue(fetchedDbs.contains(dbName));
+    }
 
     client.dropDatabase(dbNames[0], true, false, false);
     dir = new File(db0Location);
@@ -249,7 +254,9 @@ public abstract class NonCatCallsWithCatalog {
     Assert.assertFalse(dir.exists());
 
     fetchedDbs = new HashSet<>(client.getAllDatabases());
-    for (String dbName : dbNames) Assert.assertFalse(fetchedDbs.contains(dbName));
+    for (String dbName : dbNames) {
+      Assert.assertFalse(fetchedDbs.contains(dbName));
+    }
   }
 
   @Test
@@ -271,9 +278,13 @@ public abstract class NonCatCallsWithCatalog {
           .addCol("col1_" + i, ColumnType.STRING_TYPE_NAME)
           .addCol("col2_" + i, ColumnType.INT_TYPE_NAME);
       // Make one have a non-standard location
-      if (i == 0) builder.setLocation(MetaStoreTestUtils.getTestWarehouseDir(tableNames[i]));
+      if (i == 0) {
+        builder.setLocation(MetaStoreTestUtils.getTestWarehouseDir(tableNames[i]));
+      }
       // Make one partitioned
-      if (i == 2) builder.addPartCol("pcol1", ColumnType.STRING_TYPE_NAME);
+      if (i == 2) {
+        builder.addPartCol("pcol1", ColumnType.STRING_TYPE_NAME);
+      }
       // Make one a materialized view
       /*
       // TODO HIVE-18991
@@ -328,10 +339,14 @@ public abstract class NonCatCallsWithCatalog {
     // test getAllTables
     Set<String> fetchedNames = new HashSet<>(client.getAllTables(dbName));
     Assert.assertEquals(tableNames.length, fetchedNames.size());
-    for (String tableName : tableNames) Assert.assertTrue(fetchedNames.contains(tableName));
+    for (String tableName : tableNames) {
+      Assert.assertTrue(fetchedNames.contains(tableName));
+    }
 
     fetchedNames = new HashSet<>(client.getAllTables(DEFAULT_DATABASE_NAME));
-    for (String tableName : tableNames) Assert.assertFalse(fetchedNames.contains(tableName));
+    for (String tableName : tableNames) {
+      Assert.assertFalse(fetchedNames.contains(tableName));
+    }
 
     // test getMaterializedViewsForRewriting
     /* TODO HIVE-18991
@@ -378,7 +393,9 @@ public abstract class NonCatCallsWithCatalog {
     */
 
     List<String> partNames = new ArrayList<>();
-    for (String partVal : partVals) partNames.add("pcol1=" + partVal);
+    for (String partVal : partVals) {
+      partNames.add("pcol1=" + partVal);
+    }
     // Truncate a table
     client.truncateTable(dbName, tableNames[0], partNames);
 
@@ -424,7 +441,9 @@ public abstract class NonCatCallsWithCatalog {
 
     Set<String> tables = new HashSet<>(client.getTables(dbName, "*e_in_other_*"));
     Assert.assertEquals(4, tables.size());
-    for (String tableName : tableNames) Assert.assertTrue(tables.contains(tableName));
+    for (String tableName : tableNames) {
+      Assert.assertTrue(tables.contains(tableName));
+    }
 
     List<String> fetchedNames = client.getTables(dbName, "*_3");
     Assert.assertEquals(1, fetchedNames.size());
@@ -452,7 +471,9 @@ public abstract class NonCatCallsWithCatalog {
           .setTableName(tableNames[i])
           .addCol("col1_" + i, ColumnType.STRING_TYPE_NAME)
           .addCol("col2_" + i, ColumnType.INT_TYPE_NAME);
-      if (i == 0) builder.addTableParam("the_key", "the_value");
+      if (i == 0) {
+        builder.addTableParam("the_key", "the_value");
+      }
       Table table = builder.build(conf);
       table.unsetCatName();
       client.createTable(table);
@@ -586,7 +607,9 @@ public abstract class NonCatCallsWithCatalog {
         Arrays.asList("partcol=a0", "partcol=a1"));
     Assert.assertEquals(2, fetchedParts.size());
     Set<String> vals = new HashSet<>(fetchedParts.size());
-    for (Partition part : fetchedParts) vals.add(part.getValues().get(0));
+    for (Partition part : fetchedParts) {
+      vals.add(part.getValues().get(0));
+    }
     Assert.assertTrue(vals.contains("a0"));
     Assert.assertTrue(vals.contains("a1"));
 
@@ -961,47 +984,61 @@ public abstract class NonCatCallsWithCatalog {
         .onTable(parentTable)
         .addColumn("test_col1")
         .build(conf);
-    for (SQLPrimaryKey pkcol : parentPk) pkcol.unsetCatName();
+    for (SQLPrimaryKey pkcol : parentPk) {
+      pkcol.unsetCatName();
+    }
     client.addPrimaryKey(parentPk);
 
     List<SQLPrimaryKey> pk = new SQLPrimaryKeyBuilder()
         .onTable(table)
         .addColumn("col2")
         .build(conf);
-    for (SQLPrimaryKey pkcol : pk) pkcol.unsetCatName();
+    for (SQLPrimaryKey pkcol : pk) {
+      pkcol.unsetCatName();
+    }
 
     List<SQLForeignKey> fk = new SQLForeignKeyBuilder()
         .fromPrimaryKey(parentPk)
         .onTable(table)
         .addColumn("col1")
         .build(conf);
-    for (SQLForeignKey fkcol : fk) fkcol.unsetCatName();
+    for (SQLForeignKey fkcol : fk) {
+      fkcol.unsetCatName();
+    }
 
     List<SQLDefaultConstraint> dv = new SQLDefaultConstraintBuilder()
         .onTable(table)
         .addColumn("col3")
         .setDefaultVal(0)
         .build(conf);
-    for (SQLDefaultConstraint dccol : dv) dccol.unsetCatName();
+    for (SQLDefaultConstraint dccol : dv) {
+      dccol.unsetCatName();
+    }
 
     List<SQLNotNullConstraint> nn = new SQLNotNullConstraintBuilder()
         .onTable(table)
         .addColumn("col4")
         .build(conf);
-    for (SQLNotNullConstraint nncol : nn) nncol.unsetCatName();
+    for (SQLNotNullConstraint nncol : nn) {
+      nncol.unsetCatName();
+    }
 
     List<SQLUniqueConstraint> uc = new SQLUniqueConstraintBuilder()
         .onTable(table)
         .addColumn("col5")
         .build(conf);
-    for (SQLUniqueConstraint uccol : uc) uccol.unsetCatName();
+    for (SQLUniqueConstraint uccol : uc) {
+      uccol.unsetCatName();
+    }
 
     List<SQLCheckConstraint> cc = new SQLCheckConstraintBuilder()
         .onTable(table)
         .addColumn("col6")
         .setCheckExpression("> 0")
         .build(conf);
-    for (SQLCheckConstraint cccol : cc) cccol.unsetCatName();
+    for (SQLCheckConstraint cccol : cc) {
+      cccol.unsetCatName();
+    }
 
     client.createTableWithConstraints(table, pk, fk, uc, nn, dv, cc);
 

@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class ShowMaterializedViewsDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  public static final String SCHEMA = "mv_name,rewrite_enabled,mode#string:string:string";
+  public static final String SCHEMA = "mv_name,rewrite_enabled,mode,incremental_rebuild#string:string:string:string";
 
   private final String resFile;
   private final String dbName;

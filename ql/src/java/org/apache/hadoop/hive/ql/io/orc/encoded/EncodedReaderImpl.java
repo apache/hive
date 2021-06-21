@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.io.orc.encoded;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -640,9 +639,7 @@ class EncodedReaderImpl implements EncodedReader {
             // but have not released the buffers because of that extra refCount. So, this is
             // essentially the "consumer" refcount being released here.
             for (MemoryBuffer buf : sctx.stripeLevelStream.getCacheBuffers()) {
-              if (LOG.isTraceEnabled()) {
-                LOG.trace("Unlocking {} at the end of processing", buf);
-              }
+              LOG.trace("Unlocking {} at the end of processing", buf);
               cacheWrapper.releaseBuffer(buf);
             }
           }
@@ -1083,6 +1080,62 @@ class EncodedReaderImpl implements EncodedReader {
     }
 
     return lastUncompressed;
+  }
+
+  @Override
+  public void preReadDataRanges(DiskRangeList ranges) throws IOException {
+    boolean hasFileId = this.fileKey != null;
+    long baseOffset = 0L;
+
+    // 2. Now, read all of the ranges from cache or disk.
+    IdentityHashMap<ByteBuffer, Boolean> toRelease = new IdentityHashMap<>();
+    MutateHelper toRead = getDataFromCacheAndDisk(ranges, 0, hasFileId, toRelease);
+
+    // 3. For uncompressed case, we need some special processing before read.
+    preReadUncompressedStreams(baseOffset, toRead, toRelease);
+
+    // 4. Decompress the data.
+    ColumnStreamData csd = POOLS.csdPool.take();
+    try {
+      csd.incRef();
+      DiskRangeList drl = toRead.next;
+      while (drl != null) {
+        drl = readEncodedStream(baseOffset, drl, drl.getOffset(), drl.getEnd(), csd, drl.getOffset(), drl.getEnd(),
+                toRelease);
+        for (MemoryBuffer buf : csd.getCacheBuffers()) {
+          cacheWrapper.releaseBuffer(buf);
+        }
+        if (drl != null)
+          drl = drl.next;
+        }
+    } finally {
+      if (toRead != null) {
+        releaseInitialRefcounts(toRead.next);
+      }
+      if (toRelease != null) {
+        releaseBuffers(toRelease.keySet(), true);
+        toRelease.clear();
+      }
+      if (csd != null) {
+        csd.decRef();
+        POOLS.csdPool.offer(csd);
+      }
+    }
+  }
+
+  private void preReadUncompressedStreams(long baseOffset, MutateHelper toRead,
+      IdentityHashMap<ByteBuffer, Boolean> toRelease) throws IOException {
+    if (isCompressed)
+      return;
+    DiskRangeList iter = toRead.next;
+    while (iter != null) {
+      DiskRangeList newIter = preReadUncompressedStream(baseOffset, iter, iter.getOffset(), iter.getOffset() + iter.getLength(), Kind.DATA);
+      iter = newIter != null ? newIter.next : null;
+    }
+    if (toRelease != null) {
+      releaseBuffers(toRelease.keySet(), true);
+      toRelease.clear();
+    }
   }
 
   /** Subset of readEncodedStream specific to compressed streams, separate to avoid long methods. */
@@ -2000,9 +2053,7 @@ class EncodedReaderImpl implements EncodedReader {
     DiskRangeList indexRanges = planIndexReading(fileSchema, streams, true, physicalFileIncludes,
         sargColumns, version, index.getBloomFilterKinds());
     if (indexRanges == null) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Nothing to read for stripe [" + stripe + "]");
-      }
+      LOG.debug("Nothing to read for stripe [{}]", stripe);
       return;
     }
     ReadContext[] colCtxs = new ReadContext[physicalFileIncludes.length];

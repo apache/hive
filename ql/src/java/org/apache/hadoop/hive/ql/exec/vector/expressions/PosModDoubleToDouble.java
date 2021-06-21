@@ -66,7 +66,7 @@ public class PosModDoubleToDouble extends MathFuncDoubleToDouble {
 
   @Override
   public String vectorExpressionParameters() {
-    return "col " + colNum + ", divisor " + divisor;
+    return "col " + inputColumnNum[0] + ", divisor " + divisor;
   }
 
   @Override

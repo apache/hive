@@ -288,7 +288,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     }
   }
 
-  private void checkDeletePermission(Path dataLocation, Configuration conf, String userName)
+  protected void checkDeletePermission(Path dataLocation, Configuration conf, String userName)
       throws HiveException {
     try {
       FileUtils.checkDeletePermission(dataLocation, conf, userName);

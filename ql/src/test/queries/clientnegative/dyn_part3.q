@@ -1,3 +1,4 @@
+--! qt:disabled:HIVE-24767
 --! qt:dataset:src
 set hive.exec.max.dynamic.partitions=100;
 set hive.exec.dynamic.partition=true;

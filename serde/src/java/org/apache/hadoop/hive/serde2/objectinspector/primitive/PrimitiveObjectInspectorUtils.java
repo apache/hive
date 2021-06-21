@@ -66,6 +66,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
+import org.apache.hive.common.util.DateParser;
 
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector
@@ -1124,33 +1125,25 @@ public final class PrimitiveObjectInspectorUtils {
     case STRING:
       StringObjectInspector soi = (StringObjectInspector) oi;
       String s = soi.getPrimitiveJavaObject(o).trim();
-      try {
-        if (s.length() == DATE_LENGTH) {
-          result = Date.valueOf(s);
-        } else {
-          Timestamp ts = getTimestampFromString(s);
-          if (ts != null) {
-            result = Date.ofEpochMilli(ts.toEpochMilli());
-          }
+      if (s.length() == DATE_LENGTH) {
+        result = DateParser.parseDate(s);
+      } else {
+        Timestamp ts = getTimestampFromString(s);
+        if (ts != null) {
+          result = Date.ofEpochMilli(ts.toEpochMilli());
         }
-      } catch (IllegalArgumentException e) {
-        // Do nothing
       }
       break;
     case CHAR:
     case VARCHAR: {
       String val = getString(o, oi).trim();
-      try {
-        if (val.length() == DATE_LENGTH) {
-          result = Date.valueOf(val);
-        } else {
-          Timestamp ts = getTimestampFromString(val);
-          if (ts != null) {
-            result = Date.ofEpochMilli(ts.toEpochMilli());
-          }
+      if (val.length() == DATE_LENGTH) {
+        result = DateParser.parseDate(val);
+      } else {
+        Timestamp ts = getTimestampFromString(val);
+        if (ts != null) {
+          result = Date.ofEpochMilli(ts.toEpochMilli());
         }
-      } catch (IllegalArgumentException e) {
-        // Do nothing
       }
       break;
     }

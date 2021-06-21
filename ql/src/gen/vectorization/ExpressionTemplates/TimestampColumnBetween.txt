@@ -35,8 +35,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 public class <ClassName> extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private final int inputCol;
-
   private final Timestamp leftValue;
   private final Timestamp rightValue;
 
@@ -44,7 +42,6 @@ public class <ClassName> extends VectorExpression {
     super();
 
     // Dummy final assignments.
-    inputCol = -1;
     leftValue = null;
     rightValue = null;
   }
@@ -53,8 +50,7 @@ public class <ClassName> extends VectorExpression {
    * After construction you must call setInListValues() to add the values to the IN set.
    */
   public <ClassName>(int colNum, Timestamp leftValue, Timestamp rightValue, int outputColumnNum) {
-    super(outputColumnNum);
-    this.inputCol = colNum;
+    super(colNum, outputColumnNum);
     this.leftValue = leftValue;
     this.rightValue = rightValue;
   }
@@ -66,7 +62,7 @@ public class <ClassName> extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[inputCol];
+    TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[inputColumnNum[0]];
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
@@ -171,7 +167,7 @@ public class <ClassName> extends VectorExpression {
    @Override
   public String vectorExpressionParameters() {
     return
-        getColumnParamString(0, inputCol) +
+        getColumnParamString(0, inputColumnNum[0]) +
         ", left " + leftValue.toString() + ", right " + rightValue.toString();
   }
 }

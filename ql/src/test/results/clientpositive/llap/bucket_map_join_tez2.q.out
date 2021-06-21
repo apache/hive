@@ -503,7 +503,6 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: UDFToDouble(key) is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:value, smallTablePos:0, keyRatio:0.764
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: UDFToDouble(key) is not null (type: boolean)
@@ -595,7 +594,6 @@ STAGE PLANS:
                 TableScan
                   alias: b
                   filterExpr: UDFToDouble(key) is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:value, smallTablePos:0, keyRatio:0.764
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: UDFToDouble(key) is not null (type: boolean)
@@ -2400,6 +2398,7 @@ STAGE PLANS:
                 TableScan
                   alias: my_dim
                   filterExpr: ((filter_col) IN ('VAL1', 'VAL2') and join_col is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:join_col, smallTablePos:0, keyRatio:1.0
                   Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

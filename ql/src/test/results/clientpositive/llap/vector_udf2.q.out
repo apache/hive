@@ -80,8 +80,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [5, 6, 7, 8, 9, 10]
-                          selectExpressions: SelectStringColLikeStringScalar(col 0:string) -> 5:boolean, SelectStringColLikeStringScalar(col 1:string) -> 6:boolean, SelectStringColLikeStringScalar(col 2:varchar(10)) -> 7:boolean, SelectStringColLikeStringScalar(col 0:string) -> 8:boolean, SelectStringColLikeStringScalar(col 1:string) -> 9:boolean, SelectStringColLikeStringScalar(col 2:varchar(10)) -> 10:boolean
+                          projectedOutputColumnNums: [6, 7, 8, 9, 10, 11]
+                          selectExpressions: SelectStringColLikeStringScalar(col 0:string) -> 6:boolean, SelectStringColLikeStringScalar(col 1:string) -> 7:boolean, SelectStringColLikeStringScalar(col 2:varchar(10)) -> 8:boolean, SelectStringColLikeStringScalar(col 0:string) -> 9:boolean, SelectStringColLikeStringScalar(col 1:string) -> 10:boolean, SelectStringColLikeStringScalar(col 2:varchar(10)) -> 11:boolean
                       Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false

@@ -12,6 +12,9 @@ select * from tx1_n1 u left semi join tx2_n0 v on u.a=v.a;
 
 select * from tx1_n1 u left semi join tx2_n0 v on u.a=v.a;
 
+explain cbo
+select * from tx1_n1 u left semi join tx2_n0 v on u.b <=> v.b;
+
 explain
 select * from tx1_n1 u left semi join tx2_n0 v on u.b <=> v.b;
 

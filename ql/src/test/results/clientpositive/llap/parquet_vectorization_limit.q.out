@@ -300,13 +300,13 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0, 13]
-                          selectExpressions: DoubleColAddDoubleScalar(col 5:double, val 1.0) -> 13:double
+                          projectedOutputColumnNums: [0, 14]
+                          selectExpressions: DoubleColAddDoubleScalar(col 5:double, val 1.0) -> 14:double
                       Statistics: Num rows: 12288 Data size: 110096 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col1), count(_col1)
                         Group By Vectorization:
-                            aggregators: VectorUDAFSumDouble(col 13:double) -> double, VectorUDAFCount(col 13:double) -> bigint
+                            aggregators: VectorUDAFSumDouble(col 14:double) -> double, VectorUDAFCount(col 14:double) -> bigint
                             className: VectorGroupByOperator
                             groupByMode: HASH
                             keyExpressions: col 0:tinyint

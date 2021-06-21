@@ -185,13 +185,20 @@ public class VectorizedRowBatchCtx {
 
   public int findVirtualColumnNum(VirtualColumn virtualColumn) {
     // Virtual columns start after the last partition column.
-    int resultColumnNum = dataColumnCount + partitionColumnCount;
-    for (VirtualColumn neededVirtualColumn : neededVirtualColumns) {
-      if (neededVirtualColumn.equals(virtualColumn)) {
-        return resultColumnNum;
+    int partitionEndColumnNum = dataColumnCount + partitionColumnCount;
+    final int virtualEndColumnNum = partitionEndColumnNum + virtualColumnCount;
+    for (int virtualColumnNum = partitionEndColumnNum; virtualColumnNum < virtualEndColumnNum; virtualColumnNum++) {
+      String virtualColumnName = rowColumnNames[virtualColumnNum];
+      if (!virtualColumnName.equals(virtualColumn.getName())) {
+        continue;
       }
-      resultColumnNum++;
+      if (!isVirtualColumnNeeded(virtualColumnName)) {
+        continue;
+      }
+
+      return virtualColumnNum;
     }
+
     return -1;
   }
 

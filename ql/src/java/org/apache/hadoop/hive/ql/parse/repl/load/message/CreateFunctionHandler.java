@@ -206,7 +206,8 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
         return ReplCopyTask.getLoadCopyTask(metadata.getReplicationSpec(), new Path(sourceUri), dest, context.hiveConf,
                 context.getDumpDirectory(), context.getMetricCollector());
       } else {
-        return TaskFactory.get(new CopyWork(new Path(sourceUri), dest, true, false,
+        //CopyTask expects the destination directory, hence we pass the parent of the actual destination path
+        return TaskFactory.get(new CopyWork(new Path(sourceUri), dest.getParent(), true, false,
                 context.getDumpDirectory(), context.getMetricCollector(), true), context.hiveConf);
       }
     }

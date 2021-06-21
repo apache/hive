@@ -63,7 +63,7 @@ public class TableSerializer implements JsonWriter.Serializer {
     try {
       TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
       writer.jsonGenerator
-          .writeStringField(FIELD_NAME, serializer.toString(tTable, UTF_8));
+          .writeStringField(FIELD_NAME, serializer.toString(tTable));
       writer.jsonGenerator.writeFieldName(PartitionSerializer.FIELD_NAME);
       writePartitions(writer, additionalPropertiesProvider);
     } catch (TException e) {

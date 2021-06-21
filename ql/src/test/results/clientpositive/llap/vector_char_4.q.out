@@ -159,8 +159,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [14, 15, 16, 17, 18, 19, 20]
-                        selectExpressions: CastLongToChar(col 0:tinyint, maxLength 10) -> 14:char(10), CastLongToChar(col 1:smallint, maxLength 10) -> 15:char(10), CastLongToChar(col 2:int, maxLength 20) -> 16:char(20), CastLongToChar(col 3:bigint, maxLength 30) -> 17:char(30), CastFloatToChar(col 4:float, maxLength 20) -> 18:char(20), CastDoubleToChar(col 5:double, maxLength 20) -> 19:char(20), CastStringGroupToChar(col 8:string, maxLength 50) -> 20:char(50)
+                        projectedOutputColumnNums: [15, 16, 17, 18, 19, 20, 21]
+                        selectExpressions: CastLongToChar(col 0:tinyint, maxLength 10) -> 15:char(10), CastLongToChar(col 1:smallint, maxLength 10) -> 16:char(10), CastLongToChar(col 2:int, maxLength 20) -> 17:char(20), CastLongToChar(col 3:bigint, maxLength 30) -> 18:char(30), CastFloatToChar(col 4:float, maxLength 20) -> 19:char(20), CastDoubleToChar(col 5:double, maxLength 20) -> 20:char(20), CastStringGroupToChar(col 8:string, maxLength 50) -> 21:char(50)
                     Statistics: Num rows: 2000 Data size: 410616 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false

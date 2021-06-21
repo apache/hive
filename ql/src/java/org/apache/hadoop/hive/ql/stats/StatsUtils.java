@@ -1915,17 +1915,6 @@ public class StatsUtils {
     return result;
   }
 
-  public static long getAvailableMemory(Configuration conf) {
-    int memory = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE);
-    if (memory <= 0) {
-      memory = conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
-      if (memory <= 0) {
-        memory = 1024;
-      }
-    }
-    return memory;
-  }
-
   /**
    * negative number of rows or data sizes are invalid. It could be because of
    * long overflow in which case return Long.MAX_VALUE

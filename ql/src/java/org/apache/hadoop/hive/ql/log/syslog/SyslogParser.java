@@ -112,6 +112,7 @@ public class SyslogParser implements Closeable {
 
   private InputStream in;
   private boolean parseTag;
+  private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
   private static final Charset UTF8 = StandardCharsets.UTF_8;
   private Charset charset;
 
@@ -252,7 +253,7 @@ public class SyslogParser implements Closeable {
         }
       }
 
-      cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"), Locale.getDefault());
+      cal = new GregorianCalendar(UTC, Locale.getDefault());
 
       cal.set(y, m - 1, d, hh, mm, ss);
       cal.set(Calendar.MILLISECOND, (int) (subss * 1000));

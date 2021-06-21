@@ -70,9 +70,7 @@ public class AlterDatabaseEvent extends HiveMetaStoreAuthorizableEvent {
   }
 
   private List<HivePrivilegeObject> getOutputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> AlterDatabaseEvent.getOutputHObjs()");
-    }
+    LOG.debug("==> AlterDatabaseEvent.getOutputHObjs()");
 
     List<HivePrivilegeObject> ret           = new ArrayList<>();
     PreAlterDatabaseEvent     event         = (PreAlterDatabaseEvent) preEventContext;
@@ -89,9 +87,7 @@ public class AlterDatabaseEvent extends HiveMetaStoreAuthorizableEvent {
 
       COMMAND_STR = buildCommandString(COMMAND_STR, database);
 
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("<== AlterDatabaseEvent.getOutputHObjs(): ret=" + ret);
-      }
+      LOG.debug("<== AlterDatabaseEvent.getOutputHObjs(): ret={}", ret);
     }
 
    return ret;

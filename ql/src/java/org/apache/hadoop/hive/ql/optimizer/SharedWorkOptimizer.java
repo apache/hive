@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.Cluster;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.EdgeType;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.OpEdge;
+import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.OperatorEdgePredicate;
 import org.apache.hadoop.hive.ql.parse.GenTezUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
@@ -81,7 +82,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -146,13 +146,6 @@ public class SharedWorkOptimizer extends Transform {
     if (tablesReferencedOnlyOnce) {
       // Nothing to do, bail out
       return pctx;
-    }
-
-    try {
-      new OperatorGraph(pctx).toDot(new java.io.File("/tmp/0.full.dot"));
-      new OperatorGraph(pctx).implode().toDot(new java.io.File("/tmp/0.joins.dot"));
-    } catch (Exception e1) {
-      throw new RuntimeException(e1);
     }
 
     if (LOG.isDebugEnabled()) {
@@ -293,13 +286,6 @@ public class SharedWorkOptimizer extends Transform {
           }
         }
       }
-    }
-
-    try {
-      new OperatorGraph(pctx).toDot(new java.io.File("/tmp/1.full.dot"));
-      new OperatorGraph(pctx).implode().toDot(new java.io.File("/tmp/1.joins.dot"));
-    } catch (Exception e1) {
-      throw new RuntimeException(e1);
     }
 
     return pctx;
@@ -1805,11 +1791,11 @@ public class SharedWorkOptimizer extends Transform {
     // If we do, we cannot merge. The reason is that Tez currently does
     // not support parallel edges, i.e., multiple edges from same work x
     // into same work y.
-    EdgePredicate edgePredicate;
+    RelaxedVertexEdgePredicate edgePredicate;
     if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_PARALLEL_EDGE_SUPPORT)) {
-      edgePredicate = new EdgePredicate(EnumSet.<EdgeType> of(EdgeType.DPP, EdgeType.SEMIJOIN, EdgeType.BROADCAST));
+      edgePredicate = new RelaxedVertexEdgePredicate(EnumSet.<EdgeType> of(EdgeType.DPP, EdgeType.SEMIJOIN, EdgeType.BROADCAST));
     } else {
-      edgePredicate = new EdgePredicate(EnumSet.<EdgeType> of(EdgeType.DPP));
+      edgePredicate = new RelaxedVertexEdgePredicate(EnumSet.<EdgeType> of(EdgeType.DPP));
     }
 
     OperatorGraph og = new OperatorGraph(pctx);
@@ -1856,17 +1842,26 @@ public class SharedWorkOptimizer extends Transform {
     return true;
   }
 
-  static class EdgePredicate implements Function<OpEdge, Boolean> {
+  static class RelaxedVertexEdgePredicate implements OperatorEdgePredicate {
 
-    private EnumSet<EdgeType> nonTraverseableEdgeTypes;
+    private EnumSet<EdgeType> traverseableEdgeTypes;
 
-    public EdgePredicate(EnumSet<EdgeType> nonTraverseableEdgeTypes) {
-      this.nonTraverseableEdgeTypes = nonTraverseableEdgeTypes;
+    public RelaxedVertexEdgePredicate(EnumSet<EdgeType> nonTraverseableEdgeTypes) {
+      this.traverseableEdgeTypes = nonTraverseableEdgeTypes;
     }
 
     @Override
-    public Boolean apply(OpEdge input) {
-      return !nonTraverseableEdgeTypes.contains(input.getEdgeType());
+    public boolean accept(Operator<?> s, Operator<?> t, OpEdge opEdge) {
+      if (!traverseableEdgeTypes.contains(opEdge.getEdgeType())) {
+        return true;
+      }
+      if (s instanceof ReduceSinkOperator) {
+        ReduceSinkOperator rs = (ReduceSinkOperator) s;
+        if (!ParallelEdgeFixer.colMappingInverseKeys(rs).isPresent()) {
+          return true;
+        }
+      }
+      return false;
     }
 
   }

@@ -124,9 +124,7 @@ public class AvroSerDe extends AbstractSerDe {
 
     tableProperties.setProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), schema.toString());
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Avro schema is " + schema);
-    }
+    LOG.debug("Avro schema is: {}", schema);
 
     if (this.configuration.isPresent()) {
       this.configuration.get().set(AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SCHEMA.getPropName(),
@@ -177,9 +175,7 @@ public class AvroSerDe extends AbstractSerDe {
       //in MetaStoreUtils where this string columns.comments is generated
       columnComments = Arrays.asList(columnCommentProperty.split("\0"));
 
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("columnComments is " + columnCommentProperty);
-      }
+      LOG.debug("columnComments is {}", columnCommentProperty);
     }
     if (columnNames.size() != columnTypes.size()) {
       throw new IllegalArgumentException("AvroSerde initialization failed. Number of column " +

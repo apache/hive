@@ -25,8 +25,6 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
-import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -39,24 +37,25 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 @Description(name = "last_value", value = "_FUNC_(x)")
 @WindowFunctionDescription(
-  supportsWindow = true, pivotResult = false, impliesOrder = true)
+  supportsWindow = true, pivotResult = false, impliesOrder = true, supportsNullTreatment = true)
 public class GenericUDAFLastValue extends AbstractGenericUDAFResolver {
 
   static final Logger LOG = LoggerFactory.getLogger(GenericUDAFLastValue.class.getName());
 
   @Override
-  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
+  public GenericUDAFEvaluator getEvaluator(GenericUDAFParameterInfo info) throws SemanticException {
+    TypeInfo[] parameters = info.getParameters();
     if (parameters.length > 2) {
       throw new UDFArgumentTypeException(2, "At most 2 arguments expected");
     }
     if (parameters.length > 1 && !parameters[1].equals(TypeInfoFactory.booleanTypeInfo)) {
       throw new UDFArgumentTypeException(1, "second argument must be a boolean expression");
     }
-    return createEvaluator();
+    return createEvaluator(!info.respectNulls());
   }
 
-  protected GenericUDAFLastValueEvaluator createEvaluator() {
-    return new GenericUDAFLastValueEvaluator();
+  protected GenericUDAFLastValueEvaluator createEvaluator(boolean skipNulls) {
+    return new GenericUDAFLastValueEvaluator(skipNulls);
   }
 
   static class LastValueBuffer implements AggregationBuffer {
@@ -65,14 +64,14 @@ public class GenericUDAFLastValue extends AbstractGenericUDAFResolver {
     boolean firstRow;
     boolean skipNulls;
 
-    LastValueBuffer() {
-      init();
+    LastValueBuffer(boolean skipNulls) {
+      init(skipNulls);
     }
 
-    void init() {
+    void init(boolean skipNulls) {
       val = null;
       firstRow = true;
-      skipNulls = false;
+      this.skipNulls = skipNulls;
     }
 
   }
@@ -81,6 +80,11 @@ public class GenericUDAFLastValue extends AbstractGenericUDAFResolver {
 
     ObjectInspector inputOI;
     ObjectInspector outputOI;
+    final boolean skipNulls;
+
+    public GenericUDAFLastValueEvaluator(boolean skipNulls) {
+      this.skipNulls = skipNulls;
+    }
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
@@ -96,12 +100,12 @@ public class GenericUDAFLastValue extends AbstractGenericUDAFResolver {
 
     @Override
     public AggregationBuffer getNewAggregationBuffer() throws HiveException {
-      return new LastValueBuffer();
+      return new LastValueBuffer(skipNulls);
     }
 
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
-      ((LastValueBuffer) agg).init();
+      ((LastValueBuffer) agg).init(skipNulls);
     }
 
     @Override

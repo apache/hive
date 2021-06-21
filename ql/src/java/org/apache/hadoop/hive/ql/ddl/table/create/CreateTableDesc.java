@@ -18,8 +18,11 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.create;
 
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
+
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -488,9 +491,15 @@ public class CreateTableDesc implements DDLDesc, Serializable {
   /**
    * @return the table properties
    */
-  @Explain(displayName = "table properties")
   public Map<String, String> getTblProps() {
     return tblProps;
+  }
+
+  @Explain(displayName = "table properties")
+  public Map<String, String> getTblPropsExplain() { // only for displaying plan
+    HashMap<String, String> copy = new HashMap<>(tblProps);
+    copy.remove(TABLE_IS_CTAS);
+    return copy;
   }
 
   /**
@@ -842,11 +851,6 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     if (isExternal()) {
       tbl.setProperty("EXTERNAL", "TRUE");
       tbl.setTableType(TableType.EXTERNAL_TABLE);
-      // only add if user have not explicit set it (user explicitly disabled for example in which case don't flip it)
-      if (tbl.isPartitioned() && tbl.getProperty(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY) == null) {
-        // partition discovery is on by default if undefined
-        tbl.setProperty(PartitionManagementTask.DISCOVER_PARTITIONS_TBLPROPERTY, "true");
-      }
     }
 
     // If the sorted columns is a superset of bucketed columns, store this fact.

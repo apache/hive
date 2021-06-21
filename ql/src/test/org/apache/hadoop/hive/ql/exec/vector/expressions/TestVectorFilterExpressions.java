@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastLongToBooleanViaLongToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDecimalColGreaterEqualDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDecimalColLessDecimalScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDecimalScalarGreaterDecimalColumn;
@@ -1057,4 +1058,58 @@ public class TestVectorFilterExpressions {
     b.size = 3;
     return b;
   }
+
+  // Test that the cast filter should be wrapped in SelectColumnIsTrue
+  @Test
+  public void testCastFilter() throws HiveException {
+    int seed = 0;
+    VectorizedRowBatch vrb = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        3, 4, seed);
+    vrb.cols[0] = new BytesColumnVector();
+    BytesColumnVector bcv = (BytesColumnVector) vrb.cols[0];
+    bcv.initBuffer();
+    byte[] n = "no".getBytes();
+    byte[] f = "false".getBytes();
+    bcv.setVal(0, n, 0, n.length);
+    bcv.setVal(1, f, 0, f.length);
+    bcv.setVal(2, c, 0, 1);
+
+    VectorExpression ve1 = new CastStringToBoolean(0,2);
+    VectorExpression ve2 = new CastLongToBooleanViaLongToLong(1, 3);
+    VectorExpression orExpr = new FilterExprOrExpr();
+    orExpr.setChildExpressions(new VectorExpression[] {ve1, ve2});
+    orExpr.evaluate(vrb);
+
+    // Only one row should be filtered out, but both filters fail to take effect
+    assertFalse(vrb.selectedInUse);
+    assertEquals(0, vrb.selected[0]);
+    assertEquals(1, vrb.selected[1]);
+    assertEquals(2, vrb.selected[2]);
+    assertEquals(3, vrb.size);
+
+    SelectColumnIsTrue filter1 = new SelectColumnIsTrue(2);
+    filter1.setChildExpressions(new VectorExpression[]{ ve1 });
+    VectorExpression andExpr = new FilterExprAndExpr();
+    // SelectColumnIsTrue(cast string) and CastLongToBooleanViaLongToLong
+    andExpr.setChildExpressions(new VectorExpression[]{filter1, ve2});
+    andExpr.evaluate(vrb);
+
+    // All should be filtered out, but CastLongToBooleanViaLongToLong fails to take effect
+    assertTrue(vrb.selectedInUse);
+    assertEquals(2, vrb.selected[0]);
+    assertEquals(1, vrb.size);
+
+    // restore
+    vrb.selectedInUse = false;
+    vrb.size = 3;
+
+    SelectColumnIsTrue filter2 = new SelectColumnIsTrue(3);
+    filter2.setChildExpressions(new VectorExpression[]{ ve2 });
+    andExpr.setChildExpressions(new VectorExpression[]{filter1, filter2});
+    andExpr.evaluate(vrb);
+
+    assertTrue(vrb.selectedInUse);
+    assertEquals(0, vrb.size);
+  }
+
 }

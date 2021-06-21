@@ -178,6 +178,8 @@ POSTHOOK: Input: default@emps_n8
 POSTHOOK: Input: default@locations_n4
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n4
+POSTHOOK: Lineage: mv1_n4.deptno SIMPLE [(depts_n6)depts_n6.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n4.empid SIMPLE [(dependents_n4)dependents_n4.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select dependents_n4.empid, depts_n6.deptno
 from depts_n6
@@ -503,6 +505,9 @@ POSTHOOK: Input: default@emps_n8
 POSTHOOK: Input: default@locations_n4
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n4
+POSTHOOK: Lineage: mv1_n4.deptno SIMPLE [(depts_n6)depts_n6.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n4.empid SIMPLE [(dependents_n4)dependents_n4.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n4.s EXPRESSION [(emps_n8)emps_n8.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select dependents_n4.empid, count(emps_n8.salary) + 1
 from depts_n6
@@ -862,6 +867,8 @@ POSTHOOK: Input: default@depts_n6
 POSTHOOK: Input: default@emps_n8
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n4
+POSTHOOK: Lineage: mv1_n4.deptno SIMPLE [(depts_n6)depts_n6.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n4.empid SIMPLE [(dependents_n4)dependents_n4.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select dependents_n4.empid
 from depts_n6

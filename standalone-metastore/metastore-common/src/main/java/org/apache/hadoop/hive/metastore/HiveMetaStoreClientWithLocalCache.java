@@ -182,7 +182,9 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     // GetValidWriteIdsResponse <-- getValidWriteIdsInternal(GetValidWriteIdsRequest rqst)
     // Stored individually as:
     // TableValidWriteIds <-- String fullTableName, String validTxnList, long writeId
-    VALID_WRITE_IDS(TableValidWriteIds.class, String.class, long.class);
+    VALID_WRITE_IDS(TableValidWriteIds.class, String.class, long.class),
+    // TableId <- String fullTableName
+    TABLE_ID(Long.class, String.class);
 
     private final List<Class<?>> keyClasses;
     private final Class<?> valueClass;

@@ -56,7 +56,7 @@ public class FunctionSerializer implements JsonWriter.Serializer {
   @Override
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
       throws SemanticException, IOException, MetaException {
-    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+
     List<ResourceUri> resourceUris = new ArrayList<>();
     if (function.getResourceUris() != null) {
       for (ResourceUri uri : function.getResourceUris()) {
@@ -90,13 +90,14 @@ public class FunctionSerializer implements JsonWriter.Serializer {
     }
 
     try {
+      TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
       //This is required otherwise correct work object on repl load wont be created.
       writer.jsonGenerator.writeStringField(ReplicationSpec.KEY.REPL_SCOPE.toString(),
           "all");
       writer.jsonGenerator.writeStringField(ReplicationSpec.KEY.CURR_STATE_ID.toString(),
           additionalPropertiesProvider.getCurrentReplicationState());
       writer.jsonGenerator
-          .writeStringField(FIELD_NAME, serializer.toString(copyObj, UTF_8));
+          .writeStringField(FIELD_NAME, serializer.toString(copyObj));
     } catch (TException e) {
       throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METASTORE.getMsg(), e);
     }

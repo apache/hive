@@ -45,7 +45,7 @@ public class TestJdbcGenericUDTFGetSplits extends AbstractTestJdbcGenericUDTFGet
 
   @Test(timeout = 200000)
   public void testGenericUDTFOrderBySplitCount1OnPartitionedTable() throws Exception {
-    super.testGenericUDTFOrderBySplitCount1OnPartitionedTable("get_splits", new int[]{5, 1, 2, 2, 2});
+    super.testGenericUDTFOrderBySplitCount1OnPartitionedTable("get_splits", new int[]{5, 5, 1, 1, 1});
   }
 
 

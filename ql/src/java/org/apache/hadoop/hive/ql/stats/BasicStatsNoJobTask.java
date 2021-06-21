@@ -19,12 +19,13 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -90,11 +91,20 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     console = new LogHelper(LOG);
   }
 
-  public static boolean canUseFooterScan(
+  public static boolean canUseBasicStats(
       Table table, Class<? extends InputFormat> inputFormat) {
+      return canUseFooterScan(table, inputFormat) || useBasicStatsFromStorageHandler(table);
+  }
+
+  public static boolean canUseFooterScan(Table table, Class<? extends InputFormat> inputFormat) {
     return (OrcInputFormat.class.isAssignableFrom(inputFormat) && !AcidUtils.isFullAcidTable(table))
         || MapredParquetInputFormat.class.isAssignableFrom(inputFormat);
   }
+
+  private static boolean useBasicStatsFromStorageHandler(Table table) {
+    return table.isNonNative() && table.getStorageHandler().canProvideBasicStatistics();
+  }
+
 
   @Override
   public void initialize(CompilationOpContext opContext) {
@@ -119,16 +129,64 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     return "STATS-NO-JOB";
   }
 
-  static class StatItem {
-    Partish partish;
-    Map<String, String> params;
-    Object result;
+  abstract static class StatCollector implements Runnable {
+
+    protected Partish partish;
+    protected Object result;
+    protected LogHelper console;
+
+    public static Function<StatCollector, String> SIMPLE_NAME_FUNCTION =
+        sc -> String.format("%s#%s", sc.partish.getTable().getCompleteName(), sc.partish.getPartishType());
+
+    public static Function<StatCollector, Partition> EXTRACT_RESULT_FUNCTION = sc -> (Partition) sc.result;
+
+    protected void init(HiveConf conf, LogHelper console) throws IOException {
+      this.console = console;
+    }
+
+    protected final boolean isValid() {
+      return result != null;
+    }
+
+    protected final String toString(Map<String, String> parameters) {
+      return StatsSetupConst.SUPPORTED_STATS.stream().map(st -> st + "=" + parameters.get(st))
+          .collect(Collectors.joining(", "));
+    }
   }
 
-  static class FooterStatCollector implements Runnable {
+  static class HiveStorageHandlerStatCollector extends StatCollector {
 
-    private Partish partish;
-    private Object result;
+    public HiveStorageHandlerStatCollector(Partish partish) {
+      this.partish = partish;
+    }
+
+    @Override
+    public void run() {
+      try {
+        Table table = partish.getTable();
+        Map<String, String> parameters;
+        Map<String, String> basicStatistics = table.getStorageHandler().getBasicStatistics(partish);
+        if (partish.getPartition() != null) {
+          parameters = partish.getPartParameters();
+          result = new Partition(table, partish.getPartition().getTPartition());
+        } else {
+          parameters = table.getParameters();
+          result = new Table(table.getTTable());
+        }
+        parameters.putAll(basicStatistics);
+        StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
+        String msg = partish.getSimpleName() + " stats: [" + toString(parameters) + ']';
+        LOG.debug(msg);
+        console.printInfo(msg);
+      } catch (Exception e) {
+        console.printInfo("[Warning] could not update stats for " + partish.getSimpleName() + ".",
+            "Failed with exception " + e.getMessage() + "\n" + StringUtils.stringifyException(e));
+      }
+    }
+  }
+
+  static class FooterStatCollector extends StatCollector {
+
     private JobConf jc;
     private Path dir;
     private FileSystem fs;
@@ -139,24 +197,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       this.partish = partish;
     }
 
-    public static final Function<FooterStatCollector, String> SIMPLE_NAME_FUNCTION = new Function<FooterStatCollector, String>() {
-
-      @Override
-      public String apply(FooterStatCollector sc) {
-        return String.format("%s#%s", sc.partish.getTable().getCompleteName(), sc.partish.getPartishType());
-      }
-    };
-    private static final Function<FooterStatCollector, Partition> EXTRACT_RESULT_FUNCTION = new Function<FooterStatCollector, Partition>() {
-      @Override
-      public Partition apply(FooterStatCollector input) {
-        return (Partition) input.result;
-      }
-    };
-
-    private boolean isValid() {
-      return result != null;
-    }
-
+    @Override
     public void init(HiveConf conf, LogHelper console) throws IOException {
       this.console = console;
       dir = new Path(partish.getPartSd().getLocation());
@@ -236,21 +277,33 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       }
     }
 
-    private String toString(Map<String, String> parameters) {
-      StringBuilder builder = new StringBuilder();
-      for (String statType : StatsSetupConst.SUPPORTED_STATS) {
-        String value = parameters.get(statType);
-        if (value != null) {
-          if (builder.length() > 0) {
-            builder.append(", ");
-          }
-          builder.append(statType).append('=').append(value);
-        }
-      }
-      return builder.toString();
-    }
-
   }
+
+  private Collection<Partition> getPartitions(Table table) {
+    Collection<Partition> partitions = null;
+    if (work.getPartitions() == null || work.getPartitions().isEmpty()) {
+      if (table.isPartitioned()) {
+        partitions = table.getTableSpec().partitions;
+      }
+    } else {
+      partitions = work.getPartitions();
+    }
+    return partitions;
+  }
+
+  private List<Partish> getPartishes(Table table) {
+    Collection<Partition> partitions = getPartitions(table);
+    List<Partish> partishes = Lists.newLinkedList();
+    if (partitions == null) {
+      partishes.add(Partish.buildFor(table));
+    } else {
+      for (Partition part : partitions) {
+        partishes.add(Partish.buildFor(table, part));
+      }
+    }
+    return partishes;
+  }
+
 
   private int aggregateStats(ExecutorService threadPool, Hive db) {
     int ret = 0;
@@ -265,30 +318,18 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
 
       Table table = tableSpecs.tableHandle;
 
-      Collection<Partition> partitions = null;
-      if (work.getPartitions() == null || work.getPartitions().isEmpty()) {
-        if (table.isPartitioned()) {
-          partitions = tableSpecs.partitions;
-        }
-      } else {
-        partitions = work.getPartitions();
-      }
+      List<Partish> partishes = getPartishes(table);
 
-      LinkedList<Partish> partishes = Lists.newLinkedList();
-      if (partitions == null) {
-        partishes.add(Partish.buildFor(table));
-      } else {
-        for (Partition part : partitions) {
-          partishes.add(Partish.buildFor(table, part));
-        }
-      }
-
-      List<FooterStatCollector> scs = Lists.newArrayList();
+      List<StatCollector> scs = new ArrayList();
       for (Partish partish : partishes) {
-        scs.add(new FooterStatCollector(jc, partish));
+        if (useBasicStatsFromStorageHandler(table)) {
+          scs.add(new HiveStorageHandlerStatCollector(partish));
+        } else {
+          scs.add(new FooterStatCollector(jc, partish));
+        }
       }
 
-      for (FooterStatCollector sc : scs) {
+      for (StatCollector sc : scs) {
         sc.init(conf, console);
         threadPool.execute(sc);
       }
@@ -312,7 +353,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     return ret;
   }
 
-  private int updatePartitions(Hive db, List<FooterStatCollector> scs, Table table) throws InvalidOperationException, HiveException {
+  private int updatePartitions(Hive db, List<StatCollector> scs, Table table) throws InvalidOperationException, HiveException {
 
     String tableFullName = table.getFullyQualifiedName();
 
@@ -320,15 +361,15 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       return 0;
     }
     if (work.isStatsReliable()) {
-      for (FooterStatCollector statsCollection : scs) {
-        if (statsCollection.result == null) {
+      for (StatCollector statsCollection : scs) {
+        if (!statsCollection.isValid()) {
           LOG.debug("Stats requested to be reliable. Empty stats found: {}", statsCollection.partish.getSimpleName());
           return -1;
         }
       }
     }
-    List<FooterStatCollector> validColectors = Lists.newArrayList();
-    for (FooterStatCollector statsCollection : scs) {
+    List<StatCollector> validColectors = Lists.newArrayList();
+    for (StatCollector statsCollection : scs) {
       if (statsCollection.isValid()) {
         validColectors.add(statsCollection);
       }
@@ -337,7 +378,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     EnvironmentContext environmentContext = new EnvironmentContext();
     environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
 
-    ImmutableListMultimap<String, FooterStatCollector> collectorsByTable = Multimaps.index(validColectors, FooterStatCollector.SIMPLE_NAME_FUNCTION);
+    ImmutableListMultimap<String, StatCollector> collectorsByTable = Multimaps.index(validColectors, FooterStatCollector.SIMPLE_NAME_FUNCTION);
 
     LOG.debug("Collectors.size(): {}", collectorsByTable.keySet());
 
@@ -351,7 +392,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     LOG.debug("Updating stats for: {}", tableFullName);
 
     for (String partName : collectorsByTable.keySet()) {
-      ImmutableList<FooterStatCollector> values = collectorsByTable.get(partName);
+      ImmutableList<StatCollector> values = collectorsByTable.get(partName);
 
       if (values == null) {
         throw new RuntimeException("very intresting");
@@ -362,7 +403,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
         LOG.debug("Updated stats for {}.", tableFullName);
       } else {
         if (values.get(0).result instanceof Partition) {
-          List<Partition> results = Lists.transform(values, FooterStatCollector.EXTRACT_RESULT_FUNCTION);
+          List<Partition> results = Lists.transform(values, StatCollector.EXTRACT_RESULT_FUNCTION);
           db.alterPartitions(tableFullName, results, environmentContext, true);
           LOG.debug("Bulk updated {} partitions of {}.", results.size(), tableFullName);
         } else {

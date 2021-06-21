@@ -112,8 +112,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [1, 4, 5, 2, 6, 7]
-                          selectExpressions: VectorUDFStructField(col 1:struct<f1:int,f2:string>, col 0:int) -> 4:int, VectorUDFStructField(col 1:struct<f1:int,f2:string>, col 1:int) -> 5:string, VectorUDFStructField(col 2:struct<f1:int,f3:string>, col 0:int) -> 6:int, VectorUDFStructField(col 2:struct<f1:int,f3:string>, col 1:int) -> 7:string
+                          projectedOutputColumnNums: [1, 5, 6, 2, 7, 8]
+                          selectExpressions: VectorUDFStructField(col 1:struct<f1:int,f2:string>, col 0:int) -> 5:int, VectorUDFStructField(col 1:struct<f1:int,f2:string>, col 1:int) -> 6:string, VectorUDFStructField(col 2:struct<f1:int,f3:string>, col 0:int) -> 7:int, VectorUDFStructField(col 2:struct<f1:int,f3:string>, col 1:int) -> 8:string
                       Statistics: Num rows: 10 Data size: 4480 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -234,7 +234,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColGreaterLongScalar(col 4:int, val 500)(children: VectorUDFStructField(col 1:struct<f1:int,f2:string>, col 0:int) -> 4:int)
+                        predicateExpression: FilterLongColGreaterLongScalar(col 5:int, val 500)(children: VectorUDFStructField(col 1:struct<f1:int,f2:string>, col 0:int) -> 5:int)
                     predicate: (st1.f1 > 500) (type: boolean)
                     Statistics: Num rows: 341 Data size: 76542 Basic stats: COMPLETE Column stats: NONE
                     Top N Key Operator
@@ -245,7 +245,7 @@ STAGE PLANS:
                       top n: 10
                       Top N Key Vectorization:
                           className: VectorTopNKeyOperator
-                          keyExpressions: VectorUDFStructField(col 1:struct<f1:int,f2:string>, col 0:int) -> 5:int
+                          keyExpressions: VectorUDFStructField(col 1:struct<f1:int,f2:string>, col 0:int) -> 6:int
                           native: true
                       Select Operator
                         expressions: st1.f1 (type: int)
@@ -253,16 +253,16 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [4]
-                            selectExpressions: VectorUDFStructField(col 1:struct<f1:int,f2:string>, col 0:int) -> 4:int
+                            projectedOutputColumnNums: [5]
+                            selectExpressions: VectorUDFStructField(col 1:struct<f1:int,f2:string>, col 0:int) -> 5:int
                         Statistics: Num rows: 341 Data size: 76542 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: sum(_col0)
                           Group By Vectorization:
-                              aggregators: VectorUDAFSumLong(col 4:int) -> bigint
+                              aggregators: VectorUDAFSumLong(col 5:int) -> bigint
                               className: VectorGroupByOperator
                               groupByMode: HASH
-                              keyExpressions: col 4:int
+                              keyExpressions: col 5:int
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0]

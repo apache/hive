@@ -94,9 +94,7 @@ public final class ProactiveEviction {
         return;
       }
       LOG.info("Requesting proactive LLAP cache eviction.");
-      if (LOG.isDebugEnabled()) {
-        LOG.debug(request.toString());
-      }
+      LOG.debug("Request: {}", request);
       // Fire and forget - requests are enqueued on the single threaded executor and this (caller) thread won't wait.
       for (LlapServiceInstance instance : instances) {
         EvictionRequestTask task = new EvictionRequestTask(conf, instance, request);
@@ -146,9 +144,7 @@ public final class ProactiveEviction {
           evictedBytes += response.getEvictedBytes();
           LOG.debug("Proactively evicted {} bytes", response.getEvictedBytes());
         }
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Proactive eviction freed {} bytes on LLAP daemon {} in total", evictedBytes, instance.toString());
-        }
+        LOG.debug("Proactive eviction freed {} bytes on LLAP daemon {} in total", evictedBytes, instance);
       } catch (Exception e) {
         LOG.warn("Exception while requesting proactive eviction.", e);
       }

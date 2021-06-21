@@ -77,9 +77,7 @@ public final class LlapTokenChecker {
     List<LlapTokenIdentifier> tokens = null;
     for (TokenIdentifier id : ugi.getTokenIdentifiers()) {
       if (!LlapTokenIdentifier.KIND_NAME.equals(id.getKind())) continue;
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Token {}", id);
-      }
+      LOG.debug("Token {}", id);
       LlapTokenIdentifier llapId = (LlapTokenIdentifier)id;
       if (clusterId != null && !clusterId.equals(llapId.getClusterId())) continue;
       if (tokens == null) {

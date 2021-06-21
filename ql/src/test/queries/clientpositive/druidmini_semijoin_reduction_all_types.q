@@ -1,3 +1,4 @@
+--! qt:disabled:HIVE-24816
 --! qt:dataset:srcpart
 --! qt:dataset:druid_table_alltypesorc
 --! qt:dataset:alltypesorc

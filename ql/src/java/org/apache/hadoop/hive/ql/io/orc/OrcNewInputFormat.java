@@ -120,18 +120,14 @@ public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
   @Override
   public List<InputSplit> getSplits(JobContext jobContext)
       throws IOException, InterruptedException {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("getSplits started");
-    }
+    LOG.debug("getSplits started");
     Configuration conf = ShimLoader.getHadoopShims().getConfiguration(jobContext);
     List<OrcSplit> splits = OrcInputFormat.generateSplitsInfo(conf, createContext(conf, -1));
     List<InputSplit> result = new ArrayList<InputSplit>(splits.size());
     for(OrcSplit split: splits) {
       result.add(new OrcNewSplit(split));
     }
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("getSplits finished");
-    }
+    LOG.debug("getSplits finished");
     return result;
   }
 

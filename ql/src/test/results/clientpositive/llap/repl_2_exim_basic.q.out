@@ -345,7 +345,6 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'discover.partitions'='true', 
 #### A masked pattern was here ####
 PREHOOK: query: select * from ext_t_imported
 PREHOOK: type: QUERY
@@ -426,7 +425,6 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'discover.partitions'='true', 
   'repl.last.id'='0', 
 #### A masked pattern was here ####
 PREHOOK: query: select * from ext_t_r_imported

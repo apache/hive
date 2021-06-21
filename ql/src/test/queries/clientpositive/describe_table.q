@@ -23,7 +23,6 @@ describe formatted `srcpart`;
 describe formatted `srcpart` `key`;
 describe formatted `srcpart` PARTITION(ds='2008-04-08', hr='12');
 
-
 describe formatted `srcpart` `ds`;
 describe formatted `srcpart` `hr`;
 
@@ -34,6 +33,14 @@ alter table srcpart_serdeprops set serdeproperties('abcd'='2');
 alter table srcpart_serdeprops set serdeproperties('A1234'='3');
 describe formatted srcpart_serdeprops;
 drop table srcpart_serdeprops;
+
+CREATE TABLE IF NOT EXISTS desc_parttable_stats (somenumber int) PARTITIONED BY (yr int);
+INSERT INTO desc_parttable_stats values(0,1),(0,2),(0,3);
+set hive.describe.partitionedtable.ignore.stats=true;
+describe formatted desc_parttable_stats;
+set hive.describe.partitionedtable.ignore.stats=false;
+describe formatted desc_parttable_stats;
+DROP TABLE IF EXISTS desc_parttable_stats;
 
 CREATE DATABASE IF NOT EXISTS name1;
 CREATE DATABASE IF NOT EXISTS name2;

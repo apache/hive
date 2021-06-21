@@ -10,6 +10,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Create Database
+      database type:
       name: d
 
 PREHOOK: query: CREATE DATABASE d
@@ -69,7 +70,7 @@ PREHOOK: Input: database:d
 POSTHOOK: query: DESCRIBE DATABASE d
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:d
-d		location/in/test		hive_test_user	USER
+d		location/in/test		hive_test_user	USER		
 PREHOOK: query: EXPLAIN ALTER DATABASE d SET dbproperties('test'='yesthisis')
 PREHOOK: type: ALTERDATABASE
 PREHOOK: Output: database:d

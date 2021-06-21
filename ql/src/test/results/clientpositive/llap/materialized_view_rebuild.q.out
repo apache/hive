@@ -37,6 +37,9 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@basetable_rebuild
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv_rebuild
+POSTHOOK: Lineage: mv_rebuild._c2 EXPRESSION [(basetable_rebuild)basetable_rebuild.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: mv_rebuild.a SIMPLE [(basetable_rebuild)basetable_rebuild.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: mv_rebuild.b SIMPLE [(basetable_rebuild)basetable_rebuild.FieldSchema(name:b, type:varchar(256), comment:null), ]
 PREHOOK: query: select * from mv_rebuild
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mv_rebuild

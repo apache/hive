@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -131,22 +132,47 @@ public class BucketVersionPopulator extends Transform {
     }
   }
 
+  enum InfoType {
+    MANDATORY, OPTIONAL,
+  };
+
   /**
    * This class represents the version required by an Operator.
    */
-  private static class OperatorBucketingVersionInfo {
+  static class OperatorBucketingVersionInfo {
 
+    public static final Comparator<OperatorBucketingVersionInfo> MANDATORY_FIRST =
+        new Comparator<BucketVersionPopulator.OperatorBucketingVersionInfo>() {
+
+          @Override
+          public int compare(OperatorBucketingVersionInfo i1, OperatorBucketingVersionInfo i2) {
+            int r = i1.infoType.compareTo(i2.infoType);
+            if (r != 0) {
+              // mandatory first
+              return r;
+            }
+            r = Integer.compare(i2.bucketingVersion, i1.bucketingVersion);
+            if (r != 0) {
+              // prefer higher version if avail
+              return r;
+            }
+            r = i1.op.toString().compareTo(i2.op.toString());
+            return r;
+          }
+        };
     private Operator<?> op;
     private int bucketingVersion;
+    private InfoType infoType;
 
-    public OperatorBucketingVersionInfo(Operator<?> op, int bucketingVersion) {
+    public OperatorBucketingVersionInfo(Operator<?> op, InfoType infoType, int bucketingVersion) {
       this.op = op;
+      this.infoType = infoType;
       this.bucketingVersion = bucketingVersion;
     }
 
     @Override
     public String toString() {
-      return String.format("[op: %s, bucketingVersion=%d]", op, bucketingVersion);
+      return String.format("[op: %s, bucketingVersion=%d, infoType=%s]", op, bucketingVersion, infoType);
     }
   }
 
@@ -179,7 +205,7 @@ public class BucketVersionPopulator extends Transform {
           int bucketingVersion = tso.getConf().getTableMetadata().getBucketingVersion();
           int numBuckets = tso.getConf().getNumBuckets();
           if (numBuckets > 1) {
-            ret.add(new OperatorBucketingVersionInfo(operator, bucketingVersion));
+            ret.add(new OperatorBucketingVersionInfo(operator, InfoType.MANDATORY, bucketingVersion));
           } else {
             LOG.info("not considering bucketingVersion for: {} because it has {}<2 buckets ", tso, numBuckets);
           }
@@ -187,7 +213,9 @@ public class BucketVersionPopulator extends Transform {
         if (operator instanceof FileSinkOperator) {
           FileSinkOperator fso = (FileSinkOperator) operator;
           int bucketingVersion = fso.getConf().getTableInfo().getBucketingVersion();
-          ret.add(new OperatorBucketingVersionInfo(operator, bucketingVersion));
+          // for FileSinkOperator-s keeping the RS side in sync w.r.t to the bucketing version is beneficial
+          // but since they are internally compute the bucket number with the correct algo they don't rely on it.
+          ret.add(new OperatorBucketingVersionInfo(operator, InfoType.OPTIONAL, bucketingVersion));
         }
       }
       return ret;
@@ -195,9 +223,10 @@ public class BucketVersionPopulator extends Transform {
 
     public void analyzeBucketVersion() {
       List<OperatorBucketingVersionInfo> bucketingVersions = getBucketingVersions();
+      bucketingVersions.sort(OperatorBucketingVersionInfo.MANDATORY_FIRST);
       try {
         for (OperatorBucketingVersionInfo info : bucketingVersions) {
-          setVersion(info.bucketingVersion);
+          setVersion(info);
         }
       } catch (Exception e) {
         throw new RuntimeException("Error setting bucketingVersion for group: " + bucketingVersions, e);
@@ -208,12 +237,17 @@ public class BucketVersionPopulator extends Transform {
       }
     }
 
-    private void setVersion(int newVersion) {
+    private void setVersion(OperatorBucketingVersionInfo info) {
+      int newVersion = info.bucketingVersion;
       if (version == newVersion || newVersion == -1) {
         return;
       }
       if (version == -1) {
         version = newVersion;
+        return;
+      }
+      if (info.infoType == InfoType.OPTIONAL) {
+        LOG.debug("Ignoring version preference for {}; because {} is already set and its OPTIONAL", info.op, version);
         return;
       }
       throw new RuntimeException("Unable to set version");

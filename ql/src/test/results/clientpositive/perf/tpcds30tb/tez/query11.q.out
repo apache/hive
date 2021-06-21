@@ -252,7 +252,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_302_container, bigKeyColName:$f00, smallTablePos:0, keyRatio:0.1111111125
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_302_container, bigKeyColName:c_customer_id, smallTablePos:0, keyRatio:0.1111111125
                   Statistics: Num rows: 80000000 Data size: 29760000000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: c_customer_id (type: char(16)), c_first_name (type: char(20)), c_last_name (type: char(30)), c_birth_country (type: varchar(20))
@@ -560,13 +560,13 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: char(16)), _col2 (type: decimal(18,2))
                   outputColumnNames: _col0, _col2
-                  Statistics: Num rows: 80000000 Data size: 24320000000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 80000000 Data size: 16960000000 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: char(16))
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: char(16))
-                    Statistics: Num rows: 80000000 Data size: 24320000000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 80000000 Data size: 16960000000 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col2 (type: decimal(18,2))
         Reducer 7 
             Execution mode: vectorized, llap

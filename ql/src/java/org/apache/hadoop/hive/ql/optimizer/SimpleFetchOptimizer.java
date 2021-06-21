@@ -481,9 +481,7 @@ public class SimpleFetchOptimizer extends Transform {
           PlanUtils.configureInputJobPropertiesForStorageHandler(tableDesc);
           Utilities.copyTableJobPropertiesToConf(tableDesc, jobConf);
           long len = estimator.estimate(jobConf, scanOp, threshold).getTotalLength();
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Threshold " + len + " exceeded for pseudoMR mode");
-          }
+          LOG.debug("Threshold {} exceeded for pseudoMR mode", len);
           return (threshold - len) > 0;
         }
         if (table.isNonNative()) {
@@ -491,9 +489,7 @@ public class SimpleFetchOptimizer extends Transform {
         }
         if (!table.isPartitioned()) {
           long len = getPathLength(jobConf, table.getPath(), table.getInputFormatClass(), threshold);
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Threshold " + len + " exceeded for pseudoMR mode");
-          }
+          LOG.debug("Threshold {} exceeded for pseudoMR mode", len);
           return (threshold - len) > 0;
         }
         final AtomicLong total = new AtomicLong(0);

@@ -43,6 +43,7 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TIOStreamTransport;
+import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +61,7 @@ public class ThriftJDBCBinarySerDe extends AbstractSerDe {
   private ArrayList<Object> row;
   private BytesWritable serializedBytesWritable = new BytesWritable();
   private ByteStream.Output output = new ByteStream.Output();
-  private TProtocol protocol = new TCompactProtocol(new TIOStreamTransport(output));
+  private TProtocol protocol;
   private ThriftFormatter thriftFormatter = new ThriftFormatter();
   private int MAX_BUFFERED_ROWS;
   private int count;
@@ -71,6 +72,11 @@ public class ThriftJDBCBinarySerDe extends AbstractSerDe {
       throws SerDeException {
     super.initialize(configuration, tableProperties, partitionProperties);
 
+    try {
+    protocol = new TCompactProtocol(new TIOStreamTransport(output));
+    } catch (TTransportException e) {
+      throw new SerDeException(e);
+    }
     // Get column names
     MAX_BUFFERED_ROWS =
       HiveConf.getIntVar(configuration, HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE);

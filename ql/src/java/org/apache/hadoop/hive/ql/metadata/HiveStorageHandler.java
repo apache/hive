@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
@@ -178,11 +179,13 @@ public interface HiveStorageHandler extends Configurable {
   /**
    * Test if the storage handler allows the push-down of join filter predicate to prune further the splits.
    *
+   * @param table The table to filter.
    * @param syntheticFilterPredicate Join filter predicate.
    * @return true if supports dynamic split pruning for the given predicate.
    */
 
-  default boolean addDynamicSplitPruningEdge(ExprNodeDesc syntheticFilterPredicate) {
+  default boolean addDynamicSplitPruningEdge(org.apache.hadoop.hive.ql.metadata.Table table,
+      ExprNodeDesc syntheticFilterPredicate) {
     return false;
   }
 
@@ -196,5 +199,68 @@ public interface HiveStorageHandler extends Configurable {
    */
   default Map<String, String> getOperatorDescProperties(OperatorDesc operatorDesc, Map<String, String> initialProps) {
     return initialProps;
+  }
+
+  /**
+   * Return some basic statistics (numRows, numFiles, totalSize) calculated by the underlying storage handler
+   * implementation.
+   * @param partish a partish wrapper class
+   * @return map of basic statistics, can be null
+   */
+  default Map<String, String> getBasicStatistics(Partish partish) {
+    return null;
+  }
+
+  /**
+   * Check if the storage handler can provide basic statistics.
+   * @return true if the storage handler can supply the basic statistics
+   */
+  default boolean canProvideBasicStatistics() {
+    return false;
+  }
+
+  /**
+   * Check if CTAS operations should behave in a direct-insert manner (i.e. no move task).
+   *
+   * If true, the compiler will not include the table creation task and move task into the execution plan.
+   * Instead, it's the responsibility of storage handler/serde to create the table during the compilation phase.
+   * Please note that the atomicity of the operation will suffer in this case, i.e. the created table might become
+   * exposed, depending on the implementation, before the CTAS operations finishes.
+   * Rollback (e.g. dropping the table) is also the responsibility of the storage handler in case of failures.
+   *
+   * @return whether direct insert CTAS is required
+   */
+  default boolean directInsertCTAS() {
+    return false;
+  }
+
+  /**
+   * Check if partition columns should be removed and added to the list of regular columns in HMS.
+   * This can be useful for non-native tables where the table format/layout differs from the standard Hive table layout,
+   * e.g. Iceberg tables. For these table formats, the partition column values are stored in the data files along with
+   * regular column values, therefore the object inspectors should include the partition columns as well.
+   * Any partitioning scheme provided via the standard HiveQL syntax will be honored but stored in someplace
+   * other than HMS, depending on the storage handler implementation.
+   *
+   * @return whether table should always be unpartitioned from the perspective of HMS
+   */
+  default boolean alwaysUnpartitioned() {
+    return false;
+  }
+
+  /**
+   * Check if the underlying storage handler implementation support partition transformations.
+   * @return true if the storage handler can support it
+   */
+  default boolean supportsPartitionTransform() {
+    return false;
+  }
+
+  /**
+   * Get file format property key, if the file format is configured through a table property.
+   * @return table property key, can be null
+   */
+  default String getFileFormatPropertyKey() {
+    return null;
   }
 }
