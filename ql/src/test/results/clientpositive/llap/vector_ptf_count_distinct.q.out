@@ -4557,7 +4557,7 @@ STAGE PLANS:
                     dataColumnCount: 2
                     dataColumns: KEY.reducesinkkey0:decimal(10,0), VALUE._col1:decimal(10,0)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, decimal(10,0)]
+                    scratchColumnTypeNames: [bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col1 (type: decimal(10,0)), KEY.reducesinkkey0 (type: decimal(10,0))
@@ -4590,8 +4590,8 @@ STAGE PLANS:
                   PTF Vectorization:
                       allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
-                      evaluatorClasses: [VectorPTFEvaluatorDecimalCountDistinct]
-                      functionInputExpressions: [ConvertDecimal64ToDecimal(col 1:decimal(10,0)/DECIMAL_64) -> 3:decimal(10,0)]
+                      evaluatorClasses: [VectorPTFEvaluatorDecimal64CountDistinct]
+                      functionInputExpressions: [col 1:decimal(10,0)/DECIMAL_64]
                       functionNames: [count]
                       keyInputColumns: [0]
                       native: true
@@ -4637,7 +4637,7 @@ STAGE PLANS:
                     dataColumnCount: 3
                     dataColumns: KEY.reducesinkkey0:decimal(10,0), VALUE._col0:bigint, VALUE._col2:decimal(10,0)/DECIMAL_64
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, decimal(10,0)]
+                    scratchColumnTypeNames: [bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: bigint), KEY.reducesinkkey0 (type: decimal(10,0)), VALUE._col2 (type: decimal(10,0))
@@ -4670,8 +4670,8 @@ STAGE PLANS:
                   PTF Vectorization:
                       allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
-                      evaluatorClasses: [VectorPTFEvaluatorDecimalCountDistinct]
-                      functionInputExpressions: [ConvertDecimal64ToDecimal(col 2:decimal(10,0)/DECIMAL_64) -> 4:decimal(10,0)]
+                      evaluatorClasses: [VectorPTFEvaluatorDecimal64CountDistinct]
+                      functionInputExpressions: [col 2:decimal(10,0)/DECIMAL_64]
                       functionNames: [count]
                       keyInputColumns: [0]
                       native: true

@@ -31,12 +31,19 @@ import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorBase;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorCount;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorBytesCountDistinct;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorCountStar;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimal64Avg;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimalAvg;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimal64CountDistinct;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimalCountDistinct;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimal64FirstValue;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimalFirstValue;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimal64LastValue;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimalLastValue;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimal64Max;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimalMax;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimal64Min;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimalMin;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimal64Sum;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimalSum;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDenseRank;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDoubleAvg;
@@ -55,9 +62,13 @@ import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongMin;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongSum;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorRank;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorRowNumber;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingDecimal64Avg;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingDecimalAvg;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingDecimal64Max;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingDecimalMax;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingDecimal64Min;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingDecimalMin;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingDecimal64Sum;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingDecimalSum;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingDoubleAvg;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingDoubleMax;
@@ -71,6 +82,8 @@ import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorTimestampCoun
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+
+import javax.xml.crypto.Data;
 
 /**
  * VectorPTFDesc.
@@ -173,7 +186,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
   // We provide this public method to help EXPLAIN VECTORIZATION show the evaluator classes.
   public static VectorPTFEvaluatorBase getEvaluator(SupportedFunctionType functionType,
       boolean isDistinct, WindowFrameDef windowFrameDef, Type columnVectorType,
-      VectorExpression inputVectorExpression, int outputColumnNum) {
+      DataTypePhysicalVariation columnVariation, VectorExpression inputVectorExpression, int outputColumnNum) {
 
     final boolean isRowEndCurrent = (windowFrameDef.getWindowType() == WindowType.ROWS
         && windowFrameDef.getEnd().isCurrentRow());
@@ -220,6 +233,13 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
             new VectorPTFEvaluatorStreamingDecimalMin(
                 windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
+      case DECIMAL_64:
+        evaluator = !canStream ?
+            new VectorPTFEvaluatorDecimal64Min(
+                windowFrameDef, inputVectorExpression, outputColumnNum) :
+            new VectorPTFEvaluatorStreamingDecimal64Min(
+                windowFrameDef, inputVectorExpression, outputColumnNum);
+        break;
       default:
         throw new RuntimeException("Unexpected column vector type " + columnVectorType + " for " + functionType);
       }
@@ -245,6 +265,13 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
             new VectorPTFEvaluatorDecimalMax(
                 windowFrameDef, inputVectorExpression, outputColumnNum) :
             new VectorPTFEvaluatorStreamingDecimalMax(
+                windowFrameDef, inputVectorExpression, outputColumnNum);
+        break;
+      case DECIMAL_64:
+        evaluator = !canStream ?
+            new VectorPTFEvaluatorDecimal64Max(
+                windowFrameDef, inputVectorExpression, outputColumnNum) :
+            new VectorPTFEvaluatorStreamingDecimal64Max(
                 windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       default:
@@ -274,6 +301,13 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
             new VectorPTFEvaluatorStreamingDecimalSum(
                 windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
+      case DECIMAL_64:
+        evaluator = !canStream ?
+            new VectorPTFEvaluatorDecimal64Sum(
+                windowFrameDef, inputVectorExpression, outputColumnNum) :
+            new VectorPTFEvaluatorStreamingDecimal64Sum(
+                windowFrameDef, inputVectorExpression, outputColumnNum);
+        break;
       default:
         throw new RuntimeException("Unexpected column vector type " + columnVectorType + " for " + functionType);
       }
@@ -301,6 +335,13 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
             new VectorPTFEvaluatorStreamingDecimalAvg(
                 windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
+      case DECIMAL_64:
+        evaluator = !canStream ?
+            new VectorPTFEvaluatorDecimal64Avg(
+                windowFrameDef, inputVectorExpression, outputColumnNum) :
+            new VectorPTFEvaluatorStreamingDecimal64Avg(
+                windowFrameDef, inputVectorExpression, outputColumnNum);
+        break;
       default:
         throw new RuntimeException("Unexpected column vector type " + columnVectorType + " for " + functionType);
       }
@@ -315,6 +356,9 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
         break;
       case DECIMAL:
         evaluator = new VectorPTFEvaluatorDecimalFirstValue(windowFrameDef, inputVectorExpression, outputColumnNum);
+        break;
+      case DECIMAL_64:
+        evaluator = new VectorPTFEvaluatorDecimal64FirstValue(windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       default:
         throw new RuntimeException("Unexpected column vector type " + columnVectorType + " for " + functionType);
@@ -331,6 +375,9 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
       case DECIMAL:
         evaluator = new VectorPTFEvaluatorDecimalLastValue(windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
+      case DECIMAL_64:
+        evaluator = new VectorPTFEvaluatorDecimal64LastValue(windowFrameDef, inputVectorExpression, outputColumnNum);
+        break;
       default:
         throw new RuntimeException("Unexpected column vector type " + columnVectorType + " for " + functionType);
       }
@@ -345,7 +392,6 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
             evaluator = new VectorPTFEvaluatorBytesCountDistinct(windowFrameDef,
                 inputVectorExpression, outputColumnNum);
             break;
-          case DECIMAL_64: //Decimal64ColumnVector is a LongColumnVector
           case LONG:
             evaluator = new VectorPTFEvaluatorLongCountDistinct(windowFrameDef,
                 inputVectorExpression, outputColumnNum);
@@ -356,6 +402,10 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
             break;
           case DECIMAL:
             evaluator = new VectorPTFEvaluatorDecimalCountDistinct(windowFrameDef,
+                inputVectorExpression, outputColumnNum);
+            break;
+          case DECIMAL_64:
+            evaluator = new VectorPTFEvaluatorDecimal64CountDistinct(windowFrameDef,
                 inputVectorExpression, outputColumnNum);
             break;
           case TIMESTAMP:
@@ -385,6 +435,8 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     WindowFrameDef[] evaluatorWindowFrameDefs = vectorPTFDesc.getEvaluatorWindowFrameDefs();
     VectorExpression[] evaluatorInputExpressions = vectorPTFInfo.getEvaluatorInputExpressions();
     Type[] evaluatorInputColumnVectorTypes = vectorPTFInfo.getEvaluatorInputColumnVectorTypes();
+    DataTypePhysicalVariation[] evaluatorInputDataTypePhysicalVariations =
+        vectorPTFInfo.getEvaluatorInputDataTypePhysicalVariations();
 
     int[] outputColumnMap = vectorPTFInfo.getOutputColumnMap();
 
@@ -396,12 +448,13 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
       SupportedFunctionType functionType = VectorPTFDesc.supportedFunctionsMap.get(functionName);
       VectorExpression inputVectorExpression = evaluatorInputExpressions[i];
       final Type columnVectorType = evaluatorInputColumnVectorTypes[i];
+      final DataTypePhysicalVariation columnDataTypePhysicalVariation = evaluatorInputDataTypePhysicalVariations[i];
 
       // The output* arrays start at index 0 for output evaluator aggregations.
       final int outputColumnNum = outputColumnMap[i];
 
       VectorPTFEvaluatorBase evaluator = VectorPTFDesc.getEvaluator(functionType, isDistinct,
-          windowFrameDef, columnVectorType, inputVectorExpression, outputColumnNum);
+          windowFrameDef, columnVectorType, columnDataTypePhysicalVariation, inputVectorExpression, outputColumnNum);
 
       evaluators[i] = evaluator;
     }
