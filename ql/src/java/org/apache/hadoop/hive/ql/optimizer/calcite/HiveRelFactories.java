@@ -144,7 +144,7 @@ public class HiveRelFactories {
      *          Right input
      * @param condition
      *          Join condition
-     * @param variablesStoppedd
+     * @param variablesStopped
      *          Set of names of variables which are set by the LHS and used by
      *          the RHS and are not available to nodes above this JoinRel in the
      *          tree
@@ -155,7 +155,7 @@ public class HiveRelFactories {
      */
     @Override
     public RelNode createJoin(RelNode left, RelNode right, List<RelHint> hints, RexNode condition,
-      Set<CorrelationId> variablesStoppedd, JoinRelType joinType, boolean semiJoinDone) {
+      Set<CorrelationId> variablesStopped, JoinRelType joinType, boolean semiJoinDone) {
       if (joinType == JoinRelType.SEMI) {
         final RelOptCluster cluster = left.getCluster();
         return HiveSemiJoin.getSemiJoin(cluster, left.getTraitSet(), left, right, condition);

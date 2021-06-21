@@ -464,7 +464,6 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
         new LinkedHashSet<>(extraFields);
     RelOptUtil.InputFinder inputFinder =
         new RelOptUtil.InputFinder(inputExtraFields, fieldsUsed);
-//    inputFinder.inputBitSet.addAll(fieldsUsed);
     conditionExpr.accept(inputFinder);
     final ImmutableBitSet inputFieldsUsed = inputFinder.build();
 
