@@ -217,9 +217,9 @@ public class HiveServer2 extends CompositeService {
       }
     };
     if (isHTTPTransportMode(hiveConf)) {
-      thriftCLIService = new ThriftHttpCLIService(cliService, oomHook);
+      thriftCLIService = new ThriftHttpCLIService(cliService);
     } else {
-      thriftCLIService = new ThriftBinaryCLIService(cliService, oomHook);
+      thriftCLIService = new ThriftBinaryCLIService(cliService);
     }
     addService(thriftCLIService);
     super.init(hiveConf);
