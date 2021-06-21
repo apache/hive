@@ -6848,16 +6848,40 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("write_partition_column_statistics", ":  db=" + dbName  + " table=" + tableName
               + " part=" + csd.getPartName());
       boolean ret = false;
+
+      Map<String, String> parameters;
+      List<String> partVals;
+      boolean committed = false;
+      getMS().openTransaction();
+
       try {
         if (tbl == null) {
           tbl = getTable(catName, dbName, tableName);
         }
-        ret = updatePartitionColStatsInBatch(tbl, Collections.singletonMap(csd.getPartName(), colStats),
-                validWriteIds, writeId);
+        partVals = getPartValsFromName(tbl, csd.getPartName());
+        parameters = getMS().updatePartitionColumnStatistics(colStats, partVals, validWriteIds, writeId);
+        if (parameters != null) {
+          if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                    EventType.UPDATE_PARTITION_COLUMN_STAT,
+                    new UpdatePartitionColumnStatEvent(colStats, partVals, parameters, tbl,
+                            writeId, this));
+          }
+          if (!listeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(listeners,
+                    EventType.UPDATE_PARTITION_COLUMN_STAT,
+                    new UpdatePartitionColumnStatEvent(colStats, partVals, parameters, tbl,
+                            writeId, this));
+          }
+        }
+        committed = getMS().commitTransaction();
       } finally {
-        endFunction("write_partition_column_statistics", ret == true, null, tableName);
+        if (!committed) {
+          getMS().rollbackTransaction();
+        }
+        endFunction("write_partition_column_statistics", ret != false, null, tableName);
       }
-      return ret;
+      return parameters != null;
     }
 
     private boolean updatePartitionColStatsInBatch(Table tbl, Map<String, ColumnStatistics> statsMap,
@@ -8860,8 +8884,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         } else { // No merge.
           Table t = getTable(catName, dbName, tableName);
           // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
-          ret = updatePartitionColStatsInBatch(t, newStatsMap,
-                  request.getValidWriteIdList(), request.getWriteId());
+          if (MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL)) {
+            ret = updatePartitionColStatsInBatch(t, newStatsMap,
+                    request.getValidWriteIdList(), request.getWriteId());
+          } else {
+            for (Map.Entry<String, ColumnStatistics> entry : newStatsMap.entrySet()) {
+              // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
+              ret = updatePartitonColStatsInternal(t, entry.getValue(),
+                      request.getValidWriteIdList(), request.getWriteId()) && ret;
+            }
+          }
         }
       }
       return ret;
