@@ -213,9 +213,10 @@ public class BytesColumnVector extends ColumnVector {
    * Ensures that we have space allocated for the next value, which has size
    * length bytes.
    *
-   * Updates buffer, nextFree, and smallBufferNextFree for this value.
+   * Updates currentValue, currentOffset, and sharedBufferOffset for this value.
    *
-   * Always use with getValPreallocatedBytes, getValPreallocatedStart, and setValPreallocated.
+   * Always use before getValPreallocatedBytes, getValPreallocatedStart,
+   * and setValPreallocated.
    */
   public void ensureValPreallocated(int length) {
     if ((sharedBufferOffset + length) > sharedBuffer.length) {
@@ -274,8 +275,9 @@ public class BytesColumnVector extends ColumnVector {
 
   /**
    * Allocate/reuse enough buffer space to accommodate next element.
-   * Updates the nextFree field to point to the start of the new record.
-   * If smallBuffer is used, smallBufferNextFree is updated.
+   * currentOffset is set to the first available byte in the returned array.
+   * If sharedBuffer is used, sharedBufferOffset is updated to point after the
+   * current record.
    *
    * This uses an exponential increase mechanism to rapidly
    * increase buffer size to enough to hold all data.
@@ -286,20 +288,18 @@ public class BytesColumnVector extends ColumnVector {
    * @return the buffer to use for the next element
    */
   private byte[] allocateBuffer(int nextElemLength) {
-    // A call to ensureValPreallocated() will ensure that buffer[] points to
-    // a byte[] with sufficient space for the specified size.
-
-    // If this is a large value or small buffer is maxed out, allocate a
-    // single use buffer.
+    // If this is a large value or shared buffer is maxed out, allocate a
+    // single use buffer. Assumes that sharedBuffer length and
+    // MAX_SIZE_FOR_SHARED_BUFFER are powers of 2.
     if (nextElemLength > MAX_SIZE_FOR_SMALL_ITEM ||
-        sharedBufferOffset + nextElemLength > MAX_SIZE_FOR_SHARED_BUFFER) {
+        sharedBufferOffset + nextElemLength >= MAX_SIZE_FOR_SHARED_BUFFER) {
       // allocate a value for the next value
       ++bufferAllocationCount;
       currentOffset = 0;
       return new byte[nextElemLength];
     } else {
 
-      // smallBuffer might still be out of space
+      // sharedBuffer might still be out of space
       if ((sharedBufferOffset + nextElemLength) > sharedBuffer.length) {
         int newLength = sharedBuffer.length * 2;
         while (newLength < nextElemLength) {
