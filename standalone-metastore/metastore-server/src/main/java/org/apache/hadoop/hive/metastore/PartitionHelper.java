@@ -60,49 +60,74 @@ class PartitionHelper {
     }
   }
 
+  // If next value is already inserted, then increment it by numValues. Else return -1.
+  private static long updateAndGetNextValueFromSequence(Connection dbConn, String seqName, long numValues)
+          throws SQLException {
+    ResultSet rs = null;
+    long currValue = -1;
+
+    try (Statement statement = dbConn.createStatement()) {
+      String query = "SELECT \"NEXT_VAL\" FROM \"SEQUENCE_TABLE\" WHERE \"SEQUENCE_NAME\"= "
+              + quoteString(seqName)
+              + " FOR UPDATE";
+      LOG.debug("Going to execute query " + query);
+      rs = statement.executeQuery(query);
+      if (rs.next()) {
+        currValue = rs.getLong(1);
+      }
+    } finally {
+      close(rs);
+    }
+
+    // If its already there, update.
+    if (currValue != -1) {
+      long nextValue = currValue + numValues;
+      try (Statement statement = dbConn.createStatement()) {
+        String query = "UPDATE \"SEQUENCE_TABLE\" SET \"NEXT_VAL\" = "
+                + nextValue
+                + " WHERE \"SEQUENCE_NAME\" = "
+                + quoteString(seqName);
+        statement.executeUpdate(query);
+      }
+    }
+    return currValue;
+  }
+
   /**
    * Gets the next value from SEQUENCE_TABLE table for given sequence. The sequence value is updated by numValues and
-   * the current value is returned. Write lock is taken on the SEQUENCE_TABLE to avoid race condition of multiple
-   * thread trying to insert the initial value.
+   * the current value is returned.
    * @return The sequence value before update.
    */
   public static long getNextValueFromSequenceTable(Connection dbConn, String seqName, long numValues,
                                             DatabaseProduct dbType) throws MetaException {
     try {
-      try (Statement stmt = dbConn.createStatement()) {
-        String lockTableSql = dbType.lockTable("SEQUENCE_TABLE", false);
-        stmt.executeUpdate(lockTableSql);
+      long currValue = updateAndGetNextValueFromSequence(dbConn, seqName, numValues);
+      if (currValue != -1) {
+        return currValue;
       }
 
-      String updateQuery;
-      ResultSet rs = null;
-      long currValue;
-      try (Statement stmt = dbConn.createStatement()) {
-        String query = "SELECT \"NEXT_VAL\" FROM \"SEQUENCE_TABLE\" WHERE \"SEQUENCE_NAME\"= " + quoteString(seqName);
-        rs = stmt.executeQuery(query);
-        if (rs.next()) {
-          currValue = rs.getLong(1);
-          long nextValue = currValue + numValues;
-          updateQuery = "UPDATE \"SEQUENCE_TABLE\" SET \"NEXT_VAL\" = " + nextValue + " WHERE \"SEQUENCE_NAME\" = "
-                  + quoteString(seqName);
+      // If next value for the sequence is not present insert the updated value and return 1.
+      currValue = 1;
+      try (Statement statement = dbConn.createStatement()) {
+        long nextValue = currValue + numValues;
+        String query = "INSERT INTO \"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\", \"NEXT_VAL\")  VALUES ( "
+                + quoteString(seqName) + "," + nextValue
+                + ")";
+        statement.executeUpdate(query);
+      } catch (SQLException e) {
+        // If the record is already inserted by some other thread then update it.
+        if (dbType.isDuplicateKeyError(e)) {
+          currValue = updateAndGetNextValueFromSequence(dbConn, seqName, numValues);
         } else {
-          currValue = 1;
-          long nextValue = currValue + numValues;
-          updateQuery = "INSERT INTO \"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\", \"NEXT_VAL\")  VALUES ( "
-                  + quoteString(seqName) + "," + nextValue
-                  + ")";
+          LOG.error("Unable to insert into SEQUENCE_TABLE for MPartitionColumnStatistics.", e);
+          throw e;
         }
-      } finally {
-        close(rs);
-      }
-
-      try (Statement stmt = dbConn.createStatement()) {
-        stmt.executeUpdate(updateQuery);
       }
       return currValue;
-    } catch (SQLException e){
-      LOG.error("Failed to get next value for sequence " + seqName + " with numValues " + numValues, e);
-      throw new MetaException(e.getMessage());
+    } catch (Exception e) {
+      LOG.error("Unable to getNextCSIdForMPartitionColumnStatistics", e);
+      throw new MetaException("Unable to getNextCSIdForMPartitionColumnStatistics  "
+              + " due to: " + e.getMessage());
     }
   }
 
