@@ -20,7 +20,9 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,6 +31,7 @@ import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -39,8 +42,10 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.JobContextImpl;
@@ -59,6 +64,7 @@ import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableMetadataParser;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.UpdateProperties;
+import org.apache.iceberg.UpdateSchema;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveSchemaUtil;
@@ -85,6 +91,8 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
       // Initially we'd like to cache the partition spec in HMS, but not push it down later to Iceberg during alter
       // table commands since by then the HMS info can be stale + Iceberg does not store its partition spec in the props
       InputFormatConfig.PARTITION_SPEC);
+  private static final EnumSet<AlterTableType> SUPPORTED_ALTER_OPS = EnumSet.of(
+      AlterTableType.ADDCOLS, AlterTableType.ADDPROPS, AlterTableType.DROPPROPS);
 
   private final Configuration conf;
   private Table icebergTable = null;
@@ -94,6 +102,8 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   private TableMetadata deleteMetadata;
   private boolean canMigrateHiveTable;
   private PreAlterTableProperties preAlterTableProperties;
+  private Enum<AlterTableType> currentAlterTableOp;
+  private UpdateSchema updateSchema;
 
   public HiveIcebergMetaHook(Configuration conf) {
     this.conf = conf;
@@ -214,7 +224,7 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
   @Override
   public void preAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws MetaException {
-    super.preAlterTable(hmsTable, context);
+    setupAlterOperationType(hmsTable, context);
     catalogProperties = getCatalogProperties(hmsTable);
     try {
       icebergTable = IcebergTableUtil.getTable(conf, catalogProperties);
@@ -249,6 +259,21 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
           Collections.emptyMap()));
       updateHmsTableProperties(hmsTable);
     }
+
+    if (AlterTableType.ADDCOLS.equals(currentAlterTableOp)) {
+      Collection<FieldSchema> addedCols =
+          HiveSchemaUtil.schemaDifference(hmsTable.getSd().getCols(), HiveSchemaUtil.convert(icebergTable.schema()));
+      for (FieldSchema addedCol : addedCols) {
+        if (updateSchema == null) {
+          updateSchema = icebergTable.updateSchema();
+        }
+        updateSchema.addColumn(
+            addedCol.getName(),
+            HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType())),
+            addedCol.getComment()
+        );
+      }
+    }
   }
 
   @Override
@@ -266,9 +291,12 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
       HiveTableUtil.importFiles(preAlterTableProperties.tableLocation, preAlterTableProperties.format,
           partitionSpecProxy, preAlterTableProperties.partitionKeys, catalogProperties, conf);
     } else {
-      Map<String, String> contextProperties = context.getProperties();
-      if (contextProperties.containsKey(ALTER_TABLE_OPERATION_TYPE) &&
-          allowedAlterTypes.contains(contextProperties.get(ALTER_TABLE_OPERATION_TYPE))) {
+      if (AlterTableType.ADDCOLS.equals(currentAlterTableOp) && updateSchema != null) {
+        updateSchema.commit();
+      } else if (AlterTableType.ADDPROPS.equals(currentAlterTableOp) ||
+          AlterTableType.DROPPROPS.equals(currentAlterTableOp)) {
+
+        Map<String, String> contextProperties = context.getProperties();
         Map<String, String> hmsTableParameters = hmsTable.getParameters();
         Splitter splitter = Splitter.on(PROPERTIES_SEPARATOR);
         UpdateProperties icebergUpdateProperties = icebergTable.updateProperties();
@@ -307,6 +335,24 @@ public class HiveIcebergMetaHook extends DefaultHiveMetaHook {
             icebergTable.name(), path);
       } catch (IOException e) {
         // the file doesn't exists, do nothing
+      }
+    }
+  }
+
+  private void setupAlterOperationType(org.apache.hadoop.hive.metastore.api.Table hmsTable,
+      EnvironmentContext context) throws MetaException {
+    TableName tableName = new TableName(hmsTable.getCatName(), hmsTable.getDbName(), hmsTable.getTableName());
+    if (context == null || context.getProperties() == null) {
+      throw new MetaException("ALTER TABLE operation type on Iceberg table " + tableName +
+          " could not be determined.");
+    }
+    String stringOpType = context.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
+    if (stringOpType != null) {
+      currentAlterTableOp = AlterTableType.valueOf(stringOpType);
+      if (SUPPORTED_ALTER_OPS.stream().noneMatch(op -> op.equals(currentAlterTableOp))) {
+        throw new MetaException(
+            "Unsupported ALTER TABLE operation type on Iceberg table " + tableName + ", must be one of: " +
+                SUPPORTED_ALTER_OPS.toString());
       }
     }
   }

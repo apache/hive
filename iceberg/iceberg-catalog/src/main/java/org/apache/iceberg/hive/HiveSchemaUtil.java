@@ -20,7 +20,10 @@
 package org.apache.iceberg.hive;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -132,6 +135,23 @@ public final class HiveSchemaUtil {
    */
   public static Type convert(TypeInfo typeInfo) {
     return HiveSchemaConverter.convert(typeInfo, false);
+  }
+
+  /**
+   * Produces the difference of two FieldSchema lists by only taking into account the field name and type.
+   * @param minuendCollection Collection of fields to subtract from
+   * @param subtrahendCollection Collection of fields to subtract
+   * @return the result list of difference
+   */
+  public static Collection<FieldSchema> schemaDifference(
+      Collection<FieldSchema> minuendCollection, Collection<FieldSchema> subtrahendCollection) {
+
+    Function<FieldSchema, FieldSchema> unsetCommentFunc = fs -> new FieldSchema(fs.getName(), fs.getType(), null);
+    Set<FieldSchema> subtrahendWithoutComment =
+        subtrahendCollection.stream().map(unsetCommentFunc).collect(Collectors.toSet());
+
+    return minuendCollection.stream()
+        .filter(fs -> !subtrahendWithoutComment.contains(unsetCommentFunc.apply(fs))).collect(Collectors.toList());
   }
 
   private static String convertToTypeString(Type type) {
