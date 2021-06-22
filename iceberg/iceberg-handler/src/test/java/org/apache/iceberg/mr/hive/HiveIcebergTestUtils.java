@@ -387,7 +387,7 @@ public class HiveIcebergTestUtils {
     PositionDeleteWriter<Record> posWriter = appenderFactory.newPosDeleteWriter(outputFile, fileFormat, partitionKey);
     try (PositionDeleteWriter<Record> writer = posWriter) {
       deletes.forEach(del -> {
-        PositionDelete<Record> positionDelete = PositionDelete.create();
+        PositionDelete positionDelete = PositionDelete.create();
         positionDelete.set(del.path(), del.pos(), del.row());
         writer.write(positionDelete);
       });

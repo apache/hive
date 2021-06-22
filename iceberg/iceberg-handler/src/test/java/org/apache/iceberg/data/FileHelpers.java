@@ -51,12 +51,13 @@ public class FileHelpers {
   }
 
   public static Pair<DeleteFile, CharSequenceSet> writeDeleteFile(Table table, OutputFile out,
-                                                                  List<Pair<CharSequence, Long>> deletes)
+                                                                    List<Pair<CharSequence, Long>> deletes)
       throws IOException {
     return writeDeleteFile(table, out, null, deletes);
   }
+
   public static Pair<DeleteFile, CharSequenceSet> writeDeleteFile(Table table, OutputFile out, StructLike partition,
-                                                                  List<Pair<CharSequence, Long>> deletes)
+                                                                    List<Pair<CharSequence, Long>> deletes)
       throws IOException {
     FileFormat format = defaultFormat(table.properties());
     FileAppenderFactory<Record> factory = new GenericAppenderFactory(table.schema(), table.spec());
