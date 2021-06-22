@@ -178,7 +178,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   }
 
   @Test
-  public void testREADOperationsNotCapturedInNotificationLog() throws Throwable {
+  public void testReadOperationsNotCapturedInNotificationLog() throws Throwable {
     //Perform empty bootstrap dump and load
     primary.hiveConf.set("hive.txn.readonly.enabled", "true");
     primary.run("create table " + primaryDbName + ".t1 (id int)");
