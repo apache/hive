@@ -90,6 +90,7 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -187,6 +188,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         if (shouldDump(previousValidHiveDumpPath)) {
           Path currentDumpPath = getCurrentDumpPath(dumpRoot, isBootstrap);
           Path hiveDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
+          // Set distCp custom name corresponding to the replication policy.
+          String mapRedCustomName = ReplUtils.getDistCpCustomName(conf);
+          conf.set(JobContext.JOB_NAME, mapRedCustomName);
           work.setCurrentDumpPath(currentDumpPath);
           work.setMetricCollector(initMetricCollection(isBootstrap, hiveDumpRoot));
           if (shouldDumpAtlasMetadata()) {
