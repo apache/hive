@@ -3061,14 +3061,12 @@ class MetaStoreDirectSql {
       long batchSizeMax = MetastoreConf.getIntVar(conf, ConfVars.JDBC_MAX_BATCH_SIZE);
 
       if (PartitionHelper.needToAddPrivilegeInfo(dbConn, tblId)) {
-        final long grantId = PartitionHelper.getNextValueFromSequenceTable(dbConn,
-                "org.apache.hadoop.hive.metastore.model.MTablePrivilege", numPart * 2, dbType);
-        PartitionHelper.addPartitionPrivilegeInfo(dbConn, parts, tblId, partId, grantId, batchSizeMax);
-        PartitionHelper.addPartitionColPrivilegeInfo(dbConn, parts, tblId, partId, grantId, batchSizeMax);
+        PartitionHelper.addPartitionPrivilegeInfo(dbConn, parts, tblId, partId, dbType, batchSizeMax);
+        PartitionHelper.addPartitionColPrivilegeInfo(dbConn, parts, tblId, partId, dbType, batchSizeMax);
       }
 
       PartitionHelper.addSerdeInfo(dbConn, parts, serId, batchSizeMax);
-      PartitionHelper.addColDescInfo(dbConn, parts, colDescId, batchSizeMax);
+      PartitionHelper.addColDescInfo(dbConn, numPart, colDescId, batchSizeMax);
       PartitionHelper.addSDInfo(dbConn, parts, sdId, serId, colDescId, dbType, batchSizeMax);
       PartitionHelper.addColV2Info(dbConn, parts, colDescId, batchSizeMax);
       PartitionHelper.addSDParaInfo(dbConn, parts, sdId, batchSizeMax);

@@ -62,7 +62,7 @@ class PartitionHelper {
 
   /**
    * Gets the next value from SEQUENCE_TABLE table for given sequence. The sequence value is updated by numValues and
-   * the current value is returned. write lock is taken on the SEQUENCE_TABLE to avoid race condition of multiple
+   * the current value is returned. Write lock is taken on the SEQUENCE_TABLE to avoid race condition of multiple
    * thread trying to insert the initial value.
    * @return The sequence value before update.
    */
@@ -87,7 +87,7 @@ class PartitionHelper {
                   + quoteString(seqName);
         } else {
           currValue = 1;
-          long nextValue = currValue + numValues ;
+          long nextValue = currValue + numValues;
           updateQuery = "INSERT INTO \"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\", \"NEXT_VAL\")  VALUES ( "
                   + quoteString(seqName) + "," + nextValue
                   + ")";
@@ -144,30 +144,9 @@ class PartitionHelper {
     }
   }
 
-  public static void addPartitionPrivilegeInfo(Connection dbConn, List<Partition> parts, long tblId, long partId,
-                                               long grantId, long maxBatchSize) throws SQLException {
-    ResultSet rs = null;
-    long numPartGrant = 0;
-    try (Statement statement = dbConn.createStatement()) {
-      String query = "SELECT COUNT(*) FROM \"TBL_PRIVS\" WHERE  \"TBL_ID\" = " + tblId;
-      rs = statement.executeQuery(query);
-      if (rs.next()) {
-        numPartGrant = rs.getLong(1);
-      }
-    } finally {
-      close(rs);
-    }
-
-    if (numPartGrant == 0) {
-      return;
-    }
-
-    long grantIdIdx = grantId;
-    int now = (int) (System.currentTimeMillis() / 1000);
-    String insertPartPrev = "INSERT INTO \"PART_PRIVS\" "
-            + " (\"PART_GRANT_ID\", \"CREATE_TIME\", \"GRANT_OPTION\", \"GRANTOR\", \"GRANTOR_TYPE\", \"PART_ID\","
-            + " \"PRINCIPAL_NAME\", \"PRINCIPAL_TYPE\", \"PART_PRIV\", \"AUTHORIZER\") "
-            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+  public static void addPartitionPrivilegeInfo(Connection dbConn, List<Partition> parts, long tblId, long partIdx,
+                                               DatabaseProduct dbType, long maxBatchSize)
+          throws SQLException, MetaException {
     List<Integer> grantOptionList = new ArrayList<>();
     List<String> grantorList = new ArrayList<>();
     List<String> grantTypeList = new ArrayList<>();
@@ -175,7 +154,7 @@ class PartitionHelper {
     List<String> principalTypeList = new ArrayList<>();
     List<String> tblPrivList = new ArrayList<>();
     List<String> authorizerList = new ArrayList<>();
-
+    ResultSet rs = null;
     try (Statement statement = dbConn.createStatement()) {
       String query = "SELECT \"GRANT_OPTION\", \"GRANTOR\", \"GRANTOR_TYPE\", \"PRINCIPAL_NAME\", "
               + " \"PRINCIPAL_TYPE\", \"TBL_PRIV\", \"AUTHORIZER\" "
@@ -196,8 +175,15 @@ class PartitionHelper {
       close(rs);
     }
 
+    long grantIdIdx = PartitionHelper.getNextValueFromSequenceTable(dbConn,
+            "org.apache.hadoop.hive.metastore.model.MTablePrivilege", parts.size(), dbType);
+    int now = (int) (System.currentTimeMillis() / 1000);
+    String insertPartPrev = "INSERT INTO \"PART_PRIVS\" "
+            + " (\"PART_GRANT_ID\", \"CREATE_TIME\", \"GRANT_OPTION\", \"GRANTOR\", \"GRANTOR_TYPE\", \"PART_ID\","
+            + " \"PRINCIPAL_NAME\", \"PRINCIPAL_TYPE\", \"PART_PRIV\", \"AUTHORIZER\") "
+            + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+
     try (PreparedStatement pst = dbConn.prepareStatement(insertPartPrev)) {
-      long partIdx = partId;
       long numRecords = 0;
       for (int j = 0; j < parts.size(); j++) {
         for (int i = 0; i < grantOptionList.size(); i++) {
@@ -220,24 +206,9 @@ class PartitionHelper {
   }
 
   public static void addPartitionColPrivilegeInfo(Connection dbConn, List<Partition> parts, long tblId,
-                                                  long startPartId, long startGrantId, long maxBatchSize)
-          throws SQLException {
+                                                  long partIdx, DatabaseProduct dbType, long maxBatchSize)
+          throws SQLException, MetaException {
     ResultSet rs = null;
-    long numPartColGrant = 0;
-    try (Statement statement = dbConn.createStatement()) {
-      String query = "SELECT COUNT(*) FROM \"TBL_COL_PRIVS\" WHERE  \"TBL_ID\" = " + tblId;
-      rs = statement.executeQuery(query);
-      if (rs.next()) {
-        numPartColGrant = rs.getLong(1);
-      }
-    } finally {
-      close(rs);
-    }
-
-    if (numPartColGrant == 0) {
-      return;
-    }
-
     List<String> colNameList = new ArrayList<>();
     List<Integer> grantOptionList = new ArrayList<>();
     List<String> grantorList = new ArrayList<>();
@@ -246,7 +217,6 @@ class PartitionHelper {
     List<String> principalTypeList = new ArrayList<>();
     List<String> tblColPrivList = new ArrayList<>();
     List<String> authorizerList = new ArrayList<>();
-    rs = null;
     try (Statement statement = dbConn.createStatement()) {
       String query = "SELECT \"COLUMN_NAME\", \"GRANT_OPTION\", \"GRANTOR\", \"GRANTOR_TYPE\", \"PRINCIPAL_NAME\","
               + " \"PRINCIPAL_TYPE\", \"TBL_COL_PRIV\", \"AUTHORIZER\" "
@@ -268,16 +238,16 @@ class PartitionHelper {
       close(rs);
     }
 
+    long grantIdIdx = PartitionHelper.getNextValueFromSequenceTable(dbConn,
+            "org.apache.hadoop.hive.metastore.model.MTablePrivilege", parts.size(), dbType);
+    int now = (int) (System.currentTimeMillis() / 1000);
     String insertPartPrev = "INSERT INTO \"PART_COL_PRIVS\" "
             + " (\"PART_COLUMN_GRANT_ID\", \"COLUMN_NAME\", \"CREATE_TIME\", \"GRANT_OPTION\", \"GRANTOR\","
             + " \"GRANTOR_TYPE\", \"PART_ID\","
             + " \"PRINCIPAL_NAME\", \"PRINCIPAL_TYPE\", \"PART_COL_PRIV\", \"AUTHORIZER\") "
             + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
     try (PreparedStatement pst = dbConn.prepareStatement(insertPartPrev)) {
-      long partIdx = startPartId;
-      long grantIdIdx = startGrantId;
       long numRecords = 0;
-      int now = (int) (System.currentTimeMillis() / 1000);
       for (int j = 0; j < parts.size(); j++) {
         for (int i = 0; i < grantOptionList.size(); i++) {
           pst.setLong(1, grantIdIdx++);
@@ -324,12 +294,12 @@ class PartitionHelper {
     }
   }
 
-  public static void addColDescInfo(Connection dbConn, List<Partition> parts, long cdIdIdx, long maxBatchSize)
+  public static void addColDescInfo(Connection dbConn, long numPart, long cdIdIdx, long maxBatchSize)
           throws SQLException {
     String insertCDInfo = "INSERT INTO \"CDS\" (\"CD_ID\") VALUES (?) ";
     try (PreparedStatement pst = dbConn.prepareStatement(insertCDInfo)) {
       long numRecords = 0;
-      for (Partition ignored : parts) {
+      for (int i = 0; i < numPart; i++) {
         pst.setLong(1, cdIdIdx++);
         numRecords = addBatch(pst, numRecords, maxBatchSize);
       }
@@ -397,13 +367,13 @@ class PartitionHelper {
         if (cols == null) {
           continue;
         }
-        int colIdx = 0;
+        int idx = 0;
         for (FieldSchema col : cols) {
           pst.setLong(1, cdIdIdx);
           pst.setString(2, col.getComment());
           pst.setString(3, col.getName());
           pst.setString(4, col.getType());
-          pst.setLong(5, colIdx++);
+          pst.setLong(5, idx++);
           numRecords = addBatch(pst, numRecords, maxBatchSize);
         }
         cdIdIdx++;
