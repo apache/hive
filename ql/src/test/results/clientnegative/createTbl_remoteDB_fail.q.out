@@ -1,0 +1,42 @@
+PREHOOK: query: CREATE CONNECTOR IF NOT EXISTS mysql_test
+TYPE 'mysql'
+URL 'jdbc:mysql://nightly1.apache.org:3306/hive1'
+COMMENT 'test connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="hive1",
+"hive.sql.dbcp.password"="hive1")
+PREHOOK: type: CREATEDATACONNECTOR
+PREHOOK: Output: connector:mysql_test
+POSTHOOK: query: CREATE CONNECTOR IF NOT EXISTS mysql_test
+TYPE 'mysql'
+URL 'jdbc:mysql://nightly1.apache.org:3306/hive1'
+COMMENT 'test connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="hive1",
+"hive.sql.dbcp.password"="hive1")
+POSTHOOK: type: CREATEDATACONNECTOR
+POSTHOOK: Output: connector:mysql_test
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS
+mysql_test
+PREHOOK: query: CREATE REMOTE database mysql_db using mysql_test with DBPROPERTIES("connector.remoteDbName"="hive1")
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:mysql_db
+#### A masked pattern was here ####
+POSTHOOK: query: CREATE REMOTE database mysql_db using mysql_test with DBPROPERTIES("connector.remoteDbName"="hive1")
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:mysql_db
+#### A masked pattern was here ####
+PREHOOK: query: USE mysql_db
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:mysql_db
+POSTHOOK: query: USE mysql_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:mysql_db
+PREHOOK: query: create table bees (id int, name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:mysql_db
+PREHOOK: Output: mysql_db@bees
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Create table in REMOTE database mysql_db is not allowed)

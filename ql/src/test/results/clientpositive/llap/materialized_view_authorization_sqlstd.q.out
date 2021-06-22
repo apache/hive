@@ -27,6 +27,8 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@amvs_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@amvs_mat_view
+POSTHOOK: Lineage: amvs_mat_view.a SIMPLE [(amvs_table)amvs_table.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: amvs_mat_view.c SIMPLE [(amvs_table)amvs_table.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: show grant user user1 on table amvs_mat_view
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user user1 on table amvs_mat_view
@@ -158,6 +160,8 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@amvs_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@amvs_mat_view2
+POSTHOOK: Lineage: amvs_mat_view2.a SIMPLE [(amvs_table)amvs_table.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: amvs_mat_view2.b SIMPLE [(amvs_table)amvs_table.FieldSchema(name:b, type:varchar(256), comment:null), ]
 PREHOOK: query: select * from amvs_mat_view2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@amvs_mat_view2

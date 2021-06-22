@@ -224,7 +224,7 @@ public class SessionManager extends CompositeService {
     // Threads terminate when they are idle for more than the keepAliveTime
     // A bounded blocking queue is used to queue incoming operations, if #operations > poolSize
     String threadPoolName = "HiveServer2-Background-Pool";
-    final BlockingQueue queue = new LinkedBlockingQueue<Runnable>(poolQueueSize);
+    final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(poolQueueSize);
     backgroundOperationPool = new ThreadPoolExecutor(poolSize, poolSize,
         keepAliveTime, TimeUnit.SECONDS, queue,
         new ThreadFactoryWithGarbageCleanup(threadPoolName));
