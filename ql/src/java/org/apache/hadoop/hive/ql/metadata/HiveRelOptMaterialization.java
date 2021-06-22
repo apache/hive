@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedV
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static org.apache.commons.collections.CollectionUtils.intersection;
 
@@ -50,6 +51,10 @@ public class HiveRelOptMaterialization extends RelOptMaterialization {
 
     public static final EnumSet<RewriteAlgorithm> ALL = EnumSet.allOf(RewriteAlgorithm.class);
 
+    public static final Predicate<EnumSet<RewriteAlgorithm>> ANY =
+            rewriteAlgorithms -> true;
+    public static final Predicate<EnumSet<RewriteAlgorithm>> NON_CALCITE =
+            rewriteAlgorithms -> !rewriteAlgorithms.contains(HiveRelOptMaterialization.RewriteAlgorithm.CALCITE);
   }
 
   public enum IncrementalRebuildMode {
