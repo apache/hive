@@ -85,7 +85,6 @@ import static org.apache.iceberg.types.Types.NestedField.required;
 import static org.junit.runners.Parameterized.Parameter;
 import static org.junit.runners.Parameterized.Parameters;
 
-@org.junit.Ignore("HIVE-25265")
 @RunWith(Parameterized.class)
 public class TestHiveIcebergStorageHandlerWithEngine {
 
