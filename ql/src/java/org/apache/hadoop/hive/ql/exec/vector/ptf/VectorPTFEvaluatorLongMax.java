@@ -129,7 +129,7 @@ public class VectorPTFEvaluatorLongMax extends VectorPTFEvaluatorBase {
   }
 
   @Override
-  public long getLongGroupResult() {
+  public Object getGroupResult() {
     return max;
   }
 

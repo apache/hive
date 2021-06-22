@@ -4128,6 +4128,37 @@ public final class Utilities {
     return null;
   }
 
+  /**
+   * Sets up the job so that all necessary jars ar passed that contain classes from the given argument of this method.
+   * @param conf jobConf instance to setup
+   * @param classes the classes to look in jars for
+   * @throws IOException
+   */
+  public static void addDependencyJars(Configuration conf, Class<?>... classes)
+      throws IOException {
+    FileSystem localFs = FileSystem.getLocal(conf);
+    Set<String> jars = new HashSet<>(conf.getStringCollection("tmpjars"));
+    for (Class<?> clazz : classes) {
+      if (clazz == null) {
+        continue;
+      }
+      final String path = Utilities.jarFinderGetJar(clazz);
+      if (path == null) {
+        throw new RuntimeException("Could not find jar for class " + clazz +
+            " in order to ship it to the cluster.");
+      }
+      if (!localFs.exists(new Path(path))) {
+        throw new RuntimeException("Could not validate jar file " + path + " for class " + clazz);
+      }
+      jars.add(path);
+    }
+    if (jars.isEmpty()) {
+      return;
+    }
+    //noinspection ToArrayCallWithZeroLengthArrayArgument
+    conf.set("tmpjars", org.apache.hadoop.util.StringUtils.arrayToString(jars.toArray(new String[jars.size()])));
+  }
+
   public static int getDPColOffset(FileSinkDesc conf) {
 
     if (conf.getWriteType() == AcidUtils.Operation.DELETE) {
@@ -4918,10 +4949,10 @@ public final class Utilities {
    * Logs the class paths of the job class loader and the thread context class loader to the passed logger.
    * Checks both loaders if getURLs method is available; if not, prints a message about this (instead of the class path)
    *
-   * Note: all messages will always be logged with INFO log level.
+   * Note: all messages will always be logged with DEBUG log level.
    */
   public static void tryLoggingClassPaths(JobConf job, Logger logger) {
-    if (logger != null && logger.isInfoEnabled()) {
+    if (logger != null && logger.isDebugEnabled()) {
       tryToLogClassPath("conf", job.getClassLoader(), logger);
       tryToLogClassPath("thread", Thread.currentThread().getContextClassLoader(), logger);
     }
@@ -4929,9 +4960,9 @@ public final class Utilities {
 
   private static void tryToLogClassPath(String prefix, ClassLoader loader, Logger logger) {
     if(loader instanceof URLClassLoader) {
-      logger.info("{} class path = {}", prefix, Arrays.asList(((URLClassLoader) loader).getURLs()).toString());
+      logger.debug("{} class path = {}", prefix, Arrays.asList(((URLClassLoader) loader).getURLs()).toString());
     } else {
-      logger.info("{} class path = unavailable for {}", prefix,
+      logger.debug("{} class path = unavailable for {}", prefix,
           loader == null ? "null" : loader.getClass().getSimpleName());
     }
   }

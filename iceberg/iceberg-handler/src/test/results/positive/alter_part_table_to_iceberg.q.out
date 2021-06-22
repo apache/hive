@@ -33,7 +33,6 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -139,7 +138,6 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	engine.hive.enabled 	true                
 	external.table.purge	TRUE                
 #### A masked pattern was here ####
@@ -221,7 +219,6 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -327,7 +324,6 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	engine.hive.enabled 	true                
 	external.table.purge	TRUE                
 #### A masked pattern was here ####
@@ -337,7 +333,7 @@ Table Parameters:
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	1503                
+	totalSize           	1659                
 #### A masked pattern was here ####
 	write.format.default	parquet             
 	 	 
@@ -409,7 +405,6 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	numFiles            	0                   
 	numPartitions       	0                   
 	numRows             	0                   
@@ -515,7 +510,6 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
-	discover.partitions 	true                
 	engine.hive.enabled 	true                
 	external.table.purge	TRUE                
 #### A masked pattern was here ####

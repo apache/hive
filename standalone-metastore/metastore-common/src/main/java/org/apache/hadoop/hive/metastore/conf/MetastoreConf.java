@@ -454,6 +454,13 @@ public class MetastoreConf {
         "hive.metastore.acidmetrics.check.interval", 300,
         TimeUnit.SECONDS,
         "Time in seconds between acid related metric collection runs."),
+    METASTORE_ACIDMETRICS_EXT_ON("metastore.acidmetrics.ext.on", "hive.metastore.acidmetrics.ext.on", true,
+        "Whether to collect additional acid related metrics outside of the acid metrics service. "
+            + "(metastore.metrics.enabled and/or hive.server2.metrics.enabled are also required to be set to true.)"),
+    METASTORE_ACIDMETRICS_TABLES_WITH_ABORTED_TXNS_THRESHOLD("metastore.acidmetrics.table.aborted.txns.threshold",
+        "hive.metastore.acidmetrics.table.aborted.txns.threshold", 1500,
+        "The acid metrics system will collect the number of tables which have a large number of aborted transactions." +
+            "This parameter controls the minimum number of aborted transaction required so that a table will be counted."),
     COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", false,
         "Whether to run the initiator and cleaner threads on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
@@ -596,6 +603,11 @@ public class MetastoreConf {
             "not blocked.\n" +
             "\n" +
             "See HIVE-4409 for more details."),
+    ALLOW_INCOMPATIBLE_COL_TYPE_CHANGES_TABLE_SERDES("metastore.allow.incompatible.col.type.changes.serdes",
+        "hive.metastore.allow.incompatible.col.type.changes.serdes", "org.apache.hadoop.hive.kudu.KuduSerDe",
+        "Comma-separated list of table serdes which are allowed to make incompatible column type\n" +
+        "changes. This configuration is only applicable if metastore.disallow.incompatible.col.type.changes\n" +
+        "is true."),
     DUMP_CONFIG_ON_CREATION("metastore.dump.config.on.creation", "metastore.dump.config.on.creation", true,
         "If true, a printout of the config file (minus sensitive values) will be dumped to the " +
             "log whenever newMetastoreConf() is called.  Can produce a lot of logs"),
@@ -853,6 +865,22 @@ public class MetastoreConf {
         "hive.metastore.scheduled.queries.execution.max.age", 30 * 86400, TimeUnit.SECONDS,
         "Maximal age of a scheduled query execution entry before it is removed."),
 
+    SCHEDULED_QUERIES_AUTODISABLE_COUNT("metastore.scheduled.queries.autodisable.count",
+        "metastore.scheduled.queries.autodisable.count", 0,
+        "Scheduled queries will be automatically disabled after this number of consecutive failures."
+            + "Setting it to a non-positive number disables the feature."),
+
+    SCHEDULED_QUERIES_SKIP_OPPORTUNITIES_AFTER_FAILURES(
+        "metastore.scheduled.queries.skip.opportunities.after.failures",
+        "metastore.scheduled.queries.skip.opportunities.after.failures", 0,
+        "Causes to skip schedule opportunities after consequitive failures; taking into account the last N executions. For a scheduled query which have failed its last f execution; it's next schedule will be set to skip f-1 schedule opportunitites."
+            + "Suppose that a scheduled query is scheduled to run every minute.\n"
+            + "Consider this setting to be set to 3 - which means it will only look at the last 3 executions."
+            + "In case the query failed at 1:00 then it will skip 0 opportunities; and the next execution will be scheduled to 1:01\n"
+            + "If that execution also fails it will skip 1 opportunities; next execution will happen at 1:03\n"
+            + "In case that execution fails as well it will skip 2 opportunities; so next execution will be 1:06."
+            + "If the query fails it will skip 2 opportunities again ; because it only cares with the last 3 executions based on the set value."),
+
     // Parameters for exporting metadata on table drop (requires the use of the)
     // org.apache.hadoop.hive.ql.parse.MetaDataExportListener preevent listener
     METADATA_EXPORT_LOCATION("metastore.metadata.export.location", "hive.metadata.export.location",
@@ -951,6 +979,19 @@ public class MetastoreConf {
             + "which is used by HMS Server to fetch the extended tables/partitions information \n"
             + "based on the data processor capabilities \n"
             + " This class should implement the IMetaStoreMetadataTransformer interface"),
+    METASTORE_METADATA_TRANSFORMER_TRANSLATED_TO_EXTERNAL_FOLLOWS_RENAMES(
+        "metastore.metadata.transformer.translated.to.external.follows.renames",
+        "metastore.metadata.transformer.translated.to.external.follows.renames", true,
+        "Wether TRANSLATED_TO_EXTERNAL tables should follow renames. In case the default directory exists "
+            + "the strategy of metastore.metadata.transformer.location.mode is used"),
+    METASTORE_METADATA_TRANSFORMER_LOCATION_MODE("metastore.metadata.transformer.location.mode",
+        "metastore.metadata.transformer.location.mode", "prohibit",
+        new StringSetValidator("seqsuffix", "seqprefix", "prohibit"),
+        "Defines the strategy to use in case the default location for a translated table already exists.\n"
+            + "  seqsuffix: add a '_N' suffix to the table name to get a unique location (table,table_1,table_2,...)\n"
+            + "  seqprefix: adds a 'N_' prefix to the table name to get a unique location (table,1_table,2_table,...)\n"
+            + "  prohibit: do not allow alternate locations; throw error if the default is not available\n"),
+
     MULTITHREADED("javax.jdo.option.Multithreaded", "javax.jdo.option.Multithreaded", true,
         "Set this to true if multiple threads access metastore through JDO concurrently."),
     MAX_OPEN_TXNS("metastore.max.open.txns", "hive.max.open.txns", 100000,

@@ -51,24 +51,34 @@ public class HiveRelOptMaterialization extends RelOptMaterialization {
     public static final EnumSet<RewriteAlgorithm> ALL = EnumSet.allOf(RewriteAlgorithm.class);
 
   }
+
+  public enum IncrementalRebuildMode {
+    AVAILABLE,
+    INSERT_ONLY,
+    NOT_AVAILABLE,
+    UNKNOWN
+  }
+
   private final EnumSet<RewriteAlgorithm> scope;
   private final boolean sourceTablesUpdateDeleteModified;
   private final boolean sourceTablesCompacted;
+  private final IncrementalRebuildMode rebuildMode;
 
   public HiveRelOptMaterialization(RelNode tableRel, RelNode queryRel,
                                    RelOptTable starRelOptTable, List<String> qualifiedTableName,
-                                   EnumSet<RewriteAlgorithm> scope) {
-    this(tableRel, queryRel, starRelOptTable, qualifiedTableName, scope, false, false);
+                                   EnumSet<RewriteAlgorithm> scope, IncrementalRebuildMode rebuildMode) {
+    this(tableRel, queryRel, starRelOptTable, qualifiedTableName, scope, false, false, rebuildMode);
   }
 
   private HiveRelOptMaterialization(RelNode tableRel, RelNode queryRel,
-                                   RelOptTable starRelOptTable, List<String> qualifiedTableName,
-                                   EnumSet<RewriteAlgorithm> scope,
-                                   boolean sourceTablesUpdateDeleteModified, boolean sourceTablesCompacted) {
+                                    RelOptTable starRelOptTable, List<String> qualifiedTableName,
+                                    EnumSet<RewriteAlgorithm> scope,
+                                    boolean sourceTablesUpdateDeleteModified, boolean sourceTablesCompacted, IncrementalRebuildMode rebuildMode) {
     super(tableRel, queryRel, starRelOptTable, qualifiedTableName);
     this.scope = scope;
     this.sourceTablesUpdateDeleteModified = sourceTablesUpdateDeleteModified;
     this.sourceTablesCompacted = sourceTablesCompacted;
+    this.rebuildMode = rebuildMode;
   }
 
   public EnumSet<RewriteAlgorithm> getScope() {
@@ -92,15 +102,19 @@ public class HiveRelOptMaterialization extends RelOptMaterialization {
     return sourceTablesCompacted;
   }
 
+  public IncrementalRebuildMode getRebuildMode() {
+    return rebuildMode;
+  }
+
   public HiveRelOptMaterialization updateInvalidation(Materialization materialization) {
     return new HiveRelOptMaterialization(tableRel, queryRel, starRelOptTable, qualifiedTableName, scope,
-        materialization.isSourceTablesUpdateDeleteModified(), materialization.isSourceTablesCompacted());
+        materialization.isSourceTablesUpdateDeleteModified(), materialization.isSourceTablesCompacted(), rebuildMode);
   }
 
   public HiveRelOptMaterialization copyToNewCluster(RelOptCluster optCluster) {
     final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(optCluster, tableRel);
     return new HiveRelOptMaterialization(newViewScan, queryRel, null, qualifiedTableName, scope,
-        sourceTablesUpdateDeleteModified, sourceTablesCompacted);
+        sourceTablesUpdateDeleteModified, sourceTablesCompacted, rebuildMode);
   }
 
 }

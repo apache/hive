@@ -103,6 +103,9 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mat1
+POSTHOOK: Lineage: mat1._c1 EXPRESSION [(t1)t1.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1._c2 EXPRESSION [(t1)t1.null, (t2)t2.null, ]
+POSTHOOK: Lineage: mat1.a SIMPLE [(t1)t1.FieldSchema(name:a, type:char(15), comment:null), ]
 PREHOOK: query: explain cbo
 select t1.a, sum(t1.b) from t1
 join t2 on (t1.a = t2.a)
@@ -341,7 +344,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: char(15))
                         Statistics: Num rows: 7 Data size: 727 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int), _col2 (type: boolean), _col3 (type: boolean)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 9 
             Map Operator Tree:
@@ -365,7 +368,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: char(15))
                         Statistics: Num rows: 9 Data size: 909 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: boolean), _col2 (type: boolean)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap

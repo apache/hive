@@ -1236,6 +1236,11 @@ CREATE INDEX "ROLE_MAP_N49" ON "ROLE_MAP" USING btree ("ROLE_ID");
 
 CREATE INDEX "SDS_N49" ON "SDS" USING btree ("SERDE_ID");
 
+--
+-- Name: SDS_N50; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+CREATE INDEX "SDS_N50" ON "SDS" USING btree ("CD_ID");
 
 --
 -- Name: SD_PARAMS_N49; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:

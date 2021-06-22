@@ -32,7 +32,9 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
@@ -44,8 +46,10 @@ import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.UpdateSchema;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.exceptions.CommitFailedException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.Util;
 import org.apache.iceberg.hive.HiveSchemaUtil;
@@ -55,6 +59,7 @@ import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.thrift.TException;
@@ -155,11 +160,46 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
+  public void testPartitionTransform() {
+    Schema schema = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "year_field", Types.DateType.get()),
+        optional(3, "month_field", Types.TimestampType.withZone()),
+        optional(4, "day_field", Types.TimestampType.withoutZone()),
+        optional(5, "hour_field", Types.TimestampType.withoutZone()),
+        optional(6, "truncate_field", Types.StringType.get()),
+        optional(7, "bucket_field", Types.StringType.get()),
+        optional(8, "identity_field", Types.StringType.get())
+    );
+    PartitionSpec spec = PartitionSpec.builderFor(schema)
+        .year("year_field")
+        .month("month_field")
+        .day("day_field")
+        .hour("hour_field")
+        .truncate("truncate_field", 2)
+        .bucket("bucket_field", 2)
+        .identity("identity_field")
+        .build();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "part_test");
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier +
+        " PARTITIONED BY SPEC (year(year_field), month(month_field), day(day_field), hour(hour_field), " +
+        "truncate(2, truncate_field), bucket(2, bucket_field), identity_field)" +
+        " STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) +
+        "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
+        SchemaParser.toJson(schema) + "', " +
+        "'" + InputFormatConfig.CATALOG_NAME + "'='" + Catalogs.ICEBERG_DEFAULT_CATALOG_NAME + "')");
+    Table table = testTables.loadTable(identifier);
+    Assert.assertEquals(spec, table.spec());
+  }
+
+  @Test
   public void testCreateDropTable() throws TException, IOException, InterruptedException {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
     shell.executeStatement("CREATE EXTERNAL TABLE customers " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        "STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
         SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA) + "', " +
@@ -221,7 +261,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     String createSql = "CREATE EXTERNAL TABLE " + identifier +
         " (customer_id BIGINT, first_name STRING COMMENT 'This is first name'," +
         " last_name STRING COMMENT 'This is last name')" +
-        " STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        " STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         testTables.propertiesForCreateTableSQL(ImmutableMap.of());
     shell.executeStatement(createSql);
@@ -240,11 +280,39 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
+  public void testCreateTableStoredByIceberg() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    String query = String.format("CREATE EXTERNAL TABLE customers (customer_id BIGINT, first_name STRING, last_name " +
+        "STRING) STORED BY iceBerg %s TBLPROPERTIES ('%s'='%s')",
+        testTables.locationForCreateTableSQL(identifier),
+        InputFormatConfig.CATALOG_NAME,
+        Catalogs.ICEBERG_DEFAULT_CATALOG_NAME);
+    shell.executeStatement(query);
+    Assert.assertNotNull(testTables.loadTable(identifier));
+  }
+
+  @Test
+  public void testCreateTableStoredByIcebergWithSerdeProperties() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    String query = String.format("CREATE EXTERNAL TABLE customers (customer_id BIGINT, first_name STRING, last_name " +
+            "STRING) STORED BY iceberg WITH SERDEPROPERTIES('%s'='%s') %s TBLPROPERTIES ('%s'='%s')",
+        TableProperties.DEFAULT_FILE_FORMAT,
+        "orc",
+        testTables.locationForCreateTableSQL(identifier),
+        InputFormatConfig.CATALOG_NAME,
+        Catalogs.ICEBERG_DEFAULT_CATALOG_NAME);
+    shell.executeStatement(query);
+    Table table = testTables.loadTable(identifier);
+    Assert.assertNotNull(table);
+    Assert.assertEquals("orc", table.properties().get(TableProperties.DEFAULT_FILE_FORMAT));
+  }
+
+  @Test
   public void testCreateTableWithoutSpec() {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
     shell.executeStatement("CREATE EXTERNAL TABLE customers " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        "STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
         SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA) + "','" +
@@ -260,7 +328,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
     // We need the location for HadoopTable based tests only
     shell.executeStatement("CREATE EXTERNAL TABLE customers " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        "STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
         SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA) + "', " +
@@ -278,7 +346,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
     shell.executeStatement("CREATE EXTERNAL TABLE customers " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        "STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
         SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA) + "', " +
@@ -324,7 +392,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
         "Unrecognized token 'WrongSchema'", () -> {
           shell.executeStatement("CREATE EXTERNAL TABLE withShell2 " +
-              "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+              "STORED BY ICEBERG " +
               testTables.locationForCreateTableSQL(identifier) +
               "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='WrongSchema'" +
               ",'" + InputFormatConfig.CATALOG_NAME + "'='" + Catalogs.ICEBERG_DEFAULT_CATALOG_NAME + "')");
@@ -335,7 +403,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
         "Please provide ", () -> {
           shell.executeStatement("CREATE EXTERNAL TABLE withShell2 " +
-              "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+              "STORED BY ICEBERG " +
               testTables.locationForCreateTableSQL(identifier) +
               testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
         }
@@ -346,7 +414,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
       AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
           "Table location not set", () -> {
             shell.executeStatement("CREATE EXTERNAL TABLE withShell2 " +
-                "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+                "STORED BY ICEBERG " +
                 "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
                 SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA) + "','" +
                 InputFormatConfig.CATALOG_NAME + "'='" + Catalogs.ICEBERG_DEFAULT_CATALOG_NAME + "')");
@@ -366,7 +434,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
       AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
           "customers already exists", () -> {
             shell.executeStatement("CREATE EXTERNAL TABLE customers " +
-                "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+                "STORED BY ICEBERG " +
                 "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
                 SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA) + "',' " +
                 InputFormatConfig.CATALOG_NAME + "'='" + Catalogs.ICEBERG_DEFAULT_CATALOG_NAME + "')");
@@ -375,7 +443,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     } else {
       // With other catalogs, table creation should succeed
       shell.executeStatement("CREATE EXTERNAL TABLE customers " +
-          "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+          "STORED BY ICEBERG " +
           testTables.locationForCreateTableSQL(TableIdentifier.of("default", "customers")) +
           testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
     }
@@ -390,7 +458,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         "Provide only one of the following", () -> {
           shell.executeStatement("CREATE EXTERNAL TABLE customers (customer_id BIGINT) " +
               "PARTITIONED BY (first_name STRING) " +
-              "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+              "STORED BY ICEBERG " +
               testTables.locationForCreateTableSQL(TableIdentifier.of("default", "customers")) +
               " TBLPROPERTIES ('" + InputFormatConfig.PARTITION_SPEC + "'='" +
               PartitionSpecParser.toJson(spec) + "')");
@@ -409,7 +477,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         "memorable_moments MAP < STRING, STRUCT < year: INT, place: STRING, details: STRING >>, " +
         "current_address STRUCT < street_address: STRUCT " +
         "<street_number: INT, street_name: STRING, street_type: STRING>, country: STRING, postal_code: STRING >) " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        "STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
 
@@ -438,7 +506,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     shell.executeStatement("CREATE EXTERNAL TABLE all_types (" +
         "t_Float FLOaT, t_dOuble DOUBLE, t_boolean BOOLEAN, t_int INT, t_bigint BIGINT, t_binary BINARY, " +
         "t_string STRING, t_timestamp TIMESTAMP, t_date DATE, t_decimal DECIMAL(3,2)) " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        "STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
 
@@ -462,7 +530,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
           "Unsupported Hive type", () -> {
             shell.executeStatement("CREATE EXTERNAL TABLE not_supported_types " +
                 "(not_supported " + notSupportedType + ") " +
-                "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+                "STORED BY ICEBERG " +
                 testTables.locationForCreateTableSQL(identifier) +
                 testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
           }
@@ -484,7 +552,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     for (String notSupportedType : notSupportedTypes.keySet()) {
       shell.executeStatement("CREATE EXTERNAL TABLE not_supported_types (not_supported " + notSupportedType + ") " +
-              "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+              "STORED BY ICEBERG " +
               testTables.locationForCreateTableSQL(identifier) +
               testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
 
@@ -500,7 +568,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     shell.executeStatement("CREATE EXTERNAL TABLE comment_table (" +
         "t_int INT COMMENT 'int column',  " +
         "t_string STRING COMMENT 'string column') " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        "STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
     org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
@@ -520,7 +588,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     shell.executeStatement("CREATE EXTERNAL TABLE without_comment_table (" +
             "t_int INT,  " +
             "t_string STRING) " +
-            "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+            "STORED BY ICEBERG " +
             testTables.locationForCreateTableSQL(identifier) +
             testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
     org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
@@ -541,7 +609,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     shell.executeStatement("CREATE EXTERNAL TABLE customers (" +
         "t_int INT,  " +
         "t_string STRING) " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
+        "STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
     String propKey = "dummy";
@@ -571,7 +639,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
     shell.executeStatement(String.format("CREATE EXTERNAL TABLE default.customers " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' %s" +
+        "STORED BY ICEBERG %s" +
         "TBLPROPERTIES ('%s'='%s', '%s'='%s', '%s'='%s', '%s'='%s')",
         testTables.locationForCreateTableSQL(identifier), // we need the location for HadoopTable based tests only
         InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA),
@@ -587,6 +655,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     expectedIcebergProperties.put("custom_property", "initial_val");
     expectedIcebergProperties.put("EXTERNAL", "TRUE");
     expectedIcebergProperties.put("storage_handler", HiveIcebergStorageHandler.class.getName());
+    expectedIcebergProperties.put(serdeConstants.SERIALIZATION_FORMAT, "1");
 
     // Check the HMS table parameters
     org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "customers");
@@ -606,7 +675,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     Assert.assertEquals(expectedIcebergProperties, icebergTable.properties());
 
     if (Catalogs.hiveCatalog(shell.getHiveConf(), tableProperties)) {
-      Assert.assertEquals(10, hmsParams.size());
+      Assert.assertEquals(11, hmsParams.size());
       Assert.assertEquals("initial_val", hmsParams.get("custom_property"));
       Assert.assertEquals("TRUE", hmsParams.get(InputFormatConfig.EXTERNAL_TABLE_PURGE));
       Assert.assertEquals("TRUE", hmsParams.get("EXTERNAL"));
@@ -620,6 +689,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
       Assert.assertNull(hmsParams.get(BaseMetastoreTableOperations.PREVIOUS_METADATA_LOCATION_PROP));
       Assert.assertNotNull(hmsParams.get(hive_metastoreConstants.DDL_TIME));
       Assert.assertNotNull(hmsParams.get(InputFormatConfig.PARTITION_SPEC));
+      Assert.assertNotNull(hmsParams.get(serdeConstants.SERIALIZATION_FORMAT));
     } else {
       Assert.assertEquals(8, hmsParams.size());
       Assert.assertNull(hmsParams.get(TableProperties.ENGINE_HIVE_ENABLED));
@@ -644,7 +714,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     if (Catalogs.hiveCatalog(shell.getHiveConf(), tableProperties)) {
-      Assert.assertEquals(13, hmsParams.size()); // 2 newly-added properties + previous_metadata_location prop
+      Assert.assertEquals(14, hmsParams.size()); // 2 newly-added properties + previous_metadata_location prop
       Assert.assertEquals("true", hmsParams.get("new_prop_1"));
       Assert.assertEquals("false", hmsParams.get("new_prop_2"));
       Assert.assertEquals("new_val", hmsParams.get("custom_property"));
@@ -690,7 +760,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     // Create HMS table with with a property to be translated
     shell.executeStatement(String.format("CREATE EXTERNAL TABLE default.customers " +
-        "STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler'" +
+        "STORED BY ICEBERG " +
         "TBLPROPERTIES ('%s'='%s', '%s'='%s', '%s'='%s')",
         InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA),
         InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(SPEC),
@@ -750,6 +820,73 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     // Finally drop the Hive table as well
     shell.executeStatement("DROP TABLE " + identifier);
+  }
+
+  @Test
+  public void testAlterTableAddColumns() throws Exception {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, SPEC,
+        FileFormat.PARQUET, ImmutableList.of());
+
+    shell.executeStatement("ALTER TABLE default.customers ADD COLUMNS " +
+        "(newintcol int, newstringcol string COMMENT 'Column with description')");
+
+    verifyAlterTableAddColumnsTests();
+  }
+
+  @Test
+  public void testAlterTableAddColumnsConcurrently() throws Exception {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, SPEC,
+        FileFormat.PARQUET, ImmutableList.of());
+
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+
+    UpdateSchema updateSchema = icebergTable.updateSchema().addColumn("newfloatcol", Types.FloatType.get());
+
+    shell.executeStatement("ALTER TABLE default.customers ADD COLUMNS " +
+        "(newintcol int, newstringcol string COMMENT 'Column with description')");
+
+    try {
+      updateSchema.commit();
+      Assert.fail();
+    } catch (CommitFailedException expectedException) {
+      // Should fail to commit the addition of newfloatcol as another commit went in from Hive side adding 2 other cols
+    }
+
+    // Same verification should be applied, as we expect newfloatcol NOT to be added to the schema
+    verifyAlterTableAddColumnsTests();
+  }
+
+  /**
+   * Checks that the new schema has newintcol and newstring col columns on both HMS and Iceberg sides
+   * @throws Exception - any test error
+   */
+  private void verifyAlterTableAddColumnsTests() throws Exception {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "customers");
+
+    List<FieldSchema> icebergSchema = HiveSchemaUtil.convert(icebergTable.schema());
+    List<FieldSchema> hmsSchema = hmsTable.getSd().getCols();
+
+    List<FieldSchema> expectedSchema = Lists.newArrayList(
+        new FieldSchema("customer_id", "bigint", null),
+        new FieldSchema("first_name", "string", "This is first name"),
+        new FieldSchema("last_name", "string", "This is last name"),
+        new FieldSchema("newintcol", "int", null),
+        new FieldSchema("newstringcol", "string", "Column with description"));
+
+    Assert.assertEquals(expectedSchema, icebergSchema);
+
+    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+      expectedSchema.get(0).setComment("from deserializer");
+    }
+
+    Assert.assertEquals(expectedSchema, hmsSchema);
   }
 
   private String getCurrentSnapshotForHiveCatalogTable(org.apache.iceberg.Table icebergTable) {

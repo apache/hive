@@ -106,9 +106,7 @@ class TablePropertyEnrichmentOptimizer extends Transform {
       Table table = tsOp.getConf().getTableMetadata().getTTable();
 
       Map<String, String> originalTableParameters = getTableParameters(table);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Original Table parameters: " + originalTableParameters);
-      }
+      LOG.debug("Original Table parameters: {}", originalTableParameters);
       Properties clonedTableParameters = new Properties();
       clonedTableParameters.putAll(originalTableParameters);
 
@@ -122,18 +120,15 @@ class TablePropertyEnrichmentOptimizer extends Transform {
 
         if (context.serdeClassesUnderConsideration.contains(deserializerClassName)) {
           serDe.initialize(context.conf, clonedTableParameters, null);
-          LOG.debug("SerDe init succeeded for class: " + deserializerClassName);
+          LOG.debug("SerDe init succeeded for class: {}", deserializerClassName);
           for (Map.Entry property : clonedTableParameters.entrySet()) {
             if (!property.getValue().equals(originalTableParameters.get(property.getKey()))) {
               LOG.debug("Resolving changed parameters! key=" + property.getKey() + ", value=" + property.getValue());
               table.getParameters().put((String) property.getKey(), (String) property.getValue());
             }
           }
-        }
-        else {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Skipping prefetch for " + deserializerClassName);
-          }
+        } else {
+          LOG.debug("Skipping prefetch for {}", deserializerClassName);
         }
       }
       catch(Throwable t) {

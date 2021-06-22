@@ -118,7 +118,7 @@ public class Warehouse {
     try {
       return f.getFileSystem(conf);
     } catch (IOException e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return null;
   }
@@ -417,7 +417,7 @@ public class Warehouse {
       fs = getFs(f);
       return FileUtils.mkdir(fs, f);
     } catch (IOException e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return false;
   }
@@ -433,7 +433,7 @@ public class Warehouse {
       FileSystem destFs = getFs(destPath);
       return FileUtils.rename(srcFs, destFs, sourcePath, destPath);
     } catch (Exception ex) {
-      MetaStoreUtils.logAndThrowMetaException(ex);
+      MetaStoreUtils.throwMetaException(ex);
     }
     return false;
   }
@@ -537,6 +537,45 @@ public class Warehouse {
 
   /**
    * Makes a partition name from a specification
+   * @param spec The partition specification, key and value pairs.
+   * @param addTrailingSeperator If true, adds a trailing separator e.g. 'ds=1/'.
+   * @param dynamic If true, create a dynamic partition name.
+   * @return partition name
+   * @throws MetaException
+   */
+  public static String makePartNameUtil(Map<String, String> spec, boolean addTrailingSeperator, boolean dynamic)
+          throws MetaException {
+    StringBuilder suffixBuf = new StringBuilder();
+    int i = 0;
+    for (Entry<String, String> e : spec.entrySet()) {
+      // Throw an exception if it is not a dynamic partition.
+      if (e.getValue() == null || e.getValue().length() == 0) {
+        if (dynamic) {
+          break;
+        }
+        else {
+          throw new MetaException("Partition spec is incorrect. " + spec);
+        }
+      }
+
+      if (i > 0) {
+        suffixBuf.append(Path.SEPARATOR);
+      }
+      suffixBuf.append(escapePathName(e.getKey()));
+      suffixBuf.append('=');
+      suffixBuf.append(escapePathName(e.getValue()));
+      i++;
+    }
+
+    if (addTrailingSeperator && i > 0) {
+      suffixBuf.append(Path.SEPARATOR);
+    }
+
+    return suffixBuf.toString();
+  }
+
+  /**
+   * Makes a partition name from a specification
    * @param spec
    * @param addTrailingSeperator if true, adds a trailing separator e.g. 'ds=1/'
    * @return partition name
@@ -545,45 +584,47 @@ public class Warehouse {
   public static String makePartName(Map<String, String> spec,
       boolean addTrailingSeperator)
       throws MetaException {
-    StringBuilder suffixBuf = new StringBuilder();
-    int i = 0;
-    for (Entry<String, String> e : spec.entrySet()) {
-      if (e.getValue() == null || e.getValue().length() == 0) {
-        throw new MetaException("Partition spec is incorrect. " + spec);
-      }
-      if (i>0) {
-        suffixBuf.append(Path.SEPARATOR);
-      }
-      suffixBuf.append(escapePathName(e.getKey()));
-      suffixBuf.append('=');
-      suffixBuf.append(escapePathName(e.getValue()));
-      i++;
-    }
-    if (addTrailingSeperator) {
-      suffixBuf.append(Path.SEPARATOR);
-    }
-    return suffixBuf.toString();
+    return makePartNameUtil(spec, addTrailingSeperator, false);
   }
+
   /**
    * Given a dynamic partition specification, return the path corresponding to the
-   * static part of partition specification. This is basically a copy of makePartName
+   * static part of partition specification. This is basically similar to makePartName
    * but we get rid of MetaException since it is not serializable.
    * @param spec
    * @return string representation of the static part of the partition specification.
    */
   public static String makeDynamicPartName(Map<String, String> spec) {
-    StringBuilder suffixBuf = new StringBuilder();
-    for (Entry<String, String> e : spec.entrySet()) {
-      if (e.getValue() != null && e.getValue().length() > 0) {
-        suffixBuf.append(escapePathName(e.getKey()));
-        suffixBuf.append('=');
-        suffixBuf.append(escapePathName(e.getValue()));
-        suffixBuf.append(Path.SEPARATOR);
-      } else { // stop once we see a dynamic partition
-        break;
-      }
+    String partName = null;
+    try {
+       partName = makePartNameUtil(spec, true, true);
     }
-    return suffixBuf.toString();
+    catch (MetaException e) {
+      // This exception is not thrown when dynamic=true. This is a Noop and
+      // can be ignored.
+    }
+    return partName;
+  }
+
+  /**
+   * Given a dynamic partition specification, return the path corresponding to the
+   * static part of partition specification. This is basically similar to makePartName
+   * but we get rid of MetaException since it is not serializable. This method skips
+   * the trailing path seperator also.
+   *
+   * @param spec
+   * @return string representation of the static part of the partition specification.
+   */
+  public static String makeDynamicPartNameNoTrailingSeperator(Map<String, String> spec) {
+    String partName = null;
+    try {
+      partName = makePartNameUtil(spec, false, true);
+    }
+    catch (MetaException e) {
+      // This exception is not thrown when dynamic=true. This is a Noop and
+      // can be ignored.
+    }
+    return partName;
   }
 
   static final Pattern pat = Pattern.compile("([^/]+)=([^/]+)");
@@ -762,7 +803,7 @@ public class Warehouse {
     } catch (FileNotFoundException e) {
       return false;
     } catch (IOException e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
     return true;
   }
@@ -794,7 +835,7 @@ public class Warehouse {
       FileSystem fileSys = path.getFileSystem(conf);
       return FileUtils.getFileStatusRecurse(path, fileSys);
     } catch (IOException ioe) {
-      MetaStoreUtils.logAndThrowMetaException(ioe);
+      MetaStoreUtils.throwMetaException(ioe);
     }
     return null;
   }
@@ -812,7 +853,7 @@ public class Warehouse {
       FileSystem fileSys = tablePath.getFileSystem(conf);
       return FileUtils.getFileStatusRecurse(tablePath, fileSys);
     } catch (IOException ioe) {
-      MetaStoreUtils.logAndThrowMetaException(ioe);
+      MetaStoreUtils.throwMetaException(ioe);
     }
     return null;
   }

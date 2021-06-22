@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.Writable;
@@ -262,22 +263,16 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       isSupported = isSerdeBased = checkInputFormatForLlapEncode(conf, ifName);
     }
     if ((!isSupported || !isVectorized) && !isCacheOnly) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Not using llap for " + ifName + ": supported = "
-          + isSupported + ", vectorized = " + isVectorized + ", cache only = " + isCacheOnly);
-      }
+      LOG.info("Not using llap for " + ifName + ": supported = " + isSupported + ", vectorized = " + isVectorized
+          + ", cache only = " + isCacheOnly);
       return inputFormat;
     }
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Processing " + ifName);
-    }
+    LOG.debug("Processing {}", ifName);
 
     @SuppressWarnings("unchecked")
     LlapIo<VectorizedRowBatch> llapIo = LlapProxy.getIo();
     if (llapIo == null) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Not using LLAP IO because it is not initialized");
-      }
+      LOG.info("Not using LLAP IO because it is not initialized");
       return inputFormat;
     }
     Deserializer serde = null;
@@ -312,17 +307,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
   public static boolean checkInputFormatForLlapEncode(Configuration conf, String ifName) {
     String formatList = HiveConf.getVar(conf, ConfVars.LLAP_IO_ENCODE_FORMATS);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Checking " + ifName + " against " + formatList);
-    }
+    LOG.debug("Checking {} against {}", ifName, formatList);
     String[] formats = StringUtils.getStrings(formatList);
     if (formats != null) {
       for (String format : formats) {
         // TODO: should we check isAssignableFrom?
         if (ifName.equals(format)) {
-          if (LOG.isInfoEnabled()) {
-            LOG.info("Using SerDe-based LLAP reader for " + ifName);
-          }
+          LOG.info("Using SerDe-based LLAP reader for " + ifName);
           return true;
         }
       }
@@ -791,9 +782,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       }
 
       if (!currentDirs.isEmpty()) {
-        if (LOG.isInfoEnabled()) {
-          LOG.info("Generating splits as currentDirs is not empty. currentDirs: {}", currentDirs);
-        }
+        LOG.info("Generating splits as currentDirs is not empty. currentDirs: {}", currentDirs);
 
         // set columns to read in conf
         if (pushDownProjection) {
@@ -819,19 +808,16 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     if (dirs.length != 0) { // TODO: should this be currentDirs?
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Generating splits for dirs: {}", dirs);
-      }
+      LOG.info("Generating splits for dirs: {}", dirs);
       addSplitsForGroup(currentDirs, currentTableScan, newjob,
           getInputFormatFromCache(currentInputFormatClass, job),
           currentInputFormatClass, currentDirs.size()*(numSplits / dirs.length),
           currentTable, result);
     }
+    DeltaFilesMetricReporter.backPropagateAcidMetrics(job, newjob);
 
     Utilities.clearWorkMapForConf(job);
-    if (LOG.isInfoEnabled()) {
-      LOG.info("number of splits " + result.size());
-    }
+    LOG.info("number of splits " + result.size());
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
     return result.toArray(new HiveInputSplit[result.size()]);
   }
@@ -844,10 +830,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     newjob.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, readColIds);
     newjob.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, readColNames);
 
-    if (LOG.isInfoEnabled()) {
-      LOG.info("{} = {}", ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, readColIds);
-      LOG.info("{} = {}", ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, readColNames);
-    }
+    LOG.info("{} = {}", ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, readColIds);
+    LOG.info("{} = {}", ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, readColNames);
   }
 
 

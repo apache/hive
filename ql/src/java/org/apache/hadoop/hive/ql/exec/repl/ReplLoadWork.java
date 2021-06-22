@@ -50,6 +50,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_STATS_TOP_EVENTS_COUNTS;
+
 @Explain(displayName = "Replication Load Operator", explainLevels = { Explain.Level.USER,
     Explain.Level.DEFAULT,
     Explain.Level.EXTENDED })
@@ -71,6 +73,7 @@ public class ReplLoadWork implements Serializable {
   private transient IncrementalLoadTasksBuilder incrementalLoadTasksBuilder;
   private transient Task<?> rootTask;
   private Iterator<String> externalTableDataCopyItr;
+  private ReplStatsTracker replStatsTracker;
 
   /*
   these are sessionState objects that are copied over to work to allow for parallel execution.
@@ -102,8 +105,18 @@ public class ReplLoadWork implements Serializable {
 
     rootTask = null;
     if (isIncrementalDump) {
+      if (replStatsTracker == null) {
+        int numEvents = hiveConf.getIntVar(REPL_STATS_TOP_EVENTS_COUNTS);
+        if (numEvents < 0) {
+          LOG.warn("Invalid value configured for {}, Using default of {}", REPL_STATS_TOP_EVENTS_COUNTS,
+              REPL_STATS_TOP_EVENTS_COUNTS.defaultIntVal);
+          numEvents = REPL_STATS_TOP_EVENTS_COUNTS.defaultIntVal;
+        }
+        replStatsTracker = new ReplStatsTracker(numEvents);
+      }
       incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
-                  new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector);
+          new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector,
+          replStatsTracker);
 
       /*
        * If the current incremental dump also includes bootstrap for some tables, then create iterator

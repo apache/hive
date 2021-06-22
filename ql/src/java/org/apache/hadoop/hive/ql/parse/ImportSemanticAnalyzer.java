@@ -1176,7 +1176,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (table != null) {
-      if (!replicationSpec.allowReplacementInto(table.getParameters())) {
+      if (!replicationSpec.allowReplacementInto(parentDb.getParameters())) {
         // If the target table exists and is newer or same as current update based on repl.last.id, then just noop it.
         x.getLOG().info("Table {}.{} is not replaced as it is newer than the update",
                 tblDesc.getDatabaseName(), tblDesc.getTableName());
@@ -1349,7 +1349,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           } else {
             // If replicating, then the partition already existing means we need to replace, maybe, if
             // the destination ptn's repl.last.id is older than the replacement's.
-            if (replicationSpec.allowReplacementInto(ptn.getParameters())){
+            if (replicationSpec.allowReplacementInto(parentDb.getParameters())){
               if (!replicationSpec.isMetadataOnly()){
                 x.getTasks().add(addSinglePartition(tblDesc, table, wh, addPartitionDesc, replicationSpec, x,
                                                     writeId, stmtId, true, dumpRoot, metricCollector));

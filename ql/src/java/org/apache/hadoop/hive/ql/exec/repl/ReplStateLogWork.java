@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Map;
 
 
@@ -159,7 +161,8 @@ public class ReplStateLogWork implements Serializable {
       if (StringUtils.isEmpty(lastReplId) || "null".equalsIgnoreCase(lastReplId)) {
         metricCollector.reportStageEnd("REPL_LOAD", Status.SUCCESS);
       } else {
-        metricCollector.reportStageEnd("REPL_LOAD", Status.SUCCESS, Long.parseLong(lastReplId));
+        metricCollector.reportStageEnd("REPL_LOAD", Status.SUCCESS,
+            Long.parseLong(lastReplId), new SnapshotUtils.ReplSnapshotCount(), replLogger.getReplStatsTracker());
       }
       metricCollector.reportEnd(Status.SUCCESS);
       break;

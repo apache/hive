@@ -1014,6 +1014,7 @@ struct OpenTxnsResponse {
 struct AbortTxnRequest {
     1: required i64 txnid,
     2: optional string replPolicy,
+    3: optional TxnType txn_type,
 }
 
 struct AbortTxnsRequest {
@@ -1053,7 +1054,8 @@ struct CommitTxnRequest {
     4: optional ReplLastIdInfo replLastIdInfo,
     // An optional key/value to store atomically with the transaction
     5: optional CommitTxnKeyValue keyValue,
-    6: optional bool exclWriteEnabled = true
+    6: optional bool exclWriteEnabled = true,
+    7: optional TxnType txn_type,
 }
 
 struct ReplTblWriteIdStateRequest {
@@ -1970,6 +1972,7 @@ enum QueryState {
    FAILED,
    FINISHED,
    TIMED_OUT,
+   AUTO_DISABLED,
 }
 
 struct ScheduledQueryProgressInfo{
@@ -3008,3 +3011,4 @@ const string TABLE_BUCKETING_VERSION = "bucketing_version",
 const string DRUID_CONFIG_PREFIX = "druid.",
 const string JDBC_CONFIG_PREFIX = "hive.sql.",
 const string TABLE_IS_CTAS = "created_with_ctas",
+const string PARTITION_TRANSFORM_SPEC = "partition_transform_spec",

@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
@@ -92,6 +93,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -214,6 +216,10 @@ public abstract class CompactorTest {
   protected long openTxn(TxnType txnType) throws MetaException {
     OpenTxnRequest rqst = new OpenTxnRequest(1, System.getProperty("user.name"), ServerUtils.hostname());
     rqst.setTxn_type(txnType);
+    if (txnType == TxnType.REPL_CREATED) {
+      rqst.setReplPolicy("default.*");
+      rqst.setReplSrcTxnIds(Arrays.asList(1L));
+    }
     List<Long> txns = txnHandler.openTxns(rqst).getTxn_ids();
     return txns.get(0);
   }
@@ -275,6 +281,11 @@ public abstract class CompactorTest {
   }
 
   protected void burnThroughTransactions(String dbName, String tblName, int num, Set<Long> open, Set<Long> aborted)
+      throws NoSuchTxnException, TxnAbortedException, MetaException {
+    burnThroughTransactions(dbName, tblName, num, open, aborted, null);
+  }
+
+  protected void burnThroughTransactions(String dbName, String tblName, int num, Set<Long> open, Set<Long> aborted, LockRequest lockReq)
       throws MetaException, NoSuchTxnException, TxnAbortedException {
     OpenTxnsResponse rsp = txnHandler.openTxns(new OpenTxnRequest(num, "me", "localhost"));
     AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(dbName, tblName);
@@ -283,6 +294,10 @@ public abstract class CompactorTest {
     int i = 0;
     for (long tid : rsp.getTxn_ids()) {
       assert(awiResp.getTxnToWriteIds().get(i++).getTxnId() == tid);
+      if(lockReq != null) {
+        lockReq.setTxnid(tid);
+        txnHandler.lock(lockReq);
+      }
       if (aborted != null && aborted.contains(tid)) {
         txnHandler.abortTxn(new AbortTxnRequest(tid));
       } else if (open == null || (open != null && !open.contains(tid))) {

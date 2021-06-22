@@ -58,8 +58,8 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   String username = null;
   String password = null; // TODO convert to byte array
 
-  public AbstractJDBCConnectorProvider(String dbName, DataConnector dataConn) {
-    super(dbName, dataConn);
+  public AbstractJDBCConnectorProvider(String dbName, DataConnector dataConn, String driverClass) {
+    super(dbName, dataConn, driverClass);
     this.type = connector.getType().toUpperCase(); // TODO
     this.jdbcUrl = connector.getUrl();
     this.username = connector.getParameters().get(JDBC_USERNAME);
@@ -79,16 +79,19 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     try {
       warehouse = new Warehouse(MetastoreConf.newMetastoreConf());
     } catch (MetaException e) { /* ignore */ }
+
+    try {
+      Class.forName(driverClassName);
+    } catch (ClassNotFoundException cnfe) {
+      LOG.warn("Driver class not found in classpath:" + driverClassName);
+      throw new RuntimeException("Driver class not found:" + driverClass.getClass().getName(), cnfe);
+    }
   }
 
   @Override public void open() throws ConnectException {
     try {
-      Class.forName(driverClassName);
       handle = DriverManager.getConnection(jdbcUrl, username, password);
       isOpen = true;
-    } catch (ClassNotFoundException cnfe) {
-      LOG.warn("Driver class not found in classpath:" + driverClassName);
-      throw new RuntimeException("Driver class not found:" + driverClassName, cnfe);
     } catch (SQLException sqle) {
       LOG.warn("Could not connect to remote data source at " + jdbcUrl);
       throw new ConnectException("Could not connect to remote datasource at " + jdbcUrl + ",cause:" + sqle.getMessage());

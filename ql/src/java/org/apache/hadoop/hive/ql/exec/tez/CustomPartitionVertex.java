@@ -238,9 +238,7 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
       }
     }
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Path file splits map for input name: " + inputName + " is " + pathFileSplitsMap);
-    }
+    LOG.debug("Path file splits map for input name: {} is {}", inputName, pathFileSplitsMap);
 
     Multimap<Integer, InputSplit> bucketToInitialSplitMap =
         getBucketSplitMapForPath(inputName, pathFileSplitsMap);
@@ -254,10 +252,9 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
 
       int availableSlots = totalResource / taskResource;
 
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Grouping splits. " + availableSlots + " available slots, " + waves
-                + " waves. Bucket initial splits map: " + bucketToInitialSplitMap);
-      }
+      LOG.debug("Grouping splits. {} available slots, {} waves. Bucket initial splits map: {}", availableSlots, waves,
+          bucketToInitialSplitMap);
+
       JobConf jobConf = new JobConf(conf);
       ShimLoader.getHadoopShims().getMergedCredentials(jobConf);
 

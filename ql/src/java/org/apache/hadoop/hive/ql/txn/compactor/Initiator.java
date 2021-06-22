@@ -75,6 +75,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_INTIATOR_THREAD_NAME_FORMAT;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.isNoAutoCompactSet;
 
 /**
  * A class to initiate compactions.  This will run in a separate thread.
@@ -103,7 +104,8 @@ public class Initiator extends MetaStoreCompactorThread {
       long abortedTimeThreshold = HiveConf
           .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
               TimeUnit.MILLISECONDS);
-      boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED);
+      boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
+          MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
       Pair<AtomicInteger, AtomicInteger> ratio =
           Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_INITIATOR_RATIO);
 
@@ -438,18 +440,6 @@ public class Initiator extends MetaStoreCompactorThread {
     }
   }
 
-  // Because TABLE_NO_AUTO_COMPACT was originally assumed to be NO_AUTO_COMPACT and then was moved
-  // to no_auto_compact, we need to check it in both cases.
-  private boolean noAutoCompactSet(Table t) {
-    String noAutoCompact =
-        t.getParameters().get(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT);
-    if (noAutoCompact == null) {
-      noAutoCompact =
-          t.getParameters().get(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT.toUpperCase());
-    }
-    return noAutoCompact != null && noAutoCompact.equalsIgnoreCase("true");
-  }
-
   // Check if it's a dynamic partitioning case. If so, do not initiate compaction for streaming ingest, only for aborts.
   private static boolean isDynPartIngest(Table t, CompactionInfo ci){
     if (t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0 &&
@@ -506,7 +496,7 @@ public class Initiator extends MetaStoreCompactorThread {
         return false;
       }
 
-      if (noAutoCompactSet(t)) {
+      if (isNoAutoCompactSet(t.getParameters())) {
         LOG.info("Table " + tableName(t) + " marked " + hive_metastoreConstants.TABLE_NO_AUTO_COMPACT +
             "=true so we will not compact it.");
         return false;

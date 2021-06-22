@@ -71,8 +71,6 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -89,7 +87,6 @@ public class HiveMetaStoreChecker {
   private final IMetaStoreClient msc;
   private final Configuration conf;
   private final long partitionExpirySeconds;
-  private final Interner<Path> pathInterner = Interners.newStrongInterner();
   public static final PathFilter HIDDEN_FILES_PATH_FILTER =
       p -> !p.getName().startsWith("_") && !p.getName().startsWith(".");
 
@@ -354,7 +351,6 @@ public class HiveMetaStoreChecker {
 
       for (int i = 0; i < getPartitionSpec(table, partition).size(); i++) {
         Path qualifiedPath = partPath.makeQualified(fs);
-        pathInterner.intern(qualifiedPath);
         partPaths.add(qualifiedPath);
         partPath = partPath.getParent();
       }

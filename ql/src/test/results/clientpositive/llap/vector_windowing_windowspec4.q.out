@@ -77,7 +77,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:i:int, 1:type:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:i:int, 1:type:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: type (type: string), i (type: int)
                     null sort order: az

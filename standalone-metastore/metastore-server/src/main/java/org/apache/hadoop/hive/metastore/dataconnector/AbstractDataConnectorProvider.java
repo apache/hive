@@ -20,10 +20,12 @@ public abstract class AbstractDataConnectorProvider implements IDataConnectorPro
   protected Object  handle = null;
   protected boolean isOpen = false;
   protected DataConnector connector = null;
+  protected String driverClassName = null;
 
-  public AbstractDataConnectorProvider(String dbName, DataConnector connector) {
+  public AbstractDataConnectorProvider(String dbName, DataConnector connector, String driverClassName) {
     this.scoped_db = dbName;
     this.connector = connector;
+    this.driverClassName = driverClassName;
   }
 
   @Override public final void setScope(String scoped_db) {

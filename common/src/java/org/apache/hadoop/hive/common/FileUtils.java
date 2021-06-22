@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
 import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -691,6 +690,25 @@ public final class FileUtils {
     return copied;
   }
 
+  public static boolean distCpWithSnapshot(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst,
+      boolean overwriteTarget, HiveConf conf, HadoopShims shims, UserGroupInformation proxyUser) {
+    boolean copied = false;
+    try {
+      if (proxyUser == null) {
+        copied = shims.runDistCpWithSnapshots(oldSnapshot, newSnapshot, srcPaths, dst, overwriteTarget, conf);
+      } else {
+        copied =
+            shims.runDistCpWithSnapshotsAs(oldSnapshot, newSnapshot, srcPaths, dst, overwriteTarget, proxyUser, conf);
+      }
+      if (copied)
+        LOG.info("Successfully copied using snapshots source {} and dest {} using snapshots {} and {}", srcPaths, dst,
+            oldSnapshot, newSnapshot);
+    } catch (IOException e) {
+      LOG.error("Can not copy using snapshot from source: {}, target: {}", srcPaths, dst);
+    }
+    return copied;
+  }
+
   /**
    * Move a particular file or directory to the trash.
    * @param fs FileSystem to use
@@ -1103,4 +1121,16 @@ public final class FileUtils {
     return IO_ERROR_SLEEP_TIME * (int)(Math.pow(2.0, repeatNum));
   }
 
+  /**
+   * Attempts to delete a file if it exists.
+   * @param fs FileSystem
+   * @param path Path to be deleted.
+   */
+  public static void deleteIfExists(FileSystem fs, Path path) {
+    try {
+      fs.delete(path, true);
+    } catch (IOException e) {
+      LOG.debug("Unable to delete {}", path, e);
+    }
+  }
 }

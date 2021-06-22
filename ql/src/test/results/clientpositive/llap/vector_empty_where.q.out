@@ -37,7 +37,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsTrue(col 13:boolean)(children: CastStringToBoolean(col 6) -> 13:boolean)
+                        predicateExpression: SelectColumnIsTrue(col 14:boolean)(children: CastStringToBoolean(col 6) -> 14:boolean)
                     predicate: UDFToBoolean(cstring1) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 449620 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -211,7 +211,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsTrue(col 13:boolean)(children: CastLongToBooleanViaLongToLong(col 2:int) -> 13:boolean)
+                        predicateExpression: SelectColumnIsTrue(col 14:boolean)(children: CastLongToBooleanViaLongToLong(col 2:int) -> 14:boolean)
                     predicate: UDFToBoolean(cint) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 18348 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
@@ -377,7 +377,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsTrue(col 13:boolean)(children: CastDoubleToBooleanViaDoubleToLong(col 4:float) -> 13:boolean)
+                        predicateExpression: SelectColumnIsTrue(col 14:boolean)(children: CastDoubleToBooleanViaDoubleToLong(col 4:float) -> 14:boolean)
                     predicate: UDFToBoolean(cfloat) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -551,7 +551,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsTrue(col 13:boolean)(children: CastTimestampToBoolean(col 8:timestamp) -> 13:boolean)
+                        predicateExpression: SelectColumnIsTrue(col 14:boolean)(children: CastTimestampToBoolean(col 8:timestamp) -> 14:boolean)
                     predicate: UDFToBoolean(ctimestamp1) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 201828 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator

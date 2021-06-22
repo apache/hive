@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.hive.UtilsForTest;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
@@ -49,7 +50,7 @@ public class TestHplSqlViaBeeLine {
    */
   @BeforeClass
   public static void preTests() throws Exception {
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = UtilsForTest.getHiveOnTezConfFromDir("../../data/conf/tez/");
     hiveConf.setVar(HiveConf.ConfVars.HIVE_LOCK_MANAGER,
             "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");
     hiveConf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE, 10);

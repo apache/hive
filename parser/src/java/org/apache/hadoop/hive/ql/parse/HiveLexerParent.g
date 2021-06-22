@@ -172,6 +172,7 @@ KW_MACRO: 'MACRO';
 KW_FILE: 'FILE';
 KW_JAR: 'JAR';
 KW_EXPLAIN: 'EXPLAIN';
+KW_DDL: 'DDL';
 KW_EXTENDED: 'EXTENDED';
 KW_DEBUG: 'DEBUG';
 KW_FORMATTED: 'FORMATTED';
@@ -384,6 +385,7 @@ KW_DATACONNECTORS: 'CONNECTORS';
 KW_TYPE: 'TYPE';
 KW_URL: 'URL';
 KW_REMOTE: 'REMOTE';
+KW_SPEC: 'SPEC';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

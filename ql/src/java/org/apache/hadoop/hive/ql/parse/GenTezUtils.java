@@ -891,9 +891,7 @@ public class GenTezUtils {
         int result = defaultTinyBufferSize == -1 ?
             (int) Math.ceil((double) groupByOperator.getStatistics().getDataSize() / 1E6) :
             defaultTinyBufferSize;
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Buffer size for output from operator {} can be set to {}Mb", rsOp, result);
-        }
+        LOG.debug("Buffer size for output from operator {} can be set to {}Mb", rsOp, result);
         return result;
       }
     }

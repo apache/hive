@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorBase;
@@ -132,6 +133,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
   }
 
   private TypeInfo[] reducerBatchTypeInfos;
+  private DataTypePhysicalVariation[] reducerBatchDataTypePhysicalVariations;
 
   private boolean isPartitionOrderBy;
 
@@ -145,6 +147,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
 
   private String[] outputColumnNames;
   private TypeInfo[] outputTypeInfos;
+  private DataTypePhysicalVariation[] outputDataTypePhysicalVariations;
 
   private VectorPTFInfo vectorPTFInfo;
 
@@ -172,9 +175,15 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
       boolean isDistinct, WindowFrameDef windowFrameDef, Type columnVectorType,
       VectorExpression inputVectorExpression, int outputColumnNum) {
 
-    final boolean isRowEndCurrent =
-        (windowFrameDef.getWindowType() == WindowType.ROWS &&
-         windowFrameDef.getEnd().isCurrentRow());
+    final boolean isRowEndCurrent = (windowFrameDef.getWindowType() == WindowType.ROWS
+        && windowFrameDef.getEnd().isCurrentRow());
+    /*
+     * we should only stream when the window start is unbounded and the end row is the current,
+     * because that's the way how streaming evaluation works: calculate from the very-first row then
+     * create result for the current row on the fly, so with other words: currently we cannot force
+     * a boundary on a streaming evaluator
+     */
+    final boolean canStream = windowFrameDef.getStart().isUnbounded() && isRowEndCurrent;
 
     VectorPTFEvaluatorBase evaluator;
     switch (functionType) {
@@ -191,21 +200,21 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     case MIN:
       switch (columnVectorType) {
       case LONG:
-        evaluator = !isRowEndCurrent ?
+        evaluator = !canStream ?
             new VectorPTFEvaluatorLongMin(
                 windowFrameDef, inputVectorExpression, outputColumnNum) :
             new VectorPTFEvaluatorStreamingLongMin(
                 windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       case DOUBLE:
-        evaluator = !isRowEndCurrent ?
+        evaluator = !canStream ?
             new VectorPTFEvaluatorDoubleMin(
                 windowFrameDef, inputVectorExpression, outputColumnNum) :
             new VectorPTFEvaluatorStreamingDoubleMin(
                 windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       case DECIMAL:
-        evaluator = !isRowEndCurrent ?
+        evaluator = !canStream ?
             new VectorPTFEvaluatorDecimalMin(
                 windowFrameDef, inputVectorExpression, outputColumnNum) :
             new VectorPTFEvaluatorStreamingDecimalMin(
@@ -218,21 +227,21 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     case MAX:
       switch (columnVectorType) {
       case LONG:
-        evaluator = !isRowEndCurrent ?
+        evaluator = !canStream ?
             new VectorPTFEvaluatorLongMax(
                 windowFrameDef, inputVectorExpression, outputColumnNum) :
             new VectorPTFEvaluatorStreamingLongMax(
                 windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       case DOUBLE:
-        evaluator = !isRowEndCurrent ?
+        evaluator = !canStream ?
             new VectorPTFEvaluatorDoubleMax(
                 windowFrameDef, inputVectorExpression, outputColumnNum) :
             new VectorPTFEvaluatorStreamingDoubleMax(
                 windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       case DECIMAL:
-        evaluator = !isRowEndCurrent ?
+        evaluator = !canStream ?
             new VectorPTFEvaluatorDecimalMax(
                 windowFrameDef, inputVectorExpression, outputColumnNum) :
             new VectorPTFEvaluatorStreamingDecimalMax(
@@ -245,21 +254,21 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     case SUM:
       switch (columnVectorType) {
       case LONG:
-        evaluator = !isRowEndCurrent ?
+        evaluator = !canStream ?
             new VectorPTFEvaluatorLongSum(
                 windowFrameDef, inputVectorExpression, outputColumnNum) :
             new VectorPTFEvaluatorStreamingLongSum(
                 windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       case DOUBLE:
-        evaluator = !isRowEndCurrent ?
+        evaluator = !canStream ?
             new VectorPTFEvaluatorDoubleSum(
                 windowFrameDef, inputVectorExpression, outputColumnNum) :
             new VectorPTFEvaluatorStreamingDoubleSum(
                 windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       case DECIMAL:
-        evaluator = !isRowEndCurrent ?
+        evaluator = !canStream ?
             new VectorPTFEvaluatorDecimalSum(
                 windowFrameDef, inputVectorExpression, outputColumnNum) :
             new VectorPTFEvaluatorStreamingDecimalSum(
@@ -272,21 +281,21 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     case AVG:
       switch (columnVectorType) {
       case LONG:
-        evaluator = !isRowEndCurrent ?
+        evaluator = !canStream ?
             new VectorPTFEvaluatorLongAvg(
                 windowFrameDef, inputVectorExpression, outputColumnNum) :
             new VectorPTFEvaluatorStreamingLongAvg(
                 windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       case DOUBLE:
-        evaluator = !isRowEndCurrent ?
+        evaluator = !canStream ?
             new VectorPTFEvaluatorDoubleAvg(
                 windowFrameDef, inputVectorExpression, outputColumnNum) :
             new VectorPTFEvaluatorStreamingDoubleAvg(
                 windowFrameDef, inputVectorExpression, outputColumnNum);
         break;
       case DECIMAL:
-        evaluator = !isRowEndCurrent ?
+        evaluator = !canStream ?
             new VectorPTFEvaluatorDecimalAvg(
                 windowFrameDef, inputVectorExpression, outputColumnNum) :
             new VectorPTFEvaluatorStreamingDecimalAvg(
@@ -415,8 +424,10 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     return reducerBatchTypeInfos;
   }
 
-  public void setReducerBatchTypeInfos(TypeInfo[] reducerBatchTypeInfos) {
+  public void setReducerBatchTypeInfos(TypeInfo[] reducerBatchTypeInfos,
+      DataTypePhysicalVariation[] reducerBatchDataTypePhysicalVariations) {
     this.reducerBatchTypeInfos = reducerBatchTypeInfos;
+    this.reducerBatchDataTypePhysicalVariations = reducerBatchDataTypePhysicalVariations;
   }
 
   public boolean getIsPartitionOrderBy() {
@@ -487,8 +498,14 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     return outputTypeInfos;
   }
 
-  public void setOutputTypeInfos(TypeInfo[] outputTypeInfos) {
+  public DataTypePhysicalVariation[] getOutputDataTypePhysicalVariations() {
+    return outputDataTypePhysicalVariations;
+  }
+
+  public void setOutputTypeInfos(TypeInfo[] outputTypeInfos,
+      DataTypePhysicalVariation[] outputDataTypePhysicalVariations) {
     this.outputTypeInfos = outputTypeInfos;
+    this.outputDataTypePhysicalVariations = outputDataTypePhysicalVariations;
   }
 
   public void setVectorPTFInfo(VectorPTFInfo vectorPTFInfo) {

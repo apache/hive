@@ -96,7 +96,8 @@ public class Cleaner extends MetaStoreCompactorThread {
   public void run() {
     LOG.info("Starting Cleaner thread");
     try {
-      boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED);
+      boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
+          MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
       Pair<AtomicInteger, AtomicInteger> ratio =
           Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_CLEANER_RATIO);
       do {
@@ -231,9 +232,7 @@ public class Cleaner extends MetaStoreCompactorThread {
 
       // Creating 'reader' list since we are interested in the set of 'obsolete' files
       final ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, t, validTxnList);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Cleaning based on writeIdList: " + validWriteIdList);
-      }
+      LOG.debug("Cleaning based on writeIdList: {}", validWriteIdList);
 
       Ref<Boolean> removedFiles = Ref.from(false);
       if (runJobAsSelf(ci.runAs)) {

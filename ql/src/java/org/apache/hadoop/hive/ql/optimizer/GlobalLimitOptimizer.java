@@ -93,6 +93,10 @@ public class GlobalLimitOptimizer extends Transform {
       //
       TableScanOperator ts = topOps.values().iterator().next();
       Table tab = ts.getConf().getTableMetadata();
+      if (tab.isNonNative()) {
+        LOG.info("Not enabling limit optimization on non native table: " + tab.getTableName());
+        return pctx;
+      }
       // StorageHandlers will always have empty tablePath.
       // GenMapRedUtils.setMapWork removes empty tablePath from input dir with select-Limit
       // InputFormat.getSplits wont be called if no input path & TS Vertex will have 0 task parallelism

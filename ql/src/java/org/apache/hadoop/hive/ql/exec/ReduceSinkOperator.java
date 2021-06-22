@@ -203,9 +203,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       tag = conf.getTag();
       tagByte[0] = (byte) tag;
       skipTag = conf.getSkipTag();
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Using tag = " + tag);
-      }
+      LOG.info("Using tag = " + tag);
 
       TableDesc keyTableDesc = conf.getKeySerializeInfo();
       AbstractSerDe keySerDe = keyTableDesc.getSerDeClass().newInstance();
@@ -300,10 +298,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
         // TODO: this is fishy - we init object inspectors based on first tag. We
         //       should either init for each tag, or if rowInspector doesn't really
         //       matter, then we can create this in ctor and get rid of firstRow.
-        if (LOG.isInfoEnabled()) {
-          LOG.info("keys are " + conf.getOutputKeyColumnNames() + " num distributions: " +
-              conf.getNumDistributionKeys());
-        }
+        LOG.info("keys are " + conf.getOutputKeyColumnNames() + " num distributions: " + conf.getNumDistributionKeys());
         keyObjectInspector = initEvaluatorsAndReturnStruct(keyEval,
             distinctColIndices,
             conf.getOutputKeyColumnNames(), numDistributionKeys, rowInspector);

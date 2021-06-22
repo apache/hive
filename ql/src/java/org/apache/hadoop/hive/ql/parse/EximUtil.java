@@ -81,6 +81,8 @@ public class EximUtil {
   public static final String FILES_NAME = "_files";
   public static final String FILE_LIST = "_file_list";
   public static final String FILE_LIST_EXTERNAL = "_file_list_external";
+  public static final String FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT = "_file_list_external_current";
+  public static final String FILE_LIST_EXTERNAL_SNAPSHOT_OLD = "_file_list_external_old";
   public static final String DATA_PATH_NAME = "data";
   public static final String METADATA_PATH_NAME = "metadata";
 

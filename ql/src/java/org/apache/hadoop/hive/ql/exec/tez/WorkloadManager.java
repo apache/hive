@@ -2200,9 +2200,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         }
       }
       if (!wasCanceled) {
-        if (LOG.isDebugEnabled()) {
-          LOG.info("Queueing the initialization failure with " + session);
-        }
+        LOG.debug("Queueing the initialization failure with {}", session);
         notifyInitializationCompleted(this); // Report failure to the main thread.
       }
       future.setException(t);

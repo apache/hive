@@ -23,10 +23,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -42,7 +45,7 @@ import org.junit.runners.Parameterized;
 @RunWith(Parameterized.class)
 public class TestHiveIcebergStorageHandlerWithMultipleCatalogs {
 
-  private static final String[] EXECUTION_ENGINES = new String[] { "tez", "mr" };
+  private static final String[] EXECUTION_ENGINES = new String[] { "tez" };
   private static final String HIVECATALOGNAME = "table1_catalog";
   private static final String OTHERCATALOGNAME = "table2_catalog";
   private static TestHiveShell shell;
@@ -76,7 +79,7 @@ public class TestHiveIcebergStorageHandlerWithMultipleCatalogs {
     // Run tests with PARQUET and ORC file formats for a two Catalogs
     for (String engine : EXECUTION_ENGINES) {
       // include Tez tests only for Java 8
-      if (javaVersion.equals("1.8") || "mr".equals(engine)) {
+      if (javaVersion.equals("1.8")) {
         for (TestTables.TestTableType testTableType : TestTables.ALL_TABLE_TYPES) {
           if (!TestTables.TestTableType.HIVE_CATALOG.equals(testTableType)) {
             testParams.add(new Object[]{FileFormat.PARQUET, FileFormat.ORC, engine,
@@ -128,13 +131,48 @@ public class TestHiveIcebergStorageHandlerWithMultipleCatalogs {
             HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, rows), 0);
   }
 
+  @Test
+  public void testCTASFromOtherCatalog() throws IOException {
+    testTables2.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat2, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+
+    shell.executeStatement(String.format(
+        "CREATE TABLE target STORED BY ICEBERG TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
+        InputFormatConfig.CATALOG_NAME, HIVECATALOGNAME));
+
+    List<Object[]> objects = shell.executeStatement("SELECT * FROM target");
+    HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
+  }
+
+  @Test
+  public void testCTASFromOtherCatalogFailureRollback() throws IOException {
+    // force an execution error by passing in a committer class that Tez won't be able to load
+    shell.setHiveSessionValue("hive.tez.mapreduce.output.committer.class", "org.apache.NotExistingClass");
+
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    testTables2.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat2, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+
+    AssertHelpers.assertThrows("Should fail while loading non-existent output committer class.",
+        IllegalArgumentException.class, "org.apache.NotExistingClass",
+        () -> shell.executeStatement(String.format(
+            "CREATE TABLE target STORED BY ICEBERG TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
+            InputFormatConfig.CATALOG_NAME, HIVECATALOGNAME)));
+    // CTAS table should have been dropped by the lifecycle hook
+    Assert.assertThrows(NoSuchTableException.class, () -> testTables1.loadTable(target));
+  }
+
   private void createAndAddRecords(TestTables testTables, FileFormat fileFormat, TableIdentifier identifier,
                                    String catalogName, List<Record> records) throws IOException {
-    String createSql =
-        "CREATE EXTERNAL TABLE " + identifier + " (customer_id BIGINT, first_name STRING, last_name STRING)" +
-            " STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' " +
-            testTables.locationForCreateTableSQL(identifier) +
-            " TBLPROPERTIES ('" + InputFormatConfig.CATALOG_NAME + "'='" + catalogName + "')";
+    String createSql = String.format(
+        "CREATE EXTERNAL TABLE %s (customer_id BIGINT, first_name STRING, last_name STRING)" +
+        " STORED BY ICEBERG %s " +
+        " TBLPROPERTIES ('%s'='%s', '%s'='%s')",
+        identifier,
+        testTables.locationForCreateTableSQL(identifier),
+        InputFormatConfig.CATALOG_NAME, catalogName,
+        TableProperties.DEFAULT_FILE_FORMAT, fileFormat);
     shell.executeStatement(createSql);
     Table icebergTable = testTables.loadTable(identifier);
     testTables.appendIcebergTable(shell.getHiveConf(), icebergTable, fileFormat, null, records);

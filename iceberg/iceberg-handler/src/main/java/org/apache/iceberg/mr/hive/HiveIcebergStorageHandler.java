@@ -31,8 +31,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
@@ -52,15 +55,18 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
+import org.apache.iceberg.relocated.com.google.common.base.Throwables;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.SerializationUtil;
 import org.slf4j.Logger;
@@ -93,6 +99,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public HiveMetaHook getMetaHook() {
+    // Make sure to always return a new instance here, as HiveIcebergMetaHook might hold state relevant for the
+    // operation.
     return new HiveIcebergMetaHook(conf);
   }
 
@@ -158,6 +166,25 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         jobConf.set(InputFormatConfig.TABLE_CATALOG_PREFIX + tableName, catalogName);
       }
     }
+    try {
+      if (!jobConf.getBoolean(HiveConf.ConfVars.HIVE_IN_TEST_IDE.varname, false)) {
+        // For running unit test this won't work as maven surefire CP is different than what we have on a cluster:
+        // it places the current projects' classes and test-classes to top instead of jars made from these...
+        Utilities.addDependencyJars(jobConf, HiveIcebergStorageHandler.class);
+      }
+    } catch (IOException e) {
+      Throwables.propagate(e);
+    }
+  }
+
+  @Override
+  public boolean directInsertCTAS() {
+    return true;
+  }
+
+  @Override
+  public boolean alwaysUnpartitioned() {
+    return true;
   }
 
   @Override
@@ -219,6 +246,25 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       stats.put(StatsSetupConst.TOTAL_SIZE, "0");
     }
     return stats;
+  }
+
+  /**
+   * No need for exclusive locks when writing, since Iceberg tables use optimistic concurrency when writing
+   * and only lock the table during the commit operation.
+   */
+  @Override
+  public LockType getLockType(WriteEntity writeEntity) {
+    return LockType.SHARED_READ;
+  }
+
+  @Override
+  public boolean supportsPartitionTransform() {
+    return true;
+  }
+
+  @Override
+  public String getFileFormatPropertyKey() {
+    return TableProperties.DEFAULT_FILE_FORMAT;
   }
 
   public boolean addDynamicSplitPruningEdge(org.apache.hadoop.hive.ql.metadata.Table table,
@@ -313,7 +359,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @VisibleForTesting
   static void overlayTableProperties(Configuration configuration, TableDesc tableDesc, Map<String, String> map) {
     Properties props = tableDesc.getProperties();
-    Table table = Catalogs.loadTable(configuration, props);
+    Table table = IcebergTableUtil.getTable(configuration, props);
     String schemaJson = SchemaParser.toJson(table.schema());
 
     Maps.fromProperties(props).entrySet().stream()
@@ -323,6 +369,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     map.put(InputFormatConfig.TABLE_IDENTIFIER, props.getProperty(Catalogs.NAME));
     map.put(InputFormatConfig.TABLE_LOCATION, table.location());
     map.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
+    props.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(table.spec()));
 
     if (table instanceof Serializable) {
       map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),

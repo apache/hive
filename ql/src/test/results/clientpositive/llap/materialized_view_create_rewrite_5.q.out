@@ -72,6 +72,8 @@ POSTHOOK: Input: default@cmv_basetable_2_n3
 POSTHOOK: Input: default@cmv_basetable_n6
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view_n6
+POSTHOOK: Lineage: cmv_mat_view_n6.a SIMPLE [(cmv_basetable_n6)cmv_basetable_n6.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view_n6.c SIMPLE [(cmv_basetable_2_n3)cmv_basetable_2_n3.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: insert into cmv_basetable_2_n3 values
  (3, 'charlie', 15.8, 1)
 PREHOOK: type: QUERY

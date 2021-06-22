@@ -17,13 +17,17 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import com.codahale.metrics.Gauge;
 import org.apache.commons.lang3.tuple.Pair;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Maps;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HMSMetricsListener;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -39,12 +43,17 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
+import org.apache.tez.common.counters.TezCounters;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,12 +61,21 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.DeltaFilesMetricType.NUM_DELTAS;
+import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.DeltaFilesMetricType.NUM_SMALL_DELTAS;
+import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter.DeltaFilesMetricType.NUM_OBSOLETE_DELTAS;
 import static org.apache.hadoop.hive.metastore.metrics.AcidMetricService.replaceWhitespace;
 
 public class TestCompactionMetrics  extends CompactorTest {
@@ -165,6 +183,43 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     Assert.assertEquals(originalValue,
         Metrics.getOrCreateGauge(INITIATED_METRICS_KEY).intValue());
+  }
+
+  @Test
+  public void testOldestReadyForCleaningAge() throws Exception {
+    conf.setIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA, 1);
+
+    long oldStart = System.currentTimeMillis();
+    Table old = newTable("default", "old_rfc", true);
+    Partition oldP = newPartition(old, "part");
+    addBaseFile(old, oldP, 20L, 20);
+    addDeltaFile(old, oldP, 21L, 22L, 2);
+    addDeltaFile(old, oldP, 23L, 24L, 2);
+    burnThroughTransactions("default", "old_rfc", 25);
+    CompactionRequest rqst = new CompactionRequest("default", "old_rfc", CompactionType.MINOR);
+    rqst.setPartitionname("ds=part");
+    txnHandler.compact(rqst);
+    startWorker();
+
+    long youngStart = System.currentTimeMillis();
+    Table young = newTable("default", "young_rfc", true);
+    Partition youngP = newPartition(young, "part");
+    addBaseFile(young, youngP, 20L, 20);
+    addDeltaFile(young, youngP, 21L, 22L, 2);
+    addDeltaFile(young, youngP, 23L, 24L, 2);
+    burnThroughTransactions("default", "young_rfc", 25);
+    rqst = new CompactionRequest("default", "young_rfc", CompactionType.MINOR);
+    rqst.setPartitionname("ds=part");
+    txnHandler.compact(rqst);
+    startWorker();
+
+    runAcidMetricService();
+    long oldDiff = (System.currentTimeMillis() - oldStart)/1000;
+    long youngDiff = (System.currentTimeMillis() - youngStart)/1000;
+
+    long threshold = 1000;
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_READY_FOR_CLEANING_AGE).intValue() <= oldDiff + threshold);
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_READY_FOR_CLEANING_AGE).intValue() >= youngDiff);
   }
 
   @Test
@@ -506,6 +561,7 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     long start = System.currentTimeMillis();
     burnThroughTransactions(t.getDbName(), t.getTableName(), 24, new HashSet<>(Arrays.asList(22L, 23L, 24L)), null);
+    openTxn(TxnType.REPL_CREATED);
 
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, t.getDbName());
     comp.setTablename(t.getTableName());
@@ -531,11 +587,19 @@ public class TestCompactionMetrics  extends CompactorTest {
         Metrics.getOrCreateGauge(MetricsConstants.NUM_COMPLETED_TXN_COMPONENTS).intValue());
 
     Assert.assertEquals(2,
-        Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_TXNS).intValue());
+        Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_NON_REPL_TXNS).intValue());
+    Assert.assertEquals(1,
+        Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_REPL_TXNS).intValue());
+
     Assert.assertEquals(23,
-        Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_ID).longValue());
-    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_AGE).intValue() <= diff);
-    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_TXN_AGE).intValue() >= 1);
+        Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_NON_REPL_TXN_ID).longValue());
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_NON_REPL_TXN_AGE).intValue() <= diff);
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_NON_REPL_TXN_AGE).intValue() >= 1);
+
+    Assert.assertEquals(25,
+        Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_REPL_TXN_ID).longValue());
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_REPL_TXN_AGE).intValue() <= diff);
+    Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_OPEN_REPL_TXN_AGE).intValue() >= 1);
 
     Assert.assertEquals(1,
         Metrics.getOrCreateGauge(MetricsConstants.NUM_LOCKS).intValue());
@@ -548,7 +612,7 @@ public class TestCompactionMetrics  extends CompactorTest {
         Metrics.getOrCreateGauge(MetricsConstants.NUM_TXN_TO_WRITEID).intValue());
 
     start = System.currentTimeMillis();
-    burnThroughTransactions(dbName, tblName, 3, null, new HashSet<>(Arrays.asList(25L, 27L)));
+    burnThroughTransactions(dbName, tblName, 3, null, new HashSet<>(Arrays.asList(26L, 28L)));
     Thread.sleep(1000);
 
     runAcidMetricService();
@@ -557,7 +621,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_AGE).intValue() <= diff);
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_AGE).intValue() >= 1);
 
-    Assert.assertEquals(25,
+    Assert.assertEquals(26,
         Metrics.getOrCreateGauge(MetricsConstants.OLDEST_ABORTED_TXN_ID).longValue());
     Assert.assertEquals(2,
         Metrics.getOrCreateGauge(MetricsConstants.NUM_ABORTED_TXNS).intValue());
@@ -580,6 +644,183 @@ public class TestCompactionMetrics  extends CompactorTest {
             3, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_ABORTED_TXNS).getCount());
     Assert.assertEquals(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS + " value incorrect",
             3, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS).getCount());
+  }
+
+  @Test
+  public void testDeltaFilesMetric() throws Exception {
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, true);
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE, 2);
+
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD, 100);
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD, 100);
+    HiveConf.setTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_CACHE_DURATION, 5, TimeUnit.SECONDS);
+
+    MetricsFactory.close();
+    MetricsFactory.init(conf);
+
+    HiveConf.setTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_REPORTING_INTERVAL, 1, TimeUnit.SECONDS);
+    DeltaFilesMetricReporter.init(conf);
+
+    TezCounters tezCounters = new TezCounters();
+    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "acid/p=1").setValue(200);
+    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "acid/p=2").setValue(100);
+    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "acid/p=3").setValue(150);
+    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "acid_v2").setValue(250);
+
+    tezCounters.findCounter(NUM_DELTAS + "", "acid/p=1").setValue(150);
+    tezCounters.findCounter(NUM_DELTAS + "", "acid/p=2").setValue(100);
+    tezCounters.findCounter(NUM_DELTAS + "", "acid/p=3").setValue(250);
+    tezCounters.findCounter(NUM_DELTAS + "", "acid_v2").setValue(200);
+
+    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "acid/p=1").setValue(250);
+    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "acid/p=2").setValue(200);
+    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "acid/p=3").setValue(150);
+    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "acid_v2").setValue(100);
+
+    DeltaFilesMetricReporter.getInstance().submit(tezCounters);
+    Thread.sleep(1000);
+
+    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
+    Map<String, Gauge> gauges = metrics.getMetricRegistry().getGauges();
+
+    Assert.assertTrue(
+      equivalent(
+        new HashMap<String, String>() {{
+          put("acid_v2", "250");
+          put("acid/p=1", "200");
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS, gauges)));
+
+    Assert.assertTrue(
+      equivalent(
+        new HashMap<String, String>() {{
+          put("acid_v2", "200");
+          put("acid/p=3", "250");
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS, gauges)));
+
+    Assert.assertTrue(
+      equivalent(
+        new HashMap<String, String>() {{
+          put("acid/p=1", "250");
+          put("acid/p=2", "200");
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS, gauges)));
+
+    //time-out existing entries
+    Thread.sleep(5000);
+
+    tezCounters = new TezCounters();
+    tezCounters.findCounter(NUM_DELTAS + "", "acid/p=2").setValue(150);
+    DeltaFilesMetricReporter.getInstance().submit(tezCounters);
+    Thread.sleep(1000);
+
+    Assert.assertTrue(
+      equivalent(
+        new HashMap<String, String>() {{
+          put("acid/p=2", "150");
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS, gauges)));
+
+    DeltaFilesMetricReporter.close();
+  }
+
+  static boolean equivalent(Map<String, String> lhs, Map<String, String> rhs) {
+    return lhs.size() == rhs.size() && Maps.difference(lhs, rhs).areEqual();
+  }
+
+  static Map<String, String> gaugeToMap(String metric, Map<String, Gauge> gauges) {
+    String value = (String) gauges.get(metric).getValue();
+    return value.isEmpty()? Collections.emptyMap() : Splitter.on(',').withKeyValueSeparator("->").split(value);
+  }
+
+  @Test
+  public void testTablesWithXAbortedTxns() throws Exception {
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_TABLES_WITH_ABORTED_TXNS_THRESHOLD, 14);
+
+    String dbName = "default";
+    String tblName1 = "table1";
+    String tblName2 = "table2";
+    String tblName3 = "table3";
+    Table t1 = newTable(dbName, tblName1, false);
+    Table t2 = newTable(dbName, tblName2, false);
+    Table t3 = newTable(dbName, tblName3, false);
+    Set<Long> abort1 = LongStream.range(1, 16).boxed().collect(Collectors.toSet());
+    Set<Long> abort2 = LongStream.range(21, 31).boxed().collect(Collectors.toSet());
+    Set<Long> abort3 = LongStream.range(41, 61).boxed().collect(Collectors.toSet());
+
+    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, dbName);
+    comp.setOperationType(DataOperationType.INSERT);
+    LockRequest lockReq = new LockRequest(Lists.newArrayList(comp), "me", "localhost");
+
+    comp.setTablename(t1.getTableName());
+    burnThroughTransactions(t1.getDbName(), t1.getTableName(), 20, null, abort1, lockReq);
+    comp.setTablename(t2.getTableName());
+    burnThroughTransactions(t2.getDbName(), t2.getTableName(), 20, null, abort2, lockReq);
+    comp.setTablename(t3.getTableName());
+    burnThroughTransactions(t3.getDbName(), t3.getTableName(), 30, null, abort3, lockReq);
+
+    runAcidMetricService();
+
+    Assert.assertEquals(MetricsConstants.TABLES_WITH_X_ABORTED_TXNS + " value incorrect",
+        2, Metrics.getOrCreateGauge(MetricsConstants.TABLES_WITH_X_ABORTED_TXNS).intValue());
+  }
+
+  @Test
+  public void testPartTablesWithXAbortedTxns() throws Exception {
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_TABLES_WITH_ABORTED_TXNS_THRESHOLD, 4);
+
+    String dbName = "default";
+    String tblName = "table";
+
+    String part1 = "p1";
+    String part2 = "p2";
+    String part3 = "p3";
+
+    Table t = newTable(dbName, tblName, true);
+    newPartition(t, part1);
+    newPartition(t, part2);
+    newPartition(t, part3);
+    String partPattern = t.getPartitionKeys().get(0).getName() + "=%s";
+
+    Set<Long> abort1 = LongStream.range(1, 6).boxed().collect(Collectors.toSet());
+    Set<Long> abort2 = LongStream.range(11, 16).boxed().collect(Collectors.toSet());
+
+    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, dbName);
+    comp.setTablename(tblName);
+    comp.setOperationType(DataOperationType.INSERT);
+    LockRequest lockReq = new LockRequest(Lists.newArrayList(comp), "me", "localhost");
+
+
+    comp.setPartitionname(String.format(partPattern, part1));
+    burnThroughTransactions(t.getDbName(), t.getTableName(), 10, null, abort1, lockReq);
+
+    comp.setPartitionname(String.format(partPattern, part2));
+    burnThroughTransactions(t.getDbName(), t.getTableName(), 10, null, abort2, lockReq);
+
+    comp.setPartitionname(String.format(partPattern, part3));
+    burnThroughTransactions(t.getDbName(), t.getTableName(), 10, null, null, lockReq);
+
+    runAcidMetricService();
+
+    Assert.assertEquals(MetricsConstants.TABLES_WITH_X_ABORTED_TXNS + " value incorrect",
+        2, Metrics.getOrCreateGauge(MetricsConstants.TABLES_WITH_X_ABORTED_TXNS).intValue());
+  }
+
+  @Test
+  public void testWritesToDisabledCompactionTable() throws Exception {
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS, HMSMetricsListener.class.getName());
+    txnHandler = TxnUtils.getTxnStore(conf);
+
+    String dbName = "default";
+
+    Map<String, String> params = new HashMap<>();
+    params.put(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT, "true");
+    Table disabledTbl = newTable(dbName, "comp_disabled", false, params);
+    burnThroughTransactions(disabledTbl.getDbName(), disabledTbl.getTableName(), 1, null, null);
+    burnThroughTransactions(disabledTbl.getDbName(), disabledTbl.getTableName(), 1, null, new HashSet<>(Arrays.asList(2L)));
+
+    Table enabledTbl = newTable(dbName, "comp_enabled", false);
+    burnThroughTransactions(enabledTbl.getDbName(), enabledTbl.getTableName(), 1, null, null);
+
+    Assert.assertEquals(MetricsConstants.WRITES_TO_DISABLED_COMPACTION_TABLE + " value incorrect",
+        2, Metrics.getOrCreateGauge(MetricsConstants.WRITES_TO_DISABLED_COMPACTION_TABLE).intValue());
   }
 
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,

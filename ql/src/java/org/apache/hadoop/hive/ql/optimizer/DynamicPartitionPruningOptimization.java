@@ -162,6 +162,11 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     List<ExprNodeDesc> newBetweenNodes = new ArrayList<>();
     List<ExprNodeDesc> newBloomFilterNodes = new ArrayList<>();
     for (DynamicListContext ctx : removerContext) {
+      if (ctx.desc.getTypeInfo().getCategory()  != ObjectInspector.Category.PRIMITIVE) {
+        // DPP is not supported for complex types.
+        // https://issues.apache.org/jira/browse/HIVE-24988
+        continue;
+      }
       String column = ExprNodeDescUtils.extractColName(ctx.parent);
       boolean semiJoinAttempted = false;
 
@@ -474,10 +479,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     // we also need the expr for the partitioned table
     ExprNodeDesc partKey = ctx.parent.getChildren().get(0);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("key expr: " + key);
-      LOG.debug("partition key expr: " + partKey);
-    }
+    LOG.debug("key expr: {}; partition key expr: {}", key, partKey);
 
     List<ExprNodeDesc> keyExprs = new ArrayList<ExprNodeDesc>();
     keyExprs.add(key);

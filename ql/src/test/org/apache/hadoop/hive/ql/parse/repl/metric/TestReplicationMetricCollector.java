@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.parse.repl.metric;
 
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.metric.BootstrapDumpMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.dump.metric.IncrementalDumpMetricCollector;
@@ -44,6 +46,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Unit Test class for In Memory Replication Metric Collection.
@@ -132,7 +137,8 @@ public class TestReplicationMetricCollector {
     actualMetrics = MetricCollector.getInstance().getMetrics();
     Assert.assertEquals(1, actualMetrics.size());
 
-    bootstrapDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10);
+    bootstrapDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10, new SnapshotUtils.ReplSnapshotCount(),
+        new ReplStatsTracker(0));
     bootstrapDumpMetricCollector.reportEnd(Status.SUCCESS);
     actualMetrics = MetricCollector.getInstance().getMetrics();
     Assert.assertEquals(1, actualMetrics.size());
@@ -173,7 +179,8 @@ public class TestReplicationMetricCollector {
     actualMetrics = MetricCollector.getInstance().getMetrics();
     Assert.assertEquals(1, actualMetrics.size());
 
-    incrDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10);
+    incrDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10, new SnapshotUtils.ReplSnapshotCount(),
+        new ReplStatsTracker(0));
     incrDumpMetricCollector.reportEnd(Status.SUCCESS);
     actualMetrics = MetricCollector.getInstance().getMetrics();
     Assert.assertEquals(1, actualMetrics.size());
@@ -215,7 +222,9 @@ public class TestReplicationMetricCollector {
     actualMetrics = MetricCollector.getInstance().getMetrics();
     Assert.assertEquals(1, actualMetrics.size());
 
-    bootstrapLoadMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10);
+    bootstrapLoadMetricCollector
+        .reportStageEnd("dump", Status.SUCCESS, 10, new SnapshotUtils.ReplSnapshotCount(),
+            new ReplStatsTracker(0));
     bootstrapLoadMetricCollector.reportEnd(Status.SUCCESS);
     actualMetrics = MetricCollector.getInstance().getMetrics();
     Assert.assertEquals(1, actualMetrics.size());
@@ -257,7 +266,8 @@ public class TestReplicationMetricCollector {
     actualMetrics = MetricCollector.getInstance().getMetrics();
     Assert.assertEquals(1, actualMetrics.size());
 
-    incrLoadMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10);
+    incrLoadMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10, new SnapshotUtils.ReplSnapshotCount(),
+        new ReplStatsTracker(0));
     incrLoadMetricCollector.reportEnd(Status.SUCCESS);
     actualMetrics = MetricCollector.getInstance().getMetrics();
     Assert.assertEquals(1, actualMetrics.size());
@@ -333,5 +343,75 @@ public class TestReplicationMetricCollector {
     Assert.assertEquals(Status.FAILED_ADMIN, actualMetric.getProgress().getStatus());
     Assert.assertEquals("errorlogpath", actualMetric.getProgress()
       .getStageByName("dump").getErrorLogPath());
+  }
+
+  @Test
+  public void testReplStatsTracker() throws Exception {
+    ReplStatsTracker repl = new ReplStatsTracker(5);
+    repl.addEntry("EVENT_ADD_PARTITION", "1", 2345);
+    repl.addEntry("EVENT_ADD_PARTITION", "2", 23451);
+    repl.addEntry("EVENT_ADD_PARTITION", "3", 23451);
+    repl.addEntry("EVENT_ADD_DATABASE", "4", 234544);
+    repl.addEntry("EVENT_ALTER_PARTITION", "5", 2145);
+    repl.addEntry("EVENT_CREATE_TABLE", "6", 2245);
+    repl.addEntry("EVENT_ADD_PARTITION", "7", 1245);
+    repl.addEntry("EVENT_ADD_PARTITION", "8", 23425);
+    repl.addEntry("EVENT_ALTER_PARTITION", "9", 21345);
+    repl.addEntry("EVENT_CREATE_TABLE", "10", 1345);
+    repl.addEntry("EVENT_ADD_DATABASE", "11", 345);
+    repl.addEntry("EVENT_ADD_DATABASE", "12", 12345);
+    repl.addEntry("EVENT_ADD_DATABASE", "13", 3345);
+    repl.addEntry("EVENT_ALTER_PARTITION", "14", 2645);
+    repl.addEntry("EVENT_ALTER_PARTITION", "15", 2555);
+    repl.addEntry("EVENT_CREATE_TABLE", "16", 23765);
+    repl.addEntry("EVENT_ADD_PARTITION", "17", 23435);
+    repl.addEntry("EVENT_DROP_PARTITION", "18", 2205);
+    repl.addEntry("EVENT_CREATE_TABLE", "19", 2195);
+    repl.addEntry("EVENT_DROP_PARTITION", "20", 2225);
+    repl.addEntry("EVENT_DROP_PARTITION", "21", 2225);
+    repl.addEntry("EVENT_DROP_PARTITION", "22", 23485);
+    repl.addEntry("EVENT_CREATE_TABLE", "23", 2385);
+    repl.addEntry("EVENT_DROP_PARTITION", "24", 234250);
+    repl.addEntry("EVENT_DROP_PARTITION", "25", 15);
+    repl.addEntry("EVENT_CREATE_TABLE", "26", 23425);
+    repl.addEntry("EVENT_CREATE_TABLE", "27", 23445);
+
+    // Check the total number of entries in the TopKEvents is equal to the number of events fed in.
+    assertEquals(5, repl.getTopKEvents().size());
+
+    // Check the timing & number of events for ADD_PARTITION
+    assertArrayEquals(repl.getTopKEvents().get("EVENT_ADD_PARTITION").valueList().toString(),
+        new Long[] { 23451L, 23451L, 23435L, 23425L, 2345L },
+        repl.getTopKEvents().get("EVENT_ADD_PARTITION").valueList().toArray());
+
+    assertEquals(6, repl.getDescMap().get("EVENT_ADD_PARTITION").getN());
+
+    // Check the timing & number of events for DROP_PARTITION
+    assertArrayEquals(repl.getTopKEvents().get("EVENT_DROP_PARTITION").valueList().toString(),
+        new Long[] { 234250L, 23485L, 2225L, 2225L, 2205L },
+        repl.getTopKEvents().get("EVENT_DROP_PARTITION").valueList().toArray());
+
+    assertEquals(6, repl.getDescMap().get("EVENT_DROP_PARTITION").getN());
+
+    // Check the timing & number of events for CREATE_TABLE
+    assertArrayEquals(repl.getTopKEvents().get("EVENT_CREATE_TABLE").valueList().toString(),
+        new Long[] { 23765L, 23445L, 23425L, 2385L, 2245L },
+        repl.getTopKEvents().get("EVENT_CREATE_TABLE").valueList().toArray());
+
+    assertEquals(7, repl.getDescMap().get("EVENT_CREATE_TABLE").getN());
+
+    // Check the timing & number of events for ALTER_PARTITION
+    assertArrayEquals(repl.getTopKEvents().get("EVENT_ALTER_PARTITION").valueList().toString(),
+        new Long[] { 21345L, 2645L, 2555L, 2145L },
+        repl.getTopKEvents().get("EVENT_ALTER_PARTITION").valueList().toArray());
+
+    assertEquals(4, repl.getDescMap().get("EVENT_ALTER_PARTITION").getN());
+
+    // Check the timing & number of events for ADD_DATABASE
+    assertArrayEquals(repl.getTopKEvents().get("EVENT_ADD_DATABASE").valueList().toString(),
+        new Long[] { 234544L, 12345L, 3345L, 345L },
+        repl.getTopKEvents().get("EVENT_ADD_DATABASE").valueList().toArray());
+
+    assertEquals(4, repl.getDescMap().get("EVENT_ADD_DATABASE").getN());
   }
 }

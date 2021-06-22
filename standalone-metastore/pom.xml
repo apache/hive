@@ -82,16 +82,16 @@
     <guava.version>19.0</guava.version>
     <hadoop.version>3.1.0</hadoop.version>
     <hikaricp.version>2.6.1</hikaricp.version>
-    <jackson.version>2.10.5</jackson.version>
+    <jackson.version>2.12.0</jackson.version>
     <javolution.version>5.5.1</javolution.version>
     <junit.version>4.13</junit.version>
     <junit.jupiter.version>5.6.2</junit.jupiter.version>
     <junit.vintage.version>5.6.2</junit.vintage.version>
     <libfb303.version>0.9.3</libfb303.version>
-    <libthrift.version>0.13.0</libthrift.version>
+    <libthrift.version>0.14.1</libthrift.version>
     <log4j2.version>2.13.2</log4j2.version>
     <mockito-core.version>3.3.3</mockito-core.version>
-    <orc.version>1.6.7</orc.version>
+    <orc.version>1.6.8</orc.version>
     <!-- com.google repo will be used except on Aarch64 platform. -->
     <protobuf.group>com.google.protobuf</protobuf.group>
     <protobuf.version>2.6.1</protobuf.version>

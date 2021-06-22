@@ -247,9 +247,7 @@ public class OrcRecordUpdater implements RecordUpdater {
       }
     }
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("ORC schema = " + schema);
-    }
+    LOG.debug("ORC schema = {}", schema);
 
     return schema;
   }
@@ -562,9 +560,7 @@ public class OrcRecordUpdater implements RecordUpdater {
   public void close(boolean abort) throws IOException {
     if (abort) {
       if (flushLengths == null) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Close on abort for path: {}.. Deleting..", path);
-        }
+        LOG.debug("Close on abort for path: {}.. Deleting..", path);
         fs.delete(path, false);
       }
     } else if (!writerClosed) {
@@ -574,9 +570,7 @@ public class OrcRecordUpdater implements RecordUpdater {
         // would be written & they are closed separately below.
         if (indexBuilder.acidStats.inserts > 0) {
           if (writer != null) {
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Closing writer for path: {} acid stats: {}", path, indexBuilder.acidStats);
-            }
+            LOG.debug("Closing writer for path: {} acid stats: {}", path, indexBuilder.acidStats);
             writer.close(); // normal close, when there are inserts.
           }
         } else {
@@ -591,32 +585,24 @@ public class OrcRecordUpdater implements RecordUpdater {
         }
       } else {
         //so that we create empty bucket files when needed (but see HIVE-17138)
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Initializing writer before close (to create empty buckets) for path: {}", path);
-        }
+        LOG.debug("Initializing writer before close (to create empty buckets) for path: {}", path);
         initWriter();
         writer.close(); // normal close.
       }
       if (deleteEventWriter != null) {
         if (deleteEventIndexBuilder.acidStats.deletes > 0) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Closing delete event writer for path: {} acid stats: {}", path, indexBuilder.acidStats);
-          }
+          LOG.debug("Closing delete event writer for path: {} acid stats: {}", path, indexBuilder.acidStats);
           // Only need to write out & close the delete_delta if there have been any.
           deleteEventWriter.close();
         } else {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("No delete events in path: {}.. Deleting..", path);
-          }
+          LOG.debug("No delete events in path: {}.. Deleting..", path);
           // Just remove delete_delta, if there have been no delete events.
           fs.delete(deleteEventPath, false);
         }
       }
     }
     if (flushLengths != null) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Closing and deleting flush length file for path: {}", path);
-      }
+      LOG.debug("Closing and deleting flush length file for path: {}", path);
       flushLengths.close();
       fs.delete(OrcAcidUtils.getSideFile(path), false);
     }

@@ -438,10 +438,7 @@ public class MapOperator extends AbstractMapOperator {
 
       for (String alias : aliases) {
         Operator<? extends OperatorDesc> op = conf.getAliasToWork().get(alias);
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Adding alias " + alias + " to work list for file "
-              + onefile);
-        }
+        LOG.debug("Adding alias {} to work list for file {}", alias, onefile);
         Map<Operator<?>, MapOpCtx> contexts = opCtxMap.computeIfAbsent(onefile,
                 k -> new LinkedHashMap<>());
         if (contexts.containsKey(op)) {
@@ -525,9 +522,7 @@ public class MapOperator extends AbstractMapOperator {
         }
         builder.append(context.alias);
       }
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Processing alias(es) " + builder.toString() + " for file " + fpath);
-      }
+      LOG.debug("Processing alias(es) {} for file {}", builder, fpath);
     }
     // Add alias, table name, and partitions to hadoop conf so that their
     // children will inherit these

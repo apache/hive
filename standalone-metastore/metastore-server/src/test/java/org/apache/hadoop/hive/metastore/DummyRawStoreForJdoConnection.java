@@ -197,7 +197,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public List<String> getCatalogs() throws MetaException {
+  public List<String> getCatalogs() {
     return null;
   }
 
@@ -1449,5 +1449,14 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public void dropPackage(DropPackageRequest request) {
+  }
+
+  @Override
+  public Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
+          Map<String, ColumnStatistics> partColStatsMap,
+          Table tbl, List<TransactionalMetaStoreEventListener> listeners,
+          String validWriteIds, long writeId)
+          throws MetaException, InvalidObjectException {
+    return null;
   }
 }

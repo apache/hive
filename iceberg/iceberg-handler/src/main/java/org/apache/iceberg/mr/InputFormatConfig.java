@@ -21,6 +21,8 @@ package org.apache.iceberg.mr;
 
 import java.util.List;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.catalog.TableIdentifier;
@@ -52,6 +54,7 @@ public class InputFormatConfig {
   public static final String CATALOG = "iceberg.mr.catalog";
   public static final String HADOOP_CATALOG_WAREHOUSE_LOCATION = "iceberg.mr.catalog.hadoop.warehouse.location";
   public static final String CATALOG_LOADER_CLASS = "iceberg.mr.catalog.loader.class";
+  public static final String CTAS_TABLE_NAME = "iceberg.mr.ctas.table.name";
   public static final String SELECTED_COLUMNS = "iceberg.mr.selected.columns";
   public static final String EXTERNAL_TABLE_PURGE = "external.table.purge";
 
@@ -200,8 +203,12 @@ public class InputFormatConfig {
   }
 
   public static String[] selectedColumns(Configuration conf) {
-    String[] readColumns = conf.getStrings(InputFormatConfig.SELECTED_COLUMNS);
-    return readColumns != null && readColumns.length > 0 ? readColumns : null;
+    String readColumns = conf.get(InputFormatConfig.SELECTED_COLUMNS);
+    if (readColumns == null || readColumns.isEmpty()) {
+      return null;
+    }
+
+    return readColumns.split(conf.get(serdeConstants.COLUMN_NAME_DELIMITER, String.valueOf(SerDeUtils.COMMA)));
   }
 
   private static Schema schema(Configuration conf, String key) {

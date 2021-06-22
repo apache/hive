@@ -47,6 +47,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
+@org.junit.Ignore("HIVE-25247")
 public class TestWMMetricsWithTrigger {
 
   private final Logger LOG = LoggerFactory.getLogger(getClass().getName());

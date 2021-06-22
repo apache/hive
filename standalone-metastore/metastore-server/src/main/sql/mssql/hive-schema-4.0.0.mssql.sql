@@ -289,7 +289,10 @@ CREATE TABLE DBS
     OWNER_TYPE nvarchar(10) NULL,
     CTLG_NAME nvarchar(256) DEFAULT 'hive',
     CREATE_TIME INT,
-    DB_MANAGED_LOCATION_URI nvarchar(4000) NULL
+    DB_MANAGED_LOCATION_URI nvarchar(4000) NULL,
+    TYPE nvarchar(32) DEFAULT 'native' NOT NULL,
+    DATACONNECTOR_NAME nvarchar(128) NULL,
+    REMOTE_DBNAME nvarchar(128) NULL
 );
 
 ALTER TABLE DBS ADD CONSTRAINT DBS_PK PRIMARY KEY (DB_ID);
@@ -1383,6 +1386,26 @@ CREATE TABLE "PACKAGES" (
 CREATE UNIQUE INDEX "UNIQUEPKG" ON "PACKAGES" ("NAME", "DB_ID");
 ALTER TABLE "PACKAGES" ADD CONSTRAINT "PACKAGES_FK1" FOREIGN KEY ("DB_ID") REFERENCES "DBS" ("DB_ID");
 
+-- HIVE-24396
+-- Create DataConnectors and DataConnector_Params tables
+CREATE TABLE "DATACONNECTORS" (
+  "NAME" nvarchar(128) NOT NULL,
+  "TYPE" nvarchar(32) NOT NULL,
+  "URL" nvarchar(4000) NOT NULL,
+  "COMMENT" nvarchar(256),
+  "OWNER_NAME" nvarchar(256),
+  "OWNER_TYPE" nvarchar(10),
+  "CREATE_TIME" int NOT NULL,
+  PRIMARY KEY ("NAME")
+);
+
+CREATE TABLE "DATACONNECTOR_PARAMS"(
+  "NAME" nvarchar(128) NOT NULL,
+  "PARAM_KEY" nvarchar(180) NOT NULL,
+  "PARAM_VALUE" nvarchar(4000),
+  PRIMARY KEY ("NAME", "PARAM_KEY"),
+  CONSTRAINT DATACONNECTOR_NAME_FK1 FOREIGN KEY ("NAME") REFERENCES "DATACONNECTORS" ("NAME") ON DELETE CASCADE
+);
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script

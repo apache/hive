@@ -78,7 +78,7 @@ class MetastoreDirectSqlUtils {
       }
       LOG.warn(errorBuilder.toString() + "]", ex);
       // We just logged an exception with (in case of JDO) a humongous callstack. Make a new one.
-      throw new MetaException("See previous errors; " + ex.getMessage());
+      throw new MetaException("See previous errors; " + ex.getMessage() + errorBuilder.toString() + "]");
     }
   }
 

@@ -382,7 +382,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
 
   @VisibleForTesting
   long acquireLock() throws UnknownHostException, TException, InterruptedException {
-    final LockComponent lockComponent = new LockComponent(LockType.EXCLUSIVE, LockLevel.TABLE, database);
+    final LockComponent lockComponent = new LockComponent(LockType.EXCL_WRITE, LockLevel.TABLE, database);
     lockComponent.setTablename(tableName);
     final LockRequest lockRequest = new LockRequest(Lists.newArrayList(lockComponent),
         System.getProperty("user.name"),

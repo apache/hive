@@ -59,9 +59,7 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
   private List<HivePrivilegeObject> getInputHObjs() { return Collections.emptyList(); }
 
   private List<HivePrivilegeObject> getOutputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> CreateTableEvent.getOutputHObjs()");
-    }
+    LOG.debug("==> CreateTableEvent.getOutputHObjs()");
 
     List<HivePrivilegeObject> ret   = new ArrayList<>();
     PreCreateTableEvent       event = (PreCreateTableEvent) preEventContext;
@@ -79,9 +77,7 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
 
     COMMAND_STR = buildCommandString(COMMAND_STR,table);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("<== CreateTableEvent.getOutputHObjs(): ret=" + ret);
-    }
+    LOG.debug("<== CreateTableEvent.getOutputHObjs(): ret={}", ret);
 
     return ret;
   }

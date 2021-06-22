@@ -53,13 +53,13 @@ public abstract class InstanceCache<SeedObject, Instance> {
    */
   public Instance retrieve(SeedObject hv, Set<SeedObject> seenSchemas)
     throws AvroSerdeException {
-    if(LOG.isDebugEnabled()) LOG.debug("Checking for hv: " + hv.toString());
+    LOG.debug("Checking for hv: {}", hv);
 
     if(cache.containsKey(hv)) {
-      if(LOG.isDebugEnabled()) LOG.debug("Returning cache result.");
+      LOG.debug("Returning cache result");
       return cache.get(hv);
     } else {
-      if(LOG.isDebugEnabled()) LOG.debug("Creating new instance and storing in cache");
+      LOG.debug("Creating new instance and storing in cache");
       Instance newInstance = makeInstance(hv, seenSchemas);
       Instance cachedInstance = cache.putIfAbsent(hv, newInstance);
       return cachedInstance == null ? newInstance : cachedInstance;

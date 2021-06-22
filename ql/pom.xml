@@ -387,7 +387,7 @@
     </dependency>
     <dependency>
       <groupId>org.jodd</groupId>
-      <artifactId>jodd-core</artifactId>
+      <artifactId>jodd-util</artifactId>
       <version>${jodd.version}</version>
     </dependency>
     <dependency>
@@ -558,6 +558,11 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -1088,7 +1093,7 @@
                   <include>org.datanucleus:javax.jdo</include>
                   <include>commons-lang:commons-lang</include>
                   <include>org.apache.commons:commons-lang3</include>
-                  <include>org.jodd:jodd-core</include>
+                  <include>org.jodd:jodd-util</include>
                   <include>com.tdunning:json</include>
                   <include>org.apache.avro:avro</include>
                   <include>org.apache.avro:avro-mapred</include>
@@ -1124,6 +1129,16 @@
                   <include>org.apache.calcite.avatica:avatica</include>
                 </includes>
               </artifactSet>
+              <filters>
+                <filter>
+                  <artifact>org.apache.calcite.avatica:avatica</artifact>
+                  <excludes>
+                    <exclude>org/slf4j/**</exclude>
+                    <exclude>META-INF/maven/org.slf4j/**</exclude>
+                    <exclude>META-INF/licenses/slf4j*/**</exclude>
+                  </excludes>
+                </filter>
+              </filters>
               <relocations>
                 <relocation>
                   <pattern>com.esotericsoftware</pattern>

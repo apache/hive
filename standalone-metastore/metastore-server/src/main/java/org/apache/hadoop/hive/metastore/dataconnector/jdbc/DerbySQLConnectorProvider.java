@@ -19,8 +19,7 @@ public class DerbySQLConnectorProvider extends AbstractJDBCConnectorProvider {
   private static final String DRIVER_CLASS = "org.apache.derby.jdbc.AutoloadedDriver".intern();
 
   public DerbySQLConnectorProvider(String dbName, DataConnector connector) {
-    super(dbName, connector);
-    driverClassName = DRIVER_CLASS;
+    super(dbName, connector, DRIVER_CLASS);
   }
 
   /**

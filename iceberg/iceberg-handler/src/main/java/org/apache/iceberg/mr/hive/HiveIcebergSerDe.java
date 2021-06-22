@@ -28,8 +28,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -46,7 +51,9 @@ import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -57,6 +64,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HiveIcebergSerDe extends AbstractSerDe {
+  public static final String CTAS_EXCEPTION_MSG = "CTAS target table must be a HiveCatalog table." +
+      " For other catalog types, the target Iceberg table would be created successfully but the table will not be" +
+      " registered in HMS. This means that even though the CTAS query succeeds, the new table wouldn't be immediately" +
+      " queryable from Hive, since HMS does not know about it.";
+
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergSerDe.class);
   private static final String LIST_COLUMN_COMMENT = "columns.comments";
 
@@ -94,8 +106,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       }
     } else {
       try {
+        Table table = IcebergTableUtil.getTable(configuration, serDeProperties);
         // always prefer the original table schema if there is one
-        Table table = Catalogs.loadTable(configuration, serDeProperties);
         this.tableSchema = table.schema();
         this.partitionColumns = table.spec().fields().stream().map(PartitionField::name).collect(Collectors.toList());
         LOG.info("Using schema from existing table {}", SchemaParser.toJson(tableSchema));
@@ -108,6 +120,15 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         this.tableSchema = hiveSchemaOrThrow(serDeProperties, e, autoConversion);
         // This is only for table creation, it is ok to have an empty partition column list
         this.partitionColumns = ImmutableList.of();
+        // create table for CTAS
+        if (e instanceof NoSuchTableException &&
+            Boolean.parseBoolean(serDeProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTAS))) {
+          if (!Catalogs.hiveCatalog(configuration, serDeProperties)) {
+            throw new SerDeException(CTAS_EXCEPTION_MSG);
+          }
+
+          createTableForCTAS(configuration, serDeProperties);
+        }
       }
     }
 
@@ -136,6 +157,35 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     } catch (Exception e) {
       throw new SerDeException(e);
     }
+  }
+
+  private void createTableForCTAS(Configuration configuration, Properties serDeProperties) {
+    serDeProperties.setProperty(TableProperties.ENGINE_HIVE_ENABLED, "true");
+    serDeProperties.setProperty(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(tableSchema));
+
+    // build partition spec, if any
+    String partColsString = serDeProperties.getProperty(serdeConstants.LIST_PARTITION_COLUMNS);
+    if (partColsString != null && !partColsString.isEmpty()) {
+      String partColDelimiter = partColsString.contains(String.valueOf(ColumnType.COLUMN_COMMENTS_DELIMITER)) ?
+          String.valueOf(ColumnType.COLUMN_COMMENTS_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
+      String[] partCols = partColsString.split(partColDelimiter);
+      String[] partColTypes = serDeProperties.getProperty(serdeConstants.LIST_PARTITION_COLUMN_TYPES)
+          .split(String.valueOf(SerDeUtils.COLON));
+      List<FieldSchema> partitionFields = IntStream.range(0, partCols.length)
+          .mapToObj(i -> new FieldSchema(partCols[i], partColTypes[i], null))
+          .collect(Collectors.toList());
+      PartitionSpec spec = HiveSchemaUtil.spec(tableSchema, partitionFields);
+      serDeProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
+    }
+
+    // create CTAS table
+    LOG.info("Creating table {} for CTAS with schema: {}, and spec: {}",
+        serDeProperties.get(Catalogs.NAME), tableSchema, serDeProperties.get(InputFormatConfig.PARTITION_SPEC));
+    Catalogs.createTable(configuration, serDeProperties);
+
+    // set this in the query state so that we can rollback the table in the lifecycle hook in case of failures
+    SessionStateUtil.addResource(configuration, InputFormatConfig.CTAS_TABLE_NAME,
+        serDeProperties.getProperty(Catalogs.NAME));
   }
 
   private void assertNotVectorizedTez(Configuration configuration) {
@@ -207,6 +257,16 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       // Parse the configuration parameters
       List<String> names = new ArrayList<>();
       Collections.addAll(names, columnNames.split(columnNameDelimiter));
+      // check if there are partition columns as well
+      String partColNames = serDeProperties.getProperty(serdeConstants.LIST_PARTITION_COLUMNS);
+      if (partColNames != null && !partColNames.isEmpty()) {
+        // add partition col names to regular col names
+        String partColDelimiter = partColNames.contains(String.valueOf(ColumnType.COLUMN_COMMENTS_DELIMITER)) ?
+            String.valueOf(ColumnType.COLUMN_COMMENTS_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
+        Collections.addAll(names, partColNames.split(partColDelimiter));
+        // add partition col types to regular col types
+        columnTypes += SerDeUtils.COLON + serDeProperties.getProperty(serdeConstants.LIST_PARTITION_COLUMN_TYPES);
+      }
       List<String> comments = new ArrayList<>();
       if (columnComments != null) {
         Collections.addAll(comments, columnComments.split(Character.toString(Character.MIN_VALUE)));
@@ -227,5 +287,10 @@ public class HiveIcebergSerDe extends AbstractSerDe {
    */
   public Collection<String> partitionColumns() {
     return partitionColumns;
+  }
+
+  @Override
+  public boolean shouldStoreFieldsInMetastore(Map<String, String> tableParams) {
+    return true;
   }
 }

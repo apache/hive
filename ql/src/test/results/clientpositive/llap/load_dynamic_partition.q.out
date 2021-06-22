@@ -1,0 +1,84 @@
+PREHOOK: query: CREATE EXTERNAL TABLE test_part_ext_1(i int) PARTITIONED BY (j string, k int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_part_ext_1
+POSTHOOK: query: CREATE EXTERNAL TABLE test_part_ext_1(i int) PARTITIONED BY (j string, k int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_part_ext_1
+PREHOOK: query: CREATE TABLE test_part(i int,j string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_part
+POSTHOOK: query: CREATE TABLE test_part(i int,j string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_part
+PREHOOK: query: insert into test_part values(1, "test1"), (2, "test2"), (3, "test3"), 
+(4, "test4"), (5, "test5"), (6, "test6"), (7, "test7"), (8, "test8"), (9, "test9"), (10, "test10")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_part
+POSTHOOK: query: insert into test_part values(1, "test1"), (2, "test2"), (3, "test3"), 
+(4, "test4"), (5, "test5"), (6, "test6"), (7, "test7"), (8, "test8"), (9, "test9"), (10, "test10")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_part
+POSTHOOK: Lineage: test_part.i SCRIPT []
+POSTHOOK: Lineage: test_part.j SCRIPT []
+PREHOOK: query: insert overwrite table test_part_ext_1 partition(j, k) select i,j,i from test_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_part
+PREHOOK: Output: default@test_part_ext_1
+POSTHOOK: query: insert overwrite table test_part_ext_1 partition(j, k) select i,j,i from test_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_part
+POSTHOOK: Output: default@test_part_ext_1
+POSTHOOK: Output: default@test_part_ext_1@j=test1/k=1
+POSTHOOK: Output: default@test_part_ext_1@j=test10/k=10
+POSTHOOK: Output: default@test_part_ext_1@j=test2/k=2
+POSTHOOK: Output: default@test_part_ext_1@j=test3/k=3
+POSTHOOK: Output: default@test_part_ext_1@j=test4/k=4
+POSTHOOK: Output: default@test_part_ext_1@j=test5/k=5
+POSTHOOK: Output: default@test_part_ext_1@j=test6/k=6
+POSTHOOK: Output: default@test_part_ext_1@j=test7/k=7
+POSTHOOK: Output: default@test_part_ext_1@j=test8/k=8
+POSTHOOK: Output: default@test_part_ext_1@j=test9/k=9
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test1,k=1).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test10,k=10).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test2,k=2).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test3,k=3).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test4,k=4).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test5,k=5).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test6,k=6).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test7,k=7).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test8,k=8).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test9,k=9).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]
+PREHOOK: query: insert overwrite table test_part_ext_1 partition(j, k) select i,j,i from test_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_part
+PREHOOK: Output: default@test_part_ext_1
+POSTHOOK: query: insert overwrite table test_part_ext_1 partition(j, k) select i,j,i from test_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_part
+POSTHOOK: Output: default@test_part_ext_1
+POSTHOOK: Output: default@test_part_ext_1@j=test1/k=1
+POSTHOOK: Output: default@test_part_ext_1@j=test10/k=10
+POSTHOOK: Output: default@test_part_ext_1@j=test2/k=2
+POSTHOOK: Output: default@test_part_ext_1@j=test3/k=3
+POSTHOOK: Output: default@test_part_ext_1@j=test4/k=4
+POSTHOOK: Output: default@test_part_ext_1@j=test5/k=5
+POSTHOOK: Output: default@test_part_ext_1@j=test6/k=6
+POSTHOOK: Output: default@test_part_ext_1@j=test7/k=7
+POSTHOOK: Output: default@test_part_ext_1@j=test8/k=8
+POSTHOOK: Output: default@test_part_ext_1@j=test9/k=9
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test1,k=1).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test10,k=10).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test2,k=2).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test3,k=3).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test4,k=4).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test5,k=5).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test6,k=6).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test7,k=7).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test8,k=8).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_part_ext_1 PARTITION(j=test9,k=9).i SIMPLE [(test_part)test_part.FieldSchema(name:i, type:int, comment:null), ]

@@ -193,7 +193,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> getCatalogs() throws MetaException {
+  public List<String> getCatalogs() {
     return objectStore.getCatalogs();
   }
 
@@ -1451,5 +1451,14 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public void dropPackage(DropPackageRequest request) {
     objectStore.dropPackage(request);
+  }
+
+  @Override
+  public Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
+        Map<String, ColumnStatistics> partColStatsMap,
+        Table tbl, List<TransactionalMetaStoreEventListener> listeners,
+        String validWriteIds, long writeId)
+          throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
+    return objectStore.updatePartitionColumnStatisticsInBatch(partColStatsMap, tbl, listeners, validWriteIds, writeId);
   }
 }

@@ -515,7 +515,7 @@ public interface HadoopShims {
    * @param dst Path to the destination file or directory
    * @param conf The hadoop configuration object
    * @param proxyUser The user to perform the distcp as
-   * @return True if it is successfull; False otherwise.
+   * @return true if it is successful; false otherwise.
    */
   boolean runDistCpAs(List<Path> srcPaths, Path dst, Configuration conf, UserGroupInformation proxyUser)
           throws IOException;
@@ -528,9 +528,48 @@ public interface HadoopShims {
    * @param srcPaths List of Path to the source files or directories to copy
    * @param dst Path to the destination file or directory
    * @param conf The hadoop configuration object
-   * @return True if it is successfull; False otherwise.
+   * @return true if it is successful; false otherwise.
    */
-  public boolean runDistCp(List<Path> srcPaths, Path dst, Configuration conf) throws IOException;
+  public boolean runDistCp(List<Path> srcPaths, Path dst, Configuration conf)
+      throws IOException;
+
+  /**
+   * Copies a source dir/file to a destination by orchestrating the copy between hdfs nodes.
+   * This distributed process is meant to copy huge files that could take some time if a single
+   * copy is done. This method allows to specify usage of -diff feature of
+   * distcp
+   * @param oldSnapshot    initial snapshot
+   * @param newSnapshot    final snapshot
+   * @param srcPaths List of Path to the source files or directories to copy
+   * @param dst      Path to the destination file or directory
+   * @param overwriteTarget if true, in case the target is modified, restores back the target to the original state
+   *                        and reattempt copying using snapshots.
+   * @param conf     The hadoop configuration object
+   * @return true if it is successful; false otherwise.
+   */
+  boolean runDistCpWithSnapshots(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst,
+      boolean overwriteTarget, Configuration conf) throws IOException;
+
+  /**
+   * Copies a source dir/file to a destination by orchestrating the copy between hdfs nodes.
+   * This distributed process is meant to copy huge files that could take some time if a single
+   * copy is done. This method allows to specify usage of -diff feature of
+   * distcp. This is a variation which allows proxying as a different
+   * user to perform
+   * the distcp, and requires that the caller have requisite proxy user privileges.
+   * @param oldSnapshot     initial snapshot
+   * @param newSnapshot     final snapshot
+   * @param srcPaths  List of Path to the source files or directories to copy
+   * @param dst       Path to the destination file or directory
+   * @param overwriteTarget if true, in case the target is modified, restores back the target to the original state
+   *                        and reattempt copying using snapshots.
+   * @param proxyUser The user to perform the distcp as
+   * @param conf      The hadoop configuration object
+   * @return true if it is successful; false otherwise.
+   */
+  boolean runDistCpWithSnapshotsAs(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst,
+      boolean overwriteTarget, UserGroupInformation proxyUser, Configuration conf) throws IOException;
+
 
   /**
    * This interface encapsulates methods used to get encryption information from

@@ -61,21 +61,12 @@ public class <ClassName> extends VectorExpression {
     1_000_000_000_000_000_000L, // 18
   };
 
-  private final int colNum1;
-  private final int colNum2;
-
   public <ClassName>(int colNum1, int colNum2, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum1 = colNum1;
-    this.colNum2 = colNum2;
+    super(colNum1, colNum2, outputColumnNum);
   }
 
   public <ClassName>() {
     super();
-
-    // Dummy final assignments.
-    colNum1 = -1;
-    colNum2 = -1;
   }
 
   /*
@@ -113,8 +104,8 @@ public class <ClassName> extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    Decimal64ColumnVector inputColVector1 = (Decimal64ColumnVector) batch.cols[colNum1];
-    Decimal64ColumnVector inputColVector2 = (Decimal64ColumnVector) batch.cols[colNum2];
+    Decimal64ColumnVector inputColVector1 = (Decimal64ColumnVector) batch.cols[inputColumnNum[0]];
+    Decimal64ColumnVector inputColVector2 = (Decimal64ColumnVector) batch.cols[inputColumnNum[1]];
     Decimal64ColumnVector outputColVector = (Decimal64ColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
 
@@ -258,7 +249,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum1) + ", " + getColumnParamString(1, colNum2);
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getColumnParamString(1, inputColumnNum[1]);
   }
 
   @Override

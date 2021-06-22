@@ -86,7 +86,7 @@ STAGE PLANS:
                   Statistics: Num rows: 14 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:cint1:int, 1:cint2:int, 2:cdouble:double, 3:cvarchar:varchar(50), 4:cdecimal1:decimal(10,2)/DECIMAL_64, 5:cdecimal2:decimal(38,5), 6:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:cint1:int, 1:cint2:int, 2:cdouble:double, 3:cvarchar:varchar(50), 4:cdecimal1:decimal(10,2)/DECIMAL_64, 5:cdecimal2:decimal(38,5), 6:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 7:ROW__IS__DELETED:boolean]
                   Top N Key Operator
                     sort order: +
                     keys: cint1 (type: int)
