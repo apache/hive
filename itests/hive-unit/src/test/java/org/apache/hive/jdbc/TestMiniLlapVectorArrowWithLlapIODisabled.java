@@ -20,6 +20,7 @@ package org.apache.hive.jdbc;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.FieldDesc;
 import org.apache.hadoop.hive.llap.LlapArrowRowInputFormat;
 import org.apache.hadoop.hive.llap.Row;
 import org.apache.hadoop.io.NullWritable;
@@ -28,7 +29,11 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.List;
+import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * TestMiniLlapVectorArrowWithLlapIODisabled - turns off llap io while testing LLAP external client flow.
@@ -57,19 +62,89 @@ public class TestMiniLlapVectorArrowWithLlapIODisabled extends BaseJdbcWithMiniL
   public void testNullsInStructFields() throws Exception {
     createDataTypesTable("datatypes");
     RowCollector2 rowCollector = new RowCollector2();
+    // c1 int
     // c8 struct<r:string,s:int,t:double>
     // c15 struct<r:int,s:struct<a:int,b:string>>
     // c16 array<struct<m:map<string,string>,n:int>>
-    String query = "select c8, c15, c16 from datatypes";
+    String query = "select c1, c8, c15, c16 from datatypes";
     int rowCount = processQuery(query, 1, rowCollector);
+    assertEquals(4, rowCollector.numColumns);
     assertEquals(3, rowCount);
+
+    FieldDesc fieldDesc = rowCollector.schema.getColumns().get(0);
+    assertEquals("c1", fieldDesc.getName());
+    assertEquals("int", fieldDesc.getTypeInfo().getTypeName());
+
+    fieldDesc = rowCollector.schema.getColumns().get(1);
+    assertEquals("c8", fieldDesc.getName());
+    assertEquals("struct<r:string,s:int,t:double>", fieldDesc.getTypeInfo().getTypeName());
+
+    fieldDesc = rowCollector.schema.getColumns().get(2);
+    assertEquals("c15", fieldDesc.getName());
+    assertEquals("struct<r:int,s:struct<a:int,b:string>>", fieldDesc.getTypeInfo().getTypeName());
+
+    fieldDesc = rowCollector.schema.getColumns().get(3);
+    assertEquals("c16", fieldDesc.getName());
+    assertEquals("array<struct<m:map<string,string>,n:int>>", fieldDesc.getTypeInfo().getTypeName());
+
+    // First row is all nulls
+    Object[] rowValues = rowCollector.rows.get(0);
+    for (int idx = 0; idx < rowCollector.numColumns; ++idx) {
+      assertNull("idx=" + idx, rowValues[idx]);
+    }
+
+    // Second Row
+    rowValues = rowCollector.rows.get(1);
+    assertEquals(-1, rowValues[0]);
+
+    List<?> c8Value = (List<?>) rowValues[1];
+    assertNull(c8Value.get(0));
+    assertNull(c8Value.get(1));
+    assertNull(c8Value.get(2));
+
+    List<?> c15Value = (List<?>) rowValues[2];
+    assertNull(c15Value.get(0));
+    assertNull(c15Value.get(1));
+
+    List<?> c16Value = (List<?>) rowValues[3];
+    assertEquals(0, c16Value.size());
+
+    // Third row
+    rowValues = rowCollector.rows.get(2);
+    assertEquals(1, rowValues[0]);
+
+    c8Value = (List<?>) rowValues[1];
+    assertEquals("a", c8Value.get(0));
+    assertEquals(9, c8Value.get(1));
+    assertEquals(2.2d, c8Value.get(2));
+
+
+    c15Value = (List<?>) rowValues[2];
+    assertEquals(1, c15Value.get(0));
+    List<?> listVal = (List<?>) c15Value.get(1);
+    assertEquals(2, listVal.size());
+    assertEquals(2, listVal.get(0));
+    assertEquals("x", listVal.get(1));
+
+    c16Value = (List<?>) rowValues[3];
+    assertEquals(2, c16Value.size());
+    listVal = (List<?>) c16Value.get(0);
+    assertEquals(2, listVal.size());
+    Map<?,?> mapVal = (Map<?,?>) listVal.get(0);
+    assertEquals(0, mapVal.size());
+    assertEquals(1, listVal.get(1));
+    listVal = (List<?>) c16Value.get(1);
+    mapVal = (Map<?,?>) listVal.get(0);
+    assertEquals(2, mapVal.size());
+    assertEquals("b", mapVal.get("a"));
+    assertEquals("d", mapVal.get("c"));
+    assertEquals(2, listVal.get(1));
   }
 
   @Override
+  @Ignore
   public void testDataTypes() throws Exception {
-    // the test should be exactly identical to TestJdbcWithMiniLlapVectorArrow
-    TestJdbcWithMiniLlapVectorArrow testJdbcWithMiniLlapVectorArrow = new TestJdbcWithMiniLlapVectorArrow();
-    testJdbcWithMiniLlapVectorArrow.testDataTypes();
+    // To be implemented
   }
 
   @Override

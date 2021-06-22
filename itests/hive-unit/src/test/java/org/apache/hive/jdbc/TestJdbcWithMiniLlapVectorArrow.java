@@ -239,9 +239,7 @@ public class TestJdbcWithMiniLlapVectorArrow extends BaseJdbcWithMiniLlap {
     assertEquals("abc123", rowValues[20]);
     assertEquals("abc123         ", rowValues[21]);
 
-    // one of the above assertions already has assertEquals(null, rowValues[22])
-    // and below assertion fails with - java.lang.AssertionError: actual array was null
-    // assertArrayEquals("X'01FF'".getBytes("UTF-8"), (byte[]) rowValues[22]);
+    assertArrayEquals("X'01FF'".getBytes("UTF-8"), (byte[]) rowValues[22]);
   }
 
 
