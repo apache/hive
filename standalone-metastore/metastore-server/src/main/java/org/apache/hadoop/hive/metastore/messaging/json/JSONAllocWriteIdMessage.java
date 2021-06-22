@@ -91,10 +91,6 @@ public class JSONAllocWriteIdMessage extends AllocWriteIdMessage {
     return tableName;
   }
 
-  public Long getTableId() {
-    return  tableId;
-  }
-
   @Override
   public List<TxnToWriteId> getTxnToWriteIdList() {
     // after deserialization, need to recreate the txnToWriteIdList as its not under JsonProperty.
@@ -105,6 +101,11 @@ public class JSONAllocWriteIdMessage extends AllocWriteIdMessage {
       }
     }
     return txnToWriteIdList;
+  }
+
+  @Override
+  public Long getTableId() {
+    return  tableId;
   }
 
   @Override

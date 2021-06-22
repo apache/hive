@@ -2068,13 +2068,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
         LOG.debug("Going to execute select <" + s.replaceAll("\\?", "{}") + ">",
             quoteString(catalog), quoteString(dbName), quoteString(tblName));
-        Long tableId;
+        Long tableId = -1L;
         rs = pStmt.executeQuery();
         if (rs.next()) {
           tableId = rs.getLong(1);
           closeStmt(pStmt);
-        } else {
-          throw new MetaException(String.format("Table not found: %s.%s", dbName, tblName));
         }
 
         List<String> queries = new ArrayList<>();

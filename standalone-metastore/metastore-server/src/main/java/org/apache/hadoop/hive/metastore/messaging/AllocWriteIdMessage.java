@@ -33,4 +33,6 @@ public abstract class AllocWriteIdMessage extends EventMessage {
   public abstract String getTableName();
 
   public abstract List<TxnToWriteId> getTxnToWriteIdList();
+
+  public abstract Long getTableId();
 }
