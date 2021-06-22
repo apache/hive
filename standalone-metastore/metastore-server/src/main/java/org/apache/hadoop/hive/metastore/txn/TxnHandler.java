@@ -2060,7 +2060,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
         }
 
-        // Check if the table exists
+        // In CTAS statement, we don't have the table created yet so we just set table id as -1
         List<String> params = Arrays.asList(catalog, dbName, tblName);
         String s = "SELECT \"TBLS\".\"TBL_ID\" FROM \"TBLS\"" +
             " INNER JOIN \"DBS\" ON \"TBLS\".\"DB_ID\" = \"DBS\".\"DB_ID\"" +

@@ -80,9 +80,6 @@ public class TestHiveMetaStoreTxns {
   private static IMetaStoreClient client;
   private Connection conn;
 
-  private final String dbName = "db";
-  private final String tblName = "tbl";
-
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
@@ -364,9 +361,38 @@ public class TestHiveMetaStoreTxns {
 
   @Test
   public void testAllocateTableWriteId() throws TException {
+    final String dbName = "db";
+    final String tblName = "tbl";
+
+    // can allocate write id without created table
     long txnId = client.openTxn("me");
-    long writeId = client.allocateTableWriteId(txnId, "db", "tbl");
+    long writeId = client.allocateTableWriteId(txnId, dbName, tblName);
     Assert.assertTrue(writeId > 0);
+    client.commitTxn(txnId);
+
+    Database db = new DatabaseBuilder()
+        .setName(dbName)
+        .build(conf);
+    db.unsetCatalogName();
+    client.createDatabase(db);
+
+    Table tbl = new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(tblName)
+        .addCol("id", "int")
+        .addCol("name", "string")
+        .setType(TableType.MANAGED_TABLE.name())
+        .build(conf);
+    client.createTable(tbl);
+
+    // can allocate write id with created table
+    txnId = client.openTxn("me");
+    writeId = client.allocateTableWriteId(txnId, dbName, tblName);
+    Assert.assertTrue(writeId > 0);
+    client.commitTxn(txnId);
+
+    client.dropTable(dbName, tblName);
+    client.dropDatabase(dbName);
   }
 
   @Test
@@ -470,29 +496,11 @@ public class TestHiveMetaStoreTxns {
   public void setUp() throws Exception {
     String connectionStr = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
     conn = DriverManager.getConnection(connectionStr);
-
-    Database db = new DatabaseBuilder()
-        .setName(dbName)
-        .build(conf);
-    db.unsetCatalogName();
-    client.createDatabase(db);
-
-    Table tbl = new TableBuilder()
-        .setDbName(dbName)
-        .setTableName(tblName)
-        .addCol("id", "int")
-        .addCol("name", "string")
-        .setType(TableType.MANAGED_TABLE.name())
-        .build(conf);
-    client.createTable(tbl);
   }
 
   @After
   public void tearDown() throws Exception {
     conn.close();
     TestTxnDbUtil.cleanDb(conf);
-
-    client.dropTable(dbName, tblName);
-    client.dropDatabase(dbName);
   }
 }
