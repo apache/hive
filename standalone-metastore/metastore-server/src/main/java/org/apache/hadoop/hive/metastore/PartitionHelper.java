@@ -127,9 +127,25 @@ class PartitionHelper {
     }
     return false;
   }
+  
+  private static long addBatch(PreparedStatement pst, long numRecords, long maxBatchSize) throws SQLException {
+    if (numRecords == maxBatchSize) {
+      executeBatch(pst, numRecords);
+      numRecords = 0;
+    }
+    pst.addBatch();
+    numRecords++;
+    return numRecords;
+  }
+  
+  private static void executeBatch(PreparedStatement pst, long numRecords) throws SQLException {
+    if (numRecords != 0) {
+      pst.executeBatch();
+    }
+  }
 
-  public static void addPartitionPrivilegeInfo(Connection dbConn, List<Partition> parts,
-                                                long tblId, long partId, long grantId ) throws SQLException {
+  public static void addPartitionPrivilegeInfo(Connection dbConn, List<Partition> parts, long tblId, long partId,
+                                               long grantId, long maxBatchSize) throws SQLException {
     ResultSet rs = null;
     long numPartGrant = 0;
     try (Statement statement = dbConn.createStatement()) {
@@ -182,6 +198,7 @@ class PartitionHelper {
 
     try (PreparedStatement pst = dbConn.prepareStatement(insertPartPrev)) {
       long partIdx = partId;
+      long numRecords = 0;
       for (int j = 0; j < parts.size(); j++) {
         for (int i = 0; i < grantOptionList.size(); i++) {
           pst.setLong(1, grantIdIdx++);
@@ -194,15 +211,17 @@ class PartitionHelper {
           pst.setString(8, principalTypeList.get(i));
           pst.setString(9, tblPrivList.get(i));
           pst.setString(10, authorizerList.get(i));
-          pst.addBatch();
+          numRecords = addBatch(pst, numRecords, maxBatchSize);
         }
         partIdx++;
       }
+      executeBatch(pst, numRecords);
     }
   }
 
-  public static void addPartitionColPrivilegeInfo(Connection dbConn, List<Partition> parts,
-                                               long tblId, long startPartId, long startGrantId ) throws SQLException {
+  public static void addPartitionColPrivilegeInfo(Connection dbConn, List<Partition> parts, long tblId,
+                                                  long startPartId, long startGrantId, long maxBatchSize)
+          throws SQLException {
     ResultSet rs = null;
     long numPartColGrant = 0;
     try (Statement statement = dbConn.createStatement()) {
@@ -257,6 +276,7 @@ class PartitionHelper {
     try (PreparedStatement pst = dbConn.prepareStatement(insertPartPrev)) {
       long partIdx = startPartId;
       long grantIdIdx = startGrantId;
+      long numRecords = 0;
       int now = (int) (System.currentTimeMillis() / 1000);
       for (int j = 0; j < parts.size(); j++) {
         for (int i = 0; i < grantOptionList.size(); i++) {
@@ -271,94 +291,103 @@ class PartitionHelper {
           pst.setString(9, principalTypeList.get(i));
           pst.setString(10, tblColPrivList.get(i));
           pst.setString(11, authorizerList.get(i));
-          pst.addBatch();
+          numRecords = addBatch(pst, numRecords, maxBatchSize);
         }
         partIdx++;
       }
+      executeBatch(pst, numRecords);
     }
   }
 
-  public static void addSerdeInfo(Connection dbConn, List<Partition> parts, long serdeIdIdx) throws SQLException {
+  public static void addSerdeInfo(Connection dbConn, List<Partition> parts, long serdeIdIdx, long maxBatchSize)
+          throws SQLException {
     String insertSerdeInfo = "INSERT INTO \"SERDES\" (\"SERDE_ID\", \"NAME\", \"SLIB\", \"DESCRIPTION\","
             + " \"SERIALIZER_CLASS\", \"DESERIALIZER_CLASS\", \"SERDE_TYPE\") VALUES (?, ?, ?, ?, ?, ?, ?) ";
-    try (PreparedStatement preparedStatement = dbConn.prepareStatement(insertSerdeInfo)) {
+    try (PreparedStatement pst = dbConn.prepareStatement(insertSerdeInfo)) {
+      long numRecords = 0;
       for (Partition part : parts) {
         if (part.getSd() == null) {
           continue;
         }
         SerDeInfo serDeInfo = part.getSd().getSerdeInfo();
-        preparedStatement.setLong(1, serdeIdIdx++);
-        preparedStatement.setObject(2, serDeInfo.getName());
-        preparedStatement.setObject(3, serDeInfo.getSerializationLib());
-        preparedStatement.setObject(4, serDeInfo.getDescription());
-        preparedStatement.setObject(5, serDeInfo.getSerializerClass());
-        preparedStatement.setObject(6, serDeInfo.getDeserializerClass());
-        preparedStatement.setLong(7, serDeInfo.getSerdeType() != null ?
+        pst.setLong(1, serdeIdIdx++);
+        pst.setObject(2, serDeInfo.getName());
+        pst.setObject(3, serDeInfo.getSerializationLib());
+        pst.setObject(4, serDeInfo.getDescription());
+        pst.setObject(5, serDeInfo.getSerializerClass());
+        pst.setObject(6, serDeInfo.getDeserializerClass());
+        pst.setLong(7, serDeInfo.getSerdeType() != null ?
                 serDeInfo.getSerdeType().getValue() : 0);
-        preparedStatement.addBatch();
+        numRecords = addBatch(pst, numRecords, maxBatchSize);
       }
-      preparedStatement.executeBatch();
+      executeBatch(pst, numRecords);
     }
   }
 
-  public static void addColDescInfo(Connection dbConn, List<Partition> parts, long cdIdIdx) throws SQLException {
+  public static void addColDescInfo(Connection dbConn, List<Partition> parts, long cdIdIdx, long maxBatchSize)
+          throws SQLException {
     String insertCDInfo = "INSERT INTO \"CDS\" (\"CD_ID\") VALUES (?) ";
-    try (PreparedStatement preparedStatement = dbConn.prepareStatement(insertCDInfo)) {
+    try (PreparedStatement pst = dbConn.prepareStatement(insertCDInfo)) {
+      long numRecords = 0;
       for (Partition ignored : parts) {
-        preparedStatement.setLong(1, cdIdIdx++);
-        preparedStatement.addBatch();
+        pst.setLong(1, cdIdIdx++);
+        numRecords = addBatch(pst, numRecords, maxBatchSize);
       }
-      preparedStatement.executeBatch();
+      executeBatch(pst, numRecords);
     }
   }
 
   public static void addSDInfo(Connection dbConn, List<Partition> parts, long sdIdIdx,
-                               long serdeIdIdx, long cdIdIdx, DatabaseProduct dbType) throws SQLException {
+                               long serdeIdIdx, long cdIdIdx, DatabaseProduct dbType, long maxBatchSize)
+          throws SQLException {
     String insertSDInfo = "INSERT INTO \"SDS\" (\"SD_ID\", \"INPUT_FORMAT\", \"IS_COMPRESSED\", \"LOCATION\","
             + " \"NUM_BUCKETS\", \"OUTPUT_FORMAT\", \"SERDE_ID\", \"CD_ID\", \"IS_STOREDASSUBDIRECTORIES\")"
             + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ";
-    try (PreparedStatement preparedStatement = dbConn.prepareStatement(insertSDInfo)) {
+    try (PreparedStatement pst = dbConn.prepareStatement(insertSDInfo)) {
+      long numRecords = 0;
       for (Partition part : parts) {
         StorageDescriptor sd = part.getSd();
         if (sd == null) {
           continue;
         }
-        preparedStatement.setLong(1, sdIdIdx++);
-        preparedStatement.setObject(2, sd.getInputFormat());
-        preparedStatement.setObject(4, sd.getLocation());
-        preparedStatement.setObject(5, sd.getNumBuckets());
-        preparedStatement.setObject(6, sd.getOutputFormat());
-        preparedStatement.setLong(7, serdeIdIdx++);
-        preparedStatement.setObject(8, sd.getCols() == null ? null : cdIdIdx);
+        pst.setLong(1, sdIdIdx++);
+        pst.setObject(2, sd.getInputFormat());
+        pst.setObject(4, sd.getLocation());
+        pst.setObject(5, sd.getNumBuckets());
+        pst.setObject(6, sd.getOutputFormat());
+        pst.setLong(7, serdeIdIdx++);
+        pst.setObject(8, sd.getCols() == null ? null : cdIdIdx);
         cdIdIdx++;
 
         if (dbType.isDERBY()) {
           // In Derby schema file, constraint is added for the value to be either Y or N.
-          preparedStatement.setObject(3, sd.isCompressed() ? "Y" : "N");
-          preparedStatement.setObject(9, sd.isStoredAsSubDirectories() ? "Y" : "N");
+          pst.setObject(3, sd.isCompressed() ? "Y" : "N");
+          pst.setObject(9, sd.isStoredAsSubDirectories() ? "Y" : "N");
         } else if (dbType.isORACLE()) {
           // In Oracle schema file, constraint is added for the value to be either 1 or 0.
-          preparedStatement.setObject(3, sd.isCompressed() ? 1 : 0);
-          preparedStatement.setObject(9, sd.isStoredAsSubDirectories() ? 1 : 0);
+          pst.setObject(3, sd.isCompressed() ? 1 : 0);
+          pst.setObject(9, sd.isStoredAsSubDirectories() ? 1 : 0);
         } else if (dbType.isMYSQL() || dbType.isPOSTGRES() || dbType.isSQLSERVER()) {
           // For postgres the column is of type is boolean. For mysql its bit(1) and for sql server its bit.
           // For both, the conversion is done automatically from boolean to bit.
-          preparedStatement.setBoolean(3, sd.isCompressed());
-          preparedStatement.setBoolean(9, sd.isStoredAsSubDirectories());
+          pst.setBoolean(3, sd.isCompressed());
+          pst.setBoolean(9, sd.isStoredAsSubDirectories());
         } else {
           throw new IllegalArgumentException("Unsupported DB type: " + dbType);
         }
 
-        preparedStatement.addBatch();
+        numRecords = addBatch(pst, numRecords, maxBatchSize);
       }
-      preparedStatement.executeBatch();
+      executeBatch(pst, numRecords);
     }
   }
 
-  public static void addColV2Info(Connection dbConn, List<Partition> parts, long cdIdIdx) throws SQLException {
+  public static void addColV2Info(Connection dbConn, List<Partition> parts, long cdIdIdx, long maxBatchSize)
+          throws SQLException {
     String insertColInfo = "INSERT INTO \"COLUMNS_V2\" (\"CD_ID\", \"COMMENT\", \"COLUMN_NAME\", \"TYPE_NAME\","
             + " \"INTEGER_IDX\") VALUES (?, ?, ?, ?, ?) ";
-    try (PreparedStatement preparedStatement = dbConn.prepareStatement(insertColInfo)) {
+    try (PreparedStatement pst = dbConn.prepareStatement(insertColInfo)) {
+      long numRecords = 0;
       for (Partition part : parts) {
         StorageDescriptor sd = part.getSd();
         if (sd == null) {
@@ -370,23 +399,25 @@ class PartitionHelper {
         }
         int colIdx = 0;
         for (FieldSchema col : cols) {
-          preparedStatement.setLong(1, cdIdIdx);
-          preparedStatement.setString(2, col.getComment());
-          preparedStatement.setString(3, col.getName());
-          preparedStatement.setString(4, col.getType());
-          preparedStatement.setLong(5, colIdx++);
-          preparedStatement.addBatch();
+          pst.setLong(1, cdIdIdx);
+          pst.setString(2, col.getComment());
+          pst.setString(3, col.getName());
+          pst.setString(4, col.getType());
+          pst.setLong(5, colIdx++);
+          numRecords = addBatch(pst, numRecords, maxBatchSize);
         }
         cdIdIdx++;
       }
-      preparedStatement.executeBatch();
+      executeBatch(pst, numRecords);
     }
   }
 
-  public static void addSDParaInfo(Connection dbConn, List<Partition> parts, long sdIdIdx) throws SQLException {
+  public static void addSDParaInfo(Connection dbConn, List<Partition> parts, long sdIdIdx, long maxBatchSize)
+          throws SQLException {
     String insertSDParamInfo = "INSERT INTO \"SD_PARAMS\" (\"SD_ID\", \"PARAM_KEY\", \"PARAM_VALUE\")" +
             " VALUES (?, ?, ?) ";
-    try (PreparedStatement preparedStatement = dbConn.prepareStatement(insertSDParamInfo)) {
+    try (PreparedStatement pst = dbConn.prepareStatement(insertSDParamInfo)) {
+      long numRecords = 0;
       for (Partition part : parts) {
         StorageDescriptor sd = part.getSd();
         if (sd == null) {
@@ -395,21 +426,23 @@ class PartitionHelper {
         for (Map.Entry entry : sd.getParameters().entrySet()) {
           String key = (String) entry.getKey();
           String value = (String) entry.getValue();
-          preparedStatement.setLong(1, sdIdIdx);
-          preparedStatement.setString(2, key);
-          preparedStatement.setString(3, value);
-          preparedStatement.addBatch();
+          pst.setLong(1, sdIdIdx);
+          pst.setString(2, key);
+          pst.setString(3, value);
+          numRecords = addBatch(pst, numRecords, maxBatchSize);
         }
         sdIdIdx++;
       }
-      preparedStatement.executeBatch();
+      executeBatch(pst, numRecords);
     }
   }
 
-  public static void addSerdeParaInfo(Connection dbConn, List<Partition> parts, long serdeIdIdx) throws SQLException {
+  public static void addSerdeParaInfo(Connection dbConn, List<Partition> parts, long serdeIdIdx, long maxBatchSize)
+          throws SQLException {
     String insertSerdePara
             = "INSERT INTO \"SERDE_PARAMS\" (\"SERDE_ID\", \"PARAM_KEY\", \"PARAM_VALUE\") VALUES (?, ?, ?) ";
-    try (PreparedStatement preparedStatement = dbConn.prepareStatement(insertSerdePara)) {
+    try (PreparedStatement pst = dbConn.prepareStatement(insertSerdePara)) {
+      long numRecords = 0;
       for (Partition part : parts) {
         if (part.getSd() == null) {
           continue;
@@ -418,74 +451,78 @@ class PartitionHelper {
         for (Map.Entry entry : serDeInfo.getParameters().entrySet()) {
           String key = (String) entry.getKey();
           String value = (String) entry.getValue();
-          preparedStatement.setLong(1, serdeIdIdx);
-          preparedStatement.setString(2, key);
-          preparedStatement.setString(3, value);
-          preparedStatement.addBatch();
+          pst.setLong(1, serdeIdIdx);
+          pst.setString(2, key);
+          pst.setString(3, value);
+          numRecords = addBatch(pst, numRecords, maxBatchSize);
         }
         serdeIdIdx++;
       }
-      preparedStatement.executeBatch();
+      executeBatch(pst, numRecords);
     }
   }
 
   public static void addPartitionInfo(Connection dbConn, List<Partition> parts, List<FieldSchema> partKeys,
-                                       long tblId, long partIdIdx, long sdIdIdx) throws MetaException, SQLException {
+                                       long tblId, long partIdIdx, long sdIdIdx, long maxBatchSize)
+          throws MetaException, SQLException {
     String insertPartition = "INSERT INTO \"PARTITIONS\" (\"PART_ID\", \"CREATE_TIME\", \"LAST_ACCESS_TIME\", "
             + "\"PART_NAME\", \"SD_ID\", \"TBL_ID\", \"WRITE_ID\") VALUES (?, ?, ?, ?, ?, ?, ?) ";
-    try (PreparedStatement preparedStatement = dbConn.prepareStatement(insertPartition)) {
+    try (PreparedStatement pst = dbConn.prepareStatement(insertPartition)) {
+      long numRecords = 0;
       for (Partition part : parts) {
-        preparedStatement.setLong(1, partIdIdx++);
-        preparedStatement.setObject(2, part.getCreateTime());
-        preparedStatement.setObject(3, part.getLastAccessTime());
-        preparedStatement.setString(4,
+        pst.setLong(1, partIdIdx++);
+        pst.setObject(2, part.getCreateTime());
+        pst.setObject(3, part.getLastAccessTime());
+        pst.setString(4,
                 makePartName(partKeys, part.getValues(), null));
-        preparedStatement.setObject(5, part.getSd() == null ? null : sdIdIdx);
-        preparedStatement.setLong(6, tblId);
-        preparedStatement.setLong(7, part.getWriteId());
+        pst.setObject(5, part.getSd() == null ? null : sdIdIdx);
+        pst.setLong(6, tblId);
+        pst.setLong(7, part.getWriteId());
         sdIdIdx++;
-        preparedStatement.addBatch();
+        numRecords = addBatch(pst, numRecords, maxBatchSize);
       }
-      preparedStatement.executeBatch();
+      executeBatch(pst, numRecords);
     }
   }
 
   public static void addPartitionParaInfo(Connection dbConn, List<Partition> parts,
-                                          long partIdIdx) throws SQLException {
+                                          long partIdIdx, long maxBatchSize) throws SQLException {
     String insertParamKeys =
-            "INSERT INTO \"PARTITION_PARAMS\" (\"PART_ID\", \"PARAM_KEY\", \"PARAM_VALUE\") VALUES (?, ?, ?) ";
-    try (PreparedStatement preparedStatement = dbConn.prepareStatement(insertParamKeys)) {
+            "INSERT INTO \"PARTITION_PARAMS\" (\"PART_ID\", \"PARAM_KEY\", \"PARAM_VALUE\") VALUES (?, ?, ?)";
+    try (PreparedStatement pst = dbConn.prepareStatement(insertParamKeys)) {
+      long numRecords = 0;
       for (Partition part : parts) {
         for (Map.Entry entry : part.getParameters().entrySet()) {
           String key = (String) entry.getKey();
           String value = (String) entry.getValue();
-          preparedStatement.setLong(1, partIdIdx);
-          preparedStatement.setString(2, key);
-          preparedStatement.setString(3, value);
-          preparedStatement.addBatch();
+          pst.setLong(1, partIdIdx);
+          pst.setString(2, key);
+          pst.setString(3, value);
+          numRecords = addBatch(pst, numRecords, maxBatchSize);
         }
         partIdIdx++;
       }
-      preparedStatement.executeBatch();
+      executeBatch(pst, numRecords);
     }
   }
 
   public static void addPartitionKeyValInfo(Connection dbConn, List<Partition> parts,
-                                            long partIdIdx) throws SQLException {
+                                            long partIdIdx, long maxBatchSize) throws SQLException {
     String insertPartKeyVals
-            = "INSERT INTO \"PARTITION_KEY_VALS\" (\"PART_ID\", \"PART_KEY_VAL\", \"INTEGER_IDX\") VALUES (?, ?, ?) ";
-    try (PreparedStatement preparedStatement = dbConn.prepareStatement(insertPartKeyVals)) {
+            = "INSERT INTO \"PARTITION_KEY_VALS\" (\"PART_ID\", \"PART_KEY_VAL\", \"INTEGER_IDX\") VALUES (?, ?, ?)";
+    try (PreparedStatement pst = dbConn.prepareStatement(insertPartKeyVals)) {
+      long numRecords = 0;
       for (Partition part : parts) {
         int idx = 0;
         for (String value : part.getValues()) {
-          preparedStatement.setLong(1, partIdIdx);
-          preparedStatement.setString(2, value);
-          preparedStatement.setLong(3, idx++);
-          preparedStatement.addBatch();
+          pst.setLong(1, partIdIdx);
+          pst.setString(2, value);
+          pst.setLong(3, idx++);
+          numRecords = addBatch(pst, numRecords, maxBatchSize);
         }
         partIdIdx++;
       }
-      preparedStatement.executeBatch();
+      executeBatch(pst, numRecords);
     }
   }
 }

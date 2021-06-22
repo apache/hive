@@ -21,13 +21,9 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.commons.lang3.StringUtils.normalizeSpace;
 import static org.apache.commons.lang3.StringUtils.repeat;
-import static org.apache.hadoop.hive.metastore.DirectSqlUpdateStat.quoteString;
 import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.throwMetaOrRuntimeException;
-import static org.apache.hadoop.hive.metastore.Warehouse.makePartName;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
@@ -3055,8 +3051,6 @@ class MetaStoreDirectSql {
 
       final long partId = PartitionHelper.getNextValueFromSequenceTable(
               dbConn, "org.apache.hadoop.hive.metastore.model.MPartition", numPart, dbType);
-      final long grantId = PartitionHelper.getNextValueFromSequenceTable(
-              dbConn, "org.apache.hadoop.hive.metastore.model.MTablePrivilege", numPart * 2, dbType);
       final long serId = PartitionHelper.getNextValueFromSequenceTable(
               dbConn, "org.apache.hadoop.hive.metastore.model.MSerDeInfo", numPart, dbType);
       final long sdId = PartitionHelper.getNextValueFromSequenceTable(
@@ -3064,19 +3058,24 @@ class MetaStoreDirectSql {
       final long colDescId = PartitionHelper.getNextValueFromSequenceTable(
               dbConn, "org.apache.hadoop.hive.metastore.model.MColumnDescriptor", numPart, dbType);
 
+      long batchSizeMax = MetastoreConf.getIntVar(conf, ConfVars.JDBC_MAX_BATCH_SIZE);
+
       if (PartitionHelper.needToAddPrivilegeInfo(dbConn, tblId)) {
-        PartitionHelper.addPartitionPrivilegeInfo(dbConn, parts, tblId, partId, grantId);
-        PartitionHelper.addPartitionColPrivilegeInfo(dbConn, parts, tblId, partId, grantId);
+        final long grantId = PartitionHelper.getNextValueFromSequenceTable(dbConn,
+                "org.apache.hadoop.hive.metastore.model.MTablePrivilege", numPart * 2, dbType);
+        PartitionHelper.addPartitionPrivilegeInfo(dbConn, parts, tblId, partId, grantId, batchSizeMax);
+        PartitionHelper.addPartitionColPrivilegeInfo(dbConn, parts, tblId, partId, grantId, batchSizeMax);
       }
-      PartitionHelper.addSerdeInfo(dbConn, parts, serId);
-      PartitionHelper.addColDescInfo(dbConn, parts, colDescId);
-      PartitionHelper.addSDInfo(dbConn, parts, sdId, serId, colDescId, dbType);
-      PartitionHelper.addColV2Info(dbConn, parts, colDescId);
-      PartitionHelper.addSDParaInfo(dbConn, parts, sdId);
-      PartitionHelper.addSerdeParaInfo(dbConn, parts, serId);
-      PartitionHelper.addPartitionInfo(dbConn, parts, partKeys, tblId, partId, sdId);
-      PartitionHelper.addPartitionParaInfo(dbConn, parts, partId);
-      PartitionHelper.addPartitionKeyValInfo(dbConn, parts, partId);
+
+      PartitionHelper.addSerdeInfo(dbConn, parts, serId, batchSizeMax);
+      PartitionHelper.addColDescInfo(dbConn, parts, colDescId, batchSizeMax);
+      PartitionHelper.addSDInfo(dbConn, parts, sdId, serId, colDescId, dbType, batchSizeMax);
+      PartitionHelper.addColV2Info(dbConn, parts, colDescId, batchSizeMax);
+      PartitionHelper.addSDParaInfo(dbConn, parts, sdId, batchSizeMax);
+      PartitionHelper.addSerdeParaInfo(dbConn, parts, serId, batchSizeMax);
+      PartitionHelper.addPartitionInfo(dbConn, parts, partKeys, tblId, partId, sdId, batchSizeMax);
+      PartitionHelper.addPartitionParaInfo(dbConn, parts, partId, batchSizeMax);
+      PartitionHelper.addPartitionKeyValInfo(dbConn, parts, partId, batchSizeMax);
     } catch (Exception e) {
       LOG.error("Failed to add partition", e);
       throw new MetaException("Failed to add partition" + e.getMessage());
