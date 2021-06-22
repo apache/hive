@@ -472,7 +472,7 @@ class CompactionQueryBuilder {
             sourceTab.getTableName());
       } finally {
         query.append(" clustered by (`bucket`)")
-            .append(" sorted by (`bucket`, `originalTransaction`, `rowId`)")
+            .append(" sorted by (`originalTransaction`, `bucket`, `rowId`)")
             .append(" into ").append(numBuckets).append(" buckets");
       }
     }
