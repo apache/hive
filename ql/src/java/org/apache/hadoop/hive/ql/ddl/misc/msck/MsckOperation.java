@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.ddl.misc.msck;
 
+import static org.apache.hadoop.hive.metastore.Msck.getProxyClass;
+
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 
@@ -53,6 +55,7 @@ public class MsckOperation extends DDLOperation<MsckDesc> {
     try {
       Msck msck = new Msck(false, false);
       msck.init(context.getDb().getConf());
+      msck.updateExpressionProxy(getProxyClass(context.getDb().getConf()));
 
       TableName tableName = HiveTableName.of(desc.getTableName());
 

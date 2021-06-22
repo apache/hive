@@ -97,10 +97,19 @@ public class Msck {
       Configuration metastoreConf = MetastoreConf.newMetastoreConf();
       metastoreConf.addResource(conf);
       metastoreConf.set(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(),
-        MsckPartitionExpressionProxy.class.getCanonicalName());
+              getProxyClass(metastoreConf));
       setConf(metastoreConf);
       this.msc = new HiveMetaStoreClient(metastoreConf);
     }
+  }
+
+  public static String getProxyClass(Configuration metastoreConf) {
+    return metastoreConf.get(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(),
+            MsckPartitionExpressionProxy.class.getCanonicalName());
+  }
+
+  public void updateExpressionProxy(String proxyClass) throws TException {
+    msc.setMetaConf(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(), proxyClass);
   }
 
   /**
