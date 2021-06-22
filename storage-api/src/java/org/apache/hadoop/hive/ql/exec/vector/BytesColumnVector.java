@@ -49,15 +49,15 @@ public class BytesColumnVector extends ColumnVector {
    */
   public int[] length;
 
-  // Calls to ensureValPreallocated() ensure that buffer starting at nextFree
-  // points to a byte[] with sufficient space for the specified size.
-  private byte[] buffer;   // bytes for the next value
-  private int nextFree;    // next free position in buffer
+  // Calls to ensureValPreallocated() ensure that currentValue and currentOffset
+  // are set to enough space for the value.
+  private byte[] currentValue;   // bytes for the next value
+  private int currentOffset;    // starting position in the current buffer
 
-  // A static buffer allocation that we use for the small values
-  private byte[] smallBuffer;
-  // The next unused offset in the smallBuffer.
-  private int smallBufferNextFree;
+  // A shared static buffer allocation that we use for the small values
+  private byte[] sharedBuffer;
+  // The next unused offset in the sharedBuffer.
+  private int sharedBufferOffset;
 
   private int bufferAllocationCount;
 
@@ -67,11 +67,11 @@ public class BytesColumnVector extends ColumnVector {
   // Proportion of extra space to provide when allocating more buffer space.
   static final float EXTRA_SPACE_FACTOR = (float) 1.2;
 
-  // Largest item size allowed in smallBuffer
+  // Largest item size allowed in sharedBuffer
   static final int MAX_SIZE_FOR_SMALL_ITEM = 1024 * 1024;
 
-  // Largest size allowed for smallBuffer
-  static final int MAX_SIZE_FOR_SMALL_BUFFER = 1024 * 1024 * 1024;
+  // Largest size allowed for sharedBuffer
+  static final int MAX_SIZE_FOR_SHARED_BUFFER = 1024 * 1024 * 1024;
 
   /**
    * Use this constructor for normal operation.
@@ -128,10 +128,10 @@ public class BytesColumnVector extends ColumnVector {
    * @param estimatedValueSize  Estimated size of buffer space needed per row
    */
   public void initBuffer(int estimatedValueSize) {
-    smallBufferNextFree = 0;
+    sharedBufferOffset = 0;
 
     // if buffer is already allocated, keep using it, don't re-allocate
-    if (smallBuffer != null) {
+    if (sharedBuffer != null) {
       // Free up any previously allocated buffers that are referenced by vector
       if (bufferAllocationCount > 0) {
         for (int idx = 0; idx < vector.length; ++idx) {
@@ -145,10 +145,10 @@ public class BytesColumnVector extends ColumnVector {
       if (bufferSize < DEFAULT_BUFFER_SIZE) {
         bufferSize = DEFAULT_BUFFER_SIZE;
       }
-      if (bufferSize > MAX_SIZE_FOR_SMALL_BUFFER) {
-        bufferSize = MAX_SIZE_FOR_SMALL_BUFFER;
+      if (bufferSize > MAX_SIZE_FOR_SHARED_BUFFER) {
+        bufferSize = MAX_SIZE_FOR_SHARED_BUFFER;
       }
-      smallBuffer = new byte[(int) bufferSize];
+      sharedBuffer = new byte[(int) bufferSize];
     }
     bufferAllocationCount = 0;
   }
@@ -164,7 +164,7 @@ public class BytesColumnVector extends ColumnVector {
    * @return amount of buffer space currently allocated
    */
   public int bufferSize() {
-    return smallBuffer == null ? 0 : smallBuffer.length;
+    return sharedBuffer == null ? 0 : sharedBuffer.length;
   }
 
   /**
@@ -185,10 +185,10 @@ public class BytesColumnVector extends ColumnVector {
   public void setVal(int elementNum, byte[] sourceBuf, int start, int length) {
     ensureValPreallocated(length);
     if (length > 0) {
-      System.arraycopy(sourceBuf, start, buffer, nextFree, length);
+      System.arraycopy(sourceBuf, start, currentValue, currentOffset, length);
     }
-    vector[elementNum] = buffer;
-    this.start[elementNum] = nextFree;
+    vector[elementNum] = currentValue;
+    this.start[elementNum] = currentOffset;
     this.length[elementNum] = length;
   }
 
@@ -218,22 +218,22 @@ public class BytesColumnVector extends ColumnVector {
    * Always use with getValPreallocatedBytes, getValPreallocatedStart, and setValPreallocated.
    */
   public void ensureValPreallocated(int length) {
-    if ((smallBufferNextFree + length) > smallBuffer.length) {
-      buffer = allocateBuffer(length);
+    if ((sharedBufferOffset + length) > sharedBuffer.length) {
+      currentValue = allocateBuffer(length);
     } else {
-      buffer = smallBuffer;
-      nextFree = smallBufferNextFree;
-      smallBufferNextFree += length;
+      currentValue = sharedBuffer;
+      currentOffset = sharedBufferOffset;
+      sharedBufferOffset += length;
     }
   }
 
   @SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "Expose internal rep for efficiency")
   public byte[] getValPreallocatedBytes() {
-    return buffer;
+    return currentValue;
   }
 
   public int getValPreallocatedStart() {
-    return nextFree;
+    return currentOffset;
   }
 
   /**
@@ -242,8 +242,8 @@ public class BytesColumnVector extends ColumnVector {
    * @param length
    */
   public void setValPreallocated(int elementNum, int length) {
-    vector[elementNum] = buffer;
-    this.start[elementNum] = nextFree;
+    vector[elementNum] = currentValue;
+    this.start[elementNum] = currentOffset;
     this.length[elementNum] = length;
   }
 
@@ -263,13 +263,13 @@ public class BytesColumnVector extends ColumnVector {
       byte[] rightSourceBuf, int rightStart, int rightLen) {
     int newLen = leftLen + rightLen;
     ensureValPreallocated(newLen);
-    vector[elementNum] = buffer;
-    this.start[elementNum] = nextFree;
+    vector[elementNum] = currentValue;
+    this.start[elementNum] = currentOffset;
     this.length[elementNum] = newLen;
 
-    System.arraycopy(leftSourceBuf, leftStart, buffer, nextFree, leftLen);
-    System.arraycopy(rightSourceBuf, rightStart, buffer,
-        nextFree + leftLen, rightLen);
+    System.arraycopy(leftSourceBuf, leftStart, currentValue, currentOffset, leftLen);
+    System.arraycopy(rightSourceBuf, rightStart, currentValue,
+        currentOffset + leftLen, rightLen);
   }
 
   /**
@@ -292,26 +292,26 @@ public class BytesColumnVector extends ColumnVector {
     // If this is a large value or small buffer is maxed out, allocate a
     // single use buffer.
     if (nextElemLength > MAX_SIZE_FOR_SMALL_ITEM ||
-        smallBufferNextFree + nextElemLength > MAX_SIZE_FOR_SMALL_BUFFER) {
+        sharedBufferOffset + nextElemLength > MAX_SIZE_FOR_SHARED_BUFFER) {
       // allocate a value for the next value
       ++bufferAllocationCount;
-      nextFree = 0;
+      currentOffset = 0;
       return new byte[nextElemLength];
     } else {
 
       // smallBuffer might still be out of space
-      if ((smallBufferNextFree + nextElemLength) > smallBuffer.length) {
-        int newLength = smallBuffer.length * 2;
+      if ((sharedBufferOffset + nextElemLength) > sharedBuffer.length) {
+        int newLength = sharedBuffer.length * 2;
         while (newLength < nextElemLength) {
           newLength *= 2;
         }
-        smallBuffer = new byte[newLength];
+        sharedBuffer = new byte[newLength];
         ++bufferAllocationCount;
-        smallBufferNextFree = 0;
+        sharedBufferOffset = 0;
       }
-      nextFree = smallBufferNextFree;
-      smallBufferNextFree += nextElemLength;
-      return smallBuffer;
+      currentOffset = sharedBufferOffset;
+      sharedBufferOffset += nextElemLength;
+      return sharedBuffer;
     }
   }
 
@@ -562,12 +562,12 @@ public class BytesColumnVector extends ColumnVector {
   public void shallowCopyTo(ColumnVector otherCv) {
     BytesColumnVector other = (BytesColumnVector)otherCv;
     super.shallowCopyTo(other);
-    other.nextFree = nextFree;
+    other.currentOffset = currentOffset;
     other.vector = vector;
     other.start = start;
     other.length = length;
-    other.buffer = buffer;
-    other.smallBuffer = smallBuffer;
-    other.smallBufferNextFree = smallBufferNextFree;
+    other.currentValue = currentValue;
+    other.sharedBuffer = sharedBuffer;
+    other.sharedBufferOffset = sharedBufferOffset;
   }
 }

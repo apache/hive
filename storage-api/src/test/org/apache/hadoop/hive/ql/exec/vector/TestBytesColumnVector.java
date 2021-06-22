@@ -146,34 +146,35 @@ public class TestBytesColumnVector {
       writeToBytesColumnVector(row, col, size, row);
     }
     // it should have resized a bunch of times
-    byte[] smallBuffer = col.getValPreallocatedBytes();
-    assertNotSame(smallBuffer, col.vector[0]);
-    assertSame(smallBuffer, col.vector[1024]);
+    byte[] sharedBuffer = col.getValPreallocatedBytes();
+    assertNotSame(sharedBuffer, col.vector[0]);
+    assertSame(sharedBuffer, col.vector[1024]);
 
     // reset the column, but make sure the buffer isn't reallocated
     col.reset();
-    assertEquals(BytesColumnVector.MAX_SIZE_FOR_SMALL_BUFFER, col.bufferSize());
+    assertEquals(BytesColumnVector.MAX_SIZE_FOR_SHARED_BUFFER, col.bufferSize());
 
     // fill up the vector now with the large buffer
     for(int row=0; row < col.vector.length; ++row) {
       writeToBytesColumnVector(row, col, size, row);
     }
-    assertEquals(BytesColumnVector.MAX_SIZE_FOR_SMALL_BUFFER, col.bufferSize());
-    // now the first 1025 rows should all be the small buffer
+    assertEquals(BytesColumnVector.MAX_SIZE_FOR_SHARED_BUFFER, col.bufferSize());
+    // Now the first 1025 rows should all be the shared buffer,
+    // because 1025 * size < MAX_SIZE_FOR_SMALL_BUFFER
     for(int row=0; row < 1025; ++row) {
-      assertSame("row " + row, smallBuffer, col.vector[row]);
+      assertSame("row " + row, sharedBuffer, col.vector[row]);
       assertEquals("row " + row, row * size, col.start[row]);
       assertEquals("row " + row, size, col.length[row]);
     }
     // the rest should be custom buffers
     for(int row=1025; row < col.vector.length; ++row) {
-      assertNotSame("row " + row, smallBuffer, col.vector[row]);
+      assertNotSame("row " + row, sharedBuffer, col.vector[row]);
       assertEquals("row " + row, 0, col.start[row]);
       assertEquals("row " + row, size, col.length[row]);
     }
   }
 
-    // Write a value to the column vector, and return back the byte buffer used.
+  // Write a value to the column vector, and return back the byte buffer used.
   private static byte[] writeToBytesColumnVector(int rowIdx, BytesColumnVector col, int writeSize, int val) {
     col.ensureValPreallocated(writeSize);
     byte[] bytes = col.getValPreallocatedBytes();
