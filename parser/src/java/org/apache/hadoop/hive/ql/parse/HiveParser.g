@@ -1043,7 +1043,6 @@ ddlStatement
 @init { pushMsg("ddl statement", state); }
 @after { popMsg(state); }
     : createDatabaseStatement
-    | createRemoteDatabaseStatement
     | switchDatabaseStatement
     | dropDatabaseStatement
     | createTableStatement
@@ -1158,12 +1157,8 @@ createDatabaseStatement
         dbManagedLocation?
         (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
     -> ^(TOK_CREATEDATABASE $name ifNotExists? dbLocation? dbManagedLocation? databaseComment? $dbprops?)
-    ;
 
-createRemoteDatabaseStatement
-@init { pushMsg("create remote database statement", state); }
-@after { popMsg(state); }
-    : KW_CREATE KW_REMOTE (KW_DATABASE|KW_SCHEMA)
+    | KW_CREATE KW_REMOTE (KW_DATABASE|KW_SCHEMA)
         ifNotExists?
         name=identifier
         databaseComment?
@@ -1171,7 +1166,6 @@ createRemoteDatabaseStatement
         (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
     -> ^(TOK_CREATEDATABASE $name ifNotExists? databaseComment? $dbprops? dbConnectorName)
     ;
-
 
 dbLocation
 @init { pushMsg("database location specification", state); }
