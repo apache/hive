@@ -1258,7 +1258,6 @@ public class TestLlapTaskSchedulerService {
   }
 
   @Test(timeout = 10000)
-  @org.junit.Ignore("HIVE-25248")
   public void testForcedLocalityMultiplePreemptionsSameHost1() throws IOException,
       InterruptedException {
     Priority priority1 = Priority.newInstance(1);
@@ -1347,7 +1346,7 @@ public class TestLlapTaskSchedulerService {
           break;
         }
       }
-      verify(tsWrapper.mockAppCallback).preemptContainer(any(ContainerId.class));
+      verify(tsWrapper.mockAppCallback).preemptContainer(cIdArgCaptor.capture());
 
       tsWrapper.deallocateTask(deallocatedTask2, false, TaskAttemptEndReason.INTERNAL_PREEMPTION);
 
