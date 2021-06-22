@@ -1230,7 +1230,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String alias = unescapeIdentifier(subq.getChild(1).getText());
 
     // Recursively do the first phase of semantic analysis for the subquery
-    QBExpr qbexpr = new QBExpr(alias);
+    QBExpr qbexpr = new QBExpr(alias, subqref);
 
     doPhase1QBExpr(subqref, qbexpr, qb.getId(), alias, qb.isInsideView(), null);
 
