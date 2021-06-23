@@ -4102,7 +4102,6 @@ public class TestReplicationScenarios {
     fs.delete(path);
     driverMirror.run("REPL LOAD " + dbName + " INTO " + dbName);
     run("drop database " + dbName, true, driver);
-    fs.create(path, false);
   }
 
   @Test

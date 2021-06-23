@@ -1806,9 +1806,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
         Path path = new Path(db.getLocationUri()).getParent();
         if (!wh.isWritable(path)) {
-          throw new MetaException("Database not dropped since " +
-              path + " is not writable by " +
-              SecurityUtils.getUser());
+          throw new MetaException("Database not dropped since its external warehouse location " + path + " is not writable by " +
+            SecurityUtils.getUser());
+        }
+        path = wh.getDatabaseManagedPath(db).getParent();
+        if (!wh.isWritable(path)) {
+          throw new MetaException("Database not dropped since its managed warehouse location " + path + " is not writable by " +
+            SecurityUtils.getUser());
         }
 
         Path databasePath = wh.getDnsPath(wh.getDatabasePath(db));
@@ -1946,36 +1950,34 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             }
             // it is not a terrible thing even if the data is not deleted
           } else {
+            final Database dbFinal = db;
+            final Path path = (dbFinal.getManagedLocationUri() != null) ?
+                new Path(dbFinal.getManagedLocationUri()) : wh.getDatabaseManagedPath(dbFinal);
             try {
-              final Database dbFinal = db;
               Boolean deleted = UserGroupInformation.getLoginUser().doAs(new PrivilegedExceptionAction<Boolean>() {
                 @Override public Boolean run() throws MetaException {
-                  return wh.deleteDir(new Path(dbFinal.getLocationUri()), true, dbFinal);
+                  return wh.deleteDir(path, true, dbFinal);
                 }
               });
               if (!deleted) {
                 LOG.error("Failed to delete database folder " + db.getLocationUri());
               }
-            } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
-              LOG.error("Might have failed to delete the database folder for database: " + db.getLocationUri() + " " + e
-                  .getMessage());
+            } catch (Exception e) {
+              LOG.error("Failed to delete database's managed warehouse directory: " + path + " " + e.getMessage());
             }
 
             try {
-              final Path externalPath = wh.determineDatabaseExternalPath(db);
-              if (externalPath != null) {
-                Boolean deleted = UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<Boolean>() {
-                  @Override public Boolean run() throws IOException, MetaException {
-                    return wh.deleteDirIfEmpty(externalPath);
-                  }
-                });
-                if (!deleted) {
-                  LOG.error("Failed to delete database external folder " + externalPath);
+              Boolean deleted = UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<Boolean>() {
+                @Override public Boolean run() throws MetaException {
+                  return wh.deleteDir(new Path(dbFinal.getLocationUri()), true, dbFinal);
                 }
+              });
+              if (!deleted) {
+                LOG.error("Failed to delete database external warehouse directory " + db.getLocationUri());
               }
-            } catch (IOException | InterruptedException e) {
-              LOG.error(
-                  "Might have failed to delete the database external folder for database: " + db.getName() + " " + e.getMessage());
+            } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
+              LOG.error("Failed to delete the database external warehouse directory: " + db.getLocationUri() + " " + e
+                  .getMessage());
             }
           }
         }
