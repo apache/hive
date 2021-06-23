@@ -38,7 +38,7 @@ public class VectorPTFEvaluatorLead extends VectorPTFEvaluatorAbstractLeadLag {
     if (leadRow < 0 || leadRow >= batches.size()) {
       return getDefaultValue(rowNum, batches);
     } else {
-      return batches.getValue(leadRow, inputColumnNum);
+      return batches.getValueAndEvaluateInputExpression(this, leadRow, inputColumnNum);
     }
   }
 }

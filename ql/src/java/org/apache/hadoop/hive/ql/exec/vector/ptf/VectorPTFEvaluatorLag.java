@@ -38,7 +38,7 @@ public class VectorPTFEvaluatorLag extends VectorPTFEvaluatorAbstractLeadLag {
     if (lagRow < 0 || lagRow >= batches.size()) {
       return getDefaultValue(rowNum, batches);
     } else {
-      return batches.getValue(lagRow, inputColumnNum);
+      return batches.getValueAndEvaluateInputExpression(this, lagRow, inputColumnNum);
     }
   }
 }

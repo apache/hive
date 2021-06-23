@@ -179,8 +179,8 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
 
   // We provide this public method to help EXPLAIN VECTORIZATION show the evaluator classes.
   public static VectorPTFEvaluatorBase getEvaluator(SupportedFunctionType functionType,
-      List<ExprNodeDesc> evaluatorParameters, boolean isDistinct, WindowFrameDef windowFrameDef,
-      Type[] columnVectorTypes, VectorExpression[] inputVectorExpressions, int outputColumnNum) {
+      boolean isDistinct, WindowFrameDef windowFrameDef, Type[] columnVectorTypes,
+      VectorExpression[] inputVectorExpressions, int outputColumnNum) {
 
     final boolean isRowEndCurrent = (windowFrameDef.getWindowType() == WindowType.ROWS
         && windowFrameDef.getEnd().isCurrentRow());
@@ -431,7 +431,6 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
   public static VectorPTFEvaluatorBase[] getEvaluators(VectorPTFDesc vectorPTFDesc, VectorPTFInfo vectorPTFInfo) {
     String[] evaluatorFunctionNames = vectorPTFDesc.getEvaluatorFunctionNames();
     boolean[] evaluatorsAreDistinct = vectorPTFDesc.getEvaluatorsAreDistinct();
-    List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists = vectorPTFDesc.getEvaluatorInputExprNodeDescLists();
     int evaluatorCount = evaluatorFunctionNames.length;
     WindowFrameDef[] evaluatorWindowFrameDefs = vectorPTFDesc.getEvaluatorWindowFrameDefs();
     VectorExpression[][] evaluatorInputExpressions = vectorPTFInfo.getEvaluatorInputExpressions();
@@ -452,7 +451,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
       final int outputColumnNum = outputColumnMap[i];
 
       VectorPTFEvaluatorBase evaluator =
-          VectorPTFDesc.getEvaluator(functionType, evaluatorInputExprNodeDescLists[i], isDistinct,
+          VectorPTFDesc.getEvaluator(functionType, isDistinct,
               windowFrameDef, columnVectorTypes, inputVectorExpressions, outputColumnNum);
 
       evaluators[i] = evaluator;
