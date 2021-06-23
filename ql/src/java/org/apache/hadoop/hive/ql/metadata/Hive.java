@@ -374,6 +374,14 @@ public class Hive {
     return getInternal(c, false, false, true);
   }
 
+  public static Hive createHiveForSession(HiveConf c) throws HiveException {
+    return create(c, true);
+  }
+
+  public void setConf(HiveConf c) {
+    this.conf = c;
+  }
+
   /**
    * Same as {@link #get(HiveConf)}, except that it checks only the object identity of existing
    * MS client, assuming the relevant settings would be unchanged within the same conf object.
