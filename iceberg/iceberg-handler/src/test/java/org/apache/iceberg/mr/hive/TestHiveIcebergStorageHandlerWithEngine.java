@@ -37,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
@@ -54,6 +55,7 @@ import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveSchemaUtil;
+import org.apache.iceberg.hive.MetastoreUtil;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
@@ -128,7 +130,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
       StatsSetupConst.TOTAL_SIZE, SnapshotSummary.TOTAL_FILE_SIZE_PROP
   );
 
-  @Parameters(name = "fileFormat={0}, engine={1}, catalog={2}")
+  @Parameters(name = "fileFormat={0}, engine={1}, catalog={2}, isVectorized={3}")
   public static Collection<Object[]> parameters() {
     Collection<Object[]> testParams = new ArrayList<>();
     String javaVersion = System.getProperty("java.specification.version");
@@ -138,7 +140,11 @@ public class TestHiveIcebergStorageHandlerWithEngine {
       for (String engine : EXECUTION_ENGINES) {
         // include Tez tests only for Java 8
         if (javaVersion.equals("1.8")) {
-          testParams.add(new Object[] {fileFormat, engine, TestTables.TestTableType.HIVE_CATALOG});
+          testParams.add(new Object[] {fileFormat, engine, TestTables.TestTableType.HIVE_CATALOG, false});
+          // test for vectorization=ON in case of ORC format and Tez engine
+          if (fileFormat == FileFormat.ORC && "tez".equals(engine) && MetastoreUtil.hive3PresentOnClasspath()) {
+            testParams.add(new Object[] {fileFormat, engine, TestTables.TestTableType.HIVE_CATALOG, true});
+          }
         }
       }
     }
@@ -147,7 +153,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     // skip HiveCatalog tests as they are added before
     for (TestTables.TestTableType testTableType : TestTables.ALL_TABLE_TYPES) {
       if (!TestTables.TestTableType.HIVE_CATALOG.equals(testTableType)) {
-        testParams.add(new Object[]{FileFormat.PARQUET, "tez", testTableType});
+        testParams.add(new Object[]{FileFormat.PARQUET, "tez", testTableType, false});
       }
     }
 
@@ -166,6 +172,9 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Parameter(2)
   public TestTables.TestTableType testTableType;
+
+  @Parameter(3)
+  public boolean isVectorized;
 
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
@@ -187,6 +196,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   public void before() throws IOException {
     testTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, testTableType, temp);
     HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp, executionEngine);
+    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
   }
 
   @After
@@ -406,6 +416,10 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   public void testJoinTablesSupportedTypes() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
+      if (type == Types.TimestampType.withZone() && isVectorized) {
+        // ORC/TIMESTAMP_INSTANT is not a supported vectorized type for Hive
+        continue;
+      }
       // TODO: remove this filter when issue #1881 is resolved
       if (type == Types.UUIDType.get() && fileFormat == FileFormat.PARQUET) {
         continue;
@@ -429,6 +443,10 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   public void testSelectDistinctFromTable() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
+      if (type == Types.TimestampType.withZone() && isVectorized) {
+        // ORC/TIMESTAMP_INSTANT is not a supported vectorized type for Hive
+        continue;
+      }
       // TODO: remove this filter when issue #1881 is resolved
       if (type == Types.UUIDType.get() && fileFormat == FileFormat.PARQUET) {
         continue;
@@ -977,6 +995,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testMonthTransform() throws IOException {
+    Assume.assumeTrue("ORC/TIMESTAMP_INSTANT is not a supported vectorized type for Hive", isVectorized);
     Schema schema = new Schema(
         optional(1, "id", Types.LongType.get()),
         optional(2, "part_field", Types.TimestampType.withZone()));
