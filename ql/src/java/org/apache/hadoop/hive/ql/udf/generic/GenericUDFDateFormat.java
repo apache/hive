@@ -84,7 +84,7 @@ public class GenericUDFDateFormat extends GenericUDF {
             timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
                 .getLocalTimeZone();
           }
-          formatter = DateTimeFormatter.ofPattern(fmtStr).withZone(timeZone);
+          formatter = DateTimeFormatter.ofPattern(fmtStr);
         } catch (IllegalArgumentException e) {
           // ignore
         }
@@ -110,13 +110,9 @@ public class GenericUDFDateFormat extends GenericUDF {
       return null;
     }
 
-    // We are doing an extra timestamp conversion from timeZone to UTC and then UTC to timeZone to maintain the
-    // same zone format semantics as that of SimpleDateFormat for some specific locale. E.g. PST/PDT, CST
-    // If this conversion is not there PDT -> PT and CST -> CT
-    Timestamp ts2 = TimestampTZUtil.convertTimestampToZone(ts, timeZone, ZoneId.of("UTC"));
-    Instant instant = Instant.ofEpochSecond(ts2.toEpochSecond(), ts2.getNanos());
+    Instant instant = Instant.ofEpochSecond(ts.toEpochSecond(), ts.getNanos());
     ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneOffset.UTC);
-    String res = formatter.format(zonedDateTime);
+    String res = formatter.format(zonedDateTime.withZoneSameLocal(timeZone));
 
     output.set(res);
     return output;
