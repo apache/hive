@@ -1,0 +1,44 @@
+PREHOOK: query: create table table1 (acct_num string, interest_rate decimal(10,7)) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
+POSTHOOK: query: create table table1 (acct_num string, interest_rate decimal(10,7)) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1
+PREHOOK: query: create table table2 (act_id string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table2
+POSTHOOK: query: create table table2 (act_id string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table2
+PREHOOK: query: CREATE TABLE temp_output AS
+SELECT act_nbr, row_num
+FROM (SELECT t2.act_id as act_nbr,
+row_number() over (PARTITION BY trim(acct_num) ORDER BY interest_rate DESC) AS row_num
+FROM table1 t1
+INNER JOIN table2 t2
+ON trim(acct_num) = t2.act_id) t
+WHERE t.row_num = 1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@table1
+PREHOOK: Input: default@table2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp_output
+POSTHOOK: query: CREATE TABLE temp_output AS
+SELECT act_nbr, row_num
+FROM (SELECT t2.act_id as act_nbr,
+row_number() over (PARTITION BY trim(acct_num) ORDER BY interest_rate DESC) AS row_num
+FROM table1 t1
+INNER JOIN table2 t2
+ON trim(acct_num) = t2.act_id) t
+WHERE t.row_num = 1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp_output
+POSTHOOK: Lineage: temp_output.act_nbr SIMPLE [(table2)t2.FieldSchema(name:act_id, type:string, comment:null), ]
+POSTHOOK: Lineage: temp_output.row_num SIMPLE []
