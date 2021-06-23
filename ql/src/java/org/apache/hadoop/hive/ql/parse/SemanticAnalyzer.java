@@ -7316,7 +7316,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       destTableId++;
       // Create the work for moving the table
       // NOTE: specify Dynamic partitions in dest_tab for WriteEntity
-      if (!isNonNativeTable) {
+      if (!isNonNativeTable || destinationTable.getStorageHandler().commitInMoveTask()) {
         if (destTableIsTransactional) {
           acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest, isMmTable);
           checkAcidConstraints();
@@ -7733,7 +7733,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // this order needs to be enforced because metastore expects a table to exist before we can
         // add any partitions to it.
         isNonNativeTable = tableDescriptor.isNonNative();
-        if (!isNonNativeTable) {
+        if (!isNonNativeTable || destinationTable.getStorageHandler().commitInMoveTask()) {
           AcidUtils.Operation acidOp = AcidUtils.Operation.NOT_ACID;
           if (destTableIsTransactional) {
             acidOp = getAcidType(tableDescriptor.getOutputFileFormatClass(), dest, isMmTable);
@@ -7771,21 +7771,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (!outputs.add(new WriteEntity(destinationPath, !isDfsDir, isDestTempFile))) {
           throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
               .getMsg(destinationPath.toUri().toString()));
-        }
-      }
-
-      // For normal, non-direct insert CTAS cases, the TaskCompiler#patchUpAfterCTASorMaterializedView
-      // adds a DDL table creation task to the execution plan. Once that's done, the SemanticAnalyzer later appends a
-      // PreInsertTableDesc hook to this DDL task. However, for direct insert CTAS this table creation task is not
-      // added to the plan, therefore we need to add the PreInsertTableDesc to the plan here manually to ensure that the
-      // HiveMetaHook#commitInsertTable is called
-      if (qb.isCTAS() && tableDesc != null && tableDesc.getStorageHandler() != null) {
-        try {
-          if (HiveUtils.getStorageHandler(conf, tableDesc.getStorageHandler()).directInsertCTAS()) {
-            createPreInsertDesc(destinationTable, false);
-          }
-        } catch (HiveException e) {
-          throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
         }
       }
       break;
