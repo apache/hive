@@ -180,21 +180,25 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   @Test
   public void testReadOperationsNotCapturedInNotificationLog() throws Throwable {
     //Perform empty bootstrap dump and load
+    String dbName = testName.getMethodName();
+    String replDbName = "replicatd_" + testName.getMethodName();
+    primary.run("CREATE DATABASE " + dbName + " WITH DBPROPERTIES ( '" +
+            SOURCE_OF_REPLICATION + "' = '1,2,3')");
     primary.hiveConf.set("hive.txn.readonly.enabled", "true");
-    primary.run("create table " + primaryDbName + ".t1 (id int)");
-    primary.dump(primaryDbName);
-    replica.run("REPL LOAD " + primaryDbName + " INTO " + replicatedDbName);
+    primary.run("create table " + dbName + ".t1 (id int)");
+    primary.dump(dbName);
+    replica.run("REPL LOAD " + dbName + " INTO " + replDbName);
     //Perform empty incremental dump and load so that all db level properties are altered.
-    primary.dump(primaryDbName);
-    replica.run("REPL LOAD " + primaryDbName + " INTO " + replicatedDbName);
-    primary.run("insert into " + primaryDbName + ".t1 values(1)");
+    primary.dump(dbName);
+    replica.run("REPL LOAD " + dbName + " INTO " + replDbName);
+    primary.run("insert into " + dbName + ".t1 values(1)");
     long lastEventId = primary.getCurrentNotificationEventId().getEventId();
-    primary.run("DESCRIBE DATABASE " + primaryDbName );
-    primary.run("SELECT * from " + primaryDbName + ".t1");
-    primary.run("SHOW tables " + primaryDbName);
-    primary.run("use " + primaryDbName);
+    primary.run("DESCRIBE DATABASE " + dbName );
+    primary.run("SELECT * from " + dbName + ".t1");
+    primary.run("SHOW tables " + dbName);
+    primary.run("use " + dbName);
     primary.run("SHOW table extended like 't1'");
-    primary.run("EXPLAIN SELECT * from " + primaryDbName + ".t1");
+    primary.run("EXPLAIN SELECT * from " + dbName + ".t1");
     long currentEventId = primary.getCurrentNotificationEventId().getEventId();
     Assert.assertEquals(lastEventId, currentEventId);
   }
@@ -870,7 +874,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             primary.dump(primaryDbName);
 
     long lastReplId = Long.parseLong(bootStrapDump.lastReplicationId);
-    primary.testEventCounts(primaryDbName, lastReplId, null, null, 16);
+    primary.testEventCounts(primaryDbName, lastReplId, null, null, 12);
 
     // Test load
     replica.load(replicatedDbName, primaryDbName)
@@ -1691,7 +1695,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .dump(primaryDbName, dumpClause);
 
     int eventCount = primary.getNoOfEventsDumped(incrementalDump1.dumpLocation, conf);
-    assertEquals(eventCount, 5);
+    assertEquals(eventCount, 3);
 
     replica.load(replicatedDbName, primaryDbName)
             .run("select * from " + replicatedDbName + ".t1")
