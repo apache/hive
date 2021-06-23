@@ -129,6 +129,7 @@
     <commons-exec.version>1.1</commons-exec.version>
     <commons-io.version>2.6</commons-io.version>
     <commons-lang3.version>3.9</commons-lang3.version>
+    <commons-math3.version>3.6.1</commons-math3.version>
     <commons-dbcp2.version>2.7.0</commons-dbcp2.version>
     <commons-text.version>1.8</commons-text.version>
     <derby.version>10.14.1.0</derby.version>
@@ -223,6 +224,7 @@
     <janino.version>3.0.11</janino.version>
     <datasketches.version>1.1.0-incubating</datasketches.version>
     <spotbugs.version>4.0.3</spotbugs.version>
+    <validation-api.version>1.1.0.Final</validation-api.version>
   </properties>
 
   <repositories>
@@ -381,6 +383,11 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-dbcp2</artifactId>
         <version>${commons-dbcp2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-math3</artifactId>
+        <version>${commons-math3.version}</version>
       </dependency>
       <dependency>
         <groupId>io.jsonwebtoken</groupId>
