@@ -38,6 +38,7 @@ public enum AlterTableType {
   DROPPARTITION("drop partition"),
   RENAMEPARTITION("rename partition"), // Note: used in RenamePartitionDesc, not here.
   ALTERPARTITION("alter partition"), // Note: this is never used in AlterTableDesc.
+  SETPARTITIONSPEC("set partition spec"),
   // constraint
   ADD_CONSTRAINT("add constraint"),
   DROP_CONSTRAINT("drop constraint"),
@@ -77,7 +78,7 @@ public enum AlterTableType {
   }
 
   public static final List<AlterTableType> NON_NATIVE_TABLE_ALLOWED =
-      ImmutableList.of(ADDPROPS, DROPPROPS, ADDCOLS);
+      ImmutableList.of(ADDPROPS, DROPPROPS, ADDCOLS, SETPARTITIONSPEC);
 
   public static final Set<AlterTableType> SUPPORT_PARTIAL_PARTITION_SPEC =
       ImmutableSet.of(ADDCOLS, REPLACE_COLUMNS, RENAME_COLUMN, ADDPROPS, DROPPROPS, SET_SERDE,
