@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.exec.repl.NoOpReplStatsTracker;
+import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -31,9 +32,11 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.event.Progress;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Stage;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metric;
+import org.apache.hadoop.metrics2.util.MBeans;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.management.ObjectName;
 import java.util.Map;
 
 /**
@@ -45,6 +48,12 @@ public abstract class ReplicationMetricCollector {
   private MetricCollector metricCollector;
   private boolean isEnabled;
   private static boolean enableForTests;
+
+  public void setMetricsMBean(ObjectName metricsMBean) {
+    this.metricsMBean = metricsMBean;
+  }
+
+  private ObjectName metricsMBean;
 
   public ReplicationMetricCollector(String dbName, Metadata.ReplicationType replicationType,
                              String stagingDir, long dumpExecutionId, HiveConf conf) {
@@ -77,6 +86,7 @@ public abstract class ReplicationMetricCollector {
 
   public void reportStageEnd(String stageName, Status status, long lastReplId,
       SnapshotUtils.ReplSnapshotCount replSnapshotCount, ReplStatsTracker replStatsTracker) throws SemanticException {
+    unRegisterMBeanSafe();
     if (isEnabled) {
       LOG.debug("Stage ended {}, {}, {}", stageName, status, lastReplId );
       Progress progress = replicationMetric.getProgress();
@@ -103,6 +113,7 @@ public abstract class ReplicationMetricCollector {
   }
 
   public void reportStageEnd(String stageName, Status status, String errorLogPath) throws SemanticException {
+    unRegisterMBeanSafe();
     if (isEnabled) {
       LOG.debug("Stage Ended {}, {}", stageName, status );
       Progress progress = replicationMetric.getProgress();
@@ -123,6 +134,7 @@ public abstract class ReplicationMetricCollector {
   }
 
   public void reportStageEnd(String stageName, Status status) throws SemanticException {
+    unRegisterMBeanSafe();
     if (isEnabled) {
       LOG.debug("Stage Ended {}, {}", stageName, status );
       Progress progress = replicationMetric.getProgress();
@@ -177,6 +189,16 @@ public abstract class ReplicationMetricCollector {
     if (enableForTests) {
       conf.set(Constants.SCHEDULED_QUERY_SCHEDULENAME, "pol");
       conf.setLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 1L);
+    }
+  }
+
+  private void unRegisterMBeanSafe() {
+    if (metricsMBean != null && !ReplLoadWork.disableMbeanUnregistrationForTests) {
+      try {
+        MBeans.unregister(metricsMBean);
+      } catch (Exception e) {
+        LOG.warn("Unable to unregister MBean {}", metricsMBean, e);
+      }
     }
   }
 }
