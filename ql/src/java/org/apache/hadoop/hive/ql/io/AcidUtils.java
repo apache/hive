@@ -191,8 +191,10 @@ public class AcidUtils {
   static {
     READ_TXN_TOKENS.addAll(Arrays.asList(
             HiveParser.TOK_DESCDATABASE,
+            HiveParser.TOK_DESCTABLE,
             HiveParser.TOK_SHOWTABLES,
             HiveParser.TOK_SHOW_TABLESTATUS,
+            HiveParser.TOK_SHOW_TBLPROPERTIES,
             HiveParser.TOK_EXPLAIN
     ));
   }

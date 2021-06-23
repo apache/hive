@@ -181,26 +181,33 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   public void testReadOperationsNotCapturedInNotificationLog() throws Throwable {
     //Perform empty bootstrap dump and load
     String dbName = testName.getMethodName();
-    String replDbName = "replicatd_" + testName.getMethodName();
-    primary.run("CREATE DATABASE " + dbName + " WITH DBPROPERTIES ( '" +
-            SOURCE_OF_REPLICATION + "' = '1,2,3')");
-    primary.hiveConf.set("hive.txn.readonly.enabled", "true");
-    primary.run("create table " + dbName + ".t1 (id int)");
-    primary.dump(dbName);
-    replica.run("REPL LOAD " + dbName + " INTO " + replDbName);
-    //Perform empty incremental dump and load so that all db level properties are altered.
-    primary.dump(dbName);
-    replica.run("REPL LOAD " + dbName + " INTO " + replDbName);
-    primary.run("insert into " + dbName + ".t1 values(1)");
-    long lastEventId = primary.getCurrentNotificationEventId().getEventId();
-    primary.run("DESCRIBE DATABASE " + dbName );
-    primary.run("SELECT * from " + dbName + ".t1");
-    primary.run("SHOW tables " + dbName);
-    primary.run("use " + dbName);
-    primary.run("SHOW table extended like 't1'");
-    primary.run("EXPLAIN SELECT * from " + dbName + ".t1");
-    long currentEventId = primary.getCurrentNotificationEventId().getEventId();
-    Assert.assertEquals(lastEventId, currentEventId);
+    String replDbName = "replicated_" + testName.getMethodName();
+    try {
+      primary.run("CREATE DATABASE " + dbName + " WITH DBPROPERTIES ( '" +
+              SOURCE_OF_REPLICATION + "' = '1,2,3')");
+      primary.hiveConf.set("hive.txn.readonly.enabled", "true");
+      primary.run("CREATE TABLE " + dbName + ".t1 (id int)");
+      primary.dump(dbName);
+      replica.run("REPL LOAD " + dbName + " INTO " + replDbName);
+      //Perform empty incremental dump and load so that all db level properties are altered.
+      primary.dump(dbName);
+      replica.run("REPL LOAD " + dbName + " INTO " + replDbName);
+      primary.run("INSERT INTO " + dbName + ".t1 VALUES(1)");
+      long lastEventId = primary.getCurrentNotificationEventId().getEventId();
+      primary.run("USE " + dbName);
+      primary.run("DESCRIBE DATABASE " + dbName);
+      primary.run("describe "+ dbName + ".t1");
+      primary.run("SELECT * FROM " + dbName + ".t1");
+      primary.run("SHOW TABLES " + dbName);
+      primary.run("SHOW TABLE EXTENDED LIKE 't1'");
+      primary.run("SHOW TBLPROPERTIES t1");
+      primary.run("EXPLAIN SELECT * from " + dbName + ".t1");
+      long currentEventId = primary.getCurrentNotificationEventId().getEventId();
+      Assert.assertEquals(lastEventId, currentEventId);
+    } finally {
+      primary.run("DROP DATABASE " + dbName + " CASCADE");
+      replica.run("DROP DATABASE " + replDbName + " CASCADE");
+    }
   }
 
   @Test
@@ -1676,8 +1683,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .verifyResults(new String[] {"1"});
 
     List<String> dumpClause = Arrays.asList("'" + ReplUtils.DFS_MAX_DIR_ITEMS_CONFIG + "'='"
-            + (ReplUtils.RESERVED_DIR_ITEMS_COUNT + 5) +"'",
-            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES + "'='true'");
+            + (ReplUtils.RESERVED_DIR_ITEMS_COUNT + 5) +"'");
 
     WarehouseInstance.Tuple incrementalDump1 = primary.run("use " + primaryDbName)
             .run("insert into t1 values (2)")
@@ -1689,19 +1695,14 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("insert into t1 values (8)")
             .run("insert into t1 values (9)")
             .run("insert into t1 values (10)")
-            .run("create table t2(a int) clustered by (a) into 2 buckets" +
-                    " stored as orc TBLPROPERTIES ('transactional'='true')")
-            .run("insert into t2 values (100)")
             .dump(primaryDbName, dumpClause);
 
     int eventCount = primary.getNoOfEventsDumped(incrementalDump1.dumpLocation, conf);
-    assertEquals(eventCount, 3);
+    assertEquals(eventCount, 5);
 
     replica.load(replicatedDbName, primaryDbName)
             .run("select * from " + replicatedDbName + ".t1")
-            .verifyResults(new String[] {"1"})
-            .run("select * from " + replicatedDbName + ".t2")
-            .verifyResults(new String[] {"100"});
+            .verifyResults(new String[] {"1"});
 
     dumpClause = Arrays.asList("'" + ReplUtils.DFS_MAX_DIR_ITEMS_CONFIG + "'='1000'");
 
