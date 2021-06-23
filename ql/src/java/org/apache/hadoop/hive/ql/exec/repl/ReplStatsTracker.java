@@ -19,7 +19,10 @@ package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.management.ObjectName;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
@@ -38,6 +41,8 @@ public class ReplStatsTracker {
   // Number of top events to maintain.
   private final int k;
 
+  private String lastEventId;
+
   public ReplStatsTracker(int k) {
     this.k = k;
     descMap = new ConcurrentHashMap<>();
@@ -51,6 +56,8 @@ public class ReplStatsTracker {
    * @param timeTaken time taken to process the event.
    */
   public synchronized void addEntry(String eventType, String eventId, long timeTaken) {
+    // Store the last EventId for the JMX.
+    lastEventId = eventId;
     // Update the entry in the descriptive statistics.
     DescriptiveStatistics descStatistics = descMap.get(eventType);
     if (descStatistics == null) {
@@ -100,6 +107,14 @@ public class ReplStatsTracker {
    */
   public ConcurrentHashMap<String, ListOrderedMap<Long, Long>> getTopKEvents() {
     return topKEvents;
+  }
+
+  /**
+   * Gets the last event id processed.
+   * @return the last event id.
+   */
+  public String getLastEventId() {
+    return lastEventId;
   }
 
   @Override
