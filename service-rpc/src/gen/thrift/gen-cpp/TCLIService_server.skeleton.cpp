@@ -12,6 +12,8 @@ using namespace ::apache::thrift::protocol;
 using namespace ::apache::thrift::transport;
 using namespace ::apache::thrift::server;
 
+using boost::shared_ptr;
+
 using namespace  ::apache::hive::service::rpc::thrift;
 
 class TCLIServiceHandler : virtual public TCLIServiceIf {
@@ -139,11 +141,11 @@ class TCLIServiceHandler : virtual public TCLIServiceIf {
 
 int main(int argc, char **argv) {
   int port = 9090;
-  ::std::shared_ptr<TCLIServiceHandler> handler(new TCLIServiceHandler());
-  ::std::shared_ptr<TProcessor> processor(new TCLIServiceProcessor(handler));
-  ::std::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
-  ::std::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
-  ::std::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
+  shared_ptr<TCLIServiceHandler> handler(new TCLIServiceHandler());
+  shared_ptr<TProcessor> processor(new TCLIServiceProcessor(handler));
+  shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
+  shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
+  shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
   TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
   server.serve();

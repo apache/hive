@@ -595,7 +595,7 @@ public abstract class HadoopThriftAuthBridge {
 
 
       @Override
-      public void process(final TProtocol inProt, final TProtocol outProt) throws TException {
+      public boolean process(final TProtocol inProt, final TProtocol outProt) throws TException {
         TTransport trans = inProt.getTransport();
         if (!(trans instanceof TSaslServerTransport)) {
           throw new TException("Unexpected non-SASL transport " + trans.getClass());
@@ -613,8 +613,7 @@ public abstract class HadoopThriftAuthBridge {
         userAuthMechanism.set(mechanismName);
         if (AuthMethod.PLAIN.getMechanismName().equalsIgnoreCase(mechanismName)) {
           remoteUser.set(endUser);
-          wrapped.process(inProt, outProt);
-          return;
+          return wrapped.process(inProt, outProt);
         }
 
         authenticationMethod.set(AuthenticationMethod.KERBEROS);
@@ -636,26 +635,23 @@ public abstract class HadoopThriftAuthBridge {
                 endUser, UserGroupInformation.getLoginUser());
             remoteUser.set(clientUgi.getShortUserName());
             LOG.debug("Set remoteUser :" + remoteUser.get());
-            clientUgi.doAs(new PrivilegedExceptionAction<Boolean>() {
+            return clientUgi.doAs(new PrivilegedExceptionAction<Boolean>() {
 
               @Override
               public Boolean run() {
                 try {
-                  wrapped.process(inProt, outProt);
-                  return true;
+                  return wrapped.process(inProt, outProt);
                 } catch (TException te) {
                   throw new RuntimeException(te);
                 }
               }
             });
-            return;
           } else {
             // use the short user name for the request
             UserGroupInformation endUserUgi = UserGroupInformation.createRemoteUser(endUser);
             remoteUser.set(endUserUgi.getShortUserName());
             LOG.debug("Set remoteUser :" + remoteUser.get() + ", from endUser :" + endUser);
-            wrapped.process(inProt, outProt);
-            return;
+            return wrapped.process(inProt, outProt);
           }
         } catch (RuntimeException rte) {
           if (rte.getCause() instanceof TException) {
