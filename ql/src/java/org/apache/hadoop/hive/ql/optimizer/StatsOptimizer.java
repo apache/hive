@@ -400,7 +400,7 @@ public class StatsOptimizer extends Transform {
             // return null for SUM(1), when the table is empty. Without this, category = LONG, and the result is 0
             // instead of NULL.
             if (desc instanceof ExprNodeConstantDesc && rowCnt == 0) {
-              return null;
+              return oneRow.add(null);
             }
             PrimitiveCategory category = GenericUDAFSum.getReturnType(desc.getTypeInfo());
             if (category == null) {
