@@ -1332,6 +1332,13 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     shell.executeStatement(insert);
 
     checkColStat(identifier.name(), "customer_id", true);
+    checkColStatMinMaxValue(identifier.name(), "customer_id", 0, 2);
+
+    insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS, identifier, false);
+    shell.executeStatement(insert);
+
+    checkColStat(identifier.name(), "customer_id", true);
+    checkColStatMinMaxValue(identifier.name(), "customer_id", 0, 5);
   }
 
   @Test
@@ -1342,10 +1349,12 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
 
-    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, true);
+    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS, identifier,
+        true);
     shell.executeStatement(insert);
 
     checkColStat(identifier.name(), "customer_id", true);
+    checkColStatMinMaxValue(identifier.name(), "customer_id", 3, 5);
   }
 
   @Test
@@ -1368,6 +1377,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
     checkColStat("customers", "customer_id", true);
     checkColStat("customers", "first_name", true);
+    checkColStatMinMaxValue(identifier.name(), "customer_id", 0, 2);
   }
 
   @Test
@@ -1385,6 +1395,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
         TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
 
     checkColStat("target", "id", true);
+    checkColStatMinMaxValue("target", "customer_id", 0, 2);
   }
 
   @Test
@@ -1399,6 +1410,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     shell.executeStatement(insert);
 
     checkColStat(identifier.name(), "customer_id", true);
+    checkColStatMinMaxValue(identifier.name(), "customer_id", 0, 2);
 
     // Create a Catalog where the KEEP_HIVE_STATS is false
     shell.metastore().hiveConf().set(HiveTableOperations.KEEP_HIVE_STATS, StatsSetupConst.FALSE);
@@ -1418,6 +1430,18 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     Assert.assertEquals(2, rows.size());
     Assert.assertEquals(StatsSetupConst.COLUMN_STATS_ACCURATE, rows.get(1)[0]);
     Assert.assertEquals(accurate, !rows.get(1)[1].toString().matches("\\{\\}\\s*"));
+  }
+
+  private void checkColStatMinMaxValue(String tableName, String colName, int minValue, int maxValue) {
+    List<Object[]> rows = shell.executeStatement("DESCRIBE FORMATTED " + tableName + " " + colName);
+
+    // Check min
+    Assert.assertEquals("min", rows.get(2)[0]);
+    Assert.assertEquals(String.valueOf(minValue), rows.get(2)[1]);
+
+    // Check max
+    Assert.assertEquals("max", rows.get(3)[0]);
+    Assert.assertEquals(String.valueOf(maxValue), rows.get(3)[1]);
   }
 
   private void testComplexTypeWrite(Schema schema, List<Record> records) throws IOException {
