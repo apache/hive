@@ -318,9 +318,12 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new Exception(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getMsg());
       }
 
-      Database targetDb = Hive.get(conf).getDatabase(replScope.getDbName());
-      if (targetDb != null && MetaStoreUtils.isDbReplIncompatible(targetDb)) {
-        throw new SemanticException("Target Database: " + replScope.getDbName() + " is replication incompatible.");
+      String targetDb = replScope.getDbName();
+      if (targetDb != null) {
+        Database db = Hive.get(conf).getDatabase(targetDb);
+        if (db != null && MetaStoreUtils.isDbReplIncompatible(db)) {
+          throw new SemanticException("Target Database: " + replScope.getDbName() + " is replication incompatible.");
+        }
       }
 
       if (loadPath != null) {
