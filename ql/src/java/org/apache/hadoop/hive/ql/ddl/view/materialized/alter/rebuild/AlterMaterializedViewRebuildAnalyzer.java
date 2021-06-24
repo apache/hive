@@ -312,6 +312,8 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
           }
         }
       } else if (materialization.isSourceTablesUpdateDeleteModified()) {
+        // calcitePreMVRewritingPlan is already got the optimizations by applyPreJoinOrderingTransforms prior calling
+        // applyMaterializedViewRewriting in CalcitePlanner.CalcitePlannerAction.apply
         return calcitePreMVRewritingPlan;
       } else {
         return applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
@@ -380,6 +382,10 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
             HiveRelOptMaterialization materialization, RelNode calcitePreMVRewritingPlan) {
 
       if (materialization.isSourceTablesUpdateDeleteModified()) {
+        // TODO: Create rewrite rule to transform the plan to partition based incremental rebuild
+        // addressing deleted records. The rule should enable fetching deleted rows and count deleted records
+        // with a negative sign when calculating sum and count functions in top aggregate.
+        // This type of rewrite also requires the existence of count(*) function call in view definition.
         return calcitePreMVRewritingPlan;
       }
 
