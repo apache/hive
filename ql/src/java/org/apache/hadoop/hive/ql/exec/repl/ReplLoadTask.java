@@ -124,6 +124,11 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     try {
       long loadTaskStartTime = System.currentTimeMillis();
       SecurityUtils.reloginExpiringKeytabUser();
+      //Don't proceed if target db is replication incompatible.
+      Database targetDb = getHive().getDatabase(work.dbNameToLoadIn);
+      if (targetDb != null && MetaStoreUtils.isDbReplIncompatible(targetDb)) {
+        throw new SemanticException(ErrorMsg.REPL_INCOMPATIBLE_EXCEPTION.getMsg());
+      }
       Task<?> rootTask = work.getRootTask();
       if (rootTask != null) {
         rootTask.setChildTasks(null);

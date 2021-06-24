@@ -167,8 +167,13 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     txnHandler.abortTxn(new AbortTxnRequest(targetTxnId));
     assertTrue(MetaStoreUtils.isDbReplIncompatible(replica.getDatabase(replicatedDbName)));
 
-    primary.dump(primaryDbName);
+    WarehouseInstance.Tuple dumpData = primary.dump(primaryDbName);
+
+    assertFalse(ReplUtils.failedWithNonRecoverableError(new Path(dumpData.dumpLocation), conf));
     replica.loadFailure(replicatedDbName, primaryDbName);
+    assertTrue(ReplUtils.failedWithNonRecoverableError(new Path(dumpData.dumpLocation), conf));
+
+    primary.dumpFailure(primaryDbName);
   }
 
   @Test
