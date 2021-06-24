@@ -26,7 +26,7 @@ SELECT b, sum(sumc), a FROM (
     UNION ALL
     SELECT b, sum(c) sumc, a FROM t1 WHERE ROW__ID.writeId > 1 GROUP BY b, a
 ) sub
-GROUP BY a, b
+GROUP BY b, a
 ORDER BY a, b;
 
 EXPLAIN CBO
