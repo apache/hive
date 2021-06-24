@@ -2939,9 +2939,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     boolean isReplicated = false;
     try {
       ms.openTransaction();
+
+      // HIVE-25282: Drop/Alter table in REMOTE db should fail
       db = ms.getDatabase(catName, dbname);
       if (db.getType() == DatabaseType.REMOTE) {
-        return DataConnectorProviderFactory.getDataConnectorProvider(db).dropTable(name);
+        throw new MetaException("Drop table in REMOTE database " + db.getName() + " is not allowed");
       }
       isReplicated = isDbReplicationTarget(db);
 
@@ -5922,7 +5924,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   private void alter_table_core(String catName, String dbname, String name, Table newTable,
                                 EnvironmentContext envContext, String validWriteIdList, List<String> processorCapabilities, String processorId)
-      throws InvalidOperationException, MetaException {
+          throws InvalidOperationException, MetaException {
     startFunction("alter_table", ": " + TableName.getQualified(catName, dbname, name)
         + " newtbl=" + newTable.getTableName());
     if (envContext == null) {
@@ -5930,6 +5932,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
     if (catName == null) {
       catName = MetaStoreUtils.getDefaultCatalog(conf);
+    }
+
+    // HIVE-25282: Drop/Alter table in REMOTE db should fail
+    try {
+      Database db = get_database_core(catName, dbname);
+      if (db != null && db.getType().equals(DatabaseType.REMOTE)) {
+        throw new MetaException("Alter table in REMOTE database " + db.getName() + " is not allowed");
+      }
+    } catch (NoSuchObjectException e) {
+      throw new InvalidOperationException("Alter table in REMOTE database is not allowed");
     }
 
     // Update the time if it hasn't been specified.
