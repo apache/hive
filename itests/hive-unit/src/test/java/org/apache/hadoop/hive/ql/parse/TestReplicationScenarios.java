@@ -4283,6 +4283,43 @@ public class TestReplicationScenarios {
   }
 
   @Test
+  public void testDDLTasksInParallel() throws Throwable {
+    // Clean up configurations
+    driver.getConf().set(JobContext.JOB_NAME, "");
+    driverMirror.getConf().set(JobContext.JOB_NAME, "");
+    driverMirror.getConf().set(HiveConf.ConfVars.EXECPARALLEL.varname, "true");
+    // Get the logger at the root level.
+    Logger logger = LogManager.getLogger("hive.ql.metadata.Hive");
+    Level oldLevel = logger.getLevel();
+    LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+    Configuration config = ctx.getConfiguration();
+    LoggerConfig loggerConfig = config.getLoggerConfig(logger.getName());
+    loggerConfig.setLevel(Level.DEBUG);
+    ctx.updateLoggers();
+    // Create a String Appender to capture log output
+
+    StringAppender appender = StringAppender.createStringAppender("%m");
+    appender.addToLogger(logger.getName(), Level.DEBUG);
+    appender.start();
+    String testName = "testDatabaseInJobName";
+    String dbName = createDB(testName, driver);
+    String replDbName = dbName + "_dupe";
+
+    run("CREATE TABLE " + dbName + ".t1 (id int)", driver);
+    run("insert into table " + dbName + ".t1 values ('1')", driver);
+    run("CREATE TABLE " + dbName + ".t2 (id int)", driver);
+    run("insert into table " + dbName + ".t2 values ('2')", driver);
+
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+    assertTrue(appender.getOutput().contains("Starting task [Stage-0:DDL] in parallel"));
+    assertTrue(appender.getOutput().contains("Starting task [Stage-5:DDL] in parallel"));
+    loggerConfig.setLevel(oldLevel);
+    ctx.updateLoggers();
+    appender.removeFromLogger(logger.getName());
+  }
+
+  @Test
   public void testRecycleFileNonReplDatabase() throws IOException {
     String dbName = createDBNonRepl(testName.getMethodName(), driver);
 
