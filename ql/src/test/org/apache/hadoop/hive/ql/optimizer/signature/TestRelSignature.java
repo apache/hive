@@ -29,6 +29,7 @@ import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.logical.LogicalTableScan;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
@@ -50,9 +51,12 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import java.util.Collections;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestRelSignature {
@@ -85,6 +89,8 @@ public class TestRelSignature {
     RexBuilder rexBuilder = new RexBuilder(typeFactory);
     final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
     RelDataType rowTypeMock = typeFactory.createStructType(MyRecord.class);
+    LogicalTableScan tableScan = LogicalTableScan.create(optCluster, tableMock, Collections.emptyList());
+    doReturn(tableScan).when(tableMock).toRel(ArgumentMatchers.any());
     doReturn(rowTypeMock).when(tableMock).getRowType();
     doReturn(tableMock).when(schemaMock).getTableForMember(Matchers.any());
     lenient().doReturn(hiveTableMDMock).when(tableMock).getHiveTableMD();

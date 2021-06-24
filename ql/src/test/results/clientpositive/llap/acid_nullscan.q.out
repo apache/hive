@@ -37,8 +37,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_vectorized_n1
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT SUM(`a`) AS `$f0`
+FROM (SELECT `a`
 FROM `default`.`acid_vectorized_n1`
-LIMIT 0
+LIMIT 0) AS `t0`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

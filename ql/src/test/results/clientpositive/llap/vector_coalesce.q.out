@@ -257,6 +257,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -272,11 +274,11 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [14, 15, 16]
-                            selectExpressions: ConstantVectorExpression(val null) -> 14:float, ConstantVectorExpression(val null) -> 15:bigint, ConstantVectorExpression(val 0.0) -> 16:float
-                          File Sink Vectorization:
-                              className: VectorFileSinkOperator
-                              native: false
+                            projectedOutputColumnNums: []
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkEmptyKeyOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -285,9 +287,29 @@ STAGE PLANS:
                 inputFormatFeatureSupport: [DECIMAL_64]
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
+            Reduce Operator Tree:
+                Limit Vectorization:
+                    className: VectorLimitOperator
+                    native: true
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [0, 1, 2]
+                      selectExpressions: ConstantVectorExpression(val null) -> 0:float, ConstantVectorExpression(val null) -> 1:bigint, ConstantVectorExpression(val 0.0) -> 2:float
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
 
   Stage: Stage-0
     Fetch Operator
@@ -456,6 +478,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -471,11 +495,11 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [14, 15, 16]
-                            selectExpressions: ConstantVectorExpression(val null) -> 14:float, ConstantVectorExpression(val null) -> 15:bigint, ConstantVectorExpression(val null) -> 16:float
-                          File Sink Vectorization:
-                              className: VectorFileSinkOperator
-                              native: false
+                            projectedOutputColumnNums: []
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkEmptyKeyOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -484,9 +508,29 @@ STAGE PLANS:
                 inputFormatFeatureSupport: [DECIMAL_64]
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
+            Reduce Operator Tree:
+                Limit Vectorization:
+                    className: VectorLimitOperator
+                    native: true
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [0, 1, 2]
+                      selectExpressions: ConstantVectorExpression(val null) -> 0:float, ConstantVectorExpression(val null) -> 1:bigint, ConstantVectorExpression(val null) -> 2:float
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
 
   Stage: Stage-0
     Fetch Operator
