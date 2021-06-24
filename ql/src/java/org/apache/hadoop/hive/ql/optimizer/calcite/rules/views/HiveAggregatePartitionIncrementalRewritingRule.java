@@ -16,7 +16,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;/*
  * limitations under the License.
  */
 
-import com.google.common.collect.ImmutableList;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
@@ -30,7 +29,6 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.rex.RexUtil;
-import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
@@ -58,13 +56,13 @@ import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.findRe
  * 2. Query all rows from MV which are in any of the partitions queried in 1.
  * 3. Take the union of rows from 1. and 2. and perform the same aggregations defined in the MV
  *
- * SELECT b, sum(sumc), a FROM (
- *     SELECT b, sumc, a FROM mat1
- *     LEFT SEMI JOIN (SELECT b, sum(c), a FROM t1 WHERE ROW__ID.writeId > 1 GROUP BY b, a) q ON (mat1.a <=> q.a)
+ * SELECT a, b, sum(sumc) FROM (
+ *     SELECT a, b, sumc FROM mat1
+ *     LEFT SEMI JOIN (SELECT a, b, sum(c) FROM t1 WHERE ROW__ID.writeId > 1 GROUP BY b, a) q ON (mat1.a <=> q.a)
  *     UNION ALL
- *     SELECT b, sum(c) sumc, a FROM t1 WHERE ROW__ID.writeId > 1 GROUP BY b, a
+ *     SELECT a, b, sum(c) sumc FROM t1 WHERE ROW__ID.writeId > 1 GROUP BY b, a
  * ) sub
- * GROUP BY a, b
+ * GROUP BY b, a
  */
 public class HiveAggregatePartitionIncrementalRewritingRule extends RelOptRule {
   private static final Logger LOG = LoggerFactory.getLogger(HiveAggregatePartitionIncrementalRewritingRule.class);
