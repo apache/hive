@@ -121,13 +121,13 @@ public final class HiveRewriteToDataSketchesRules {
       for (int i = 0; i < vb.newProjectsBelow.size(); i++) {
         fieldNames.add("ff_" + i);
       }
-      RelNode newProjectBelow = projectFactory.createProject(aggregate.getInput(), vb.newProjectsBelow, fieldNames);
+      RelNode newProjectBelow = projectFactory.createProject(aggregate.getInput(), Collections.emptyList(), vb.newProjectsBelow, fieldNames);
 
       RelNode newAgg = aggregate.copy(aggregate.getTraitSet(), newProjectBelow, aggregate.getGroupSet(),
           aggregate.getGroupSets(), newAggCalls);
 
       RelNode newProject =
-          projectFactory.createProject(newAgg, vb.newProjectsAbove, aggregate.getRowType().getFieldNames());
+          projectFactory.createProject(newAgg, Collections.emptyList(), vb.newProjectsAbove, aggregate.getRowType().getFieldNames());
 
       call.transformTo(newProject);
       return;
@@ -339,7 +339,7 @@ public final class HiveRewriteToDataSketchesRules {
             && aggCall.getAggregation().getName().equalsIgnoreCase("percentile_disc")
             && !aggCall.hasFilter()) {
           List<Integer> argList = aggCall.getArgList();
-          RexNode orderLiteral = aggInput.getChildExps().get(argList.get(2));
+          RexNode orderLiteral = aggInput.getProjects().get(argList.get(2));
           if (orderLiteral.isA(SqlKind.LITERAL)) {
             RexLiteral lit = (RexLiteral) orderLiteral;
             return BigDecimal.valueOf(1).equals(lit.getValue());
@@ -376,7 +376,7 @@ public final class HiveRewriteToDataSketchesRules {
             collation, type, name);
 
         Integer origFractionIdx = aggCall.getArgList().get(0);
-        RexNode fraction = aggInput.getChildExps().get(origFractionIdx);
+        RexNode fraction = aggInput.getProjects().get(origFractionIdx);
         fraction = rexBuilder.makeCast(floatType, fraction);
 
         SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_QUANTILE);
@@ -440,7 +440,7 @@ public final class HiveRewriteToDataSketchesRules {
         relBuilder.push(origInput);
         RexShuttle shuttle = new ProcessShuttle();
         List<RexNode> newProjects = new ArrayList<RexNode>();
-        for (RexNode expr : project.getChildExps()) {
+        for (RexNode expr : project.getProjects()) {
           newProjects.add(expr.accept(shuttle));
         }
         if (relBuilder.peek() == origInput) {

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import com.google.common.base.Preconditions;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -487,7 +488,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
       projects.add(RexInputRef.of2(arg, childFields));
     }
     final RelNode project =
-        projFactory.createProject(child, Pair.left(projects), Pair.right(projects));
+        projFactory.createProject(child, Collections.emptyList(), Pair.left(projects), Pair.right(projects));
 
     // Get the distinct values of the GROUP BY fields and the arguments
     // to the agg functions.
