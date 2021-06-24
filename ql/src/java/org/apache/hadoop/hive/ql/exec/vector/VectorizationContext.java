@@ -1462,9 +1462,12 @@ import com.google.common.annotations.VisibleForTesting;
                    || arg0Type(expr).equals("double")
                    || arg0Type(expr).equals("float"))) {
       return true;
-    } else {
-      return gudf instanceof GenericUDFBetween && (mode == VectorExpressionDescriptor.Mode.PROJECTION);
+    } else if (gudf instanceof GenericUDFBetween && (mode == VectorExpressionDescriptor.Mode.PROJECTION)) {
+      return true;
+    } else if (gudf instanceof GenericUDFConcat && (mode == VectorExpressionDescriptor.Mode.PROJECTION)) {
+      return true;
     }
+    return false;
   }
 
   public static boolean isCastToIntFamily(Class<? extends UDF> udfClass) {
