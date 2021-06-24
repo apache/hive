@@ -25,6 +25,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@masking_test_n_mv
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_view_n_mv
+POSTHOOK: Lineage: masking_test_view_n_mv.col0 EXPRESSION [(masking_test_n_mv)masking_test_n_mv.FieldSchema(name:key, type:int, comment:null), (masking_test_n_mv)masking_test_n_mv.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain cbo
 select col0 from (select cast(key as string) col0 from `masking_test_n_mv` union select value col0 from `masking_test_n_mv`) sub
 PREHOOK: type: QUERY
@@ -61,6 +62,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@masking_test_n_mv
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_view_n_mv_masked
+POSTHOOK: Lineage: masking_test_view_n_mv_masked.col0 EXPRESSION [(masking_test_n_mv)masking_test_n_mv.FieldSchema(name:key, type:int, comment:null), (masking_test_n_mv)masking_test_n_mv.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain cbo
 select col0 from (select cast(key as string) col0 from `masking_test_n_mv` union select value col0 from `masking_test_n_mv`) sub
 PREHOOK: type: QUERY
