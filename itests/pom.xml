@@ -532,8 +532,8 @@
             <phase>install</phase>
             <configuration>
               <tasks>
-                <copy todir="${hive.path.to.root}/itests/qtest/target">
-                  <fileset dir="${hive.path.to.root}/data/files/dataconnector_derbydb" />
+                <copy todir="${hive.path.to.root}/itests/qtest/target/db_for_connectortest.db">
+                  <fileset dir="${hive.path.to.root}/data/files/dataconnector_derbydb/db_for_connectortest.db" />
                 </copy>
               </tasks>
             </configuration>

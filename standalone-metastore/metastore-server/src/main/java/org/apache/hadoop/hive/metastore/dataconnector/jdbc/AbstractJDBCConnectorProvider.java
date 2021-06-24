@@ -215,7 +215,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       }
 
       table = buildTableFromColsList(tableName, cols);
-      table.setDbName(scoped_db);
+      //table.setDbName(scoped_db);
       //Setting the table properties.
       table.getParameters().put(JDBC_DATABASE_TYPE, this.type);
       table.getParameters().put(JDBC_DRIVER, this.driverClassName);
