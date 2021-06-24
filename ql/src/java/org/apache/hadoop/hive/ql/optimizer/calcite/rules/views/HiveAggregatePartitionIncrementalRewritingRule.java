@@ -119,7 +119,7 @@ public class HiveAggregatePartitionIncrementalRewritingRule extends RelOptRule {
     }
 
     if (partitionColumnCount == 0 || partitionColumnIndexes.size() != partitionColumnCount) {
-      LOG.debug("Could not found all partition column lineages, bail out.");
+      LOG.debug("Could not find all partition column lineages, bail out.");
       return;
     }
 
