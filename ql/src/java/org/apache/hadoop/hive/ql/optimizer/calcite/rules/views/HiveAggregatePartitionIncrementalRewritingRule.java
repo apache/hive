@@ -109,7 +109,8 @@ public class HiveAggregatePartitionIncrementalRewritingRule extends RelOptRule {
       RexTableInputRef tableInputRef = tableInputRefs.iterator().next();
       RelOptHiveTable relOptHiveTable = (RelOptHiveTable) tableInputRef.getTableRef().getTable();
       if (!(relOptHiveTable.getHiveTableMD().isMaterializedView())) {
-        continue;
+        LOG.warn("{} is not a materialized view, bail out.", relOptHiveTable.getQualifiedName());
+        return;
       }
 
       partitionColumnCount = relOptHiveTable.getPartColInfoMap().size();
