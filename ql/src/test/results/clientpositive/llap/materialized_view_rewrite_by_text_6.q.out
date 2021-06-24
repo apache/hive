@@ -49,6 +49,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mat1
+POSTHOOK: Lineage: mat1.col0 EXPRESSION []
 PREHOOK: query: create materialized view mat2 as
 select col0 from t1 where col0 = 3
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -61,6 +62,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mat2
+POSTHOOK: Lineage: mat2.col0 SIMPLE []
 Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo
 select col0 from t2 where exists (
