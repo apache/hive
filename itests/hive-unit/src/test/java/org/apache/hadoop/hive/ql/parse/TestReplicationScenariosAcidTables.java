@@ -187,6 +187,12 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
               SOURCE_OF_REPLICATION + "' = '1,2,3')");
       primary.hiveConf.set("hive.txn.readonly.enabled", "true");
       primary.run("CREATE TABLE " + dbName + ".t1 (id int)");
+      primary.run("CREATE table " + dbName
+              + ".source (q1 int , a1 int) stored as orc tblproperties (\"transactional\"=\"true\")");
+      primary.run("CREATE table " + dbName
+              + ".target (b int, p int) stored as orc tblproperties (\"transactional\"=\"true\")");
+      primary.run("INSERT into " + dbName + ".source values(1,5)");
+      primary.run("INSERT into " + dbName + ".target values(10,1)");
       primary.dump(dbName);
       replica.run("REPL LOAD " + dbName + " INTO " + replDbName);
       //Perform empty incremental dump and load so that all db level properties are altered.
@@ -204,6 +210,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
       primary.run("EXPLAIN SELECT * from " + dbName + ".t1");
       primary.run("SHOW LOCKS");
       primary.run("EXPLAIN SHOW LOCKS");
+      primary.run("EXPLAIN LOCKS UPDATE target SET b = 1 WHERE p IN (SELECT t.q1 FROM source t WHERE t.a1=5)");
       long currentEventId = primary.getCurrentNotificationEventId().getEventId();
       Assert.assertEquals(lastEventId, currentEventId);
     } finally {
