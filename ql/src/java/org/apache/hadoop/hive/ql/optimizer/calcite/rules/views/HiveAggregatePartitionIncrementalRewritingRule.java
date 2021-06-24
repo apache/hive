@@ -72,7 +72,7 @@ public class HiveAggregatePartitionIncrementalRewritingRule extends RelOptRule {
 
   private HiveAggregatePartitionIncrementalRewritingRule() {
     super(operand(Aggregate.class, operand(Union.class, any())),
-            HiveRelFactories.HIVE_BUILDER, "HiveJoinPartitionIncrementalRewritingRule");
+            HiveRelFactories.HIVE_BUILDER, "HiveAggregatePartitionIncrementalRewritingRule");
   }
 
   @Override
