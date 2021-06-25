@@ -71,21 +71,13 @@ public class ColumnStatsAutoGatherContext {
   private Context origCtx;
   
   public ColumnStatsAutoGatherContext(SemanticAnalyzer sa, HiveConf conf,
-      Operator<? extends OperatorDesc> op, Table origTbl, Map<String, String> partSpec,
+      Operator<? extends OperatorDesc> op, Table tbl, Map<String, String> partSpec,
       boolean isInsertInto, Context ctx) throws SemanticException {
     super();
     this.sa = sa;
     this.conf = conf;
     this.op = op;
-    try {
-      this.tbl = origTbl.copy();
-    } catch (HiveException he) {
-      throw new SemanticException(he);
-    }
-    if (tbl.getStorageHandler() !=null && tbl.getStorageHandler().alwaysUnpartitioned()) {
-      tbl.getSd().getCols().addAll(tbl.getPartCols());
-      tbl.getPartCols().clear();
-    }
+    this.tbl = tbl;
     this.partSpec = partSpec;
     this.isInsertInto = isInsertInto;
     this.origCtx = ctx;

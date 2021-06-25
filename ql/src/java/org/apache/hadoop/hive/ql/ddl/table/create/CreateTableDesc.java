@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
@@ -740,10 +741,6 @@ public class CreateTableDesc implements DDLDesc, Serializable {
       tbl.getTTable().getParameters().putAll(getTblProps());
     }
 
-    if (getPartCols() != null) {
-      tbl.setPartCols(getPartCols());
-    }
-
     if (getNumBuckets() != -1) {
       tbl.setNumBuckets(getNumBuckets());
     }
@@ -804,9 +801,22 @@ public class CreateTableDesc implements DDLDesc, Serializable {
       }
     }
 
-    if (getCols() != null) {
-      tbl.setFields(getCols());
+    Optional<List<FieldSchema>> cols = Optional.of(getCols());
+    Optional<List<FieldSchema>> partCols = Optional.of(getPartCols());
+
+    if (storageHandler !=null && storageHandler.alwaysUnpartitioned()) {
+      cols.ifPresent(c -> tbl.getSd().getCols().addAll(c));
+      partCols.ifPresent(c -> tbl.getSd().getCols().addAll(c));
+    } else {
+      if (getPartCols() != null) {
+        tbl.setPartCols(getPartCols());
+      }
+
+      if (getCols() != null) {
+        tbl.setFields(getCols());
+      }
     }
+
     if (getBucketCols() != null) {
       tbl.setBucketCols(getBucketCols());
     }
