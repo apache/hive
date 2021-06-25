@@ -16,9 +16,4 @@ WITH DCPROPERTIES (
 "hive.sql.dbcp.password"="mine")
 POSTHOOK: type: CREATEDATACONNECTOR
 POSTHOOK: Output: connector:derby_auth
-PREHOOK: query: SHOW CONNECTORS
-PREHOOK: type: SHOWDATACONNECTORS
-POSTHOOK: query: SHOW CONNECTORS
-POSTHOOK: type: SHOWDATACONNECTORS
-derby_auth
 FAILED: HiveAccessControlException Permission denied: Principal [name=hive_test_user, type=USER] does not have following privileges for operation ALTERDATACONNECTOR [[ADMIN PRIVILEGE] on Object [type=DATACONNECTOR, name=derby_auth]]

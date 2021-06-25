@@ -10,8 +10,5 @@ WITH DCPROPERTIES (
 -- test data connector authorization feature
 SET hive.security.authorization.enabled=true;
 
--- SHOW succeed
-SHOW CONNECTORS;
-
 -- DROP fail
 DROP CONNECTOR derby_auth;
