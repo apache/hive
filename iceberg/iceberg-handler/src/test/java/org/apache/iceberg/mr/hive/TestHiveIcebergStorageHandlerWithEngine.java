@@ -1916,6 +1916,25 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     checkColStat("target", "id");
   }
 
+  @Test
+  public void testStatWithPartitionedCTAS() {
+    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
+    shell.executeStatement(testTables.getInsertQuery(
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+
+    shell.executeStatement(String.format(
+        "CREATE TABLE target PARTITIONED BY (dept, name) " +
+        "STORED BY ICEBERG TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source s",
+        TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
+
+    checkColStat("target", "id");
+    checkColStat("target", "dept");
+  }
+
   private void checkColStat(String tableName, String colName) {
     List<Object[]> rows = shell.executeStatement("DESCRIBE " + tableName + " " + colName);
 
