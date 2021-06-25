@@ -805,16 +805,12 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     Optional<List<FieldSchema>> partCols = Optional.of(getPartCols());
 
     if (storageHandler !=null && storageHandler.alwaysUnpartitioned()) {
+      tbl.getSd().setCols(new ArrayList<>());
       cols.ifPresent(c -> tbl.getSd().getCols().addAll(c));
       partCols.ifPresent(c -> tbl.getSd().getCols().addAll(c));
     } else {
-      if (getPartCols() != null) {
-        tbl.setPartCols(getPartCols());
-      }
-
-      if (getCols() != null) {
-        tbl.setFields(getCols());
-      }
+      cols.ifPresent(c -> tbl.setFields(c));
+      partCols.ifPresent(c -> tbl.setPartCols(c));
     }
 
     if (getBucketCols() != null) {
