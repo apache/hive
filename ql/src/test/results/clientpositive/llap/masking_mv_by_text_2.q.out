@@ -45,7 +45,7 @@ HiveAggregate(group=[{0}])
       HiveProject(col0=[CAST($0):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
         HiveFilter(condition=[AND(<($0, 10), =(MOD($0, 2), 0))])
           HiveTableScan(table=[[default, masking_test_n_mv]], table:alias=[masking_test_n_mv])
-      HiveProject(value=[reverse($1)])
+      HiveProject(col0=[reverse($1)])
         HiveFilter(condition=[AND(<($0, 10), =(MOD($0, 2), 0))])
           HiveTableScan(table=[[default, masking_test_n_mv]], table:alias=[masking_test_n_mv])
 
