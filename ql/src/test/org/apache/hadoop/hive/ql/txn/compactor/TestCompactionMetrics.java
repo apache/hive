@@ -58,6 +58,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanInfo;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -680,29 +685,26 @@ public class TestCompactionMetrics  extends CompactorTest {
     DeltaFilesMetricReporter.getInstance().submit(tezCounters);
     Thread.sleep(1000);
 
-    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
-    Map<String, Gauge> gauges = metrics.getMetricRegistry().getGauges();
-
     Assert.assertTrue(
       equivalent(
         new HashMap<String, String>() {{
           put("acid_v2", "250");
           put("acid/p=1", "200");
-        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS, gauges)));
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS)));
 
     Assert.assertTrue(
       equivalent(
         new HashMap<String, String>() {{
           put("acid_v2", "200");
           put("acid/p=3", "250");
-        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS, gauges)));
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS)));
 
     Assert.assertTrue(
       equivalent(
         new HashMap<String, String>() {{
           put("acid/p=1", "250");
           put("acid/p=2", "200");
-        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS, gauges)));
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS)));
 
     //time-out existing entries
     Thread.sleep(5000);
@@ -716,7 +718,7 @@ public class TestCompactionMetrics  extends CompactorTest {
       equivalent(
         new HashMap<String, String>() {{
           put("acid/p=2", "150");
-        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS, gauges)));
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS)));
 
     DeltaFilesMetricReporter.close();
   }
@@ -725,9 +727,16 @@ public class TestCompactionMetrics  extends CompactorTest {
     return lhs.size() == rhs.size() && Maps.difference(lhs, rhs).areEqual();
   }
 
-  static Map<String, String> gaugeToMap(String metric, Map<String, Gauge> gauges) {
-    String value = (String) gauges.get(metric).getValue();
-    return value.isEmpty()? Collections.emptyMap() : Splitter.on(',').withKeyValueSeparator("->").split(value);
+  static Map<String, String> gaugeToMap(String metric) throws Exception {
+    MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+    ObjectName oname = new ObjectName(DeltaFilesMetricReporter.OBJECT_NAME_PREFIX + metric);
+    MBeanInfo mbeanInfo = mbs.getMBeanInfo(oname);
+
+    Map<String, String> result = new HashMap<>();
+    for (MBeanAttributeInfo attr : mbeanInfo.getAttributes()) {
+      result.put(attr.getName(), String.valueOf(mbs.getAttribute(oname, attr.getName())));
+    }
+    return result;
   }
 
   @Test
