@@ -141,6 +141,7 @@ public final class HiveSchemaUtil {
    * those fields which are present in both (in terms of the name) but their type or comment has changed.
    * @param minuendCollection Collection of fields to subtract from
    * @param subtrahendCollection Collection of fields to subtract
+   * @param bothDirections Whether or not to compute the missing fields from the minuendCollection as well
    * @return the difference between the two schemas
    */
   public static SchemaDifference getSchemaDiff(Collection<FieldSchema> minuendCollection,
