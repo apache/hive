@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.ColumnPropagation
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateInsertDeleteIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateInsertIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregatePartitionIncrementalRewritingRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregatePartitionInsertDeleteIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinInsertDeleteIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveJoinInsertIncrementalRewritingRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializationRelMetadataProvider;
@@ -219,6 +220,10 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
         return calcitePreMVRewritingPlan;
       }
 
+      if (materialization.isSourceTablesCompacted()) {
+        return calcitePreMVRewritingPlan;
+      }
+
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
 
       // We need to expand IN/BETWEEN expressions when materialized view rewriting
@@ -260,18 +265,21 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       // A rewriting was produced, we will check whether it was part of an incremental rebuild
       // to try to replace INSERT OVERWRITE by INSERT or MERGE
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL)) {
-        if (materialization.isSourceTablesCompacted()) {
-          return calcitePreMVRewritingPlan;
-        }
-
         RelNode incrementalRebuildPlan = applyRecordIncrementalRebuildPlan(
                 basePlan, mdProvider, executorProvider, optCluster, calcitePreMVRewritingPlan, materialization);
         if (mvRebuildMode != MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD) {
           return incrementalRebuildPlan;
         }
 
-        return applyPartitionIncrementalRebuildPlan(
+        incrementalRebuildPlan = applyPartitionIncrementalRebuildPlan(
                 basePlan, mdProvider, executorProvider, materialization, calcitePreMVRewritingPlan);
+        if (incrementalRebuildPlan != null) {
+          return incrementalRebuildPlan;
+        }
+      }
+
+      if (materialization.isSourceTablesUpdateDeleteModified()) {
+        return calcitePreMVRewritingPlan;
       }
 
       // Now we trigger some needed optimization rules again
@@ -381,23 +389,18 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
             RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider,
             HiveRelOptMaterialization materialization, RelNode calcitePreMVRewritingPlan) {
 
-      if (materialization.isSourceTablesUpdateDeleteModified()) {
-        // TODO: Create rewrite rule to transform the plan to partition based incremental rebuild
-        // addressing deleted records. The rule should enable fetching deleted rows and count deleted records
-        // with a negative sign when calculating sum and count functions in top aggregate.
-        // This type of rewrite also requires the existence of count(*) function call in view definition.
-        return calcitePreMVRewritingPlan;
-      }
-
       RelOptHiveTable hiveTable = (RelOptHiveTable) materialization.tableRel.getTable();
       if (!AcidUtils.isInsertOnlyTable(hiveTable.getHiveTableMD())) {
         // TODO: plan may contains TS on fully ACID table and aggregate functions which are not supported the
         // record level incremental rewriting rules but partition based can be applied.
-        return applyPreJoinOrderingTransforms(basePlan, mdProvider, executorProvider);
+        return null;
       }
 
-      return applyIncrementalRebuild(
-              basePlan, mdProvider, executorProvider, HiveAggregatePartitionIncrementalRewritingRule.INSTANCE);
+      RelOptRule rebuildRule = materialization.isSourceTablesUpdateDeleteModified() ?
+              HiveAggregatePartitionInsertDeleteIncrementalRewritingRule.INSTANCE :
+              HiveAggregatePartitionIncrementalRewritingRule.INSTANCE;
+
+      return applyIncrementalRebuild(basePlan, mdProvider, executorProvider, rebuildRule);
     }
 
     private RelNode applyIncrementalRebuild(

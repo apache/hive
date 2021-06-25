@@ -33,6 +33,8 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveHepExtractRelNodeRule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This rule will perform a rewriting to prepare the plan for incremental
@@ -96,6 +98,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveHepExtractRelNodeRu
 public class HiveAggregateInsertDeleteIncrementalRewritingRule extends HiveAggregateIncrementalRewritingRuleBase<
         HiveAggregateInsertDeleteIncrementalRewritingRule.IncrementalComputePlanWithDeletedRows> {
 
+  private static final Logger LOG = LoggerFactory.getLogger(HiveAggregateInsertDeleteIncrementalRewritingRule.class);
+
   public static final HiveAggregateInsertDeleteIncrementalRewritingRule INSTANCE =
       new HiveAggregateInsertDeleteIncrementalRewritingRule();
 
@@ -107,8 +111,10 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends HiveAggre
 
   @Override
   protected IncrementalComputePlanWithDeletedRows createJoinRightInput(RelOptRuleCall call) {
-    RelBuilder relBuilder = call.builder();
-    Aggregate aggregate = call.rel(2);
+    return createJoinRightInput(call.rel(2), call.builder());
+  }
+
+  static IncrementalComputePlanWithDeletedRows createJoinRightInput(Aggregate aggregate, RelBuilder relBuilder) {
     RexBuilder rexBuilder = relBuilder.getRexBuilder();
     RelNode aggInput = aggregate.getInput();
 
@@ -161,6 +167,8 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends HiveAggre
     if (countIdx == -1) {
       // count(*) not found. It is required to determine if a group should be deleted from the view.
       // Can not rewrite, bail out;
+      LOG.debug("No count(*) found in materialized view definition. Can not perform incremental rebuild. " +
+              "Fall back to insert overwrite.");
       return null;
     }
 
@@ -182,6 +190,10 @@ public class HiveAggregateInsertDeleteIncrementalRewritingRule extends HiveAggre
     public IncrementalComputePlanWithDeletedRows(RelNode rightInput, int countStarIndex) {
       super(rightInput);
       this.countStarIndex = countStarIndex;
+    }
+
+    public int getCountStarIndex() {
+      return countStarIndex;
     }
   }
 
