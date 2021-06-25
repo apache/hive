@@ -138,49 +138,86 @@ public final class HiveSchemaUtil {
   }
 
   /**
-   * Returns only those field schemas from the minuendCollection, which appear in the subtrahendCollection by name, but
-   * have a different type in the minuendCollection than in the subtrahendCollection.
+   * Returns a SchemaDifference containing those fields which are present in only one of the collections, as well as
+   * those fields which are present in both (in terms of the name) but their type or comment has changed.
    * @param minuendCollection Collection of fields to subtract from
    * @param subtrahendCollection Collection of fields to subtract
-   * @return the result list of difference
+   * @return the difference between the two schemas
    */
-  public static Collection<FieldSchema> updatedTypeColumns(
-      Collection<FieldSchema> minuendCollection, Collection<FieldSchema> subtrahendCollection) {
-    BiPredicate<FieldSchema, FieldSchema> typeChanged = (first, second) ->
-        first.getName().equals(second.getName()) && !Objects.equals(first.getType(), second.getType());
-    return minuendCollection.stream()
-        .filter(first -> subtrahendCollection.stream().anyMatch(second -> typeChanged.test(first, second)))
-        .collect(Collectors.toList());
+  public static SchemaDifference getSchemaDiff(Collection<FieldSchema> minuendCollection,
+                                               Collection<FieldSchema> subtrahendCollection, boolean bothDirections) {
+    SchemaDifference difference = new SchemaDifference();
+
+    for (FieldSchema first : minuendCollection) {
+      boolean found = false;
+      for (FieldSchema second : subtrahendCollection) {
+        if (first.getName().equals(second.getName())) {
+          found = true;
+          if (!Objects.equals(first.getType(), second.getType())) {
+            difference.typeChanged(first);
+          }
+          if (!Objects.equals(first.getComment(), second.getComment())) {
+            difference.commentChanged(first);
+          }
+        }
+      }
+      if (!found) {
+        difference.missingFromSecond(first);
+      }
+    }
+
+    if (bothDirections) {
+      SchemaDifference otherWay = getSchemaDiff(subtrahendCollection, minuendCollection, false);
+      otherWay.missingFromSecond().forEach(difference::missingFromFirst);
+    }
+
+    return difference;
   }
 
-  /**
-   * Returns only those field schemas from the minuendCollection, which appear in the subtrahendCollection by name, but
-   * have a different comment in the minuendCollection than in the subtrahendCollection.
-   * @param minuendCollection Collection of fields to subtract from
-   * @param subtrahendCollection Collection of fields to subtract
-   * @return the result list of difference
-   */
-  public static Collection<FieldSchema> updatedCommentColumns(
-      Collection<FieldSchema> minuendCollection, Collection<FieldSchema> subtrahendCollection) {
-    BiPredicate<FieldSchema, FieldSchema> commentChanged = (first, second) ->
-        first.getName().equals(second.getName()) && !Objects.equals(first.getComment(), second.getComment());
-    return minuendCollection.stream()
-        .filter(first -> subtrahendCollection.stream().anyMatch(second -> commentChanged.test(first, second)))
-        .collect(Collectors.toList());
+  public static class SchemaDifference {
+    private final List<FieldSchema> missingFromFirst = new ArrayList<>();
+    private final List<FieldSchema> missingFromSecond = new ArrayList<>();
+    private final List<FieldSchema> typeChanged = new ArrayList<>();
+    private final List<FieldSchema> commentChanged = new ArrayList<>();
+
+    public List<FieldSchema> missingFromFirst() {
+      return missingFromFirst;
+    }
+
+    public List<FieldSchema> missingFromSecond() {
+      return missingFromSecond;
+    }
+
+    public List<FieldSchema> typeChanged() {
+      return typeChanged;
+    }
+
+    public List<FieldSchema> commentChanged() {
+      return commentChanged;
+    }
+
+    public boolean isEmpty() {
+      return missingFromFirst.isEmpty() && missingFromSecond.isEmpty() && typeChanged.isEmpty() &&
+          commentChanged.isEmpty();
+    }
+
+    void missingFromFirst(FieldSchema field) {
+      missingFromFirst.add(field);
+    }
+
+    void missingFromSecond(FieldSchema field) {
+      missingFromSecond.add(field);
+    }
+
+    void typeChanged(FieldSchema field) {
+      typeChanged.add(field);
+    }
+
+    void commentChanged(FieldSchema field) {
+      commentChanged.add(field);
+    }
   }
 
-  /**
-   * Returns only those field schemas from the minuendCollection, which don't appear in subtrahendCollection by name.
-   * @param minuendCollection Collection of fields to subtract from
-   * @param subtrahendCollection Collection of fields to subtract
-   * @return the result list of difference
-   */
-  public static Collection<FieldSchema> newColumns(
-      Collection<FieldSchema> minuendCollection, Collection<FieldSchema> subtrahendCollection) {
-    return minuendCollection.stream()
-        .filter(first -> subtrahendCollection.stream().noneMatch(second -> second.getName().equals(first.getName())))
-        .collect(Collectors.toList());
-  }
 
   private static String convertToTypeString(Type type) {
     switch (type.typeId()) {

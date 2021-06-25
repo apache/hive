@@ -254,8 +254,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     }
 
     if (AlterTableType.ADDCOLS.equals(currentAlterTableOp)) {
-      Collection<FieldSchema> addedCols =
-          HiveSchemaUtil.newColumns(hmsTable.getSd().getCols(), HiveSchemaUtil.convert(icebergTable.schema()));
+      Collection<FieldSchema> addedCols = HiveSchemaUtil.getSchemaDiff(
+          hmsTable.getSd().getCols(), HiveSchemaUtil.convert(icebergTable.schema()), false).missingFromSecond();
       if (!addedCols.isEmpty()) {
         updateSchema = icebergTable.updateSchema();
       }
@@ -267,21 +267,21 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         );
       }
     } else if (AlterTableType.REPLACE_COLUMNS.equals(currentAlterTableOp)) {
-      List<FieldSchema> icebergSchema = HiveSchemaUtil.convert(icebergTable.schema());
-      List<FieldSchema> hmsSchema = hmsTable.getSd().getCols();
-      Collection<FieldSchema> droppedCols = HiveSchemaUtil.newColumns(icebergSchema, hmsSchema);
-      Collection<FieldSchema> addedCols = HiveSchemaUtil.newColumns(hmsSchema, icebergSchema);
-      Collection<FieldSchema> typeUpdated = HiveSchemaUtil.updatedTypeColumns(hmsSchema, icebergSchema);
-      Collection<FieldSchema> commentUpdated = HiveSchemaUtil.updatedCommentColumns(hmsSchema, icebergSchema);
-      if (!droppedCols.isEmpty() || !addedCols.isEmpty() || !typeUpdated.isEmpty() || !commentUpdated.isEmpty()) {
+      HiveSchemaUtil.SchemaDifference schemaDifference = HiveSchemaUtil.getSchemaDiff(hmsTable.getSd().getCols(),
+          HiveSchemaUtil.convert(icebergTable.schema()), true);
+      if (!schemaDifference.isEmpty()) {
         updateSchema = icebergTable.updateSchema();
+      } else {
+        // we should get here if the user restated the exactly the existing columns in the REPLACE COLUMNS command
+        LOG.info("preAlterTable: Found no difference between new and old schema for ALTER TABLE REPLACE COLUMNS for" +
+            " table: {}. There will be no Iceberg commit.", hmsTable.getTableName());
       }
 
-      for (FieldSchema droppedCol : droppedCols) {
+      for (FieldSchema droppedCol : schemaDifference.missingFromFirst()) {
         updateSchema.deleteColumn(droppedCol.getName());
       }
 
-      for (FieldSchema addedCol : addedCols) {
+      for (FieldSchema addedCol : schemaDifference.missingFromSecond()) {
         updateSchema.addColumn(
             addedCol.getName(),
             HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType())),
@@ -289,7 +289,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         );
       }
 
-      for (FieldSchema updatedCol : typeUpdated) {
+      for (FieldSchema updatedCol : schemaDifference.typeChanged()) {
         Type newType = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(updatedCol.getType()));
         if (!(newType instanceof Type.PrimitiveType)) {
           throw new MetaException(String.format("Cannot promote type of column: '%s' to a non-primitive type: %s.",
@@ -298,7 +298,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         updateSchema.updateColumn(updatedCol.getName(), (Type.PrimitiveType) newType, updatedCol.getComment());
       }
 
-      for (FieldSchema updatedCol : commentUpdated) {
+      for (FieldSchema updatedCol : schemaDifference.commentChanged()) {
         updateSchema.updateColumnDoc(updatedCol.getName(), updatedCol.getComment());
       }
     }
