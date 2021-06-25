@@ -1085,7 +1085,6 @@ public class TestJdbcWithMiniHS2 {
    * Test for jdbc driver retry on NoHttpResponseException
    * @throws Exception
    */
-  @Ignore("Flaky test. Should be re-enabled in HIVE-19706")
   @Test
   public void testHttpRetryOnServerIdleTimeout() throws Exception {
     // Stop HiveServer2
