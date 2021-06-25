@@ -97,6 +97,7 @@ import static org.apache.hadoop.hive.metastore.utils.LockTypeUtil.getEncoding;
 /**
  * Tests for TxnHandler.
  */
+@org.junit.Ignore("HIVE-25290")
 public class TestTxnHandler {
   static final private String CLASS_NAME = TxnHandler.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
