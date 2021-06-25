@@ -82,7 +82,7 @@ public class ColumnStatsAutoGatherContext {
     } catch (HiveException he) {
       throw new SemanticException(he);
     }
-    if (tbl.getStorageHandler().alwaysUnpartitioned()) {
+    if (tbl.getStorageHandler() !=null && tbl.getStorageHandler().alwaysUnpartitioned()) {
       tbl.getSd().getCols().addAll(tbl.getPartCols());
       tbl.getPartCols().clear();
     }
