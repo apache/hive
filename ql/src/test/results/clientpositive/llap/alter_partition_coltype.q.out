@@ -130,7 +130,7 @@ POSTHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
 FROM `default`.`alter_coltype`
-WHERE `ts` = 6.3
+WHERE `ts` = 6.30
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
