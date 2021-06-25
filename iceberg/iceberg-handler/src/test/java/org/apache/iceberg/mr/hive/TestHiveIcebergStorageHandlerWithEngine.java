@@ -1925,7 +1925,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
 
     shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
-
     shell.executeStatement(String.format(
         "CREATE TABLE target PARTITIONED BY (dept, name) " +
         "STORED BY ICEBERG TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source s",
