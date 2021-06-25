@@ -10,8 +10,5 @@ WITH DCPROPERTIES (
 -- test data connector authorization feature
 SET hive.security.authorization.enabled=true;
 
--- SHOW succeed
-SHOW CONNECTORS;
-
 -- ALTER fail
 alter connector derby_auth set DCPROPERTIES("hive.sql.dbcp.username"="PPA", "hive.sql.dbcp.password"="yours");
