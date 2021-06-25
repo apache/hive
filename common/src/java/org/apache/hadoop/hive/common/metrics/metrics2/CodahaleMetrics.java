@@ -18,11 +18,31 @@
 
 package org.apache.hadoop.hive.common.metrics.metrics2;
 
-import com.codahale.metrics.ConsoleReporter;
+import java.io.Closeable;
+import java.lang.management.ManagementFactory;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
+import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.ExponentiallyDecayingReservoir;
 import com.codahale.metrics.Gauge;
-import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
@@ -35,7 +55,6 @@ import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.joshelser.dropwizard.metrics.hadoop.HadoopMetrics2Reporter;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -44,36 +63,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
-import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
-import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.BufferedWriter;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.lang.management.ManagementFactory;
-import java.net.URI;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import jline.internal.Log;
 
 /**
  * Codahale-backed Metrics implementation.
@@ -199,10 +189,8 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
 
   @Override
   public void close() throws Exception {
-    if (reporters != null) {
-      for (Closeable reporter : reporters) {
-        reporter.close();
-      }
+    for (Closeable reporter : reporters) {
+      reporter.close();
     }
     for (Map.Entry<String, Metric> metric : metricRegistry.getMetrics().entrySet()) {
       metricRegistry.remove(metric.getKey());
@@ -229,14 +217,6 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     }
   }
 
-  public MetricsScope getStoredScope(String name) throws IllegalArgumentException {
-    if (threadLocalScopes.get().containsKey(name)) {
-      return threadLocalScopes.get().get(name);
-    } else {
-      throw new IllegalArgumentException("No metrics scope named " + name);
-    }
-  }
-
   public MetricsScope createScope(String name) {
     return new CodahaleMetricsScope(name);
   }
@@ -257,8 +237,9 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
       countersLock.lock();
       counters.get(key).inc(increment);
       return counters.get(key).getCount();
-    } catch(ExecutionException ee) {
-      throw new IllegalStateException("Error retrieving counter from the metric registry ", ee);
+    } catch (ExecutionException ee) {
+      Log.warn("Error retrieving counter from the metric registry", ee);
+      return 0L;
     } finally {
       countersLock.unlock();
     }
@@ -277,7 +258,8 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
       counters.get(key).dec(decrement);
       return counters.get(key).getCount();
     } catch(ExecutionException ee) {
-      throw new IllegalStateException("Error retrieving counter from the metric registry ", ee);
+      Log.warn("Error retrieving counter from the metric registry", ee);
+      return 0L;
     } finally {
       countersLock.unlock();
     }
@@ -337,14 +319,12 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
 
   @Override
   public void markMeter(String name) {
-    String key = name;
     try {
       metersLock.lock();
       Meter meter = meters.get(name);
       meter.mark();
     } catch (ExecutionException e) {
-      throw new IllegalStateException("Error retrieving meter " + name
-          + " from the metric registry ", e);
+      Log.warn("Error retrieving meter {} from the metric registry", name, e);
     } finally {
       metersLock.unlock();
     }

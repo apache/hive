@@ -301,14 +301,12 @@ public class DeltaFilesMetricReporter {
     @Override
     public void run() {
       Metrics metrics = MetricsFactory.getInstance();
-      if (metrics != null) {
-        obsoleteDeltaCache.cleanUp();
-        metrics.addGauge(COMPACTION_NUM_OBSOLETE_DELTAS, getVariable(obsoleteDeltaCache));
-        deltaCache.cleanUp();
-        metrics.addGauge(COMPACTION_NUM_DELTAS, getVariable(deltaCache));
-        smallDeltaCache.cleanUp();
-        metrics.addGauge(COMPACTION_NUM_SMALL_DELTAS, getVariable(smallDeltaCache));
-      }
+      obsoleteDeltaCache.cleanUp();
+      metrics.addGauge(COMPACTION_NUM_OBSOLETE_DELTAS, getVariable(obsoleteDeltaCache));
+      deltaCache.cleanUp();
+      metrics.addGauge(COMPACTION_NUM_DELTAS, getVariable(deltaCache));
+      smallDeltaCache.cleanUp();
+      metrics.addGauge(COMPACTION_NUM_SMALL_DELTAS, getVariable(smallDeltaCache));
     }
 
     @NotNull

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.lockmgr.zookeeper;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -453,24 +452,16 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
         return null;
       }
     }
-    Metrics metrics = MetricsFactory.getInstance();
-    if (metrics != null) {
-      try {
-        switch(mode) {
-        case EXCLUSIVE:
-          metrics.incrementCounter(MetricsConstant.ZOOKEEPER_HIVE_EXCLUSIVELOCKS);
-          break;
-        case SEMI_SHARED:
-          metrics.incrementCounter(MetricsConstant.ZOOKEEPER_HIVE_SEMISHAREDLOCKS);
-          break;
-        default:
-          metrics.incrementCounter(MetricsConstant.ZOOKEEPER_HIVE_SHAREDLOCKS);
-          break;
-        }
-
-      } catch (Exception e) {
-        LOG.warn("Error Reporting hive client zookeeper lock operation to Metrics system", e);
-      }
+    switch (mode) {
+    case EXCLUSIVE:
+      MetricsFactory.getInstance().incrementCounter(MetricsConstant.ZOOKEEPER_HIVE_EXCLUSIVELOCKS);
+      break;
+    case SEMI_SHARED:
+      MetricsFactory.getInstance().incrementCounter(MetricsConstant.ZOOKEEPER_HIVE_SEMISHAREDLOCKS);
+      break;
+    default:
+      MetricsFactory.getInstance().incrementCounter(MetricsConstant.ZOOKEEPER_HIVE_SHAREDLOCKS);
+      break;
     }
     return new ZooKeeperHiveLock(res, key, mode);
   }
@@ -533,23 +524,16 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
           curatorFramework.delete().forPath(name);
         }
       }
-      Metrics metrics = MetricsFactory.getInstance();
-      if (metrics != null) {
-        try {
-          switch(lMode) {
-          case EXCLUSIVE:
-            metrics.decrementCounter(MetricsConstant.ZOOKEEPER_HIVE_EXCLUSIVELOCKS);
-            break;
-          case SEMI_SHARED:
-            metrics.decrementCounter(MetricsConstant.ZOOKEEPER_HIVE_SEMISHAREDLOCKS);
-            break;
-          default:
-            metrics.decrementCounter(MetricsConstant.ZOOKEEPER_HIVE_SHAREDLOCKS);
-            break;
-          }
-        } catch (Exception e) {
-          LOG.warn("Error Reporting hive client zookeeper unlock operation to Metrics system", e);
-        }
+      switch (lMode) {
+      case EXCLUSIVE:
+        MetricsFactory.getInstance().decrementCounter(MetricsConstant.ZOOKEEPER_HIVE_EXCLUSIVELOCKS);
+        break;
+      case SEMI_SHARED:
+        MetricsFactory.getInstance().decrementCounter(MetricsConstant.ZOOKEEPER_HIVE_SEMISHAREDLOCKS);
+        break;
+      default:
+        MetricsFactory.getInstance().decrementCounter(MetricsConstant.ZOOKEEPER_HIVE_SHAREDLOCKS);
+        break;
       }
     } catch (KeeperException.NoNodeException nne) {
       //can happen in retrying deleting the zLock after exceptions like InterruptedException

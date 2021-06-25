@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.metastore.api.*;
@@ -162,14 +161,7 @@ public final class DbLockManager implements HiveLockManager{
       }
       acquiredLocks.add(hl);
 
-      Metrics metrics = MetricsFactory.getInstance();
-      if (metrics != null) {
-        try {
-          metrics.incrementCounter(MetricsConstant.METASTORE_HIVE_LOCKS);
-        } catch (Exception e) {
-          LOG.warn("Error Reporting hive client metastore lock operation to Metrics system", e);
-        }
-      }
+      MetricsFactory.getInstance().incrementCounter(MetricsConstant.METASTORE_HIVE_LOCKS);
 
       return res.getState();
     } catch (NoSuchTxnException e) {
@@ -223,14 +215,7 @@ public final class DbLockManager implements HiveLockManager{
       txnManager.getMS().unlock(lockId);
       //important to remove after unlock() in case it fails
       removed = locks.remove(hiveLock);
-      Metrics metrics = MetricsFactory.getInstance();
-      if (metrics != null) {
-        try {
-          metrics.decrementCounter(MetricsConstant.METASTORE_HIVE_LOCKS);
-        } catch (Exception e) {
-          LOG.warn("Error Reporting hive client metastore unlock operation to Metrics system", e);
-        }
-      }
+      MetricsFactory.getInstance().decrementCounter(MetricsConstant.METASTORE_HIVE_LOCKS);
       LOG.debug("Removed a lock " + removed);
     } catch (NoSuchLockException e) {
       //if metastore has no record of this lock, it most likely timed out; either way

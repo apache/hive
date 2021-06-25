@@ -34,28 +34,24 @@ public class MetricsQueryLifeTimeHook implements QueryLifeTimeHook {
 
   @Override
   public void beforeCompile(QueryLifeTimeHookContext ctx) {
-    if (metrics != null) {
-      compilingQryScp = metrics.createScope(MetricsConstant.HS2_COMPILING_QUERIES);
-    }
+    compilingQryScp = metrics.createScope(MetricsConstant.HS2_COMPILING_QUERIES);
   }
 
   @Override
   public void afterCompile(QueryLifeTimeHookContext ctx, boolean hasError) {
-    if (metrics != null && compilingQryScp != null) {
+    if (compilingQryScp != null) {
       metrics.endScope(compilingQryScp);
     }
   }
 
   @Override
   public void beforeExecution(QueryLifeTimeHookContext ctx) {
-    if (metrics != null) {
-      executingQryScp = metrics.createScope(MetricsConstant.HS2_EXECUTING_QUERIES);
-    }
+    executingQryScp = metrics.createScope(MetricsConstant.HS2_EXECUTING_QUERIES);
   }
 
   @Override
   public void afterExecution(QueryLifeTimeHookContext ctx, boolean hasError) {
-    if (metrics != null && executingQryScp != null) {
+    if (executingQryScp != null) {
       metrics.endScope(executingQryScp);
     }
   }

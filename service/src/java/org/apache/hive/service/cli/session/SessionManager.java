@@ -129,10 +129,8 @@ public class SessionManager extends CompositeService {
     }
     initSessionImplClassName();
     Metrics metrics = MetricsFactory.getInstance();
-    if(metrics != null){
-      registerOpenSesssionMetrics(metrics);
-      registerActiveSesssionMetrics(metrics);
-    }
+    registerOpenSesssionMetrics(metrics);
+    registerActiveSesssionMetrics(metrics);
 
     userLimit = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER);
     ipAddressLimit = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_IPADDRESS);
@@ -237,21 +235,18 @@ public class SessionManager extends CompositeService {
     checkOperation = HiveConf.getBoolVar(hiveConf,
         ConfVars.HIVE_SERVER2_IDLE_SESSION_CHECK_OPERATION);
 
-    Metrics m = MetricsFactory.getInstance();
-    if (m != null) {
-      m.addGauge(MetricsConstant.EXEC_ASYNC_QUEUE_SIZE, new MetricsVariable() {
-        @Override
-        public Object getValue() {
-          return queue.size();
-        }
-      });
-      m.addGauge(MetricsConstant.EXEC_ASYNC_POOL_SIZE, new MetricsVariable() {
-        @Override
-        public Object getValue() {
-          return backgroundOperationPool.getPoolSize();
-        }
-      });
-    }
+    MetricsFactory.getInstance().addGauge(MetricsConstant.EXEC_ASYNC_QUEUE_SIZE, new MetricsVariable() {
+      @Override
+      public Object getValue() {
+        return queue.size();
+      }
+    });
+    MetricsFactory.getInstance().addGauge(MetricsConstant.EXEC_ASYNC_POOL_SIZE, new MetricsVariable() {
+      @Override
+      public Object getValue() {
+        return backgroundOperationPool.getPoolSize();
+      }
+    });
   }
 
   private void initOperationLogRootDir() {
@@ -320,10 +315,7 @@ public class SessionManager extends CompositeService {
               } catch (HiveSQLException e) {
                 LOG.warn("Exception is thrown closing session " + handle, e);
               } finally {
-                Metrics metrics = MetricsFactory.getInstance();
-                if (metrics != null) {
-                  metrics.incrementCounter(MetricsConstant.HS2_ABANDONED_SESSIONS);
-                }
+                MetricsFactory.getInstance().incrementCounter(MetricsConstant.HS2_ABANDONED_SESSIONS);
               }
             } else {
               session.closeExpiredOperations();
