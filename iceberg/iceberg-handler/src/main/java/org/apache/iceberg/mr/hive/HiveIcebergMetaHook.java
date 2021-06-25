@@ -214,7 +214,6 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   }
 
   @Override
-  @SuppressWarnings("checkstyle:CyclomaticComplexity")
   public void preAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws MetaException {
     setupAlterOperationType(hmsTable, context);
@@ -267,40 +266,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         );
       }
     } else if (AlterTableType.REPLACE_COLUMNS.equals(currentAlterTableOp)) {
-      HiveSchemaUtil.SchemaDifference schemaDifference = HiveSchemaUtil.getSchemaDiff(hmsTable.getSd().getCols(),
-          HiveSchemaUtil.convert(icebergTable.schema()), true);
-      if (!schemaDifference.isEmpty()) {
-        updateSchema = icebergTable.updateSchema();
-      } else {
-        // we should get here if the user restated the exactly the existing columns in the REPLACE COLUMNS command
-        LOG.info("preAlterTable: Found no difference between new and old schema for ALTER TABLE REPLACE COLUMNS for" +
-            " table: {}. There will be no Iceberg commit.", hmsTable.getTableName());
-      }
-
-      for (FieldSchema droppedCol : schemaDifference.missingFromFirst()) {
-        updateSchema.deleteColumn(droppedCol.getName());
-      }
-
-      for (FieldSchema addedCol : schemaDifference.missingFromSecond()) {
-        updateSchema.addColumn(
-            addedCol.getName(),
-            HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType())),
-            addedCol.getComment()
-        );
-      }
-
-      for (FieldSchema updatedCol : schemaDifference.typeChanged()) {
-        Type newType = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(updatedCol.getType()));
-        if (!(newType instanceof Type.PrimitiveType)) {
-          throw new MetaException(String.format("Cannot promote type of column: '%s' to a non-primitive type: %s.",
-              updatedCol.getName(), newType));
-        }
-        updateSchema.updateColumn(updatedCol.getName(), (Type.PrimitiveType) newType, updatedCol.getComment());
-      }
-
-      for (FieldSchema updatedCol : schemaDifference.commentChanged()) {
-        updateSchema.updateColumnDoc(updatedCol.getName(), updatedCol.getComment());
-      }
+      handleReplaceColumns(hmsTable);
     }
   }
 
@@ -511,6 +477,43 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       return HiveSchemaUtil.spec(schema, hmsTable.getPartitionKeys());
     } else {
       return PartitionSpec.unpartitioned();
+    }
+  }
+
+  private void handleReplaceColumns(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws MetaException {
+    HiveSchemaUtil.SchemaDifference schemaDifference = HiveSchemaUtil.getSchemaDiff(hmsTable.getSd().getCols(),
+        HiveSchemaUtil.convert(icebergTable.schema()), true);
+    if (!schemaDifference.isEmpty()) {
+      updateSchema = icebergTable.updateSchema();
+    } else {
+      // we should get here if the user restated the exactly the existing columns in the REPLACE COLUMNS command
+      LOG.info("Found no difference between new and old schema for ALTER TABLE REPLACE COLUMNS for" +
+          " table: {}. There will be no Iceberg commit.", hmsTable.getTableName());
+    }
+
+    for (FieldSchema droppedCol : schemaDifference.missingFromFirst()) {
+      updateSchema.deleteColumn(droppedCol.getName());
+    }
+
+    for (FieldSchema addedCol : schemaDifference.missingFromSecond()) {
+      updateSchema.addColumn(
+          addedCol.getName(),
+          HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType())),
+          addedCol.getComment()
+      );
+    }
+
+    for (FieldSchema updatedCol : schemaDifference.typeChanged()) {
+      Type newType = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(updatedCol.getType()));
+      if (!(newType instanceof Type.PrimitiveType)) {
+        throw new MetaException(String.format("Cannot promote type of column: '%s' to a non-primitive type: %s.",
+            updatedCol.getName(), newType));
+      }
+      updateSchema.updateColumn(updatedCol.getName(), (Type.PrimitiveType) newType, updatedCol.getComment());
+    }
+
+    for (FieldSchema updatedCol : schemaDifference.commentChanged()) {
+      updateSchema.updateColumnDoc(updatedCol.getName(), updatedCol.getComment());
     }
   }
 
