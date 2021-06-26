@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import org.apache.commons.lang3.StringUtils;
@@ -68,6 +69,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
 
   private transient String lasPattern = "yyyy-MM-dd HH:mm:ss";
   private transient final SimpleDateFormat formatter = new SimpleDateFormat(lasPattern);
+  private transient final SimpleDateFormat enFormatter = new SimpleDateFormat(lasPattern, Locale.ENGLISH);
 
 
   @Override
@@ -126,6 +128,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
       timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
               .getLocalTimeZone();
       formatter.setTimeZone(TimeZone.getTimeZone(timeZone));
+      enFormatter.setTimeZone(TimeZone.getTimeZone(timeZone));
     }
   }
 
@@ -135,6 +138,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
       String timeZoneStr = HiveConf.getVar(context.getJobConf(), HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE);
       timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
       formatter.setTimeZone(TimeZone.getTimeZone(timeZone));
+      enFormatter.setTimeZone(TimeZone.getTimeZone(timeZone));
     }
   }
 
@@ -165,13 +169,18 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
         }
         if (!patternVal.equals(lasPattern)) {
           formatter.applyPattern(patternVal);
+          enFormatter.applyPattern(patternVal);
           lasPattern = patternVal;
         }
       }
       try {
         retValue.set(formatter.parse(textVal).getTime() / 1000);
       } catch (ParseException e) {
-        return null;
+        try {
+          retValue.set(enFormatter.parse(textVal).getTime() / 1000);
+        } catch (ParseException ne) {
+          return null;
+        }
       }
     } else if (inputDateOI != null) {
       TimestampTZ timestampTZ = TimestampTZUtil.convert(
