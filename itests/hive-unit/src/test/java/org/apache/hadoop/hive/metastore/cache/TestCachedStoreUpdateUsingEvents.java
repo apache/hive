@@ -68,7 +68,7 @@ public class TestCachedStoreUpdateUsingEvents {
 
     TestTxnDbUtil.prepDb(conf);
 
-    hmsHandler = new HMSHandler("testCachedStore", conf, true);
+    hmsHandler = HMSHandler.getInitializedHandler("testCachedStore", conf);
 
     rawStore = new ObjectStore();
     rawStore.setConf(hmsHandler.getConf());

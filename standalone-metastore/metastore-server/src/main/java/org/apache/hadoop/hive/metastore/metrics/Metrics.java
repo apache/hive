@@ -67,11 +67,13 @@ public class Metrics {
   private Map<String, Pair<AtomicInteger, AtomicInteger>> gaugeRatio;
   private boolean hadoopMetricsStarted;
 
-  public static synchronized Metrics initialize(Configuration conf) {
+  public static synchronized boolean initialize(Configuration conf) {
+    boolean doInit = false;
     if (self == null) {
       self = new Metrics(conf);
+      doInit = true;
     }
-    return self;
+    return doInit;
   }
 
   public static MetricRegistry getRegistry() {

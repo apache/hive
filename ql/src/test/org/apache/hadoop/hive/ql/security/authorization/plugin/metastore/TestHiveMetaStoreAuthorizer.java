@@ -82,7 +82,7 @@ public class TestHiveMetaStoreAuthorizer {
 
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
-    hmsHandler = new HMSHandler("test", conf, true);
+    hmsHandler = HMSHandler.getInitializedHandler("test", conf);
     rawStore   = new ObjectStore();
     rawStore.setConf(hmsHandler.getConf());
     // Create the 'hive' catalog with new warehouse directory

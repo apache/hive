@@ -38,7 +38,7 @@ public class TestAdminUser {
     Configuration conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setVar(conf, ConfVars.USERS_IN_ADMIN_ROLE, "adminuser");
     MetaStoreTestUtils.setConfForStandloneMode(conf);
-    RawStore rawStore = new HMSHandler("testcreateroot", conf).getMS();
+    RawStore rawStore = HMSHandler.getInitializedHandler("testcreateroot", conf).getMS();
     Role adminRole = rawStore.getRole(HMSHandler.ADMIN);
     Assert.assertTrue(adminRole.getOwnerName().equals(HMSHandler.ADMIN));
     Assert.assertEquals(rawStore.listPrincipalGlobalGrants(HMSHandler.ADMIN, PrincipalType.ROLE)

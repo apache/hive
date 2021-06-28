@@ -140,10 +140,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private IMetaStoreMetadataTransformer transformer;
   private static DataConnectorProviderFactory dataconnectorFactory = null;
 
-  // Variables for metrics
-  // Package visible so that HMSMetricsListener can see them.
-  static AtomicInteger databaseCount, tableCount, partCount;
-
   public static final String PARTITION_NUMBER_EXCEED_LIMIT_MSG =
       "Number of partitions scanned (=%d) on table '%s' exceeds limit (=%d). This is controlled on the metastore server by %s.";
 
@@ -353,15 +349,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return threadLocalId.get();
   }
 
-  public HMSHandler(String name) throws MetaException {
-    this(name, MetastoreConf.newMetastoreConf(), true);
-  }
-
   public HMSHandler(String name, Configuration conf) throws MetaException {
-    this(name, conf, true);
-  }
-
-  public HMSHandler(String name, Configuration conf, boolean init) throws MetaException {
     super(name);
     this.conf = conf;
     isInTest = MetastoreConf.getBoolVar(this.conf, ConfVars.HIVE_IN_TEST);
@@ -376,9 +364,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
       }
     }
-    if (init) {
-      init();
-    }
+  }
+
+  @VisibleForTesting
+  public static HMSHandler getInitializedHandler(String name, Configuration conf)
+      throws MetaException {
+    HMSHandler hmsHandler = new HMSHandler(name, conf);
+    hmsHandler.init();
+    return hmsHandler;
   }
 
   /**
@@ -436,16 +429,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
 
     //Start Metrics
-    if (MetastoreConf.getBoolVar(conf, ConfVars.METRICS_ENABLED)) {
-      LOG.info("Begin calculating metadata count metrics.");
-      Metrics.initialize(conf);
-      databaseCount = Metrics.getOrCreateGauge(MetricsConstants.TOTAL_DATABASES);
-      tableCount = Metrics.getOrCreateGauge(MetricsConstants.TOTAL_TABLES);
-      partCount = Metrics.getOrCreateGauge(MetricsConstants.TOTAL_PARTITIONS);
-      updateMetrics();
-
-    }
-
+    startMetrics();
     preListeners = MetaStoreServerUtils.getMetaStoreListeners(MetaStorePreEventListener.class,
         conf, MetastoreConf.getVar(conf, ConfVars.PRE_EVENT_LISTENERS));
     preListeners.add(0, new TransactionalValidationListener(conf));
@@ -9531,12 +9515,18 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return new CacheFileMetadataResult(true);
   }
 
-  @VisibleForTesting
-  void updateMetrics() throws MetaException {
-    if (databaseCount != null) {
-      tableCount.set(getMS().getTableCount());
-      partCount.set(getMS().getPartitionCount());
-      databaseCount.set(getMS().getDatabaseCount());
+  private void startMetrics() throws MetaException {
+    if (MetastoreConf.getBoolVar(conf, ConfVars.METRICS_ENABLED)) {
+      boolean doInit = Metrics.initialize(conf);
+      if (doInit) {
+        LOG.info("Begin calculating metadata count metrics.");
+        AtomicInteger databaseCount = Metrics.getOrCreateGauge(MetricsConstants.TOTAL_DATABASES);
+        AtomicInteger tableCount = Metrics.getOrCreateGauge(MetricsConstants.TOTAL_TABLES);
+        AtomicInteger partCount = Metrics.getOrCreateGauge(MetricsConstants.TOTAL_PARTITIONS);
+        tableCount.set(getMS().getTableCount());
+        partCount.set(getMS().getPartitionCount());
+        databaseCount.set(getMS().getDatabaseCount());
+      }
     }
   }
 
