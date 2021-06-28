@@ -37,6 +37,8 @@ import org.apache.logging.log4j.core.config.plugins.util.PluginType;
 import org.apache.logging.log4j.core.filter.AbstractFilter;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Divert appender to redirect and filter test operation logs to match the output of the original
  * CLI qtest results.
@@ -174,7 +176,9 @@ public final class LogDivertAppenderForTest {
 
     LoggerContext context = (LoggerContext)LogManager.getContext(false);
     Configuration configuration = context.getConfiguration();
-    PurgePolicy purgePolicy = IdlePurgePolicy.createPurgePolicy("5", null, "SECONDS", configuration);
+    String timeToLive = String.valueOf(HiveConf
+        .getTimeVar(conf, HiveConf.ConfVars.HIVE_SERVER2_OPERATION_LOG_PURGEPOLICY_TIMETOLIVE, TimeUnit.SECONDS));
+    PurgePolicy purgePolicy = IdlePurgePolicy.createPurgePolicy(timeToLive, null, "SECONDS", configuration);
     // Hack: due to the (non-standard) way that log4j configuration is extended to introduce the routing appender
     // the life-cycle methods are not called as expected leading to initialization problems (such as the scheduler)
     configuration.getScheduler().incrementScheduledItems();
