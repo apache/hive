@@ -389,15 +389,15 @@ public class HiveAlterHandler implements AlterHandler {
                     part.getValues(), oldCols, oldt, part, null, null);
                 assert (colStats.isEmpty());
                 Deadline.checkTimeout();
-                if (cascade) {
-                  msdb.alterPartition(
-                    catName, dbname, name, part.getValues(), part, writeIdList);
-                } else {
+                if (!cascade) {
                   // update changed properties (stats)
                   oldPart.setParameters(part.getParameters());
                   msdb.alterPartition(catName, dbname, name, part.getValues(), oldPart, writeIdList);
                 }
               }
+              msdb.alterPartitions(catName, dbname, name,
+                  parts.stream().map(Partition::getValues).collect(Collectors.toList()),
+                  parts, newt.getWriteId(), writeIdList);
             } else {
               // clear all column stats to prevent incorract behaviour in case same column is reintroduced
               TableName tableName = new TableName(catName, dbname, name);
