@@ -17,12 +17,10 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+import com.google.common.collect.Lists;
+import org.apache.commons.collections.ListUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
@@ -261,6 +259,19 @@ public class TestObjectStore {
 
     numPartitions  = objectStore.getNumPartitionsByFilter(DB1, TABLE1, "country = \"US\"");
     Assert.assertEquals(2, numPartitions);
+
+    List<List<String>> partValues = Lists.newArrayList();
+    List<FieldSchema> cols = Lists.newArrayList();
+    cols.add(new FieldSchema("col1", serdeConstants.STRING_TYPE_NAME, ""));
+    for (Partition partition : partitions) {
+      partition.getSd().setCols(cols);
+      partValues.add(partition.getValues());
+    }
+    objectStore.alterPartitions(DB1, TABLE1, partValues, partitions);
+    partitions = objectStore.getPartitions(DB1, TABLE1, 10);
+    Assert.assertEquals(2, partitions.size());
+    Assert.assertTrue(ListUtils.isEqualList(cols, partitions.get(0).getSd().getCols()));
+    Assert.assertTrue(ListUtils.isEqualList(cols, partitions.get(1).getSd().getCols()));
 
     objectStore.dropPartition(DB1, TABLE1, value1);
     partitions = objectStore.getPartitions(DB1, TABLE1, 10);

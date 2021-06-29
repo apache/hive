@@ -56,6 +56,7 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 import javax.jdo.identity.IntIdentity;
 
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -1939,6 +1940,11 @@ public class ObjectStore implements RawStore, Configurable {
    */
   private MPartition convertToMPart(Partition part, boolean useTableCD)
       throws InvalidObjectException, MetaException {
+    return convertToMPart(part, useTableCD, null);
+  }
+
+  private MPartition convertToMPart(Partition part, boolean useTableCD, MColumnDescriptor mc)
+      throws InvalidObjectException, MetaException {
     if (part == null) {
       return null;
     }
@@ -1957,8 +1963,10 @@ public class ObjectStore implements RawStore, Configurable {
         mt.getSd().getCD().getCols() != null &&
         part.getSd() != null &&
         convertToFieldSchemas(mt.getSd().getCD().getCols()).
-        equals(part.getSd().getCols())) {
+            equals(part.getSd().getCols())) {
       msd = convertToMStorageDescriptor(part.getSd(), mt.getSd().getCD());
+    } if (mc != null) {
+      msd = convertToMStorageDescriptor(part.getSd(), mc);
     } else {
       msd = convertToMStorageDescriptor(part.getSd());
     }
@@ -3509,10 +3517,15 @@ public class ObjectStore implements RawStore, Configurable {
 
   private void alterPartitionNoTxn(String dbname, String name, List<String> part_vals,
       Partition newPart) throws InvalidObjectException, MetaException {
+    alterPartitionNoTxn(dbname, name, part_vals, newPart, null);
+  }
+
+  private void alterPartitionNoTxn(String dbname, String name, List<String> part_vals,
+      Partition newPart, MColumnDescriptor mc) throws InvalidObjectException, MetaException {
     name = HiveStringUtils.normalizeIdentifier(name);
     dbname = HiveStringUtils.normalizeIdentifier(dbname);
     MPartition oldp = getMPartition(dbname, name, part_vals);
-    MPartition newp = convertToMPart(newPart, false);
+    MPartition newp = convertToMPart(newPart, false, mc);
     if (oldp == null || newp == null) {
       throw new InvalidObjectException("partition does not exist.");
     }
@@ -3562,10 +3575,14 @@ public class ObjectStore implements RawStore, Configurable {
     Exception e = null;
     try {
       openTransaction();
+      MColumnDescriptor mc = null;
+      if (allPartitionHasSameColumns(newParts)) {
+        mc = createNewMColumnDescriptor(convertToMFieldSchemas(newParts.get(0).getSd().getCols()));
+      }
       Iterator<List<String>> part_val_itr = part_vals.iterator();
       for (Partition tmpPart: newParts) {
         List<String> tmpPartVals = part_val_itr.next();
-        alterPartitionNoTxn(dbname, name, tmpPartVals, tmpPart);
+        alterPartitionNoTxn(dbname, name, tmpPartVals, tmpPart, mc);
       }
       // commit the changes
       success = commitTransaction();
@@ -3582,6 +3599,23 @@ public class ObjectStore implements RawStore, Configurable {
         throw metaException;
       }
     }
+  }
+
+  private boolean allPartitionHasSameColumns(List<Partition> parts) {
+    if (parts.isEmpty()) {
+      return false;
+    }
+    Partition refPart = parts.get(0);
+    if (refPart.getSd() == null || refPart.getSd().getCols() == null) {
+      return false;
+    }
+    for (Partition part : parts) {
+      if (part.getSd() == null || part.getSd().getCols() == null ||
+          !ListUtils.isEqualList(refPart.getSd().getCols(), part.getSd().getCols())) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private void copyMSD(MStorageDescriptor newSd, MStorageDescriptor oldSd) {
