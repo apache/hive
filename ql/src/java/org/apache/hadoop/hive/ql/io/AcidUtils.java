@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -182,9 +183,21 @@ public class AcidUtils {
   public static final int MAX_STATEMENTS_PER_TXN = 10000;
   public static final Pattern LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{6}");
   public static final Pattern BUCKET_PATTERN = Pattern.compile("bucket_([0-9]+)(_[0-9]+)?$");
+  private static final Set<Integer> READ_TXN_TOKENS = new HashSet<Integer>();
 
   private static Cache<String, DirInfoValue> dirCache;
   private static AtomicBoolean dirCacheInited = new AtomicBoolean();
+
+  static {
+    READ_TXN_TOKENS.addAll(Arrays.asList(
+            HiveParser.TOK_DESCDATABASE,
+            HiveParser.TOK_DESCTABLE,
+            HiveParser.TOK_SHOWTABLES,
+            HiveParser.TOK_SHOW_TABLESTATUS,
+            HiveParser.TOK_SHOW_TBLPROPERTIES,
+            HiveParser.TOK_EXPLAIN
+    ));
+  }
 
   /**
    * A write into a non-aicd table produces files like 0000_0 or 0000_0_copy_1
@@ -3048,17 +3061,12 @@ public class AcidUtils {
    * @param tree AST
    */
   public static TxnType getTxnType(Configuration conf, ASTNode tree) {
-    final ASTSearcher astSearcher = new ASTSearcher();
-
+    int tp = tree.getToken().getType();
     // check if read-only txn
-    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_TXN_READONLY_ENABLED) &&
-        tree.getToken().getType() == HiveParser.TOK_QUERY &&
-        Stream.of(
-          new int[]{HiveParser.TOK_INSERT_INTO},
-          new int[]{HiveParser.TOK_INSERT, HiveParser.TOK_TAB})
-          .noneMatch(pattern -> astSearcher.simpleBreadthFirstSearch(tree, pattern) != null)) {
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_TXN_READONLY_ENABLED) && isReadOnlyTxn(tree)) {
       return TxnType.READ_ONLY;
     }
+
     // check if txn has a materialized view rebuild
     if (tree.getToken().getType() == HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD) {
       return TxnType.MATER_VIEW_REBUILD;
@@ -3070,6 +3078,16 @@ public class AcidUtils {
     return TxnType.DEFAULT;
   }
 
+
+  public static boolean isReadOnlyTxn(ASTNode tree) {
+    final ASTSearcher astSearcher = new ASTSearcher();
+    return READ_TXN_TOKENS.contains(tree.getToken().getType()) || (tree.getToken().getType() == HiveParser.TOK_QUERY &&
+            Stream.of(
+                    new int[]{HiveParser.TOK_INSERT_INTO},
+                    new int[]{HiveParser.TOK_INSERT, HiveParser.TOK_TAB})
+                    .noneMatch(pattern -> astSearcher.simpleBreadthFirstSearch(tree, pattern) != null));
+
+  }
 
 
   private static void initDirCache(int durationInMts) {
