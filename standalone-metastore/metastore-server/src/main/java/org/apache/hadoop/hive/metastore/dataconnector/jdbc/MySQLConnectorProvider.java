@@ -55,17 +55,14 @@ public class MySQLConnectorProvider extends AbstractJDBCConnectorProvider {
    * @param tableName
    */
   @Override public ResultSet fetchTableMetadata(String tableName) throws MetaException {
+    ResultSet rs = null;
     try {
-      Statement stmt = getConnection().createStatement();
-      ResultSet rs = stmt.executeQuery(
-          "SELECT table_name, column_name, is_nullable, data_type, character_maximum_length FROM INFORMATION_SCHEMA.Columns where table_schema='"
-              + scoped_db + "' and table_name='" + tableName + "'");
-      return rs;
-    } catch (Exception e) {
-      LOG.warn("Exception retrieving remote table " + scoped_db + "." + tableName + " via data connector "
-          + connector.getName());
-      throw new MetaException("Error retrieving remote table:" + e);
+      rs = getConnection().getMetaData().getColumns(scoped_db, null, tableName, null);
+    } catch (SQLException sqle) {
+      LOG.warn("Could not retrieve column names from JDBC table, cause:" + sqle.getMessage());
+      throw new MetaException("Could not retrieve table meta data from remote datasource, cause:" + sqle.getMessage());
     }
+    return rs;
   }
 
   protected String getDataType(String dbDataType, int size) {
