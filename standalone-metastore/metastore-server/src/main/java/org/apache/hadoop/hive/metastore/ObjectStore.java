@@ -2847,18 +2847,23 @@ public class ObjectStore implements RawStore, Configurable {
     return ret;
   }
 
+  private MPartition convertToMPart(Partition part, MTable mt, boolean useTableCD)
+      throws InvalidObjectException, MetaException {
+    return convertToMPart(part, mt, useTableCD, null);
+  }
+
   /**
    * Convert a Partition object into an MPartition, which is an object backed by the db
-   * If the Partition's set of columns is the same as the parent table's AND useTableCD
-   * is true, then this partition's storage descriptor's column descriptor will point
+   * If the Partition's set of columns is the same as other partition's and `newCd` was given
+   * then this partition's storage descriptor's column descriptor will point
    * to the same one as the table's storage descriptor.
    * @param part the partition to convert
    * @param mt the parent table object
-   * @param useTableCD whether to try to use the parent table's column descriptor.
+   * @param existedMc convert to MPartition with the existed MCD
    * @return the model partition object, and null if the input partition is null.
    */
-  private MPartition convertToMPart(Partition part, MTable mt, boolean useTableCD)
-      throws InvalidObjectException, MetaException {
+  private MPartition convertToMPart(Partition part, MTable mt, boolean useTableCD,
+      MColumnDescriptor existedMc) throws InvalidObjectException, MetaException {
     // NOTE: we don't set writeId in this method. Write ID is only set after validating the
     //       existing write ID against the caller's valid list.
     if (part == null) {
@@ -2878,46 +2883,10 @@ public class ObjectStore implements RawStore, Configurable {
         mt.getSd().getCD().getCols() != null &&
         part.getSd() != null &&
         convertToFieldSchemas(mt.getSd().getCD().getCols()).
-        equals(part.getSd().getCols())) {
+            equals(part.getSd().getCols())) {
       msd = convertToMStorageDescriptor(part.getSd(), mt.getSd().getCD());
-    } else {
-      msd = convertToMStorageDescriptor(part.getSd());
-    }
-
-    return new MPartition(Warehouse.makePartName(convertToFieldSchemas(mt
-        .getPartitionKeys()), part.getValues()), mt, part.getValues(), part
-        .getCreateTime(), part.getLastAccessTime(),
-        msd, part.getParameters());
-  }
-
-  /**
-   * Convert a Partition object into an MPartition, which is an object backed by the db
-   * If the Partition's set of columns is the same as other partition's and `newCd` was given
-   * then this partition's storage descriptor's column descriptor will point
-   * to the same one as the table's storage descriptor.
-   * @param part the partition to convert
-   * @param mt the parent table object
-   * @param givenCD convert to MPartition with given MCD.
-   * @return the model partition object, and null if the input partition is null.
-   */
-  private MPartition convertToMPart(Partition part, MTable mt, MColumnDescriptor givenCD)
-      throws InvalidObjectException, MetaException {
-    // NOTE: we don't set writeId in this method. Write ID is only set after validating the
-    //       existing write ID against the caller's valid list.
-    if (part == null) {
-      return null;
-    }
-    if (mt == null) {
-      throw new InvalidObjectException(
-          "Partition doesn't have a valid table or database name");
-    }
-
-    // If this partition's set of columns is the same as the parent table's,
-    // use the parent table's, so we do not create a duplicate column descriptor,
-    // thereby saving space
-    MStorageDescriptor msd;
-    if (givenCD != null) {
-      msd = convertToMStorageDescriptor(part.getSd(), givenCD);
+    } else if (existedMc != null) {
+      msd = convertToMStorageDescriptor(part.getSd(), existedMc);
     } else {
       msd = convertToMStorageDescriptor(part.getSd());
     }
@@ -5036,8 +5005,7 @@ public class ObjectStore implements RawStore, Configurable {
     name = normalizeIdentifier(name);
     dbname = normalizeIdentifier(dbname);
     MPartition oldp = getMPartition(catName, dbname, name, part_vals);
-    MPartition newp = newCd == null ?
-        convertToMPart(newPart, table, false) : convertToMPart(newPart, table, newCd);
+    MPartition newp = convertToMPart(newPart, table, false, newCd);
     MColumnDescriptor oldCD = null;
     MStorageDescriptor oldSD = oldp.getSd();
     if (oldSD != null) {

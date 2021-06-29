@@ -21,6 +21,8 @@ import com.codahale.metrics.Counter;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import org.apache.commons.collections.ListUtils;
 import org.apache.hadoop.hive.metastore.ObjectStore.RetryingExecutor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
@@ -405,6 +407,20 @@ public class TestObjectStore {
       numPartitions = objectStore.getNumPartitionsByFilter(DEFAULT_CATALOG_NAME, DB1, TABLE1, "");
     }
     Assert.assertEquals(partitions.size(), numPartitions);
+
+    List<List<String>> part_vals = Lists.newArrayList();
+    List<FieldSchema> cols = Lists.newArrayList();
+    cols.add(new FieldSchema("col1", ColumnType.STRING_TYPE_NAME, ""));
+    for (Partition partition : partitions) {
+      partition.getSd().setCols(cols);
+      part_vals.add(partition.getValues());
+    }
+    objectStore.alterPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, part_vals, partitions,
+        -1, null);
+    partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10);
+    Assert.assertEquals(2, partitions.size());
+    Assert.assertTrue(ListUtils.isEqualList(cols, partitions.get(0).getSd().getCols()));
+    Assert.assertTrue(ListUtils.isEqualList(cols, partitions.get(1).getSd().getCols()));
 
     try (AutoCloseable c = deadline()) {
       numPartitions = objectStore.getNumPartitionsByFilter(DEFAULT_CATALOG_NAME, DB1, TABLE1, "country = \"US\"");
