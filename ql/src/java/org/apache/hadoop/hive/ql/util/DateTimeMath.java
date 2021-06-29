@@ -601,21 +601,4 @@ public class DateTimeMath {
     return calendar;
   }
 
-  /**
-   * TODO - this is a temporary fix for handling Julian calendar dates.
-   * Returns a Gregorian calendar that can be used from year 0+ instead of default 1582.10.15.
-   * This is desirable for some UDFs that work on dates which normally would use Julian calendar.
-   * Julian calendar only works with UTC time zone only.
-   * @return the calendar
-   */
-  public static Calendar getTimeZonedProlepticGregorianCalendar() {
-    ZoneId id = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
-        .getLocalTimeZone();
-    GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone(id));
-
-    if (id.getId().equals("UTC"))
-      calendar.setGregorianChange(new java.util.Date(Long.MIN_VALUE));
-
-    return calendar;
-  }
 }

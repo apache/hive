@@ -63,7 +63,7 @@ date_format(cast(null as timestamp), 'HH');
 -- wrong fmt
 select
 date_format('2015-04-08', ''),
-date_format('2015-04-08', 'Q');
+date_format('2015-04-08', 'B');
 
 -- with time zone
 set hive.local.time.zone=Asia/Bangkok;
@@ -78,3 +78,16 @@ select date_format("2015-04-08 10:30:45","yyyy-MM-dd HH:mm:ss.SSS z");
 --julian date
 set hive.local.time.zone=UTC;
 select date_format("1001-01-05","dd---MM--yyyy");
+
+--dates prior to 1900
+set hive.local.time.zone=Asia/Bangkok;
+select date_format('1400-01-14 01:01:10.123', 'yyyy-MM-dd HH:mm:ss.SSS z');
+select date_format('1800-01-14 01:01:10.123', 'yyyy-MM-dd HH:mm:ss.SSS z');
+
+set hive.local.time.zone=Europe/Berlin;
+select date_format('1400-01-14 01:01:10.123', 'yyyy-MM-dd HH:mm:ss.SSS z');
+select date_format('1800-01-14 01:01:10.123', 'yyyy-MM-dd HH:mm:ss.SSS z');
+
+set hive.local.time.zone=Africa/Johannesburg;
+select date_format('1400-01-14 01:01:10.123', 'yyyy-MM-dd HH:mm:ss.SSS z');
+select date_format('1800-01-14 01:01:10.123', 'yyyy-MM-dd HH:mm:ss.SSS z');
