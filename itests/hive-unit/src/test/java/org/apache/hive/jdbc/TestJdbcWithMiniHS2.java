@@ -1094,7 +1094,7 @@ public class TestJdbcWithMiniHS2 {
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_MAX_IDLE_TIME, "5");
     startMiniHS2(conf, true);
     String userName = System.getProperty("user.name");
-    Connection conn = getConnection(miniHS2.getJdbcURL(testDbName), userName, "password");
+    Connection conn = getConnection(miniHS2.getJdbcURL(testDbName)+";retries=3", userName, "password");
     Statement stmt = conn.createStatement();
     stmt.execute("select from_unixtime(unix_timestamp())");
     // Sleep for longer than server's idletimeout and execute a query
