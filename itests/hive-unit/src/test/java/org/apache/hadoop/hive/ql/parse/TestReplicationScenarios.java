@@ -129,6 +129,9 @@ import java.util.Map;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.Base64;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
@@ -4282,41 +4285,53 @@ public class TestReplicationScenarios {
     run("drop database " + dbName, true, driver);
   }
 
+
   @Test
-  public void testDDLTasksInParallel() throws Throwable {
-    // Clean up configurations
-    driver.getConf().set(JobContext.JOB_NAME, "");
-    driverMirror.getConf().set(JobContext.JOB_NAME, "");
-    driverMirror.getConf().set(HiveConf.ConfVars.EXECPARALLEL.varname, "true");
-    // Get the logger at the root level.
-    Logger logger = LogManager.getLogger("hive.ql.metadata.Hive");
-    Level oldLevel = logger.getLevel();
-    LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-    Configuration config = ctx.getConfiguration();
-    LoggerConfig loggerConfig = config.getLoggerConfig(logger.getName());
-    loggerConfig.setLevel(Level.DEBUG);
-    ctx.updateLoggers();
-    // Create a String Appender to capture log output
+  public void testDDLTasksInParallel() throws Throwable{
+    Logger logger = null;
+    LoggerContext ctx = null;
+    Level oldLevel = null;
+    StringAppender appender = null;
+    LoggerConfig loggerConfig = null;
+    try {
+      driverMirror.getConf().set(HiveConf.ConfVars.EXECPARALLEL.varname, "true");
+      logger = LogManager.getLogger("hive.ql.metadata.Hive");
+      oldLevel = logger.getLevel();
+      ctx = (LoggerContext) LogManager.getContext(false);
+      Configuration config = ctx.getConfiguration();
+      loggerConfig = config.getLoggerConfig(logger.getName());
+      loggerConfig.setLevel(Level.INFO);
+      ctx.updateLoggers();
+      // Create a String Appender to capture log output
+      appender = StringAppender.createStringAppender("%m");
+      appender.addToLogger(logger.getName(), Level.DEBUG);
+      appender.start();
+      String testName = "testDDLTasksInParallel";
+      String dbName = createDB(testName, driver);
+      String replDbName = dbName + "_dupe";
 
-    StringAppender appender = StringAppender.createStringAppender("%m");
-    appender.addToLogger(logger.getName(), Level.DEBUG);
-    appender.start();
-    String testName = "testDatabaseInJobName";
-    String dbName = createDB(testName, driver);
-    String replDbName = dbName + "_dupe";
+      run("CREATE TABLE " + dbName + ".t1 (id int)", driver);
+      run("insert into table " + dbName + ".t1 values ('1')", driver);
+      run("CREATE TABLE " + dbName + ".t2 (id int)", driver);
+      run("insert into table " + dbName + ".t2 values ('2')", driver);
 
-    run("CREATE TABLE " + dbName + ".t1 (id int)", driver);
-    run("insert into table " + dbName + ".t1 values ('1')", driver);
-    run("CREATE TABLE " + dbName + ".t2 (id int)", driver);
-    run("insert into table " + dbName + ".t2 values ('2')", driver);
+      Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
 
-    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
-
-    assertTrue(appender.getOutput().contains("Starting task [Stage-0:DDL] in parallel"));
-    assertTrue(appender.getOutput().contains("Starting task [Stage-5:DDL] in parallel"));
-    loggerConfig.setLevel(oldLevel);
-    ctx.updateLoggers();
-    appender.removeFromLogger(logger.getName());
+      String logText = appender.getOutput();
+      Pattern pattern = Pattern.compile("Starting task \\[Stage-[0-9]:DDL\\] in parallel");
+      Matcher matcher = pattern.matcher(logText);
+      int count = 0;
+      while(matcher.find()){
+        count++;
+      }
+      assertEquals(count, 2);
+      appender.reset();
+    } finally {
+      driverMirror.getConf().set(HiveConf.ConfVars.EXECPARALLEL.varname, "false");
+      loggerConfig.setLevel(oldLevel);
+      ctx.updateLoggers();
+      appender.removeFromLogger(logger.getName());
+    }
   }
 
   @Test
