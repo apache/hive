@@ -2242,8 +2242,13 @@ public class HiveConf extends Configuration {
         "This value controls whether date and timestamp type in Avro files was written using the hybrid or proleptic\n" +
         "calendar. Hybrid is the default."),
     HIVE_AVRO_TIMESTAMP_LEGACY_CONVERSION_ENABLED("hive.avro.timestamp.legacy.conversion.enabled", true,
-        "This value controls whether we use former Java time API to convert between timezones on files where timezone\n" +
-        "is not encoded in the metadata. This is for debugging."),
+        "Whether to use former Java date/time APIs to convert between timezones when reading timestamps from " +
+        "Avro files. The property has no effect when the file contains explicit metadata about the conversion " + 
+        "used to write the data; in this case reading conversion is based on the metadata."),
+    HIVE_AVRO_TIMESTAMP_WRITE_LEGACY_CONVERSION_ENABLED("hive.avro.timestamp.write.legacy.conversion.enabled", false,
+        "Whether to use former Java date/time APIs to convert between timezones when writing timestamps in " +
+        "Avro files. Once data are written to the file the effect is permanent (also reflected in the metadata)." +
+        "Changing the value of this property affects only new data written to the file."),
     HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS("hive.int.timestamp.conversion.in.seconds", false,
         "Boolean/tinyint/smallint/int/bigint value is interpreted as milliseconds during the timestamp conversion.\n" +
         "Set this flag to true to interpret the value as seconds to be consistent with float/double." ),
