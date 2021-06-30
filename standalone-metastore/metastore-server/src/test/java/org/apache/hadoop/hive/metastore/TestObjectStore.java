@@ -417,7 +417,9 @@ public class TestObjectStore {
     }
     objectStore.alterPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, part_vals, partitions,
         -1, null);
-    partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10);
+    try (AutoCloseable c = deadline()) {
+      partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10);
+    }
     Assert.assertEquals(2, partitions.size());
     Assert.assertTrue(ListUtils.isEqualList(cols, partitions.get(0).getSd().getCols()));
     Assert.assertTrue(ListUtils.isEqualList(cols, partitions.get(1).getSd().getCols()));
