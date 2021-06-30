@@ -208,6 +208,10 @@ sys	mv_tables_used			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	mv_tables_used			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	mv_tables_used			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	mv_tables_used			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	part_col_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	part_col_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	part_col_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -623,6 +627,15 @@ mv_creation_metadata	tbl_name
 mv_creation_metadata	txn_list
 mv_tables_used	mv_creation_metadata_id
 mv_tables_used	tbl_id
+notification_log	cat_name
+notification_log	db_name
+notification_log	event_id
+notification_log	event_time
+notification_log	event_type
+notification_log	message
+notification_log	message_format
+notification_log	nl_id
+notification_log	tbl_name
 part	p_brand
 part	p_comment
 part	p_container
@@ -1202,7 +1215,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-73
+74
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -1600,6 +1613,7 @@ default	sys	key_constraints	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	locks	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	mv_creation_metadata	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	mv_tables_used	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	notification_log	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	part_col_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	part_col_stats	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	part_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
