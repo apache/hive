@@ -74,7 +74,7 @@ public class TestHS2ImpersonationWithRemoteMS {
     Class.forName(MiniHS2.getJdbcDriverName());
 
     // Create two tables one as user "foo" and other as user "bar"
-    Connection hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL(), "foo", null);
+    Connection hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL()+";retries=3", "foo", null);
     Statement stmt = hs2Conn.createStatement();
 
     String tableName = "foo_table";
@@ -84,7 +84,7 @@ public class TestHS2ImpersonationWithRemoteMS {
     stmt.close();
     hs2Conn.close();
 
-    hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL(), "bar", null);
+    hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL()+";retries=3", "bar", null);
     stmt = hs2Conn.createStatement();
 
     tableName = "bar_table";
