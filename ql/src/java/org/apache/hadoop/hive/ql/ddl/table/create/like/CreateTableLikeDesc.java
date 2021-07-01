@@ -18,10 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.create.like;
 
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
-
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
@@ -110,15 +107,9 @@ public class CreateTableLikeDesc implements DDLDesc, Serializable {
     return likeTableName;
   }
 
+  @Explain(displayName = "table properties")
   public Map<String, String> getTblProps() {
     return tblProps;
-  }
-
-  @Explain(displayName = "table properties")
-  public Map<String, String> getTblPropsExplain() {
-    HashMap<String, String> copy = new HashMap<>(tblProps);
-    copy.remove(TABLE_IS_CTAS);
-    return copy;
   }
 
   @Explain(displayName = "isTemporary", displayOnlyOnTrue = true)
