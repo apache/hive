@@ -174,6 +174,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(ReplUtils.failedWithNonRecoverableError(new Path(dumpData.dumpLocation), conf));
 
     primary.dumpFailure(primaryDbName);
+    assertTrue(ReplUtils.failedWithNonRecoverableError(new Path(dumpData.dumpLocation), conf));
   }
 
   @Test

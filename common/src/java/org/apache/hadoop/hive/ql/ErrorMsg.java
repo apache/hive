@@ -628,7 +628,7 @@ public enum ErrorMsg {
   REPL_INVALID_ALTER_TABLE(40013, "{0}Unable to alter table{1}", true),
   REPL_PERMISSION_DENIED(40014, "{0}org.apache.hadoop.security.AccessControlException{1}", true),
   REPL_DISTCP_SNAPSHOT_EXCEPTION(40015, "SNAPSHOT_ERROR", true),
-  REPL_INCOMPATIBLE_EXCEPTION(40016, "Cannot load into database as it is replication incompatible.", true);
+  REPL_INCOMPATIBLE_EXCEPTION(40016, "Cannot load into database {0} as it is replication incompatible.", true);
   ;
 
   private int errorCode;

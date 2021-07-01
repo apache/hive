@@ -1154,19 +1154,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private void markDbAsReplIncompatible(Connection dbConn, String database) throws SQLException, MetaException {
-    PreparedStatement pst = null;
+  private long getDatabaseId(Connection dbConn, String database, String catalog) throws SQLException {
     ResultSet rs = null;
-    Statement stmt = null;
-    String catalog = MetaStoreUtils.getDefaultCatalog(conf);
+    PreparedStatement pst = null;
     try {
-      stmt = dbConn.createStatement();
-
-      String s = sqlGenerator.getDbProduct().getPrepareTxnStmt();
-      if (s != null) {
-        stmt.execute(s);
-      }
-
       String query = "select \"DB_ID\" from \"DBS\" where \"NAME\" = ?  and \"CTLG_NAME\" = ?";
       pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, Arrays.asList(database, catalog));
       LOG.debug("Going to execute query <" + query.replaceAll("\\?", "{}") + ">",
@@ -1174,27 +1165,55 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       rs = pst.executeQuery();
       if (!rs.next()) {
         LOG.error("Database: " + database + " does not exist in catalog " + catalog);
-        return;
+        return -1;
       }
-      long dbId = rs.getLong(1);
-
-      rs = stmt.executeQuery("SELECT \"PARAM_VALUE\" FROM \"DATABASE_PARAMS\" WHERE \"PARAM_KEY\" = " +
-              "'" + ReplConst.REPL_INCOMPATIBLE + "' AND \"DB_ID\" = " + dbId);
-      if (!rs.next()) {
-        query = "INSERT INTO \"DATABASE_PARAMS\" VALUES ( " + dbId + " , '" + ReplConst.REPL_INCOMPATIBLE + "' , ? )";
-      } else {
-        query = "UPDATE \"DATABASE_PARAMS\" SET \"PARAM_VALUE\" = ? WHERE \"DB_ID\" = " + dbId +
-                " AND \"PARAM_KEY\" = '" + ReplConst.REPL_INCOMPATIBLE +"'";
-      }
-      pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, Arrays.asList(ReplConst.TRUE));
-      if (pst.executeUpdate() != 1) {
-        throw new RuntimeException("DATABASE_PARAMS is corrupted for databaseID: " + dbId);
-      }
+      return rs.getLong(1);
     } finally {
-      closeStmt(stmt);
       close(rs);
       closeStmt(pst);
     }
+  }
+
+  private void updateDatabaseProp(Connection dbConn, Statement stmt,
+                                  long dbId, String prop, String propValue) throws SQLException {
+    ResultSet rs = null;
+    PreparedStatement pst = null;
+    String query;
+    try {
+      rs = stmt.executeQuery("SELECT \"PARAM_VALUE\" FROM \"DATABASE_PARAMS\" WHERE \"PARAM_KEY\" = " +
+              "'" + prop + "' AND \"DB_ID\" = " + dbId);
+      if (!rs.next()) {
+        query = "INSERT INTO \"DATABASE_PARAMS\" VALUES ( " + dbId + " , '" + prop + "' , ? )";
+      } else {
+        query = "UPDATE \"DATABASE_PARAMS\" SET \"PARAM_VALUE\" = ? WHERE \"DB_ID\" = " + dbId +
+                " AND \"PARAM_KEY\" = '" + prop + "'";
+      }
+      close(rs);
+      pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, Arrays.asList(propValue));
+      LOG.debug("Updating " + prop + " for db <" + query.replaceAll("\\?", "{}") + ">", propValue);
+      if (pst.executeUpdate() != 1) {
+        //only one row insert or update should happen
+        throw new RuntimeException("DATABASE_PARAMS is corrupted for databaseID: " + dbId);
+      }
+    } finally {
+      close(rs);
+      closeStmt(pst);
+    }
+  }
+
+  private void markDbAsReplIncompatible(Connection dbConn, String database) throws SQLException {
+    Statement stmt = dbConn.createStatement();
+    String catalog = MetaStoreUtils.getDefaultCatalog(conf);
+    String s = sqlGenerator.getDbProduct().getPrepareTxnStmt();
+    if (s != null) {
+      stmt.execute(s);
+    }
+    long dbId = getDatabaseId(dbConn, database, catalog);
+    if (dbId == -1) {
+      return;
+    }
+    updateDatabaseProp(dbConn, stmt, dbId, ReplConst.REPL_INCOMPATIBLE, ReplConst.TRUE);
+    closeStmt(stmt);
   }
 
   private void updateReplId(Connection dbConn, ReplLastIdInfo replLastIdInfo) throws SQLException, MetaException {
@@ -1203,6 +1222,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     ResultSet rs = null;
     ResultSet prs = null;
     Statement stmt = null;
+    String query;
+    List<String> params;
     String lastReplId = Long.toString(replLastIdInfo.getLastReplId());
     String catalog = replLastIdInfo.isSetCatalog() ? normalizeIdentifier(replLastIdInfo.getCatalog()) :
             MetaStoreUtils.getDefaultCatalog(conf);
@@ -1218,37 +1239,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         stmt.execute(s);
       }
 
-      String query = "select \"DB_ID\" from \"DBS\" where \"NAME\" = ?  and \"CTLG_NAME\" = ?";
-      List<String> params = Arrays.asList(db, catalog);
-      pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
-      LOG.debug("Going to execute query <" + query.replaceAll("\\?", "{}") + ">",
-              quoteString(db), quoteString(catalog));
-      rs = pst.executeQuery();
-      if (!rs.next()) {
-        throw new MetaException("DB with name " + db + " does not exist in catalog " + catalog);
+      long dbId = getDatabaseId(dbConn, db, catalog);
+      if (dbId == -1) {
+        return;
       }
-      long dbId = rs.getLong(1);
-      rs.close();
-      pst.close();
 
       // not used select for update as it will be updated by single thread only from repl load
-      rs = stmt.executeQuery("SELECT \"PARAM_VALUE\" FROM \"DATABASE_PARAMS\" WHERE \"PARAM_KEY\" = " +
-              "'repl.last.id' AND \"DB_ID\" = " + dbId);
-      if (!rs.next()) {
-        query = "INSERT INTO \"DATABASE_PARAMS\" VALUES ( " + dbId + " , 'repl.last.id' , ? )";
-      } else {
-        query = "UPDATE \"DATABASE_PARAMS\" SET \"PARAM_VALUE\" = ? WHERE \"DB_ID\" = " + dbId +
-                " AND \"PARAM_KEY\" = 'repl.last.id'";
-      }
-      close(rs);
-      params = Arrays.asList(lastReplId);
-      pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
-      LOG.debug("Updating repl id for db <" + query.replaceAll("\\?", "{}") + ">", lastReplId);
-      if (pst.executeUpdate() != 1) {
-        //only one row insert or update should happen
-        throw new RuntimeException("DATABASE_PARAMS is corrupted for db " + db);
-      }
-      pst.close();
+      updateDatabaseProp(dbConn, stmt, dbId, ReplConst.REPL_TARGET_TABLE_PROPERTY, lastReplId);
 
       if (table == null) {
         // if only database last repl id to be updated.
