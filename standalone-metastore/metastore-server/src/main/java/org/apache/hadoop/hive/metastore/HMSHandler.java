@@ -111,7 +111,6 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_COMMENT;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.DB_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -2240,6 +2239,19 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     throw new MetaException("Not yet implemented");
   }
 
+  @Override
+  public Table ctas_query_dryrun(final Table tbl) throws AlreadyExistsException,
+          MetaException, InvalidObjectException, InvalidInputException {
+    Table transformedTbl = null;
+    if (!tbl.isSetCatName()) {
+      tbl.setCatName(getDefaultCatalog(conf));
+    }
+    if (transformer != null && !isInTest) {
+      transformedTbl = transformer.transformCreateTable(tbl, null, null);
+    }
+    return transformedTbl != null ? transformedTbl : tbl;
+  }
+
   private void create_table_core(final RawStore ms, final Table tbl,
                                  final EnvironmentContext envContext)
       throws AlreadyExistsException, MetaException,
@@ -2324,9 +2336,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     if (transformer != null) {
       tbl = transformer.transformCreateTable(tbl, processorCapabilities, processorId);
-    }
-    if (tbl.getParameters() != null) {
-      tbl.getParameters().remove(TABLE_IS_CTAS);
     }
 
     // If the given table has column statistics, save it here. We will update it later.

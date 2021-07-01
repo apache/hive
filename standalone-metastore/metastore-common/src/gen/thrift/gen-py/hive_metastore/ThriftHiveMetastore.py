@@ -349,6 +349,14 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
+    def ctas_query_dryrun(self, tbl):
+        """
+        Parameters:
+         - tbl
+
+        """
+        pass
+
     def drop_table(self, dbname, name, deleteData):
         """
         Parameters:
@@ -3711,6 +3719,46 @@ class Client(fb303.FacebookService.Client, Iface):
         if result.o2 is not None:
             raise result.o2
         return
+
+    def ctas_query_dryrun(self, tbl):
+        """
+        Parameters:
+         - tbl
+
+        """
+        self.send_ctas_query_dryrun(tbl)
+        return self.recv_ctas_query_dryrun()
+
+    def send_ctas_query_dryrun(self, tbl):
+        self._oprot.writeMessageBegin('ctas_query_dryrun', TMessageType.CALL, self._seqid)
+        args = ctas_query_dryrun_args()
+        args.tbl = tbl
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_ctas_query_dryrun(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = ctas_query_dryrun_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        if result.o3 is not None:
+            raise result.o3
+        if result.o4 is not None:
+            raise result.o4
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "ctas_query_dryrun failed: unknown result")
 
     def drop_table(self, dbname, name, deleteData):
         """
@@ -11860,6 +11908,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         self._processMap["add_not_null_constraint"] = Processor.process_add_not_null_constraint
         self._processMap["add_default_constraint"] = Processor.process_add_default_constraint
         self._processMap["add_check_constraint"] = Processor.process_add_check_constraint
+        self._processMap["ctas_query_dryrun"] = Processor.process_ctas_query_dryrun
         self._processMap["drop_table"] = Processor.process_drop_table
         self._processMap["drop_table_with_environment_context"] = Processor.process_drop_table_with_environment_context
         self._processMap["truncate_table"] = Processor.process_truncate_table
@@ -13307,6 +13356,41 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
         oprot.writeMessageBegin("add_check_constraint", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_ctas_query_dryrun(self, seqid, iprot, oprot):
+        args = ctas_query_dryrun_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = ctas_query_dryrun_result()
+        try:
+            result.success = self._handler.ctas_query_dryrun(args.tbl)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except AlreadyExistsException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except InvalidObjectException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except MetaException as o3:
+            msg_type = TMessageType.REPLY
+            result.o3 = o3
+        except NoSuchObjectException as o4:
+            msg_type = TMessageType.REPLY
+            result.o4 = o4
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("ctas_query_dryrun", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -25788,6 +25872,179 @@ add_check_constraint_result.thrift_spec = (
     None,  # 0
     (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
     (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class ctas_query_dryrun_args(object):
+    """
+    Attributes:
+     - tbl
+
+    """
+
+
+    def __init__(self, tbl=None,):
+        self.tbl = tbl
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.tbl = Table()
+                    self.tbl.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('ctas_query_dryrun_args')
+        if self.tbl is not None:
+            oprot.writeFieldBegin('tbl', TType.STRUCT, 1)
+            self.tbl.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(ctas_query_dryrun_args)
+ctas_query_dryrun_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'tbl', [Table, None], None, ),  # 1
+)
+
+
+class ctas_query_dryrun_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+     - o2
+     - o3
+     - o4
+
+    """
+
+
+    def __init__(self, success=None, o1=None, o2=None, o3=None, o4=None,):
+        self.success = success
+        self.o1 = o1
+        self.o2 = o2
+        self.o3 = o3
+        self.o4 = o4
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = Table()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = AlreadyExistsException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = InvalidObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRUCT:
+                    self.o3 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRUCT:
+                    self.o4 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('ctas_query_dryrun_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o3 is not None:
+            oprot.writeFieldBegin('o3', TType.STRUCT, 3)
+            self.o3.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o4 is not None:
+            oprot.writeFieldBegin('o4', TType.STRUCT, 4)
+            self.o4.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(ctas_query_dryrun_result)
+ctas_query_dryrun_result.thrift_spec = (
+    (0, TType.STRUCT, 'success', [Table, None], None, ),  # 0
+    (1, TType.STRUCT, 'o1', [AlreadyExistsException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [InvalidObjectException, None], None, ),  # 2
+    (3, TType.STRUCT, 'o3', [MetaException, None], None, ),  # 3
+    (4, TType.STRUCT, 'o4', [NoSuchObjectException, None], None, ),  # 4
 )
 
 

@@ -313,6 +313,15 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function add_check_constraint(\metastore\AddCheckConstraintRequest $req);
     /**
+     * @param \metastore\Table $tbl
+     * @return \metastore\Table
+     * @throws \metastore\AlreadyExistsException
+     * @throws \metastore\InvalidObjectException
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function ctas_query_dryrun(\metastore\Table $tbl);
+    /**
      * @param string $dbname
      * @param string $name
      * @param bool $deleteData

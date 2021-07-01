@@ -2623,6 +2623,77 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         return;
     }
 
+    public function ctas_query_dryrun(\metastore\Table $tbl)
+    {
+        $this->send_ctas_query_dryrun($tbl);
+        return $this->recv_ctas_query_dryrun();
+    }
+
+    public function send_ctas_query_dryrun(\metastore\Table $tbl)
+    {
+        $args = new \metastore\ThriftHiveMetastore_ctas_query_dryrun_args();
+        $args->tbl = $tbl;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'ctas_query_dryrun',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('ctas_query_dryrun', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_ctas_query_dryrun()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_ctas_query_dryrun_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_ctas_query_dryrun_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->success !== null) {
+            return $result->success;
+        }
+        if ($result->o1 !== null) {
+            throw $result->o1;
+        }
+        if ($result->o2 !== null) {
+            throw $result->o2;
+        }
+        if ($result->o3 !== null) {
+            throw $result->o3;
+        }
+        if ($result->o4 !== null) {
+            throw $result->o4;
+        }
+        throw new \Exception("ctas_query_dryrun failed: unknown result");
+    }
+
     public function drop_table($dbname, $name, $deleteData)
     {
         $this->send_drop_table($dbname, $name, $deleteData);

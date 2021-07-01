@@ -64,6 +64,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void add_not_null_constraint(AddNotNullConstraintRequest req)')
     print('  void add_default_constraint(AddDefaultConstraintRequest req)')
     print('  void add_check_constraint(AddCheckConstraintRequest req)')
+    print('  Table ctas_query_dryrun(Table tbl)')
     print('  void drop_table(string dbname, string name, bool deleteData)')
     print('  void drop_table_with_environment_context(string dbname, string name, bool deleteData, EnvironmentContext environment_context)')
     print('  void truncate_table(string dbName, string tableName,  partNames)')
@@ -619,6 +620,12 @@ elif cmd == 'add_check_constraint':
         print('add_check_constraint requires 1 args')
         sys.exit(1)
     pp.pprint(client.add_check_constraint(eval(args[0]),))
+
+elif cmd == 'ctas_query_dryrun':
+    if len(args) != 1:
+        print('ctas_query_dryrun requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.ctas_query_dryrun(eval(args[0]),))
 
 elif cmd == 'drop_table':
     if len(args) != 3:
