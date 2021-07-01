@@ -103,6 +103,7 @@ public class TestStatsReplicationScenarios {
         put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
         put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
         put(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET.varname, "false");
+        put(MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT.getVarname(), "2000");
       }};
     Map<String, String> replicatedOverrides = new HashMap<>();
 
