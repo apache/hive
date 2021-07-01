@@ -104,6 +104,7 @@ import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.join;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.newMetaException;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.rethrowException;
@@ -112,7 +113,6 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_COMMENT;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.DB_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -2241,6 +2241,19 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     throw new MetaException("Not yet implemented");
   }
 
+  @Override
+  public Table translate_table_dryrun(final Table tbl) throws AlreadyExistsException,
+          MetaException, InvalidObjectException, InvalidInputException {
+    Table transformedTbl = null;
+    if (!tbl.isSetCatName()) {
+      tbl.setCatName(getDefaultCatalog(conf));
+    }
+    if (transformer != null) {
+      transformedTbl = transformer.transformCreateTable(tbl, null, null);
+    }
+    return transformedTbl != null ? transformedTbl : tbl;
+  }
+
   private void create_table_core(final RawStore ms, final Table tbl,
                                  final EnvironmentContext envContext)
       throws AlreadyExistsException, MetaException,
@@ -2326,6 +2339,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (transformer != null) {
       tbl = transformer.transformCreateTable(tbl, processorCapabilities, processorId);
     }
+
     if (tbl.getParameters() != null) {
       tbl.getParameters().remove(TABLE_IS_CTAS);
     }

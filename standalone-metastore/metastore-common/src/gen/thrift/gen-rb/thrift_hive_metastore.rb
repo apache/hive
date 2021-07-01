@@ -686,6 +686,25 @@ module ThriftHiveMetastore
       return
     end
 
+    def translate_table_dryrun(tbl)
+      send_translate_table_dryrun(tbl)
+      return recv_translate_table_dryrun()
+    end
+
+    def send_translate_table_dryrun(tbl)
+      send_message('translate_table_dryrun', Translate_table_dryrun_args, :tbl => tbl)
+    end
+
+    def recv_translate_table_dryrun()
+      result = receive_message(Translate_table_dryrun_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'translate_table_dryrun failed: unknown result')
+    end
+
     def drop_table(dbname, name, deleteData)
       send_drop_table(dbname, name, deleteData)
       recv_drop_table()
@@ -4937,6 +4956,23 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'add_check_constraint', seqid)
     end
 
+    def process_translate_table_dryrun(seqid, iprot, oprot)
+      args = read_args(iprot, Translate_table_dryrun_args)
+      result = Translate_table_dryrun_result.new()
+      begin
+        result.success = @handler.translate_table_dryrun(args.tbl)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::InvalidObjectException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      rescue ::NoSuchObjectException => o4
+        result.o4 = o4
+      end
+      write_result(result, oprot, 'translate_table_dryrun', seqid)
+    end
+
     def process_drop_table(seqid, iprot, oprot)
       args = read_args(iprot, Drop_table_args)
       result = Drop_table_result.new()
@@ -9114,6 +9150,46 @@ module ThriftHiveMetastore
     FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Translate_table_dryrun_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TBL = 1
+
+    FIELDS = {
+      TBL => {:type => ::Thrift::Types::STRUCT, :name => 'tbl', :class => ::Table}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Translate_table_dryrun_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Table},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => ::NoSuchObjectException}
     }
 
     def struct_fields; FIELDS; end

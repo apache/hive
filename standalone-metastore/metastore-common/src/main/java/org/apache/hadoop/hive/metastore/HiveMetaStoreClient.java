@@ -1218,6 +1218,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   /**
+   * Dry run that translates table
+   *    *
+   *    * @param tbl
+   *    *          a table object
+   *    * @throws HiveException
+   */
+  @Override
+  public Table getTranslateTableDryrun(Table tbl) throws AlreadyExistsException,
+          InvalidObjectException, MetaException, NoSuchObjectException, TException {
+    return client.translate_table_dryrun(tbl);
+  }
+
+  /**
    * @param tbl
    * @throws MetaException
    * @throws NoSuchObjectException
