@@ -1174,26 +1174,29 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private void updateDatabaseProp(Connection dbConn, Statement stmt,
-                                  long dbId, String prop, String propValue) throws SQLException {
+  private void updateDatabaseProp(Connection dbConn, long dbId, String prop, String propValue) throws SQLException {
     ResultSet rs = null;
     PreparedStatement pst = null;
-    String query;
     try {
-      rs = stmt.executeQuery("SELECT \"PARAM_VALUE\" FROM \"DATABASE_PARAMS\" WHERE \"PARAM_KEY\" = " +
-              "'" + prop + "' AND \"DB_ID\" = " + dbId);
+      String query = "SELECT \"PARAM_VALUE\" FROM \"DATABASE_PARAMS\" WHERE \"PARAM_KEY\" = " +
+              "'" + prop + "' AND \"DB_ID\" = " + dbId;
+      pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, null);
+      rs = pst.executeQuery();
+      query = null;
       if (!rs.next()) {
         query = "INSERT INTO \"DATABASE_PARAMS\" VALUES ( " + dbId + " , '" + prop + "' , ? )";
-      } else {
+      } else if (!rs.getString(1).equals(propValue)) {
         query = "UPDATE \"DATABASE_PARAMS\" SET \"PARAM_VALUE\" = ? WHERE \"DB_ID\" = " + dbId +
                 " AND \"PARAM_KEY\" = '" + prop + "'";
       }
-      close(rs);
-      pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, Arrays.asList(propValue));
-      LOG.debug("Updating " + prop + " for db <" + query.replaceAll("\\?", "{}") + ">", propValue);
-      if (pst.executeUpdate() != 1) {
-        //only one row insert or update should happen
-        throw new RuntimeException("DATABASE_PARAMS is corrupted for databaseID: " + dbId);
+      closeStmt(pst);
+      if (query != null) {
+        pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, Arrays.asList(propValue));
+        LOG.debug("Updating " + prop + " for db <" + query.replaceAll("\\?", "{}") + ">", propValue);
+        if (pst.executeUpdate() != 1) {
+          //only one row insert or update should happen
+          throw new RuntimeException("DATABASE_PARAMS is corrupted for databaseID: " + dbId);
+        }
       }
     } finally {
       close(rs);
@@ -1201,7 +1204,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private void markDbAsReplIncompatible(Connection dbConn, String database) throws SQLException {
+  private void markDbAsReplIncompatible(Connection dbConn, String database) throws SQLException, MetaException {
     Statement stmt = dbConn.createStatement();
     String catalog = MetaStoreUtils.getDefaultCatalog(conf);
     String s = sqlGenerator.getDbProduct().getPrepareTxnStmt();
@@ -1210,9 +1213,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
     long dbId = getDatabaseId(dbConn, database, catalog);
     if (dbId == -1) {
-      return;
+      throw new MetaException("DB ID missing for database: " + database + " in catalog: " + catalog);
     }
-    updateDatabaseProp(dbConn, stmt, dbId, ReplConst.REPL_INCOMPATIBLE, ReplConst.TRUE);
+    updateDatabaseProp(dbConn, dbId, ReplConst.REPL_INCOMPATIBLE, ReplConst.TRUE);
     closeStmt(stmt);
   }
 
@@ -1245,7 +1248,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
 
       // not used select for update as it will be updated by single thread only from repl load
-      updateDatabaseProp(dbConn, stmt, dbId, ReplConst.REPL_TARGET_TABLE_PROPERTY, lastReplId);
+      updateDatabaseProp(dbConn, dbId, ReplConst.REPL_TARGET_TABLE_PROPERTY, lastReplId);
 
       if (table == null) {
         // if only database last repl id to be updated.
