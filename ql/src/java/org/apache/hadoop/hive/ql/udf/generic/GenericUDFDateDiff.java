@@ -70,19 +70,17 @@ public class GenericUDFDateDiff extends GenericUDF {
   private IntWritable output = new IntWritable();
   private final transient PrimitiveCategory[] tsInputTypes = new PrimitiveCategory[2];
 
-
   public GenericUDFDateDiff() {
   }
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    checkArgsSize(arguments,2,2);
-    checkArgPrimitive(arguments, 0);
-    checkArgPrimitive(arguments, 1);
-    checkArgGroups(arguments, 0, tsInputTypes, STRING_GROUP, DATE_GROUP);
-    checkArgGroups(arguments, 1, tsInputTypes, STRING_GROUP, DATE_GROUP);
-    obtainTimestampConverter(arguments,0, tsInputTypes, tsConverters);
-    obtainTimestampConverter(arguments,1, tsInputTypes, tsConverters);
+    checkArgsSize(arguments, 2, 2);
+    for (int i = 0; i < arguments.length; i++) {
+      checkArgPrimitive(arguments, i);
+      checkArgGroups(arguments, i, tsInputTypes, STRING_GROUP, DATE_GROUP);
+      obtainTimestampConverter(arguments, i, tsInputTypes, tsConverters);
+    }
     return PrimitiveObjectInspectorFactory.writableIntObjectInspector;
   }
 
@@ -96,10 +94,7 @@ public class GenericUDFDateDiff extends GenericUDF {
       return null;
     }
 
-    Date date1 = Date.ofEpochMilli(ts1.toEpochMilli());
-    Date date2 = Date.ofEpochMilli(ts2.toEpochMilli());
-
-    output.set(DateWritableV2.dateToDays(date1) - DateWritableV2.dateToDays(date2));
+    output.set(DateWritableV2.millisToDays(ts1.toEpochMilli()) - DateWritableV2.millisToDays(ts2.toEpochMilli()));
     return output;
   }
 
