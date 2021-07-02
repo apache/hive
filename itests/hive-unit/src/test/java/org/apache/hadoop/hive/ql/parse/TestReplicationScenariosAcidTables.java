@@ -108,6 +108,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
         put("metastore.warehouse.tenant.colocation", "true");
         put("hive.in.repl.test", "true");
         put("hive.txn.readonly.enabled", "true");
+        //HIVE-25267
+        put(MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT.getVarname(), "2000");
         put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
         put(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET.varname, "false");
       }};
