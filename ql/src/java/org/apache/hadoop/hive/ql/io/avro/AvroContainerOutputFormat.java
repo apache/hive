@@ -83,6 +83,8 @@ public class AvroContainerOutputFormat
     dfw.setMeta(AvroSerDe.WRITER_TIME_ZONE, TimeZone.getDefault().toZoneId().toString());
     dfw.setMeta(AvroSerDe.WRITER_PROLEPTIC, String.valueOf(
         HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_AVRO_PROLEPTIC_GREGORIAN)));
+    dfw.setMeta(AvroSerDe.WRITER_ZONE_CONVERSION_LEGACY, String
+        .valueOf(HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_AVRO_TIMESTAMP_WRITE_LEGACY_CONVERSION_ENABLED)));
     dfw.create(schema, path.getFileSystem(jobConf).create(path));
     return new AvroGenericRecordWriter(dfw);
   }

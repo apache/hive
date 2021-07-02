@@ -540,23 +540,27 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: 2000 (type: int), KEY.reducesinkkey0 (type: bigint), KEY.reducesinkkey1 (type: bigint), KEY.reducesinkkey8 (type: double), KEY.reducesinkkey2 (type: bigint), KEY.reducesinkkey3 (type: decimal(17,2)), KEY.reducesinkkey4 (type: decimal(17,2)), KEY.reducesinkkey5 (type: bigint), KEY.reducesinkkey6 (type: decimal(18,2)), KEY.reducesinkkey7 (type: decimal(18,2))
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
-                Statistics: Num rows: 75096831365509 Data size: 36947610647561300 Basic stats: COMPLETE Column stats: COMPLETE
+                expressions: KEY.reducesinkkey0 (type: bigint), KEY.reducesinkkey1 (type: bigint), KEY.reducesinkkey8 (type: double), KEY.reducesinkkey2 (type: bigint), KEY.reducesinkkey3 (type: decimal(17,2)), KEY.reducesinkkey4 (type: decimal(17,2)), KEY.reducesinkkey5 (type: bigint), KEY.reducesinkkey6 (type: decimal(18,2)), KEY.reducesinkkey7 (type: decimal(18,2))
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 75096831365509 Data size: 36647223322099264 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 100
-                  Statistics: Num rows: 100 Data size: 49200 Basic stats: COMPLETE Column stats: COMPLETE
-                  File Output Operator
-                    compressed: false
+                  Statistics: Num rows: 100 Data size: 48800 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: 2000 (type: int), _col0 (type: bigint), _col1 (type: bigint), _col2 (type: double), _col3 (type: bigint), _col4 (type: decimal(17,2)), _col5 (type: decimal(17,2)), _col6 (type: bigint), _col7 (type: decimal(18,2)), _col8 (type: decimal(18,2))
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
                     Statistics: Num rows: 100 Data size: 49200 Basic stats: COMPLETE Column stats: COMPLETE
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 100 Data size: 49200 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
-      limit: 100
+      limit: -1
       Processor Tree:
         ListSink
 

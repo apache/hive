@@ -74,6 +74,7 @@ import static org.junit.Assert.fail;
 /**
  * TestReplicationScenariosAcidTables - test replication for ACID tables.
  */
+@org.junit.Ignore("HIVE-25267")
 public class TestReplicationScenariosAcidTables extends BaseReplicationScenariosAcidTables {
 
   @BeforeClass
@@ -106,6 +107,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
         put("hive.metastore.disallow.incompatible.col.type.changes", "false");
         put("metastore.warehouse.tenant.colocation", "true");
         put("hive.in.repl.test", "true");
+        put("hive.txn.readonly.enabled", "true");
         put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
         put(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET.varname, "false");
       }};
@@ -173,6 +175,48 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     replica.loadFailure(replicatedDbName, primaryDbName);
     currentEventId = replica.getCurrentNotificationEventId().getEventId();
     assert lastEventId == currentEventId;
+  }
+
+  @Test
+  public void testReadOperationsNotCapturedInNotificationLog() throws Throwable {
+    //Perform empty bootstrap dump and load
+    String dbName = testName.getMethodName();
+    String replDbName = "replicated_" + testName.getMethodName();
+    try {
+      primary.run("CREATE DATABASE " + dbName + " WITH DBPROPERTIES ( '" +
+              SOURCE_OF_REPLICATION + "' = '1,2,3')");
+      primary.hiveConf.set("hive.txn.readonly.enabled", "true");
+      primary.run("CREATE TABLE " + dbName + ".t1 (id int)");
+      primary.run("CREATE table " + dbName
+              + ".source (q1 int , a1 int) stored as orc tblproperties (\"transactional\"=\"true\")");
+      primary.run("CREATE table " + dbName
+              + ".target (b int, p int) stored as orc tblproperties (\"transactional\"=\"true\")");
+      primary.run("INSERT into " + dbName + ".source values(1,5)");
+      primary.run("INSERT into " + dbName + ".target values(10,1)");
+      primary.dump(dbName);
+      replica.run("REPL LOAD " + dbName + " INTO " + replDbName);
+      //Perform empty incremental dump and load so that all db level properties are altered.
+      primary.dump(dbName);
+      replica.run("REPL LOAD " + dbName + " INTO " + replDbName);
+      primary.run("INSERT INTO " + dbName + ".t1 VALUES(1)");
+      long lastEventId = primary.getCurrentNotificationEventId().getEventId();
+      primary.run("USE " + dbName);
+      primary.run("DESCRIBE DATABASE " + dbName);
+      primary.run("DESCRIBE "+ dbName + ".t1");
+      primary.run("SELECT * FROM " + dbName + ".t1");
+      primary.run("SHOW TABLES " + dbName);
+      primary.run("SHOW TABLE EXTENDED LIKE 't1'");
+      primary.run("SHOW TBLPROPERTIES t1");
+      primary.run("EXPLAIN SELECT * from " + dbName + ".t1");
+      primary.run("SHOW LOCKS");
+      primary.run("EXPLAIN SHOW LOCKS");
+      primary.run("EXPLAIN LOCKS UPDATE target SET b = 1 WHERE p IN (SELECT t.q1 FROM source t WHERE t.a1=5)");
+      long currentEventId = primary.getCurrentNotificationEventId().getEventId();
+      Assert.assertEquals(lastEventId, currentEventId);
+    } finally {
+      primary.run("DROP DATABASE " + dbName + " CASCADE");
+      replica.run("DROP DATABASE " + replDbName + " CASCADE");
+    }
   }
 
   @Test
@@ -846,7 +890,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             primary.dump(primaryDbName);
 
     long lastReplId = Long.parseLong(bootStrapDump.lastReplicationId);
-    primary.testEventCounts(primaryDbName, lastReplId, null, null, 16);
+    primary.testEventCounts(primaryDbName, lastReplId, null, null, 12);
 
     // Test load
     replica.load(replicatedDbName, primaryDbName)
@@ -1648,8 +1692,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .verifyResults(new String[] {"1"});
 
     List<String> dumpClause = Arrays.asList("'" + ReplUtils.DFS_MAX_DIR_ITEMS_CONFIG + "'='"
-            + (ReplUtils.RESERVED_DIR_ITEMS_COUNT + 5) +"'",
-            "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES + "'='true'");
+            + (ReplUtils.RESERVED_DIR_ITEMS_COUNT + 5) +"'");
 
     WarehouseInstance.Tuple incrementalDump1 = primary.run("use " + primaryDbName)
             .run("insert into t1 values (2)")
@@ -1661,9 +1704,6 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("insert into t1 values (8)")
             .run("insert into t1 values (9)")
             .run("insert into t1 values (10)")
-            .run("create table t2(a int) clustered by (a) into 2 buckets" +
-                    " stored as orc TBLPROPERTIES ('transactional'='true')")
-            .run("insert into t2 values (100)")
             .dump(primaryDbName, dumpClause);
 
     int eventCount = primary.getNoOfEventsDumped(incrementalDump1.dumpLocation, conf);
@@ -1671,9 +1711,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     replica.load(replicatedDbName, primaryDbName)
             .run("select * from " + replicatedDbName + ".t1")
-            .verifyResults(new String[] {"1"})
-            .run("select * from " + replicatedDbName + ".t2")
-            .verifyResults(new String[] {"100"});
+            .verifyResults(new String[] {"1"});
 
     dumpClause = Arrays.asList("'" + ReplUtils.DFS_MAX_DIR_ITEMS_CONFIG + "'='1000'");
 

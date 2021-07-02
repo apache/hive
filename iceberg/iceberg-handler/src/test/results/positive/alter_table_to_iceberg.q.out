@@ -391,7 +391,7 @@ Table Parameters:
 	rawDataSize         	0                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	315                 
+	totalSize           	351                 
 #### A masked pattern was here ####
 	write.format.default	avro                
 	 	 

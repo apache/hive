@@ -159,10 +159,6 @@ public final class HiveMultiJoin extends AbstractRelNode {
     return inputs;
   }
 
-  @Override public List<RexNode> getChildExps() {
-    return ImmutableList.of(condition);
-  }
-
   @Override
   public RelNode accept(RexShuttle shuttle) {
     RexNode joinFilter = shuttle.apply(this.condition);

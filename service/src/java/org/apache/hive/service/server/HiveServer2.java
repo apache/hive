@@ -214,7 +214,9 @@ public class HiveServer2 extends CompositeService {
     try {
       if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
         MetricsFactory.init(hiveConf);
-        DeltaFilesMetricReporter.init(hiveConf);
+        if (MetastoreConf.getBoolVar(hiveConf, MetastoreConf.ConfVars.METRICS_ENABLED)) {
+          DeltaFilesMetricReporter.init(hiveConf);
+        }
       }
     } catch (Throwable t) {
       LOG.warn("Could not initiate the HiveServer2 Metrics system.  Metrics may not be reported.", t);
@@ -224,15 +226,14 @@ public class HiveServer2 extends CompositeService {
     cliService = new CLIService(this, false);
     addService(cliService);
     final HiveServer2 hiveServer2 = this;
-    Runnable oomHook = new HiveServer2OomHookRunner(hiveServer2);
     boolean isHttpTransportMode = isHttpTransportMode(hiveConf);
     boolean isAllTransportMode = isAllTransportMode(hiveConf);
     if (isHttpTransportMode || isAllTransportMode) {
-      thriftCLIService = new ThriftHttpCLIService(cliService, oomHook);
+      thriftCLIService = new ThriftHttpCLIService(cliService);
       addService(thriftCLIService);
     }
     if (!isHttpTransportMode || isAllTransportMode)  {
-      thriftCLIService = new ThriftBinaryCLIService(cliService, oomHook);
+      thriftCLIService = new ThriftBinaryCLIService(cliService);
       addService(thriftCLIService); //thriftCliService instance is used for zookeeper purposes
     }
 
@@ -367,6 +368,8 @@ public class HiveServer2 extends CompositeService {
             builder.setKeyStoreType(hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_TYPE));
             builder.setKeyManagerFactoryAlgorithm(
                 hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYMANAGERFACTORY_ALGORITHM));
+            builder.setExcludeCiphersuites(
+                hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_EXCLUDE_CIPHERSUITES));
             builder.setUseSSL(true);
           }
           if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SPNEGO)) {

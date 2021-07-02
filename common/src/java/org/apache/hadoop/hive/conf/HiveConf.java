@@ -1898,6 +1898,9 @@ public class HiveConf extends Configuration {
     HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL("hive.materializedview.rewriting.sql", true,
         "Whether to try to rewrite queries using the materialized views enabled for rewriting by comparing the sql " +
                 "query text with the materialized views query text"),
+    HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SUBQUERY_SQL("hive.materializedview.rewriting.sql.subquery", true,
+        "Whether to try to rewrite sub-queries using the materialized views enabled for rewriting by comparing the sql " +
+                "sub-query text with the materialized views query text"),
     HIVE_MATERIALIZED_VIEW_REWRITING_SELECTION_STRATEGY("hive.materializedview.rewriting.strategy", "heuristic",
         new StringSet("heuristic", "costbased"),
         "The strategy that should be used to cost and select the materialized view rewriting. \n" +
@@ -2243,8 +2246,13 @@ public class HiveConf extends Configuration {
         "This value controls whether date and timestamp type in Avro files was written using the hybrid or proleptic\n" +
         "calendar. Hybrid is the default."),
     HIVE_AVRO_TIMESTAMP_LEGACY_CONVERSION_ENABLED("hive.avro.timestamp.legacy.conversion.enabled", true,
-        "This value controls whether we use former Java time API to convert between timezones on files where timezone\n" +
-        "is not encoded in the metadata. This is for debugging."),
+        "Whether to use former Java date/time APIs to convert between timezones when reading timestamps from " +
+        "Avro files. The property has no effect when the file contains explicit metadata about the conversion " + 
+        "used to write the data; in this case reading conversion is based on the metadata."),
+    HIVE_AVRO_TIMESTAMP_WRITE_LEGACY_CONVERSION_ENABLED("hive.avro.timestamp.write.legacy.conversion.enabled", false,
+        "Whether to use former Java date/time APIs to convert between timezones when writing timestamps in " +
+        "Avro files. Once data are written to the file the effect is permanent (also reflected in the metadata)." +
+        "Changing the value of this property affects only new data written to the file."),
     HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS("hive.int.timestamp.conversion.in.seconds", false,
         "Boolean/tinyint/smallint/int/bigint value is interpreted as milliseconds during the timestamp conversion.\n" +
         "Set this flag to true to interpret the value as seconds to be consistent with float/double." ),
@@ -3693,9 +3701,6 @@ public class HiveConf extends Configuration {
         "The parent node in ZooKeeper used by HiveServer2 when supporting dynamic service discovery."),
     HIVE_SERVER2_ZOOKEEPER_PUBLISH_CONFIGS("hive.server2.zookeeper.publish.configs", true,
         "Whether we should publish HiveServer2's configs to ZooKeeper."),
-    HIVE_SERVER2_OOM_HOOKS("hive.server2.oom.hooks", null,
-        "A comma separated list of hooks which implement Runnable. Will be run in the order specified \n" +
-        "before HiveServer2 stops due to OutOfMemoryError."),
 
     // HiveServer2 global init file location
     HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
@@ -3741,6 +3746,9 @@ public class HiveConf extends Configuration {
         "SSL certificate keystore password for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_SSL_KEYSTORE_TYPE("hive.server2.webui.keystore.type", "",
         "SSL certificate keystore type for HiveServer2 WebUI."),
+    HIVE_SERVER2_WEBUI_SSL_EXCLUDE_CIPHERSUITES("hive.server2.webui.exclude.ciphersuites", "",
+        "SSL a list of exclude cipher suite names or regular expressions separated by comma"
+        + " for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_SSL_KEYMANAGERFACTORY_ALGORITHM("hive.server2.webui.keymanagerfactory.algorithm",
         "","SSL certificate key manager factory algorithm for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_USE_SPNEGO("hive.server2.webui.use.spnego", false,
@@ -4187,9 +4195,14 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_SSL_KEYSTORE_PASSWORD("hive.server2.keystore.password", "",
         "SSL certificate keystore password."),
     HIVE_SERVER2_SSL_KEYSTORE_TYPE("hive.server2.keystore.type", "",
-            "SSL certificate keystore type."),
+        "SSL certificate keystore type."),
     HIVE_SERVER2_SSL_KEYMANAGERFACTORY_ALGORITHM("hive.server2.keymanagerfactory.algorithm", "",
-            "SSL certificate keystore algorithm."),
+        "SSL certificate keystore algorithm."),
+    HIVE_SERVER2_SSL_HTTP_EXCLUDE_CIPHERSUITES("hive.server2.http.exclude.ciphersuites", "",
+        "SSL a list of exclude cipher suite names or regular expressions separated by comma "
+        + "for HiveServer2 http server."),
+    HIVE_SERVER2_SSL_BINARY_INCLUDE_CIPHERSUITES("hive.server2.binary.include.ciphersuites", "",
+        "SSL a list of include cipher suite names separated by colon for HiveServer2 binary Cli Server"),
     HIVE_SERVER2_BUILTIN_UDF_WHITELIST("hive.server2.builtin.udf.whitelist", "",
         "Comma separated list of builtin udf names allowed in queries.\n" +
         "An empty whitelist allows all builtin udfs to be executed. " +

@@ -67,12 +67,17 @@ class AvroSerializer {
   private static final Schema STRING_SCHEMA = Schema.create(Schema.Type.STRING);
   private AvroGenericRecordWritable cache = new AvroGenericRecordWritable();
   private boolean defaultProleptic;
+  private final boolean legacyConversion;
 
-  AvroSerializer() {}
+  AvroSerializer() {
+    this.legacyConversion = ConfVars.HIVE_AVRO_TIMESTAMP_WRITE_LEGACY_CONVERSION_ENABLED.defaultBoolVal;
+  }
 
   AvroSerializer(Configuration configuration) {
     this.defaultProleptic = HiveConf.getBoolVar(
         configuration, ConfVars.HIVE_AVRO_PROLEPTIC_GREGORIAN);
+    this.legacyConversion =
+        HiveConf.getBoolVar(configuration, ConfVars.HIVE_AVRO_TIMESTAMP_WRITE_LEGACY_CONVERSION_ENABLED);
   }
 
   // Hive is pretty simple (read: stupid) in writing out values via the serializer.
@@ -229,7 +234,7 @@ class AvroSerializer {
       long millis = defaultProleptic ? timestamp.toEpochMilli() :
           CalendarUtils.convertTimeToHybrid(timestamp.toEpochMilli());
       timestamp = TimestampTZUtil.convertTimestampToZone(
-          Timestamp.ofEpochMilli(millis), TimeZone.getDefault().toZoneId(), ZoneOffset.UTC);
+          Timestamp.ofEpochMilli(millis), TimeZone.getDefault().toZoneId(), ZoneOffset.UTC, legacyConversion);
       return timestamp.toEpochMilli();
     case UNKNOWN:
       throw new AvroSerdeException("Received UNKNOWN primitive category.");

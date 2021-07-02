@@ -68,6 +68,10 @@
        <version>${commons-lang3.version}</version>
     </dependency>
     <dependency>
+       <groupId>org.apache.commons</groupId>
+       <artifactId>commons-math3</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.orc</groupId>
       <artifactId>orc-core</artifactId>
     </dependency>

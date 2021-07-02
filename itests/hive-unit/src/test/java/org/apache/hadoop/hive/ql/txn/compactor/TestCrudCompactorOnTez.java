@@ -1667,6 +1667,170 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     dataProvider.dropTable(tableName);
   }
 
+  @Test
+  public void testMajorCompactionAfterTwoMergeStatements() throws Exception {
+    String dbName = "default";
+    String tableName = "comp_and_merge_test";
+    TestDataProvider dataProvider = new TestDataProvider();
+    // Create a non bucketed test table and insert some initial data
+    executeStatementOnDriver(
+        "CREATE TABLE " + tableName + "(id int,value string) STORED AS ORC TBLPROPERTIES ('transactional'='true')",
+        driver);
+    executeStatementOnDriver("insert into " + tableName
+        + " values(1, 'value_1'),(2, 'value_2'),(3, 'value_3'),(4, 'value_4'),(5, 'value_5')", driver);
+
+    // Find the location of the table
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    Table table = msClient.getTable(dbName, tableName);
+    FileSystem fs = FileSystem.get(conf);
+
+    runMergeStatement(tableName,
+        Arrays.asList("1, 'newvalue_1'", "2, 'newvalue_2'", "3, 'newvalue_3'", "6, 'value_6'", "7, 'value_7'"));
+    runMergeStatement(tableName, Arrays.asList("1, 'newestvalue_1'", "2, 'newestvalue_2'", "5, 'newestvalue_5'",
+        "7, 'newestvalue_7'", "8, 'value_8'"));
+
+    List<String> expectedData = dataProvider.getAllData(tableName);
+
+    // Run a query-based MAJOR compaction
+    CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MAJOR, true);
+    // Clean up resources
+    CompactorTestUtil.runCleaner(conf);
+    // Only 1 compaction should be in the response queue with succeeded state
+    verifySuccessfulCompaction(1);
+
+    // Verify delta directories after compaction
+    List<String> actualDeltasAfterComp =
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null);
+    Assert.assertEquals("Base directory does not match after compaction",
+        Collections.singletonList("base_0000003_v0000014"), actualDeltasAfterComp);
+
+    // Verify bucket files in delta dirs
+    List<String> expectedBucketFiles = Collections.singletonList("bucket_00000");
+    Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
+        CompactorTestUtil.getBucketFileNames(fs, table, null, actualDeltasAfterComp.get(0)));
+
+    // Verify contents of bucket files.
+    List<String> expectedRsBucket0 = Arrays.asList("{\"writeid\":1,\"bucketid\":536870912,\"rowid\":3}\t4\tvalue_4",
+        "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t6\tvalue_6",
+        "{\"writeid\":2,\"bucketid\":536870913,\"rowid\":2}\t3\tnewvalue_3",
+        "{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t8\tvalue_8",
+        "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":0}\t5\tnewestvalue_5",
+        "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":1}\t7\tnewestvalue_7",
+        "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":2}\t1\tnewestvalue_1",
+        "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":3}\t2\tnewestvalue_2");
+    List<String> rsBucket0 = executeStatementOnDriverAndReturnResults("select ROW__ID, * from " + tableName, driver);
+    Assert.assertEquals(expectedRsBucket0, rsBucket0);
+    // Verify all contents
+    List<String> actualData = dataProvider.getAllData(tableName);
+    Assert.assertEquals(expectedData, actualData);
+    // Clean up
+    dataProvider.dropTable(tableName);
+    msClient.close();
+  }
+
+  @Test
+  public void testMinorCompactionAfterMultipleMergeStatements() throws Exception {
+    String dbName = "default";
+    String tableName = "minor_comp_and_merge_test";
+    TestDataProvider dataProvider = new TestDataProvider();
+    // Create a non bucketed test table and insert some initial data
+    executeStatementOnDriver(
+        "CREATE TABLE " + tableName + "(id int,value string) STORED AS ORC TBLPROPERTIES ('transactional'='true')",
+        driver);
+    executeStatementOnDriver("insert into " + tableName
+        + " values(1, 'value_1'),(2, 'value_2'),(3, 'value_3'),(4, 'value_4'),(5, 'value_5'), (6, 'value_6'), (7, 'value_7'), (8, 'value_8')",
+        driver);
+
+    // Find the location of the table
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    Table table = msClient.getTable(dbName, tableName);
+    FileSystem fs = FileSystem.get(conf);
+
+    runMergeStatement(tableName, Arrays.asList("1, 'newvalue_1'", "2, 'newvalue_2'", "4, 'newvalue_4'",
+        "6, 'newvalue_6'", "9, 'value_9'", "10, 'value_10'", "11, 'value_11'", "12, 'value_12'"));
+    runMergeStatement(tableName, Arrays.asList("2, 'newestvalue_2'", "4, 'newestvalue_4'", "6, 'newestvalue_6'",
+        "10, 'newestvalue_10'", "11, 'newestvalue_11'", "13, 'value_13'", "14, 'value_14'"));
+
+    // Run a query-based MAJOR compaction
+    CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
+    // Clean up resources
+    CompactorTestUtil.runCleaner(conf);
+    // Only 1 compaction should be in the response queue with succeeded state
+    verifySuccessfulCompaction(1);
+
+    runMergeStatement(tableName, Arrays.asList("1, 'latestvalue_1'", "4, 'latestvalue_4'", "5, 'latestvalue_5'",
+        "9, 'latestvalue_9'", "11, 'latestvalue_11'", "13, 'latestvalue_13'", "15, 'value_15'"));
+    List<String> expectedData = dataProvider.getAllData(tableName);
+
+    // Run a query-based MAJOR compaction
+    CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
+    // Clean up resources
+    CompactorTestUtil.runCleaner(conf);
+    // Only 1 compaction should be in the response queue with succeeded state
+    verifySuccessfulCompaction(2);
+
+    // Verify delta and delete delta directories after compaction
+    List<String> actualDeltasAfterComp =
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null);
+    Assert.assertEquals("Delta directory does not match after compaction",
+        Collections.singletonList("delta_0000001_0000004_v0000032"), actualDeltasAfterComp);
+
+    List<String> actualDeleteDeltasAfterComp =
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table, null);
+    Assert.assertEquals("Delete delta directory does not match after compaction",
+        Collections.singletonList("delete_delta_0000001_0000004_v0000032"), actualDeleteDeltasAfterComp);
+
+    // Verify bucket files in delta dirs
+    List<String> expectedBucketFiles = Collections.singletonList("bucket_00000");
+    Assert.assertEquals("Bucket name in delta directory is not matching after compaction", expectedBucketFiles,
+        CompactorTestUtil.getBucketFileNames(fs, table, null, actualDeltasAfterComp.get(0)));
+    Assert.assertEquals("Bucket name in delete delta directory is not matching after compaction", expectedBucketFiles,
+        CompactorTestUtil.getBucketFileNames(fs, table, null, actualDeleteDeltasAfterComp.get(0)));
+
+    // Verify contents of bucket files.
+    List<String> expectedRsBucket0 =
+        Arrays.asList("{\"writeid\":4,\"bucketid\":536870913,\"rowid\":2}\t1\tlatestvalue_1",
+            "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":2}\t2\tnewestvalue_2",
+            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":2}\t3\tvalue_3",
+            "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":5}\t4\tlatestvalue_4",
+            "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":0}\t5\tlatestvalue_5",
+            "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":4}\t6\tnewestvalue_6",
+            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":6}\t7\tvalue_7",
+            "{\"writeid\":1,\"bucketid\":536870912,\"rowid\":7}\t8\tvalue_8",
+            "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":1}\t9\tlatestvalue_9",
+            "{\"writeid\":3,\"bucketid\":536870913,\"rowid\":0}\t10\tnewestvalue_10",
+            "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":4}\t11\tlatestvalue_11",
+            "{\"writeid\":2,\"bucketid\":536870912,\"rowid\":3}\t12\tvalue_12",
+            "{\"writeid\":4,\"bucketid\":536870913,\"rowid\":3}\t13\tlatestvalue_13",
+            "{\"writeid\":3,\"bucketid\":536870912,\"rowid\":1}\t14\tvalue_14",
+            "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t15\tvalue_15");
+    List<String> rsBucket0 =
+        executeStatementOnDriverAndReturnResults("select ROW__ID, * from " + tableName + " order by id", driver);
+    Assert.assertEquals(expectedRsBucket0, rsBucket0);
+    // Verify all contents
+    List<String> actualData = dataProvider.getAllData(tableName);
+    Assert.assertEquals(expectedData, actualData);
+    // Clean up
+    dataProvider.dropTable(tableName);
+    msClient.close();
+  }
+
+  private void runMergeStatement(String tableName, List<String> values) throws Exception {
+    executeStatementOnDriver("DROP TABLE IF EXISTS merge_source", driver);
+    executeStatementOnDriver("CREATE TABLE merge_source(id int,value string) STORED AS ORC", driver);
+    StringBuilder sb = new StringBuilder();
+    for (String value : values) {
+      sb.append("(");
+      sb.append(value);
+      sb.append("),");
+    }
+    executeStatementOnDriver("INSERT INTO merge_source VALUES " + sb.toString().substring(0, sb.length() - 1), driver);
+    executeStatementOnDriver("MERGE INTO " + tableName
+        + " AS T USING merge_source AS S ON T.ID = S.ID WHEN MATCHED AND (T.value != S.value AND S.value IS NOT NULL) THEN UPDATE SET value = S.value WHEN NOT MATCHED THEN INSERT VALUES (S.ID, S.value)",
+        driver);
+    executeStatementOnDriver("DROP TABLE merge_source", driver);
+  }
+
   /**
    * Make sure db is specified in compaction queries.
    */

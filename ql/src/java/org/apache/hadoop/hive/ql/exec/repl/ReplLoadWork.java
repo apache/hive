@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -38,9 +39,11 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.session.LineageState;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.metrics2.util.MBeans;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.management.ObjectName;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
@@ -48,15 +51,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
+import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_EXECUTIONID;
+import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_SCHEDULENAME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_STATS_TOP_EVENTS_COUNTS;
 
 @Explain(displayName = "Replication Load Operator", explainLevels = { Explain.Level.USER,
     Explain.Level.DEFAULT,
     Explain.Level.EXTENDED })
-public class ReplLoadWork implements Serializable {
+public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
   private static final Logger LOG = LoggerFactory.getLogger(ReplLoadWork.class);
+  private static boolean enableMBeansRegistrationForTests = false;
+  public static boolean disableMbeanUnregistrationForTests = false;
   final String dbNameToLoadIn;
   final ReplScope currentReplScope;
   final String dumpDirectory;
@@ -74,6 +83,8 @@ public class ReplLoadWork implements Serializable {
   private transient Task<?> rootTask;
   private Iterator<String> externalTableDataCopyItr;
   private ReplStatsTracker replStatsTracker;
+  private String scheduledQueryName;
+  private String executionId;
 
   /*
   these are sessionState objects that are copied over to work to allow for parallel execution.
@@ -105,6 +116,7 @@ public class ReplLoadWork implements Serializable {
 
     rootTask = null;
     if (isIncrementalDump) {
+      ObjectName name = initializeMetricsMBeans(hiveConf, dbNameToLoadIn);
       if (replStatsTracker == null) {
         int numEvents = hiveConf.getIntVar(REPL_STATS_TOP_EVENTS_COUNTS);
         if (numEvents < 0) {
@@ -113,6 +125,9 @@ public class ReplLoadWork implements Serializable {
           numEvents = REPL_STATS_TOP_EVENTS_COUNTS.defaultIntVal;
         }
         replStatsTracker = new ReplStatsTracker(numEvents);
+      }
+      if (metricCollector != null) {
+        metricCollector.setMetricsMBean(name);
       }
       incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
           new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector,
@@ -139,6 +154,43 @@ public class ReplLoadWork implements Serializable {
       this.constraintsIterator = new ConstraintEventsIterator(
               new Path(dumpDirectory, EximUtil.METADATA_PATH_NAME).toString(), hiveConf);
       incrementalLoadTasksBuilder = null;
+    }
+  }
+
+  private ObjectName initializeMetricsMBeans(HiveConf hiveConf, String dbNameToLoadIn) {
+    try {
+      scheduledQueryName = hiveConf.get(SCHEDULED_QUERY_SCHEDULENAME, "");
+      // If the scheduled query name isn't available we don't enable JMX.
+      if (!StringUtils.isEmpty(scheduledQueryName) || enableMBeansRegistrationForTests) {
+        executionId = hiveConf.get(SCHEDULED_QUERY_EXECUTIONID, "N/A");
+        String metricsName = "Database-" + dbNameToLoadIn + " Policy-" + scheduledQueryName;
+        // Clean-up any MBean registered previously, which couldn't be cleaned up due to some previous error.
+        unRegisterMBeanIfRegistered("HiveServer2", metricsName, Collections.emptyMap());
+        ObjectName name = MBeans.register("HiveServer2", metricsName, this);
+        return name;
+      }
+    } catch (Exception e) {
+      LOG.error("Failed to initialise Metrics MBean, Status won't be updated in the JMX", e);
+    }
+    return null;
+  }
+
+  // Unregisters MBeans by forming the Metrics same as how the Hadoop code forms during MBean registeration.
+  private void unRegisterMBeanIfRegistered(String serviceName, String nameName,
+      Map<String, String> additionalParameters) {
+
+    String additionalKeys =
+        additionalParameters.entrySet().stream().map(entry -> entry.getKey() + "=" + entry.getValue())
+            .collect(Collectors.joining(","));
+
+    String nameStr = "Hadoop:" + "service=" + serviceName + "," + "name=" + nameName + (additionalKeys.isEmpty() ? "" :
+        "," + additionalKeys);
+    try {
+      ObjectName name = ObjectName.getInstance(nameStr);
+      MBeans.unregister(name);
+      LOG.debug("Successfully attempted to unregistered the MBean {}", name);
+    } catch (Exception e) {
+      LOG.debug("Unable to unregister MBean {}", nameStr, e);
     }
   }
 
@@ -183,6 +235,7 @@ public class ReplLoadWork implements Serializable {
     return rootTask;
   }
 
+  @Override
   public String getDumpDirectory() {return dumpDirectory;}
   
   public void setRootTask(Task<?> rootTask) {
@@ -254,5 +307,76 @@ public class ReplLoadWork implements Serializable {
 
   public void setExternalTableDataCopyItr(Iterator<String> externalTableDataCopyItr) {
     this.externalTableDataCopyItr = externalTableDataCopyItr;
+  }
+
+
+  @Override
+  public String getSourceDatabase() {
+    return sourceDbName;
+  }
+
+  @Override
+  public String getTargetDatabase() {
+    return dbNameToLoadIn;
+  }
+
+  @Override
+  public String getReplicationType() {
+    return isIncrementalLoad() ? "INCREMENTAL" : "BOOTSTRAP";
+  }
+
+  @Override
+  public String getScheduledQueryName() {
+    return scheduledQueryName;
+  }
+
+  @Override
+  public String getExecutionId() {
+    return executionId;
+  }
+
+  @Override
+  public String getReplStats() {
+    try {
+      if (replStatsTracker != null) {
+        return replStatsTracker.toString();
+      } else {
+        return "N/A";
+      }
+    } catch (Exception e) {
+      return "Got Error" + e.getMessage();
+    }
+  }
+
+  @Override
+  public String getCurrentEventId() {
+    try {
+      if (replStatsTracker != null) {
+        return replStatsTracker.getLastEventId();
+      } else {
+        return "";
+      }
+    } catch (Exception e) {
+      return "Got Error" + e.getMessage();
+    }
+  }
+
+  @Override
+  public Long getLastEventId() {
+    if (incrementalLoadTasksBuilder != null) {
+      return incrementalLoadTasksBuilder.eventTo();
+    }
+    return -1L;
+  }
+
+  /**
+   * Enable JMX tracking for testing.
+   * @param enableRegistration enable registering MBeans.
+   * @param disableUnregistration disable unregistering MBeans, so that value can be used by tests to validate.
+   */
+  @VisibleForTesting
+  public static void setMbeansParamsForTesting(boolean enableRegistration, boolean disableUnregistration) {
+    enableMBeansRegistrationForTests = enableRegistration;
+    disableMbeanUnregistrationForTests = disableUnregistration;
   }
 }

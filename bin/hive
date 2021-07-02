@@ -55,6 +55,10 @@ while [ $# -gt 0 ]; do
       SERVICE=llapdump
       shift
       ;;
+    --replMigration)
+      SERVICE=replMigration
+      shift
+      ;;
     --skiphadoopversion)
       SKIP_HADOOPVERSION=true
       shift
@@ -97,7 +101,7 @@ if [[ "$SERVICE" == "beeline" && ! -z "$BEELINE_URL_LEGACY" ]] ; then
   SERVICE_ARGS=("${SERVICE_ARGS[@]}" "-c" "${BEELINE_URL_LEGACY}")
 fi
 
-if [[ "$SERVICE" =~ ^(help|version|orcfiledump|rcfilecat|schemaTool|cleardanglingscratchdir|metastore|beeline|llapstatus|llap)$ ]] ; then
+if [[ "$SERVICE" =~ ^(help|version|orcfiledump|rcfilecat|schemaTool|cleardanglingscratchdir|metastore|beeline|llapstatus)$ ]] ; then
   SKIP_HBASECP=true
 fi
 
@@ -200,6 +204,54 @@ else
     CLASSPATH=${CLASSPATH}:${AUX_CLASSPATH}
 fi
 
+if [ "$SKIP_HBASECP" = false ]; then
+  # HBase detection. Need bin/hbase and a conf dir for building classpath entries.
+  # Start with BigTop defaults for HBASE_HOME and HBASE_CONF_DIR.
+  HBASE_HOME=${HBASE_HOME:-"/usr/lib/hbase"}
+  HBASE_CONF_DIR=${HBASE_CONF_DIR:-"/etc/hbase/conf"}
+  if [[ ! -d $HBASE_CONF_DIR ]] ; then
+    # not explicitly set, nor in BigTop location. Try looking in HBASE_HOME.
+    HBASE_CONF_DIR="$HBASE_HOME/conf"
+  fi
+
+  # perhaps we've located the HBase config. if so, include it on classpath.
+  if [[ -d $HBASE_CONF_DIR ]] ; then
+    if [ "$HBASE_MR_CLASSPATH" != "" ]; then
+      HBASE_MR_CLASSPATH="${HBASE_MR_CLASSPATH},${HBASE_CONF_DIR}"
+    else
+      HBASE_MR_CLASSPATH="${HBASE_CONF_DIR}"
+    fi
+    CLASSPATH="${CLASSPATH}:${HBASE_CONF_DIR}"
+  fi
+
+  # look for the hbase script. First check HBASE_HOME and then ask PATH.
+  if [[ -e $HBASE_HOME/bin/hbase ]] ; then
+    HBASE_BIN="$HBASE_HOME/bin/hbase"
+  fi
+  HBASE_BIN=${HBASE_BIN:-"$(which hbase)"}
+
+  # perhaps we've located HBase. If so, include its details on the classpath
+  if [[ -n $HBASE_BIN ]] ; then
+    # exclude ZK, PB, and Guava (See HIVE-2055)
+    # depends on HBASE-8438 (hbase-0.94.14+, hbase-0.96.1+) for `hbase mapredcp` command
+    for x in $($HBASE_BIN mapredcp 2>&2 | tr ':' '\n') ; do
+      if [[ $x == *zookeeper* || $x == *protobuf-java* || $x == *guava* || $x == *slf4j* || $x == *log4j* ]] ; then
+        continue
+      fi
+      if [ "$HBASE_MR_CLASSPATH" != "" ]; then
+        HBASE_MR_CLASSPATH="${HBASE_MR_CLASSPATH},${x}"
+      else
+        HBASE_MR_CLASSPATH="${x}"
+      fi
+      CLASSPATH="${CLASSPATH}:${x}"
+    done
+  fi
+fi
+
+if [[ "$SERVICE" == "llap" && ! -z "$HBASE_MR_CLASSPATH" ]] ; then
+  SERVICE_ARGS=("${SERVICE_ARGS[@]}" "-k" "${HBASE_MR_CLASSPATH}")
+fi
+
 # supress the HADOOP_HOME warnings in 1.x.x
 export HADOOP_HOME_WARN_SUPPRESS=true 
 
@@ -289,41 +341,6 @@ if [ "$EXECUTE_WITH_JAVA" == "false" ]; then
       echo `$HADOOP version`
       exit 6
     fi
-  fi
-fi
-
-if [ "$SKIP_HBASECP" = false ]; then
-  # HBase detection. Need bin/hbase and a conf dir for building classpath entries.
-  # Start with BigTop defaults for HBASE_HOME and HBASE_CONF_DIR.
-  HBASE_HOME=${HBASE_HOME:-"/usr/lib/hbase"}
-  HBASE_CONF_DIR=${HBASE_CONF_DIR:-"/etc/hbase/conf"}
-  if [[ ! -d $HBASE_CONF_DIR ]] ; then
-    # not explicitly set, nor in BigTop location. Try looking in HBASE_HOME.
-    HBASE_CONF_DIR="$HBASE_HOME/conf"
-  fi
-  
-  # perhaps we've located the HBase config. if so, include it on classpath.
-  if [[ -d $HBASE_CONF_DIR ]] ; then
-    export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${HBASE_CONF_DIR}"
-  fi
-  
-  # look for the hbase script. First check HBASE_HOME and then ask PATH.
-  if [[ -e $HBASE_HOME/bin/hbase ]] ; then
-    HBASE_BIN="$HBASE_HOME/bin/hbase"
-  fi
-  HBASE_BIN=${HBASE_BIN:-"$(which hbase)"}
-  
-  # perhaps we've located HBase. If so, include its details on the classpath
-  if [[ -n $HBASE_BIN ]] ; then
-    # exclude ZK, PB, and Guava (See HIVE-2055)
-    # depends on HBASE-8438 (hbase-0.94.14+, hbase-0.96.1+) for `hbase mapredcp` command
-    for x in $($HBASE_BIN mapredcp 2>&2 | tr ':' '\n') ; do
-      if [[ $x == *zookeeper* || $x == *protobuf-java* || $x == *guava* ]] ; then
-        continue
-      fi
-      # TODO: should these should be added to AUX_PARAM as well?
-      export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${x}"
-    done
   fi
 fi
 

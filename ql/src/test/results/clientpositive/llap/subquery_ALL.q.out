@@ -448,7 +448,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject($f0=[$4])
+HiveProject(_o__c0=[$4])
   HiveJoin(condition=[OR($1, AND(>($4, $0), $2, IS NOT TRUE(OR(<=($4, $0), $3))))], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(m=[$0], ==[=($1, 0)], <>=[<>($1, 0)], >=[>($1, $2)])
       HiveAggregate(group=[{}], m=[MAX($1)], c=[COUNT()], d=[COUNT($1)])

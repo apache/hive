@@ -79,7 +79,7 @@ public class HiveJoinConstraintsRule extends RelOptRule {
   public void onMatch(RelOptRuleCall call) {
     final Project project = call.rel(0);
     final RexBuilder rexBuilder = project.getCluster().getRexBuilder();
-    List<RexNode> topProjExprs = project.getChildExps();
+    List<RexNode> topProjExprs = project.getProjects();
     Join join = call.rel(1);
     final JoinRelType joinType = join.getJoinType();
     final RelNode leftInput = join.getLeft();
@@ -288,7 +288,7 @@ public class HiveJoinConstraintsRule extends RelOptRule {
 
 
   private void rewrite(final Mode mode, final RelNode inputToKeep, final RelNode inputToRemove,
-      final Join join, List<RexNode> topProjExprs, RelOptRuleCall call, final RelNode project, List<RexNode> nullableNodes) {
+      final Join join, List<RexNode> topProjExprs, RelOptRuleCall call, final Project project, List<RexNode> nullableNodes) {
     RexBuilder rexBuilder = join.getCluster().getRexBuilder();
 
     final RelNode leftInput = join.getLeft();
@@ -338,7 +338,7 @@ public class HiveJoinConstraintsRule extends RelOptRule {
           .push(leftInput).push(rightInput)
           .join(JoinRelType.INNER, join.getCondition())
           .convert(call.rel(1).getRowType(), false) // Preserve nullability
-          .project(project.getChildExps())
+          .project(project.getProjects())
           .build());
     }
   }

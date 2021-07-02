@@ -293,9 +293,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       "SELECT COUNT(*), MIN(\"TXN_ID\"), ({0} - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"='" +
         TxnStatus.ABORTED + "') \"A\" CROSS JOIN (" +
       "SELECT COUNT(*), ({0} - MIN(\"HL_ACQUIRED_AT\"))/1000 FROM \"HIVE_LOCKS\") \"HL\" CROSS JOIN (" +
-      "SELECT COUNT(*) FROM (SELECT COUNT(\"TXN_ID\"), \"T2W_DATABASE\", \"T2W_TABLE\" FROM \"TXN_TO_WRITE_ID\" " +
-          "INNER JOIN \"TXNS\" ON \"T2W_TXNID\" = \"TXN_ID\" WHERE \"TXN_STATE\"='" + TxnStatus.ABORTED + "' " +
-          "GROUP BY \"T2W_DATABASE\", \"T2W_TABLE\" HAVING COUNT(\"TXN_ID\") > ?) \"L\") \"L\" CROSS JOIN (" +
+      "SELECT COUNT(*) FROM (SELECT COUNT(\"TXN_ID\"), \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" FROM \"TXN_COMPONENTS\" " +
+          "INNER JOIN \"TXNS\" ON \"TC_TXNID\" = \"TXN_ID\" WHERE \"TXN_STATE\"='" + TxnStatus.ABORTED + "' " +
+          "GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" HAVING COUNT(\"TXN_ID\") > ?) \"L\") \"L\" CROSS JOIN (" +
       "SELECT ({0} - MIN(\"CQ_COMMIT_TIME\"))/1000 from \"COMPACTION_QUEUE\" WHERE " +
           "\"CQ_STATE\"=''" + Character.toString(READY_FOR_CLEANING) + "'') OLDEST_CLEAN";
 
@@ -1497,7 +1497,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to commit");
         dbConn.commit();
 
-        Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS).inc();
+        if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+          Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_COMMITTED_TXNS).inc();
+        }
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
@@ -4723,7 +4725,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         numAborted = getUpdateCount(numUpdateQueries, affectedRowsByQuery);
       }
 
-      Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_ABORTED_TXNS).inc(txnids.size());
+      if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+        Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_ABORTED_TXNS).inc(txnids.size());
+      }
       return numAborted;
     } finally {
       closeStmt(stmt);
@@ -5363,7 +5367,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
         }
         LOG.info("Aborted " + numTxnsAborted + " transactions due to timeout");
-        Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_TIMED_OUT_TXNS).inc(numTxnsAborted);
+        if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+          Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_TIMED_OUT_TXNS).inc(numTxnsAborted);
+        }
       }
     } catch (SQLException ex) {
       LOG.warn("Aborting timed out transactions failed due to " + getMessage(ex), ex);

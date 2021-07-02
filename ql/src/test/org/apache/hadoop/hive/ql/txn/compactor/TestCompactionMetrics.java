@@ -58,6 +58,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanInfo;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -680,29 +685,26 @@ public class TestCompactionMetrics  extends CompactorTest {
     DeltaFilesMetricReporter.getInstance().submit(tezCounters);
     Thread.sleep(1000);
 
-    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
-    Map<String, Gauge> gauges = metrics.getMetricRegistry().getGauges();
-
     Assert.assertTrue(
       equivalent(
         new HashMap<String, String>() {{
           put("acid_v2", "250");
           put("acid/p=1", "200");
-        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS, gauges)));
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS)));
 
     Assert.assertTrue(
       equivalent(
         new HashMap<String, String>() {{
           put("acid_v2", "200");
           put("acid/p=3", "250");
-        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS, gauges)));
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS)));
 
     Assert.assertTrue(
       equivalent(
         new HashMap<String, String>() {{
           put("acid/p=1", "250");
           put("acid/p=2", "200");
-        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS, gauges)));
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS)));
 
     //time-out existing entries
     Thread.sleep(5000);
@@ -716,7 +718,7 @@ public class TestCompactionMetrics  extends CompactorTest {
       equivalent(
         new HashMap<String, String>() {{
           put("acid/p=2", "150");
-        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS, gauges)));
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS)));
 
     DeltaFilesMetricReporter.close();
   }
@@ -725,9 +727,16 @@ public class TestCompactionMetrics  extends CompactorTest {
     return lhs.size() == rhs.size() && Maps.difference(lhs, rhs).areEqual();
   }
 
-  static Map<String, String> gaugeToMap(String metric, Map<String, Gauge> gauges) {
-    String value = (String) gauges.get(metric).getValue();
-    return value.isEmpty()? Collections.emptyMap() : Splitter.on(',').withKeyValueSeparator("->").split(value);
+  static Map<String, String> gaugeToMap(String metric) throws Exception {
+    MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+    ObjectName oname = new ObjectName(DeltaFilesMetricReporter.OBJECT_NAME_PREFIX + metric);
+    MBeanInfo mbeanInfo = mbs.getMBeanInfo(oname);
+
+    Map<String, String> result = new HashMap<>();
+    for (MBeanAttributeInfo attr : mbeanInfo.getAttributes()) {
+      result.put(attr.getName(), String.valueOf(mbs.getAttribute(oname, attr.getName())));
+    }
+    return result;
   }
 
   @Test
@@ -745,9 +754,57 @@ public class TestCompactionMetrics  extends CompactorTest {
     Set<Long> abort2 = LongStream.range(21, 31).boxed().collect(Collectors.toSet());
     Set<Long> abort3 = LongStream.range(41, 61).boxed().collect(Collectors.toSet());
 
-    burnThroughTransactions(t1.getDbName(), t1.getTableName(), 20, null, abort1);
-    burnThroughTransactions(t2.getDbName(), t2.getTableName(), 20, null, abort2);
-    burnThroughTransactions(t3.getDbName(), t3.getTableName(), 30, null, abort3);
+    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, dbName);
+    comp.setOperationType(DataOperationType.INSERT);
+    LockRequest lockReq = new LockRequest(Lists.newArrayList(comp), "me", "localhost");
+
+    comp.setTablename(t1.getTableName());
+    burnThroughTransactions(t1.getDbName(), t1.getTableName(), 20, null, abort1, lockReq);
+    comp.setTablename(t2.getTableName());
+    burnThroughTransactions(t2.getDbName(), t2.getTableName(), 20, null, abort2, lockReq);
+    comp.setTablename(t3.getTableName());
+    burnThroughTransactions(t3.getDbName(), t3.getTableName(), 30, null, abort3, lockReq);
+
+    runAcidMetricService();
+
+    Assert.assertEquals(MetricsConstants.TABLES_WITH_X_ABORTED_TXNS + " value incorrect",
+        2, Metrics.getOrCreateGauge(MetricsConstants.TABLES_WITH_X_ABORTED_TXNS).intValue());
+  }
+
+  @Test
+  public void testPartTablesWithXAbortedTxns() throws Exception {
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_TABLES_WITH_ABORTED_TXNS_THRESHOLD, 4);
+
+    String dbName = "default";
+    String tblName = "table";
+
+    String part1 = "p1";
+    String part2 = "p2";
+    String part3 = "p3";
+
+    Table t = newTable(dbName, tblName, true);
+    newPartition(t, part1);
+    newPartition(t, part2);
+    newPartition(t, part3);
+    String partPattern = t.getPartitionKeys().get(0).getName() + "=%s";
+
+    Set<Long> abort1 = LongStream.range(1, 6).boxed().collect(Collectors.toSet());
+    Set<Long> abort2 = LongStream.range(11, 16).boxed().collect(Collectors.toSet());
+
+    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, dbName);
+    comp.setTablename(tblName);
+    comp.setOperationType(DataOperationType.INSERT);
+    LockRequest lockReq = new LockRequest(Lists.newArrayList(comp), "me", "localhost");
+
+
+    comp.setPartitionname(String.format(partPattern, part1));
+    burnThroughTransactions(t.getDbName(), t.getTableName(), 10, null, abort1, lockReq);
+
+    comp.setPartitionname(String.format(partPattern, part2));
+    burnThroughTransactions(t.getDbName(), t.getTableName(), 10, null, abort2, lockReq);
+
+    comp.setPartitionname(String.format(partPattern, part3));
+    burnThroughTransactions(t.getDbName(), t.getTableName(), 10, null, null, lockReq);
 
     runAcidMetricService();
 

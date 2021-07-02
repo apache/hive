@@ -23,8 +23,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
@@ -51,12 +54,10 @@ import org.apache.thrift.transport.TTransportFactory;
 
 
 public class ThriftBinaryCLIService extends ThriftCLIService {
-  private final Runnable oomHook;
   protected TServer server;
 
-  public ThriftBinaryCLIService(CLIService cliService, Runnable oomHook) {
+  public ThriftBinaryCLIService(CLIService cliService) {
     super(cliService, ThriftBinaryCLIService.class.getSimpleName());
-    this.oomHook = oomHook;
   }
 
   @Override
@@ -69,9 +70,9 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
     try {
       // Server thread pool
       String threadPoolName = "HiveServer2-Handler-Pool";
-      ExecutorService executorService = new ThreadPoolExecutorWithOomHook(minWorkerThreads, maxWorkerThreads,
-          workerKeepAliveTime, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
-          new ThreadFactoryWithGarbageCleanup(threadPoolName), oomHook);
+      ExecutorService executorService = new ThreadPoolExecutor(minWorkerThreads, maxWorkerThreads,
+          workerKeepAliveTime, TimeUnit.SECONDS, new SynchronousQueue<>(),
+          new ThreadFactoryWithGarbageCleanup(threadPoolName));
 
       // Thrift configs
       hiveAuthFactory = new HiveAuthFactory(hiveConf);
@@ -94,8 +95,9 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
             HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname);
         String keyStoreType = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_TYPE).trim();
         String keyStoreAlgorithm = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_KEYMANAGERFACTORY_ALGORITHM).trim();
+        String includeCiphersuites = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_BINARY_INCLUDE_CIPHERSUITES).trim();
         serverSocket = HiveAuthUtils.getServerSSLSocket(hiveHost, portNum, keyStorePath, keyStorePassword,
-            keyStoreType, keyStoreAlgorithm, sslVersionBlacklist);
+            keyStoreType, keyStoreAlgorithm, sslVersionBlacklist, includeCiphersuites);
       }
 
       // Server args

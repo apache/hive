@@ -229,8 +229,8 @@ public class HiveMaterializedViewUtils {
     Preconditions.checkState(aggregateGroupingIdIndex != -1);
     int projectGroupingIdIndex = -1;
     if (project != null) {
-      for (int i = 0; i < project.getChildExps().size(); i++) {
-        RexNode expr = project.getChildExps().get(i);
+      for (int i = 0; i < project.getProjects().size(); i++) {
+        RexNode expr = project.getProjects().get(i);
         if (expr instanceof RexInputRef) {
           RexInputRef ref = (RexInputRef) expr;
           if (ref.getIndex() == aggregateGroupingIdIndex) {
@@ -288,7 +288,7 @@ public class HiveMaterializedViewUtils {
             .project(exprs, ImmutableList.of(), true)
             .build();
         List<RexNode> newNodes =
-            RelOptUtil.pushPastProject(project.getChildExps(), bottomProject);
+            RelOptUtil.pushPastProject(project.getProjects(), bottomProject);
         builder.push(bottomProject.getInput())
             .project(newNodes);
       } else {
@@ -337,7 +337,7 @@ public class HiveMaterializedViewUtils {
     } else if (node instanceof Project) {
       final Project p = (Project) node;
       return HiveProject.create(optCluster, copyNodeNewCluster(optCluster, p.getInput()),
-          p.getChildExps(), p.getRowType(), Collections.emptyList());
+          p.getProjects(), p.getRowType(), Collections.emptyList());
     } else {
       return copyNodeScanNewCluster(optCluster, node);
     }
@@ -345,7 +345,7 @@ public class HiveMaterializedViewUtils {
 
   /**
    * Validate if given materialized view has SELECT privileges for current user
-   * @param cachedMVTable
+   * @param cachedMVTableList
    * @return false if user does not have privilege otherwise true
    * @throws HiveException
    */

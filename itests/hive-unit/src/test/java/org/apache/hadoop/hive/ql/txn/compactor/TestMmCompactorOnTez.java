@@ -53,6 +53,7 @@ import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeState
 /**
  * Test functionality of MmMinorQueryCompactor.
  */
+@org.junit.Ignore("HIVE-25288")
 public class TestMmCompactorOnTez extends CompactorOnTezTest {
 
   public TestMmCompactorOnTez() {

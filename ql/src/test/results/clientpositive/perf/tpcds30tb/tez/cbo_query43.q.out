@@ -12,6 +12,6 @@ HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=
               HiveFilter(condition=[=($6, 1998)])
                 HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
           HiveProject(s_store_sk=[$0], s_store_id=[$1], s_store_name=[$5])
-            HiveFilter(condition=[=($27, -6)])
+            HiveFilter(condition=[=($27, -6:DECIMAL(1, 0))])
               HiveTableScan(table=[[default, store]], table:alias=[store])
 

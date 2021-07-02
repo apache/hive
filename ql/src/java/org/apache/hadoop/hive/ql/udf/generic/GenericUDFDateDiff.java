@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateDiffColCol;
@@ -46,6 +45,9 @@ import org.apache.hive.common.util.DateParser;
 
 import javax.annotation.Nullable;
 
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.DATE_GROUP;
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
+
 /**
  * UDFDateDiff.
  *
@@ -64,34 +66,35 @@ import javax.annotation.Nullable;
         + "  1")
 @VectorizedExpressions({VectorUDFDateDiffColScalar.class, VectorUDFDateDiffColCol.class, VectorUDFDateDiffScalarCol.class})
 public class GenericUDFDateDiff extends GenericUDF {
-  private transient Converter inputConverter1;
-  private transient Converter inputConverter2;
+  private final transient Converter[] tsConverters = new Converter[2];
   private IntWritable output = new IntWritable();
-  private transient PrimitiveCategory inputType1;
-  private transient PrimitiveCategory inputType2;
-  private IntWritable result = new IntWritable();
+  private final transient PrimitiveCategory[] tsInputTypes = new PrimitiveCategory[2];
 
   public GenericUDFDateDiff() {
   }
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    if (arguments.length != 2) {
-      throw new UDFArgumentLengthException(
-        "datediff() requires 2 argument, got " + arguments.length);
+    checkArgsSize(arguments, 2, 2);
+    for (int i = 0; i < arguments.length; i++) {
+      checkArgPrimitive(arguments, i);
+      checkArgGroups(arguments, i, tsInputTypes, STRING_GROUP, DATE_GROUP);
+      obtainTimestampConverter(arguments, i, tsInputTypes, tsConverters);
     }
-    inputConverter1 = checkArguments(arguments, 0);
-    inputConverter2 = checkArguments(arguments, 1);
-    inputType1 = ((PrimitiveObjectInspector) arguments[0]).getPrimitiveCategory();
-    inputType2 = ((PrimitiveObjectInspector) arguments[1]).getPrimitiveCategory();
-    ObjectInspector outputOI = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
-    return outputOI;
+    return PrimitiveObjectInspectorFactory.writableIntObjectInspector;
   }
 
   @Override
   public IntWritable evaluate(DeferredObject[] arguments) throws HiveException {
-    output = evaluate(convertToDate(inputType1, inputConverter1, arguments[0]),
-      convertToDate(inputType2, inputConverter2, arguments[1]));
+
+    Timestamp ts1 = getTimestampValue(arguments, 0, tsConverters);
+    Timestamp ts2 = getTimestampValue(arguments, 1, tsConverters);
+
+    if (ts1 == null || ts2 == null) {
+      return null;
+    }
+
+    output.set(DateWritableV2.millisToDays(ts1.toEpochMilli()) - DateWritableV2.millisToDays(ts2.toEpochMilli()));
     return output;
   }
 
@@ -100,85 +103,4 @@ public class GenericUDFDateDiff extends GenericUDF {
     return getStandardDisplayString("datediff", children);
   }
 
-  @Nullable
-  private Date convertToDate(PrimitiveCategory inputType, Converter converter, DeferredObject argument)
-    throws HiveException {
-    assert(converter != null);
-    assert(argument != null);
-    if (argument.get() == null) {
-      return null;
-    }
-    switch (inputType) {
-    case STRING:
-    case VARCHAR:
-    case CHAR: {
-      String dateString = converter.convert(argument.get()).toString();
-      Date date = DateParser.parseDate(dateString);
-      if (date != null) {
-        return date;
-      }
-      Timestamp ts = PrimitiveObjectInspectorUtils.getTimestampFromString(dateString);
-      if (ts != null) {
-        return Date.ofEpochMilli(ts.toEpochMilli());
-      }
-      return null;
-    }
-    case TIMESTAMP:
-      Timestamp ts = ((TimestampWritableV2) converter.convert(argument.get()))
-        .getTimestamp();
-      return Date.ofEpochMilli(ts.toEpochMilli());
-    case DATE:
-      DateWritableV2 dw = (DateWritableV2) converter.convert(argument.get());
-      return dw.get();
-    case TIMESTAMPLOCALTZ:
-      TimestampTZ tsz = ((TimestampLocalTZWritable) converter.convert(argument.get()))
-          .getTimestampTZ();
-      return Date.ofEpochMilli(tsz.getEpochSecond() * 1000l);
-    default:
-      throw new UDFArgumentException(
-        "TO_DATE() only takes STRING/TIMESTAMP/TIMESTAMPLOCALTZ types, got " + inputType);
-    }
-  }
-
-  private Converter checkArguments(ObjectInspector[] arguments, int i) throws UDFArgumentException {
-    if (arguments[i].getCategory() != ObjectInspector.Category.PRIMITIVE) {
-      throw new UDFArgumentTypeException(0,
-        "Only primitive type arguments are accepted but "
-        + arguments[i].getTypeName() + " is passed. as first arguments");
-    }
-    final PrimitiveCategory inputType =
-        ((PrimitiveObjectInspector) arguments[i]).getPrimitiveCategory();
-    switch (inputType) {
-    case STRING:
-    case VARCHAR:
-    case CHAR:
-      return ObjectInspectorConverters.getConverter(arguments[i],
-        PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-    case TIMESTAMP:
-      return new TimestampConverter((PrimitiveObjectInspector) arguments[i],
-        PrimitiveObjectInspectorFactory.writableTimestampObjectInspector);
-    case TIMESTAMPLOCALTZ:
-      return new PrimitiveObjectInspectorConverter.TimestampLocalTZConverter(
-          (PrimitiveObjectInspector) arguments[i],
-          PrimitiveObjectInspectorFactory.writableTimestampTZObjectInspector
-      );
-    case DATE:
-      return ObjectInspectorConverters.getConverter(arguments[i],
-        PrimitiveObjectInspectorFactory.writableDateObjectInspector);
-    default:
-      throw new UDFArgumentException(
-          " DATEDIFF() only takes STRING/TIMESTAMP/DATEWRITABLE/TIMESTAMPLOCALTZ types as " + (i + 1)
-              + "-th argument, got " + inputType);
-    }
-  }
-
-  private IntWritable evaluate(Date date, Date date2) {
-
-    if (date == null || date2 == null) {
-      return null;
-    }
-
-    result.set(DateWritableV2.dateToDays(date) - DateWritableV2.dateToDays(date2));
-    return result;
-  }
 }

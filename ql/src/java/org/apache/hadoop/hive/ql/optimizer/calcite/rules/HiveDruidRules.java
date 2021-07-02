@@ -20,24 +20,28 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.apache.calcite.adapter.druid.DruidQuery;
-import org.apache.calcite.adapter.druid.DruidRules.DruidAggregateFilterTransposeRule;
 import org.apache.calcite.adapter.druid.DruidRules.DruidAggregateProjectRule;
 import org.apache.calcite.adapter.druid.DruidRules.DruidAggregateRule;
-import org.apache.calcite.adapter.druid.DruidRules.DruidFilterAggregateTransposeRule;
-import org.apache.calcite.adapter.druid.DruidRules.DruidFilterProjectTransposeRule;
 import org.apache.calcite.adapter.druid.DruidRules.DruidFilterRule;
 import org.apache.calcite.adapter.druid.DruidRules.DruidHavingFilterRule;
 import org.apache.calcite.adapter.druid.DruidRules.DruidPostAggregationProjectRule;
-import org.apache.calcite.adapter.druid.DruidRules.DruidProjectFilterTransposeRule;
 import org.apache.calcite.adapter.druid.DruidRules.DruidProjectRule;
-import org.apache.calcite.adapter.druid.DruidRules.DruidProjectSortTransposeRule;
-import org.apache.calcite.adapter.druid.DruidRules.DruidSortProjectTransposeRule;
 import org.apache.calcite.adapter.druid.DruidRules.DruidSortRule;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
+import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
+import org.apache.calcite.rel.core.Filter;
+import org.apache.calcite.rel.core.Project;
+import org.apache.calcite.rel.core.Sort;
+import org.apache.calcite.rel.rules.AggregateFilterTransposeRule;
+import org.apache.calcite.rel.rules.CoreRules;
 import org.apache.calcite.rel.rules.DateRangeRules;
+import org.apache.calcite.rel.rules.FilterAggregateTransposeRule;
+import org.apache.calcite.rel.rules.FilterProjectTransposeRule;
+import org.apache.calcite.rel.rules.ProjectFilterTransposeRule;
+import org.apache.calcite.rel.rules.SortProjectTransposeRule;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlSumEmptyIsZeroAggFunction;
 import org.apache.calcite.tools.RelBuilder;
@@ -56,43 +60,102 @@ import java.util.TreeSet;
 
 /**
  * Druid rules with Hive builder factory.
+ *
+ * Simplify this class when upgrading to Calcite 1.26 using
+ * <a href="https://issues.apache.org/jira/browse/CALCITE-4200">
  */
 public class HiveDruidRules {
 
-  public static final DruidFilterRule FILTER = new DruidFilterRule(HiveRelFactories.HIVE_BUILDER);
+  public static final DruidFilterRule FILTER = RelRule.Config.EMPTY
+    .withOperandSupplier(b0 ->
+      b0.operand(Filter.class).oneInput(b1 ->
+        b1.operand(DruidQuery.class).noInputs()))
+    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+    .as(DruidFilterRule.Config.class)
+    .toRule();
 
-  public static final DruidProjectRule PROJECT = new DruidProjectRule(HiveRelFactories.HIVE_BUILDER);
+  public static final DruidProjectRule PROJECT = RelRule.Config.EMPTY
+    .withOperandSupplier(b0 ->
+      b0.operand(Project.class).oneInput(b1 ->
+        b1.operand(DruidQuery.class).noInputs()))
+    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+    .as(DruidProjectRule.Config.class)
+    .toRule();
 
-  public static final DruidAggregateRule AGGREGATE = new DruidAggregateRule(HiveRelFactories.HIVE_BUILDER);
+  public static final DruidAggregateRule AGGREGATE = RelRule.Config.EMPTY
+    .withOperandSupplier(b0 ->
+      b0.operand(Aggregate.class).oneInput(b1 ->
+        b1.operand(DruidQuery.class).noInputs()))
+    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+    .as(DruidAggregateRule.Config.class)
+    .toRule();
 
-  public static final DruidAggregateProjectRule AGGREGATE_PROJECT =
-      new DruidAggregateProjectRule(HiveRelFactories.HIVE_BUILDER);
+  public static final DruidAggregateProjectRule AGGREGATE_PROJECT = RelRule.Config.EMPTY
+    .withOperandSupplier(b0 ->
+      b0.operand(Aggregate.class).oneInput(b1 ->
+        b1.operand(Project.class).oneInput(b2 ->
+          b2.operand(DruidQuery.class).noInputs())))
+    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+    .as(DruidAggregateProjectRule.Config.class)
+    .toRule();
 
-  public static final DruidSortRule SORT = new DruidSortRule(HiveRelFactories.HIVE_BUILDER);
+  public static final DruidSortRule SORT = RelRule.Config.EMPTY
+    .withOperandSupplier(b0 ->
+      b0.operand(Sort.class).oneInput(b1 ->
+        b1.operand(DruidQuery.class).noInputs()))
+    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+    .as(DruidSortRule.Config.class)
+    .toRule();
 
-  public static final DruidSortProjectTransposeRule SORT_PROJECT_TRANSPOSE =
-      new DruidSortProjectTransposeRule(HiveRelFactories.HIVE_BUILDER);
+  public static final SortProjectTransposeRule SORT_PROJECT_TRANSPOSE = SortProjectTransposeRule.Config.DEFAULT
+    .withOperandFor(Sort.class, Project.class, DruidQuery.class)
+    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+    .as(SortProjectTransposeRule.Config.class)
+    .toRule();
 
-  public static final DruidProjectSortTransposeRule PROJECT_SORT_TRANSPOSE =
-      new DruidProjectSortTransposeRule(HiveRelFactories.HIVE_BUILDER);
+  public static final ProjectFilterTransposeRule PROJECT_FILTER_TRANSPOSE = ProjectFilterTransposeRule.Config.DEFAULT
+    .withOperandFor(Project.class, Filter.class, DruidQuery.class)
+    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+    .as(ProjectFilterTransposeRule.Config.class)
+    .toRule();
 
-  public static final DruidProjectFilterTransposeRule PROJECT_FILTER_TRANSPOSE =
-      new DruidProjectFilterTransposeRule(HiveRelFactories.HIVE_BUILDER);
+  public static final FilterProjectTransposeRule FILTER_PROJECT_TRANSPOSE = CoreRules.FILTER_PROJECT_TRANSPOSE.config
+    .withOperandFor(Filter.class, Project.class, DruidQuery.class)
+    .withCopyFilter(true)
+    .withCopyProject(true)
+    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+    .as(FilterProjectTransposeRule.Config.class)
+    .toRule();
 
-  public static final DruidFilterProjectTransposeRule FILTER_PROJECT_TRANSPOSE =
-      new DruidFilterProjectTransposeRule(HiveRelFactories.HIVE_BUILDER);
+  public static final AggregateFilterTransposeRule AGGREGATE_FILTER_TRANSPOSE =
+    CoreRules.AGGREGATE_FILTER_TRANSPOSE.config
+      .withOperandFor(Aggregate.class, Filter.class, DruidQuery.class)
+      .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+      .as(AggregateFilterTransposeRule.Config.class)
+      .toRule();
 
-  public static final DruidAggregateFilterTransposeRule AGGREGATE_FILTER_TRANSPOSE =
-      new DruidAggregateFilterTransposeRule(HiveRelFactories.HIVE_BUILDER);
+  public static final FilterAggregateTransposeRule FILTER_AGGREGATE_TRANSPOSE =
+    CoreRules.FILTER_AGGREGATE_TRANSPOSE.config
+      .withOperandFor(Filter.class, Aggregate.class, DruidQuery.class)
+      .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+      .as(FilterAggregateTransposeRule.Config.class)
+      .toRule();
 
-  public static final DruidFilterAggregateTransposeRule FILTER_AGGREGATE_TRANSPOSE =
-      new DruidFilterAggregateTransposeRule(HiveRelFactories.HIVE_BUILDER);
+  public static final DruidPostAggregationProjectRule POST_AGGREGATION_PROJECT = RelRule.Config.EMPTY
+    .withOperandSupplier(b0 ->
+      b0.operand(Project.class).oneInput(b1 ->
+        b1.operand(DruidQuery.class).noInputs()))
+    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+    .as(DruidPostAggregationProjectRule.Config.class)
+    .toRule();
 
-  public static final DruidPostAggregationProjectRule POST_AGGREGATION_PROJECT =
-      new DruidPostAggregationProjectRule(HiveRelFactories.HIVE_BUILDER);
-
-  public static final DruidHavingFilterRule HAVING_FILTER_RULE =
-      new DruidHavingFilterRule(HiveRelFactories.HIVE_BUILDER);
+  public static final DruidHavingFilterRule HAVING_FILTER_RULE = RelRule.Config.EMPTY
+    .withOperandSupplier(b0 ->
+      b0.operand(Filter.class).oneInput(b1 ->
+        b1.operand(DruidQuery.class).noInputs()))
+    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+    .as(DruidHavingFilterRule.Config.class)
+    .toRule();
 
   public static final AggregateExpandDistinctAggregatesDruidRule EXPAND_SINGLE_DISTINCT_AGGREGATES_DRUID_RULE =
       new AggregateExpandDistinctAggregatesDruidRule(HiveRelFactories.HIVE_BUILDER);

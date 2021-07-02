@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.iceberg.AssertHelpers;
@@ -45,8 +46,10 @@ import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.UpdateSchema;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.exceptions.CommitFailedException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.Util;
 import org.apache.iceberg.hive.HiveSchemaUtil;
@@ -56,6 +59,7 @@ import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.thrift.TException;
@@ -156,6 +160,93 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
+  public void testPartitionEvolution() {
+    Schema schema = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "ts", Types.TimestampType.withZone())
+    );
+    TableIdentifier identifier = TableIdentifier.of("default", "part_test");
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier +
+        " STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) +
+        " TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
+        SchemaParser.toJson(schema) + "', " +
+        "'" + InputFormatConfig.CATALOG_NAME + "'='" + Catalogs.ICEBERG_DEFAULT_CATALOG_NAME + "')");
+
+    shell.executeStatement("ALTER TABLE " + identifier + " SET PARTITION SPEC (month(ts))");
+
+    PartitionSpec spec = PartitionSpec.builderFor(schema)
+        .withSpecId(1)
+        .month("ts")
+        .build();
+    Table table = testTables.loadTable(identifier);
+    Assert.assertEquals(spec, table.spec());
+
+    shell.executeStatement("ALTER TABLE " + identifier + " SET PARTITION SPEC (day(ts))");
+
+    spec = PartitionSpec.builderFor(schema)
+        .withSpecId(2)
+        .alwaysNull("ts", "ts_month")
+        .day("ts")
+        .build();
+
+    table.refresh();
+    Assert.assertEquals(spec, table.spec());
+  }
+
+  @Test
+  public void testSetPartitionTransform() {
+    Schema schema = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "year_field", Types.DateType.get()),
+        optional(3, "month_field", Types.TimestampType.withZone()),
+        optional(4, "day_field", Types.TimestampType.withoutZone()),
+        optional(5, "hour_field", Types.TimestampType.withoutZone()),
+        optional(6, "truncate_field", Types.StringType.get()),
+        optional(7, "bucket_field", Types.StringType.get()),
+        optional(8, "identity_field", Types.StringType.get())
+    );
+
+    TableIdentifier identifier = TableIdentifier.of("default", "part_test");
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier +
+        " PARTITIONED BY SPEC (year(year_field), hour(hour_field), " +
+        "truncate(2, truncate_field), bucket(2, bucket_field), identity_field)" +
+        " STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) +
+        "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
+        SchemaParser.toJson(schema) + "', " +
+        "'" + InputFormatConfig.CATALOG_NAME + "'='" + Catalogs.ICEBERG_DEFAULT_CATALOG_NAME + "')");
+
+    PartitionSpec spec = PartitionSpec.builderFor(schema)
+        .year("year_field")
+        .hour("hour_field")
+        .truncate("truncate_field", 2)
+        .bucket("bucket_field", 2)
+        .identity("identity_field")
+        .build();
+
+    Table table = testTables.loadTable(identifier);
+    Assert.assertEquals(spec, table.spec());
+
+    shell.executeStatement("ALTER TABLE default.part_test SET PARTITION SPEC(year(year_field), month(month_field), " +
+        "day(day_field))");
+
+    spec = PartitionSpec.builderFor(schema)
+        .withSpecId(1)
+        .year("year_field")
+        .alwaysNull("hour_field", "hour_field_hour")
+        .alwaysNull("truncate_field", "truncate_field_trunc")
+        .alwaysNull("bucket_field", "bucket_field_bucket")
+        .alwaysNull("identity_field", "identity_field")
+        .month("month_field")
+        .day("day_field")
+        .build();
+
+    table.refresh();
+    Assert.assertEquals(spec, table.spec());
+  }
+
+  @Test
   public void testPartitionTransform() {
     Schema schema = new Schema(
         optional(1, "id", Types.LongType.get()),
@@ -183,7 +274,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         "truncate(2, truncate_field), bucket(2, bucket_field), identity_field)" +
         " STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
-        "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
+        " TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
         SchemaParser.toJson(schema) + "', " +
         "'" + InputFormatConfig.CATALOG_NAME + "'='" + Catalogs.ICEBERG_DEFAULT_CATALOG_NAME + "')");
     Table table = testTables.loadTable(identifier);
@@ -816,6 +907,73 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     // Finally drop the Hive table as well
     shell.executeStatement("DROP TABLE " + identifier);
+  }
+
+  @Test
+  public void testAlterTableAddColumns() throws Exception {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, SPEC,
+        FileFormat.PARQUET, ImmutableList.of());
+
+    shell.executeStatement("ALTER TABLE default.customers ADD COLUMNS " +
+        "(newintcol int, newstringcol string COMMENT 'Column with description')");
+
+    verifyAlterTableAddColumnsTests();
+  }
+
+  @Test
+  public void testAlterTableAddColumnsConcurrently() throws Exception {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, SPEC,
+        FileFormat.PARQUET, ImmutableList.of());
+
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+
+    UpdateSchema updateSchema = icebergTable.updateSchema().addColumn("newfloatcol", Types.FloatType.get());
+
+    shell.executeStatement("ALTER TABLE default.customers ADD COLUMNS " +
+        "(newintcol int, newstringcol string COMMENT 'Column with description')");
+
+    try {
+      updateSchema.commit();
+      Assert.fail();
+    } catch (CommitFailedException expectedException) {
+      // Should fail to commit the addition of newfloatcol as another commit went in from Hive side adding 2 other cols
+    }
+
+    // Same verification should be applied, as we expect newfloatcol NOT to be added to the schema
+    verifyAlterTableAddColumnsTests();
+  }
+
+  /**
+   * Checks that the new schema has newintcol and newstring col columns on both HMS and Iceberg sides
+   * @throws Exception - any test error
+   */
+  private void verifyAlterTableAddColumnsTests() throws Exception {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "customers");
+
+    List<FieldSchema> icebergSchema = HiveSchemaUtil.convert(icebergTable.schema());
+    List<FieldSchema> hmsSchema = hmsTable.getSd().getCols();
+
+    List<FieldSchema> expectedSchema = Lists.newArrayList(
+        new FieldSchema("customer_id", "bigint", null),
+        new FieldSchema("first_name", "string", "This is first name"),
+        new FieldSchema("last_name", "string", "This is last name"),
+        new FieldSchema("newintcol", "int", null),
+        new FieldSchema("newstringcol", "string", "Column with description"));
+
+    Assert.assertEquals(expectedSchema, icebergSchema);
+
+    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+      expectedSchema.get(0).setComment("from deserializer");
+    }
+
+    Assert.assertEquals(expectedSchema, hmsSchema);
   }
 
   private String getCurrentSnapshotForHiveCatalogTable(org.apache.iceberg.Table icebergTable) {

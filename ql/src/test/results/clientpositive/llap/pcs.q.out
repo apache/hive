@@ -100,7 +100,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`pcs_t1`
-WHERE ROW(`key`, `ds`) IN (ROW(1, '2000-04-08'), ROW(2, '2000-04-09'))
+WHERE  (`key`, `ds`) IN ( (1, '2000-04-08'),  (2, '2000-04-09'))
 ORDER BY `key`, `value`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -284,7 +284,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE ROW(`key`, `ds`) IN (ROW(1, '2000-04-08'), ROW(2, '2000-04-09'))
+WHERE  (`key`, `ds`) IN ( (1, '2000-04-08'),  (2, '2000-04-09'))
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -401,7 +401,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE ROW(`ds`, `key` + 2) IN (ROW('2000-04-08', 3), ROW('2000-04-09', 4))
+WHERE  (`ds`, `key` + 2) IN ( ('2000-04-08', 3),  ('2000-04-09', 4))
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -827,7 +827,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE ROW(`ds`, `key` + `key`) IN (ROW('2000-04-08', 1), ROW('2000-04-09', 2))
+WHERE  (`ds`, `key` + `key`) IN ( ('2000-04-08', 1),  ('2000-04-09', 2))
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1291,7 +1291,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE ROW(`ds`, `key`, RAND(100)) IN (ROW('2000-04-08', 1, 0.2), ROW('2000-04-09', 2, 0.3))
+WHERE  (`ds`, `key`, RAND(100)) IN ( ('2000-04-08', 1, 0.2),  ('2000-04-09', 2, 0.3))
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1396,7 +1396,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE `ds` <> '2000-04-08' AND `key` <> 2 AND `key` = 3 OR (`ds` = '2000-04-08' OR `key` IS NOT NULL) AND `key` = 2
+WHERE `ds` <> '2000-04-08' AND (`key` <> 2 AND `key` = 3) OR (`ds` = '2000-04-08' OR `key` IS NOT NULL) AND `key` = 2
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1553,7 +1553,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE `key` = 3 OR ((`ds` = '2000-04-08' OR `key` IS NOT NULL) AND `key` = 2 OR `ds` <> '2000-04-08' AND `key` <> 2 AND `key` = 3) AND `key` + 5 > 0
+WHERE `key` = 3 OR ((`ds` = '2000-04-08' OR `key` IS NOT NULL) AND `key` = 2 OR `ds` <> '2000-04-08' AND (`key` <> 2 AND `key` = 3)) AND `key` + 5 > 0
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

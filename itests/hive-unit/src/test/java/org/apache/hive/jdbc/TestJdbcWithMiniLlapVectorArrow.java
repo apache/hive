@@ -238,6 +238,7 @@ public class TestJdbcWithMiniLlapVectorArrow extends BaseJdbcWithMiniLlap {
     assertEquals(Date.valueOf("2013-01-01"), rowValues[19]);
     assertEquals("abc123", rowValues[20]);
     assertEquals("abc123         ", rowValues[21]);
+
     assertArrayEquals("X'01FF'".getBytes("UTF-8"), (byte[]) rowValues[22]);
   }
 

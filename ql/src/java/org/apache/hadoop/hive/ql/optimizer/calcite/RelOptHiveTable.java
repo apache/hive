@@ -249,6 +249,11 @@ public class RelOptHiveTable implements RelOptTable {
   }
 
   @Override
+  public List<ImmutableBitSet> getKeys() {
+    return keys;
+  }
+
+  @Override
   public List<RelReferentialConstraint> getReferentialConstraints() {
     return referentialConstraints;
   }

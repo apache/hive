@@ -381,7 +381,7 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
       Project project = (Project) input;
       ImmutableBitSet.Builder newGroup = ImmutableBitSet.builder();
       for (int g : groups.asList()) {
-        RexNode rex = project.getChildExps().get(g);
+        RexNode rex = project.getProjects().get(g);
         if (rex instanceof RexInputRef) {
           RexInputRef rexInputRef = (RexInputRef) rex;
           newGroup.set(rexInputRef.getIndex());
