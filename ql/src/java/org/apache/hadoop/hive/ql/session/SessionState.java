@@ -350,6 +350,7 @@ public class SessionState implements ISessionAuthState{
 
   private final AtomicLong sparkSessionId = new AtomicLong();
 
+  private Hive hiveDb;
   private final Map<String, QueryState> queryStateMap = new HashMap<>();
 
   public QueryState getQueryState(String queryId) {
@@ -370,6 +371,9 @@ public class SessionState implements ISessionAuthState{
   }
 
   public void setConf(HiveConf conf) {
+    if (hiveDb != null) {
+      hiveDb.setConf(conf);
+    }
     this.sessionConf = conf;
   }
 
@@ -1884,7 +1888,10 @@ public class SessionState implements ISessionAuthState{
       unCacheDataNucleusClassLoaders();
     } finally {
       // removes the threadlocal variables, closes underlying HMS connection
-      Hive.closeCurrent();
+      if (hiveDb != null) {
+        hiveDb.close(true);
+        hiveDb = null;
+      }
     }
     progressMonitor = null;
     // Hadoop's ReflectionUtils caches constructors for the classes it instantiated.
@@ -2225,6 +2232,18 @@ public class SessionState implements ISessionAuthState{
   public Map<Object, Object> getQueryCache(String queryId) {
     return cache.get(queryId);
   }
+
+  public Hive getHiveDb() throws HiveException {
+    if (hiveDb == null) {
+      hiveDb = Hive.createHiveForSession(sessionConf);
+      // Need to setAllowClose to false. For legacy reasons, the Hive object is stored
+      // in thread local storage. If allowClose is true, the session can get closed when
+      // the thread goes away which is not desirable when the Hive object is used across
+      // different queries in the session.
+      hiveDb.setAllowClose(false);
+    }
+    return hiveDb;
+  }
 }
 
 class ResourceMaps {
@@ -2287,5 +2306,4 @@ class ResourceMaps {
     }
     return result;
   }
-
 }

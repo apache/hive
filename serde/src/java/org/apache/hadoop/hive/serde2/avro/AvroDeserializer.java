@@ -93,6 +93,8 @@ class AvroDeserializer {
    */
   private Boolean writerProleptic = null;
 
+  private Boolean writerZoneConversionLegacy = null;
+
   private Configuration configuration = null;
 
   AvroDeserializer() {}
@@ -175,6 +177,7 @@ class AvroDeserializer {
     Schema fileSchema = recordWritable.getFileSchema();
     writerTimezone = recordWritable.getWriterTimezone();
     writerProleptic = recordWritable.getWriterProleptic();
+    writerZoneConversionLegacy = recordWritable.getWriterZoneConversionLegacy(); 
 
     UID recordReaderId = recordWritable.getRecordReaderID();
     //If the record reader (from which the record is originated) is already seen and valid,
@@ -355,15 +358,23 @@ class AvroDeserializer {
       } else {
         skipUTCConversion = HiveConf.ConfVars.HIVE_AVRO_TIMESTAMP_SKIP_CONVERSION.defaultBoolVal;
       }
-      boolean legacyConversion = false;
+      final boolean legacyConversion;
+      if (writerZoneConversionLegacy != null) {
+        legacyConversion = writerZoneConversionLegacy;
+      } else if (writerTimezone != null) {
+        legacyConversion = false;
+      } else if (configuration != null) {
+        legacyConversion =
+            HiveConf.getBoolVar(configuration, HiveConf.ConfVars.HIVE_AVRO_TIMESTAMP_LEGACY_CONVERSION_ENABLED);
+      } else {
+        legacyConversion = HiveConf.ConfVars.HIVE_AVRO_TIMESTAMP_LEGACY_CONVERSION_ENABLED.defaultBoolVal;
+      }
       ZoneId convertToTimeZone;
       if (writerTimezone != null) {
         convertToTimeZone = writerTimezone;
       } else if (skipUTCConversion) {
         convertToTimeZone = ZoneOffset.UTC;
       } else {
-        legacyConversion = configuration != null && HiveConf.getBoolVar(
-            configuration, HiveConf.ConfVars.HIVE_AVRO_TIMESTAMP_LEGACY_CONVERSION_ENABLED);
         convertToTimeZone = TimeZone.getDefault().toZoneId();
       }
       final boolean skipProlepticConversion;

@@ -44,7 +44,7 @@ public class TestPluggableHiveSessionImpl {
 
     CLIService cliService = new CLIService(null, true);
     cliService.init(hiveConf);
-    ThriftBinaryCLIService service = new ThriftBinaryCLIService(cliService, null);
+    ThriftBinaryCLIService service = new ThriftBinaryCLIService(cliService);
     service.init(hiveConf);
     ThriftCLIServiceClient client = new ThriftCLIServiceClient(service);
 
@@ -70,7 +70,7 @@ public class TestPluggableHiveSessionImpl {
 
     CLIService cliService = new CLIService(null, true);
     cliService.init(hiveConf);
-    ThriftBinaryCLIService service = new ThriftBinaryCLIService(cliService, null);
+    ThriftBinaryCLIService service = new ThriftBinaryCLIService(cliService);
     service.init(hiveConf);
     ThriftCLIServiceClient client = new ThriftCLIServiceClient(service);
 

@@ -59,6 +59,11 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mat1
+POSTHOOK: Lineage: mat1._c2 EXPRESSION [(t1)t1.FieldSchema(name:d, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1._c3 EXPRESSION [(t1)t1.FieldSchema(name:d, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1._c4 EXPRESSION [(t1)t1.FieldSchema(name:d, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1.a SIMPLE [(t1)t1.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1.b SIMPLE [(t1)t1.FieldSchema(name:b, type:varchar(256), comment:null), ]
 a	b	_c2	_c3	_c4
 PREHOOK: query: INSERT INTO t1 VALUES
  (NULL, 'new row with NULL GBY key', 100.77, 35),
@@ -118,7 +123,7 @@ HiveProject($f0=[$6], $f1=[$7], $f2=[CASE(IS NULL($2), $8, IS NULL($8), $2, +($8
         HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
       HiveProject(a=[$0], b=[$1], $f2=[$2], $f3=[$3], $f4=[$4])
         HiveAggregate(group=[{0, 1}], agg#0=[sum($3)], agg#1=[min($3)], agg#2=[max($3)])
-          HiveFilter(condition=[AND(<(1, $6.writeid), >($2, 10))])
+          HiveFilter(condition=[AND(<(1, $6.writeid), >($2, 10:DECIMAL(2, 0)))])
             HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: explain
@@ -483,7 +488,7 @@ CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC])
   HiveProject(a=[$0], b=[$1], $f2=[$2], $f3=[$3], $f4=[$4])
     HiveAggregate(group=[{0, 1}], agg#0=[sum($3)], agg#1=[min($3)], agg#2=[max($3)])
-      HiveFilter(condition=[>($2, 10)])
+      HiveFilter(condition=[>($2, 10:DECIMAL(2, 0))])
         HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: SELECT a, b, sum(d), min(d), max(d)

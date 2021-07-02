@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -28,9 +29,11 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
@@ -48,6 +51,8 @@ import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
@@ -74,12 +79,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Optional;
+import java.util.Properties;
 
 /**
  * MoveTask implementation.
@@ -317,6 +321,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
 
     try (LocalTableLock lock = acquireLockForFileMove(work.getLoadTableWork())) {
+      if (checkAndCommitNatively(work, conf)) {
+        return 0;
+      }
+
       Hive db = getHive();
 
       // Do any hive related operations like moving tables and files
@@ -980,6 +988,48 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
   @Override
   public boolean canExecuteInParallel() {
+    return false;
+  }
+
+  /**
+   * Checks if the StorageHandler provides methods for committing changes which should be used instead of the file
+   * moves. This commit will be executed here if possible.
+   * @param moveWork The {@link MoveWork} we would like to commit
+   * @param configuration The Configuration used to instantiate the {@link HiveStorageHandler} for the target table
+   * @return Returns <code>true</code> if the commit was successfully executed
+   * @throws HiveException If we tried to commit, but there was an error during the process
+   */
+  private static boolean checkAndCommitNatively(MoveWork moveWork, Configuration configuration) throws HiveException {
+    String storageHandlerClass = null;
+    Properties commitProperties = null;
+    boolean overwrite = false;
+
+    if (moveWork.getLoadTableWork() != null) {
+      // Get the info from the table data
+      TableDesc tableDesc = moveWork.getLoadTableWork().getTable();
+      storageHandlerClass = tableDesc.getProperties().getProperty(
+          org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE);
+      commitProperties = new Properties(tableDesc.getProperties());
+      overwrite = moveWork.getLoadTableWork().isInsertOverwrite();
+    } else if (moveWork.getLoadFileWork() != null) {
+      // Get the info from the create table data
+      CreateTableDesc createTableDesc = moveWork.getLoadFileWork().getCtasCreateTableDesc();
+      if (createTableDesc != null) {
+        storageHandlerClass = createTableDesc.getStorageHandler();
+        commitProperties = new Properties();
+        commitProperties.put(hive_metastoreConstants.META_TABLE_NAME, createTableDesc.getDbTableName());
+      }
+    }
+
+    // If the storage handler supports native commits the use that instead of moving files
+    if (storageHandlerClass != null) {
+      HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(configuration, storageHandlerClass);
+      if (storageHandler.commitInMoveTask()) {
+        storageHandler.storageHandlerCommit(commitProperties, overwrite);
+        return true;
+      }
+    }
+
     return false;
   }
 }

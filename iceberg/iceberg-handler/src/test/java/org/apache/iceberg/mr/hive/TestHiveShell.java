@@ -82,7 +82,7 @@ public class TestHiveShell {
 
   public void start() {
     // Create a copy of the HiveConf for the metastore
-    metastore.start(new HiveConf(hs2Conf), 10);
+    metastore.start(new HiveConf(hs2Conf), 20);
     hs2Conf.setVar(HiveConf.ConfVars.METASTOREURIS, metastore.hiveConf().getVar(HiveConf.ConfVars.METASTOREURIS));
     hs2Conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE,
         metastore.hiveConf().getVar(HiveConf.ConfVars.METASTOREWAREHOUSE));

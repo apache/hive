@@ -146,6 +146,10 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n30
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n20
+POSTHOOK: Lineage: mv1_n20.commission SIMPLE [(emps_n30)emps_n30.FieldSchema(name:commission, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n20.deptno SIMPLE [(emps_n30)emps_n30.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n20.name SIMPLE [(emps_n30)emps_n30.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_n20.salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select emps_n30.name, emps_n30.salary, emps_n30.commission
 from emps_n30
@@ -291,6 +295,10 @@ POSTHOOK: Input: default@depts_n20
 POSTHOOK: Input: default@emps_n30
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n20
+POSTHOOK: Lineage: mv1_n20.c EXPRESSION [(emps_n30)emps_n30.null, (depts_n20)depts_n20.null, ]
+POSTHOOK: Lineage: mv1_n20.deptno SIMPLE [(emps_n30)emps_n30.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n20.empid SIMPLE [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n20.s EXPRESSION [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select depts_n20.deptno, count(*) as c, sum(empid) as s
 from emps_n30 join depts_n20 using (deptno)
@@ -419,6 +427,9 @@ POSTHOOK: Input: default@dependents_n20
 POSTHOOK: Input: default@emps_n30
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n20
+POSTHOOK: Lineage: mv1_n20.deptno SIMPLE [(emps_n30)emps_n30.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n20.empid SIMPLE [(dependents_n20)dependents_n20.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n20.s EXPRESSION [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select dependents_n20.empid, sum(salary) as s
 from emps_n30
@@ -589,6 +600,12 @@ POSTHOOK: Input: default@dependents_n20
 POSTHOOK: Input: default@emps_n30
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n20
+POSTHOOK: Lineage: mv1_n20.commission SIMPLE [(emps_n30)emps_n30.FieldSchema(name:commission, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n20.deptno SIMPLE [(emps_n30)emps_n30.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n20.empid SIMPLE [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n20.name1 SIMPLE [(emps_n30)emps_n30.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_n20.name2 SIMPLE [(dependents_n20)dependents_n20.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_n20.salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select emps_n30.empid, dependents_n20.empid, emps_n30.deptno
 from emps_n30
@@ -652,16 +669,16 @@ STAGE PLANS:
                     predicate: ((name1 = 'Bill') and deptno is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: empid (type: int), deptno (type: int)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: empid (type: int), deptno (type: int), empid (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: int)
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col2 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -673,10 +690,10 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col1 (type: int)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col1, _col2, _col3
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col1 (type: int), _col1 (type: int), _col0 (type: int)
+                  expressions: _col1 (type: int), _col3 (type: int), _col2 (type: int)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator

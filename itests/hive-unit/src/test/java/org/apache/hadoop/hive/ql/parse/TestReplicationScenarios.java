@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Stage;
 import org.apache.hadoop.mapreduce.JobContext;
+import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.apache.hadoop.hive.metastore.*;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
@@ -109,9 +110,16 @@ import org.junit.rules.TestName;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -121,6 +129,9 @@ import java.util.Map;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.Base64;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
@@ -4274,6 +4285,55 @@ public class TestReplicationScenarios {
     run("drop database " + dbName, true, driver);
   }
 
+
+  @Test
+  public void testDDLTasksInParallel() throws Throwable{
+    Logger logger = null;
+    LoggerContext ctx = null;
+    Level oldLevel = null;
+    StringAppender appender = null;
+    LoggerConfig loggerConfig = null;
+    try {
+      driverMirror.getConf().set(HiveConf.ConfVars.EXECPARALLEL.varname, "true");
+      logger = LogManager.getLogger("hive.ql.metadata.Hive");
+      oldLevel = logger.getLevel();
+      ctx = (LoggerContext) LogManager.getContext(false);
+      Configuration config = ctx.getConfiguration();
+      loggerConfig = config.getLoggerConfig(logger.getName());
+      loggerConfig.setLevel(Level.INFO);
+      ctx.updateLoggers();
+      // Create a String Appender to capture log output
+      appender = StringAppender.createStringAppender("%m");
+      appender.addToLogger(logger.getName(), Level.DEBUG);
+      appender.start();
+      String testName = "testDDLTasksInParallel";
+      String dbName = createDB(testName, driver);
+      String replDbName = dbName + "_dupe";
+
+      run("CREATE TABLE " + dbName + ".t1 (id int)", driver);
+      run("insert into table " + dbName + ".t1 values ('1')", driver);
+      run("CREATE TABLE " + dbName + ".t2 (id int)", driver);
+      run("insert into table " + dbName + ".t2 values ('2')", driver);
+
+      Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+      String logText = appender.getOutput();
+      Pattern pattern = Pattern.compile("Starting task \\[Stage-[0-9]:DDL\\] in parallel");
+      Matcher matcher = pattern.matcher(logText);
+      int count = 0;
+      while(matcher.find()){
+        count++;
+      }
+      assertEquals(count, 2);
+      appender.reset();
+    } finally {
+      driverMirror.getConf().set(HiveConf.ConfVars.EXECPARALLEL.varname, "false");
+      loggerConfig.setLevel(oldLevel);
+      ctx.updateLoggers();
+      appender.removeFromLogger(logger.getName());
+    }
+  }
+
   @Test
   public void testRecycleFileNonReplDatabase() throws IOException {
     String dbName = createDBNonRepl(testName.getMethodName(), driver);
@@ -4586,13 +4646,16 @@ public class TestReplicationScenarios {
   @Test
   public void testIncrementalStatisticsMetrics() throws Throwable {
     isMetricsEnabledForTests(true);
+    ReplLoadWork.setMbeansParamsForTesting(true, false);
     MetricCollector collector = MetricCollector.getInstance();
     String testName = "testIncrementalStatisticsMetrics";
     String dbName = createDB(testName, driver);
     String replDbName = dbName + "_dupe";
+    String nameStri = "Hadoop:" + "service=HiveServer2" + "," + "name=" + "Database-" + replDbName + " Policy-pol";
 
     // Do a bootstrap dump & load
     Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+    ReplLoadWork.setMbeansParamsForTesting(true,true);
 
     // Do some operations at the source side so that the count & metrics can be counted at the load side.
 
@@ -4625,6 +4688,8 @@ public class TestReplicationScenarios {
       }
     }
 
+    verifyMBeanStatistics(testName, replDbName, nameStri, events, incrementalDump);
+
     // Do some drop table/drop partition & rename table operations.
     for (int i = 0; i < 3; i++) {
       // Drop 3 tables
@@ -4638,7 +4703,7 @@ public class TestReplicationScenarios {
 
     for (int i = 6; i < 10; i++) {
       // Drop partitions from 4 tables
-      run("ALTER TABLE " + dbName + ".ptned DROP PARTITION(b=1)", driver);
+      run("ALTER TABLE " + dbName + ".ptned" + i + " DROP PARTITION(b=1)", driver);
     }
 
     for (int i = 10; i < 12; i++) {
@@ -4646,10 +4711,12 @@ public class TestReplicationScenarios {
       run("CREATE TABLE " + dbName + ".ptned" + i + "(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
     }
 
+    incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
+
     events = new String[] { "[[Event Name: EVENT_CREATE_TABLE; " + "Total Number: 2;",
         "[[Event Name: EVENT_DROP_TABLE; " + "Total Number: 3;",
         "[[Event Name: EVENT_RENAME_TABLE; " + "Total Number: 3;",
-        "[[Event Name: EVENT_DROP_PARTITION; Total Number: 2;" };
+        "[[Event Name: EVENT_DROP_PARTITION; Total Number: 4;" };
 
       itr = collector.getMetrics().iterator();
     while (itr.hasNext()) {
@@ -4662,6 +4729,35 @@ public class TestReplicationScenarios {
           assertTrue(stage.getReplStats(), stage.getReplStats().contains(event));
         }
       }
+    }
+    verifyMBeanStatistics(testName, replDbName, nameStri, events, incrementalDump);
+    // Clean up the test setup.
+    ReplLoadWork.setMbeansParamsForTesting(false,false);
+    MBeans.unregister(ObjectName.getInstance(nameStri));
+  }
+
+  private void verifyMBeanStatistics(String testName, String replDbName, String nameStri, String[] events,
+      Tuple incrementalDump)
+      throws MalformedObjectNameException, MBeanException, AttributeNotFoundException, InstanceNotFoundException,
+      ReflectionException {
+    ObjectName name = ObjectName.getInstance(nameStri);
+
+    assertTrue(ManagementFactory.getPlatformMBeanServer().getAttribute(name, "ReplicationType").toString()
+        .contains("INCREMENTAL"));
+    // Check the dump location is set correctly.
+    assertTrue(ManagementFactory.getPlatformMBeanServer().getAttribute(name, "DumpDirectory").toString()
+        .startsWith(incrementalDump.dumpLocation));
+    // The CurrentEventId should be the last dumped repl id, once the load is complete.
+    assertEquals(incrementalDump.lastReplId,
+        ManagementFactory.getPlatformMBeanServer().getAttribute(name, "CurrentEventId"));
+    assertEquals(Long.parseLong(incrementalDump.lastReplId),
+        ManagementFactory.getPlatformMBeanServer().getAttribute(name, "LastEventId"));
+    assertTrue(
+        ManagementFactory.getPlatformMBeanServer().getAttribute(name, "SourceDatabase").toString().contains(testName));
+    assertTrue(ManagementFactory.getPlatformMBeanServer().getAttribute(name, "TargetDatabase").toString()
+        .contains(replDbName));
+    for (String event : events) {
+      assertTrue(ManagementFactory.getPlatformMBeanServer().getAttribute(name, "ReplStats").toString().contains(event));
     }
   }
 

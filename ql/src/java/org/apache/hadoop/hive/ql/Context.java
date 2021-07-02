@@ -362,7 +362,8 @@ public class Context {
     // identifiers) to the stored Materialized view query definitions. We have to enable unparsing for generating
     // the extended query text when auto rewriting is enabled.
     enableUnparse =
-        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL);
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL) ||
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SUBQUERY_SQL);
     scheduledQuery = false;
   }
 

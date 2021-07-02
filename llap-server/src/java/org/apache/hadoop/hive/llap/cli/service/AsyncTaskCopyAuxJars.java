@@ -68,6 +68,16 @@ class AsyncTaskCopyAuxJars implements Callable<Void> {
     localizeJarForClass(conf.getStringCollection("io.compression.codecs"), false);
     localizeJarForClass(getDbSpecificJdbcJars(), false);
 
+    Set<String> auxJars = new HashSet<>();
+    // There are many ways to have AUX jars in Hive... sigh
+    if (cl.getIsHiveAux()) {
+      // Note: we don't add ADDED jars, RELOADABLE jars, etc. That is by design; there are too many ways
+      // to add jars in Hive, some of which are session/etc. specific. Env + conf + arg should be enough.
+      addAuxJarsToSet(auxJars, conf.getAuxJars(), ",");
+      addAuxJarsToSet(auxJars, System.getenv("HIVE_AUX_JARS_PATH"), ":");
+      LOG.info("Adding the following aux jars from the environment and configs: " + auxJars);
+    }
+
     if (cl.getIsHBase()) {
       try {
         localizeJarForClass(Arrays.asList(HBASE_SERDE_CLASS), true);
@@ -79,22 +89,13 @@ class AsyncTaskCopyAuxJars implements Callable<Void> {
             rawFs.copyFromLocalFile(new Path(jarPath), libDir);
           }
         }
+        addAuxJarsToSet(auxJars, cl.getHBaseJars(), ",");
       } catch (Throwable t) {
         String err = "Failed to add HBase jars. Use --auxhbase=false to avoid localizing them";
         LOG.error(err);
         System.err.println(err);
         throw new RuntimeException(t);
       }
-    }
-
-    Set<String> auxJars = new HashSet<>();
-    // There are many ways to have AUX jars in Hive... sigh
-    if (cl.getIsHiveAux()) {
-      // Note: we don't add ADDED jars, RELOADABLE jars, etc. That is by design; there are too many ways
-      // to add jars in Hive, some of which are session/etc. specific. Env + conf + arg should be enough.
-      addAuxJarsToSet(auxJars, conf.getAuxJars(), ",");
-      addAuxJarsToSet(auxJars, System.getenv("HIVE_AUX_JARS_PATH"), ":");
-      LOG.info("Adding the following aux jars from the environment and configs: " + auxJars);
     }
 
     addAuxJarsToSet(auxJars, cl.getAuxJars(), ",");

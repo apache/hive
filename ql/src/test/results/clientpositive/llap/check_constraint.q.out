@@ -2052,7 +2052,7 @@ POSTHOOK: Output: default@acid_uami_n0
 CBO PLAN:
 HiveSortExchange(distribution=[any], collation=[[0]])
   HiveProject(row__id=[$5], i=[$0], _o__c2=[893.14:DECIMAL(5, 2)], vc=[$2])
-    HiveFilter(condition=[AND(IN($1, 103:DECIMAL(5, 2), 119:DECIMAL(5, 2)), enforce_constraint(IS NOT FALSE(>=(893.14, CAST($0):DECIMAL(5, 2)))))])
+    HiveFilter(condition=[AND(IN($1, 103:DECIMAL(3, 0), 119:DECIMAL(3, 0)), enforce_constraint(IS NOT FALSE(>=(893.14, CAST($0):DECIMAL(5, 2)))))])
       HiveTableScan(table=[[default, acid_uami_n0]], table:alias=[acid_uami_n0])
 
 PREHOOK: query: explain update acid_uami_n0 set de = 893.14 where de = 103.00 or de = 119.00

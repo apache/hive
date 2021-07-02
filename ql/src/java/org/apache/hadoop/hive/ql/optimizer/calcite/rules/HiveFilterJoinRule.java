@@ -30,6 +30,7 @@ import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelOptUtil.InputFinder;
 import org.apache.calcite.plan.RelOptUtil.RexInputConverter;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
@@ -67,7 +68,17 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
    */
   protected HiveFilterJoinRule(RelOptRuleOperand operand, String id, boolean smart,
       RelBuilderFactory relBuilderFactory) {
-    super(operand, id, smart, relBuilderFactory, TRUE_PREDICATE);
+
+    super(
+      (Config) RelRule.Config.EMPTY
+      .withDescription("FilterJoinRule:" + id)
+      .withOperandSupplier(b0 ->
+        b0.exactly(operand))
+      .as(FilterJoinRule.Config.class)
+      .withSmart(smart)
+      .withPredicate((join, joinType, exp) -> true)
+      .withRelBuilderFactory(relBuilderFactory)
+    );
   }
 
   /**
@@ -372,7 +383,7 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
     final List<RexNode> filtersToRemove = new ArrayList<>();
     for (RexNode filter : filters) {
       final InputFinder inputFinder = InputFinder.analyze(filter);
-      final ImmutableBitSet inputBits = inputFinder.inputBitSet.build();
+      final ImmutableBitSet inputBits = inputFinder.build();
 
       // REVIEW - are there any expressions that need special handling
       // and therefore cannot be pushed?

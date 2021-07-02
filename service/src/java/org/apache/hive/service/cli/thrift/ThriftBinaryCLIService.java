@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Splitter;
@@ -53,12 +54,10 @@ import org.apache.thrift.transport.TTransportFactory;
 
 
 public class ThriftBinaryCLIService extends ThriftCLIService {
-  private final Runnable oomHook;
   protected TServer server;
 
-  public ThriftBinaryCLIService(CLIService cliService, Runnable oomHook) {
+  public ThriftBinaryCLIService(CLIService cliService) {
     super(cliService, ThriftBinaryCLIService.class.getSimpleName());
-    this.oomHook = oomHook;
   }
 
   @Override
@@ -71,9 +70,9 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
     try {
       // Server thread pool
       String threadPoolName = "HiveServer2-Handler-Pool";
-      ExecutorService executorService = new ThreadPoolExecutorWithOomHook(minWorkerThreads, maxWorkerThreads,
-          workerKeepAliveTime, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
-          new ThreadFactoryWithGarbageCleanup(threadPoolName), oomHook);
+      ExecutorService executorService = new ThreadPoolExecutor(minWorkerThreads, maxWorkerThreads,
+          workerKeepAliveTime, TimeUnit.SECONDS, new SynchronousQueue<>(),
+          new ThreadFactoryWithGarbageCleanup(threadPoolName));
 
       // Thrift configs
       hiveAuthFactory = new HiveAuthFactory(hiveConf);

@@ -270,6 +270,9 @@ POSTHOOK: Input: default@cmv_basetable_2_n2
 POSTHOOK: Input: default@cmv_basetable_n5
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view_n5
+POSTHOOK: Lineage: cmv_mat_view_n5._c2 EXPRESSION [(cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:d, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view_n5.a SIMPLE [(cmv_basetable_n5)cmv_basetable_n5.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view_n5.c SIMPLE [(cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: DESCRIBE FORMATTED cmv_mat_view_n5
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@cmv_mat_view_n5
