@@ -473,7 +473,15 @@ public abstract class TaskCompiler {
       loc = cmv.getLocation();
     }
     Path location = (loc == null) ? getDefaultCtasLocation(pCtx) : new Path(loc);
-    if(location != null && HiveConf.getBoolVar(conf, HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL)){
+    boolean isExternal = false;
+    boolean isAcid = false;
+    if (pCtx.getQueryProperties().isCTAS()) {
+      isExternal = pCtx.getCreateTable().isExternal();
+      isAcid = pCtx.getCreateTable().getTblProps().getOrDefault(
+              hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false").equalsIgnoreCase("true") ||
+              pCtx.getCreateTable().getTblProps().containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    }
+    if(location != null && (HiveConf.getBoolVar(conf, HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL) || (isExternal || !isAcid))){
       CreateTableDesc ctd = pCtx.getCreateTable();
       ctd.setLocation(location.toString());
       if(ctd.getSerdeProps().containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES)){
