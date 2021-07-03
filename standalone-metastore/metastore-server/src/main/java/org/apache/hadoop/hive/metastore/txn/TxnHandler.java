@@ -1154,7 +1154,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private long getDatabaseId(Connection dbConn, String database, String catalog) throws SQLException {
+  private long getDatabaseId(Connection dbConn, String database, String catalog) throws SQLException, MetaException {
     ResultSet rs = null;
     PreparedStatement pst = null;
     try {
@@ -1164,8 +1164,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               quoteString(database), quoteString(catalog));
       rs = pst.executeQuery();
       if (!rs.next()) {
-        LOG.error("Database: " + database + " does not exist in catalog " + catalog);
-        return -1;
+        throw new MetaException("DB with name " + database + " does not exist in catalog " + catalog);
       }
       return rs.getLong(1);
     } finally {
@@ -1174,7 +1173,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private void updateDatabaseProp(Connection dbConn, long dbId, String prop, String propValue) throws SQLException {
+  private void updateDatabaseProp(Connection dbConn, String database,
+                                  long dbId, String prop, String propValue) throws SQLException {
     ResultSet rs = null;
     PreparedStatement pst = null;
     try {
@@ -1190,13 +1190,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                 " AND \"PARAM_KEY\" = '" + prop + "'";
       }
       closeStmt(pst);
-      if (query != null) {
-        pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, Arrays.asList(propValue));
-        LOG.debug("Updating " + prop + " for db <" + query.replaceAll("\\?", "{}") + ">", propValue);
-        if (pst.executeUpdate() != 1) {
-          //only one row insert or update should happen
-          throw new RuntimeException("DATABASE_PARAMS is corrupted for databaseID: " + dbId);
-        }
+      if (query == null) {
+        LOG.info("Database property: " + prop + " with value: " + propValue + " already updated for db: " + database);
+        return;
+      }
+      pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, Arrays.asList(propValue));
+      LOG.debug("Updating " + prop + " for db: " + database + " <" + query.replaceAll("\\?", "{}") + ">", propValue);
+      if (pst.executeUpdate() != 1) {
+        //only one row insert or update should happen
+        throw new RuntimeException("DATABASE_PARAMS is corrupted for database: " + database);
       }
     } finally {
       close(rs);
@@ -1205,18 +1207,19 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   private void markDbAsReplIncompatible(Connection dbConn, String database) throws SQLException, MetaException {
-    Statement stmt = dbConn.createStatement();
-    String catalog = MetaStoreUtils.getDefaultCatalog(conf);
-    String s = sqlGenerator.getDbProduct().getPrepareTxnStmt();
-    if (s != null) {
-      stmt.execute(s);
+    Statement stmt = null;
+    try {
+      stmt = dbConn.createStatement();
+      String catalog = MetaStoreUtils.getDefaultCatalog(conf);
+      String s = sqlGenerator.getDbProduct().getPrepareTxnStmt();
+      if (s != null) {
+        stmt.execute(s);
+      }
+      long dbId = getDatabaseId(dbConn, database, catalog);
+      updateDatabaseProp(dbConn, database, dbId, ReplConst.REPL_INCOMPATIBLE, ReplConst.TRUE);
+    } finally {
+      closeStmt(stmt);
     }
-    long dbId = getDatabaseId(dbConn, database, catalog);
-    if (dbId == -1) {
-      throw new MetaException("DB ID missing for database: " + database + " in catalog: " + catalog);
-    }
-    updateDatabaseProp(dbConn, dbId, ReplConst.REPL_INCOMPATIBLE, ReplConst.TRUE);
-    closeStmt(stmt);
   }
 
   private void updateReplId(Connection dbConn, ReplLastIdInfo replLastIdInfo) throws SQLException, MetaException {
@@ -1243,12 +1246,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
 
       long dbId = getDatabaseId(dbConn, db, catalog);
-      if (dbId == -1) {
-        return;
-      }
 
       // not used select for update as it will be updated by single thread only from repl load
-      updateDatabaseProp(dbConn, dbId, ReplConst.REPL_TARGET_TABLE_PROPERTY, lastReplId);
+      updateDatabaseProp(dbConn, db, dbId, ReplConst.REPL_TARGET_TABLE_PROPERTY, lastReplId);
 
       if (table == null) {
         // if only database last repl id to be updated.
