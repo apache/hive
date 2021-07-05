@@ -154,12 +154,12 @@ class PartitionHelper {
   }
   
   private static long addBatch(PreparedStatement pst, long numRecords, long maxBatchSize) throws SQLException {
+    pst.addBatch();
+    numRecords++;
     if (numRecords == maxBatchSize) {
       executeBatch(pst, numRecords);
       numRecords = 0;
     }
-    pst.addBatch();
-    numRecords++;
     return numRecords;
   }
   
@@ -399,6 +399,9 @@ class PartitionHelper {
           pst.setString(3, col.getName());
           pst.setString(4, col.getType());
           pst.setLong(5, idx++);
+          LOG.debug("Executing insert numRecords " + numRecords  + " maxBatchSize " + maxBatchSize +
+                          insertColInfo.replaceAll("\\?", "{}"),
+                  cdIdIdx, col.getComment(), col.getName(), col.getType(), idx);
           numRecords = addBatch(pst, numRecords, maxBatchSize);
         }
         cdIdIdx++;
