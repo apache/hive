@@ -4259,11 +4259,11 @@ public class HiveConf extends Configuration {
         "If set, this configuration property should provide a comma-separated list of URLs that indicates the type and " +
         "location of providers to be used by hadoop credential provider API. It provides HiveServer2 the ability to provide job-specific " +
         "credential providers for jobs run using MR and Spark execution engines. This functionality has not been tested against Tez."),
-    HIVE_MOVE_FILES_THREAD_COUNT("hive.mv.files.thread", 15, new  SizeValidator(0L, true, 1024L, true), "Number of threads"
+    HIVE_MOVE_FILES_THREAD_COUNT("hive.mv.files.thread", 15, new RangeValidator(0L, 1024L), "Number of threads"
          + " used to move files in move task. Set it to 0 to disable multi-threaded file moves. This parameter is also used by"
          + " MSCK to check tables."),
     HIVE_LOAD_DYNAMIC_PARTITIONS_THREAD_COUNT("hive.load.dynamic.partitions.thread", 15,
-        new  SizeValidator(1L, true, 1024L, true),
+        new RangeValidator(1L, 1024L),
         "Number of threads used to load dynamic partitions."),
     HIVE_LOAD_DYNAMIC_PARTITIONS_SCAN_SPECIFIC_PARTITIONS("hive.load.dynamic.partitions.scan.specific.partitions", false,
         "For the dynamic partitioned tables, scan only the specific partitions using the name from the list"),
@@ -5441,7 +5441,7 @@ public class HiveConf extends Configuration {
     HIVE_COMPUTE_SPLITS_NUM_THREADS("hive.compute.splits.num.threads", 10,
             "How many threads Input Format should use to create splits in parallel.",
             HIVE_ORC_COMPUTE_SPLITS_NUM_THREADS.varname),
-    HIVE_EXEC_INPUT_LISTING_MAX_THREADS("hive.exec.input.listing.max.threads", 0, new  SizeValidator(0L, true, 1024L, true),
+    HIVE_EXEC_INPUT_LISTING_MAX_THREADS("hive.exec.input.listing.max.threads", 0, new RangeValidator(0L, 1024L),
         "Maximum number of threads that Hive uses to list file information from file systems (recommended > 1 for blobstore)."),
 
     HIVE_QUERY_REEXECUTION_ENABLED("hive.query.reexecution.enabled", true,
