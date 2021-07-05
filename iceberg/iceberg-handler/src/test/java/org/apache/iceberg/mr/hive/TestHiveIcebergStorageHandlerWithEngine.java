@@ -581,6 +581,34 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   }
 
   @Test
+  public void testAlterChangeColumn() throws IOException {
+    Table table = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+
+    shell.executeStatement("ALTER TABLE customers CHANGE COLUMN last_name family_name string AFTER customer_id");
+
+    List<Object[]> result = shell.executeStatement("SELECT * FROM customers ORDER BY customer_id");
+    Assert.assertEquals(3, result.size());
+    Assert.assertArrayEquals(new Object[]{0L, "Brown", "Alice"}, result.get(0));
+    Assert.assertArrayEquals(new Object[]{1L, "Green", "Bob"}, result.get(1));
+    Assert.assertArrayEquals(new Object[]{2L, "Pink", "Trudy"}, result.get(2));
+
+    shell.executeStatement("ALTER TABLE customers CHANGE COLUMN family_name family_name string FIRST");
+
+    result = shell.executeStatement("SELECT * FROM customers ORDER BY customer_id");
+    Assert.assertEquals(3, result.size());
+    Assert.assertArrayEquals(new Object[]{"Brown", 0L, "Alice"}, result.get(0));
+    Assert.assertArrayEquals(new Object[]{"Green", 1L, "Bob"}, result.get(1));
+    Assert.assertArrayEquals(new Object[]{"Pink", 2L, "Trudy"}, result.get(2));
+
+    result = shell.executeStatement("SELECT customer_id, family_name FROM customers ORDER BY customer_id");
+    Assert.assertEquals(3, result.size());
+    Assert.assertArrayEquals(new Object[]{0L, "Brown"}, result.get(0));
+    Assert.assertArrayEquals(new Object[]{1L, "Green"}, result.get(1));
+    Assert.assertArrayEquals(new Object[]{2L, "Pink"}, result.get(2));
+  }
+
+  @Test
   public void testInsertOverwriteNonPartitionedTable() throws IOException {
     TableIdentifier target = TableIdentifier.of("default", "target");
     Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,

@@ -22,7 +22,9 @@ package org.apache.iceberg.hive;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -31,6 +33,7 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.Pair;
 
 
 public final class HiveSchemaUtil {
@@ -172,6 +175,25 @@ public final class HiveSchemaUtil {
     }
 
     return difference;
+  }
+
+  /**
+   * @param updated
+   * @param old
+   * @param renameMapping
+   * @return
+   */
+  public static Pair<String, Optional<String>> getFirstOutOfOrderColPosition(List<FieldSchema> updated,
+                                                                             List<FieldSchema> old,
+                                                                             Map<String, String> renameMapping) {
+    for (int i = 0; i < updated.size() && i < old.size(); ++i) {
+      String updatedCol = renameMapping.getOrDefault(updated.get(i).getName(), updated.get(i).getName());
+      String oldCol = old.get(i).getName();
+      if (!oldCol.equals(updatedCol)) {
+        return Pair.of(updatedCol, i > 0 ? Optional.of(updated.get(i - 1).getName()) : Optional.empty());
+      }
+    }
+    return null;
   }
 
   public static class SchemaDifference {

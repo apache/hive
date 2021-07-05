@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
@@ -64,9 +66,11 @@ import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Type;
+import org.apache.iceberg.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,8 +84,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       .of(BaseMetastoreTableOperations.METADATA_LOCATION_PROP,
       BaseMetastoreTableOperations.PREVIOUS_METADATA_LOCATION_PROP);
   private static final EnumSet<AlterTableType> SUPPORTED_ALTER_OPS = EnumSet.of(
-      AlterTableType.ADDCOLS, AlterTableType.REPLACE_COLUMNS, AlterTableType.ADDPROPS, AlterTableType.DROPPROPS,
-      AlterTableType.SETPARTITIONSPEC);
+      AlterTableType.ADDCOLS, AlterTableType.REPLACE_COLUMNS, AlterTableType.RENAME_COLUMN,
+      AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.SETPARTITIONSPEC);
 
   private final Configuration conf;
   private Table icebergTable = null;
@@ -264,6 +268,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       }
     } else if (AlterTableType.REPLACE_COLUMNS.equals(currentAlterTableOp)) {
       handleReplaceColumns(hmsTable);
+    } else if (AlterTableType.RENAME_COLUMN.equals(currentAlterTableOp)) {
+      handleChangeColumn(hmsTable);
     }
   }
 
@@ -284,6 +290,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       Map<String, String> contextProperties = context.getProperties();
       switch (currentAlterTableOp) {
         case REPLACE_COLUMNS:
+        case RENAME_COLUMN:
         case ADDCOLS:
           if (updateSchema != null) {
             updateSchema.commit();
@@ -502,17 +509,77 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     }
 
     for (FieldSchema updatedCol : schemaDifference.getTypeChanged()) {
-      Type newType = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(updatedCol.getType()));
-      if (!(newType instanceof Type.PrimitiveType)) {
-        throw new MetaException(String.format("Cannot promote type of column: '%s' to a non-primitive type: %s.",
-            updatedCol.getName(), newType));
-      }
-      updateSchema.updateColumn(updatedCol.getName(), (Type.PrimitiveType) newType, updatedCol.getComment());
+      updateSchema.updateColumn(updatedCol.getName(), getPrimitiveTypeOrThrow(updatedCol), updatedCol.getComment());
     }
 
     for (FieldSchema updatedCol : schemaDifference.getCommentChanged()) {
       updateSchema.updateColumnDoc(updatedCol.getName(), updatedCol.getComment());
     }
+  }
+
+  private void handleChangeColumn(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws MetaException {
+    List<FieldSchema> hmsCols = hmsTable.getSd().getCols();
+    List<FieldSchema> icebergCols = HiveSchemaUtil.convert(icebergTable.schema());
+    // compute schema difference for renames, type/comment changes
+    HiveSchemaUtil.SchemaDifference schemaDifference = HiveSchemaUtil.getSchemaDiff(hmsCols, icebergCols, true);
+    // check column reorder (which could happen even in the absence of any rename, type or comment change too)
+    Map<String, String> renameMapping = schemaDifference.getMissingFromSecond().isEmpty() ? ImmutableMap.of() :
+        ImmutableMap.of(schemaDifference.getMissingFromSecond().get(0).getName(),
+            schemaDifference.getMissingFromFirst().get(0).getName());
+    Pair<String, Optional<String>> outOfOrder = HiveSchemaUtil.getFirstOutOfOrderColPosition(hmsCols, icebergCols,
+        renameMapping);
+
+    if (!schemaDifference.isEmpty() || outOfOrder != null) {
+      updateSchema = icebergTable.updateSchema();
+    } else {
+      // we should get here if the user restated the exactly the existing column in the CHANGE COLUMN command
+      LOG.info("Found no difference between new and old schema for ALTER TABLE CHANGE COLUMN for" +
+          " table: {}. There will be no Iceberg commit.", hmsTable.getTableName());
+      return;
+    }
+
+    // case 1: column name has been renamed
+    if (!schemaDifference.getMissingFromSecond().isEmpty()) {
+      FieldSchema updatedField = schemaDifference.getMissingFromSecond().get(0);
+      FieldSchema oldField = schemaDifference.getMissingFromFirst().get(0);
+      updateSchema.renameColumn(oldField.getName(), updatedField.getName());
+
+      // check if type/comment changed too
+      if (!Objects.equals(oldField.getType(), updatedField.getType())) {
+        updateSchema.updateColumn(oldField.getName(), getPrimitiveTypeOrThrow(updatedField), updatedField.getComment());
+      } else if (!Objects.equals(oldField.getComment(), updatedField.getComment())) {
+        updateSchema.updateColumnDoc(oldField.getName(), updatedField.getComment());
+      }
+
+    // case 2: only column type and/or comment changed
+    } else if (!schemaDifference.getTypeChanged().isEmpty()) {
+      FieldSchema updatedField = schemaDifference.getTypeChanged().get(0);
+      updateSchema.updateColumn(updatedField.getName(), getPrimitiveTypeOrThrow(updatedField),
+          updatedField.getComment());
+
+    // case 3: only comment changed
+    } else if (!schemaDifference.getCommentChanged().isEmpty()) {
+      FieldSchema updatedField = schemaDifference.getCommentChanged().get(0);
+      updateSchema.updateColumnDoc(updatedField.getName(), updatedField.getComment());
+    }
+
+    // case 4: handle any order change
+    if (outOfOrder != null) {
+      if (outOfOrder.second().isPresent()) {
+        updateSchema.moveAfter(outOfOrder.first(), outOfOrder.second().get());
+      } else {
+        updateSchema.moveFirst(outOfOrder.first());
+      }
+    }
+  }
+
+  private Type.PrimitiveType getPrimitiveTypeOrThrow(FieldSchema field) throws MetaException {
+    Type newType = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(field.getType()));
+    if (!(newType instanceof Type.PrimitiveType)) {
+      throw new MetaException(String.format("Cannot promote type of column: '%s' to a non-primitive type: %s.",
+          field.getName(), newType));
+    }
+    return (Type.PrimitiveType) newType;
   }
 
   private class PreAlterTableProperties {
