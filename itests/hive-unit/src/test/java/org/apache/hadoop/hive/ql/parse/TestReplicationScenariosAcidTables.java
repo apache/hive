@@ -165,6 +165,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     if (setReplIncompProp) {
       replica.run("ALTER DATABASE " + replicatedDbName +
               " SET DBPROPERTIES('" + ReplConst.REPL_INCOMPATIBLE + "'='false')");
+      assert "false".equals(replica.getDatabase(replicatedDbName).getParameters().get(ReplConst.REPL_INCOMPATIBLE));
     }
 
     assertFalse(MetaStoreUtils.isDbReplIncompatible(replica.getDatabase(replicatedDbName)));
@@ -172,25 +173,28 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     Long sourceTxnId = openTxns(1, txnHandler, primaryConf).get(0);
     txnHandler.abortTxn(new AbortTxnRequest(sourceTxnId));
 
-    sourceTxnId = openTxns(1, txnHandler, primaryConf).get(0);
+    try {
+      sourceTxnId = openTxns(1, txnHandler, primaryConf).get(0);
 
-    primary.dump(primaryDbName);
-    replica.load(replicatedDbName, primaryDbName);
-    assertFalse(MetaStoreUtils.isDbReplIncompatible(replica.getDatabase(replicatedDbName)));
+      primary.dump(primaryDbName);
+      replica.load(replicatedDbName, primaryDbName);
+      assertFalse(MetaStoreUtils.isDbReplIncompatible(replica.getDatabase(replicatedDbName)));
 
-    Long targetTxnId = txnHandler.getTargetTxnId(HiveUtils.getReplPolicy(replicatedDbName), sourceTxnId);
-    txnHandler.abortTxn(new AbortTxnRequest(targetTxnId));
-    assertTrue(MetaStoreUtils.isDbReplIncompatible(replica.getDatabase(replicatedDbName)));
+      Long targetTxnId = txnHandler.getTargetTxnId(HiveUtils.getReplPolicy(replicatedDbName), sourceTxnId);
+      txnHandler.abortTxn(new AbortTxnRequest(targetTxnId));
+      assertTrue(MetaStoreUtils.isDbReplIncompatible(replica.getDatabase(replicatedDbName)));
 
-    WarehouseInstance.Tuple dumpData = primary.dump(primaryDbName);
+      WarehouseInstance.Tuple dumpData = primary.dump(primaryDbName);
 
-    assertFalse(ReplUtils.failedWithNonRecoverableError(new Path(dumpData.dumpLocation), conf));
-    replica.loadFailure(replicatedDbName, primaryDbName);
-    assertTrue(ReplUtils.failedWithNonRecoverableError(new Path(dumpData.dumpLocation), conf));
+      assertFalse(ReplUtils.failedWithNonRecoverableError(new Path(dumpData.dumpLocation), conf));
+      replica.loadFailure(replicatedDbName, primaryDbName);
+      assertTrue(ReplUtils.failedWithNonRecoverableError(new Path(dumpData.dumpLocation), conf));
 
-    primary.dumpFailure(primaryDbName);
-    assertTrue(ReplUtils.failedWithNonRecoverableError(new Path(dumpData.dumpLocation), conf));
-    txnHandler.abortTxn(new AbortTxnRequest(sourceTxnId));
+      primary.dumpFailure(primaryDbName);
+      assertTrue(ReplUtils.failedWithNonRecoverableError(new Path(dumpData.dumpLocation), conf));
+    } finally {
+      txnHandler.abortTxn(new AbortTxnRequest(sourceTxnId));
+    }
   }
 
   @Test
