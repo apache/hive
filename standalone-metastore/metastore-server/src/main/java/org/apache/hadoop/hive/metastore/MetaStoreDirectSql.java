@@ -3068,6 +3068,13 @@ class MetaStoreDirectSql {
       PartitionHelper.addSerdeInfo(dbConn, parts, serId, batchSizeMax);
       PartitionHelper.addColDescInfo(dbConn, numPart, colDescId, batchSizeMax);
       PartitionHelper.addSDInfo(dbConn, parts, sdId, serId, colDescId, dbType, batchSizeMax);
+      PartitionHelper.addToSortColsTable(dbConn, parts, sdId, batchSizeMax);
+      PartitionHelper.addToBucketColsTable(dbConn, parts, sdId, batchSizeMax);
+      long numSkewedString = PartitionHelper.addSkewedColsName(dbConn, parts, sdId, batchSizeMax);
+      if (numSkewedString != 0) {
+        long startSkewedId = PartitionHelper.addSkewedStringListId(dbConn, batchSizeMax, numSkewedString);
+        PartitionHelper.addSkewedStringListValues(dbConn, parts, startSkewedId, sdId, batchSizeMax);
+      }
       PartitionHelper.addColV2Info(dbConn, parts, colDescId, batchSizeMax);
       PartitionHelper.addSDParaInfo(dbConn, parts, sdId, batchSizeMax);
       PartitionHelper.addSerdeParaInfo(dbConn, parts, serId, batchSizeMax);

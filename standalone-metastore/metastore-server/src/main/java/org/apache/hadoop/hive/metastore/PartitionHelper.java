@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -407,6 +409,188 @@ class PartitionHelper {
         cdIdIdx++;
       }
       executeBatch(pst, numRecords);
+    }
+  }
+
+  public static void addToSortColsTable(Connection dbConn, List<Partition> parts, long sdId, long maxBatchSize)
+          throws SQLException {
+    String insertColInfo = "INSERT INTO \"SORT_COLS\" (\"SD_ID\", \"COLUMN_NAME\", \"ORDER\","
+            + " \"INTEGER_IDX\") VALUES (?, ?, ?, ?) ";
+    try (PreparedStatement pst = dbConn.prepareStatement(insertColInfo)) {
+      long numRecords = 0;
+      for (Partition part : parts) {
+        StorageDescriptor sd = part.getSd();
+        if (sd == null) {
+          continue;
+        }
+        List<Order> cols = sd.getSortCols();
+        if (cols == null) {
+          continue;
+        }
+        int idx = 0;
+        for (Order col : cols) {
+          pst.setLong(1, sdId);
+          pst.setString(2, col.getCol());
+          pst.setLong(3, col.getOrder());
+          pst.setLong(4, idx++);
+          LOG.debug("Executing insert numRecords " + numRecords  + " maxBatchSize " + maxBatchSize +
+                          insertColInfo.replaceAll("\\?", "{}"),
+                  sdId, col.getCol(), col.getOrder(), idx);
+          numRecords = addBatch(pst, numRecords, maxBatchSize);
+        }
+        sdId++;
+      }
+      executeBatch(pst, numRecords);
+    }
+  }
+
+  public static void addToBucketColsTable(Connection dbConn, List<Partition> parts, long sdId, long maxBatchSize)
+          throws SQLException {
+    String insertColInfo = "INSERT INTO \"BUCKETING_COLS\" (\"SD_ID\", \"BUCKET_COL_NAME\","
+            + " \"INTEGER_IDX\") VALUES (?, ?, ?) ";
+    try (PreparedStatement pst = dbConn.prepareStatement(insertColInfo)) {
+      long numRecords = 0;
+      for (Partition part : parts) {
+        StorageDescriptor sd = part.getSd();
+        if (sd == null) {
+          continue;
+        }
+        List<String> cols = sd.getBucketCols();
+        if (cols == null) {
+          continue;
+        }
+        int idx = 0;
+        for (String col : cols) {
+          pst.setLong(1, sdId);
+          pst.setString(2, col);
+          pst.setLong(3, idx++);
+          LOG.debug("Executing insert numRecords " + numRecords  + " maxBatchSize " + maxBatchSize +
+                          insertColInfo.replaceAll("\\?", "{}"), sdId, col, idx);
+          numRecords = addBatch(pst, numRecords, maxBatchSize);
+        }
+        sdId++;
+      }
+      executeBatch(pst, numRecords);
+    }
+  }
+
+  public static long addSkewedColsName(Connection dbConn, List<Partition> parts, long sdId, long maxBatchSize)
+          throws SQLException {
+    String insertColInfo = "INSERT INTO \"SKEWED_COL_NAMES\" (\"SD_ID\", \"SKEWED_COL_NAME\","
+            + " \"INTEGER_IDX\") VALUES (?, ?, ?) ";
+    long numSkewedString = 0;
+    try (PreparedStatement pst = dbConn.prepareStatement(insertColInfo)) {
+      long numRecords = 0;
+      for (Partition part : parts) {
+        StorageDescriptor sd = part.getSd();
+        if (sd == null) {
+          continue;
+        }
+        SkewedInfo skewedInfo = sd.getSkewedInfo();
+        if (skewedInfo == null) {
+          continue;
+        }
+        int idx = 0;
+        for (String col : skewedInfo.getSkewedColNames()) {
+          pst.setLong(1, sdId);
+          pst.setString(2, col);
+          pst.setLong(3, idx++);
+          LOG.debug("Executing insert numRecords " + numRecords  + " maxBatchSize " + maxBatchSize +
+                          insertColInfo.replaceAll("\\?", "{}"), sdId, col, idx);
+          numRecords = addBatch(pst, numRecords, maxBatchSize);
+        }
+        numSkewedString += skewedInfo.getSkewedColValues().size();
+        sdId++;
+      }
+      executeBatch(pst, numRecords);
+    }
+    return numSkewedString;
+  }
+
+  public static long addSkewedStringListId(Connection dbConn, long maxBatchSize, long numSkewedString)
+          throws SQLException {
+    long maxListId = 1;
+    ResultSet rs = null;
+    try (Statement statement = dbConn.createStatement()) {
+      rs = statement.executeQuery("SELECT MAX(\"STRING_LIST_ID\") FROM \"SKEWED_STRING_LIST\"");
+      if (rs.next()) {
+        maxListId = rs.getLong(1);
+      }
+    } finally {
+      close(rs);
+    }
+
+    String insertSDParamInfo = "INSERT INTO \"SKEWED_STRING_LIST\" (\"STRING_LIST_ID\" VALUES (?)";
+    try (PreparedStatement pst = dbConn.prepareStatement(insertSDParamInfo)) {
+      long numRecords = 0;
+      for (long idx = 1; idx <= numSkewedString; idx++) {
+        pst.setLong(1, maxListId + idx);
+        numRecords = addBatch(pst, numRecords, maxBatchSize);
+      }
+      executeBatch(pst, numRecords);
+    }
+    return maxListId;
+  }
+
+  public static void addSkewedStringListValues(Connection dbConn, List<Partition> parts,
+                                               long listId, long sdId, long maxBatchSize) throws SQLException {
+    String insertSkewedLisVal = "INSERT INTO \"SKEWED_STRING_LIST_VALUES\" (\"STRING_LIST_ID\"," +
+            " \"STRING_LIST_VALUE\", \"INTEGER_IDX\" VALUES (?, ?, ?)";
+    String insertSkewedVal = "INSERT INTO \"SKEWED_VALUES\" (\"SD_ID_OID\", \"STRING_LIST_ID_EID\"," +
+            " \"INTEGER_IDX\" VALUES (?, ?, ?)";
+    String insertSkewedMap = "INSERT INTO \"SKEWED_COL_VALUE_LOC_MAP\" (\"SD_ID\", \"STRING_LIST_ID_KID\"," +
+            " \"LOCATION\" VALUES (?, ?, ?)";
+    PreparedStatement pstValues = null;
+    PreparedStatement pstMap = null;
+    try (PreparedStatement pst = dbConn.prepareStatement(insertSkewedLisVal)) {
+      pstValues = dbConn.prepareStatement(insertSkewedVal);
+      pstMap = dbConn.prepareStatement(insertSkewedVal);
+      long numRecords = 0;
+      long numRecordsVals = 0;
+      long numRecordsMap = 0;
+      for (Partition part : parts) {
+        StorageDescriptor sd = part.getSd();
+        if (sd == null) {
+          continue;
+        }
+        SkewedInfo skewedInfo = sd.getSkewedInfo();
+        if (skewedInfo == null) {
+          continue;
+        }
+        for (List<String> values : skewedInfo.getSkewedColValues()) {
+          long idx = 0;
+          for (String value : values) {
+            pst.setLong(1, listId);
+            pst.setString(2, value);
+            pst.setLong(3, idx++);
+            numRecords = addBatch(pst, numRecords, maxBatchSize);
+
+            pstValues.setLong(1, sdId);
+            pstValues.setLong(2, listId);
+            pstValues.setLong(3, idx++);
+            numRecordsVals = addBatch(pstValues, numRecordsVals, maxBatchSize);
+          }
+
+          pstMap.setLong(1, sdId);
+          pstMap.setLong(2, listId);
+          pstMap.setString(3, skewedInfo.getSkewedColValueLocationMaps().get(values));
+          numRecordsMap = addBatch(pstMap, numRecordsMap, maxBatchSize);
+
+          listId++;
+        }
+        sdId++;
+      }
+      executeBatch(pst, numRecords);
+      executeBatch(pstValues, numRecordsVals);
+      executeBatch(pstMap, numRecordsMap);
+    } finally {
+      if (pstValues != null) {
+        pstValues.close();
+      }
+
+      if (pstMap != null) {
+        pstMap.close();
+      }
     }
   }
 
