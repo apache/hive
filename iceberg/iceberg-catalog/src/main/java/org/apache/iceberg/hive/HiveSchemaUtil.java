@@ -151,24 +151,24 @@ public final class HiveSchemaUtil {
     for (FieldSchema first : minuendCollection) {
       boolean found = false;
       for (FieldSchema second : subtrahendCollection) {
-        if (first.getName().equals(second.getName())) {
+        if (Objects.equals(first.getName(), second.getName())) {
           found = true;
           if (!Objects.equals(first.getType(), second.getType())) {
-            difference.typeChanged(first);
+            difference.addTypeChanged(first);
           }
           if (!Objects.equals(first.getComment(), second.getComment())) {
-            difference.commentChanged(first);
+            difference.addCommentChanged(first);
           }
         }
       }
       if (!found) {
-        difference.missingFromSecond(first);
+        difference.addMissingFromSecond(first);
       }
     }
 
     if (bothDirections) {
       SchemaDifference otherWay = getSchemaDiff(subtrahendCollection, minuendCollection, false);
-      otherWay.missingFromSecond().forEach(difference::missingFromFirst);
+      otherWay.getMissingFromSecond().forEach(difference::addMissingFromFirst);
     }
 
     return difference;
@@ -180,19 +180,19 @@ public final class HiveSchemaUtil {
     private final List<FieldSchema> typeChanged = new ArrayList<>();
     private final List<FieldSchema> commentChanged = new ArrayList<>();
 
-    public List<FieldSchema> missingFromFirst() {
+    public List<FieldSchema> getMissingFromFirst() {
       return missingFromFirst;
     }
 
-    public List<FieldSchema> missingFromSecond() {
+    public List<FieldSchema> getMissingFromSecond() {
       return missingFromSecond;
     }
 
-    public List<FieldSchema> typeChanged() {
+    public List<FieldSchema> getTypeChanged() {
       return typeChanged;
     }
 
-    public List<FieldSchema> commentChanged() {
+    public List<FieldSchema> getCommentChanged() {
       return commentChanged;
     }
 
@@ -201,19 +201,19 @@ public final class HiveSchemaUtil {
           commentChanged.isEmpty();
     }
 
-    void missingFromFirst(FieldSchema field) {
+    void addMissingFromFirst(FieldSchema field) {
       missingFromFirst.add(field);
     }
 
-    void missingFromSecond(FieldSchema field) {
+    void addMissingFromSecond(FieldSchema field) {
       missingFromSecond.add(field);
     }
 
-    void typeChanged(FieldSchema field) {
+    void addTypeChanged(FieldSchema field) {
       typeChanged.add(field);
     }
 
-    void commentChanged(FieldSchema field) {
+    void addCommentChanged(FieldSchema field) {
       commentChanged.add(field);
     }
   }

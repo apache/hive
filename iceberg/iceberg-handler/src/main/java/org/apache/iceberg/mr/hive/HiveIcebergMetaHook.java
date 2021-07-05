@@ -254,7 +254,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
     if (AlterTableType.ADDCOLS.equals(currentAlterTableOp)) {
       Collection<FieldSchema> addedCols = HiveSchemaUtil.getSchemaDiff(
-          hmsTable.getSd().getCols(), HiveSchemaUtil.convert(icebergTable.schema()), false).missingFromSecond();
+          hmsTable.getSd().getCols(), HiveSchemaUtil.convert(icebergTable.schema()), false).getMissingFromSecond();
       if (!addedCols.isEmpty()) {
         updateSchema = icebergTable.updateSchema();
       }
@@ -489,13 +489,14 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       // we should get here if the user restated the exactly the existing columns in the REPLACE COLUMNS command
       LOG.info("Found no difference between new and old schema for ALTER TABLE REPLACE COLUMNS for" +
           " table: {}. There will be no Iceberg commit.", hmsTable.getTableName());
+      return;
     }
 
-    for (FieldSchema droppedCol : schemaDifference.missingFromFirst()) {
+    for (FieldSchema droppedCol : schemaDifference.getMissingFromFirst()) {
       updateSchema.deleteColumn(droppedCol.getName());
     }
 
-    for (FieldSchema addedCol : schemaDifference.missingFromSecond()) {
+    for (FieldSchema addedCol : schemaDifference.getMissingFromSecond()) {
       updateSchema.addColumn(
           addedCol.getName(),
           HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType())),
@@ -503,7 +504,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       );
     }
 
-    for (FieldSchema updatedCol : schemaDifference.typeChanged()) {
+    for (FieldSchema updatedCol : schemaDifference.getTypeChanged()) {
       Type newType = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(updatedCol.getType()));
       if (!(newType instanceof Type.PrimitiveType)) {
         throw new MetaException(String.format("Cannot promote type of column: '%s' to a non-primitive type: %s.",
@@ -512,7 +513,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       updateSchema.updateColumn(updatedCol.getName(), (Type.PrimitiveType) newType, updatedCol.getComment());
     }
 
-    for (FieldSchema updatedCol : schemaDifference.commentChanged()) {
+    for (FieldSchema updatedCol : schemaDifference.getCommentChanged()) {
       updateSchema.updateColumnDoc(updatedCol.getName(), updatedCol.getComment());
     }
   }
