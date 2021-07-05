@@ -144,7 +144,16 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   }
 
   @Test
-  public void testTargetDbReplIncompatible() throws Throwable {
+  public void testTargetDbReplIncompatibleWithNoPropSet() throws Throwable {
+    testTargetDbReplIncompatible(false);
+  }
+
+  @Test
+  public void testTargetDbReplIncompatibleWithPropSet() throws Throwable {
+    testTargetDbReplIncompatible(true);
+  }
+
+  private void testTargetDbReplIncompatible(boolean setReplIncompProp) throws Throwable {
     HiveConf primaryConf = primary.getConf();
     TxnStore txnHandler = TxnUtils.getTxnStore(primary.getConf());
 
@@ -152,6 +161,11 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
             .dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName);
+
+    if (setReplIncompProp) {
+      replica.run("ALTER DATABASE " + replicatedDbName +
+              " SET DBPROPERTIES('" + ReplConst.REPL_INCOMPATIBLE + "'='false')");
+    }
 
     assertFalse(MetaStoreUtils.isDbReplIncompatible(replica.getDatabase(replicatedDbName)));
 
@@ -176,6 +190,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     primary.dumpFailure(primaryDbName);
     assertTrue(ReplUtils.failedWithNonRecoverableError(new Path(dumpData.dumpLocation), conf));
+    txnHandler.abortTxn(new AbortTxnRequest(sourceTxnId));
   }
 
   @Test
