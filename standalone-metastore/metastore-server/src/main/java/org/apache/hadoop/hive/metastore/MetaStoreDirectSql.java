@@ -3072,6 +3072,12 @@ class MetaStoreDirectSql {
       PartitionHelper.addToBucketColsTable(dbConn, parts, sdId, batchSizeMax);
       long numSkewedString = PartitionHelper.addSkewedColsName(dbConn, parts, sdId, batchSizeMax);
       if (numSkewedString != 0) {
+        // addSkewedStringListId will insert the unique skewed list id for each skewed key. To avoid some other
+        // thread concurrently inserting the same value, table lock is taken.
+        String lockCommand = "lock table \"SKEWED_STRING_LIST\" in exclusive mode";
+        try (Statement statement = dbConn.createStatement()) {
+          statement.executeUpdate(lockCommand);
+        }
         long startSkewedId = PartitionHelper.addSkewedStringListId(dbConn, batchSizeMax, numSkewedString);
         PartitionHelper.addSkewedStringListValues(dbConn, parts, startSkewedId, sdId, batchSizeMax);
       }

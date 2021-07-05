@@ -1539,6 +1539,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
   @Test
   public void testAddPartitionFailNotification() throws Exception {
     Table table = createTable();
+    org.junit.Assume.assumeFalse(table.isTemporary());
     Partition partition =
             buildPartition(Lists.newArrayList(DEFAULT_YEAR_VALUE), getYearPartCol(), 1);
 

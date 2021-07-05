@@ -514,16 +514,16 @@ class PartitionHelper {
     try (Statement statement = dbConn.createStatement()) {
       rs = statement.executeQuery("SELECT MAX(\"STRING_LIST_ID\") FROM \"SKEWED_STRING_LIST\"");
       if (rs.next()) {
-        maxListId = rs.getLong(1);
+        maxListId = rs.getLong(1) + 1;
       }
     } finally {
       close(rs);
     }
 
-    String insertSDParamInfo = "INSERT INTO \"SKEWED_STRING_LIST\" (\"STRING_LIST_ID\" VALUES (?)";
+    String insertSDParamInfo = "INSERT INTO \"SKEWED_STRING_LIST\" (\"STRING_LIST_ID\") VALUES (?)";
     try (PreparedStatement pst = dbConn.prepareStatement(insertSDParamInfo)) {
       long numRecords = 0;
-      for (long idx = 1; idx <= numSkewedString; idx++) {
+      for (long idx = 0; idx < numSkewedString; idx++) {
         pst.setLong(1, maxListId + idx);
         numRecords = addBatch(pst, numRecords, maxBatchSize);
       }
@@ -534,17 +534,17 @@ class PartitionHelper {
 
   public static void addSkewedStringListValues(Connection dbConn, List<Partition> parts,
                                                long listId, long sdId, long maxBatchSize) throws SQLException {
-    String insertSkewedLisVal = "INSERT INTO \"SKEWED_STRING_LIST_VALUES\" (\"STRING_LIST_ID\"," +
-            " \"STRING_LIST_VALUE\", \"INTEGER_IDX\" VALUES (?, ?, ?)";
+    String insertSkewedListVal = "INSERT INTO \"SKEWED_STRING_LIST_VALUES\" (\"STRING_LIST_ID\"," +
+            " \"STRING_LIST_VALUE\", \"INTEGER_IDX\") VALUES (?, ?, ?)";
     String insertSkewedVal = "INSERT INTO \"SKEWED_VALUES\" (\"SD_ID_OID\", \"STRING_LIST_ID_EID\"," +
-            " \"INTEGER_IDX\" VALUES (?, ?, ?)";
+            " \"INTEGER_IDX\") VALUES (?, ?, ?)";
     String insertSkewedMap = "INSERT INTO \"SKEWED_COL_VALUE_LOC_MAP\" (\"SD_ID\", \"STRING_LIST_ID_KID\"," +
-            " \"LOCATION\" VALUES (?, ?, ?)";
+            " \"LOCATION\") VALUES (?, ?, ?)";
     PreparedStatement pstValues = null;
     PreparedStatement pstMap = null;
-    try (PreparedStatement pst = dbConn.prepareStatement(insertSkewedLisVal)) {
+    try (PreparedStatement pst = dbConn.prepareStatement(insertSkewedListVal)) {
       pstValues = dbConn.prepareStatement(insertSkewedVal);
-      pstMap = dbConn.prepareStatement(insertSkewedVal);
+      pstMap = dbConn.prepareStatement(insertSkewedMap);
       long numRecords = 0;
       long numRecordsVals = 0;
       long numRecordsMap = 0;
@@ -559,6 +559,7 @@ class PartitionHelper {
         }
         for (List<String> values : skewedInfo.getSkewedColValues()) {
           long idx = 0;
+          long idx1 = 0;
           for (String value : values) {
             pst.setLong(1, listId);
             pst.setString(2, value);
@@ -567,7 +568,7 @@ class PartitionHelper {
 
             pstValues.setLong(1, sdId);
             pstValues.setLong(2, listId);
-            pstValues.setLong(3, idx++);
+            pstValues.setLong(3, idx1++);
             numRecordsVals = addBatch(pstValues, numRecordsVals, maxBatchSize);
           }
 
