@@ -1,16 +1,18 @@
 -- CREATE IF NOT EXISTS already
-CREATE CONNECTOR IF NOT EXISTS mysql_test_2
-TYPE 'mysql'
-URL 'jdbc:mysql://nightly7x-unsecure-1.nightly7x-unsecure.root.hwx.site:3306/hive1'
-COMMENT 'test connector'
+CREATE CONNECTOR IF NOT EXISTS derby_test
+TYPE 'derby'
+URL 'jdbc:derby:./target/db_for_connectortest.db;create=true'
+COMMENT 'test derby connector'
 WITH DCPROPERTIES (
-"hive.sql.dbcp.username"="hive1",
-"hive.sql.dbcp.password"="hive1");
+"hive.sql.dbcp.username"="APP",
+"hive.sql.dbcp.password"="mine");
 SHOW CONNECTORS;
 
 -- CREATE and USE remote database
-CREATE REMOTE database mysql_db_2 using mysql_test_2 with DBPROPERTIES("connector.remoteDbName"="hive1");
-USE mysql_db_2;
+CREATE REMOTE DATABASE db_derby USING derby_test with DBPROPERTIES("connector.remoteDbName"="APP");
+SHOW DATABASES;
+USE db_derby;
+SHOW TABLES;
 
 -- ALTER TABLE is not allowed in remote database
-ALTER TABLE temp_tbls RENAME TO perm_tbls;
+ALTER TABLE TESTTABLE1 RENAME TO ALTERTABLE1;
