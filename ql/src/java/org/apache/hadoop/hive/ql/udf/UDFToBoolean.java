@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.ql.udf;
 
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.UDFMethodResolver;
@@ -31,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastDoubleToBoolean
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastLongToBooleanViaLongToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDateToBoolean;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastTimestampToBoolean;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -44,6 +48,8 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+
+import java.time.ZoneId;
 
 /**
  * UDFToBoolean.
@@ -213,7 +219,10 @@ public class UDFToBoolean extends UDF {
     if (i == null) {
       return null;
     } else {
-      booleanWritable.set(i.getSeconds() != 0 || i.getNanos() != 0);
+      ZoneId zone = SessionState.get() == null ?
+        new HiveConf().getLocalTimeZone() : SessionState.get().getConf().getLocalTimeZone();
+      TimestampTZ timestamp = TimestampTZUtil.convert(i.getTimestamp(), zone);
+      booleanWritable.set(timestamp.getEpochSecond() != 0 || timestamp.getNanos() != 0);
       return booleanWritable;
     }
   }

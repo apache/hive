@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.UDFMethodResolver;
@@ -26,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastLongToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastTimestampToDouble;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -38,6 +42,9 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+
+import java.time.ZoneId;
+
 /**
  * UDFToDouble.
  *
@@ -209,7 +216,10 @@ public class UDFToDouble extends UDF {
       return null;
     } else {
       try {
-        doubleWritable.set(i.getDouble());
+        ZoneId zone = SessionState.get() == null ?
+          new HiveConf().getLocalTimeZone() : SessionState.get().getConf().getLocalTimeZone();
+        TimestampTZ timestamp = TimestampTZUtil.convert(i.getTimestamp(), zone);
+        doubleWritable.set(TimestampTZUtil.convertTimestampTZToDouble(timestamp));
         return doubleWritable;
       } catch (NumberFormatException e) {
         // MySQL returns 0 if the string is not a well-formed numeric value.

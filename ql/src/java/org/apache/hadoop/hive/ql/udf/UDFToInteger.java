@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.UDFMethodResolver;
@@ -28,6 +31,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastTimestampToLong;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -41,6 +45,8 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+
+import java.time.ZoneId;
 
 /**
  * UDFToInteger.
@@ -221,7 +227,10 @@ public class UDFToInteger extends UDF {
     if (i == null) {
       return null;
     } else {
-      final long longValue = i.getSeconds();
+      ZoneId zone = SessionState.get() == null ?
+        new HiveConf().getLocalTimeZone() : SessionState.get().getConf().getLocalTimeZone();
+      TimestampTZ timestamp = TimestampTZUtil.convert(i.getTimestamp(), zone);
+      final long longValue = timestamp.getEpochSecond();
       final int intValue = (int) longValue;
       if (intValue != longValue) {
         return null;

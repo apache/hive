@@ -186,4 +186,8 @@ public class TimestampTZUtil {
     return Timestamp.ofEpochSecond(localDateTimeAtToZone.toEpochSecond(ZoneOffset.UTC),
         localDateTimeAtToZone.getNano());
   }
+
+  public static double convertTimestampTZToDouble(TimestampTZ timestampTZ) {
+    return timestampTZ.getEpochSecond() + timestampTZ.getNanos() / 1000000000;
+  }
 }
