@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileSplit;
@@ -76,8 +77,10 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
        * Do we have schema on read in the configuration variables?
        */
       int dataColumns = rbCtx.getDataColumnCount();
-      TypeDescription schema =
-          OrcInputFormat.getDesiredRowTypeDescr(conf, false, dataColumns);
+      String icebergOrcSchema = conf.get(ColumnProjectionUtils.ICEBERG_ORC_SCHEMA_STRING);
+      TypeDescription schema = icebergOrcSchema == null ?
+          OrcInputFormat.getDesiredRowTypeDescr(conf, false, dataColumns) :
+          TypeDescription.fromString(icebergOrcSchema);
       if (schema == null) {
         schema = file.getSchema();
         // Even if the user isn't doing schema evolution, cut the schema
