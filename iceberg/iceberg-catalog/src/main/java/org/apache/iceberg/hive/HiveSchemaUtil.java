@@ -178,19 +178,25 @@ public final class HiveSchemaUtil {
   }
 
   /**
-   * @param updated
-   * @param old
-   * @param renameMapping
-   * @return
+   * Compares a list of columns to another list, by name, to find an out of order column.
+   * It iterates through updated one by one, and compares the name of the column to the name of the column in the old
+   * list, in the same position. It returns the first mismatch it finds in updated, if any.
+   *
+   * @param updated The list of the columns after some updates have taken place
+   * @param old The list of the original columns
+   * @param renameMapping A map of name aliases for the updated columns (e.g. if a column rename occurred)
+   * @return A pair consisting of the first out of order column name, and its preceding column name (if any).
+   *         Returns a null in case there are no out of order columns.
    */
-  public static Pair<String, Optional<String>> getFirstOutOfOrderColPosition(List<FieldSchema> updated,
-                                                                             List<FieldSchema> old,
-                                                                             Map<String, String> renameMapping) {
+  public static Pair<String, Optional<String>> getFirstOutOfOrderColumn(List<FieldSchema> updated,
+                                                                        List<FieldSchema> old,
+                                                                        Map<String, String> renameMapping) {
     for (int i = 0; i < updated.size() && i < old.size(); ++i) {
       String updatedCol = renameMapping.getOrDefault(updated.get(i).getName(), updated.get(i).getName());
       String oldCol = old.get(i).getName();
       if (!oldCol.equals(updatedCol)) {
-        return Pair.of(updatedCol, i > 0 ? Optional.of(updated.get(i - 1).getName()) : Optional.empty());
+        Optional<String> previousCol = i > 0 ? Optional.of(updated.get(i - 1).getName()) : Optional.empty();
+        return Pair.of(updatedCol, previousCol);
       }
     }
     return null;

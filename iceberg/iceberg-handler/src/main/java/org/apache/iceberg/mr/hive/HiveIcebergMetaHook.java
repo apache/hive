@@ -522,11 +522,14 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     List<FieldSchema> icebergCols = HiveSchemaUtil.convert(icebergTable.schema());
     // compute schema difference for renames, type/comment changes
     HiveSchemaUtil.SchemaDifference schemaDifference = HiveSchemaUtil.getSchemaDiff(hmsCols, icebergCols, true);
-    // check column reorder (which could happen even in the absence of any rename, type or comment change too)
-    Map<String, String> renameMapping = schemaDifference.getMissingFromSecond().isEmpty() ? ImmutableMap.of() :
-        ImmutableMap.of(schemaDifference.getMissingFromSecond().get(0).getName(),
-            schemaDifference.getMissingFromFirst().get(0).getName());
-    Pair<String, Optional<String>> outOfOrder = HiveSchemaUtil.getFirstOutOfOrderColPosition(hmsCols, icebergCols,
+    // check column reorder (which could happen even in the absence of any rename, type or comment change)
+    Map<String, String> renameMapping = ImmutableMap.of();
+    if (!schemaDifference.getMissingFromSecond().isEmpty()) {
+      renameMapping = ImmutableMap.of(
+          schemaDifference.getMissingFromSecond().get(0).getName(),
+          schemaDifference.getMissingFromFirst().get(0).getName());
+    }
+    Pair<String, Optional<String>> outOfOrder = HiveSchemaUtil.getFirstOutOfOrderColumn(hmsCols, icebergCols,
         renameMapping);
 
     if (!schemaDifference.isEmpty() || outOfOrder != null) {
