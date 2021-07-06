@@ -1605,6 +1605,12 @@ public abstract class BaseSemanticAnalyzer {
 
   public static void validatePartSpec(Table tbl, Map<String, String> partSpec,
       ASTNode astNode, HiveConf conf, boolean shouldBeFull) throws SemanticException {
+    if (tbl.getStorageHandler() != null && tbl.getStorageHandler().alwaysUnpartitioned() &&
+        partSpec != null && !partSpec.isEmpty()) {
+      throw new UnsupportedOperationException("Using partition spec in query is unsupported for non-native table" +
+          " backed by: " + tbl.getStorageHandler().toString());
+    }
+
     tbl.validatePartColumnNames(partSpec, shouldBeFull);
     validatePartColumnType(tbl, partSpec, astNode, conf);
   }
