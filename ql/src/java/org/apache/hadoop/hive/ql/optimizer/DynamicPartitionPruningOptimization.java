@@ -576,16 +576,11 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     // Create the column expr map
     Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
     ExprNodeDesc exprNode = null;
-    if ( parentOfRS.getColumnExprMap() != null) {
-      exprNode = parentOfRS.getColumnExprMap().get(internalColName).clone();
-    } else {
-      exprNode = new ExprNodeColumnDesc(columnInfo);
+    if (columnInfo == null) {
+      LOG.debug("No ColumnInfo found in {} for {}", parentOfRS.getOperatorId(), internalColName);
+      return false;
     }
-
-    if (exprNode instanceof ExprNodeColumnDesc) {
-      ExprNodeColumnDesc encd = (ExprNodeColumnDesc) exprNode;
-      encd.setColumn(internalColName);
-    }
+    exprNode = new ExprNodeColumnDesc(columnInfo);
     colExprMap.put(internalColName, exprNode);
 
     // Create the Select Operator
