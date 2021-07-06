@@ -49,4 +49,8 @@ POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:db_derby
 TESTTABLE1
 TESTTABLE2
-FAILED: SemanticException [Error 10134]: ALTER TABLE can only be used for [ADDPROPS, DROPPROPS, ADDCOLS, SETPARTITIONSPEC] to a non-native table  TESTTABLE1
+PREHOOK: query: DROP TABLE TESTTABLE1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: db_derby@TESTTABLE1
+PREHOOK: Output: db_derby@TESTTABLE1
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Drop table in REMOTE database db_derby is not allowed)
