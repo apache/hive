@@ -3719,8 +3719,45 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public GetTablesResult get_table_objects_by_name_req(GetTablesRequest req) throws TException {
     String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+    if (isDatabaseRemote(req.getDbName())) {
+      return new GetTablesResult(getRemoteTableObjectsInternal(req.getDbName(), req.getTblNames(), req.getTablesPattern()));
+    }
     return new GetTablesResult(getTableObjectsInternal(catName, req.getDbName(),
         req.getTblNames(), req.getCapabilities(), req.getProjectionSpec(), req.getTablesPattern()));
+  }
+
+  private List<Table> filterTablesByName(List<Table> tables, List<String> tableNames) {
+    List<Table> filteredTables = new ArrayList<>();
+    for (Table table : tables) {
+      if (tableNames.contains(table.getTableName())) {
+        filteredTables.add(table);
+      }
+    }
+    return filteredTables;
+  }
+
+  private List<Table> getRemoteTableObjectsInternal(String dbname, List<String> tableNames, String pattern) throws MetaException {
+    String[] parsedDbName = parseDbName(dbname, conf);
+    try {
+      // retrieve tables from remote database
+      Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+      List<Table> tables = DataConnectorProviderFactory.getDataConnectorProvider(db).getTables(null);
+
+      // filtered out undesired tables
+      if (tableNames != null) {
+        tables = filterTablesByName(tables, tableNames);
+      }
+
+      // set remote tables' local hive database reference
+      for (Table table : tables) {
+        table.setDbName(dbname);
+      }
+
+      return FilterUtils.filterTablesIfEnabled(isServerFilterEnabled, filterHook, tables);
+    } catch (Exception e) {
+      LOG.warn("Unexpected exception while getting table(s) in remote database " + dbname , e);
+      return new ArrayList<Table>();
+    }
   }
 
   private List<Table> getTableObjectsInternal(String catName, String dbName,

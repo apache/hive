@@ -38,17 +38,6 @@ public class MySQLConnectorProvider extends AbstractJDBCConnectorProvider {
   }
 
   /**
-   * Returns Hive Table objects from the remote database for tables that match a name pattern.
-   * @return List A collection of objects that match the name pattern, null otherwise.
-   * @throws MetaException To indicate any failures with executing this API
-   * @param regex
-   */
-  @Override public  List<Table> getTables(String regex) throws MetaException {
-    LOG.info("getTables() not implemented yet");
-    return null;
-  }
-
-  /**
    * Fetch a single table with the given name, returns a Hive Table object from the remote database
    * @return Table A Table object for the matching table, null otherwise.
    * @throws MetaException To indicate any failures with executing this API

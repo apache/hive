@@ -50,17 +50,6 @@ public class DerbySQLConnectorProvider extends AbstractJDBCConnectorProvider {
      return null;
   }
 
-  /**
-   * Returns Hive Table objects from the remote database for tables that match a name pattern.
-   * @return List A collection of objects that match the name pattern, null otherwise.
-   * @throws MetaException To indicate any failures with executing this API
-   * @param regex
-   */
-  @Override
-  public List<Table> getTables(String regex) throws MetaException {
-    return null;
-  }
-
   protected String getDataType(String dbDataType, int size) {
     String mappedType = super.getDataType(dbDataType, size);
     if (!mappedType.equalsIgnoreCase(ColumnType.VOID_TYPE_NAME)) {
