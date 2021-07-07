@@ -53,7 +53,6 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   private static final String JDBC_OUTPUTFORMAT_CLASS = "org.apache.hive.storage.jdbc.JdbcOutputFormat".intern();
 
   String type = null; // MYSQL, POSTGRES, ORACLE, DERBY, MSSQL, DB2 etc.
-  String driverClassName = null;
   String jdbcUrl = null;
   String username = null;
   String password = null; // TODO convert to byte array
@@ -129,7 +128,32 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
    * @throws MetaException To indicate any failures with executing this API
    * @param regex
    */
-  @Override public abstract List<Table> getTables(String regex) throws MetaException;
+  @Override public List<Table> getTables(String regex) throws MetaException {
+    ResultSet rs = null;
+    try {
+      rs = fetchTablesViaDBMetaData(regex);
+      if (rs != null) {
+        List<Table> tables = new ArrayList<Table>();
+        while(rs.next()) {
+          try {
+            tables.add(getTable(rs.getString(3)));
+          } catch (MetaException e) { /* IGNORE */ }
+        }
+        return tables;
+      }
+    } catch (SQLException sqle) {
+      LOG.warn("Could not retrieve tables from remote datasource, cause:" + sqle.getMessage());
+      throw new MetaException("Error retrieving remote table:" + sqle);
+    } finally {
+      try {
+        if (rs != null) {
+          rs.close();
+          rs = null;
+        }
+      } catch(Exception e) { /* ignore */}
+    }
+    return null;
+  }
 
   /**
    * Returns a list of all table names from the remote database.
@@ -139,7 +163,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   @Override public List<String> getTableNames() throws MetaException {
     ResultSet rs = null;
     try {
-      rs = getConnection().getMetaData().getTables(scoped_db, null, null, new String[] { "TABLE" });
+      rs = fetchTablesViaDBMetaData(null);
       if (rs != null) {
         List<String> tables = new ArrayList<String>();
         while(rs.next()) {
@@ -175,8 +199,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     ResultSet rs = null;
     Table table = null;
     try {
-      // rs = fetchTableMetadata(tableName);
-      rs = fetchTableViaDBMetaData(tableName);
+      rs = fetchColumnsViaDBMetaData(tableName);
       List<FieldSchema> cols = new ArrayList<>();
       while (rs.next()) {
         FieldSchema fs = new FieldSchema();
@@ -219,12 +242,23 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     }
   }
 
-  private ResultSet fetchTableViaDBMetaData(String tableName) throws SQLException {
+  private ResultSet fetchTablesViaDBMetaData(String regex) throws SQLException {
+    ResultSet rs = null;
+    try {
+      rs = getConnection().getMetaData().getTables(scoped_db, null, regex, new String[] { "TABLE" });
+    } catch (SQLException sqle) {
+      LOG.warn("Could not retrieve tables from JDBC table, cause:" + sqle.getMessage());
+      throw sqle;
+    }
+    return rs;
+  }
+
+  private ResultSet fetchColumnsViaDBMetaData(String tableName) throws SQLException {
     ResultSet rs = null;
     try {
       rs = getConnection().getMetaData().getColumns(scoped_db, null, tableName, null);
     } catch (SQLException sqle) {
-      LOG.warn("Could not retrieve column names from JDBC table, cause:" + sqle.getMessage());
+      LOG.warn("Could not retrieve columns from JDBC table, cause:" + sqle.getMessage());
       throw sqle;
     }
     return rs;
@@ -238,62 +272,62 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   protected String getDataType(String mySqlType, int size) {
     switch(mySqlType.toLowerCase())
     {
-    case "char":
-      return ColumnType.CHAR_TYPE_NAME + wrapSize(size);
-    case "varchar":
-    case "tinytext":
-      return ColumnType.VARCHAR_TYPE_NAME + wrapSize(size);
-    case "text":
-    case "mediumtext":
-    case "enum":
-    case "set":
-    case "tsvector":
-    case "tsquery":
-    case "uuid":
-    case "json":
-      return ColumnType.STRING_TYPE_NAME;
-    case "blob":
-    case "mediumblob":
-    case "longblob":
-    case "bytea":
-      return ColumnType.BINARY_TYPE_NAME;
-    case "tinyint":
-      return ColumnType.TINYINT_TYPE_NAME;
-    case "smallint":
-    case "smallserial":
-      return ColumnType.SMALLINT_TYPE_NAME;
-    case "mediumint":
-    case "int":
-    case "serial":
-      return ColumnType.INT_TYPE_NAME;
-    case "bigint":
-    case "bigserial":
-    case "money":
-      return ColumnType.BIGINT_TYPE_NAME;
-    case "float":
-    case "real":
-      return ColumnType.FLOAT_TYPE_NAME;
-    case "double":
-    case "double precision":
-      return ColumnType.DOUBLE_TYPE_NAME;
-    case "decimal":
-    case "numeric":
-      return ColumnType.DECIMAL_TYPE_NAME;
-    case "date":
-      return ColumnType.DATE_TYPE_NAME;
-    case "datetime":
-      return ColumnType.DATETIME_TYPE_NAME;
-    case "timestamp":
-    case "time":
-    case "interval":
-      return ColumnType.TIMESTAMP_TYPE_NAME;
-    case "timestampz":
-    case "timez":
-      return ColumnType.TIMESTAMPTZ_TYPE_NAME;
-    case "boolean":
-      return ColumnType.BOOLEAN_TYPE_NAME;
-    default:
-      return ColumnType.VOID_TYPE_NAME;
+      case "char":
+        return ColumnType.CHAR_TYPE_NAME + wrapSize(size);
+      case "varchar":
+      case "tinytext":
+        return ColumnType.VARCHAR_TYPE_NAME + wrapSize(size);
+      case "text":
+      case "mediumtext":
+      case "enum":
+      case "set":
+      case "tsvector":
+      case "tsquery":
+      case "uuid":
+      case "json":
+        return ColumnType.STRING_TYPE_NAME;
+      case "blob":
+      case "mediumblob":
+      case "longblob":
+      case "bytea":
+        return ColumnType.BINARY_TYPE_NAME;
+      case "tinyint":
+        return ColumnType.TINYINT_TYPE_NAME;
+      case "smallint":
+      case "smallserial":
+        return ColumnType.SMALLINT_TYPE_NAME;
+      case "mediumint":
+      case "int":
+      case "serial":
+        return ColumnType.INT_TYPE_NAME;
+      case "bigint":
+      case "bigserial":
+      case "money":
+        return ColumnType.BIGINT_TYPE_NAME;
+      case "float":
+      case "real":
+        return ColumnType.FLOAT_TYPE_NAME;
+      case "double":
+      case "double precision":
+        return ColumnType.DOUBLE_TYPE_NAME;
+      case "decimal":
+      case "numeric":
+        return ColumnType.DECIMAL_TYPE_NAME;
+      case "date":
+        return ColumnType.DATE_TYPE_NAME;
+      case "datetime":
+        return ColumnType.DATETIME_TYPE_NAME;
+      case "timestamp":
+      case "time":
+      case "interval":
+        return ColumnType.TIMESTAMP_TYPE_NAME;
+      case "timestampz":
+      case "timez":
+        return ColumnType.TIMESTAMPTZ_TYPE_NAME;
+      case "boolean":
+        return ColumnType.BOOLEAN_TYPE_NAME;
+      default:
+        return ColumnType.VOID_TYPE_NAME;
     }
   }
 

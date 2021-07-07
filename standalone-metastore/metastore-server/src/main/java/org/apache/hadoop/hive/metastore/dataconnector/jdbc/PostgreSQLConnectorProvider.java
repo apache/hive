@@ -19,16 +19,6 @@ public class PostgreSQLConnectorProvider extends AbstractJDBCConnectorProvider {
     super(dbName, dataConn, DRIVER_CLASS);
   }
 
-  /**
-   * Returns Hive Table objects from the remote database for tables that match a name pattern.
-   * @return List A collection of objects that match the name pattern, null otherwise.
-   * @throws MetaException To indicate any failures with executing this API
-   * @param regex
-   */
-  @Override public List<Table> getTables(String regex) throws MetaException {
-    return null;
-  }
-
   @Override protected ResultSet fetchTableMetadata(String tableName) throws MetaException {
     ResultSet rs = null;
     try {
