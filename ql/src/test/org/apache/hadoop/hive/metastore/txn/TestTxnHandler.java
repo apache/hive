@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -242,6 +243,7 @@ public class TestTxnHandler {
 
   @Test
   public void testAbortTxns() throws Exception {
+    createDatabaseForReplTests("default", MetaStoreUtils.getDefaultCatalog(conf));
     OpenTxnsResponse openedTxns = txnHandler.openTxns(new OpenTxnRequest(3, "me", "localhost"));
     List<Long> txnList = openedTxns.getTxn_ids();
     txnHandler.abortTxns(new AbortTxnsRequest(txnList));
@@ -1251,6 +1253,7 @@ public class TestTxnHandler {
 
   @Test
   public void testReplTimeouts() throws Exception {
+    createDatabaseForReplTests("default", MetaStoreUtils.getDefaultCatalog(conf));
     long timeout = txnHandler.setTimeout(1);
     try {
       OpenTxnRequest request = new OpenTxnRequest(3, "me", "localhost");
@@ -1712,8 +1715,18 @@ public class TestTxnHandler {
     return replayedTxns.equals(targetTxnId);
   }
 
+  private void createDatabaseForReplTests(String dbName, String catalog) throws Exception {
+    String query = "select \"DB_ID\" from \"DBS\" where \"NAME\" = '" + dbName + "' and \"CTLG_NAME\" = '" + catalog + "'";
+    String[] output = TestTxnDbUtil.queryToString(conf, query).split("\n");
+    if (output.length == 1) {
+      query = "INSERT INTO \"DBS\"(\"DB_ID\", \"NAME\", \"CTLG_NAME\", \"DB_LOCATION_URI\")  VALUES (1, '" + dbName + "','" + catalog + "','dummy')";
+      TestTxnDbUtil.executeUpdate(conf, query);
+    }
+  }
+
   @Test
   public void testReplOpenTxn() throws Exception {
+    createDatabaseForReplTests("default", MetaStoreUtils.getDefaultCatalog(conf));
     int numTxn = 50000;
     String[] output = TestTxnDbUtil.queryToString(conf, "SELECT MAX(\"TXN_ID\") + 1 FROM \"TXNS\"").split("\n");
     long startTxnId = Long.parseLong(output[1].trim());
