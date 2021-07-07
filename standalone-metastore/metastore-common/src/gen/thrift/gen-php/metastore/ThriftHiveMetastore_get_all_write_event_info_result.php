@@ -24,8 +24,12 @@ class ThriftHiveMetastore_get_all_write_event_info_result
         0 => array(
             'var' => 'success',
             'isRequired' => false,
-            'type' => TType::STRUCT,
-            'class' => '\metastore\GetAllWriteEventInfoResponse',
+            'type' => TType::LST,
+            'etype' => TType::STRUCT,
+            'elem' => array(
+                'type' => TType::STRUCT,
+                'class' => '\metastore\WriteEventInfo',
+                ),
         ),
         1 => array(
             'var' => 'o1',
@@ -36,7 +40,7 @@ class ThriftHiveMetastore_get_all_write_event_info_result
     );
 
     /**
-     * @var \metastore\GetAllWriteEventInfoResponse
+     * @var \metastore\WriteEventInfo[]
      */
     public $success = null;
     /**
@@ -76,9 +80,18 @@ class ThriftHiveMetastore_get_all_write_event_info_result
             }
             switch ($fid) {
                 case 0:
-                    if ($ftype == TType::STRUCT) {
-                        $this->success = new \metastore\GetAllWriteEventInfoResponse();
-                        $xfer += $this->success->read($input);
+                    if ($ftype == TType::LST) {
+                        $this->success = array();
+                        $_size1796 = 0;
+                        $_etype1799 = 0;
+                        $xfer += $input->readListBegin($_etype1799, $_size1796);
+                        for ($_i1800 = 0; $_i1800 < $_size1796; ++$_i1800) {
+                            $elem1801 = null;
+                            $elem1801 = new \metastore\WriteEventInfo();
+                            $xfer += $elem1801->read($input);
+                            $this->success []= $elem1801;
+                        }
+                        $xfer += $input->readListEnd();
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -106,11 +119,15 @@ class ThriftHiveMetastore_get_all_write_event_info_result
         $xfer = 0;
         $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_all_write_event_info_result');
         if ($this->success !== null) {
-            if (!is_object($this->success)) {
+            if (!is_array($this->success)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
             }
-            $xfer += $output->writeFieldBegin('success', TType::STRUCT, 0);
-            $xfer += $this->success->write($output);
+            $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+            $output->writeListBegin(TType::STRUCT, count($this->success));
+            foreach ($this->success as $iter1802) {
+                $xfer += $iter1802->write($output);
+            }
+            $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
         }
         if ($this->o1 !== null) {

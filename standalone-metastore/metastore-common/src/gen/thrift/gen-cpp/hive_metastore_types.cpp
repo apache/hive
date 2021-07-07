@@ -48259,10 +48259,12 @@ void GetAllWriteEventInfoRequest::__set_txnId(const int64_t val) {
 
 void GetAllWriteEventInfoRequest::__set_dbName(const std::string& val) {
   this->dbName = val;
+__isset.dbName = true;
 }
 
 void GetAllWriteEventInfoRequest::__set_tableName(const std::string& val) {
   this->tableName = val;
+__isset.tableName = true;
 }
 std::ostream& operator<<(std::ostream& out, const GetAllWriteEventInfoRequest& obj)
 {
@@ -48283,6 +48285,7 @@ uint32_t GetAllWriteEventInfoRequest::read(::apache::thrift::protocol::TProtocol
 
   using ::apache::thrift::protocol::TProtocolException;
 
+  bool isset_txnId = false;
 
   while (true)
   {
@@ -48295,7 +48298,7 @@ uint32_t GetAllWriteEventInfoRequest::read(::apache::thrift::protocol::TProtocol
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I64) {
           xfer += iprot->readI64(this->txnId);
-          this->__isset.txnId = true;
+          isset_txnId = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -48325,6 +48328,8 @@ uint32_t GetAllWriteEventInfoRequest::read(::apache::thrift::protocol::TProtocol
 
   xfer += iprot->readStructEnd();
 
+  if (!isset_txnId)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
 
@@ -48337,14 +48342,16 @@ uint32_t GetAllWriteEventInfoRequest::write(::apache::thrift::protocol::TProtoco
   xfer += oprot->writeI64(this->txnId);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->dbName);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("tableName", ::apache::thrift::protocol::T_STRING, 3);
-  xfer += oprot->writeString(this->tableName);
-  xfer += oprot->writeFieldEnd();
-
+  if (this->__isset.dbName) {
+    xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 2);
+    xfer += oprot->writeString(this->dbName);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.tableName) {
+    xfer += oprot->writeFieldBegin("tableName", ::apache::thrift::protocol::T_STRING, 3);
+    xfer += oprot->writeString(this->tableName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -48375,8 +48382,8 @@ void GetAllWriteEventInfoRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "GetAllWriteEventInfoRequest(";
   out << "txnId=" << to_string(txnId);
-  out << ", " << "dbName=" << to_string(dbName);
-  out << ", " << "tableName=" << to_string(tableName);
+  out << ", " << "dbName="; (__isset.dbName ? (out << to_string(dbName)) : (out << "<null>"));
+  out << ", " << "tableName="; (__isset.tableName ? (out << to_string(tableName)) : (out << "<null>"));
   out << ")";
 }
 

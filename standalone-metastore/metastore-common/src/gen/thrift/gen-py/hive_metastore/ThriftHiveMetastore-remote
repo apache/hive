@@ -286,7 +286,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void add_package(AddPackageRequest request)')
     print('   get_all_packages(ListPackageRequest request)')
     print('  void drop_package(DropPackageRequest request)')
-    print('  GetAllWriteEventInfoResponse get_all_write_event_info(GetAllWriteEventInfoRequest request)')
+    print('   get_all_write_event_info(GetAllWriteEventInfoRequest request)')
     print('  string getName()')
     print('  string getVersion()')
     print('  fb_status getStatus()')

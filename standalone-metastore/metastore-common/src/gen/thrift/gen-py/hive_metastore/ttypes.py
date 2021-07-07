@@ -27713,6 +27713,8 @@ class GetAllWriteEventInfoRequest(object):
         oprot.writeStructEnd()
 
     def validate(self):
+        if self.txnId is None:
+            raise TProtocolException(message='Required field txnId is unset!')
         return
 
     def __repr__(self):

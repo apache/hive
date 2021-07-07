@@ -59700,9 +59700,14 @@ class get_all_write_event_info_result(object):
             if ftype == TType.STOP:
                 break
             if fid == 0:
-                if ftype == TType.STRUCT:
-                    self.success = GetAllWriteEventInfoResponse()
-                    self.success.read(iprot)
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype1796, _size1793) = iprot.readListBegin()
+                    for _i1797 in range(_size1793):
+                        _elem1798 = WriteEventInfo()
+                        _elem1798.read(iprot)
+                        self.success.append(_elem1798)
+                    iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
             elif fid == 1:
@@ -59721,8 +59726,11 @@ class get_all_write_event_info_result(object):
             return
         oprot.writeStructBegin('get_all_write_event_info_result')
         if self.success is not None:
-            oprot.writeFieldBegin('success', TType.STRUCT, 0)
-            self.success.write(oprot)
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter1799 in self.success:
+                iter1799.write(oprot)
+            oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.o1 is not None:
             oprot.writeFieldBegin('o1', TType.STRUCT, 1)
@@ -59746,7 +59754,7 @@ class get_all_write_event_info_result(object):
         return not (self == other)
 all_structs.append(get_all_write_event_info_result)
 get_all_write_event_info_result.thrift_spec = (
-    (0, TType.STRUCT, 'success', [GetAllWriteEventInfoResponse, None], None, ),  # 0
+    (0, TType.LIST, 'success', (TType.STRUCT, [WriteEventInfo, None], False), None, ),  # 0
     (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
 )
 fix_spec(all_structs)

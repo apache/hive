@@ -10493,14 +10493,12 @@ public Package find_package(GetPackageRequest request) throws MetaException, NoS
   }
 
   @Override
-  public GetAllWriteEventInfoResponse get_all_write_event_info(GetAllWriteEventInfoRequest request)
+  public List<WriteEventInfo> get_all_write_event_info(GetAllWriteEventInfoRequest request)
       throws MetaException {
     startFunction("get_all_write_event_info");
     Exception ex = null;
     try {
-      List<WriteEventInfo> writeEventInfo = getMS().getAllWriteEventInfo(request.getTxnId(),
-          request.getDbName(), request.getTableName());
-      return new GetAllWriteEventInfoResponse(writeEventInfo);
+      return getMS().getAllWriteEventInfo(request.getTxnId(), request.getDbName(), request.getTableName());
     } catch (Exception e) {
       LOG.error("Caught exception", e);
       ex = e;

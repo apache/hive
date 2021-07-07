@@ -23,7 +23,7 @@ class GetAllWriteEventInfoRequest
     static public $_TSPEC = array(
         1 => array(
             'var' => 'txnId',
-            'isRequired' => false,
+            'isRequired' => true,
             'type' => TType::I64,
         ),
         2 => array(

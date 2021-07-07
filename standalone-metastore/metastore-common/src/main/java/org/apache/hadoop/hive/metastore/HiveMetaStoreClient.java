@@ -4984,7 +4984,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public GetAllWriteEventInfoResponse getAllWriteEventInfo(GetAllWriteEventInfoRequest request)
+  public List<WriteEventInfo> getAllWriteEventInfo(GetAllWriteEventInfoRequest request)
       throws TException {
     return client.get_all_write_event_info(request);
   }

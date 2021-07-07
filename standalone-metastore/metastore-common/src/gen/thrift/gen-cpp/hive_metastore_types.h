@@ -18198,8 +18198,7 @@ void swap(Package &a, Package &b);
 std::ostream& operator<<(std::ostream& out, const Package& obj);
 
 typedef struct _GetAllWriteEventInfoRequest__isset {
-  _GetAllWriteEventInfoRequest__isset() : txnId(false), dbName(false), tableName(false) {}
-  bool txnId :1;
+  _GetAllWriteEventInfoRequest__isset() : dbName(false), tableName(false) {}
   bool dbName :1;
   bool tableName :1;
 } _GetAllWriteEventInfoRequest__isset;
@@ -18229,9 +18228,13 @@ class GetAllWriteEventInfoRequest : public virtual ::apache::thrift::TBase {
   {
     if (!(txnId == rhs.txnId))
       return false;
-    if (!(dbName == rhs.dbName))
+    if (__isset.dbName != rhs.__isset.dbName)
       return false;
-    if (!(tableName == rhs.tableName))
+    else if (__isset.dbName && !(dbName == rhs.dbName))
+      return false;
+    if (__isset.tableName != rhs.__isset.tableName)
+      return false;
+    else if (__isset.tableName && !(tableName == rhs.tableName))
       return false;
     return true;
   }

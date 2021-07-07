@@ -1615,7 +1615,7 @@ public abstract class AbstractThriftHiveMetastore implements Iface {
     }
 
     @Override
-    public GetAllWriteEventInfoResponse get_all_write_event_info(GetAllWriteEventInfoRequest request)
+    public List<WriteEventInfo> get_all_write_event_info(GetAllWriteEventInfoRequest request)
         throws MetaException, org.apache.thrift.TException {
         throw new UnsupportedOperationException("this method is not supported");
     }

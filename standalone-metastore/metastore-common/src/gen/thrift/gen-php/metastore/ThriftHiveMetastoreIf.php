@@ -1911,7 +1911,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
     public function drop_package(\metastore\DropPackageRequest $request);
     /**
      * @param \metastore\GetAllWriteEventInfoRequest $request
-     * @return \metastore\GetAllWriteEventInfoResponse
+     * @return \metastore\WriteEventInfo[]
      * @throws \metastore\MetaException
      */
     public function get_all_write_event_info(\metastore\GetAllWriteEventInfoRequest $request);

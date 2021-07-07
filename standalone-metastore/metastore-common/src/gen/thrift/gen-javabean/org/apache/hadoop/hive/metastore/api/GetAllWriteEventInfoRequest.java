@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new GetAllWriteEventInfoRequestTupleSchemeFactory();
 
   private long txnId; // required
-  private @org.apache.thrift.annotation.Nullable java.lang.String dbName; // required
-  private @org.apache.thrift.annotation.Nullable java.lang.String tableName; // required
+  private @org.apache.thrift.annotation.Nullable java.lang.String dbName; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String tableName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -91,14 +91,15 @@ package org.apache.hadoop.hive.metastore.api;
   // isset id assignments
   private static final int __TXNID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.DB_NAME,_Fields.TABLE_NAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.TXN_ID, new org.apache.thrift.meta_data.FieldMetaData("txnId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.TXN_ID, new org.apache.thrift.meta_data.FieldMetaData("txnId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("tableName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("tableName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetAllWriteEventInfoRequest.class, metaDataMap);
@@ -108,15 +109,11 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   public GetAllWriteEventInfoRequest(
-    long txnId,
-    java.lang.String dbName,
-    java.lang.String tableName)
+    long txnId)
   {
     this();
     this.txnId = txnId;
     setTxnIdIsSet(true);
-    this.dbName = dbName;
-    this.tableName = tableName;
   }
 
   /**
@@ -399,28 +396,36 @@ package org.apache.hadoop.hive.metastore.api;
     sb.append("txnId:");
     sb.append(this.txnId);
     first = false;
-    if (!first) sb.append(", ");
-    sb.append("dbName:");
-    if (this.dbName == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.dbName);
+    if (isSetDbName()) {
+      if (!first) sb.append(", ");
+      sb.append("dbName:");
+      if (this.dbName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.dbName);
+      }
+      first = false;
     }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("tableName:");
-    if (this.tableName == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.tableName);
+    if (isSetTableName()) {
+      if (!first) sb.append(", ");
+      sb.append("tableName:");
+      if (this.tableName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tableName);
+      }
+      first = false;
     }
-    first = false;
     sb.append(")");
     return sb.toString();
   }
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
+    if (!isSetTxnId()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'txnId' is unset! Struct:" + toString());
+    }
+
     // check for sub-struct validity
   }
 
@@ -501,14 +506,18 @@ package org.apache.hadoop.hive.metastore.api;
       oprot.writeI64(struct.txnId);
       oprot.writeFieldEnd();
       if (struct.dbName != null) {
-        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
-        oprot.writeString(struct.dbName);
-        oprot.writeFieldEnd();
+        if (struct.isSetDbName()) {
+          oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+          oprot.writeString(struct.dbName);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.tableName != null) {
-        oprot.writeFieldBegin(TABLE_NAME_FIELD_DESC);
-        oprot.writeString(struct.tableName);
-        oprot.writeFieldEnd();
+        if (struct.isSetTableName()) {
+          oprot.writeFieldBegin(TABLE_NAME_FIELD_DESC);
+          oprot.writeString(struct.tableName);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -527,20 +536,15 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, GetAllWriteEventInfoRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+      oprot.writeI64(struct.txnId);
       java.util.BitSet optionals = new java.util.BitSet();
-      if (struct.isSetTxnId()) {
+      if (struct.isSetDbName()) {
         optionals.set(0);
       }
-      if (struct.isSetDbName()) {
+      if (struct.isSetTableName()) {
         optionals.set(1);
       }
-      if (struct.isSetTableName()) {
-        optionals.set(2);
-      }
-      oprot.writeBitSet(optionals, 3);
-      if (struct.isSetTxnId()) {
-        oprot.writeI64(struct.txnId);
-      }
+      oprot.writeBitSet(optionals, 2);
       if (struct.isSetDbName()) {
         oprot.writeString(struct.dbName);
       }
@@ -552,16 +556,14 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, GetAllWriteEventInfoRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(3);
+      struct.txnId = iprot.readI64();
+      struct.setTxnIdIsSet(true);
+      java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
-        struct.txnId = iprot.readI64();
-        struct.setTxnIdIsSet(true);
-      }
-      if (incoming.get(1)) {
         struct.dbName = iprot.readString();
         struct.setDbNameIsSet(true);
       }
-      if (incoming.get(2)) {
+      if (incoming.get(1)) {
         struct.tableName = iprot.readString();
         struct.setTableNameIsSet(true);
       }
