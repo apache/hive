@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
@@ -87,6 +88,7 @@ import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
 import static org.junit.runners.Parameterized.Parameter;
 import static org.junit.runners.Parameterized.Parameters;
+
 
 @RunWith(Parameterized.class)
 public class TestHiveIcebergStorageHandlerWithEngine {
@@ -1329,9 +1331,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
         optional(3, "last_name", Types.StringType.get(), "This is last name"),
         optional(4, "age", Types.LongType.get()));
 
-    Schema customerSchemaWithAgeOnly =
-        new Schema(optional(1, "customer_id", Types.LongType.get()), optional(4, "age", Types.LongType.get()));
-
     // Also add a new entry to the table where the age column is set.
     icebergTable = testTables.loadTable(TableIdentifier.of("default", "customers"));
     List<Record> newCustomerWithAge = TestHelper.RecordsBuilder.newInstance(customerSchemaWithAge)
@@ -1351,6 +1350,8 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
     // Do a 'select customer_id, age' from Hive to check if the new column can be queried from Hive.
     // The customer_id is needed because of the result sorting.
+    Schema customerSchemaWithAgeOnly =
+        new Schema(optional(1, "customer_id", Types.LongType.get()), optional(4, "age", Types.LongType.get()));
     TestHelper.RecordsBuilder customerWithAgeOnlyBuilder = TestHelper.RecordsBuilder
         .newInstance(customerSchemaWithAgeOnly).add(0L, null).add(1L, null).add(2L, null).add(3L, 34L).add(4L, null);
     List<Record> customersWithAgeOnly = customerWithAgeOnlyBuilder.build();
@@ -1378,7 +1379,10 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testAddRequiredColumnToIcebergTable() throws IOException {
-    // Create an Iceberg table with the columns customer_id, first_name and last_name with some initial data.
+    // Create an Iceberg table with the columns customer_id, first_name and last_name without initial data.
+    // The reason why not to add initial data is that adding a required column is an incompatible change in Iceberg.
+    // So there is no contract on what happens when trying to read the old data back. It behaves differently depending
+    // on the underlying file format. So there is no point creating a test for that as there is no expected behaviour.
     Table icebergTable = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, null);
 
@@ -1407,12 +1411,13 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testAddColumnIntoStructToIcebergTable() throws IOException {
+    // Create an Iceberg table with the columns id and person, where person is a struct, consists of the
+    // columns first_name and last_name.
     Schema schema = new Schema(required(1, "id", Types.LongType.get()), required(2, "person", Types.StructType
         .of(required(3, "first_name", Types.StringType.get()), required(4, "last_name", Types.StringType.get()))));
     List<Record> people = TestHelper.generateRandomRecords(schema, 3, 0L);
-
-    // Create an Iceberg table with the columns customer_id, first_name and last_name with some initial data.
     Table icebergTable = testTables.createTable(shell, "people", schema, fileFormat, people);
+
     // Add a new column (age long) to the Iceberg table into the person struct
     icebergTable.updateSchema().addColumn("person", "age", Types.LongType.get()).commit();
 
@@ -1610,7 +1615,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
         HiveIcebergTestUtils.valueForRow(schemaWithFamilyName, rows), 0);
 
     Schema shemaWithFamilyNameOnly = new Schema(optional(1, "customer_id", Types.LongType.get()),
-        optional(2, "first_name", Types.StringType.get(), "This is first name"));
+        optional(2, "family_name", Types.StringType.get(), "This is family name"));
     TestHelper.RecordsBuilder customersWithFamilyNameOnlyBuilder = TestHelper.RecordsBuilder
         .newInstance(shemaWithFamilyNameOnly).add(0L, "Brown").add(1L, "Green").add(2L, "Pink");
     List<Record> customersWithFamilyNameOnly = customersWithFamilyNameOnlyBuilder.build();
@@ -1759,7 +1764,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   }
 
   @Test
-  public void testUpdateColumnTypeInIcebergTable() throws IOException {
+  public void testUpdateColumnTypeInIcebergTable() throws IOException, TException, InterruptedException {
     // Create an Iceberg table with int, float and decimal(2,1) types with some initial records
     Schema schema = new Schema(optional(1, "id", Types.LongType.get()),
         optional(2, "int_col", Types.IntegerType.get(), "This is an integer type"),
@@ -1771,6 +1776,9 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
     Table icebergTable = testTables.createTable(shell, "types_table", schema, fileFormat, records);
 
+    // In the result set a float column is returned as double and a decimal is returned as string, even though Hive has the columns with the right types.
+    // Probably this conversation happens when fetching the result set after calling the select through the shell.
+    // Because of this, a separate schema and record list has to be used when validating the returned values.
     Schema schemaForResultSet =
         new Schema(optional(1, "id", Types.LongType.get()), optional(2, "int_col", Types.IntegerType.get()),
             optional(3, "float_col", Types.DoubleType.get()), optional(4, "decimal_col", Types.StringType.get()));
@@ -1778,19 +1786,22 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     List<Record> expectedResults = TestHelper.RecordsBuilder.newInstance(schema).add(0L, 35, 22d, "1.3")
         .add(1L, 223344, 555.22d, "2.2").add(2L, -234, -342d, "-1.2").build();
 
-    // Check the select resut and the column types from Hive
+    // Check the select result and the column types of the table.
     List<Object[]> rows = shell.executeStatement("SELECT * FROM types_table");
     HiveIcebergTestUtils.validateData(expectedResults, HiveIcebergTestUtils.valueForRow(schemaForResultSet, rows), 0);
 
-    rows = shell.executeStatement("DESCRIBE types_table");
-    Assert.assertEquals("id", rows.get(0)[0]);
-    Assert.assertEquals("bigint", rows.get(0)[1]);
-    Assert.assertEquals("int_col", rows.get(1)[0]);
-    Assert.assertEquals("int", rows.get(1)[1]);
-    Assert.assertEquals("float_col", rows.get(2)[0]);
-    Assert.assertEquals("float", rows.get(2)[1]);
-    Assert.assertEquals("decimal_col", rows.get(3)[0]);
-    Assert.assertEquals("decimal(2,1)", rows.get(3)[1]);
+    org.apache.hadoop.hive.metastore.api.Table table = shell.metastore().getTable("default", "types_table");
+    Assert.assertNotNull(table);
+    Assert.assertNotNull(table.getSd());
+    List<FieldSchema> columns = table.getSd().getCols();
+    Assert.assertEquals("id", columns.get(0).getName());
+    Assert.assertEquals("bigint", columns.get(0).getType());
+    Assert.assertEquals("int_col", columns.get(1).getName());
+    Assert.assertEquals("int", columns.get(1).getType());
+    Assert.assertEquals("float_col", columns.get(2).getName());
+    Assert.assertEquals("float", columns.get(2).getType());
+    Assert.assertEquals("decimal_col", columns.get(3).getName());
+    Assert.assertEquals("decimal(2,1)", columns.get(3).getType());
 
     // Change the column types on the table to long, double and decimal(6,1)
     icebergTable.updateSchema().updateColumn("int_col", Types.LongType.get())
@@ -1807,16 +1818,32 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     rows = shell.executeStatement("SELECT * FROM types_table");
     HiveIcebergTestUtils.validateData(expectedResults, HiveIcebergTestUtils.valueForRow(schemaForResultSet, rows), 0);
 
-    // Check if the column types in Hive has also changed to big_int, double an decimal(6,1)
-    rows = shell.executeStatement("DESCRIBE types_table");
-    Assert.assertEquals("id", rows.get(0)[0]);
-    Assert.assertEquals("bigint", rows.get(0)[1]);
-    Assert.assertEquals("int_col", rows.get(1)[0]);
-    Assert.assertEquals("bigint", rows.get(1)[1]);
-    Assert.assertEquals("float_col", rows.get(2)[0]);
-    Assert.assertEquals("double", rows.get(2)[1]);
-    Assert.assertEquals("decimal_col", rows.get(3)[0]);
-    Assert.assertEquals("decimal(6,1)", rows.get(3)[1]);
+    // Check if the column types in Hive have also changed to big_int, double an decimal(6,1)
+    // Do this check only for Hive catalog, as this is the only case when the column types are updated in the metastore.
+    // In case of other catalog types, the table is not updated in the metastore, so no point in checking the column types.
+    if (TestTables.TestTableType.HIVE_CATALOG.equals(this.testTableType)) {
+      table = shell.metastore().getTable("default", "types_table");
+      Assert.assertNotNull(table);
+      Assert.assertNotNull(table.getSd());
+      columns = table.getSd().getCols();
+      Assert.assertEquals("id", columns.get(0).getName());
+      Assert.assertEquals("bigint", columns.get(0).getType());
+      Assert.assertEquals("int_col", columns.get(1).getName());
+      Assert.assertEquals("bigint", columns.get(1).getType());
+      Assert.assertEquals("float_col", columns.get(2).getName());
+      Assert.assertEquals("double", columns.get(2).getType());
+      Assert.assertEquals("decimal_col", columns.get(3).getName());
+      Assert.assertEquals("decimal(6,1)", columns.get(3).getType());
+    }
+
+    // Insert some data which fit to the new column types and check if they are saved and can be queried correctly.
+    // This should work for all catalog types.
+    shell.executeStatement(
+        "INSERT INTO types_table values (3, 3147483647, 111.333, 12345.5), (4, -3147483648, 55, -2234.5)");
+    expectedResults = TestHelper.RecordsBuilder.newInstance(schema).add(3L, 3147483647L, 111.333d, "12345.5")
+        .add(4L, -3147483648L, 55d, "-2234.5").build();
+    rows = shell.executeStatement("SELECT * FROM types_table where id in(3, 4)");
+    HiveIcebergTestUtils.validateData(expectedResults, HiveIcebergTestUtils.valueForRow(schemaForResultSet, rows), 0);
   }
 
   private void testComplexTypeWrite(Schema schema, List<Record> records) throws IOException {
