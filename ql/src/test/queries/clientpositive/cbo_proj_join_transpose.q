@@ -1,4 +1,3 @@
---! qt:disabled:HIVE-25309
 create table table1 (acct_num string, interest_rate decimal(10,7)) stored as orc;
 create table table2 (act_id string) stored as orc;
 
