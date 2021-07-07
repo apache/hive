@@ -27226,12 +27226,12 @@ class GetAllWriteEventInfoRequest(object):
                     iprot.skip(ftype)
             elif fid == 2:
                 if ftype == TType.STRING:
-                    self.dbName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                    self.dbName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             elif fid == 3:
                 if ftype == TType.STRING:
-                    self.tableName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                    self.tableName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             else:
@@ -27260,6 +27260,8 @@ class GetAllWriteEventInfoRequest(object):
         oprot.writeStructEnd()
 
     def validate(self):
+        if self.txnId is None:
+            raise TProtocolException(message='Required field txnId is unset!')
         return
 
     def __repr__(self):

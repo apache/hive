@@ -287,7 +287,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void add_package(const AddPackageRequest& request) = 0;
   virtual void get_all_packages(std::vector<std::string> & _return, const ListPackageRequest& request) = 0;
   virtual void drop_package(const DropPackageRequest& request) = 0;
-  virtual void get_all_write_event_info(GetAllWriteEventInfoResponse& _return, const GetAllWriteEventInfoRequest& request) = 0;
+  virtual void get_all_write_event_info(std::vector<WriteEventInfo> & _return, const GetAllWriteEventInfoRequest& request) = 0;
 };
 
 class ThriftHiveMetastoreIfFactory : virtual public  ::facebook::fb303::FacebookServiceIfFactory {
@@ -1129,7 +1129,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void drop_package(const DropPackageRequest& /* request */) {
     return;
   }
-  void get_all_write_event_info(GetAllWriteEventInfoResponse& /* _return */, const GetAllWriteEventInfoRequest& /* request */) {
+  void get_all_write_event_info(std::vector<WriteEventInfo> & /* _return */, const GetAllWriteEventInfoRequest& /* request */) {
     return;
   }
 };
@@ -32737,12 +32737,12 @@ class ThriftHiveMetastore_get_all_write_event_info_result {
   }
 
   virtual ~ThriftHiveMetastore_get_all_write_event_info_result() noexcept;
-  GetAllWriteEventInfoResponse success;
+  std::vector<WriteEventInfo>  success;
   MetaException o1;
 
   _ThriftHiveMetastore_get_all_write_event_info_result__isset __isset;
 
-  void __set_success(const GetAllWriteEventInfoResponse& val);
+  void __set_success(const std::vector<WriteEventInfo> & val);
 
   void __set_o1(const MetaException& val);
 
@@ -32776,7 +32776,7 @@ class ThriftHiveMetastore_get_all_write_event_info_presult {
 
 
   virtual ~ThriftHiveMetastore_get_all_write_event_info_presult() noexcept;
-  GetAllWriteEventInfoResponse* success;
+  std::vector<WriteEventInfo> * success;
   MetaException o1;
 
   _ThriftHiveMetastore_get_all_write_event_info_presult__isset __isset;
@@ -33579,9 +33579,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void drop_package(const DropPackageRequest& request);
   void send_drop_package(const DropPackageRequest& request);
   void recv_drop_package();
-  void get_all_write_event_info(GetAllWriteEventInfoResponse& _return, const GetAllWriteEventInfoRequest& request);
+  void get_all_write_event_info(std::vector<WriteEventInfo> & _return, const GetAllWriteEventInfoRequest& request);
   void send_get_all_write_event_info(const GetAllWriteEventInfoRequest& request);
-  void recv_get_all_write_event_info(GetAllWriteEventInfoResponse& _return);
+  void recv_get_all_write_event_info(std::vector<WriteEventInfo> & _return);
 };
 
 class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceProcessor {
@@ -36663,7 +36663,7 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->drop_package(request);
   }
 
-  void get_all_write_event_info(GetAllWriteEventInfoResponse& _return, const GetAllWriteEventInfoRequest& request) {
+  void get_all_write_event_info(std::vector<WriteEventInfo> & _return, const GetAllWriteEventInfoRequest& request) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -37472,9 +37472,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void drop_package(const DropPackageRequest& request);
   int32_t send_drop_package(const DropPackageRequest& request);
   void recv_drop_package(const int32_t seqid);
-  void get_all_write_event_info(GetAllWriteEventInfoResponse& _return, const GetAllWriteEventInfoRequest& request);
+  void get_all_write_event_info(std::vector<WriteEventInfo> & _return, const GetAllWriteEventInfoRequest& request);
   int32_t send_get_all_write_event_info(const GetAllWriteEventInfoRequest& request);
-  void recv_get_all_write_event_info(GetAllWriteEventInfoResponse& _return, const int32_t seqid);
+  void recv_get_all_write_event_info(std::vector<WriteEventInfo> & _return, const int32_t seqid);
 };
 
 #ifdef _MSC_VER

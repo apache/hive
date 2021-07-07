@@ -62057,8 +62057,20 @@ uint32_t ThriftHiveMetastore_get_all_write_event_info_result::read(::apache::thr
     switch (fid)
     {
       case 0:
-        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += this->success.read(iprot);
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->success.clear();
+            uint32_t _size2440;
+            ::apache::thrift::protocol::TType _etype2443;
+            xfer += iprot->readListBegin(_etype2443, _size2440);
+            this->success.resize(_size2440);
+            uint32_t _i2444;
+            for (_i2444 = 0; _i2444 < _size2440; ++_i2444)
+            {
+              xfer += this->success[_i2444].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
           this->__isset.success = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -62091,8 +62103,16 @@ uint32_t ThriftHiveMetastore_get_all_write_event_info_result::write(::apache::th
   xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_all_write_event_info_result");
 
   if (this->__isset.success) {
-    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
-    xfer += this->success.write(oprot);
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
+      std::vector<WriteEventInfo> ::const_iterator _iter2445;
+      for (_iter2445 = this->success.begin(); _iter2445 != this->success.end(); ++_iter2445)
+      {
+        xfer += (*_iter2445).write(oprot);
+      }
+      xfer += oprot->writeListEnd();
+    }
     xfer += oprot->writeFieldEnd();
   } else if (this->__isset.o1) {
     xfer += oprot->writeFieldBegin("o1", ::apache::thrift::protocol::T_STRUCT, 1);
@@ -62131,8 +62151,20 @@ uint32_t ThriftHiveMetastore_get_all_write_event_info_presult::read(::apache::th
     switch (fid)
     {
       case 0:
-        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += (*(this->success)).read(iprot);
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            (*(this->success)).clear();
+            uint32_t _size2446;
+            ::apache::thrift::protocol::TType _etype2449;
+            xfer += iprot->readListBegin(_etype2449, _size2446);
+            (*(this->success)).resize(_size2446);
+            uint32_t _i2450;
+            for (_i2450 = 0; _i2450 < _size2446; ++_i2450)
+            {
+              xfer += (*(this->success))[_i2450].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
           this->__isset.success = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -78548,7 +78580,7 @@ void ThriftHiveMetastoreClient::recv_drop_package()
   return;
 }
 
-void ThriftHiveMetastoreClient::get_all_write_event_info(GetAllWriteEventInfoResponse& _return, const GetAllWriteEventInfoRequest& request)
+void ThriftHiveMetastoreClient::get_all_write_event_info(std::vector<WriteEventInfo> & _return, const GetAllWriteEventInfoRequest& request)
 {
   send_get_all_write_event_info(request);
   recv_get_all_write_event_info(_return);
@@ -78568,7 +78600,7 @@ void ThriftHiveMetastoreClient::send_get_all_write_event_info(const GetAllWriteE
   oprot_->getTransport()->flush();
 }
 
-void ThriftHiveMetastoreClient::recv_get_all_write_event_info(GetAllWriteEventInfoResponse& _return)
+void ThriftHiveMetastoreClient::recv_get_all_write_event_info(std::vector<WriteEventInfo> & _return)
 {
 
   int32_t rseqid = 0;
@@ -94081,13 +94113,13 @@ void ThriftHiveMetastoreProcessor::process_drop_package(int32_t seqid, ::apache:
 
 void ThriftHiveMetastoreProcessor::process_get_all_write_event_info(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = NULL;
-  if (this->eventHandler_.get() != NULL) {
+  void* ctx = nullptr;
+  if (this->eventHandler_.get() != nullptr) {
     ctx = this->eventHandler_->getContext("ThriftHiveMetastore.get_all_write_event_info", callContext);
   }
   ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.get_all_write_event_info");
 
-  if (this->eventHandler_.get() != NULL) {
+  if (this->eventHandler_.get() != nullptr) {
     this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.get_all_write_event_info");
   }
 
@@ -94096,7 +94128,7 @@ void ThriftHiveMetastoreProcessor::process_get_all_write_event_info(int32_t seqi
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
-  if (this->eventHandler_.get() != NULL) {
+  if (this->eventHandler_.get() != nullptr) {
     this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.get_all_write_event_info", bytes);
   }
 
@@ -94108,7 +94140,7 @@ void ThriftHiveMetastoreProcessor::process_get_all_write_event_info(int32_t seqi
     result.o1 = o1;
     result.__isset.o1 = true;
   } catch (const std::exception& e) {
-    if (this->eventHandler_.get() != NULL) {
+    if (this->eventHandler_.get() != nullptr) {
       this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.get_all_write_event_info");
     }
 
@@ -94121,7 +94153,7 @@ void ThriftHiveMetastoreProcessor::process_get_all_write_event_info(int32_t seqi
     return;
   }
 
-  if (this->eventHandler_.get() != NULL) {
+  if (this->eventHandler_.get() != nullptr) {
     this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.get_all_write_event_info");
   }
 
@@ -94131,7 +94163,7 @@ void ThriftHiveMetastoreProcessor::process_get_all_write_event_info(int32_t seqi
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
-  if (this->eventHandler_.get() != NULL) {
+  if (this->eventHandler_.get() != nullptr) {
     this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.get_all_write_event_info", bytes);
   }
 }
@@ -117727,7 +117759,7 @@ void ThriftHiveMetastoreConcurrentClient::recv_drop_package(const int32_t seqid)
   } // end while(true)
 }
 
-void ThriftHiveMetastoreConcurrentClient::get_all_write_event_info(GetAllWriteEventInfoResponse& _return, const GetAllWriteEventInfoRequest& request)
+void ThriftHiveMetastoreConcurrentClient::get_all_write_event_info(std::vector<WriteEventInfo> & _return, const GetAllWriteEventInfoRequest& request)
 {
   int32_t seqid = send_get_all_write_event_info(request);
   recv_get_all_write_event_info(_return, seqid);
@@ -117751,7 +117783,7 @@ int32_t ThriftHiveMetastoreConcurrentClient::send_get_all_write_event_info(const
   return cseqid;
 }
 
-void ThriftHiveMetastoreConcurrentClient::recv_get_all_write_event_info(GetAllWriteEventInfoResponse& _return, const int32_t seqid)
+void ThriftHiveMetastoreConcurrentClient::recv_get_all_write_event_info(std::vector<WriteEventInfo> & _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;
