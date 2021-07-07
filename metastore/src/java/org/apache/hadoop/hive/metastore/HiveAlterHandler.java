@@ -162,13 +162,15 @@ public class HiveAlterHandler implements AlterHandler {
         //Currently only column related changes can be cascaded in alter table
         if(MetaStoreUtils.isCascadeNeededInAlterTable(oldt, newt)) {
           List<Partition> parts = msdb.getPartitions(dbname, name, -1);
+          List<List<String>> partValues = Lists.newArrayList();
           for (Partition part : parts) {
             List<FieldSchema> oldCols = part.getSd().getCols();
             part.getSd().setCols(newt.getSd().getCols());
             String oldPartName = Warehouse.makePartName(oldt.getPartitionKeys(), part.getValues());
             updatePartColumnStatsForAlterColumns(msdb, part, oldPartName, part.getValues(), oldCols, part);
-            msdb.alterPartition(dbname, name, part.getValues(), part);
+            partValues.add(part.getValues());
           }
+          msdb.alterPartitions(dbname, name, partValues ,parts);
         } else {
           LOG.warn("Alter table does not cascade changes to its partitions.");
         }
