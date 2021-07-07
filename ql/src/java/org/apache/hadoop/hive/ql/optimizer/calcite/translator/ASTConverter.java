@@ -216,7 +216,7 @@ public class ASTConverter {
     ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_SELECT, "TOK_SELECT");
 
     if (select instanceof Project) {
-      List<RexNode> childExps = ((Project) select).getChildExps();
+      List<RexNode> childExps = ((Project) select).getProjects();
       if (childExps.isEmpty()) {
         RexLiteral r = select.getCluster().getRexBuilder().makeExactLiteral(new BigDecimal(1));
         ASTNode selectExpr = ASTBuilder.selectExpr(ASTBuilder.literal(r), "1");
@@ -705,20 +705,28 @@ public class ASTConverter {
       ASTNode wRangeAst = null;
 
       ASTNode startAST = null;
+      boolean lbUnbounded = false;
       RexWindowBound lb = window.getLowerBound();
       if (lb != null) {
         startAST = getWindowBound(lb);
+        lbUnbounded = lb.isUnbounded();
       }
 
       ASTNode endAST = null;
+      boolean ubUnbounded = false;
       RexWindowBound ub = window.getUpperBound();
       if (ub != null) {
         endAST = getWindowBound(ub);
+        ubUnbounded = ub.isUnbounded();
       }
 
       if (startAST != null || endAST != null) {
         // NOTE: in Hive AST Rows->Range(Physical) & Range -> Values (logical)
-        if (window.isRows()) {
+        // In Calcite, "ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING"
+        // is represented as "RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING"
+        // since they are equivalent. However, in Hive, it is most commonly represented
+        // as "ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING".
+        if (window.isRows() || (lbUnbounded && ubUnbounded)) {
           wRangeAst = ASTBuilder.createAST(HiveParser.TOK_WINDOWRANGE, "TOK_WINDOWRANGE");
         } else {
           wRangeAst = ASTBuilder.createAST(HiveParser.TOK_WINDOWVALUES, "TOK_WINDOWVALUES");

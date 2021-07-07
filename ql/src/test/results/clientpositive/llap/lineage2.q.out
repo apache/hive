@@ -122,7 +122,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@src2
 #### A masked pattern was here ####
-{"version":"1.0","engine":"tez","database":"default","hash":"8a689d34ce64f6ede5c3f5665fb5c3e7","queryText":"select key k from src1 union select key2 from src2 order by k","edges":[{"sources":[1,2],"targets":[0],"expression":"key","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"k"},{"id":1,"vertexType":"COLUMN","vertexId":"default.src1.key"},{"id":2,"vertexType":"COLUMN","vertexId":"default.src2.key2"}]}
+{"version":"1.0","engine":"tez","database":"default","hash":"8a689d34ce64f6ede5c3f5665fb5c3e7","queryText":"select key k from src1 union select key2 from src2 order by k","edges":[{"sources":[1,2],"targets":[0],"expression":"k","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"k"},{"id":1,"vertexType":"COLUMN","vertexId":"default.src1.key"},{"id":2,"vertexType":"COLUMN","vertexId":"default.src2.key2"}]}
 
 128
 146

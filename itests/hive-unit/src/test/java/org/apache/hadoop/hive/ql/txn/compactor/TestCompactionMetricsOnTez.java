@@ -64,8 +64,6 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
 
     executeStatementOnDriver("select avg(b) from " + tableName, driver);
     Thread.sleep(1000);
-    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
-    Map<String, Gauge> gauges = metrics.getMetricRegistry().getGauges();
 
     Assert.assertTrue(
       equivalent(
@@ -73,10 +71,10 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
           put(tableName + Path.SEPARATOR + partitionTomorrow, "3");
           put(tableName + Path.SEPARATOR + partitionYesterday, "4");
           put(tableName + Path.SEPARATOR + partitionToday, "5");
-        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS, gauges)));
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS)));
 
-    Assert.assertEquals(gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS, gauges).size(), 0);
-    Assert.assertEquals(gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS, gauges).size(), 0);
+    Assert.assertEquals(gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS).size(), 0);
+    Assert.assertEquals(gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS).size(), 0);
 
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MAJOR, true,
         partitionToday, partitionTomorrow, partitionYesterday);
@@ -90,9 +88,9 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
           put(tableName + Path.SEPARATOR + partitionTomorrow, "3");
           put(tableName + Path.SEPARATOR + partitionYesterday, "4");
           put(tableName + Path.SEPARATOR + partitionToday, "5");
-        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS, gauges)));
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS)));
 
-    Assert.assertEquals(gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS, gauges).size(), 0);
+    Assert.assertEquals(gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS).size(), 0);
 
     String insertQry = MessageFormat.format("insert into " + tableName + " partition (ds=''today'') values " +
       "(''{0}'',1),(''{0}'',2),(''{0}'',3),(''{0}'',4),(''{0}'',5),(''{0}'',6),(''{0}'',7), (''{0}'',8),(''{0}'',9)," +
@@ -111,7 +109,7 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
       equivalent(
         new HashMap<String, String>() {{
           put(tableName + Path.SEPARATOR + partitionToday, "1");
-        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS, gauges)));
+        }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS)));
 
     DeltaFilesMetricReporter.close();
   }

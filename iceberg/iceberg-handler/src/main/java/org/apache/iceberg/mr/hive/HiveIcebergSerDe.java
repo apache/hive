@@ -91,10 +91,6 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     // executor, but serDeProperties are populated by HiveIcebergStorageHandler.configureInputJobProperties() and
     // the resulting properties are serialized and distributed to the executors
 
-    // temporarily disabling vectorization in Tez, since it doesn't work with projection pruning (fix: TEZ-4248)
-    // TODO: remove this once TEZ-4248 has been released and the Tez dependencies updated here
-    assertNotVectorizedTez(configuration);
-
     if (serDeProperties.get(InputFormatConfig.TABLE_SCHEMA) != null) {
       this.tableSchema = SchemaParser.fromJson((String) serDeProperties.get(InputFormatConfig.TABLE_SCHEMA));
       if (serDeProperties.get(InputFormatConfig.PARTITION_SPEC) != null) {
@@ -287,5 +283,10 @@ public class HiveIcebergSerDe extends AbstractSerDe {
    */
   public Collection<String> partitionColumns() {
     return partitionColumns;
+  }
+
+  @Override
+  public boolean shouldStoreFieldsInMetastore(Map<String, String> tableParams) {
+    return true;
   }
 }

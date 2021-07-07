@@ -218,10 +218,9 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     final Set<RelDataTypeField> combinedInputExtraFields =
         new LinkedHashSet<RelDataTypeField>(extraFields);
     RelOptUtil.InputFinder inputFinder =
-        new RelOptUtil.InputFinder(combinedInputExtraFields);
-    inputFinder.inputBitSet.addAll(fieldsUsed);
+        new RelOptUtil.InputFinder(combinedInputExtraFields, fieldsUsed);
     conditionExpr.accept(inputFinder);
-    final ImmutableBitSet fieldsUsedPlus = inputFinder.inputBitSet.build();
+    final ImmutableBitSet fieldsUsedPlus = inputFinder.build();
 
     int inputStartPos = 0;
     int changeCount = 0;
@@ -550,12 +549,11 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
 
     final RelNode input = aggregate.getInput();
 
-
     final RelDataType rowType = input.getRowType();
     RexBuilder rexBuilder = aggregate.getCluster().getRexBuilder();
     final List<RexNode> newProjects = new ArrayList<>();
 
-    final List<RexNode> inputExprs = input.getChildExps();
+    final List<RexNode> inputExprs = input instanceof Project ? ((Project) input).getProjects() : null;
     if (inputExprs == null || inputExprs.isEmpty()) {
       return aggregate;
     }
@@ -788,7 +786,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     final List<Integer> iRefSet = Lists.newArrayList();
     if (key instanceof Project) {
       final Project project = (Project) key;
-      for (RexNode rx : project.getChildExps()) {
+      for (RexNode rx : project.getProjects()) {
         iRefSet.addAll(HiveCalciteUtil.getInputRefs(rx));
       }
     } else {

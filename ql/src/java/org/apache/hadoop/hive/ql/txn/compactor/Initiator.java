@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -104,7 +105,8 @@ public class Initiator extends MetaStoreCompactorThread {
       long abortedTimeThreshold = HiveConf
           .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD,
               TimeUnit.MILLISECONDS);
-      boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED);
+      boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
+          MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
       Pair<AtomicInteger, AtomicInteger> ratio =
           Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_INITIATOR_RATIO);
 
@@ -129,16 +131,16 @@ public class Initiator extends MetaStoreCompactorThread {
           long compactionInterval = (prevStart < 0) ? prevStart : (startedAt - prevStart)/1000;
           prevStart = startedAt;
 
-          ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
+          final ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
 
-          Set<String> skipDBs = new HashSet<>();
-          Set<String> skipTables = new HashSet<>();
+          Set<String> skipDBs = Sets.newConcurrentHashSet();
+          Set<String> skipTables = Sets.newConcurrentHashSet();
 
-          Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(abortedThreshold,
-              abortedTimeThreshold, compactionInterval)
-              .stream()
+          Set<CompactionInfo> potentials = compactionExecutor.submit(() ->
+            txnHandler.findPotentialCompactions(abortedThreshold, abortedTimeThreshold, compactionInterval)
+              .parallelStream()
               .filter(ci -> isEligibleForCompaction(ci, currentCompactions, skipDBs, skipTables))
-              .collect(Collectors.toSet());
+              .collect(Collectors.toSet())).get();
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");
 

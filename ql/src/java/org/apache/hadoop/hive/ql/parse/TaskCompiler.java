@@ -282,11 +282,7 @@ public abstract class TaskCompiler {
           setLoadFileLocation(pCtx, lfd);
           oneLoadFileForCtas = false;
         }
-        // for direct insert CTAS, we don't need this MoveTask since the data will be inserted into its final location
-        if (!directInsertCtas) {
-          mvTask.add(TaskFactory
-              .get(new MoveWork(null, null, null, lfd, false)));
-        }
+        mvTask.add(TaskFactory.get(new MoveWork(null, null, null, lfd, false)));
       }
     }
 

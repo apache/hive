@@ -115,7 +115,7 @@
     <avatica.version>1.12.0</avatica.version>
     <avro.version>1.8.2</avro.version>
     <bcprov-jdk15on.version>1.64</bcprov-jdk15on.version>
-    <calcite.version>1.21.0</calcite.version>
+    <calcite.version>1.25.0</calcite.version>
     <datanucleus-api-jdo.version>5.2.2</datanucleus-api-jdo.version>
     <datanucleus-core.version>5.2.2</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-m13</datanucleus-jdo.version>
@@ -129,6 +129,7 @@
     <commons-exec.version>1.1</commons-exec.version>
     <commons-io.version>2.6</commons-io.version>
     <commons-lang3.version>3.9</commons-lang3.version>
+    <commons-math3.version>3.6.1</commons-math3.version>
     <commons-dbcp2.version>2.7.0</commons-dbcp2.version>
     <commons-text.version>1.8</commons-text.version>
     <derby.version>10.14.1.0</derby.version>
@@ -199,7 +200,7 @@
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
     <storage-api.version>2.7.3-SNAPSHOT</storage-api.version>
-    <tez.version>0.10.0</tez.version>
+    <tez.version>0.10.1</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <spark.version>2.4.5</spark.version>
     <scala.binary.version>2.12</scala.binary.version>
@@ -223,6 +224,7 @@
     <janino.version>3.0.11</janino.version>
     <datasketches.version>1.1.0-incubating</datasketches.version>
     <spotbugs.version>4.0.3</spotbugs.version>
+    <validation-api.version>1.1.0.Final</validation-api.version>
   </properties>
 
   <repositories>
@@ -381,6 +383,11 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-dbcp2</artifactId>
         <version>${commons-dbcp2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-math3</artifactId>
+        <version>${commons-math3.version}</version>
       </dependency>
       <dependency>
         <groupId>io.jsonwebtoken</groupId>

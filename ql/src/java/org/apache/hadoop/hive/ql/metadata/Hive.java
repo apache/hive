@@ -374,6 +374,14 @@ public class Hive {
     return getInternal(c, false, false, true);
   }
 
+  public static Hive createHiveForSession(HiveConf c) throws HiveException {
+    return create(c, true);
+  }
+
+  public void setConf(HiveConf c) {
+    this.conf = c;
+  }
+
   /**
    * Same as {@link #get(HiveConf)}, except that it checks only the object identity of existing
    * MS client, assuming the relevant settings would be unchanged within the same conf object.
@@ -525,6 +533,8 @@ public class Hive {
    */
   private Hive(HiveConf c, boolean doRegisterAllFns) throws HiveException {
     conf = c;
+    // turn off calcite rexnode normalization
+    System.setProperty("calcite.enable.rexnode.digest.normalize", "false");
     if (doRegisterAllFns) {
       registerAllFunctionsOnce();
     }

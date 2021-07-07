@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -72,7 +73,7 @@ public class HiveWindowingFixRule extends RelOptRule {
     final int groupingFields = aggregate.getGroupCount() + aggregate.getIndicatorCount();
     Set<String> projectExprsDigest = new HashSet<String>();
     Map<String, RexNode> windowingExprsDigestToNodes = new HashMap<String,RexNode>();
-    for (RexNode r : project.getChildExps()) {
+    for (RexNode r : project.getProjects()) {
       if (r instanceof RexOver) {
         RexOver rexOverNode = (RexOver) r;
         // Operands
@@ -125,9 +126,9 @@ public class HiveWindowingFixRule extends RelOptRule {
     // operator (top)
     final List<RexNode> topProjectExprs = new ArrayList<RexNode>();
 
-    final int projectCount = project.getChildExps().size();
+    final int projectCount = project.getProjects().size();
     for (int i = 0; i < projectCount; i++) {
-      belowProjectExprs.add(project.getChildExps().get(i));
+      belowProjectExprs.add(project.getProjects().get(i));
       belowProjectColumnNames.add(project.getRowType().getFieldNames().get(i));
       topProjectExprs.add(RexInputRef.of(i, project.getRowType()));
     }
@@ -153,9 +154,9 @@ public class HiveWindowingFixRule extends RelOptRule {
     // 3. We need to fix it, we create the two replacement project
     //    operators
     RelNode newProjectRel = projectFactory.createProject(
-        aggregate, belowProjectExprs, belowProjectColumnNames);
+        aggregate, Collections.emptyList(), belowProjectExprs, belowProjectColumnNames);
     RelNode newTopProjectRel = projectFactory.createProject(
-        newProjectRel, topProjectExprs, project.getRowType().getFieldNames());
+        newProjectRel, Collections.emptyList(), topProjectExprs, project.getRowType().getFieldNames());
 
     call.transformTo(newTopProjectRel);
   }

@@ -89,7 +89,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 
-@org.junit.Ignore("HIVE-23925")
 public class TestJdbcWithMiniHS2 {
   private static MiniHS2 miniHS2 = null;
   private static String dataFileDir;
@@ -1086,7 +1085,6 @@ public class TestJdbcWithMiniHS2 {
    * Test for jdbc driver retry on NoHttpResponseException
    * @throws Exception
    */
-  @Ignore("Flaky test. Should be re-enabled in HIVE-19706")
   @Test
   public void testHttpRetryOnServerIdleTimeout() throws Exception {
     // Stop HiveServer2
@@ -1096,7 +1094,7 @@ public class TestJdbcWithMiniHS2 {
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_MAX_IDLE_TIME, "5");
     startMiniHS2(conf, true);
     String userName = System.getProperty("user.name");
-    Connection conn = getConnection(miniHS2.getJdbcURL(testDbName), userName, "password");
+    Connection conn = getConnection(miniHS2.getJdbcURL(testDbName)+";retries=3", userName, "password");
     Statement stmt = conn.createStatement();
     stmt.execute("select from_unixtime(unix_timestamp())");
     // Sleep for longer than server's idletimeout and execute a query

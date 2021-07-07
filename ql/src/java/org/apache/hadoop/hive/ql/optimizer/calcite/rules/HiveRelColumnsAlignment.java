@@ -222,7 +222,7 @@ public class HiveRelColumnsAlignment implements ReflectiveVisitor {
   public RelNode align(Project rel, List<RelFieldCollation> collations) {
     // 1) We extract the collations indices
     boolean containsWindowing = false;
-    for (RexNode childExp : rel.getChildExps()) {
+    for (RexNode childExp : rel.getProjects()) {
       if (childExp instanceof RexOver) {
         // TODO: support propagation for partitioning/ordering in windowing
         containsWindowing = true;
@@ -232,7 +232,7 @@ public class HiveRelColumnsAlignment implements ReflectiveVisitor {
     ImmutableList.Builder<RelFieldCollation> propagateCollations = ImmutableList.builder();
     if (!containsWindowing) {
       for (RelFieldCollation c : collations) {
-        RexNode rexNode = rel.getChildExps().get(c.getFieldIndex());
+        RexNode rexNode = rel.getProjects().get(c.getFieldIndex());
         if (rexNode instanceof RexInputRef) {
           int newIdx = ((RexInputRef) rexNode).getIndex();
           propagateCollations.add(c.copy((newIdx)));

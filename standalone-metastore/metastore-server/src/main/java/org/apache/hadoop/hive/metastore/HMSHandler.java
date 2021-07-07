@@ -2316,8 +2316,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     Database db = get_database_core(tbl.getCatName(), tbl.getDbName());
     if (db != null && db.getType().equals(DatabaseType.REMOTE)) {
-      DataConnectorProviderFactory.getDataConnectorProvider(db).createTable(tbl);
-      return;
+      // HIVE-24425: Create table in REMOTE db should fail
+      throw new MetaException("Create table in REMOTE database " + db.getName() + " is not allowed");
     }
 
     if (transformer != null) {
@@ -3719,8 +3719,45 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public GetTablesResult get_table_objects_by_name_req(GetTablesRequest req) throws TException {
     String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+    if (isDatabaseRemote(req.getDbName())) {
+      return new GetTablesResult(getRemoteTableObjectsInternal(req.getDbName(), req.getTblNames(), req.getTablesPattern()));
+    }
     return new GetTablesResult(getTableObjectsInternal(catName, req.getDbName(),
         req.getTblNames(), req.getCapabilities(), req.getProjectionSpec(), req.getTablesPattern()));
+  }
+
+  private List<Table> filterTablesByName(List<Table> tables, List<String> tableNames) {
+    List<Table> filteredTables = new ArrayList<>();
+    for (Table table : tables) {
+      if (tableNames.contains(table.getTableName())) {
+        filteredTables.add(table);
+      }
+    }
+    return filteredTables;
+  }
+
+  private List<Table> getRemoteTableObjectsInternal(String dbname, List<String> tableNames, String pattern) throws MetaException {
+    String[] parsedDbName = parseDbName(dbname, conf);
+    try {
+      // retrieve tables from remote database
+      Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+      List<Table> tables = DataConnectorProviderFactory.getDataConnectorProvider(db).getTables(null);
+
+      // filtered out undesired tables
+      if (tableNames != null) {
+        tables = filterTablesByName(tables, tableNames);
+      }
+
+      // set remote tables' local hive database reference
+      for (Table table : tables) {
+        table.setDbName(dbname);
+      }
+
+      return FilterUtils.filterTablesIfEnabled(isServerFilterEnabled, filterHook, tables);
+    } catch (Exception e) {
+      LOG.warn("Unexpected exception while getting table(s) in remote database " + dbname , e);
+      return new ArrayList<Table>();
+    }
   }
 
   private List<Table> getTableObjectsInternal(String catName, String dbName,
@@ -6854,16 +6891,40 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         + " part=" + csd.getPartName());
 
     boolean ret = false;
+
+    Map<String, String> parameters;
+    List<String> partVals;
+    boolean committed = false;
+    getMS().openTransaction();
+
     try {
       if (tbl == null) {
         tbl = getTable(catName, dbName, tableName);
       }
-      ret = updatePartitionColStatsInBatch(tbl, Collections.singletonMap(csd.getPartName(), colStats),
-              validWriteIds, writeId);
+      partVals = getPartValsFromName(tbl, csd.getPartName());
+      parameters = getMS().updatePartitionColumnStatistics(colStats, partVals, validWriteIds, writeId);
+      if (parameters != null) {
+        if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.UPDATE_PARTITION_COLUMN_STAT,
+                  new UpdatePartitionColumnStatEvent(colStats, partVals, parameters, tbl,
+                          writeId, this));
+        }
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners,
+                  EventType.UPDATE_PARTITION_COLUMN_STAT,
+                  new UpdatePartitionColumnStatEvent(colStats, partVals, parameters, tbl,
+                          writeId, this));
+        }
+      }
+      committed = getMS().commitTransaction();
     } finally {
-      endFunction("write_partition_column_statistics", ret == true, null, tableName);
+      if (!committed) {
+        getMS().rollbackTransaction();
+      }
+      endFunction("write_partition_column_statistics", ret != false, null, tableName);
     }
-    return ret;
+    return parameters != null;
   }
 
   private void updatePartitionColStatsForOneBatch(Table tbl, Map<String, ColumnStatistics> statsMap,
@@ -8786,8 +8847,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       } else { // No merge.
         Table t = getTable(catName, dbName, tableName);
         // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
-        ret = updatePartitionColStatsInBatch(t, newStatsMap,
-                request.getValidWriteIdList(), request.getWriteId());
+        if (MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL)) {
+          ret = updatePartitionColStatsInBatch(t, newStatsMap,
+                  request.getValidWriteIdList(), request.getWriteId());
+        } else {
+          for (Map.Entry<String, ColumnStatistics> entry : newStatsMap.entrySet()) {
+            // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
+            ret = updatePartitonColStatsInternal(t, entry.getValue(),
+                    request.getValidWriteIdList(), request.getWriteId()) && ret;
+          }
+        }
       }
     }
     return ret;

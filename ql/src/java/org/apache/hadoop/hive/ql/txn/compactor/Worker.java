@@ -403,8 +403,11 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
       checkInterrupt();
 
-      workerMetric = MetricsConstants.COMPACTION_WORKER_CYCLE + "_" + ci.type;
-      perfLogger.perfLogBegin(CLASS_NAME, workerMetric);
+      if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+        workerMetric = MetricsConstants.COMPACTION_WORKER_CYCLE + "_" +
+            (ci.type != null ? ci.type.toString().toLowerCase() : null);
+        perfLogger.perfLogBegin(CLASS_NAME, workerMetric);
+      }
 
       // Find the table we will be working with.
       Table t1;
@@ -580,7 +583,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       if (heartbeater != null) {
         heartbeater.interrupt();
       }
-      if (workerMetric != null) {
+      if (workerMetric != null && MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
         perfLogger.perfLogEnd(CLASS_NAME, workerMetric);
       }
     }

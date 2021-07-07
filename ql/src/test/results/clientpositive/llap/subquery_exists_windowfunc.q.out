@@ -250,7 +250,7 @@ CBO PLAN:
 HiveAntiJoin(condition=[=($0, $3)], joinType=[anti])
   HiveProject(id=[$0], int_col=[$1])
     HiveTableScan(table=[[default, alltypestiny]], table:alias=[t])
-  HiveProject(literalTrue=[true], int_col0=[$1])
+  HiveProject(literalTrue=[true], int_col=[$1])
     HiveFilter(condition=[IS NOT NULL($1)])
       HiveTableScan(table=[[default, alltypesagg]], table:alias=[a])
 

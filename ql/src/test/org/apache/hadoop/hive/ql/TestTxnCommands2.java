@@ -1042,11 +1042,7 @@ public class TestTxnCommands2 {
       runWorker(hiveConf);
     }
     //this should not schedule a new compaction due to prior failures, but will create 'did not initiate' entry
-    Initiator init = new Initiator();
-    init.setThreadId((int)init.getId());
-    init.setConf(hiveConf);
-    init.init(stop);
-    init.run();
+    runInitiator(hiveConf);
     int numDidNotInitiateCompactions = 1;
     checkCompactionState(new CompactionsByState(numDidNotInitiateCompactions,numFailedCompactions,0,0,0,0,numFailedCompactions + numDidNotInitiateCompactions), countCompacts(txnHandler));
 
@@ -1061,9 +1057,9 @@ public class TestTxnCommands2 {
     runWorker(hiveConf);//will fail
     txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MINOR));
     runWorker(hiveConf);//will fail
-    init.run();
+    runInitiator(hiveConf);
     numDidNotInitiateCompactions++;
-    init.run();
+    runInitiator(hiveConf);
     numDidNotInitiateCompactions++;
     checkCompactionState(new CompactionsByState(numDidNotInitiateCompactions,numFailedCompactions + 2,0,0,0,0,numFailedCompactions + 2 + numDidNotInitiateCompactions), countCompacts(txnHandler));
 
@@ -1071,7 +1067,7 @@ public class TestTxnCommands2 {
     //COMPACTOR_HISTORY_RETENTION_FAILED failed compacts left (and no other since we only have failed ones here)
     checkCompactionState(new CompactionsByState(
       MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE),
-            MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED),0,0,0,0, 
+            MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED),0,0,0,0,
             MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED) + MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE)),
         countCompacts(txnHandler));
 

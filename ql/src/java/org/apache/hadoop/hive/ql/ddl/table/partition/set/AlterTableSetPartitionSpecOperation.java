@@ -16,32 +16,25 @@
  * limitations under the License.
  */
 
-package org.apache.hive.service.server;
+package org.apache.hadoop.hive.ql.ddl.table.partition.set;
 
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
-import org.apache.hadoop.hive.ql.hooks.HookUtils;
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableOperation;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 
-import java.util.List;
+/**
+ * Operation process of setting partition spec of a table.
+ */
+public class AlterTableSetPartitionSpecOperation extends AbstractAlterTableOperation<AlterTableSetPartitionSpecDesc> {
 
-public class HiveServer2OomHookRunner implements Runnable {
-  private final HiveServer2 hiveServer2;
-
-  HiveServer2OomHookRunner(HiveServer2 hiveServer2) {
-    this.hiveServer2 = hiveServer2;
+  public AlterTableSetPartitionSpecOperation(DDLOperationContext context, AlterTableSetPartitionSpecDesc desc) {
+    super(context, desc);
   }
 
   @Override
-  public synchronized void run() {
-    try {
-      HiveConf hiveConf = hiveServer2.getHiveConf();
-      List<Runnable> hooks = HookUtils.readHooksFromConf(hiveConf, HookType.HIVE_SERVER2_OOM_HOOKS);
-      for (Runnable runnable : hooks) {
-        runnable.run();
-      }
-    } finally {
-      hiveServer2.stop();
-    }
-  }
+  protected void doAlteration(Table table, Partition partition) throws HiveException {
 
+  }
 }
