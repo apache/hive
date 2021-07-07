@@ -278,8 +278,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       }
       HiveTableUtil.importFiles(preAlterTableProperties.tableLocation, preAlterTableProperties.format,
           partitionSpecProxy, preAlterTableProperties.partitionKeys, catalogProperties, conf);
-    } else {
-      Map<String, String> contextProperties = context.getProperties();
+    } else if (currentAlterTableOp != null) {
       switch (currentAlterTableOp) {
         case ADDCOLS:
           if (updateSchema != null) {

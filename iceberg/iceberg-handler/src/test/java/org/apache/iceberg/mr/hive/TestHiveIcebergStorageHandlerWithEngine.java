@@ -55,6 +55,7 @@ import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveSchemaUtil;
+import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.MetastoreUtil;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -1312,6 +1313,135 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     Assert.assertEquals(2, rows.size());
     Assert.assertArrayEquals(new Object[] {0L, "Alice", "Brown"}, rows.get(0));
     Assert.assertArrayEquals(new Object[] {1L, "Bob", "Green"}, rows.get(1));
+  }
+
+  @Test
+  public void testStatsWithInsert() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
+
+    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+      // If the location is set and we have to gather stats, then we have to update the table stats now
+      shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+    }
+
+    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, false);
+    shell.executeStatement(insert);
+
+    checkColStat(identifier.name(), "customer_id", true);
+    checkColStatMinMaxValue(identifier.name(), "customer_id", 0, 2);
+
+    insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS, identifier, false);
+    shell.executeStatement(insert);
+
+    checkColStat(identifier.name(), "customer_id", true);
+    checkColStatMinMaxValue(identifier.name(), "customer_id", 0, 5);
+  }
+
+  @Test
+  public void testStatsWithInsertOverwrite() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
+
+    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS, identifier,
+        true);
+    shell.executeStatement(insert);
+
+    checkColStat(identifier.name(), "customer_id", true);
+    checkColStatMinMaxValue(identifier.name(), "customer_id", 3, 5);
+  }
+
+  @Test
+  public void testStatsWithPartitionedInsert() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .identity("last_name").build();
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec,
+        fileFormat, ImmutableList.of());
+
+    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+      // If the location is set and we have to gather stats, then we have to update the table stats now
+      shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+    }
+
+    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, false);
+    shell.executeStatement(insert);
+
+    checkColStat("customers", "customer_id", true);
+    checkColStat("customers", "first_name", true);
+    checkColStatMinMaxValue(identifier.name(), "customer_id", 0, 2);
+  }
+
+  @Test
+  public void testStatsWithCTAS() {
+    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
+    shell.executeStatement(testTables.getInsertQuery(
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    shell.executeStatement(String.format(
+        "CREATE TABLE target STORED BY ICEBERG %s TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
+        testTables.locationForCreateTableSQL(TableIdentifier.of("default", "target")),
+        TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
+
+    checkColStat("target", "id", true);
+    checkColStatMinMaxValue("target", "customer_id", 0, 2);
+  }
+
+  @Test
+  public void testStatsRemoved() throws IOException {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
+
+    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, true);
+    shell.executeStatement(insert);
+
+    checkColStat(identifier.name(), "customer_id", true);
+    checkColStatMinMaxValue(identifier.name(), "customer_id", 0, 2);
+
+    // Create a Catalog where the KEEP_HIVE_STATS is false
+    shell.metastore().hiveConf().set(HiveTableOperations.KEEP_HIVE_STATS, StatsSetupConst.FALSE);
+    TestTables nonHiveTestTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, testTableType, temp);
+    Table nonHiveTable = nonHiveTestTables.loadTable(identifier);
+
+    // Append data to the table through a this non-Hive Catalog
+    nonHiveTestTables.appendIcebergTable(shell.getHiveConf(), nonHiveTable, fileFormat, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+
+    checkColStat(identifier.name(), "customer_id", false);
+  }
+
+  private void checkColStat(String tableName, String colName, boolean accurate) {
+    List<Object[]> rows = shell.executeStatement("DESCRIBE " + tableName + " " + colName);
+
+    Assert.assertEquals(2, rows.size());
+    Assert.assertEquals(StatsSetupConst.COLUMN_STATS_ACCURATE, rows.get(1)[0]);
+    Assert.assertEquals(accurate, !rows.get(1)[1].toString().matches("\\{\\}\\s*"));
+  }
+
+  private void checkColStatMinMaxValue(String tableName, String colName, int minValue, int maxValue) {
+    List<Object[]> rows = shell.executeStatement("DESCRIBE FORMATTED " + tableName + " " + colName);
+
+    // Check min
+    Assert.assertEquals("min", rows.get(2)[0]);
+    Assert.assertEquals(String.valueOf(minValue), rows.get(2)[1]);
+
+    // Check max
+    Assert.assertEquals("max", rows.get(3)[0]);
+    Assert.assertEquals(String.valueOf(maxValue), rows.get(3)[1]);
   }
 
   private void testComplexTypeWrite(Schema schema, List<Record> records) throws IOException {
