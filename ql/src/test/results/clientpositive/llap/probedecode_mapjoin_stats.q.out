@@ -416,4 +416,4 @@ POSTHOOK: Input: default@orders_fact
 POSTHOOK: Input: default@seller_dim
 #### A masked pattern was here ####
 101	101	12345	12345	Seller 1	Item 101	2001-01-30 00:00:00
-104	104	23456	23456	Seller 2	Item 104	2002-03-02 00:00:00
+104	104	23456	23456	Seller 2	Item 104	NULL
