@@ -480,17 +480,17 @@ public abstract class TaskCompiler {
       isAcid = pCtx.getCreateTable().getTblProps().getOrDefault(
               hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false").equalsIgnoreCase("true") ||
               pCtx.getCreateTable().getTblProps().containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-    }
-    if(location != null && (HiveConf.getBoolVar(conf, HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL) || (isExternal || !isAcid))){
-      CreateTableDesc ctd = pCtx.getCreateTable();
-      ctd.setLocation(location.toString());
-      if(ctd.getSerdeProps().containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES)){
-        ctd.getSerdeProps().remove(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+      if(location != null && (HiveConf.getBoolVar(conf, HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL) || (isExternal || !isAcid))){
+        CreateTableDesc ctd = pCtx.getCreateTable();
+        ctd.setLocation(location.toString());
+        if(ctd.getSerdeProps().containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES)){
+          ctd.getSerdeProps().remove(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+        }
+        if(ctd.getSerdeProps().containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)){
+          ctd.getSerdeProps().remove(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+        }
+        pCtx.setCreateTable(ctd);
       }
-      if(ctd.getSerdeProps().containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)){
-        ctd.getSerdeProps().remove(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-      }
-      pCtx.setCreateTable(ctd);
     }
     if (txnId != null) {
       dataSink.setDirName(location);
