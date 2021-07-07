@@ -37,7 +37,6 @@ INSERT INTO item_dim values(104, "Item 104");
 INSERT INTO item_dim values(105, "Item 105");
 
 INSERT INTO orders_fact values(12345, 101, '2001-01-30 00:00:00');
-INSERT INTO orders_fact values(23456, 104, '2002-02-30 00:00:00');
 INSERT INTO orders_fact values(34567, 108, '2003-03-30 00:00:00');
 INSERT INTO orders_fact values(45678, 102, '2004-04-30 00:00:00');
 INSERT INTO orders_fact values(56789, 109, '2005-05-30 00:00:00');

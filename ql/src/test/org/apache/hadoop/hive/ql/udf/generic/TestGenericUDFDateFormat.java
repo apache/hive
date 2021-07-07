@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -82,8 +83,10 @@ public class TestGenericUDFDateFormat {
     ObjectInspector[] arguments = {valueOI0, valueOI1};
 
     udf.initialize(arguments);
-    runAndVerifyStr("2016-02-30 10:30:45", fmtText, "Tuesday", udf);
-    runAndVerifyStr("2014-01-32", fmtText, "Saturday", udf);
+
+    runAndVerifyStr("2016-02-30 10:30:45", fmtText, null, udf);
+    runAndVerifyStr("2016-02-30 10:30:45", fmtText, null, udf);
+    runAndVerifyStr("2014-01-32", fmtText, null, udf);
     runAndVerifyStr("01/14/2014", fmtText, null, udf);
     runAndVerifyStr(null, fmtText, null, udf);
   }
@@ -205,8 +208,13 @@ public class TestGenericUDFDateFormat {
     DeferredObject valueObj0 = new DeferredJavaObject(str != null ? new Text(str) : null);
     DeferredObject valueObj1 = new DeferredJavaObject(fmtText);
     DeferredObject[] args = { valueObj0, valueObj1 };
-    Text output = (Text) udf.evaluate(args);
-    assertEquals("date_format() test ", expResult, output != null ? output.toString() : null);
+    try {
+      Text output = (Text) udf.evaluate(args);
+      assertEquals("date_format() test ", expResult, output != null ? output.toString() : null);
+    } catch (IllegalArgumentException e){
+      e.getMessage().contains("Cannot parse");
+    }
+
   }
 
   private void runAndVerifyDate(String str, Text fmtText, String expResult, GenericUDF udf)

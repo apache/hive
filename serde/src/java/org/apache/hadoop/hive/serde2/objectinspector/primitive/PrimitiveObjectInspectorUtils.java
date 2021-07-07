@@ -23,7 +23,9 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
+import java.time.DateTimeException;
 import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -1256,8 +1258,8 @@ public final class PrimitiveObjectInspectorUtils {
 
     try {
       return TimestampUtils.stringToTimestamp(s);
-    } catch (IllegalArgumentException e) {
-      return null;
+    } catch (IllegalArgumentException | DateTimeException e) {
+      throw new IllegalArgumentException("Cannot parse " + s);
     }
   }
 

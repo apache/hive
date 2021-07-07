@@ -47,12 +47,30 @@ public class TestTimestampParser {
 
     Assert.assertEquals(Timestamp.valueOf("1945-12-31T23:59:59"),
         tsp.parseTimestamp("1945-12-31 23:59:59"));
+
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testDefaultInvalid() {
     final TimestampParser tsp = new TimestampParser();
-    tsp.parseTimestamp("12345");
+    String expectedMessage = "Cannot create timestamp, parsing error";
+
+    Assert.assertTrue(Assert.assertThrows(IllegalArgumentException.class, () -> {
+      tsp.parseTimestamp("12345");
+    }).getMessage().contains(expectedMessage));
+
+    Assert.assertTrue(Assert.assertThrows(IllegalArgumentException.class, () -> {
+      tsp.parseTimestamp("1945-12-45 23:59:59");
+    }).getMessage().contains(expectedMessage));
+
+    Assert.assertTrue(Assert.assertThrows(IllegalArgumentException.class, () -> {
+      tsp.parseTimestamp("1945-15-20 23:59:59");
+    }).getMessage().contains(expectedMessage));
+
+    Assert.assertTrue(Assert.assertThrows(IllegalArgumentException.class, () -> {
+      tsp.parseTimestamp("0000-00-00 00:00:00");
+    }).getMessage().contains(expectedMessage));
+
   }
 
   @Test
