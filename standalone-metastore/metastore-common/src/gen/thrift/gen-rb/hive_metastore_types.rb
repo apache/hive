@@ -817,8 +817,6 @@ class Package; end
 
 class GetAllWriteEventInfoRequest; end
 
-class GetAllWriteEventInfoResponse; end
-
 class MetaException < ::Thrift::Exception; end
 
 class UnknownTableException < ::Thrift::Exception; end
@@ -7583,22 +7581,6 @@ class GetAllWriteEventInfoRequest
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnId is unset!') unless @txnId
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class GetAllWriteEventInfoResponse
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  WRITEEVENTINFOS = 1
-
-  FIELDS = {
-    WRITEEVENTINFOS => {:type => ::Thrift::Types::LIST, :name => 'writeEventInfos', :element => {:type => ::Thrift::Types::STRUCT, :class => ::WriteEventInfo}}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
   end
 
   ::Thrift::Struct.generate_accessors self

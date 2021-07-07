@@ -999,8 +999,6 @@ class Package;
 
 class GetAllWriteEventInfoRequest;
 
-class GetAllWriteEventInfoResponse;
-
 class MetaException;
 
 class UnknownTableException;
@@ -18253,48 +18251,6 @@ class GetAllWriteEventInfoRequest : public virtual ::apache::thrift::TBase {
 void swap(GetAllWriteEventInfoRequest &a, GetAllWriteEventInfoRequest &b);
 
 std::ostream& operator<<(std::ostream& out, const GetAllWriteEventInfoRequest& obj);
-
-typedef struct _GetAllWriteEventInfoResponse__isset {
-  _GetAllWriteEventInfoResponse__isset() : writeEventInfos(false) {}
-  bool writeEventInfos :1;
-} _GetAllWriteEventInfoResponse__isset;
-
-class GetAllWriteEventInfoResponse : public virtual ::apache::thrift::TBase {
- public:
-
-  GetAllWriteEventInfoResponse(const GetAllWriteEventInfoResponse&);
-  GetAllWriteEventInfoResponse& operator=(const GetAllWriteEventInfoResponse&);
-  GetAllWriteEventInfoResponse() {
-  }
-
-  virtual ~GetAllWriteEventInfoResponse() noexcept;
-  std::vector<WriteEventInfo>  writeEventInfos;
-
-  _GetAllWriteEventInfoResponse__isset __isset;
-
-  void __set_writeEventInfos(const std::vector<WriteEventInfo> & val);
-
-  bool operator == (const GetAllWriteEventInfoResponse & rhs) const
-  {
-    if (!(writeEventInfos == rhs.writeEventInfos))
-      return false;
-    return true;
-  }
-  bool operator != (const GetAllWriteEventInfoResponse &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const GetAllWriteEventInfoResponse & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(GetAllWriteEventInfoResponse &a, GetAllWriteEventInfoResponse &b);
-
-std::ostream& operator<<(std::ostream& out, const GetAllWriteEventInfoResponse& obj);
 
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}

@@ -2266,10 +2266,6 @@ struct GetAllWriteEventInfoRequest {
   3: optional string tableName
 }
 
-struct GetAllWriteEventInfoResponse {
-  1: list<WriteEventInfo> writeEventInfos
-}
-
 // Exceptions.
 
 exception MetaException {
