@@ -5882,7 +5882,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public void alter_table(final String dbname, final String name,
                           final Table newTable)
-      throws InvalidOperationException, MetaException, NoSuchObjectException {
+      throws InvalidOperationException, MetaException {
     // Do not set an environment context.
     String[] parsedDbName = parseDbName(dbname, conf);
     alter_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, newTable,
@@ -5892,7 +5892,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public void alter_table_with_cascade(final String dbname, final String name,
                                        final Table newTable, final boolean cascade)
-      throws InvalidOperationException, MetaException, NoSuchObjectException {
+      throws InvalidOperationException, MetaException {
     EnvironmentContext envContext = null;
     if (cascade) {
       envContext = new EnvironmentContext();
@@ -5916,7 +5916,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public void alter_table_with_environment_context(final String dbname,
                                                    final String name, final Table newTable,
                                                    final EnvironmentContext envContext)
-      throws InvalidOperationException, MetaException, NoSuchObjectException {
+      throws InvalidOperationException, MetaException {
     String[] parsedDbName = parseDbName(dbname, conf);
     alter_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
         name, newTable, envContext, null, null, null);
@@ -5924,7 +5924,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   private void alter_table_core(String catName, String dbname, String name, Table newTable,
                                 EnvironmentContext envContext, String validWriteIdList, List<String> processorCapabilities, String processorId)
-          throws InvalidOperationException, MetaException, NoSuchObjectException {
+          throws InvalidOperationException, MetaException {
     startFunction("alter_table", ": " + TableName.getQualified(catName, dbname, name)
         + " newtbl=" + newTable.getTableName());
     if (envContext == null) {
@@ -5935,9 +5935,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
 
     // HIVE-25282: Drop/Alter table in REMOTE db should fail
-    Database db = get_database_core(catName, dbname);
-    if (db != null && db.getType().equals(DatabaseType.REMOTE)) {
-      throw new MetaException("Alter table in REMOTE database " + db.getName() + " is not allowed");
+    try {
+      Database db = get_database_core(catName, dbname);
+      if (db != null && db.getType().equals(DatabaseType.REMOTE)) {
+        throw new MetaException("Alter table in REMOTE database " + db.getName() + " is not allowed");
+      }
+    } catch (NoSuchObjectException e) {
+      throw new InvalidOperationException("Alter table in REMOTE database is not allowed");
     }
 
     // Update the time if it hasn't been specified.
