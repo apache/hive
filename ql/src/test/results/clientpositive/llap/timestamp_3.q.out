@@ -136,7 +136,7 @@ POSTHOOK: query: select cast(t as int) from timestamp_3 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_3
 #### A masked pattern was here ####
-1304135216
+1304110016
 PREHOOK: query: select cast(t as bigint) from timestamp_3 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_3
