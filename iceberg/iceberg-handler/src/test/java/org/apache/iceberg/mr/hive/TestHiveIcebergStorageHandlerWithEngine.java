@@ -1776,7 +1776,8 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
     Table icebergTable = testTables.createTable(shell, "types_table", schema, fileFormat, records);
 
-    // In the result set a float column is returned as double and a decimal is returned as string, even though Hive has the columns with the right types.
+    // In the result set a float column is returned as double and a decimal is returned as string,
+    // even though Hive has the columns with the right types.
     // Probably this conversation happens when fetching the result set after calling the select through the shell.
     // Because of this, a separate schema and record list has to be used when validating the returned values.
     Schema schemaForResultSet =
@@ -1819,8 +1820,9 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     HiveIcebergTestUtils.validateData(expectedResults, HiveIcebergTestUtils.valueForRow(schemaForResultSet, rows), 0);
 
     // Check if the column types in Hive have also changed to big_int, double an decimal(6,1)
-    // Do this check only for Hive catalog, as this is the only case when the column types are updated in the metastore.
-    // In case of other catalog types, the table is not updated in the metastore, so no point in checking the column types.
+    // Do this check only for Hive catalog, as this is the only case when the column types are updated
+    // in the metastore. In case of other catalog types, the table is not updated in the metastore,
+    // so no point in checking the column types.
     if (TestTables.TestTableType.HIVE_CATALOG.equals(this.testTableType)) {
       table = shell.metastore().getTable("default", "types_table");
       Assert.assertNotNull(table);
