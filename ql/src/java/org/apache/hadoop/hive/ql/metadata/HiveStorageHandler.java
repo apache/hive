@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -36,6 +37,7 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -255,6 +257,16 @@ public interface HiveStorageHandler extends Configurable {
    */
   default boolean supportsPartitionTransform() {
     return false;
+  }
+
+  /**
+   * Return a list of partition transform specifications. This method should be overwritten in case
+   * {@link HiveStorageHandler#supportsPartitionTransform()} returns true.
+   * @param table the HMS table, must be non-null
+   * @return partition transform specification, can be null.
+   */
+  default List<PartitionTransformSpec> getPartitionTransformSpec(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return null;
   }
 
   /**
