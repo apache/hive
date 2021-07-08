@@ -64,6 +64,16 @@ POSTHOOK: query: DESCRIBE CONNECTOR extended mysql_auth_dc
 POSTHOOK: type: DESCDATACONNECTOR
 POSTHOOK: Input: connector:mysql_auth_dc
 mysql_auth_dc	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	newuser	USER	test connector	{hive.sql.dbcp.password=hive2, hive.sql.dbcp.username=hive2}
+PREHOOK: query: CREATE REMOTE DATABASE db_mysql_auth USING mysql_auth_dc with DBPROPERTIES("connector.remoteDbName"="hive1")
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Input: connector:mysql_auth_dc
+PREHOOK: Output: database:db_mysql_auth
+#### A masked pattern was here ####
+POSTHOOK: query: CREATE REMOTE DATABASE db_mysql_auth USING mysql_auth_dc with DBPROPERTIES("connector.remoteDbName"="hive1")
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Input: connector:mysql_auth_dc
+POSTHOOK: Output: database:db_mysql_auth
+#### A masked pattern was here ####
 PREHOOK: query: DROP CONNECTOR mysql_auth_dc
 PREHOOK: type: DROPDATACONNECTOR
 PREHOOK: Input: connector:mysql_auth_dc
