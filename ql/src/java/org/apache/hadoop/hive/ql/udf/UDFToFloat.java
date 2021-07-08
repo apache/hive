@@ -215,10 +215,9 @@ public class UDFToFloat extends UDF {
       return null;
     } else {
       try {
-        ZoneId zone = SessionState.get() == null ?
-          new HiveConf().getLocalTimeZone() : SessionState.get().getConf().getLocalTimeZone();
-        TimestampTZ timestamp = TimestampTZUtil.convert(i.getTimestamp(), zone);
-        floatWritable.set((float) TimestampTZUtil.convertTimestampTZToDouble(timestamp));
+        floatWritable.set((float) TimestampTZUtil.convertTimestampTZToDouble(
+          UDFUtils.getTimestampTZFromTimestamp(i.getTimestamp())
+        ));
         return floatWritable;
       } catch (NumberFormatException e) {
         // MySQL returns 0 if the string is not a well-formed numeric value.

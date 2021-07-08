@@ -219,10 +219,8 @@ public class UDFToBoolean extends UDF {
     if (i == null) {
       return null;
     } else {
-      ZoneId zone = SessionState.get() == null ?
-        new HiveConf().getLocalTimeZone() : SessionState.get().getConf().getLocalTimeZone();
-      TimestampTZ timestamp = TimestampTZUtil.convert(i.getTimestamp(), zone);
-      booleanWritable.set(timestamp.getEpochSecond() != 0 || timestamp.getNanos() != 0);
+      TimestampTZ timestamp = UDFUtils.getTimestampTZFromTimestamp(i.getTimestamp());
+      booleanWritable.set((timestamp.getEpochSecond() != 0) || (timestamp.getNanos() != 0));
       return booleanWritable;
     }
   }

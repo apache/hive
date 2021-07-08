@@ -216,10 +216,9 @@ public class UDFToDouble extends UDF {
       return null;
     } else {
       try {
-        ZoneId zone = SessionState.get() == null ?
-          new HiveConf().getLocalTimeZone() : SessionState.get().getConf().getLocalTimeZone();
-        TimestampTZ timestamp = TimestampTZUtil.convert(i.getTimestamp(), zone);
-        doubleWritable.set(TimestampTZUtil.convertTimestampTZToDouble(timestamp));
+        doubleWritable.set(TimestampTZUtil.convertTimestampTZToDouble(
+          UDFUtils.getTimestampTZFromTimestamp(i.getTimestamp())
+        ));
         return doubleWritable;
       } catch (NumberFormatException e) {
         // MySQL returns 0 if the string is not a well-formed numeric value.

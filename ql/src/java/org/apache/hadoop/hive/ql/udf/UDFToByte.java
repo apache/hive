@@ -217,10 +217,7 @@ public class UDFToByte extends UDF {
     if (i == null) {
       return null;
     } else {
-      ZoneId zone = SessionState.get() == null ?
-        new HiveConf().getLocalTimeZone() : SessionState.get().getConf().getLocalTimeZone();
-      TimestampTZ timestamp = TimestampTZUtil.convert(i.getTimestamp(), zone);
-      final long longValue = timestamp.getEpochSecond();
+      final long longValue = UDFUtils.getTimestampTZFromTimestamp(i.getTimestamp()).getEpochSecond();
       final byte byteValue = (byte) longValue;
       if (byteValue != longValue) {
         return null;

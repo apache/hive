@@ -1,6 +1,7 @@
 --! qt:dataset:src
 set hive.fetch.task.conversion=more;
 set hive.local.time.zone=UTC;
+
 drop table timestamp_2;
 
 create table timestamp_2 (t timestamp);

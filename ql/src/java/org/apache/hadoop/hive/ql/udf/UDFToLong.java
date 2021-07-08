@@ -228,10 +228,7 @@ public class UDFToLong extends UDF {
     if (i == null) {
       return null;
     } else {
-      ZoneId zone = SessionState.get() == null ?
-        new HiveConf().getLocalTimeZone() : SessionState.get().getConf().getLocalTimeZone();
-      TimestampTZ timestamp = TimestampTZUtil.convert(i.getTimestamp(), zone);
-      longWritable.set(timestamp.getEpochSecond());
+      longWritable.set(UDFUtils.getTimestampTZFromTimestamp(i.getTimestamp()).getEpochSecond());
       return longWritable;
     }
   }

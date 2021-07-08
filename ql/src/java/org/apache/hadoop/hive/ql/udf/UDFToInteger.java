@@ -227,10 +227,7 @@ public class UDFToInteger extends UDF {
     if (i == null) {
       return null;
     } else {
-      ZoneId zone = SessionState.get() == null ?
-        new HiveConf().getLocalTimeZone() : SessionState.get().getConf().getLocalTimeZone();
-      TimestampTZ timestamp = TimestampTZUtil.convert(i.getTimestamp(), zone);
-      final long longValue = timestamp.getEpochSecond();
+      final long longValue = UDFUtils.getTimestampTZFromTimestamp(i.getTimestamp()).getEpochSecond();
       final int intValue = (int) longValue;
       if (intValue != longValue) {
         return null;

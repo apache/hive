@@ -39,6 +39,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hive.common.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -188,6 +189,6 @@ public class TimestampTZUtil {
   }
 
   public static double convertTimestampTZToDouble(TimestampTZ timestampTZ) {
-    return timestampTZ.getEpochSecond() + timestampTZ.getNanos() / 1000000000;
+    return timestampTZ.getEpochSecond() + timestampTZ.getNanos() / DateUtils.NANOS_PER_SEC;
   }
 }
