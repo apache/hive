@@ -91,7 +91,7 @@ public class TestRangerRestClient {
   @Test
   public void testSuccessSimpleAuthRangerExport() throws Exception {
     Mockito.when(UserGroupInformation.isSecurityEnabled()).thenReturn(false);
-    Mockito.when(mockClient.exportRangerPoliciesPlain(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
+    Mockito.when(mockClient.exportRangerPoliciesPlain(Mockito.anyString(),
             Mockito.any(HiveConf.class))).thenReturn(new RangerExportPolicyList());
     Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
       Mockito.any()))

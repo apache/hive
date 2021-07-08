@@ -30,8 +30,9 @@ public enum StageType implements org.apache.thrift.TEnum {
   ACK(18),
   RANGER_DUMP(19),
   RANGER_LOAD(20),
-  ATLAS_DUMP(21),
-  ATLAS_LOAD(22);
+  RANGER_DENY(21),
+  ATLAS_DUMP(22),
+  ATLAS_LOAD(23);
 
   private final int value;
 
@@ -96,8 +97,10 @@ public enum StageType implements org.apache.thrift.TEnum {
       case 20:
         return RANGER_LOAD;
       case 21:
-        return ATLAS_DUMP;
+        return RANGER_DENY;
       case 22:
+        return ATLAS_DUMP;
+      case 23:
         return ATLAS_LOAD;
       default:
         return null;

@@ -203,6 +203,7 @@ int _kStageTypeValues[] = {
   StageType::ACK,
   StageType::RANGER_DUMP,
   StageType::RANGER_LOAD,
+  StageType::RANGER_DENY,
   StageType::ATLAS_DUMP,
   StageType::ATLAS_LOAD
 };
@@ -228,10 +229,11 @@ const char* _kStageTypeNames[] = {
   "ACK",
   "RANGER_DUMP",
   "RANGER_LOAD",
+  "RANGER_DENY",
   "ATLAS_DUMP",
   "ATLAS_LOAD"
 };
-const std::map<int, const char*> _StageType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(23, _kStageTypeValues, _kStageTypeNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+const std::map<int, const char*> _StageType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(24, _kStageTypeValues, _kStageTypeNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
 
 std::ostream& operator<<(std::ostream& out, const StageType::type& val) {
   std::map<int, const char*>::const_iterator it = _StageType_VALUES_TO_NAMES.find(val);
