@@ -885,6 +885,46 @@
               </artifactSet>
               <relocations>
                 <relocation>
+                  <pattern>org.apache.orc</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.orc</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.avro</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.avro</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.commons</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.commons</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.parquet</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.parquet</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>joda-time</pattern>
+                  <shadedPattern>org.apache.hive.joda-time</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.thrift</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.thrift</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>commons-lang</pattern>
+                  <shadedPattern>org.apache.hive.commons-lang</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.jodd</pattern>
+                  <shadedPattern>org.apache.hive.org.jodd</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.google.protobuf</pattern>
+                  <shadedPattern>org.apache.hive.com.google.protobuf</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.codehaus.jackson</pattern>
+                  <shadedPattern>org.apache.hive.org.codehaus.jackson</shadedPattern>
+                </relocation>
+                <relocation>
                   <pattern>com.esotericsoftware</pattern>
                   <shadedPattern>org.apache.hive.com.esotericsoftware</shadedPattern>
                 </relocation>
