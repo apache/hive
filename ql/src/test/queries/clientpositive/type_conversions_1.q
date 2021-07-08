@@ -18,9 +18,3 @@ select
   cast(null as binary)
 from src limit 1;
 
--- Invalid conversions, should all be null
-select
-  cast('abcd' as date),
-  cast('abcd' as timestamp)
-from src limit 1;
-

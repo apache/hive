@@ -766,16 +766,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 true
-PREHOOK: query: select date('1') from src limit 2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-POSTHOOK: query: select date('1') from src limit 2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-#### A masked pattern was here ####
-NULL
-NULL
 PREHOOK: query: select double(1) from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -803,16 +793,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 0
-PREHOOK: query: select timestamp('1') from src limit 2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-POSTHOOK: query: select timestamp('1') from src limit 2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
-#### A masked pattern was here ####
-NULL
-NULL
 PREHOOK: query: explain extended desc default.src key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src

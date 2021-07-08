@@ -71,6 +71,14 @@ public class TestTimestampParser {
       tsp.parseTimestamp("0000-00-00 00:00:00");
     }).getMessage().contains(expectedMessage));
 
+    Assert.assertTrue(Assert.assertThrows(IllegalArgumentException.class, () -> {
+      tsp.parseTimestamp("");
+    }).getMessage().contains(expectedMessage));
+
+    Assert.assertTrue(Assert.assertThrows(IllegalArgumentException.class, () -> {
+      tsp.parseTimestamp("null");
+    }).getMessage().contains(expectedMessage));
+
   }
 
   @Test

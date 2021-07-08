@@ -23,12 +23,12 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:expr2
 POSTHOOK: Output: expr2@sales
 PREHOOK: query: insert into sales values
-(11,1,101,'12/24/2013',1000,1234.00,'onedummytwo')
+(11,1,101,'2013-12-24',1000,1234.00,'onedummytwo')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: expr2@sales
 POSTHOOK: query: insert into sales values
-(11,1,101,'12/24/2013',1000,1234.00,'onedummytwo')
+(11,1,101,'2013-12-24',1000,1234.00,'onedummytwo')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: expr2@sales
@@ -228,12 +228,12 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:expr9
 POSTHOOK: Output: expr9@sales
 PREHOOK: query: insert into sales values
-(11,1,101,'12/24/2013',1000,1234.00,'onedummytwo')
+(11,1,101,'2013-12-24',1000,1234.00,'onedummytwo')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: expr9@sales
 POSTHOOK: query: insert into sales values
-(11,1,101,'12/24/2013',1000,1234.00,'onedummytwo')
+(11,1,101,'2013-12-24',1000,1234.00,'onedummytwo')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: expr9@sales

@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.common.type.TimestampUtils;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
@@ -1255,6 +1256,9 @@ public final class PrimitiveObjectInspectorUtils {
   public static Timestamp getTimestampFromString(String s) {
     s = s.trim();
     s = trimNanoTimestamp(s);
+
+    if(StringUtils.isEmpty(s))
+      return null;
 
     try {
       return TimestampUtils.stringToTimestamp(s);

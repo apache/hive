@@ -12,7 +12,7 @@ create database expr2;
 use expr2;
 create table sales(prod_id int, cust_id int, store_id int, sale_date timestamp, qty int, amt double, descr string);
 insert into sales values
-(11,1,101,'12/24/2013',1000,1234.00,'onedummytwo');
+(11,1,101,'2013-12-24',1000,1234.00,'onedummytwo');
 
 create materialized view mv1 stored as orc as (select prod_id, cust_id, store_id, sale_date, qty, amt, descr from sales where cust_id in (1,2,3,4,5));
 -- SAME ORDER
@@ -48,7 +48,7 @@ create database expr9;
 use expr9;
 create table sales(prod_id int, cust_id int, store_id int, sale_date timestamp, qty int, amt double, descr string);
 insert into sales values
-(11,1,101,'12/24/2013',1000,1234.00,'onedummytwo');
+(11,1,101,'2013-12-24',1000,1234.00,'onedummytwo');
 
 create materialized view mv3 stored as orc as (select prod_id, cust_id, store_id, sale_date, qty, amt, descr from sales where cust_id >= 1 and prod_id < 31);
 -- SAME

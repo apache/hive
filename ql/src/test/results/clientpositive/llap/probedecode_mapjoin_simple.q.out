@@ -45,11 +45,11 @@ POSTHOOK: Output: default@orders_fact
 POSTHOOK: Lineage: orders_fact.dt SCRIPT []
 POSTHOOK: Lineage: orders_fact.key2 SCRIPT []
 POSTHOOK: Lineage: orders_fact.nokey SCRIPT []
-PREHOOK: query: INSERT INTO orders_fact values(23456, 104, '2002-02-30 00:00:00')
+PREHOOK: query: INSERT INTO orders_fact values(23456, 104, '2002-02-28 00:00:00')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@orders_fact
-POSTHOOK: query: INSERT INTO orders_fact values(23456, 104, '2002-02-30 00:00:00')
+POSTHOOK: query: INSERT INTO orders_fact values(23456, 104, '2002-02-28 00:00:00')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@orders_fact
