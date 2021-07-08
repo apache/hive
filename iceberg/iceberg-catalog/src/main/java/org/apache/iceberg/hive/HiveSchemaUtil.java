@@ -22,8 +22,7 @@ package org.apache.iceberg.hive;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -138,21 +137,87 @@ public final class HiveSchemaUtil {
   }
 
   /**
-   * Produces the difference of two FieldSchema lists by only taking into account the field name and type.
+   * Returns a SchemaDifference containing those fields which are present in only one of the collections, as well as
+   * those fields which are present in both (in terms of the name) but their type or comment has changed.
    * @param minuendCollection Collection of fields to subtract from
    * @param subtrahendCollection Collection of fields to subtract
-   * @return the result list of difference
+   * @param bothDirections Whether or not to compute the missing fields from the minuendCollection as well
+   * @return the difference between the two schemas
    */
-  public static Collection<FieldSchema> schemaDifference(
-      Collection<FieldSchema> minuendCollection, Collection<FieldSchema> subtrahendCollection) {
+  public static SchemaDifference getSchemaDiff(Collection<FieldSchema> minuendCollection,
+                                               Collection<FieldSchema> subtrahendCollection, boolean bothDirections) {
+    SchemaDifference difference = new SchemaDifference();
 
-    Function<FieldSchema, FieldSchema> unsetCommentFunc = fs -> new FieldSchema(fs.getName(), fs.getType(), null);
-    Set<FieldSchema> subtrahendWithoutComment =
-        subtrahendCollection.stream().map(unsetCommentFunc).collect(Collectors.toSet());
+    for (FieldSchema first : minuendCollection) {
+      boolean found = false;
+      for (FieldSchema second : subtrahendCollection) {
+        if (Objects.equals(first.getName(), second.getName())) {
+          found = true;
+          if (!Objects.equals(first.getType(), second.getType())) {
+            difference.addTypeChanged(first);
+          }
+          if (!Objects.equals(first.getComment(), second.getComment())) {
+            difference.addCommentChanged(first);
+          }
+        }
+      }
+      if (!found) {
+        difference.addMissingFromSecond(first);
+      }
+    }
 
-    return minuendCollection.stream()
-        .filter(fs -> !subtrahendWithoutComment.contains(unsetCommentFunc.apply(fs))).collect(Collectors.toList());
+    if (bothDirections) {
+      SchemaDifference otherWay = getSchemaDiff(subtrahendCollection, minuendCollection, false);
+      otherWay.getMissingFromSecond().forEach(difference::addMissingFromFirst);
+    }
+
+    return difference;
   }
+
+  public static class SchemaDifference {
+    private final List<FieldSchema> missingFromFirst = new ArrayList<>();
+    private final List<FieldSchema> missingFromSecond = new ArrayList<>();
+    private final List<FieldSchema> typeChanged = new ArrayList<>();
+    private final List<FieldSchema> commentChanged = new ArrayList<>();
+
+    public List<FieldSchema> getMissingFromFirst() {
+      return missingFromFirst;
+    }
+
+    public List<FieldSchema> getMissingFromSecond() {
+      return missingFromSecond;
+    }
+
+    public List<FieldSchema> getTypeChanged() {
+      return typeChanged;
+    }
+
+    public List<FieldSchema> getCommentChanged() {
+      return commentChanged;
+    }
+
+    public boolean isEmpty() {
+      return missingFromFirst.isEmpty() && missingFromSecond.isEmpty() && typeChanged.isEmpty() &&
+          commentChanged.isEmpty();
+    }
+
+    void addMissingFromFirst(FieldSchema field) {
+      missingFromFirst.add(field);
+    }
+
+    void addMissingFromSecond(FieldSchema field) {
+      missingFromSecond.add(field);
+    }
+
+    void addTypeChanged(FieldSchema field) {
+      typeChanged.add(field);
+    }
+
+    void addCommentChanged(FieldSchema field) {
+      commentChanged.add(field);
+    }
+  }
+
 
   private static String convertToTypeString(Type type) {
     switch (type.typeId()) {
