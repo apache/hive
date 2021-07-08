@@ -362,7 +362,7 @@ public class ReplUtils {
 
   private static String getMetricStageName(String stageName, ReplicationMetricCollector metricCollector) {
     if( stageName == "REPL_DUMP" || stageName == "REPL_LOAD" || stageName == "ATLAS_DUMP" || stageName == "ATLAS_LOAD"
-            || stageName == "RANGER_DUMP" || stageName == "RANGER_LOAD"){
+            || stageName == "RANGER_DUMP" || stageName == "RANGER_LOAD" || stageName == "RANGER_DENY"){
       return stageName;
     }
     if(isDumpMetricCollector(metricCollector)){

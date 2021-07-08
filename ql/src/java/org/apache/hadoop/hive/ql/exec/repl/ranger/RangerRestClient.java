@@ -37,6 +37,9 @@ public interface RangerRestClient {
                                               String rangerHiveServiceName,
                                               HiveConf hiveConf) throws Exception;
 
+  void deleteRangerPolicy(String policyName, String baseUrl, String rangerHiveServiceName,
+                          HiveConf hiveConf) throws Exception;
+
   List<RangerPolicy> removeMultiResourcePolicies(List<RangerPolicy> rangerPolicies);
 
   List<RangerPolicy> changeDataSet(List<RangerPolicy> rangerPolicies, String sourceDbName,
@@ -50,6 +53,7 @@ public interface RangerRestClient {
 
   boolean checkConnection(String url, HiveConf hiveConf) throws Exception;
 
-  List<RangerPolicy> addDenyPolicies(List<RangerPolicy> rangerPolicies, String rangerServiceName,
-                                     String sourceDb, String targetDb) throws SemanticException;
+  RangerPolicy getDenyPolicyForReplicatedDb(String rangerServiceName, String sourceDb,
+                                            String targetDb) throws SemanticException;
+
 }

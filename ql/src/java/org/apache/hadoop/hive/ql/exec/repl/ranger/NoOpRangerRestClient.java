@@ -44,6 +44,11 @@ public class NoOpRangerRestClient implements RangerRestClient {
     return null;
   }
 
+  public void deleteRangerPolicy(String policyName, String baseUrl, String rangerHiveServiceName,
+                                 HiveConf hiveConf) throws Exception {
+    return;
+  }
+
   @Override
   public List<RangerPolicy> removeMultiResourcePolicies(List<RangerPolicy> rangerPolicies) {
     return null;
@@ -72,9 +77,9 @@ public class NoOpRangerRestClient implements RangerRestClient {
   }
 
   @Override
-  public List<RangerPolicy> addDenyPolicies(List<RangerPolicy> rangerPolicies, String rangerServiceName,
-                                            String sourceDb, String targetDb) throws SemanticException {
-    return rangerPolicies;
+  public RangerPolicy getDenyPolicyForReplicatedDb(String rangerServiceName,
+                                                   String sourceDb, String targetDb) throws SemanticException {
+    return null;
   }
 
 }
