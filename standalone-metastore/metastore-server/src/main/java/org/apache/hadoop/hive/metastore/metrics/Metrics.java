@@ -68,12 +68,12 @@ public class Metrics {
   private boolean hadoopMetricsStarted;
 
   public static synchronized boolean initialize(Configuration conf) {
-    boolean doInit = false;
+    boolean init = false;
     if (self == null) {
       self = new Metrics(conf);
-      doInit = true;
+      init = true;
     }
-    return doInit;
+    return init;
   }
 
   public static MetricRegistry getRegistry() {
