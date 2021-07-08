@@ -265,7 +265,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     objectMapper = new ObjectMapper();
     objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     // serialize json based on field annotations only
-    objectMapper.setVisibilityChecker(objectMapper.getSerializationConfig().getDefaultVisibilityChecker()
+    objectMapper.setVisibility(objectMapper.getSerializationConfig().getDefaultVisibilityChecker()
       .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
       .withSetterVisibility(JsonAutoDetect.Visibility.NONE));
   }
