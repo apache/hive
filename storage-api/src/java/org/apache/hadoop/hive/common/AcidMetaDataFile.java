@@ -17,16 +17,16 @@
  */
 package org.apache.hadoop.hive.common;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * General facility to place a metadata file into a dir created by acid/compactor write.
