@@ -27,11 +27,13 @@ import java.util.*;
 
 import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.RunningJob;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-import org.codehaus.jackson.annotate.JsonWriteNullProperties;
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 /**
  * Some limited query information to save for WebUI.
@@ -77,7 +79,7 @@ public class QueryDisplay {
     return LogUtils.getLogFilePath();
   }
 
-  @JsonWriteNullProperties(false)
+  @JsonInclude(Include.NON_NULL)
   @JsonIgnoreProperties(ignoreUnknown = true)
   public static class TaskDisplay {
 
