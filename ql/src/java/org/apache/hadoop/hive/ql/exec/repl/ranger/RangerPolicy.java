@@ -18,24 +18,28 @@
 
 package org.apache.hadoop.hive.ql.exec.repl.ranger;
 
-import org.codehaus.jackson.annotate.JsonAutoDetect;
-import org.codehaus.jackson.annotate.JsonAutoDetect.Visibility;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
+
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * RangerPolicy class to contain Ranger Policy details.
  */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY)
-@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+@JsonInclude(Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -481,7 +485,7 @@ public class RangerPolicy extends RangerBaseModelObject implements java.io.Seria
    * RangerPolicyResource class to store the resource path values.
    */
   @JsonAutoDetect(fieldVisibility = Visibility.ANY)
-  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+  @JsonInclude(Include.NON_NULL)
   @JsonIgnoreProperties(ignoreUnknown = true)
   @XmlRootElement
   @XmlAccessorType(XmlAccessType.FIELD)
@@ -653,7 +657,7 @@ public class RangerPolicy extends RangerBaseModelObject implements java.io.Seria
    * RangerPolicyItem class contains ranger policy items like access and permissions.
    */
   @JsonAutoDetect(fieldVisibility = Visibility.ANY)
-  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+  @JsonInclude(Include.NON_NULL)
   @JsonIgnoreProperties(ignoreUnknown = true)
   @XmlRootElement
   @XmlAccessorType(XmlAccessType.FIELD)
@@ -914,7 +918,7 @@ public class RangerPolicy extends RangerBaseModelObject implements java.io.Seria
    * RangerDataMaskPolicyItem class.
    */
   @JsonAutoDetect(fieldVisibility = Visibility.ANY)
-  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+  @JsonInclude(Include.NON_NULL)
   @JsonIgnoreProperties(ignoreUnknown = true)
   @XmlRootElement
   @XmlAccessorType(XmlAccessType.FIELD)
@@ -1005,7 +1009,7 @@ public class RangerPolicy extends RangerBaseModelObject implements java.io.Seria
    * RangerRowFilterPolicyItem class.
    */
   @JsonAutoDetect(fieldVisibility = Visibility.ANY)
-  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+  @JsonInclude(Include.NON_NULL)
   @JsonIgnoreProperties(ignoreUnknown = true)
   @XmlRootElement
   @XmlAccessorType(XmlAccessType.FIELD)
@@ -1095,7 +1099,7 @@ public class RangerPolicy extends RangerBaseModelObject implements java.io.Seria
    * RangerPolicyItemAccess class.
    */
   @JsonAutoDetect(fieldVisibility = Visibility.ANY)
-  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+  @JsonInclude(Include.NON_NULL)
   @JsonIgnoreProperties(ignoreUnknown = true)
   @XmlRootElement
   @XmlAccessorType(XmlAccessType.FIELD)
@@ -1204,7 +1208,7 @@ public class RangerPolicy extends RangerBaseModelObject implements java.io.Seria
    * RangerPolicyItemCondition class to store policy conditions.
    */
   @JsonAutoDetect(fieldVisibility = Visibility.ANY)
-  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+  @JsonInclude(Include.NON_NULL)
   @JsonIgnoreProperties(ignoreUnknown = true)
   @XmlRootElement
   @XmlAccessorType(XmlAccessType.FIELD)
@@ -1325,7 +1329,7 @@ public class RangerPolicy extends RangerBaseModelObject implements java.io.Seria
    * RangerPolicyItemDataMaskInfo store policy having datamasking.
    */
   @JsonAutoDetect(fieldVisibility = Visibility.ANY)
-  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+  @JsonInclude(Include.NON_NULL)
   @JsonIgnoreProperties(ignoreUnknown = true)
   @XmlRootElement
   @XmlAccessorType(XmlAccessType.FIELD)
@@ -1439,7 +1443,7 @@ public class RangerPolicy extends RangerBaseModelObject implements java.io.Seria
    * Ranger policyItem Row-filter info class.
    */
   @JsonAutoDetect(fieldVisibility = Visibility.ANY)
-  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+  @JsonInclude(Include.NON_NULL)
   @JsonIgnoreProperties(ignoreUnknown = true)
   @XmlRootElement
   @XmlAccessorType(XmlAccessType.FIELD)
