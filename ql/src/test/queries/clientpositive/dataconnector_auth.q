@@ -29,6 +29,9 @@ DESCRIBE CONNECTOR extended mysql_auth_dc;
 alter connector mysql_auth_dc set OWNER USER newuser;
 DESCRIBE CONNECTOR extended mysql_auth_dc;
 
+-- create remote database
+CREATE REMOTE DATABASE db_mysql_auth USING mysql_auth_dc with DBPROPERTIES("connector.remoteDbName"="hive1");
+
 DROP CONNECTOR mysql_auth_dc;
 SHOW CONNECTORS;
 
