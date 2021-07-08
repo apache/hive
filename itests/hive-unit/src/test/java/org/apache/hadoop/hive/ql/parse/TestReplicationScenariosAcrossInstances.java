@@ -1673,7 +1673,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   @Test
   public void testRangerReplication() throws Throwable {
     List<String> clause = Arrays.asList("'hive.repl.include.authorization.metadata'='true'",
-        "'hive.in.test'='true'");
+        "'hive.in.test'='true'", "'hive.repl.handle.ranger.deny.policy'='true'");
     primary.run("use " + primaryDbName)
         .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
             "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")

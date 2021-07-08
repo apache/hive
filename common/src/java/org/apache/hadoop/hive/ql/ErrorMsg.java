@@ -627,7 +627,9 @@ public enum ErrorMsg {
   REPL_INVALID_ARGUMENTS(40012, "Invalid arguments error : {0}.", true),
   REPL_INVALID_ALTER_TABLE(40013, "{0}Unable to alter table{1}", true),
   REPL_PERMISSION_DENIED(40014, "{0}org.apache.hadoop.security.AccessControlException{1}", true),
-  REPL_DISTCP_SNAPSHOT_EXCEPTION(40015, "SNAPSHOT_ERROR", true)
+  REPL_DISTCP_SNAPSHOT_EXCEPTION(40015, "SNAPSHOT_ERROR", true),
+  RANGER_AUTHORIZATION_FAILED(40016, "Authorization Failure while communicating to Ranger admin", true),
+  RANGER_AUTHENTICATION_FAILED(40017, "Authentication Failure while communicating to Ranger admin", true)
   ;
 
   private int errorCode;
