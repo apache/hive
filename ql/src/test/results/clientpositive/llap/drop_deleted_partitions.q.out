@@ -38,10 +38,10 @@ POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: dmp@mp
 POSTHOOK: Output: dmp@mp@b=1/c=1
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-0
+  Stage: Stage-1
     Drop Partition
       table: dmp.mp
 
