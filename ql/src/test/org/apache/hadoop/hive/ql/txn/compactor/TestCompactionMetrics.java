@@ -856,7 +856,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     String runtimeId;
     if (manuallyInitiatedCompaction) {
       runtimeId ="hs2-host-" +
-          ThreadLocalRandom.current().nextInt(999) + HiveMetaStoreClient.MANUALLY_INITIATED_COMPACTION;
+          ThreadLocalRandom.current().nextInt(999) + "-" + HiveMetaStoreClient.MANUALLY_INITIATED_COMPACTION;
     } else {
       runtimeId = ServerUtils.hostname() + "-" + ThreadLocalRandom.current().nextInt(999);
     }
