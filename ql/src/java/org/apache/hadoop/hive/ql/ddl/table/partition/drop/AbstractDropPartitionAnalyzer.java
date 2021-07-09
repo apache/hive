@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -109,6 +110,9 @@ abstract class AbstractDropPartitionAnalyzer extends AbstractAlterTableAnalyzer 
   }
 
   protected abstract boolean expectView();
+
+  protected abstract void postProcess(TableName tableName, Table table, AlterTableDropPartitionDesc desc,
+      Task<DDLWork> ddlTask);
 
   /**
    * Add the table partitions to be modified in the output, so that it is available for the
