@@ -43,8 +43,7 @@ public class AlterTableDropPartitionAnalyzer extends AbstractDropPartitionAnalyz
   }
 
   @Override
-  protected void postProcess(TableName tableName, Table table,
-                             AlterTableDropPartitionDesc desc, Task<DDLWork> ddlTask) {
+  protected void postProcess(TableName tableName, Table table, AlterTableDropPartitionDesc desc) {
     if (!AcidUtils.isTransactionalTable(table)) {
       return;
     }
