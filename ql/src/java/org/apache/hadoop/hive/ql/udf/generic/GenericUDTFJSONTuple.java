@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.json.JsonReadFeature;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.hadoop.hive.ql.exec.Description;
@@ -53,6 +54,7 @@ public class GenericUDTFJSONTuple extends GenericUDTF {
   private static final Logger LOG = LoggerFactory.getLogger(GenericUDTFJSONTuple.class.getName());
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
+  private static final JavaType MAP_TYPE = MAPPER.getTypeFactory().constructType(Map.class);
   static {
     // Allows for unescaped ASCII control characters in JSON values
     MAPPER.enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature());
@@ -167,7 +169,7 @@ public class GenericUDTFJSONTuple extends GenericUDTF {
       Object jsonObj = jsonObjectCache.get(jsonStr);
       if (jsonObj == null) {
         try {
-          jsonObj = MAPPER.readValue(jsonStr, Map.class);
+          jsonObj = MAPPER.readValue(jsonStr, MAP_TYPE);
         } catch (Exception e) {
           reportInvalidJson(jsonStr);
           forward(nullCols);
