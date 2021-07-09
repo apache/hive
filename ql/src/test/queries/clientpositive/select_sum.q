@@ -4,6 +4,10 @@ Explain SELECT SUM(1) FROM t1;
 
 SELECT SUM(1) FROM t1;
 
+SELECT SUM(1), SUM(1), 1, 2, 3 FROM t1;
+
+SELECT SUM(1), SUM(2), 1, 2, 3 FROM t1;
+
 SELECT COUNT(*) FROM t1;
 
 INSERT INTO TABLE t1 VALUES (true, false), (false, true);

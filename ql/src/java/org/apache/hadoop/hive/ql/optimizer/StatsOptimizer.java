@@ -401,6 +401,7 @@ public class StatsOptimizer extends Transform {
             // instead of NULL.
             if (desc instanceof ExprNodeConstantDesc && rowCnt == 0) {
               oneRow.add(null);
+              continue;
             }
             PrimitiveCategory category = GenericUDAFSum.getReturnType(desc.getTypeInfo());
             if (category == null) {

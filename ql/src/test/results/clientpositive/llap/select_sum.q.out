@@ -33,6 +33,24 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 NULL
+PREHOOK: query: SELECT SUM(1), SUM(1), 1, 2, 3 FROM t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(1), SUM(1), 1, 2, 3 FROM t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+NULL	NULL	1	2	3
+PREHOOK: query: SELECT SUM(1), SUM(2), 1, 2, 3 FROM t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(1), SUM(2), 1, 2, 3 FROM t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+NULL	NULL	1	2	3
 PREHOOK: query: SELECT COUNT(*) FROM t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
