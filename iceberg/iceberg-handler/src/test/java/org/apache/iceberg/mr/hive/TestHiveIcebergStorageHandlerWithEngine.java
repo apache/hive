@@ -582,7 +582,10 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testAlterChangeColumn() throws IOException {
-    Table table = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+    // TODO: remove once vectorized execution can handle column reorders/renames
+    Assume.assumeTrue(!isVectorized);
+
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
     shell.executeStatement("ALTER TABLE customers CHANGE COLUMN last_name family_name string AFTER customer_id");
