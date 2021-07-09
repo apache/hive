@@ -98,12 +98,6 @@ public class HiveIcebergStorageHandlerTestUtils {
     shell.setHiveSessionValue("hive.jar.directory", temp.getRoot().getAbsolutePath());
     shell.setHiveSessionValue("tez.staging-dir", temp.getRoot().getAbsolutePath());
 
-    // temporarily disabling vectorization in Tez, since it doesn't work with projection pruning (fix: TEZ-4248)
-    // TODO: remove this once TEZ-4248 has been released and the Tez dependencies updated here
-    if (engine.equals("tez")) {
-      shell.setHiveSessionValue("hive.vectorized.execution.enabled", "false");
-    }
-
     // Until HADOOP-16435 we have to manually remove the RpcMetrics for every run otherwise we might end up with OOM
     // We have to initialize the metrics as TestMetrics, so shutdown will remove them
     DefaultMetricsSystem.instance().init("TestMetrics");

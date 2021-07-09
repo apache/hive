@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.UDFMethodResolver;
@@ -209,7 +210,9 @@ public class UDFToFloat extends UDF {
       return null;
     } else {
       try {
-        floatWritable.set((float) i.getDouble());
+        floatWritable.set((float) TimestampTZUtil.convertTimestampTZToDouble(
+          UDFUtils.getTimestampTZFromTimestamp(i.getTimestamp())
+        ));
         return floatWritable;
       } catch (NumberFormatException e) {
         // MySQL returns 0 if the string is not a well-formed numeric value.

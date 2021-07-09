@@ -260,6 +260,10 @@ sys	mv_tables_used			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	mv_tables_used			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	mv_tables_used			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	mv_tables_used			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	part_col_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	part_col_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	part_col_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -476,6 +480,7 @@ PREHOOK: Output: sys@key_constraints
 PREHOOK: Output: sys@locks
 PREHOOK: Output: sys@mv_creation_metadata
 PREHOOK: Output: sys@mv_tables_used
+PREHOOK: Output: sys@notification_log
 PREHOOK: Output: sys@part_col_privs
 PREHOOK: Output: sys@part_col_stats
 PREHOOK: Output: sys@part_privs
@@ -536,6 +541,7 @@ POSTHOOK: Output: sys@key_constraints
 POSTHOOK: Output: sys@locks
 POSTHOOK: Output: sys@mv_creation_metadata
 POSTHOOK: Output: sys@mv_tables_used
+POSTHOOK: Output: sys@notification_log
 POSTHOOK: Output: sys@part_col_privs
 POSTHOOK: Output: sys@part_col_stats
 POSTHOOK: Output: sys@part_privs

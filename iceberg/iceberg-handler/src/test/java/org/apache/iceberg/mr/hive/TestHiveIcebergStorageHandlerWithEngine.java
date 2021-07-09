@@ -71,7 +71,6 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -749,7 +748,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     HiveIcebergTestUtils.validateData(table, records, 0);
   }
 
-  @Ignore("Ignored until new Tez release has come out")
   @Test
   public void testInsertFromSelectWithProjection() throws IOException {
     Table table = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
@@ -767,7 +765,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     HiveIcebergTestUtils.validateData(table, expected, 0);
   }
 
-  @Ignore("Ignored until new Tez release has come out")
   @Test
   public void testInsertUsingSourceTableWithSharedColumnsNames() throws IOException {
     List<Record> records = HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS;
@@ -791,7 +788,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     HiveIcebergTestUtils.validateData(table, expected, 0);
   }
 
-  @Ignore("Ignored until new Tez release has come out")
   @Test
   public void testInsertFromJoiningTwoIcebergTables() throws IOException {
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
