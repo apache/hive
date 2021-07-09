@@ -17,9 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import com.codahale.metrics.Gauge;
 import org.apache.commons.lang3.tuple.Pair;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
@@ -28,6 +26,7 @@ import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HMSMetricsListener;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -458,7 +457,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     // Check for overwrite where the order is different
     elements.add(generateElement(4,"db", "tb3", "p1", CompactionType.MINOR, TxnStore.FAILED_RESPONSE));
 
-    elements.add(generateElement(6,"db1", "tb", null, CompactionType.MINOR, TxnStore.FAILED_RESPONSE));
+    elements.add(generateElement(6,"db1", "tb", null, CompactionType.MINOR, TxnStore.FAILED_RESPONSE, true));
     elements.add(generateElement(7,"db1", "tb2", null, CompactionType.MINOR, TxnStore.FAILED_RESPONSE));
     elements.add(generateElement(8,"db1", "tb3", null, CompactionType.MINOR, TxnStore.FAILED_RESPONSE));
 
@@ -469,9 +468,9 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     elements.add(generateElement(13,"db3", "tb3", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE));
     elements.add(generateElement(14,"db3", "tb4", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE));
-    elements.add(generateElement(15,"db3", "tb5", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE));
+    elements.add(generateElement(15,"db3", "tb5", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE, true));
     elements.add(generateElement(16,"db3", "tb6", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE));
-    elements.add(generateElement(17,"db3", "tb7", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE));
+    elements.add(generateElement(17,"db3", "tb7", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE, true));
 
     scr.setCompacts(elements);
     AcidMetricService.updateMetricsFromShowCompact(scr);
@@ -491,9 +490,9 @@ public class TestCompactionMetrics  extends CompactorTest {
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX +
             replaceWhitespace(TxnStore.CLEANING_RESPONSE)).intValue());
 
-    Assert.assertEquals(2,
+    Assert.assertEquals(1,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_INITIATORS).intValue());
-    Assert.assertEquals(2,
+    Assert.assertEquals(1,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_WORKERS).intValue());
     Assert.assertEquals(1,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_NUM_INITIATOR_VERSIONS).intValue());
@@ -834,19 +833,36 @@ public class TestCompactionMetrics  extends CompactorTest {
 
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
       CompactionType type, String state) {
-    return generateElement(id, db, table, partition, type, state, System.currentTimeMillis());
+    return generateElement(id, db, table, partition, type, state, false);
+  }
+
+  private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
+      CompactionType type, String state, boolean manuallyInitiatedCompaction) {
+    return generateElement(id, db, table, partition, type, state, manuallyInitiatedCompaction, System.currentTimeMillis());
   }
 
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
       CompactionType type, String state, long enqueueTime) {
+    return generateElement(id, db, table, partition, type, state, false, enqueueTime);
+  }
+
+  private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
+      CompactionType type, String state, boolean manuallyInitiatedCompaction, long enqueueTime) {
     ShowCompactResponseElement element = new ShowCompactResponseElement(db, table, type, state);
     element.setId(id);
     element.setPartitionname(partition);
     element.setEnqueueTime(enqueueTime);
 
-    String runtimeId = ServerUtils.hostname() + "-" + ThreadLocalRandom.current().nextInt();
+    String runtimeId;
+    if (manuallyInitiatedCompaction) {
+      runtimeId ="hs2-host-" +
+          ThreadLocalRandom.current().nextInt(999) + HiveMetaStoreClient.MANUALLY_INITIATED_COMPACTION;
+    } else {
+      runtimeId = ServerUtils.hostname() + "-" + ThreadLocalRandom.current().nextInt(999);
+    }
+    String workerId = "hs2-host-" + ThreadLocalRandom.current().nextInt(999);
     element.setInitiatorId(runtimeId);
-    element.setWorkerid(runtimeId);
+    element.setWorkerid(workerId);
     element.setInitiatorVersion("4.0.0");
     element.setWorkerVersion("4.0.0");
     return element;
