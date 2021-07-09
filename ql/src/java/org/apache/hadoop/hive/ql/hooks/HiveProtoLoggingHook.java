@@ -83,14 +83,13 @@ import static org.apache.hadoop.hive.ql.plan.HiveOperation.TRUNCATETABLE;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.UNLOCKTABLE;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.RejectedExecutionException;
@@ -102,6 +101,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
@@ -388,11 +388,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
 
       String hiveInstanceAddress = hookContext.getHiveInstanceAddress();
       if (hiveInstanceAddress == null) {
-        try {
-          hiveInstanceAddress = InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException e) {
-          LOG.error("Error tyring to get localhost address: ", e);
-        }
+        hiveInstanceAddress = ServerUtils.hostAddress(Optional.of("Unknown"));
       }
       addMapEntry(builder, OtherInfoType.HIVE_ADDRESS, hiveInstanceAddress);
 

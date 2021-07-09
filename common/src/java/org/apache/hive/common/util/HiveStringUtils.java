@@ -20,10 +20,8 @@ package org.apache.hive.common.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -36,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
@@ -46,6 +45,7 @@ import org.apache.commons.lang3.text.translate.EntityArrays;
 import org.apache.commons.lang3.text.translate.JavaUnicodeEscaper;
 import org.apache.commons.lang3.text.translate.LookupTranslator;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.io.Text;
@@ -751,7 +751,7 @@ public class HiveStringUtils {
    */
   public static void startupShutdownMessage(Class<?> clazz, String[] args,
                                      final org.slf4j.Logger LOG) {
-    final String hostname = getHostname();
+    final String hostname = ServerUtils.hostname(Optional.of("UNKNOWN"));
     final String classname = clazz.getSimpleName();
     LOG.info(
         toStartupShutdownString("STARTUP_MSG: ", new String[] {
@@ -778,16 +778,6 @@ public class HiveStringUtils {
 
   }
 
-  /**
-   * Return hostname without throwing exception.
-   * @return hostname
-   */
-  public static String getHostname() {
-    try {return "" + InetAddress.getLocalHost();}
-    catch(UnknownHostException uhe) {return "" + uhe;}
-  }
-
-  
   /**
    * The traditional binary prefixes, kilo, mega, ..., exa,
    * which can be represented by a 64-bit integer.

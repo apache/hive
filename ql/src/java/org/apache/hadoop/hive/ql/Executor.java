@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -99,7 +99,7 @@ public class Executor {
       // TODO: should this use getUserFromAuthenticator?
       hookContext = new PrivateHookContext(driverContext.getPlan(), driverContext.getQueryState(),
           context.getPathToCS(), SessionState.get().getUserName(), SessionState.get().getUserIpAddress(),
-          InetAddress.getLocalHost().getHostAddress(), driverContext.getOperationId(),
+          ServerUtils.hostAddress(), driverContext.getOperationId(),
           SessionState.get().getSessionId(), Thread.currentThread().getName(), SessionState.get().isHiveServerQuery(),
           SessionState.getPerfLogger(), driverContext.getQueryInfo(), context);
 

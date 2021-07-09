@@ -13,12 +13,12 @@
  */
 package org.apache.hadoop.hive.registry;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.util.Optional;
 import java.util.UUID;
 
+import org.apache.hadoop.hive.common.ServerUtils;
+
 public class RegistryUtilities {
-  private static final String LOCALHOST = "localhost";
 
   /**
    * Will return hostname stored in InetAddress.
@@ -26,11 +26,7 @@ public class RegistryUtilities {
    * @return hostname
    */
   public static String getHostName() {
-    try {
-      return InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      return LOCALHOST;
-    }
+    return ServerUtils.hostname(Optional.of("localhost"));
   }
 
   /**
@@ -39,11 +35,7 @@ public class RegistryUtilities {
    * @return FQDN of host
    */
   public static String getCanonicalHostName() {
-    try {
-      return InetAddress.getLocalHost().getCanonicalHostName();
-    } catch (UnknownHostException e) {
-      return LOCALHOST;
-    }
+    return ServerUtils.canonicalHostName(Optional.of("localhost"));
   }
 
   public static String getUUID() {

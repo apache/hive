@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.util.Objects;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,15 +69,54 @@ public class ServerUtils {
     }
     return serverIPAddress;
   }
+
   /**
    * @return name of current host
    */
   public static String hostname() {
+    return hostname(Optional.empty());
+  }
+
+  /**
+   * @return name of current host
+   */
+  public static String hostname(Optional<String> defaultValue) {
+    Objects.requireNonNull(defaultValue);
     try {
       return InetAddress.getLocalHost().getHostName();
     } catch (UnknownHostException e) {
-      LOG.error("Unable to resolve my host name " + e.getMessage());
-      throw new RuntimeException(e);
+      return defaultValue.orElseThrow(() -> new RuntimeException("Unable to resolve my host name", e));
+    }
+  }
+
+  /**
+   * @return address of current host
+   */
+  public static String hostAddress() {
+    return hostAddress(Optional.empty());
+  }
+
+  /**
+   * @return address of current host
+   */
+  public static String hostAddress(Optional<String> defaultValue) {
+    Objects.requireNonNull(defaultValue);
+    try {
+      return InetAddress.getLocalHost().getHostAddress();
+    } catch (UnknownHostException e) {
+      return defaultValue.orElseThrow(() -> new RuntimeException("Unable to resolve my host name", e));
+    }
+  }
+
+  /**
+   * @return canonical name of current host
+   */
+  public static String canonicalHostName(Optional<String> defaultValue) {
+    Objects.requireNonNull(defaultValue);
+    try {
+      return InetAddress.getLocalHost().getCanonicalHostName();
+    } catch (UnknownHostException e) {
+      return defaultValue.orElseThrow(() -> new RuntimeException("Unable to resolve my host name", e));
     }
   }
 
