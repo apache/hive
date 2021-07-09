@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -985,6 +986,26 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     Assert.assertEquals(expectedSchema, icebergSchema);
     Assert.assertEquals(expectedSchema, hmsSchema);
+  }
+
+  /**
+   * Checks that HiveIcebergMetaHook doesn't run into failures with undefined alter operation type (e.g. stat updates)
+   * @throws Exception - any test failure
+   */
+  @Test
+  public void testMetaHookWithUndefinedAlterOperationType() throws Exception {
+    Assume.assumeTrue("Enough to check for one type only",
+        testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, SPEC,
+        FileFormat.PARQUET, ImmutableList.of());
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "customers");
+
+    HiveIcebergMetaHook metaHook = new HiveIcebergMetaHook(shell.getHiveConf());
+    EnvironmentContext environmentContext = new EnvironmentContext(new HashMap<>());
+
+    metaHook.preAlterTable(hmsTable, environmentContext);
+    metaHook.commitAlterTable(hmsTable, environmentContext, null);
   }
 
   /**
