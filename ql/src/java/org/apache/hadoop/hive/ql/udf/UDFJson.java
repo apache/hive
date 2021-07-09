@@ -26,15 +26,12 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.core.json.JsonReadFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Iterators;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.Text;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonParser.Feature;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.type.TypeFactory;
-import org.codehaus.jackson.type.JavaType;
 
 /**
  * UDFJson.
@@ -61,11 +58,8 @@ import org.codehaus.jackson.type.JavaType;
 public class UDFJson extends UDF {
   private static final Pattern patternKey = Pattern.compile("^([a-zA-Z0-9_\\-\\:\\s]+).*");
   private static final Pattern patternIndex = Pattern.compile("\\[([0-9]+|\\*)\\]");
-  private static final JavaType MAP_TYPE = TypeFactory.fromClass(Map.class);
-  private static final JavaType LIST_TYPE = TypeFactory.fromClass(List.class);
 
-  private final JsonFactory jsonFactory = new JsonFactory();
-  private final ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   // An LRU cache using a linked hash map
   static class HashCache<K, V> extends LinkedHashMap<K, V> {
@@ -96,9 +90,9 @@ public class UDFJson extends UDF {
 
   public UDFJson() {
     // Allows for unescaped ASCII control characters in JSON values
-    jsonFactory.enable(Feature.ALLOW_UNQUOTED_CONTROL_CHARS);
+    objectMapper.enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature());
     // Enabled to accept quoting of all character backslash qooting mechanism
-    jsonFactory.enable(Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER);
+    objectMapper.enable(JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER.mappedFeature());
   }
 
   /**
@@ -153,19 +147,19 @@ public class UDFJson extends UDF {
     if (extractObject == null) {
       if (unknownType) {
         try {
-          extractObject = objectMapper.readValue(jsonString, LIST_TYPE);
+          extractObject = objectMapper.readValue(jsonString, List.class);
         } catch (Exception e) {
           // Ignore exception
         }
         if (extractObject == null) {
           try {
-            extractObject = objectMapper.readValue(jsonString, MAP_TYPE);
+            extractObject = objectMapper.readValue(jsonString, Map.class);
           } catch (Exception e) {
             return null;
           }
         }
       } else {
-        JavaType javaType = isRootArray ? LIST_TYPE : MAP_TYPE;
+        Class<?> javaType = isRootArray ? List.class : Map.class;
         try {
           extractObject = objectMapper.readValue(jsonString, javaType);
         } catch (Exception e) {
