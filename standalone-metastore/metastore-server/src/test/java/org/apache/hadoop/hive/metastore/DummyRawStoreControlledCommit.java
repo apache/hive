@@ -576,6 +576,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public List<HiveObjectPrivilege> listPrincipalDCGrants(String principalName,
+       PrincipalType principalType, String dbName) {
+    return objectStore.listPrincipalDCGrants(principalName, principalType, dbName);
+  }
+
+  @Override
   public List<HiveObjectPrivilege> listAllTableGrants(String principalName,
       PrincipalType principalType, String catName, String dbName, String tableName) {
     return objectStore.listAllTableGrants(principalName, principalType,
@@ -691,6 +697,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public List<HiveObjectPrivilege> listPrincipalDCGrantsAll(
+      String principalName, PrincipalType principalType) {
+    return objectStore.listPrincipalDCGrantsAll(principalName, principalType);
+  }
+
+  @Override
   public List<HiveObjectPrivilege> listPrincipalTableGrantsAll(
       String principalName, PrincipalType principalType) {
     return objectStore.listPrincipalTableGrantsAll(principalName, principalType);
@@ -722,6 +734,11 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public List<HiveObjectPrivilege> listDBGrantsAll(String catName, String dbName) {
     return objectStore.listDBGrantsAll(catName, dbName);
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listDCGrantsAll(String dcName) {
+    return objectStore.listDCGrantsAll(dcName);
   }
 
   @Override

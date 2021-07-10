@@ -909,6 +909,16 @@ public interface RawStore extends Configurable {
       PrincipalType principalType, String catName, String dbName);
 
   /**
+   * For a given principal name and type, list the DC Grants
+   * @param principalName principal name
+   * @param principalType type
+   * @param dcName data connector name
+   * @return list of privileges for that principal on the specified data connector.
+   */
+  List<HiveObjectPrivilege> listPrincipalDCGrants(String principalName,
+                                                  PrincipalType principalType, String dcName);
+
+  /**
    * For a given principal name and type, list the Table Grants
    * @param principalName principal name
    * @param principalType type
@@ -1283,6 +1293,15 @@ public interface RawStore extends Configurable {
       String principalName, PrincipalType principalType);
 
   /**
+   * List all DC grants for a given principal.
+   * @param principalName principal name
+   * @param principalType type
+   * @return all DC grants for this principal
+   */
+  List<HiveObjectPrivilege> listPrincipalDCGrantsAll(
+          String principalName, PrincipalType principalType);
+
+  /**
    * List all Table grants for a given principal
    * @param principalName principal name
    * @param principalType type
@@ -1327,6 +1346,13 @@ public interface RawStore extends Configurable {
    * @return list of all privileges.
    */
   List<HiveObjectPrivilege> listDBGrantsAll(String catName, String dbName);
+
+  /**
+   * Find all the privileges for a given data connector.
+   * @param dcName data connector name
+   * @return list of all privileges.
+   */
+  List<HiveObjectPrivilege> listDCGrantsAll(String dcName);
 
   /**
    * Find all of the privileges for a given column in a given partition.
