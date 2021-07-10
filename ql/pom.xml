@@ -905,10 +905,6 @@
                   <shadedPattern>org.apache.hive.joda-time</shadedPattern>
                 </relocation>
                 <relocation>
-                  <pattern>org.apache.thrift</pattern>
-                  <shadedPattern>org.apache.hive.org.apache.thrift</shadedPattern>
-                </relocation>
-                <relocation>
                   <pattern>commons-lang</pattern>
                   <shadedPattern>org.apache.hive.commons-lang</shadedPattern>
                 </relocation>
