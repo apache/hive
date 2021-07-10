@@ -1169,6 +1169,10 @@ public class ObjectStore implements RawStore, Configurable {
       // then drop the dataconnector
       MDataConnector mdb = getMDataConnector(dcname);
       pm.retrieve(mdb);
+      List<MDCPrivilege> dcGrants = this.listDataConnectorGrants(dcname, null);
+      if (CollectionUtils.isNotEmpty(dcGrants)) {
+        pm.deletePersistentAll(dcGrants);
+      }
       pm.deletePersistent(mdb);
       success = commitTransaction();
     } catch (Exception e) {
@@ -6173,6 +6177,12 @@ public class ObjectStore implements RawStore, Configurable {
           pm.deletePersistentAll(dbGrants);
         }
 
+        List<MDCPrivilege> dcGrants = listPrincipalAllDCGrant(mRol
+                .getRoleName(), PrincipalType.ROLE);
+        if (CollectionUtils.isNotEmpty(dcGrants)) {
+          pm.deletePersistentAll(dcGrants);
+        }
+
         List<MTablePrivilege> tabPartGrants = listPrincipalAllTableGrants(
             mRol.getRoleName(), PrincipalType.ROLE);
         if (CollectionUtils.isNotEmpty(tabPartGrants)) {
@@ -6570,8 +6580,8 @@ public class ObjectStore implements RawStore, Configurable {
       if (CollectionUtils.isNotEmpty(roleNames)) {
         Map<String, List<PrivilegeGrantInfo>> dbRolePriv = new HashMap<>();
         for (String roleName : roleNames) {
-          dbRolePriv
-                  .put(roleName, getConnectorPrivilege(catName, connectorName, roleName, PrincipalType.ROLE));
+          dbRolePriv.put(roleName, getConnectorPrivilege(catName, connectorName, roleName,
+                  PrincipalType.ROLE));
         }
         ret.setRolePrivileges(dbRolePriv);
       }
@@ -7152,7 +7162,7 @@ public class ObjectStore implements RawStore, Configurable {
               }
               if (!found) {
                 throw new InvalidObjectException(
-                        "No database grant found for privileges " + privilege
+                        "No dataconnector grant found for privileges " + privilege
                                 + " on data connector " + dc);
               }
             }
@@ -7351,7 +7361,7 @@ public class ObjectStore implements RawStore, Configurable {
         break;
       case DATACONNECTOR:
         try {
-          grants = this.listDCGrantsAll(catName, objToRefresh.getDbName(), authorizer);
+          grants = this.listDCGrantsAll(objToRefresh.getObjectName(), authorizer);
         } catch (Exception e) {
           throw new MetaException(e.getMessage());
         }
@@ -7620,12 +7630,12 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private List<MDCPrivilege> listPrincipalMDCGrants(String principalName,
-                                                    PrincipalType principalType, String catName, String dcName) {
-    return listPrincipalMDCGrants(principalName, principalType, catName, dcName, null);
+                                                    PrincipalType principalType, String dcName) {
+    return listPrincipalMDCGrants(principalName, principalType, dcName, null);
   }
 
   private List<MDCPrivilege> listPrincipalMDCGrants(String principalName,
-                                                    PrincipalType principalType, String catName, String dcName, String authorizer) {
+                                                    PrincipalType principalType, String dcName, String authorizer) {
     boolean success = false;
     Query query = null;
     List<MDCPrivilege> mSecurityDCList = new ArrayList<>();
@@ -7767,8 +7777,63 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private List<HiveObjectPrivilege> listDCGrantsAll(String catName, String dcName, String authorizer) throws Exception {
-    return convertDC(listDataConnectorGrants(catName, dcName, authorizer));
+  @Override
+  public List<HiveObjectPrivilege> listPrincipalDCGrants(String principalName,
+                                                         PrincipalType principalType,
+                                                         String dcName) {
+    List<MDCPrivilege> mDcs = listPrincipalMDCGrants(principalName, principalType, dcName);
+    if (mDcs.isEmpty()) {
+      return Collections.emptyList();
+    }
+    List<HiveObjectPrivilege> result = new ArrayList<>();
+    for (int i = 0; i < mDcs.size(); i++) {
+      MDCPrivilege sDC = mDcs.get(i);
+      HiveObjectRef objectRef = new HiveObjectRef(
+              HiveObjectType.DATACONNECTOR, null, dcName, null, null);
+      HiveObjectPrivilege secObj = new HiveObjectPrivilege(objectRef,
+              sDC.getPrincipalName(), principalType,
+              new PrivilegeGrantInfo(sDC.getPrivilege(), sDC
+                      .getCreateTime(), sDC.getGrantor(), PrincipalType
+                      .valueOf(sDC.getGrantorType()), sDC.getGrantOption()), sDC.getAuthorizer());
+      result.add(secObj);
+    }
+    return result;
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listPrincipalDCGrantsAll(String principalName, PrincipalType principalType) {
+    List<HiveObjectPrivilege> results = Collections.emptyList();
+    boolean success = false;
+    try {
+      openTransaction();
+      results = convertDC(listPrincipalAllDCGrant(principalName, principalType));
+      success = commitTransaction();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    } finally {
+      rollbackAndCleanup(success, null);
+    }
+    return results;
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listDCGrantsAll(String dcName) {
+    List<HiveObjectPrivilege> results = Collections.emptyList();
+    boolean success = false;
+    try {
+      openTransaction();
+      results = listDCGrantsAll(dcName, null);
+      success = commitTransaction();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    } finally {
+      rollbackAndCleanup(success, null);
+    }
+    return results;
+  }
+
+  private List<HiveObjectPrivilege> listDCGrantsAll(String dcName, String authorizer) throws Exception {
+    return convertDC(listDataConnectorGrants(dcName, authorizer));
   }
 
   private List<HiveObjectPrivilege> convertDC(List<MDCPrivilege> privs) {
@@ -7787,6 +7852,32 @@ public class ObjectStore implements RawStore, Configurable {
       result.add(new HiveObjectPrivilege(objectRef, pname, ptype, grantor, authorizer));
     }
     return result;
+  }
+
+  private List<MDCPrivilege> listPrincipalAllDCGrant(String principalName, PrincipalType principalType)
+          throws Exception {
+    final List<MDCPrivilege> mSecurityDCList;
+
+    LOG.debug("Executing listPrincipalAllDCGrant");
+
+    Preconditions.checkState(this.currentTransaction.isActive());
+
+    if (principalName != null && principalType != null) {
+      try (Query query = pm.newQuery(MDCPrivilege.class, "principalName == t1 && principalType == t2")) {
+        query.declareParameters("java.lang.String t1, java.lang.String t2");
+        mSecurityDCList = (List<MDCPrivilege>) query.execute(principalName, principalType.toString());
+        pm.retrieveAll(mSecurityDCList);
+        LOG.debug("Done retrieving all objects for listPrincipalAllDCGrant: {}", mSecurityDCList);
+        return Collections.unmodifiableList(new ArrayList<>(mSecurityDCList));
+      }
+    } else {
+      try (Query query = pm.newQuery(MDCPrivilege.class)) {
+        mSecurityDCList = (List<MDCPrivilege>) query.execute();
+        pm.retrieveAll(mSecurityDCList);
+        LOG.debug("Done retrieving all objects for listPrincipalAllDCGrant: {}", mSecurityDCList);
+        return Collections.unmodifiableList(new ArrayList<>(mSecurityDCList));
+      }
+    }
   }
 
   private List<MTablePrivilege> listAllTableGrants(String catName, String dbName, String tableName) {
@@ -7992,13 +8083,12 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private List<MDCPrivilege> listDataConnectorGrants(String catName, String dcName, String authorizer) throws Exception {
+  private List<MDCPrivilege> listDataConnectorGrants(String dcName, String authorizer) throws Exception {
     LOG.debug("Executing listDataConnectorGrants");
 
     Preconditions.checkState(currentTransaction.isActive());
 
     dcName = normalizeIdentifier(dcName);
-    //catName = normalizeIdentifier(catName);
 
     final Query query;
     final String[] args;

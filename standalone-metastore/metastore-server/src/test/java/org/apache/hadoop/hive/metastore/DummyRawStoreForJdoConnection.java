@@ -608,6 +608,13 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public List<HiveObjectPrivilege> listPrincipalDCGrants(String principalName,
+      PrincipalType principalType, String dcName) {
+
+    return Collections.emptyList();
+  }
+
+  @Override
   public List<HiveObjectPrivilege> listAllTableGrants(String principalName,
       PrincipalType principalType, String catName, String dbName, String tableName) {
 
@@ -769,6 +776,12 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public List<HiveObjectPrivilege> listPrincipalDCGrantsAll(
+          String principalName, PrincipalType principalType) {
+    return Collections.emptyList();
+  }
+
+  @Override
   public List<HiveObjectPrivilege> listPrincipalTableGrantsAll(
       String principalName, PrincipalType principalType) {
     return Collections.emptyList();
@@ -799,6 +812,11 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public List<HiveObjectPrivilege> listDBGrantsAll(String catName, String dbName) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listDCGrantsAll(String dcName) {
     return Collections.emptyList();
   }
 

@@ -7786,6 +7786,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       return list_db_privileges(principalName, principalType, catName, hiveObject
           .getDbName());
     }
+    if (hiveObject.getObjectType() == HiveObjectType.DATACONNECTOR) {
+      return list_dc_privileges(principalName, principalType, hiveObject
+              .getObjectName());
+    }
     if (hiveObject.getObjectType() == HiveObjectType.TABLE) {
       return list_table_privileges(principalName, principalType,
           catName, hiveObject.getDbName(), hiveObject.getObjectName());
@@ -7812,6 +7816,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     List<HiveObjectPrivilege> privs = new ArrayList<>();
     privs.addAll(list_global_privileges(principalName, principalType));
     privs.addAll(list_db_privileges(principalName, principalType, catName, null));
+    privs.addAll(list_dc_privileges(principalName, principalType, null));
     privs.addAll(list_table_privileges(principalName, principalType, catName, null, null));
     privs.addAll(list_partition_privileges(principalName, principalType, catName, null, null, null));
     privs.addAll(list_table_column_privileges(principalName, principalType, catName, null, null, null));
@@ -7874,6 +7879,24 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         return getMS().listDBGrantsAll(catName, dbName);
       } else {
         return getMS().listPrincipalDBGrants(principalName, principalType, catName, dbName);
+      }
+    } catch (Exception e) {
+      throw handleException(e).throwIfInstance(MetaException.class).defaultRuntimeException();
+    }
+  }
+
+  private List<HiveObjectPrivilege> list_dc_privileges(final String principalName,
+                                                       final PrincipalType principalType, final String dcName) throws TException {
+    incrementCounter("list_security_dc_grant");
+
+    try {
+      if (dcName == null) {
+        return getMS().listPrincipalDCGrantsAll(principalName, principalType);
+      }
+      if (principalName == null) {
+        return getMS().listDCGrantsAll(dcName);
+      } else {
+        return getMS().listPrincipalDCGrants(principalName, principalType, dcName);
       }
     } catch (Exception e) {
       throw handleException(e).throwIfInstance(MetaException.class).defaultRuntimeException();
