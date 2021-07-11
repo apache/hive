@@ -2390,7 +2390,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             LOG.warn("Location: " + tbl.getSd().getLocation()
                 + " specified for non-external table:" + tbl.getTableName());
           }
-          tblPath = wh.getDnsPath(new Path(tbl.getSd().getLocation()));
+          tblPath = wh.getExternalTablePath(new Path(tbl.getSd().getLocation()),
+                  ms.getDatabase(tbl.getCatName(),tbl.getDbName()));
         }
         tbl.getSd().setLocation(tblPath.toString());
       }

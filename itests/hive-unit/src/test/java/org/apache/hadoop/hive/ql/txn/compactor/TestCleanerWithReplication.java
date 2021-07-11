@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -73,6 +74,9 @@ public class TestCleanerWithReplication extends CompactorTest {
     Database db = new Database();
     db.putToParameters(SOURCE_OF_REPLICATION, "1,2,3");
     db.setName(dbName);
+    String whRootString = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.WAREHOUSE);
+    Path whP = new Path(whRootString);
+    db.setLocationUri(fs.getUri().toString() + whP.toUri().getPath());
     ms.createDatabase(db);
   }
 
