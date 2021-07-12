@@ -136,4 +136,8 @@ public class CopyWork implements Serializable {
   public void setOverwrite(boolean overwrite) {
     this.overwrite = overwrite;
   }
+
+  public void setToPath(Path[] toPath) {
+    this.toPath = toPath;
+  }
 }
