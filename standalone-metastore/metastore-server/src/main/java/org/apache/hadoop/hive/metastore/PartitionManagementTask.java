@@ -94,6 +94,10 @@ public class PartitionManagementTask implements MetastoreTaskThread {
 
   @Override
   public void run() {
+    if (!MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TASK_ENABLED)) {
+      LOG.info("PartitionManagementTask is disabled");
+      return;
+    }
     if (lock.tryLock()) {
       skippedAttempts = 0;
       String qualifiedTableName = null;

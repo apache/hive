@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TASK_ENABLED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -522,9 +523,15 @@ public class TestPartitionManagement {
     table.getParameters().put(PartitionManagementTask.PARTITION_RETENTION_PERIOD_TBLPROPERTY, "20000ms");
     client.alter_table(dbName, tableName, table);
 
+    // disable partitionmanagement task and check
+    conf.setBoolean(PARTITION_MANAGEMENT_TASK_ENABLED.getVarname(), false);
+    runPartitionManagementTask(conf);
+    assertEquals(3, partitions.size()); //no changes to partitions
+
+    conf.setBoolean(PARTITION_MANAGEMENT_TASK_ENABLED.getVarname(), true);
     runPartitionManagementTask(conf);
     partitions = client.listPartitions(dbName, tableName, (short) -1);
-    assertEquals(5, partitions.size());
+    assertEquals(5, partitions.size()); // 2 more partitions discovered. Total 5 partitions
 
     // after 30s all partitions should have been gone
     Thread.sleep(30 * 1000);
