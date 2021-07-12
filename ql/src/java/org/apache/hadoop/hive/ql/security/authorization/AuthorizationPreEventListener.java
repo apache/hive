@@ -357,8 +357,7 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
             try {
               return new PartitionWrapper(table, partition);
             } catch (Exception exception) {
-              LOG.error("Could not construct partition-object for: " + partition, exception);
-              throw new RuntimeException(exception);
+              throw new RuntimeException("Could not construct partition-object for: " + partition, exception);
             }
           }
         });

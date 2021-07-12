@@ -196,12 +196,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
    */
   protected void checkPartitionsMatch(Path inputPath) throws IOException {
     if (!dpPath.equals(inputPath)) {
-      // Temp partition input path does not match exist temp path
-      String msg = "Multiple partitions for one merge mapper: " + dpPath +
-          " NOT EQUAL TO "
-          + inputPath;
-      LOG.error(msg);
-      throw new IOException(msg);
+      throw new IOException("Multiple partitions for one merge mapper: " + dpPath + " NOT EQUAL TO " + inputPath);
     }
   }
 
@@ -307,8 +302,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
               Utilities.renameOrMoveFiles(fs, incompatFile, destPath);
               LOG.info("Moved incompatible file " + incompatFile + " to " + destPath);
             } catch (HiveException e) {
-              LOG.error("Unable to move " + incompatFile + " to " + destPath);
-              throw new IOException(e);
+              throw new IOException("Unable to move " + incompatFile + " to " + destPath, e);
             }
           }
         }

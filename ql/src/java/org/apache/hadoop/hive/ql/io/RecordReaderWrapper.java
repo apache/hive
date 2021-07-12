@@ -86,7 +86,7 @@ class RecordReaderWrapper extends LineRecordReader {
       try {
         isCompressed = (Boolean) isCompressedMethod.invoke(innerReader);
       } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-        LOG.error("Cannot check the reader for compression; offsets not supported", e);
+        LOG.warn("Cannot check the reader for compression; offsets not supported", e);
         return innerReader;
       }
       if (isCompressed && (headerCount > 0 || footerCount > 0)) {

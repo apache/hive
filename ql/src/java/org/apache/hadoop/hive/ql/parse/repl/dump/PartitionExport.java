@@ -139,7 +139,6 @@ class PartitionExport {
       try {
         future.get();
       } catch (Exception e) {
-        LOG.error("failed", e.getCause());
         throw new HiveException(e.getCause().getMessage(), e.getCause());
       }
     }

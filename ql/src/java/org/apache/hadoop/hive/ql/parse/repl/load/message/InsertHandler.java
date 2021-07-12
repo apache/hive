@@ -48,8 +48,7 @@ public class InsertHandler extends AbstractMessageHandler {
         return Collections.emptyList();
       }
     } catch (Exception e) {
-      LOG.error("failed to load insert event", e);
-      throw new SemanticException(e);
+      throw new SemanticException("Failed to load insert event", e);
     }
 
     InsertMessage insertMessage = deserializer.getInsertMessage(withinContext.dmd.getPayload());

@@ -847,7 +847,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
         }
         getWh().deleteDir(tablePath, true, ifPurge, false);
       } catch (Exception err) {
-        LOG.error("Failed to delete temp table directory: " + tablePath, err);
+        LOG.warn("Failed to delete temp table directory: " + tablePath, err);
         // Forgive error
       }
     }
@@ -2504,7 +2504,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     try {
       return Hive.get().getConf().get(HiveConf.ConfVars.HIVEQUERYID.varname);
     } catch (HiveException e) {
-      LOG.error("Error getting query id. Query level HMS caching will be disabled", e);
+      LOG.warn("Error getting query id. Query level HMS caching will be disabled", e);
       return null;
     }
   }

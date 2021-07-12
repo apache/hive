@@ -143,7 +143,7 @@ public final class MetricSink {
           LOG.debug("No Metrics to Update ");
         }
       } catch (Exception e) {
-        LOG.error("Metrics are not getting persisted", e);
+        LOG.warn("Metrics are not getting persisted", e);
       }
     }
   }

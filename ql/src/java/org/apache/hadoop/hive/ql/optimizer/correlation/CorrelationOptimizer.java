@@ -487,7 +487,6 @@ public class CorrelationOptimizer extends Transform {
           correlatedReduceSinkOperators.clear();
         }
       } else {
-        LOG.error("ReduceSinkOperator " + current.getIdentifier() + " does not have ColumnExprMap");
         throw new SemanticException("CorrelationOptimizer cannot optimize this plan. " +
             "ReduceSinkOperator " + current.getIdentifier()
             + " does not have ColumnExprMap");

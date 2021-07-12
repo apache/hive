@@ -1225,9 +1225,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
   private void ensurePutReader(ReaderKey key, ReaderPair deltaPair) throws IOException {
     ReaderPair oldPair = readers.put(key, deltaPair);
     if (oldPair == null) return;
-    String error = "Two readers for " + key + ": new " + deltaPair + ", old " + oldPair;
-    LOG.error(error);
-    throw new IOException(error);
+    throw new IOException("Two readers for " + key + ": new " + deltaPair + ", old " + oldPair);
   }
 
   /**

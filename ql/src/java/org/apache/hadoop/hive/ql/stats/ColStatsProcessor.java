@@ -82,8 +82,7 @@ public class ColStatsProcessor implements IStatsProcessor {
       JobConf job = new JobConf(conf);
       ftOp = new FetchOperator(fWork, job);
     } catch (Exception e) {
-      LOG.error("Failed to initialize", e);
-      throw new RuntimeException(e);
+      throw new RuntimeException("Failed to initialize", e);
     }
   }
 

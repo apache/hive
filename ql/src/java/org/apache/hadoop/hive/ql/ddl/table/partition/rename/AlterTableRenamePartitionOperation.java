@@ -58,7 +58,6 @@ public class AlterTableRenamePartitionOperation extends DDLOperation<AlterTableR
     }
 
     if (Utils.isBootstrapDumpInProgress(context.getDb(), HiveTableName.of(tableName).getDb())) {
-      LOG.error("DDLTask: Rename Partition not allowed as bootstrap dump in progress");
       throw new HiveException("Rename Partition: Not allowed as bootstrap dump in progress");
     }
 

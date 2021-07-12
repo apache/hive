@@ -292,7 +292,7 @@ public class RangerRestClientImpl implements RangerRestClient {
           multipartEntity.close();
         }
       } catch (IOException e) {
-        LOG.error("Exception occurred while closing resources: {}", e);
+        LOG.error("Exception occurred while closing resources", e);
       }
     }
     return rangerExportPolicyList;

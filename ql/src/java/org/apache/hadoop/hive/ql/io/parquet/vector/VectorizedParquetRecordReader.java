@@ -161,8 +161,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       }
       initPartitionValues((FileSplit) oldInputSplit, conf);
     } catch (Throwable e) {
-      LOG.error("Failed to create the vectorized reader due to exception " + e);
-      throw new RuntimeException(e);
+      throw new RuntimeException("Failed to create the vectorized reader due to exception", e);
     }
   }
 

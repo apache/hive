@@ -61,7 +61,7 @@ public class AlterTableUpdateColumnsOperation extends AbstractAlterTableOperatio
       StorageDescriptor sd = getStorageDescriptor(table, partition);
       sd.setCols(fields);
     } catch (org.apache.hadoop.hive.serde2.SerDeException | MetaException e) {
-      LOG.error("alter table update columns: {}", e);
+      LOG.error("alter table update columns", e);
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);
     }
   }

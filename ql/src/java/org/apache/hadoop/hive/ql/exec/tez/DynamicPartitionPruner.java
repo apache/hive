@@ -235,8 +235,8 @@ public class DynamicPartitionPruner {
 
     // sanity check. all tasks must submit events for us to succeed.
     if (expectedEvents != totalEventCount) {
-      LOG.error("Expecting: " + expectedEvents + ", received: " + totalEventCount);
-      throw new HiveException("Incorrect event count in dynamic partition pruning");
+      throw new HiveException("Incorrect event count in dynamic partition pruning. Expecting: " + expectedEvents
+          + ", received: " + totalEventCount);
     }
   }
 

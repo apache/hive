@@ -109,9 +109,8 @@ public class LlapCacheResourceProcessor implements CommandProcessor {
         llapCachePurge(ss, llapRegistryService);
         return new CommandProcessorResponse(getSchema(), null);
       } catch (Exception e) {
-        LOG.error("Error while purging LLAP IO Cache. err: ", e);
         throw new CommandProcessorException(
-            "LLAP Cache Processor Helper Failed: Error while purging LLAP IO Cache. err: " + e.getMessage());
+            "LLAP Cache Processor Helper Failed: Error while purging LLAP IO Cache.", e);
       }
     } else {
       String usage = getUsageAsString();

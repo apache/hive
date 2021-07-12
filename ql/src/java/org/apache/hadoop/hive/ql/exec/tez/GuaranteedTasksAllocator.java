@@ -197,7 +197,7 @@ public class GuaranteedTasksAllocator implements QueryAllocationManager {
       try {
         session.handleUpdateError(endpointVersion);
       } catch (Exception e) {
-        LOG.error("Failed to kill the session " + session);
+        LOG.error("Failed to kill the session " + session, e);
       }
     }
 

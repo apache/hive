@@ -479,8 +479,7 @@ public class MapRecordProcessor extends RecordProcessor {
     } catch (Exception e) {
       if (!isAborted()) {
         // signal new failure to map-reduce
-        LOG.error("Hit error while closing operators - failing tree");
-        throw new RuntimeException("Hive Runtime Error while closing operators", e);
+        throw new RuntimeException("Hive Runtime Error while closing operators - failing tree\"", e);
       }
     } finally {
       Utilities.clearWorkMap(jconf);

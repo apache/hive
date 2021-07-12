@@ -254,8 +254,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
       try {
         skewJoinKeyContext.endGroup();
       } catch (IOException e) {
-        LOG.error(e.getMessage(), e);
-        throw new HiveException(e);
+        throw new HiveException("Failed to end group", e);
       }
       return;
     } else {

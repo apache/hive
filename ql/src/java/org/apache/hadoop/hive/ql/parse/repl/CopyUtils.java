@@ -153,8 +153,7 @@ public class CopyUtils {
     FileSystem sourceFsOfFileInfo = fileInfoList.get(0).getSourcePath().getFileSystem(hiveConf);
     if (!destinationFs.exists(destination)
       && !FileUtils.mkdir(destinationFs, destination, hiveConf)) {
-      LOG.error("Failed to create destination directory: " + destination);
-      throw new IOException("Destination directory creation failed");
+      throw new IOException("Failed to create destination directory: " + destination);
     }
     // Copy files with retry logic on failure or source file is dropped or changed.
     doCopyRetry(sourceFsOfFileInfo, fileInfoList, destination, proxyUser, useRegularCopy, overwrite);
@@ -403,8 +402,7 @@ public class CopyUtils {
         proxyUser,
         hiveConf,
         ShimLoader.getHadoopShims())) {
-      LOG.error("Distcp failed to copy files: " + srcList + " to destination: " + destination);
-      throw new IOException("Distcp operation failed.");
+      throw new IOException("Distcp failed to copy files: " + srcList + " to destination: " + destination);
     }
   }
 

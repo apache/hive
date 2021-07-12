@@ -234,7 +234,7 @@ public class PrivilegeSynchronizer implements Runnable {
                   + numTbl + " tables");
         }
       } catch (Exception e) {
-        LOG.error("Error initializing PrivilegeSynchronizer: " + e.getMessage(), e);
+        LOG.error("Error initializing PrivilegeSynchronizer", e);
       }
       LOG.info("Wait for " + interval + " seconds");
       try {

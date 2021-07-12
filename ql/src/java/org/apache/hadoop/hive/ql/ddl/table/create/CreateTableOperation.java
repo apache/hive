@@ -157,8 +157,7 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
         try {
           newFilesList = HdfsUtils.listPath(tabLocation.getFileSystem(context.getConf()), tabLocation, null, true);
         } catch (IOException e) {
-          LOG.error("Error listing files", e);
-          throw new HiveException(e);
+          throw new HiveException("Error listing files", e);
         }
         context.getDb().addWriteNotificationLog(createdTable, null, newFilesList, tTable.getWriteId());
       }
