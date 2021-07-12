@@ -1658,7 +1658,7 @@
     <class name="MDCPrivilege" table="DC_PRIVS" identity-type="datastore" detachable="true">
           <index name="DCPrivilegeIndex" unique="true">
             <column name="AUTHORIZER"/>
-            <column name="DC_NAME"/>
+            <column name="NAME"/>
             <column name="PRINCIPAL_NAME"/>
             <column name="PRINCIPAL_TYPE"/>
             <column name="DC_PRIV"/>
@@ -1677,7 +1677,7 @@
             <column name="PRINCIPAL_TYPE" length="128" jdbc-type="VARCHAR"/>
           </field>
           <field name="dataConnector">
-            <column name="DC_NAME" />
+            <column name="NAME" />
           </field>
           <field name="privilege">
             <column name="DC_PRIV" length="128" jdbc-type="VARCHAR"/>

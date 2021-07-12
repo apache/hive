@@ -6902,8 +6902,8 @@ public class ObjectStore implements RawStore, Configurable {
             }
           } else if (hiveObject.getObjectType() == HiveObjectType.DATACONNECTOR) {
             MDataConnector dcObj = getMDataConnector(hiveObject.getObjectName());
-            List<MDCPrivilege> dcPrivs = this.listPrincipalMDCGrants(
-                    userName, principalType, catName, hiveObject.getObjectName(), authorizer);
+            List<MDCPrivilege> dcPrivs = this.listPrincipalMDCGrants(userName, principalType,
+                  hiveObject.getObjectName(), authorizer);
             for (MDCPrivilege priv : dcPrivs) {
               if (priv.getGrantor().equalsIgnoreCase(grantor)) {
                 privSet.add(priv.getPrivilege());
