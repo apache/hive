@@ -3037,4 +3037,62 @@ class MetaStoreDirectSql {
     long csId = updateStat.getNextCSIdForMPartitionColumnStatistics(numStats);
     return updateStat.updatePartitionColumnStatistics(partColStatsMap, tbl, csId, validWriteIds, writeId, listeners);
   }
+
+  // The whole thing will be executed under the transaction started in HMS handler. So no commit or rollback
+  // is done here.
+  public boolean addPartitions(long tblId, List<FieldSchema> partKeys, List<Partition> parts) throws MetaException {
+    assert pm.currentTransaction().isActive();
+    JDOConnection jdoConn = null;
+    long numPart = parts.size();
+
+    try {
+      jdoConn = pm.getDataStoreConnection();
+      Connection dbConn = (Connection) (jdoConn.getNativeConnection());
+
+      final long partId = PartitionHelper.getNextValueFromSequenceTable(
+              dbConn, "org.apache.hadoop.hive.metastore.model.MPartition", numPart, dbType);
+      final long serId = PartitionHelper.getNextValueFromSequenceTable(
+              dbConn, "org.apache.hadoop.hive.metastore.model.MSerDeInfo", numPart, dbType);
+      final long sdId = PartitionHelper.getNextValueFromSequenceTable(
+              dbConn, "org.apache.hadoop.hive.metastore.model.MStorageDescriptor", numPart, dbType);
+      final long colDescId = PartitionHelper.getNextValueFromSequenceTable(
+              dbConn, "org.apache.hadoop.hive.metastore.model.MColumnDescriptor", numPart, dbType);
+
+      long batchSizeMax = MetastoreConf.getIntVar(conf, ConfVars.JDBC_MAX_BATCH_SIZE);
+
+      if (PartitionHelper.needToAddPrivilegeInfo(dbConn, tblId)) {
+        PartitionHelper.addPartitionPrivilegeInfo(dbConn, parts, tblId, partId, dbType, batchSizeMax);
+        PartitionHelper.addPartitionColPrivilegeInfo(dbConn, parts, tblId, partId, dbType, batchSizeMax);
+      }
+
+      PartitionHelper.addSerdeInfo(dbConn, parts, serId, batchSizeMax);
+      PartitionHelper.addColDescInfo(dbConn, numPart, colDescId, batchSizeMax);
+      PartitionHelper.addSDInfo(dbConn, parts, sdId, serId, colDescId, dbType, batchSizeMax);
+      PartitionHelper.addToSortColsTable(dbConn, parts, sdId, batchSizeMax);
+      PartitionHelper.addToBucketColsTable(dbConn, parts, sdId, batchSizeMax);
+      long numSkewedString = PartitionHelper.addSkewedColsName(dbConn, parts, sdId, batchSizeMax);
+      if (numSkewedString != 0) {
+        // addSkewedStringListId will insert the unique skewed list id for each skewed key. To avoid some other
+        // thread concurrently inserting the same value, table lock is taken.
+        String lockCommand = "lock table \"SKEWED_STRING_LIST\" in exclusive mode";
+        try (Statement statement = dbConn.createStatement()) {
+          statement.executeUpdate(lockCommand);
+        }
+        long startSkewedId = PartitionHelper.addSkewedStringListId(dbConn, batchSizeMax, numSkewedString);
+        PartitionHelper.addSkewedStringListValues(dbConn, parts, startSkewedId, sdId, batchSizeMax);
+      }
+      PartitionHelper.addColV2Info(dbConn, parts, colDescId, batchSizeMax);
+      PartitionHelper.addSDParaInfo(dbConn, parts, sdId, batchSizeMax);
+      PartitionHelper.addSerdeParaInfo(dbConn, parts, serId, batchSizeMax);
+      PartitionHelper.addPartitionInfo(dbConn, parts, partKeys, tblId, partId, sdId, batchSizeMax);
+      PartitionHelper.addPartitionParaInfo(dbConn, parts, partId, batchSizeMax);
+      PartitionHelper.addPartitionKeyValInfo(dbConn, parts, partId, batchSizeMax);
+    } catch (Exception e) {
+      LOG.error("Failed to add partition", e);
+      throw new MetaException("Failed to add partition" + e.getMessage());
+    } finally {
+      jdoConn.close();
+    }
+    return true;
+  }
 }
