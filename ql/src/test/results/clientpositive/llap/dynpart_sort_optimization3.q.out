@@ -1,0 +1,2377 @@
+PREHOOK: query: CREATE TABLE src (key string) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src
+POSTHOOK: query: CREATE TABLE src (key string) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src
+PREHOOK: query: insert into src values ('2000'), ('60'), ('100'), ('5')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@src
+POSTHOOK: query: insert into src values ('2000'), ('60'), ('100'), ('5')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@src
+POSTHOOK: Lineage: src.key SCRIPT []
+PREHOOK: query: create table ctas_part (key int) partitioned by (modkey bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: create table ctas_part (key int) partitioned by (modkey bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_part
+PREHOOK: query: TRUNCATE TABLE ctas_part
+PREHOOK: type: TRUNCATETABLE
+POSTHOOK: query: TRUNCATE TABLE ctas_part
+POSTHOOK: type: TRUNCATETABLE
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Top N Key Operator
+                    sort order: +
+                    keys: key (type: string)
+                    null sort order: z
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    top n: 10
+                    Select Operator
+                      expressions: key (type: string), ceil((UDFToDouble(key) / 100.0D)) (type: bigint)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col1 (type: bigint), _col0 (type: string)
+                    null sort order: az
+                    sort order: ++
+                    Map-reduce partition columns: _col1 (type: bigint)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: string)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: UDFToInteger(VALUE._col0) (type: int), KEY._col1 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.ctas_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            modkey 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_part
+
+PREHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=20).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part
+PREHOOK: Input: default@ctas_part@modkey=1
+PREHOOK: Input: default@ctas_part@modkey=20
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part
+POSTHOOK: Input: default@ctas_part@modkey=1
+POSTHOOK: Input: default@ctas_part@modkey=20
+#### A masked pattern was here ####
+100	1
+5	1
+60	1
+2000	20
+PREHOOK: query: TRUNCATE TABLE ctas_part
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ctas_part@modkey=1
+PREHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: query: TRUNCATE TABLE ctas_part
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=20
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY cast(key as int) LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY cast(key as int) LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Top N Key Operator
+                    sort order: +
+                    keys: UDFToInteger(key) (type: int)
+                    null sort order: z
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    top n: 10
+                    Select Operator
+                      expressions: key (type: string), ceil((UDFToDouble(key) / 100.0D)) (type: bigint), UDFToInteger(key) (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col2 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string), _col1 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col1 (type: bigint)
+                    null sort order: a
+                    sort order: +
+                    Map-reduce partition columns: _col1 (type: bigint)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: string)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: UDFToInteger(VALUE._col0) (type: int), KEY._col1 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.ctas_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            modkey 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_part
+
+PREHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY cast(key as int) LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY cast(key as int) LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=20).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part
+PREHOOK: Input: default@ctas_part@modkey=1
+PREHOOK: Input: default@ctas_part@modkey=20
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part
+POSTHOOK: Input: default@ctas_part@modkey=1
+POSTHOOK: Input: default@ctas_part@modkey=20
+#### A masked pattern was here ####
+5	1
+60	1
+100	1
+2000	20
+PREHOOK: query: TRUNCATE TABLE ctas_part
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ctas_part@modkey=1
+PREHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: query: TRUNCATE TABLE ctas_part
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=20
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), ceil((UDFToDouble(key) / 100.0D)) (type: bigint)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: bigint), _col0 (type: string)
+                      null sort order: aa
+                      sort order: ++
+                      Map-reduce partition columns: _col1 (type: bigint)
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: UDFToInteger(KEY._col0) (type: int), KEY._col1 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.ctas_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            modkey 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_part
+
+PREHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=20).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part
+PREHOOK: Input: default@ctas_part@modkey=1
+PREHOOK: Input: default@ctas_part@modkey=20
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part
+POSTHOOK: Input: default@ctas_part@modkey=1
+POSTHOOK: Input: default@ctas_part@modkey=20
+#### A masked pattern was here ####
+100	1
+5	1
+60	1
+2000	20
+PREHOOK: query: TRUNCATE TABLE ctas_part
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ctas_part@modkey=1
+PREHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: query: TRUNCATE TABLE ctas_part
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=20
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY cast(key as int)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY cast(key as int)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), ceil((UDFToDouble(key) / 100.0D)) (type: bigint), UDFToInteger(key) (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: bigint)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: bigint)
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: string)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: UDFToInteger(VALUE._col0) (type: int), KEY._col1 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.ctas_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            modkey 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_part
+
+PREHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY cast(key as int)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY cast(key as int)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=20).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part
+PREHOOK: Input: default@ctas_part@modkey=1
+PREHOOK: Input: default@ctas_part@modkey=20
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part
+POSTHOOK: Input: default@ctas_part@modkey=1
+POSTHOOK: Input: default@ctas_part@modkey=20
+#### A masked pattern was here ####
+60	1
+100	1
+5	1
+2000	20
+PREHOOK: query: TRUNCATE TABLE ctas_part
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ctas_part@modkey=1
+PREHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: query: TRUNCATE TABLE ctas_part
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=20
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY key LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY key LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Top N Key Operator
+                    sort order: +
+                    keys: key (type: string)
+                    null sort order: z
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    top n: 10
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col1
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col1 (type: string), _col1 (type: string)
+                    null sort order: az
+                    sort order: ++
+                    Map-reduce partition columns: _col1 (type: string)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: string)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: UDFToInteger(VALUE._col0) (type: int), KEY._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.ctas_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            modkey 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_part
+
+PREHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY key LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY key LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=100).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=2000).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=5).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=60).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part
+PREHOOK: Input: default@ctas_part@modkey=1
+PREHOOK: Input: default@ctas_part@modkey=100
+PREHOOK: Input: default@ctas_part@modkey=20
+PREHOOK: Input: default@ctas_part@modkey=2000
+PREHOOK: Input: default@ctas_part@modkey=5
+PREHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part
+POSTHOOK: Input: default@ctas_part@modkey=1
+POSTHOOK: Input: default@ctas_part@modkey=100
+POSTHOOK: Input: default@ctas_part@modkey=20
+POSTHOOK: Input: default@ctas_part@modkey=2000
+POSTHOOK: Input: default@ctas_part@modkey=5
+POSTHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+100	100
+2000	2000
+5	5
+60	60
+PREHOOK: query: TRUNCATE TABLE ctas_part
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ctas_part@modkey=1
+PREHOOK: Output: default@ctas_part@modkey=100
+PREHOOK: Output: default@ctas_part@modkey=20
+PREHOOK: Output: default@ctas_part@modkey=2000
+PREHOOK: Output: default@ctas_part@modkey=5
+PREHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: query: TRUNCATE TABLE ctas_part
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY cast(key as int) LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY cast(key as int) LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Top N Key Operator
+                    sort order: +
+                    keys: UDFToInteger(key) (type: int)
+                    null sort order: z
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    top n: 10
+                    Select Operator
+                      expressions: key (type: string), UDFToInteger(key) (type: int)
+                      outputColumnNames: _col0, _col2
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col2 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col1 (type: string)
+                    null sort order: a
+                    sort order: +
+                    Map-reduce partition columns: _col1 (type: string)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: string)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: UDFToInteger(VALUE._col0) (type: int), KEY._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.ctas_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            modkey 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_part
+
+PREHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY cast(key as int) LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY cast(key as int) LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=100).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=2000).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=5).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=60).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part
+PREHOOK: Input: default@ctas_part@modkey=1
+PREHOOK: Input: default@ctas_part@modkey=100
+PREHOOK: Input: default@ctas_part@modkey=20
+PREHOOK: Input: default@ctas_part@modkey=2000
+PREHOOK: Input: default@ctas_part@modkey=5
+PREHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part
+POSTHOOK: Input: default@ctas_part@modkey=1
+POSTHOOK: Input: default@ctas_part@modkey=100
+POSTHOOK: Input: default@ctas_part@modkey=20
+POSTHOOK: Input: default@ctas_part@modkey=2000
+POSTHOOK: Input: default@ctas_part@modkey=5
+POSTHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+100	100
+2000	2000
+5	5
+60	60
+PREHOOK: query: TRUNCATE TABLE ctas_part
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ctas_part@modkey=1
+PREHOOK: Output: default@ctas_part@modkey=100
+PREHOOK: Output: default@ctas_part@modkey=20
+PREHOOK: Output: default@ctas_part@modkey=2000
+PREHOOK: Output: default@ctas_part@modkey=5
+PREHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: query: TRUNCATE TABLE ctas_part
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: _col1
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: string), _col1 (type: string)
+                      null sort order: aa
+                      sort order: ++
+                      Map-reduce partition columns: _col1 (type: string)
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: UDFToInteger(KEY._col0) (type: int), KEY._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.ctas_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            modkey 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_part
+
+PREHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=100).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=2000).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=5).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=60).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part
+PREHOOK: Input: default@ctas_part@modkey=1
+PREHOOK: Input: default@ctas_part@modkey=100
+PREHOOK: Input: default@ctas_part@modkey=20
+PREHOOK: Input: default@ctas_part@modkey=2000
+PREHOOK: Input: default@ctas_part@modkey=5
+PREHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part
+POSTHOOK: Input: default@ctas_part@modkey=1
+POSTHOOK: Input: default@ctas_part@modkey=100
+POSTHOOK: Input: default@ctas_part@modkey=20
+POSTHOOK: Input: default@ctas_part@modkey=2000
+POSTHOOK: Input: default@ctas_part@modkey=5
+POSTHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+100	100
+2000	2000
+5	5
+60	60
+PREHOOK: query: TRUNCATE TABLE ctas_part
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ctas_part@modkey=1
+PREHOOK: Output: default@ctas_part@modkey=100
+PREHOOK: Output: default@ctas_part@modkey=20
+PREHOOK: Output: default@ctas_part@modkey=2000
+PREHOOK: Output: default@ctas_part@modkey=5
+PREHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: query: TRUNCATE TABLE ctas_part
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY cast(key as int)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY cast(key as int)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), UDFToInteger(key) (type: int)
+                    outputColumnNames: _col0, _col2
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: string)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: UDFToInteger(VALUE._col0) (type: int), KEY._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.ctas_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            modkey 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_part
+
+PREHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY cast(key as int)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY cast(key as int)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=100).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=2000).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=5).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=60).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part
+PREHOOK: Input: default@ctas_part@modkey=1
+PREHOOK: Input: default@ctas_part@modkey=100
+PREHOOK: Input: default@ctas_part@modkey=20
+PREHOOK: Input: default@ctas_part@modkey=2000
+PREHOOK: Input: default@ctas_part@modkey=5
+PREHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part
+POSTHOOK: Input: default@ctas_part@modkey=1
+POSTHOOK: Input: default@ctas_part@modkey=100
+POSTHOOK: Input: default@ctas_part@modkey=20
+POSTHOOK: Input: default@ctas_part@modkey=2000
+POSTHOOK: Input: default@ctas_part@modkey=5
+POSTHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+100	100
+2000	2000
+5	5
+60	60
+PREHOOK: query: TRUNCATE TABLE ctas_part
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ctas_part@modkey=1
+PREHOOK: Output: default@ctas_part@modkey=100
+PREHOOK: Output: default@ctas_part@modkey=20
+PREHOOK: Output: default@ctas_part@modkey=2000
+PREHOOK: Output: default@ctas_part@modkey=5
+PREHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: query: TRUNCATE TABLE ctas_part
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Top N Key Operator
+                    sort order: +
+                    keys: key (type: string)
+                    null sort order: z
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    top n: 10
+                    Select Operator
+                      expressions: key (type: string), ceil((UDFToDouble(key) / 100.0D)) (type: bigint)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col1 (type: bigint), _col0 (type: string)
+                    null sort order: az
+                    sort order: ++
+                    Map-reduce partition columns: _col1 (type: bigint)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: string)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: UDFToInteger(VALUE._col0) (type: int), KEY._col1 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.ctas_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            modkey 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_part
+
+PREHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=20).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part
+PREHOOK: Input: default@ctas_part@modkey=1
+PREHOOK: Input: default@ctas_part@modkey=100
+PREHOOK: Input: default@ctas_part@modkey=20
+PREHOOK: Input: default@ctas_part@modkey=2000
+PREHOOK: Input: default@ctas_part@modkey=5
+PREHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part
+POSTHOOK: Input: default@ctas_part@modkey=1
+POSTHOOK: Input: default@ctas_part@modkey=100
+POSTHOOK: Input: default@ctas_part@modkey=20
+POSTHOOK: Input: default@ctas_part@modkey=2000
+POSTHOOK: Input: default@ctas_part@modkey=5
+POSTHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+100	1
+5	1
+60	1
+2000	20
+PREHOOK: query: TRUNCATE TABLE ctas_part
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ctas_part@modkey=1
+PREHOOK: Output: default@ctas_part@modkey=100
+PREHOOK: Output: default@ctas_part@modkey=20
+PREHOOK: Output: default@ctas_part@modkey=2000
+PREHOOK: Output: default@ctas_part@modkey=5
+PREHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: query: TRUNCATE TABLE ctas_part
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY cast(key as int) LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY cast(key as int) LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Top N Key Operator
+                    sort order: +
+                    keys: UDFToInteger(key) (type: int)
+                    null sort order: z
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    top n: 10
+                    Select Operator
+                      expressions: key (type: string), ceil((UDFToDouble(key) / 100.0D)) (type: bigint), UDFToInteger(key) (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col2 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string), _col1 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col1 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col1 (type: bigint)
+                    null sort order: a
+                    sort order: +
+                    Map-reduce partition columns: _col1 (type: bigint)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: string)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: UDFToInteger(VALUE._col0) (type: int), KEY._col1 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.ctas_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            modkey 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_part
+
+PREHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY cast(key as int) LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY cast(key as int) LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=20).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part
+PREHOOK: Input: default@ctas_part@modkey=1
+PREHOOK: Input: default@ctas_part@modkey=100
+PREHOOK: Input: default@ctas_part@modkey=20
+PREHOOK: Input: default@ctas_part@modkey=2000
+PREHOOK: Input: default@ctas_part@modkey=5
+PREHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part
+POSTHOOK: Input: default@ctas_part@modkey=1
+POSTHOOK: Input: default@ctas_part@modkey=100
+POSTHOOK: Input: default@ctas_part@modkey=20
+POSTHOOK: Input: default@ctas_part@modkey=2000
+POSTHOOK: Input: default@ctas_part@modkey=5
+POSTHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+5	1
+60	1
+100	1
+2000	20
+PREHOOK: query: TRUNCATE TABLE ctas_part
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ctas_part@modkey=1
+PREHOOK: Output: default@ctas_part@modkey=100
+PREHOOK: Output: default@ctas_part@modkey=20
+PREHOOK: Output: default@ctas_part@modkey=2000
+PREHOOK: Output: default@ctas_part@modkey=5
+PREHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: query: TRUNCATE TABLE ctas_part
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), ceil((UDFToDouble(key) / 100.0D)) (type: bigint)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: bigint), _col0 (type: string)
+                      null sort order: aa
+                      sort order: ++
+                      Map-reduce partition columns: _col1 (type: bigint)
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: UDFToInteger(KEY._col0) (type: int), KEY._col1 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.ctas_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            modkey 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_part
+
+PREHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=20).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part
+PREHOOK: Input: default@ctas_part@modkey=1
+PREHOOK: Input: default@ctas_part@modkey=100
+PREHOOK: Input: default@ctas_part@modkey=20
+PREHOOK: Input: default@ctas_part@modkey=2000
+PREHOOK: Input: default@ctas_part@modkey=5
+PREHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part
+POSTHOOK: Input: default@ctas_part@modkey=1
+POSTHOOK: Input: default@ctas_part@modkey=100
+POSTHOOK: Input: default@ctas_part@modkey=20
+POSTHOOK: Input: default@ctas_part@modkey=2000
+POSTHOOK: Input: default@ctas_part@modkey=5
+POSTHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+100	1
+5	1
+60	1
+2000	20
+PREHOOK: query: TRUNCATE TABLE ctas_part
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ctas_part@modkey=1
+PREHOOK: Output: default@ctas_part@modkey=100
+PREHOOK: Output: default@ctas_part@modkey=20
+PREHOOK: Output: default@ctas_part@modkey=2000
+PREHOOK: Output: default@ctas_part@modkey=5
+PREHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: query: TRUNCATE TABLE ctas_part
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY cast(key as int)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY cast(key as int)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), ceil((UDFToDouble(key) / 100.0D)) (type: bigint), UDFToInteger(key) (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: bigint)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: bigint)
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: UDFToInteger(VALUE._col0) (type: int), KEY._col1 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.ctas_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            modkey 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_part
+
+PREHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY cast(key as int)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY cast(key as int)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=20).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part
+PREHOOK: Input: default@ctas_part@modkey=1
+PREHOOK: Input: default@ctas_part@modkey=100
+PREHOOK: Input: default@ctas_part@modkey=20
+PREHOOK: Input: default@ctas_part@modkey=2000
+PREHOOK: Input: default@ctas_part@modkey=5
+PREHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part
+POSTHOOK: Input: default@ctas_part@modkey=1
+POSTHOOK: Input: default@ctas_part@modkey=100
+POSTHOOK: Input: default@ctas_part@modkey=20
+POSTHOOK: Input: default@ctas_part@modkey=2000
+POSTHOOK: Input: default@ctas_part@modkey=5
+POSTHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+60	1
+100	1
+5	1
+2000	20
+PREHOOK: query: TRUNCATE TABLE ctas_part
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ctas_part@modkey=1
+PREHOOK: Output: default@ctas_part@modkey=100
+PREHOOK: Output: default@ctas_part@modkey=20
+PREHOOK: Output: default@ctas_part@modkey=2000
+PREHOOK: Output: default@ctas_part@modkey=5
+PREHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: query: TRUNCATE TABLE ctas_part
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY key LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY key LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Top N Key Operator
+                    sort order: +
+                    keys: key (type: string)
+                    null sort order: z
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    top n: 10
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col1
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col1 (type: string), _col1 (type: string)
+                    null sort order: az
+                    sort order: ++
+                    Map-reduce partition columns: _col1 (type: string)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: string)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: UDFToInteger(VALUE._col0) (type: int), KEY._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.ctas_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            modkey 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_part
+
+PREHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY key LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY key LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=100).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=2000).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=5).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=60).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part
+PREHOOK: Input: default@ctas_part@modkey=1
+PREHOOK: Input: default@ctas_part@modkey=100
+PREHOOK: Input: default@ctas_part@modkey=20
+PREHOOK: Input: default@ctas_part@modkey=2000
+PREHOOK: Input: default@ctas_part@modkey=5
+PREHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part
+POSTHOOK: Input: default@ctas_part@modkey=1
+POSTHOOK: Input: default@ctas_part@modkey=100
+POSTHOOK: Input: default@ctas_part@modkey=20
+POSTHOOK: Input: default@ctas_part@modkey=2000
+POSTHOOK: Input: default@ctas_part@modkey=5
+POSTHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+100	100
+2000	2000
+5	5
+60	60
+PREHOOK: query: TRUNCATE TABLE ctas_part
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ctas_part@modkey=1
+PREHOOK: Output: default@ctas_part@modkey=100
+PREHOOK: Output: default@ctas_part@modkey=20
+PREHOOK: Output: default@ctas_part@modkey=2000
+PREHOOK: Output: default@ctas_part@modkey=5
+PREHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: query: TRUNCATE TABLE ctas_part
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY cast(key as int) LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY cast(key as int) LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Top N Key Operator
+                    sort order: +
+                    keys: UDFToInteger(key) (type: int)
+                    null sort order: z
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    top n: 10
+                    Select Operator
+                      expressions: key (type: string), UDFToInteger(key) (type: int)
+                      outputColumnNames: _col0, _col2
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col2 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col1 (type: string)
+                    null sort order: a
+                    sort order: +
+                    Map-reduce partition columns: _col1 (type: string)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: string)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: UDFToInteger(VALUE._col0) (type: int), KEY._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.ctas_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            modkey 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_part
+
+PREHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY cast(key as int) LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY cast(key as int) LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=100).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=2000).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=5).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=60).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part
+PREHOOK: Input: default@ctas_part@modkey=1
+PREHOOK: Input: default@ctas_part@modkey=100
+PREHOOK: Input: default@ctas_part@modkey=20
+PREHOOK: Input: default@ctas_part@modkey=2000
+PREHOOK: Input: default@ctas_part@modkey=5
+PREHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part
+POSTHOOK: Input: default@ctas_part@modkey=1
+POSTHOOK: Input: default@ctas_part@modkey=100
+POSTHOOK: Input: default@ctas_part@modkey=20
+POSTHOOK: Input: default@ctas_part@modkey=2000
+POSTHOOK: Input: default@ctas_part@modkey=5
+POSTHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+100	100
+2000	2000
+5	5
+60	60
+PREHOOK: query: TRUNCATE TABLE ctas_part
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ctas_part@modkey=1
+PREHOOK: Output: default@ctas_part@modkey=100
+PREHOOK: Output: default@ctas_part@modkey=20
+PREHOOK: Output: default@ctas_part@modkey=2000
+PREHOOK: Output: default@ctas_part@modkey=5
+PREHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: query: TRUNCATE TABLE ctas_part
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: _col1
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: string), _col1 (type: string)
+                      null sort order: aa
+                      sort order: ++
+                      Map-reduce partition columns: _col1 (type: string)
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: UDFToInteger(KEY._col0) (type: int), KEY._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.ctas_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            modkey 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_part
+
+PREHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=100).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=2000).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=5).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=60).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part
+PREHOOK: Input: default@ctas_part@modkey=1
+PREHOOK: Input: default@ctas_part@modkey=100
+PREHOOK: Input: default@ctas_part@modkey=20
+PREHOOK: Input: default@ctas_part@modkey=2000
+PREHOOK: Input: default@ctas_part@modkey=5
+PREHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part
+POSTHOOK: Input: default@ctas_part@modkey=1
+POSTHOOK: Input: default@ctas_part@modkey=100
+POSTHOOK: Input: default@ctas_part@modkey=20
+POSTHOOK: Input: default@ctas_part@modkey=2000
+POSTHOOK: Input: default@ctas_part@modkey=5
+POSTHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+100	100
+2000	2000
+5	5
+60	60
+PREHOOK: query: TRUNCATE TABLE ctas_part
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ctas_part@modkey=1
+PREHOOK: Output: default@ctas_part@modkey=100
+PREHOOK: Output: default@ctas_part@modkey=20
+PREHOOK: Output: default@ctas_part@modkey=2000
+PREHOOK: Output: default@ctas_part@modkey=5
+PREHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: query: TRUNCATE TABLE ctas_part
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY cast(key as int)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY cast(key as int)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), UDFToInteger(key) (type: int)
+                    outputColumnNames: _col0, _col2
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: UDFToInteger(VALUE._col0) (type: int), KEY._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.ctas_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            modkey 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_part
+
+PREHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY cast(key as int)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, key FROM src ORDER BY cast(key as int)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=100).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=2000).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=5).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=60).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part
+PREHOOK: Input: default@ctas_part@modkey=1
+PREHOOK: Input: default@ctas_part@modkey=100
+PREHOOK: Input: default@ctas_part@modkey=20
+PREHOOK: Input: default@ctas_part@modkey=2000
+PREHOOK: Input: default@ctas_part@modkey=5
+PREHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part
+POSTHOOK: Input: default@ctas_part@modkey=1
+POSTHOOK: Input: default@ctas_part@modkey=100
+POSTHOOK: Input: default@ctas_part@modkey=20
+POSTHOOK: Input: default@ctas_part@modkey=2000
+POSTHOOK: Input: default@ctas_part@modkey=5
+POSTHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+100	100
+2000	2000
+5	5
+60	60
+PREHOOK: query: DROP TABLE src
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src
+POSTHOOK: query: DROP TABLE src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src
+PREHOOK: query: CREATE TABLE src (key string, dummy double) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src
+POSTHOOK: query: CREATE TABLE src (key string, dummy double) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src
+PREHOOK: query: insert into src values ('2000', 0.1), ('60', 0.2), ('100', 0.3), ('5', 0.4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@src
+POSTHOOK: query: insert into src values ('2000', 0.1), ('60', 0.2), ('100', 0.3), ('5', 0.4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@src
+POSTHOOK: Lineage: src.dummy SCRIPT []
+POSTHOOK: Lineage: src.key SCRIPT []
+PREHOOK: query: TRUNCATE TABLE ctas_part
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ctas_part@modkey=1
+PREHOOK: Output: default@ctas_part@modkey=100
+PREHOOK: Output: default@ctas_part@modkey=20
+PREHOOK: Output: default@ctas_part@modkey=2000
+PREHOOK: Output: default@ctas_part@modkey=5
+PREHOOK: Output: default@ctas_part@modkey=60
+POSTHOOK: query: TRUNCATE TABLE ctas_part
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=100
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Output: default@ctas_part@modkey=2000
+POSTHOOK: Output: default@ctas_part@modkey=5
+POSTHOOK: Output: default@ctas_part@modkey=60
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string), ceil((UDFToDouble(key) / 100.0D)) (type: bigint)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: bigint), _col0 (type: string)
+                      null sort order: aa
+                      sort order: ++
+                      Map-reduce partition columns: _col1 (type: bigint)
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: UDFToInteger(KEY._col0) (type: int), KEY._col1 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.ctas_part
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            modkey 
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_part
+
+PREHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ctas_part PARTITION (modkey)
+SELECT key, ceil(key / 100) FROM src ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_part
+POSTHOOK: Output: default@ctas_part@modkey=1
+POSTHOOK: Output: default@ctas_part@modkey=20
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: ctas_part PARTITION(modkey=20).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_part
+PREHOOK: Input: default@ctas_part@modkey=1
+PREHOOK: Input: default@ctas_part@modkey=100
+PREHOOK: Input: default@ctas_part@modkey=20
+PREHOOK: Input: default@ctas_part@modkey=2000
+PREHOOK: Input: default@ctas_part@modkey=5
+PREHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_part
+POSTHOOK: Input: default@ctas_part@modkey=1
+POSTHOOK: Input: default@ctas_part@modkey=100
+POSTHOOK: Input: default@ctas_part@modkey=20
+POSTHOOK: Input: default@ctas_part@modkey=2000
+POSTHOOK: Input: default@ctas_part@modkey=5
+POSTHOOK: Input: default@ctas_part@modkey=60
+#### A masked pattern was here ####
+100	1
+5	1
+60	1
+2000	20

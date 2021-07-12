@@ -214,12 +214,27 @@ public class TezCompiler extends TaskCompiler {
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
       // Dynamic sort partition adds an extra RS therefore need to de-dup
       new ReduceSinkDeDuplication().transform(procCtx.parseContext);
-      // there is an issue with dedup logic wherein SELECT is created with wrong columns
-      // NonBlockingOpDeDupProc fixes that
-      // (kind of hackish, the issue in de-dup should be fixed but it needs more investigation)
-      new NonBlockingOpDeDupProc().transform(procCtx.parseContext);
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Reduce Sink de-duplication");
     }
+
+    perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    /**
+     * There are two reasons to run {@link NonBlockingOpDeDupProc} here:
+     * 1. There is an issue with {@link ReduceSinkDeDuplication} logic wherein SELECT is created with wrong columns
+     *     NonBlockingOpDeDupProc fixes that (kind of hackish, the issue in de-dup should be fixed but it needs
+     *     more investigation
+     * 2. {@link NonBlockingOpDeDupProc} may skip optimizing out some Select operators until
+     *    {@link SortedDynPartitionOptimizer} runs. Here, since SortedDynPartitionOptimizer already ran,
+     *    we should let NonBlockingOpDeDupProc optimize out all applicable Select operators
+     */
+    new NonBlockingOpDeDupProc().transform(procCtx.parseContext);
+    perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "SEL-SEL and FIL-FIL de-duplication");
+
+    perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    // run stats a second time as SortedDynPartitionOptimizer and NonBlockingOpDeDupProc might have
+    // changed the plan. That would change the stats.
+    runStatsAnnotation(procCtx);
+    perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Setup stats in the operator plan");
 
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
     // run the optimizations that use stats for optimization

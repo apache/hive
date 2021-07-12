@@ -57,6 +57,27 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  */
 public class NonBlockingOpDeDupProc extends Transform {
 
+  private final boolean skipCastForInsert;
+
+  public NonBlockingOpDeDupProc() {
+    this(false);
+  }
+
+  /**
+   * INSERT queries may create an extra select operator to cast source column
+   * types to target column types. {@link SortedDynPartitionOptimizer} needs
+   * to identify such select operators and move them to the same reducer as
+   * the file sink. So we do not want to merge such select operators to other
+   * select operators before that optimization occurs.
+   *
+   * @param skipCastForInsert if {@code true}, skips this optimization for select
+   *                       operators that has {@link SelectOperator#isCastForInsert()}
+   *                       true.
+   */
+  public NonBlockingOpDeDupProc(boolean skipCastForInsert) {
+    this.skipCastForInsert = skipCastForInsert;
+  }
+
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     // 1. We apply the transformation
@@ -92,6 +113,11 @@ public class NonBlockingOpDeDupProc extends Transform {
         Object... nodeOutputs) throws SemanticException {
       SelectOperator cSEL = (SelectOperator) nd;
       SelectOperator pSEL = (SelectOperator) stack.get(stack.size() - 2);
+
+      if (skipCastForInsert && cSEL.isCastForInsert()) {
+        return null;
+      }
+
       if (pSEL.getNumChild() > 1) {
         return null;  // possible if all children have same expressions, but not likely.
       }
