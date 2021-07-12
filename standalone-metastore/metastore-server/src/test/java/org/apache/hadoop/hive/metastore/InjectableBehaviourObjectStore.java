@@ -180,12 +180,12 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
 
   // ObjectStore methods to be overridden with injected behavior
   @Override
-  public Table getTable(String catName, String dbName, String tableName) throws MetaException {
+  public Table getTable(String catName, String dbName, String tableName) {
     return getTableModifier.apply(super.getTable(catName, dbName, tableName));
   }
 
   @Override
-  public Table getTable(String catName, String dbName, String tableName, String writeIdList) throws MetaException {
+  public Table getTable(String catName, String dbName, String tableName, String writeIdList) {
     return getTableModifier.apply(super.getTable(catName, dbName, tableName, writeIdList));
   }
 
@@ -196,8 +196,7 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
   }
 
   @Override
-  public List<String> listPartitionNames(String catName, String dbName, String tableName, short max)
-          throws MetaException {
+  public List<String> listPartitionNames(String catName, String dbName, String tableName, short max) {
     return listPartitionNamesModifier.apply(super.listPartitionNames(catName, dbName, tableName, max));
   }
 
@@ -208,13 +207,13 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
 
   @Override
   public Table alterTable(String catName, String dbname, String name, Table newTable, String queryValidWriteIds)
-          throws InvalidObjectException, MetaException {
+          throws InvalidObjectException {
     if (alterTableModifier != null) {
       CallerArguments args = new CallerArguments(dbname);
       args.tblName = name;
       Boolean success = alterTableModifier.apply(args);
       if ((success != null) && !success) {
-        throw new MetaException("InjectableBehaviourObjectStore: Invalid alterTable operation on Catalog : " + catName +
+        throw new InvalidObjectException("InjectableBehaviourObjectStore: Invalid alterTable operation on Catalog : " + catName +
                 " DB: " + dbname + " table: " + name);
       }
     }
@@ -234,13 +233,13 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
   }
 
   @Override
-  public void createTable(Table tbl) throws InvalidObjectException, MetaException {
+  public void createTable(Table tbl) throws InvalidObjectException {
     if (callerVerifier != null) {
       CallerArguments args = new CallerArguments(tbl.getDbName());
       args.tblName = tbl.getTableName();
       Boolean success = callerVerifier.apply(args);
       if ((success != null) && !success) {
-        throw new MetaException("InjectableBehaviourObjectStore: Invalid Create Table operation on DB: "
+        throw new InvalidObjectException("InjectableBehaviourObjectStore: Invalid Create Table operation on DB: "
                 + args.dbName + " table: " + args.tblName);
       }
     }
@@ -293,7 +292,7 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
 
   @Override
   public boolean alterDatabase(String catalogName, String dbname, Database db)
-          throws NoSuchObjectException, MetaException {
+          throws NoSuchObjectException {
     if (callerVerifier != null) {
       CallerArguments args = new CallerArguments(dbname);
       callerVerifier.apply(args);

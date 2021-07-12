@@ -46,6 +46,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
@@ -641,7 +642,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void createCatalog(Catalog cat) throws MetaException {
+  public void createCatalog(Catalog cat) {
     LOG.debug("Creating catalog {}", cat);
     boolean committed = false;
     MCatalog mCat = catToMCat(cat);
@@ -714,7 +715,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void dropCatalog(String catalogName) throws NoSuchObjectException, MetaException {
+  public void dropCatalog(String catalogName) throws NoSuchObjectException {
     LOG.debug("Dropping catalog {}", catalogName);
     boolean committed = false;
     try {
@@ -772,7 +773,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void createDatabase(Database db) throws InvalidObjectException, MetaException {
+  public void createDatabase(Database db) throws InvalidObjectException {
     boolean commited = false;
     MDatabase mdb = new MDatabase();
     assert db.getCatalogName() != null;
@@ -908,7 +909,7 @@ public class ObjectStore implements RawStore, Configurable {
    */
   @Override
   public boolean alterDatabase(String catName, String dbName, Database db)
-    throws MetaException, NoSuchObjectException {
+    throws NoSuchObjectException {
 
     MDatabase mdb = null;
     boolean committed = false;
@@ -942,7 +943,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public boolean dropDatabase(String catName, String dbname)
-      throws NoSuchObjectException, MetaException {
+      throws NoSuchObjectException {
     boolean success = false;
     LOG.info("Dropping database {}.{} along with all tables", catName, dbname);
     dbname = normalizeIdentifier(dbname);
@@ -960,7 +961,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.deletePersistent(db);
       success = commitTransaction();
     } catch (Exception e) {
-      throw new MetaException(e.getMessage() + " " + org.apache.hadoop.hive.metastore.utils.StringUtils.stringifyException(e));
+      throw new RuntimeException(e);
     } finally {
       rollbackAndCleanup(success, null);
     }
@@ -968,7 +969,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> getDatabases(String catName, String pattern) throws MetaException {
+  public List<String> getDatabases(String catName, String pattern) {
     if (pattern == null || pattern.equals("*")) {
       return getAllDatabases(catName);
     }
@@ -997,7 +998,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> getAllDatabases(String catName) throws MetaException {
+  public List<String> getAllDatabases(String catName) {
     boolean commited = false;
     List<String> databases = null;
 
@@ -1020,7 +1021,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void createDataConnector(DataConnector connector) throws InvalidObjectException, MetaException {
+  public void createDataConnector(DataConnector connector) throws InvalidObjectException {
     boolean commited = false;
     MDataConnector mDataConnector = new MDataConnector();
     mDataConnector.setName(connector.getName().toLowerCase());
@@ -1096,7 +1097,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> getAllDataConnectorNames() throws MetaException {
+  public List<String> getAllDataConnectorNames() {
     boolean commited = false;
     List<String> connectors = null;
     Query query = null;
@@ -1122,7 +1123,7 @@ public class ObjectStore implements RawStore, Configurable {
    */
   @Override
   public boolean alterDataConnector(String dcName, DataConnector connector)
-      throws MetaException, NoSuchObjectException {
+      throws NoSuchObjectException {
 
     MDataConnector mdc = null;
     boolean committed = false;
@@ -1151,9 +1152,9 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public boolean dropDataConnector(String dcname)
-      throws NoSuchObjectException, MetaException {
+      throws NoSuchObjectException {
     boolean success = false;
-    LOG.info("Dropping dataconnector {} ", dcname);
+    LOG.info("Dropping dataconnector {}", dcname);
     dcname = normalizeIdentifier(dcname);
     try {
       openTransaction();
@@ -1164,7 +1165,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.deletePersistent(mdb);
       success = commitTransaction();
     } catch (Exception e) {
-      throw new MetaException(e.getMessage() + " " + org.apache.hadoop.hive.metastore.utils.StringUtils.stringifyException(e));
+      throw new RuntimeException(e);
     } finally {
       rollbackAndCleanup(success, null);
     }
@@ -1345,7 +1346,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void createTable(Table tbl) throws InvalidObjectException, MetaException {
+  public void createTable(Table tbl) throws InvalidObjectException {
     boolean commited = false;
     MTable mtbl = null;
 
@@ -1416,7 +1417,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public boolean dropTable(String catName, String dbName, String tableName)
-      throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+      throws NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean materializedView = false;
     boolean success = false;
     try {
@@ -1583,15 +1584,12 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public Table
-  getTable(String catName, String dbName, String tableName)
-      throws MetaException {
+  public Table getTable(String catName, String dbName, String tableName) {
     return getTable(catName, dbName, tableName, null);
   }
 
   @Override
-  public Table getTable(String catName, String dbName, String tableName, String writeIdList)
-      throws MetaException {
+  public Table getTable(String catName, String dbName, String tableName, String writeIdList) {
     boolean commited = false;
     Table tbl = null;
     try {
@@ -1806,7 +1804,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<Table> getAllMaterializedViewObjectsForRewriting(String catName) throws MetaException {
+  public List<Table> getAllMaterializedViewObjectsForRewriting(String catName) {
     List<Table> allMaterializedViews = new ArrayList<>();
     boolean commited = false;
     Query query = null;
@@ -1834,7 +1832,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<String> getMaterializedViewsForRewriting(String catName, String dbName)
-      throws MetaException, NoSuchObjectException {
+      throws NoSuchObjectException {
     final String db_name = normalizeIdentifier(dbName);
     catName = normalizeIdentifier(catName);
     boolean commited = false;
@@ -1859,17 +1857,17 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public int getDatabaseCount() throws MetaException {
+  public int getDatabaseCount() {
     return getObjectCount("name", MDatabase.class.getName());
   }
 
   @Override
-  public int getPartitionCount() throws MetaException {
+  public int getPartitionCount() {
     return getObjectCount("partitionName", MPartition.class.getName());
   }
 
   @Override
-  public int getTableCount() throws MetaException {
+  public int getTableCount() {
     return getObjectCount("tableName", MTable.class.getName());
   }
 
@@ -1891,8 +1889,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<TableMeta> getTableMeta(String catName, String dbNames, String tableNames,
-                                      List<String> tableTypes) throws MetaException {
+  public List<TableMeta> getTableMeta(String catName, String dbNames, String tableNames, List<String> tableTypes) {
 
     boolean commited = false;
     Query query = null;
@@ -2193,7 +2190,7 @@ public class ObjectStore implements RawStore, Configurable {
         MetastoreConf.getBoolVar(getConf(), ConfVars.ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS));
   }
 
-  private Table convertToTable(MTable mtbl) throws MetaException {
+  private Table convertToTable(MTable mtbl) {
     if (mtbl == null) {
       return null;
     }
@@ -2231,8 +2228,8 @@ public class ObjectStore implements RawStore, Configurable {
     return t;
   }
 
-  private MTable convertToMTable(Table tbl) throws InvalidObjectException,
-      MetaException {
+  private MTable convertToMTable(Table tbl) throws InvalidObjectException
+       {
     // NOTE: we don't set writeId in this method. Write ID is only set after validating the
     //       existing write ID against the caller's valid list.
     if (tbl == null) {
@@ -2321,12 +2318,12 @@ public class ObjectStore implements RawStore, Configurable {
     return keys;
   }
 
-  private SerDeInfo convertToSerDeInfo(MSerDeInfo ms, boolean allowNull) throws MetaException {
+  private SerDeInfo convertToSerDeInfo(MSerDeInfo ms, boolean allowNull) {
     if (ms == null) {
       if (allowNull) {
         return null;
       }
-      throw new MetaException("Invalid SerDeInfo object");
+      throw new NullPointerException("Invalid SerDeInfo object");
     }
     SerDeInfo serde =
         new SerDeInfo(ms.getName(), ms.getSerializationLib(), convertMap(ms.getParameters()));
@@ -2345,10 +2342,9 @@ public class ObjectStore implements RawStore, Configurable {
     return serde;
   }
 
-  private MSerDeInfo convertToMSerDeInfo(SerDeInfo ms) throws MetaException {
-    if (ms == null) {
-      throw new MetaException("Invalid SerDeInfo object");
-    }
+  private MSerDeInfo convertToMSerDeInfo(SerDeInfo ms) {
+    Objects.requireNonNull(ms);
+
     return new MSerDeInfo(ms.getName(), ms.getSerializationLib(), ms.getParameters(),
         ms.getDescription(), ms.getSerializerClass(), ms.getDeserializerClass(),
         ms.getSerdeType() == null ? 0 : ms.getSerdeType().getValue());
@@ -2367,7 +2363,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private StorageDescriptor convertToStorageDescriptor(
-      MStorageDescriptor msd, boolean noFS, boolean isAcidTable) throws MetaException {
+      MStorageDescriptor msd, boolean noFS, boolean isAcidTable) {
     if (msd == null) {
       return null;
     }
@@ -2458,8 +2454,7 @@ public class ObjectStore implements RawStore, Configurable {
    * @param sd the storage descriptor to wrap in a db-backed object
    * @return the storage descriptor db-backed object
    */
-  private MStorageDescriptor convertToMStorageDescriptor(StorageDescriptor sd)
-      throws MetaException {
+  private MStorageDescriptor convertToMStorageDescriptor(StorageDescriptor sd) {
     if (sd == null) {
       return null;
     }
@@ -2476,7 +2471,7 @@ public class ObjectStore implements RawStore, Configurable {
    * @return the db-backed storage descriptor object
    */
   private MStorageDescriptor convertToMStorageDescriptor(StorageDescriptor sd,
-      MColumnDescriptor mcd) throws MetaException {
+      MColumnDescriptor mcd) {
     if (sd == null) {
       return null;
     }
@@ -3258,7 +3253,7 @@ public class ObjectStore implements RawStore, Configurable {
   // TODO:pc implement max
   @Override
   public List<String> listPartitionNames(String catName, String dbName, String tableName,
-      short max) throws MetaException {
+      short max) {
     List<String> pns = null;
     boolean success = false;
     try {
@@ -3775,7 +3770,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<String> listPartitionNamesPs(String catName, String dbName, String tableName,
-      List<String> part_vals, short max_parts) throws MetaException, NoSuchObjectException {
+      List<String> part_vals, short max_parts) throws NoSuchObjectException {
     List<String> partitionNames = new ArrayList<>();
     boolean success = false;
 
@@ -3786,10 +3781,10 @@ public class ObjectStore implements RawStore, Configurable {
           part_vals, max_parts, "partitionName");
       partitionNames.addAll(names);
       success = commitTransaction();
-    } catch (NoSuchObjectException | MetaException e) {
+    } catch (NoSuchObjectException e) {
       throw e;
     } catch (Exception e) {
-      throw new MetaException(e.getMessage());
+      throw new RuntimeException(e);
     } finally {
       rollbackAndCleanup(success, null);
     }
@@ -4834,7 +4829,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public Table alterTable(String catName, String dbname, String name, Table newTable,
-      String queryValidWriteIds) throws InvalidObjectException, MetaException {
+      String queryValidWriteIds) throws InvalidObjectException {
     boolean success = false;
     try {
       openTransaction();
@@ -4848,7 +4843,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       MTable oldt = getMTable(catName, dbname, name);
       if (oldt == null) {
-        throw new MetaException("table " + dbname + "." + name + " doesn't exist");
+        throw new InvalidObjectException("table " + dbname + "." + name + " doesn't exist");
       }
 
       // For now only alter name, owner, parameters, cols, bucketcols are allowed
@@ -4861,7 +4856,7 @@ public class ObjectStore implements RawStore, Configurable {
         String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(name, dbname), oldt.getParameters(),
                 newTable.getParameters(), newTable.getWriteId(), queryValidWriteIds, false);
         if (errorMsg != null) {
-          throw new MetaException(errorMsg);
+          throw new InvalidObjectException(errorMsg);
         }
       }
       oldt.setParameters(newt.getParameters());
@@ -4949,7 +4944,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void updateCreationMetadata(String catName, String dbname, String tablename, CreationMetadata cm)
-      throws MetaException {
+       {
     boolean success = false;
     try {
       openTransaction();
@@ -6012,7 +6007,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public boolean addRole(String roleName, String ownerName)
-      throws InvalidObjectException, MetaException, NoSuchObjectException {
+      throws InvalidObjectException, NoSuchObjectException {
     boolean success = false;
     boolean commited = false;
     try {
@@ -6037,7 +6032,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public boolean grantRole(Role role, String userName,
       PrincipalType principalType, String grantor, PrincipalType grantorType,
-      boolean grantOption) throws MetaException, NoSuchObjectException,InvalidObjectException {
+      boolean grantOption) throws NoSuchObjectException, InvalidObjectException {
     boolean success = false;
     boolean commited = false;
     try {
@@ -6132,8 +6127,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean removeRole(String roleName) throws MetaException,
-      NoSuchObjectException {
+  public boolean removeRole(String roleName) throws NoSuchObjectException {
     boolean success = false;
     try {
       openTransaction();
@@ -6194,7 +6188,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       success = commitTransaction();
     } catch (Exception e) {
-      throw new MetaException(e.getMessage());
+      throw new RuntimeException(e);
     } finally {
       rollbackAndCleanup(success, null);
     }
@@ -6382,7 +6376,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public PrincipalPrivilegeSet getUserPrivilegeSet(String userName,
-      List<String> groupNames) throws InvalidObjectException, MetaException {
+      List<String> groupNames) throws InvalidObjectException {
     boolean commited = false;
     PrincipalPrivilegeSet ret = new PrincipalPrivilegeSet();
     try {
@@ -6454,9 +6448,8 @@ public class ObjectStore implements RawStore, Configurable {
 
 
   @Override
-  public PrincipalPrivilegeSet getDBPrivilegeSet(String catName, String dbName,
-      String userName, List<String> groupNames) throws InvalidObjectException,
-      MetaException {
+  public PrincipalPrivilegeSet getDBPrivilegeSet(String catName, String dbName, String userName,
+      List<String> groupNames) throws InvalidObjectException {
     boolean commited = false;
     catName = normalizeIdentifier(catName);
     dbName = normalizeIdentifier(dbName);
@@ -6499,7 +6492,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public PrincipalPrivilegeSet getPartitionPrivilegeSet(String catName, String dbName,
       String tableName, String partition, String userName,
-      List<String> groupNames) throws InvalidObjectException, MetaException {
+      List<String> groupNames) throws InvalidObjectException {
     boolean commited = false;
     PrincipalPrivilegeSet ret = new PrincipalPrivilegeSet();
     tableName = normalizeIdentifier(tableName);
@@ -6543,7 +6536,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public PrincipalPrivilegeSet getTablePrivilegeSet(String catName, String dbName,
       String tableName, String userName, List<String> groupNames)
-      throws InvalidObjectException, MetaException {
+      throws InvalidObjectException {
     boolean commited = false;
     PrincipalPrivilegeSet ret = new PrincipalPrivilegeSet();
     tableName = normalizeIdentifier(tableName);
@@ -6587,8 +6580,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public PrincipalPrivilegeSet getColumnPrivilegeSet(String catName, String dbName,
       String tableName, String partitionName, String columnName,
-      String userName, List<String> groupNames) throws InvalidObjectException,
-      MetaException {
+      String userName, List<String> groupNames) throws InvalidObjectException {
     tableName = normalizeIdentifier(tableName);
     dbName = normalizeIdentifier(dbName);
     columnName = normalizeIdentifier(columnName);
@@ -8588,7 +8580,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public boolean isPartitionMarkedForEvent(String catName, String dbName, String tblName,
       Map<String, String> partName, PartitionEventType evtType) throws UnknownTableException,
-      MetaException, InvalidPartitionException, UnknownPartitionException {
+      InvalidPartitionException, UnknownPartitionException {
     boolean success = false;
     Query query = null;
 
@@ -8620,7 +8612,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public Table markPartitionForEvent(String catName, String dbName, String tblName, Map<String,String> partName,
-      PartitionEventType evtType) throws MetaException, UnknownTableException, InvalidPartitionException, UnknownPartitionException {
+      PartitionEventType evtType) throws UnknownTableException, InvalidPartitionException, UnknownPartitionException {
 
     LOG.debug("Begin executing markPartitionForEvent");
     boolean success = false;
@@ -10073,7 +10065,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
       String colName, String engine)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+      throws NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean ret = false;
     Query query = null;
     dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName,
@@ -12033,8 +12025,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void createISchema(ISchema schema) throws AlreadyExistsException, MetaException,
-      NoSuchObjectException {
+  public void createISchema(ISchema schema) throws AlreadyExistsException, NoSuchObjectException {
     boolean committed = false;
     MISchema mSchema = convertToMISchema(schema);
     try {
@@ -12054,7 +12045,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void alterISchema(ISchemaName schemaName, ISchema newSchema)
-      throws NoSuchObjectException, MetaException {
+      throws NoSuchObjectException {
     boolean committed = false;
     try {
       openTransaction();
@@ -12082,7 +12073,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public ISchema getISchema(ISchemaName schemaName) throws MetaException {
+  public ISchema getISchema(ISchemaName schemaName) {
     boolean committed = false;
     try {
       openTransaction();
@@ -12119,7 +12110,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void dropISchema(ISchemaName schemaName) throws NoSuchObjectException, MetaException {
+  public void dropISchema(ISchemaName schemaName) throws NoSuchObjectException {
     boolean committed = false;
     try {
       openTransaction();
@@ -12139,7 +12130,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void addSchemaVersion(SchemaVersion schemaVersion)
-      throws AlreadyExistsException, NoSuchObjectException, MetaException {
+      throws AlreadyExistsException, NoSuchObjectException {
     boolean committed = false;
     MSchemaVersion mSchemaVersion = convertToMSchemaVersion(schemaVersion);
     try {
@@ -12166,7 +12157,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void alterSchemaVersion(SchemaVersionDescriptor version, SchemaVersion newVersion)
-      throws NoSuchObjectException, MetaException {
+      throws NoSuchObjectException {
     boolean committed = false;
     try {
       openTransaction();
@@ -12192,7 +12183,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public SchemaVersion getSchemaVersion(SchemaVersionDescriptor version) throws MetaException {
+  public SchemaVersion getSchemaVersion(SchemaVersionDescriptor version) {
     boolean committed = false;
     try {
       openTransaction();
@@ -12237,7 +12228,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public SchemaVersion getLatestSchemaVersion(ISchemaName schemaName) throws MetaException {
+  public SchemaVersion getLatestSchemaVersion(ISchemaName schemaName) {
     boolean committed = false;
     Query query = null;
     try {
@@ -12269,7 +12260,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<SchemaVersion> getAllSchemaVersion(ISchemaName schemaName) throws MetaException {
+  public List<SchemaVersion> getAllSchemaVersion(ISchemaName schemaName) {
     boolean committed = false;
     Query query = null;
     try {
@@ -12304,10 +12295,10 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<SchemaVersion> getSchemaVersionsByColumns(String colName, String colNamespace,
-                                                        String type) throws MetaException {
+                                                        String type) {
     if (colName == null && colNamespace == null) {
       // Don't allow a query that returns everything, it will blow stuff up.
-      throw new MetaException("You must specify column name or column namespace, else your query " +
+      throw new RuntimeException("You must specify column name or column namespace, else your query " +
           "may be too large");
     }
     boolean committed = false;
@@ -12366,8 +12357,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void dropSchemaVersion(SchemaVersionDescriptor version) throws NoSuchObjectException,
-      MetaException {
+  public void dropSchemaVersion(SchemaVersionDescriptor version) throws NoSuchObjectException {
     boolean committed = false;
     try {
       openTransaction();
@@ -12388,7 +12378,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public SerDeInfo getSerDeInfo(String serDeName) throws NoSuchObjectException, MetaException {
+  public SerDeInfo getSerDeInfo(String serDeName) throws NoSuchObjectException {
     boolean committed = false;
     try {
       openTransaction();
@@ -12423,7 +12413,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void addSerde(SerDeInfo serde) throws AlreadyExistsException, MetaException {
+  public void addSerde(SerDeInfo serde) throws AlreadyExistsException {
     boolean committed = false;
     try {
       openTransaction();
@@ -12472,7 +12462,7 @@ public class ObjectStore implements RawStore, Configurable {
     return schema;
   }
 
-  private MSchemaVersion convertToMSchemaVersion(SchemaVersion schemaVersion) throws MetaException {
+  private MSchemaVersion convertToMSchemaVersion(SchemaVersion schemaVersion) {
     return new MSchemaVersion(getMISchema(
         normalizeIdentifier(schemaVersion.getSchema().getCatName()),
         normalizeIdentifier(schemaVersion.getSchema().getDbName()),
@@ -12488,7 +12478,7 @@ public class ObjectStore implements RawStore, Configurable {
         schemaVersion.isSetSerDe() ? convertToMSerDeInfo(schemaVersion.getSerDe()) : null);
   }
 
-  private SchemaVersion convertToSchemaVersion(MSchemaVersion mSchemaVersion) throws MetaException {
+  private SchemaVersion convertToSchemaVersion(MSchemaVersion mSchemaVersion) {
     if (mSchemaVersion == null) {
       return null;
     }
@@ -12559,7 +12549,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public void createResourcePlan(
       WMResourcePlan resourcePlan, String copyFromName, int defaultPoolSize)
-      throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException {
+      throws AlreadyExistsException, InvalidObjectException, NoSuchObjectException {
     boolean commited = false;
     String rpName = normalizeIdentifier(resourcePlan.getName());
     if (rpName.isEmpty()) {
@@ -12794,7 +12784,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<WMResourcePlan> getAllResourcePlans(String ns) throws MetaException {
+  public List<WMResourcePlan> getAllResourcePlans(String ns) {
     List<WMResourcePlan> resourcePlans = new ArrayList();
     boolean commited = false;
     Query query = null;
@@ -12819,7 +12809,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public WMFullResourcePlan alterResourcePlan(String name, String ns, WMNullableResourcePlan changes,
       boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
-    throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException, MetaException {
+    throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException {
     name = name == null ? null : normalizeIdentifier(name);
     if (isReplace && name == null) {
       throw new InvalidOperationException("Cannot replace without specifying the source plan");
@@ -12850,7 +12840,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   private WMFullResourcePlan handleSimpleAlter(String name, String ns, WMNullableResourcePlan changes,
       boolean canActivateDisabled, boolean canDeactivate)
-          throws InvalidOperationException, NoSuchObjectException, MetaException {
+          throws InvalidOperationException, NoSuchObjectException {
     MWMResourcePlan plan = name == null ? getActiveMWMResourcePlan(ns)
         : getMWMResourcePlan(name, ns, !changes.isSetStatus());
     boolean hasNsChange = changes.isSetNs() && !changes.getNs().equals(getNsOrDefault(plan.getNs()));
@@ -12907,7 +12897,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private WMFullResourcePlan handleAlterReplace(String name, String ns, WMNullableResourcePlan changes)
-          throws InvalidOperationException, NoSuchObjectException, MetaException {
+          throws InvalidOperationException, NoSuchObjectException {
     // Verify that field changes are consistent with what Hive does. Note: we could handle this.
     if (changes.isSetQueryParallelism() || changes.isSetDefaultPoolPath()) {
       throw new InvalidOperationException("Cannot change values during replace.");
@@ -12968,7 +12958,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException {
+  public WMFullResourcePlan getActiveResourcePlan(String ns) {
     // Note: fullFromMResroucePlan needs to be called inside the txn, otherwise we could have
     //       deduplicated this with getActiveMWMResourcePlan.
     boolean commited = false;
@@ -13175,7 +13165,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public WMValidateResourcePlanResponse validateResourcePlan(String name, String ns)
-      throws NoSuchObjectException, InvalidObjectException, MetaException {
+      throws NoSuchObjectException, InvalidObjectException {
     name = normalizeIdentifier(name);
     boolean committed = false;
     Query query = null;
@@ -13222,8 +13212,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void createWMTrigger(WMTrigger trigger)
-      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
-          MetaException {
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException {
     boolean commited = false;
     try {
       openTransaction();
@@ -13245,7 +13234,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void alterWMTrigger(WMTrigger trigger)
-      throws NoSuchObjectException, InvalidOperationException, MetaException {
+      throws NoSuchObjectException, InvalidOperationException {
     boolean commited = false;
     Query query = null;
     try {
@@ -13294,7 +13283,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
-      throws NoSuchObjectException, InvalidOperationException, MetaException  {
+      throws NoSuchObjectException, InvalidOperationException {
     resourcePlanName = normalizeIdentifier(resourcePlanName);
     triggerName = normalizeIdentifier(triggerName);
 
@@ -13316,7 +13305,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName, String ns)
-      throws NoSuchObjectException, MetaException {
+      throws NoSuchObjectException {
     List<WMTrigger> triggers = new ArrayList();
     boolean commited = false;
     Query query = null;
@@ -13358,7 +13347,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void createPool(WMPool pool) throws AlreadyExistsException, NoSuchObjectException,
-      InvalidOperationException, MetaException {
+      InvalidOperationException {
     boolean commited = false;
     try {
       openTransaction();
@@ -13386,7 +13375,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void alterPool(WMNullablePool pool, String poolPath) throws AlreadyExistsException,
-      NoSuchObjectException, InvalidOperationException, MetaException {
+      NoSuchObjectException, InvalidOperationException {
     boolean commited = false;
     try {
       openTransaction();
@@ -13489,7 +13478,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void dropWMPool(String resourcePlanName, String poolPath, String ns)
-      throws NoSuchObjectException, InvalidOperationException, MetaException {
+      throws NoSuchObjectException, InvalidOperationException {
     poolPath = normalizeIdentifier(poolPath);
     boolean commited = false;
     Query query = null;
@@ -13538,8 +13527,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void createOrUpdateWMMapping(WMMapping mapping, boolean update)
-      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
-      MetaException {
+      throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException {
     EntityType entityType = EntityType.valueOf(mapping.getEntityType().trim().toUpperCase());
     String entityName = normalizeIdentifier(mapping.getEntityName());
     boolean commited = false;
@@ -13574,7 +13562,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void dropWMMapping(WMMapping mapping)
-      throws NoSuchObjectException, InvalidOperationException, MetaException {
+      throws NoSuchObjectException, InvalidOperationException {
     String entityType = mapping.getEntityType().trim().toUpperCase();
     String entityName = normalizeIdentifier(mapping.getEntityName());
     boolean commited = false;
@@ -13673,7 +13661,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) throws MetaException {
+  public List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) {
     boolean committed = false;
     try {
       openTransaction();
@@ -13725,7 +13713,7 @@ public class ObjectStore implements RawStore, Configurable {
    * @Precondition   "tbl" should be retrieved from the TBLS table.
    */
   private boolean isCurrentStatsValidForTheQuery(MTable tbl, String queryValidWriteIdList,
-      boolean isCompleteStatsWriter) throws MetaException {
+      boolean isCompleteStatsWriter) {
     return isCurrentStatsValidForTheQuery(tbl.getParameters(), tbl.getWriteId(),
         queryValidWriteIdList, isCompleteStatsWriter);
   }
@@ -13760,7 +13748,7 @@ public class ObjectStore implements RawStore, Configurable {
   // TODO: move to somewhere else
   public static boolean isCurrentStatsValidForTheQuery(
       Map<String, String> statsParams, long statsWriteId, String queryValidWriteIdList,
-      boolean isCompleteStatsWriter) throws MetaException {
+      boolean isCompleteStatsWriter) {
 
     // Note: can be changed to debug/info to verify the calls.
     LOG.debug("isCurrentStatsValidForTheQuery with stats write ID {}; query {}; writer: {} params {}",

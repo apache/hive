@@ -4485,8 +4485,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     } else {
       catName = partSpecs.get(0).getCatName();
     }
-
-    return add_partitions_pspec_core(getMS(), catName, dbName, tableName, partSpecs, false);
+    try {
+      return add_partitions_pspec_core(getMS(), catName, dbName, tableName, partSpecs, false);
+    } catch (RuntimeException e) {
+      throw new MetaException(e.getMessage());
+    }
   }
 
   private int add_partitions_pspec_core(RawStore ms, String catName, String dbName,
@@ -10030,6 +10033,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       LOG.error("Caught exception doing schema version query", e);
       ex = e;
       throw e;
+    } catch (RuntimeException e) {
+      LOG.error("Caught exception doing schema version query", e);
+      ex = e;
+      throw new MetaException(e.getMessage());
     } finally {
       endFunction("get_schemas_by_cols", !schemaVersions.isEmpty(), ex);
     }
@@ -10138,7 +10145,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ms.openTransaction();
       ms.addSerde(serde);
       success = ms.commitTransaction();
-    } catch (MetaException|AlreadyExistsException e) {
+    } catch (AlreadyExistsException e) {
       LOG.error("Caught exception creating serde", e);
       ex = e;
       throw e;
