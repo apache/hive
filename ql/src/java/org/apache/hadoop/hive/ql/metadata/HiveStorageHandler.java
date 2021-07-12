@@ -312,4 +312,14 @@ public interface HiveStorageHandler extends Configurable {
   default boolean isAllowedAlterOperation(AlterTableType opType) {
     return DEFAULT_ALLOWED_ALTER_OPS.contains(opType);
   }
+
+  /**
+   * Check if the underlying storage handler implementation supports truncate operation
+   * for non native tables.
+   * @return true if the storage handler can support it
+   * @return
+   */
+  default boolean supportsTruncateOnNonNativeTables() {
+    return false;
+  }
 }
