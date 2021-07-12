@@ -89,6 +89,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageAuthorizationHandler;
 import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -117,6 +118,8 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -134,7 +137,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
  * DruidStorageHandler provides a HiveStorageHandler implementation for Druid.
  */
 @SuppressWarnings({ "rawtypes" }) public class DruidStorageHandler extends DefaultHiveMetaHook
-    implements HiveStorageHandler {
+    implements HiveStorageHandler, HiveStorageAuthorizationHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(DruidStorageHandler.class);
 
@@ -148,6 +151,11 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 
   private static final List<String> ALLOWED_ALTER_TYPES =
       ImmutableList.of("ADDPROPS", "DROPPROPS", "ADDCOLS");
+
+  /** Druid prefix to form the URI for authentication */
+  private static final String DRUID_PREFIX = "druid:";
+  /** Druid config for determining the host name */
+  private static final String DRUID_HOST_NAME = "druid.zk.service.host";
 
   static {
     final Lifecycle lifecycle = new Lifecycle();
@@ -256,6 +264,18 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
     // For CTAS queries when user has explicitly specified the datasource.
     // We will append the data to existing druid datasource.
     this.commitInsertTable(table, false);
+  }
+
+  @Override
+  public URI getURIForAuth(Map<String, String> tableProperties) throws URISyntaxException{
+    String host_name = conf.get(DRUID_HOST_NAME) != null ? conf.get(DRUID_HOST_NAME) :
+            HiveConf.getVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
+    String table_name = tableProperties.get(Constants.DRUID_DATA_SOURCE);
+    String column_names = tableProperties.get(Constants.DRUID_QUERY_FIELD_NAMES);
+    if (column_names != null)
+      return new URI(DRUID_PREFIX+"//"+host_name+"/"+table_name+"/"+column_names);
+    else
+      return new URI(DRUID_PREFIX+"//"+host_name+"/"+table_name);
   }
 
   private void updateKafkaIngestion(Table table) {
