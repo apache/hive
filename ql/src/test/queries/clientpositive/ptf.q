@@ -25,6 +25,16 @@ from noop(on part
   order by p_name
   );
 
+-- string based range
+select
+count(*) over(partition by p_mfgr order by p_name range between 1 preceding and current row) as count1,
+count(*) over(partition by p_mfgr order by p_name range between 3 preceding and current row) as count3,
+p_mfgr, p_name
+from noop(on part
+  partition by p_mfgr
+  order by p_name
+  );
+
 -- 2. testJoinWithNoop
 explain
 select p_mfgr, p_name,
