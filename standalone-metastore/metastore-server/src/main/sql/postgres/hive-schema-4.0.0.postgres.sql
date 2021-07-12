@@ -115,7 +115,7 @@ CREATE TABLE "DB_PRIVS" (
 CREATE TABLE "DC_PRIVS" (
                             "DC_GRANT_ID" bigint NOT NULL,
                             "CREATE_TIME" bigint NOT NULL,
-                            "DC_NAME" character varying(128),
+                            "NAME" character varying(128),
                             "GRANT_OPTION" smallint NOT NULL,
                             "GRANTOR" character varying(128) DEFAULT NULL::character varying,
                             "GRANTOR_TYPE" character varying(128) DEFAULT NULL::character varying,
@@ -783,7 +783,7 @@ ALTER TABLE ONLY "DB_PRIVS"
 --
 
 ALTER TABLE ONLY "DC_PRIVS"
-    ADD CONSTRAINT "DCPRIVILEGEINDEX" UNIQUE ("AUTHORIZER", "DC_NAME", "PRINCIPAL_NAME", "PRINCIPAL_TYPE", "DC_PRIV", "GRANTOR", "GRANTOR_TYPE");
+    ADD CONSTRAINT "DCPRIVILEGEINDEX" UNIQUE ("AUTHORIZER", "NAME", "PRINCIPAL_NAME", "PRINCIPAL_TYPE", "DC_PRIV", "GRANTOR", "GRANTOR_TYPE");
 
 
 --
@@ -1155,7 +1155,7 @@ CREATE INDEX "DB_PRIVS_N49" ON "DB_PRIVS" USING btree ("DB_ID");
 -- Name: DC_PRIVS_N49; Type: INDEX; Schema: public; Owner: hiveuser; Tablespace:
 --
 
-CREATE INDEX "DC_PRIVS_N49" ON "DC_PRIVS" USING btree ("DC_NAME");
+CREATE INDEX "DC_PRIVS_N49" ON "DC_PRIVS" USING btree ("NAME");
 
 
 --
@@ -2036,7 +2036,7 @@ CREATE TABLE "DATACONNECTOR_PARAMS" (
 );
 
 ALTER TABLE ONLY "DC_PRIVS"
-    ADD CONSTRAINT "DC_PRIVS_DC_ID_fkey" FOREIGN KEY ("DC_NAME") REFERENCES "DATACONNECTORS"("NAME") DEFERRABLE;
+    ADD CONSTRAINT "DC_PRIVS_DC_ID_fkey" FOREIGN KEY ("NAME") REFERENCES "DATACONNECTORS"("NAME") DEFERRABLE;
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
