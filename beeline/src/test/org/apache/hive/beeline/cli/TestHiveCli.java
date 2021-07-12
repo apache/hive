@@ -285,8 +285,8 @@ public class TestHiveCli {
   public void setup() throws IOException, URISyntaxException {
     System.setProperty("datanucleus.schema.autoCreateAll", "true");
     cli = new HiveCli();
-    initFromFile();
     redirectOutputStream();
+    initFromFile();
   }
 
   private void redirectOutputStream() {
