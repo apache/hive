@@ -112,6 +112,7 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
 
     LOG.debug("Pushing {} through {}", topNKey.getName(), select.getName());
     topNKeyDesc.setKeyColumns(mappedColumns);
+    topNKeyDesc.setPartitionKeyColumns(mappedColumns.subList(0, topNKeyDesc.getPartitionKeyColumns().size()));
     moveDown(topNKey);
     pushdown(topNKey);
   }

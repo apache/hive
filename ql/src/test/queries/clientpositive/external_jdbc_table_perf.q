@@ -1940,6 +1940,24 @@ ORDER  BY cd_gender,
           cd_purchase_estimate,
           cd_credit_rating
 LIMIT  100;
+
+explain
+SELECT ranking
+FROM
+    (SELECT rank() OVER (PARTITION BY ss_store_sk
+        ORDER BY sum(ss_net_profit)) AS ranking
+     FROM store_sales
+     GROUP BY ss_store_sk) tmp1
+WHERE ranking <= 5;
+
+SELECT ranking
+FROM
+    (SELECT rank() OVER (PARTITION BY ss_store_sk
+        ORDER BY sum(ss_net_profit)) AS ranking
+     FROM store_sales
+     GROUP BY ss_store_sk) tmp1
+WHERE ranking <= 5;
+
 set hive.auto.convert.anti.join=true;
 
 DROP TABLE catalog_sales;
