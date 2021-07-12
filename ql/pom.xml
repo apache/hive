@@ -183,7 +183,15 @@
     </dependency>
     <dependency>
       <groupId>org.apache.parquet</groupId>
-      <artifactId>parquet-hadoop-bundle</artifactId>
+      <artifactId>parquet-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.parquet</groupId>
+      <artifactId>parquet-column</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.parquet</groupId>
+      <artifactId>parquet-hadoop</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
@@ -549,12 +557,6 @@
       <scope>test</scope>
     </dependency>
     <!-- test inter-project -->
-    <dependency>
-      <groupId>org.apache.parquet</groupId>
-      <artifactId>parquet-column</artifactId>
-      <classifier>tests</classifier>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -1092,7 +1094,9 @@
                   <include>com.esotericsoftware:reflectasm</include>
                   <include>com.esotericsoftware:minlog</include>
                   <include>org.objenesis:objenesis</include>
-                  <include>org.apache.parquet:parquet-hadoop-bundle</include>
+                  <include>org.apache.parquet:common</include>
+                  <include>org.apache.parquet:column</include>
+                  <include>org.apache.parquet:hadoop</include>
                   <include>org.apache.thrift:libthrift</include>
                   <include>org.apache.thrift:libfb303</include>
                   <include>org.datanucleus:javax.jdo</include>

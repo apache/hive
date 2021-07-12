@@ -181,12 +181,6 @@
                       </includes>
                     </filter>
                     <filter>
-                      <artifact>org.apache.parquet:parquet-hadoop-bundle</artifact>
-                      <excludes>
-                        <exclude>shaded/parquet/org/codehaus/jackson/**</exclude>
-                      </excludes>
-                    </filter>
-                    <filter>
                       <artifact>org.apache.hadoop:hadoop-common</artifact>
                       <includes>
                         <include>org/apache/hadoop/security/*</include>
