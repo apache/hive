@@ -51,7 +51,7 @@
       <select>
         <location src="first-location-attempted"/>
         <location src="second-location-attempted"/>
-        <location src="third-location-attepted"/>
+        <location src="third-location-attempted"/>
       </select>
     </match>
     -->

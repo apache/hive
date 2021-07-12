@@ -382,7 +382,7 @@ public class MultiOutputFormat extends OutputFormat<Writable, Writable> {
       Job copy = outputConfigs.get(alias);
       if (copy == null) {
         throw new IllegalArgumentException("OutputFormat with alias " + alias
-            + " has not beed added");
+            + " has not been added");
       }
       return copy;
     }

@@ -150,7 +150,7 @@ public final class HiveRewriteToDataSketchesRules {
        *  Most important here is to CAST the final result to the same type as the original aggregate was producing.
        */
       protected final List<RexNode> newProjectsAbove;
-      /** The new projections expressions inserted belove the aggregate
+      /** The new projections expressions inserted below the aggregate
        *
        * These projections could be used to prepocess the incoming datastream.
        * For example a CAST might need to be injected.

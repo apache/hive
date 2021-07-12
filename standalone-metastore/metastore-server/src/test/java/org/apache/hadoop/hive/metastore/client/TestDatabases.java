@@ -417,7 +417,7 @@ public class TestDatabases extends MetaStoreClientTest {
     for(Database database : testDatabases) {
       Assert.assertTrue("Checking database names", allDatabases.contains(database.getName()));
     }
-    Assert.assertTrue("Checnking that default database is returned",
+    Assert.assertTrue("Checking that default database is returned",
         allDatabases.contains(DEFAULT_DATABASE));
 
     // Drop one database, see what remains
@@ -429,7 +429,7 @@ public class TestDatabases extends MetaStoreClientTest {
         Assert.assertTrue("Checking database names", allDatabases.contains(database.getName()));
       }
     }
-    Assert.assertTrue("Checnking that default database is returned",
+    Assert.assertTrue("Checking that default database is returned",
         allDatabases.contains(DEFAULT_DATABASE));
     Assert.assertFalse("Checking that the deleted database is not returned",
         allDatabases.contains(testDatabases[1].getName()));

@@ -552,7 +552,7 @@ public class QTestMiniClusters {
             // 1534736225090 -> 08/19/2018 20:37:05
             .setTimestamp(formatter.format(new Timestamp(1534736225090L + 1000 * 3600 * i)))
             .setAdded(i * 300).setDeleted(-i).setIsrobot(i % 2 == 0)
-            .setChannel("chanel number " + i).setComment("comment number " + i).setCommentlength(i)
+            .setChannel("channel number " + i).setComment("comment number " + i).setCommentlength(i)
             .setDiffurl(String.format("url %s", i)).setFlags("flag").setIsminor(i % 2 > 0)
             .setIsanonymous(i % 3 != 0).setNamespace("namespace")
             .setIsunpatrolled(new Boolean(i % 3 == 0)).setIsnew(new Boolean(i % 2 > 0))

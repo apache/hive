@@ -83,7 +83,7 @@ public class Context {
    * @return map with keys which matched prefix with prefix removed from
    *   keys in resulting map. If no keys are matched, the returned map is
    *   empty
-   * @throws IllegalArguemntException if the given prefix does not end with
+   * @throws IllegalArgumentException if the given prefix does not end with
    *   a period character.
    */
   public ImmutableMap<String, String> getSubProperties(String prefix) {

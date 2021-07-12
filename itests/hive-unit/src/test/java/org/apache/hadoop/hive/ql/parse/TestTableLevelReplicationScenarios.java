@@ -383,14 +383,14 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     String[] originalTables = new String[] {"t1", "t11", "t2", "t3", "t111"};
     createTables(originalTables, CreateTableType.NON_ACID);
 
-    // Invalid repl policy where abrubtly placed DOT which causes ParseException during REPL dump.
+    // Invalid repl policy where abruptly placed DOT which causes ParseException during REPL dump.
     String[] replicatedTables = new String[] {};
     boolean failed;
     String[] invalidReplPolicies = new String[] {
         primaryDbName + ".t1.t2", // Didn't enclose table pattern within single quotes.
         primaryDbName + ".'t1'.t2", // Table name and include list not allowed.
         primaryDbName + ".t1.'t2'", // Table name and exclude list not allowed.
-        primaryDbName + ".'t1+'.", // Abrubtly ended dot.
+        primaryDbName + ".'t1+'.", // Abruptly ended dot.
         primaryDbName +  ".['t1+'].['t11']", // With square brackets
         primaryDbName + "..''", // Two dots with empty list
         primaryDbName + ".'t1'.'tt2'.'t3'" // More than two list

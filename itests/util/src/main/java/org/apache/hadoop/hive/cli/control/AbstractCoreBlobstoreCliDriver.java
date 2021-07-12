@@ -122,7 +122,7 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
     try {
       qt.shutdown();
       if (System.getenv(QTestUtil.QTEST_LEAVE_FILES) == null) {
-        qt.executeAdhocCommand("dfs -rmdir " + testBlobstorePathUnique);
+        qt.executeAdHocCommand("dfs -rmdir " + testBlobstorePathUnique);
       }
     } catch (Exception e) {
       System.err.println("Exception: " + e.getMessage());

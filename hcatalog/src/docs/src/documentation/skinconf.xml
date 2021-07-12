@@ -147,7 +147,7 @@ which will be used to configure the chosen Forrest skin.
       This can be a specific page, or a general pattern to match a set of pages,
       e.g. everything in the "samples" directory.
       The @starts-with=true anchors the string to the start, otherwise contains 
-    motd-title : This text will betadded in brackets after the <html><title>
+    motd-title : This text will be added in brackets after the <html><title>
       and this can be empty.
     motd-page : This text will be added in a panel on the face of the page,
       with the "motd-page-url" being the hyperlink "More".

@@ -51,7 +51,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  *
  * BucketingSortingInferenceOptimizer.
  *
- * For each map reduce task, attmepts to infer bucketing and sorting metadata for the outputs.
+ * For each map reduce task, attempts to infer bucketing and sorting metadata for the outputs.
  *
  * Currently only map reduce tasks which produce final output have there output metadata inferred,
  * but it can be extended to intermediate tasks as well.

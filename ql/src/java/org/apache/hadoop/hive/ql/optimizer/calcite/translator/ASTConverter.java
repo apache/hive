@@ -956,7 +956,7 @@ public class ASTConverter {
      * Assumption:<br>
      * 1. Project will always be child of Sort.<br>
      * 2. In Calcite every projection in Project is uniquely named
-     * (unambigous) without using table qualifier (table name).<br>
+     * (unambiguous) without using table qualifier (table name).<br>
      *
      * @param order
      *          Hive Sort Node

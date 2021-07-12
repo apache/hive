@@ -598,7 +598,7 @@ public class GenTezUtils {
     BaseWork parentWork = rsWorkList.get(0);
     BaseWork childWork = procCtx.rootToWorkMap.get(ts);
 
-    // Connect parent/child work with a brodacast edge.
+    // Connect parent/child work with a broadcast edge.
     LOG.debug("Connecting Baswork - " + parentWork.getName() + " to " + childWork.getName());
     TezEdgeProperty edgeProperty = new TezEdgeProperty(EdgeType.BROADCAST_EDGE);
     TezWork tezWork = procCtx.currentTask.getWork();

@@ -51,7 +51,7 @@ public class TestMultiAuthorizationPreEventListener {
     System.setProperty(HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS.varname,
         AuthorizationPreEventListener.class.getName());
 
-    // Set two dummy classes as authorizatin managers. Two instances should get created.
+    // Set two dummy classes as authorization managers. Two instances should get created.
     System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_MANAGER.varname,
         DummyHiveMetastoreAuthorizationProvider.class.getName() + ","
             + DummyHiveMetastoreAuthorizationProvider.class.getName());

@@ -991,7 +991,7 @@ public class HiveAlterHandler implements AlterHandler {
     String tableName = normalizeIdentifier(oldTable.getTableName());
     String newDbName = newTable.getDbName().toLowerCase();
     String newTableName = normalizeIdentifier(newTable.getTableName());
-    //if its not called from cahced store then update the table
+    //if its not called from cached store then update the table
     boolean doAlterTable = deletedCols == null;
     List<ColumnStatistics> newMultiColStats = new ArrayList<>();
 

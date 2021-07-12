@@ -157,7 +157,7 @@ class JIRAService {
       comments.add("");
     }
     comments.add("This message is automatically generated.");
-    String attachmentId = parseAttachementId(mPatch);
+    String attachmentId = parseAttachmentId(mPatch);
     comments.add("");
     comments.add("ATTACHMENT ID: " + attachmentId +
       " - " + buildInfo.getBuildName());
@@ -300,7 +300,7 @@ class JIRAService {
     }
   }
 
-  private static String parseAttachementId(String patch) {
+  private static String parseAttachmentId(String patch) {
     if (patch == null) {
       return "";
     }

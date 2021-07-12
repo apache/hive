@@ -57,7 +57,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 
 /**
- * This class has methods for generating vectorized join results and forwarding batchs.
+ * This class has methods for generating vectorized join results and forwarding batches.
  *
  * In some cases when can forward the big table batch by setting scratch columns
  * with small table results and then making use of our output projection to pick out all the

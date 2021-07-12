@@ -121,7 +121,7 @@ public class HiveAccumuloTableInputFormat implements
           log.info("Job credential tokens: " + jobConf.getCredentials().getAllTokens());
           AuthenticationToken unwrappedToken = ConfiguratorBase.unwrapAuthenticationToken(jobConf, token);
           log.info("Converted authentication token from Configuration into: " + unwrappedToken);
-          // It's possible that the Job doesn't have the token in its credentials. In this case, unwrapAuthenticatinoToken
+          // It's possible that the Job doesn't have the token in its credentials. In this case, unwrapAuthenticationToken
           // will return back the original token (which we know is insufficient)
           if (unwrappedToken != token) {
             log.info("Creating Accumulo Connector with unwrapped delegation token");

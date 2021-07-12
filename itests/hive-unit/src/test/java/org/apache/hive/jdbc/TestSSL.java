@@ -404,7 +404,7 @@ public class TestSSL {
       hs2Conn =
           DriverManager.getConnection(miniHS2.getJdbcURL("default", SSLTestUtils.SSL_CONN_PARAMS),
               System.getProperty("user.name"), "bar");
-      fail("SSL connection, with the server providing wrong certifcate (with CN www.example.com, "
+      fail("SSL connection, with the server providing wrong certificate (with CN www.example.com, "
           + "instead of localhost), should fail");
     } catch (SQLException e) {
       // Expected error: should throw java.security.cert.CertificateException
@@ -421,7 +421,7 @@ public class TestSSL {
       hs2Conn =
           DriverManager.getConnection(miniHS2.getJdbcURL("default", SSLTestUtils.SSL_CONN_PARAMS),
               System.getProperty("user.name"), "bar");
-      fail("SSL connection, with the server providing wrong certifcate (with CN www.example.com, "
+      fail("SSL connection, with the server providing wrong certificate (with CN www.example.com, "
           + "instead of localhost), should fail");
     } catch (SQLException e) {
       // Expected error: should throw javax.net.ssl.SSLPeerUnverifiedException

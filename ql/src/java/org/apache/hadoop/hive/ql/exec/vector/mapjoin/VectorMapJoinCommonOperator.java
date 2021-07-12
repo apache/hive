@@ -765,7 +765,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
    */
   public void firstBatchSetup(VectorizedRowBatch batch) throws HiveException {
     // Make sure small table BytesColumnVectors have room for string values in the big table and
-    // overflow batchs...
+    // overflow batches...
     for (int column: smallTableByteColumnVectorColumns) {
       BytesColumnVector bytesColumnVector = (BytesColumnVector) batch.cols[column];
       bytesColumnVector.initBuffer();

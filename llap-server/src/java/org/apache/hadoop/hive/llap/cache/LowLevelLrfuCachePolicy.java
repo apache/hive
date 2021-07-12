@@ -136,7 +136,7 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
   }
 
   /**
-   * Wraps around the structures used in thread locals and buffers instances of LlapCachableBuffers in order to prevent
+   * Wraps around the structures used in thread locals and buffers instances of LlapCacheableBuffers in order to prevent
    * lock contention in LRFU during buffer ingress initiated heap access.
    */
   private class BPWrapper {

@@ -227,7 +227,7 @@ public class VectorBatchGenerator {
     case STRUCT:
     case UNION:
     default:
-      throw new RuntimeException("Unsupported catagory " + generateType.getCategory());
+      throw new RuntimeException("Unsupported category " + generateType.getCategory());
     }
     colVector.init();
     batch.cols[columnNum] = colVector;

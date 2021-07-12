@@ -1616,7 +1616,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("insert into table t1 values ('testCheck')")
             .run("create table t2 (place string) partitioned by (country string)")
             .run("insert into table t2 partition(country='china') values ('shenzhen')")
-            .run("insert into table t2 partition(country='india') values ('banaglore')")
+            .run("insert into table t2 partition(country='india') values ('bangalore')")
             .dump(primaryDbName);
 
     // fail setting ckpt directory property for table t1.

@@ -2707,7 +2707,7 @@ public class SharedCache {
   }
 
   /**
-   * This resets the contents of the cataog cache so that we can re-fill it in another test.
+   * This resets the contents of the catalog cache so that we can re-fill it in another test.
    */
   void resetCatalogCache() {
     isCatalogCachePrewarmed = false;

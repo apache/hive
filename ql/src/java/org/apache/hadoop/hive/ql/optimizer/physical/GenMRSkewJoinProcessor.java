@@ -99,7 +99,7 @@ public final class GenMRSkewJoinProcessor {
    * </ul>
    * For each table, we launch one mapjoin job, taking the directory containing
    * big keys in this table and corresponding dirs in other tables as input.
-   * (Actally one job for one row in the above.)
+   * (Actually one job for one row in the above.)
    *
    * <p>
    * For more discussions, please check

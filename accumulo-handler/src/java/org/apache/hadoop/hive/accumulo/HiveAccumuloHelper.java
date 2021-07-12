@@ -341,7 +341,7 @@ public class HiveAccumuloHelper {
     AuthenticationToken token = getDelegationToken(conn);
 
     // Make sure the Accumulo token is set in the Configuration (only a stub of the Accumulo
-    // AuthentiationToken is serialized, not the entire token). configureJobConf may be
+    // AuthenticationToken is serialized, not the entire token). configureJobConf may be
     // called multiple times with the same JobConf which results in an error from Accumulo
     // MapReduce API. Catch the error, log a debug message and just keep going
     try {

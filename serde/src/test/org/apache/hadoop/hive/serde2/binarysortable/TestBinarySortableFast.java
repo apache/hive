@@ -416,7 +416,7 @@ public class TestBinarySortableFast {
     Arrays.fill(columnNotNullMarker, BinarySortableSerDe.ONE);
 
     /*
-     * Acending.
+     * Ascending.
      */
     testBinarySortableFast(source, rows,
         columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker,

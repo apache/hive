@@ -57,7 +57,7 @@ def buildAbsPath(pathElements):
 def findHive():
     # TODO, check for Hive in path.  For now, just look in known locations and
     # HIVE_HOME
-    # No need to be OS independent checkinf for /usr/bin/hive since this is an
+    # No need to be OS independent checking for /usr/bin/hive since this is an
     # RPM specific path
     # If HIVE_HOME is set it overrides default locations
     if os.path.exists("/usr/bin/hive") and ('HIVE_HOME' not in os.environ):

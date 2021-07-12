@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.llap.cli.status;
 
 /**
- * Representing the exceptions that may occur during the Llap state chacking.
+ * Representing the exceptions that may occur during the Llap state checking.
  */
 class LlapStatusCliException extends Exception {
   private final ExitCode exitCode;

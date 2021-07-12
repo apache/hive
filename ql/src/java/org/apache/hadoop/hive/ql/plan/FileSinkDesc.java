@@ -491,7 +491,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
    */
   @Override
   @Explain(displayName = "Stats Publishing Key Prefix", explainLevels = { Level.EXTENDED })
-  // FIXME: including this in the signature will almost certenly differ even if the operator is doing the same
+  // FIXME: including this in the signature will almost certainly differ even if the operator is doing the same
   // there might be conflicting usages of logicalCompare?
   @Signature
   public String getStatsAggPrefix() {

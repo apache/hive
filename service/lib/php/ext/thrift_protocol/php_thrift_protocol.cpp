@@ -429,7 +429,7 @@ void binary_deserialize(int8_t thrift_typeID, PHPInputTransport& transport, zval
         throw_tprotocolexception(errbuf, INVALID_DATA);
         RETURN_NULL();
       }
-      binary_deserialize_spec(return_value, transport, Z_ARRVAL_P(spec));
+      binary_deserialize_spec(return_value, transport, Z_ARRIVAL_P(spec));
       return;
     } break;
     case T_BOOL: {
@@ -490,9 +490,9 @@ void binary_deserialize(int8_t thrift_typeID, PHPInputTransport& transport, zval
       array_init(return_value);
 
       zend_hash_find(fieldspec, "key", 4, (void**)&val_ptr);
-      HashTable* keyspec = Z_ARRVAL_PP(val_ptr);
+      HashTable* keyspec = Z_ARRIVAL_PP(val_ptr);
       zend_hash_find(fieldspec, "val", 4, (void**)&val_ptr);
-      HashTable* valspec = Z_ARRVAL_PP(val_ptr);
+      HashTable* valspec = Z_ARRIVAL_PP(val_ptr);
 
       for (uint32_t s = 0; s < size; ++s) {
         zval *value;
@@ -518,7 +518,7 @@ void binary_deserialize(int8_t thrift_typeID, PHPInputTransport& transport, zval
       int8_t type = transport.readI8();
       uint32_t size = transport.readU32();
       zend_hash_find(fieldspec, "elem", 5, (void**)&val_ptr);
-      HashTable* elemspec = Z_ARRVAL_PP(val_ptr);
+      HashTable* elemspec = Z_ARRIVAL_PP(val_ptr);
 
       array_init(return_value);
       for (uint32_t s = 0; s < size; ++s) {
@@ -536,7 +536,7 @@ void binary_deserialize(int8_t thrift_typeID, PHPInputTransport& transport, zval
       transport.readBytes(&size, 4);
       size = ntohl(size);
       zend_hash_find(fieldspec, "elem", 5, (void**)&val_ptr);
-      HashTable* elemspec = Z_ARRVAL_PP(val_ptr);
+      HashTable* elemspec = Z_ARRIVAL_PP(val_ptr);
 
       array_init(return_value);
 
@@ -678,7 +678,7 @@ void binary_deserialize_spec(zval* zthis, PHPInputTransport& transport, HashTabl
     if (ttype == T_STOP) return;
     int16_t fieldno = transport.readI16();
     if (zend_hash_index_find(spec, fieldno, (void**)&val_ptr) == SUCCESS) {
-      HashTable* fieldspec = Z_ARRVAL_PP(val_ptr);
+      HashTable* fieldspec = Z_ARRIVAL_PP(val_ptr);
       // pull the field name
       // zend hash tables use the null at the end in the length... so strlen(hash key) + 1.
       zend_hash_find(fieldspec, "var", 4, (void**)&val_ptr);
@@ -719,7 +719,7 @@ void binary_serialize(int8_t thrift_typeID, PHPOutputTransport& transport, zval*
       if (Z_TYPE_P(spec) != IS_ARRAY) {
         throw_tprotocolexception("Attempt to send non-Thrift object as a T_STRUCT", INVALID_DATA);
       }
-      binary_serialize_spec(*value, transport, Z_ARRVAL_P(spec));
+      binary_serialize_spec(*value, transport, Z_ARRIVAL_P(spec));
     } return;
     case T_BOOL:
       if (Z_TYPE_PP(value) != IS_BOOL) convert_to_boolean(*value);
@@ -763,7 +763,7 @@ void binary_serialize(int8_t thrift_typeID, PHPOutputTransport& transport, zval*
       if (Z_TYPE_PP(value) != IS_ARRAY) {
         throw_tprotocolexception("Attempt to send an incompatible type as an array (T_MAP)", INVALID_DATA);
       }
-      HashTable* ht = Z_ARRVAL_PP(value);
+      HashTable* ht = Z_ARRIVAL_PP(value);
       zval** val_ptr;
 
       zend_hash_find(fieldspec, "ktype", 6, (void**)&val_ptr);
@@ -776,7 +776,7 @@ void binary_serialize(int8_t thrift_typeID, PHPOutputTransport& transport, zval*
       transport.writeI8(valtype);
 
       zend_hash_find(fieldspec, "val", 4, (void**)&val_ptr);
-      HashTable* valspec = Z_ARRVAL_PP(val_ptr);
+      HashTable* valspec = Z_ARRIVAL_PP(val_ptr);
 
       transport.writeI32(zend_hash_num_elements(ht));
       HashPosition key_ptr;
@@ -790,7 +790,7 @@ void binary_serialize(int8_t thrift_typeID, PHPOutputTransport& transport, zval*
       if (Z_TYPE_PP(value) != IS_ARRAY) {
         throw_tprotocolexception("Attempt to send an incompatible type as an array (T_LIST)", INVALID_DATA);
       }
-      HashTable* ht = Z_ARRVAL_PP(value);
+      HashTable* ht = Z_ARRIVAL_PP(value);
       zval** val_ptr;
 
       zend_hash_find(fieldspec, "etype", 6, (void**)&val_ptr);
@@ -799,7 +799,7 @@ void binary_serialize(int8_t thrift_typeID, PHPOutputTransport& transport, zval*
       transport.writeI8(valtype);
 
       zend_hash_find(fieldspec, "elem", 5, (void**)&val_ptr);
-      HashTable* valspec = Z_ARRVAL_PP(val_ptr);
+      HashTable* valspec = Z_ARRIVAL_PP(val_ptr);
 
       transport.writeI32(zend_hash_num_elements(ht));
       HashPosition key_ptr;
@@ -812,7 +812,7 @@ void binary_serialize(int8_t thrift_typeID, PHPOutputTransport& transport, zval*
       if (Z_TYPE_PP(value) != IS_ARRAY) {
         throw_tprotocolexception("Attempt to send an incompatible type as an array (T_SET)", INVALID_DATA);
       }
-      HashTable* ht = Z_ARRVAL_PP(value);
+      HashTable* ht = Z_ARRIVAL_PP(value);
       zval** val_ptr;
 
       zend_hash_find(fieldspec, "etype", 6, (void**)&val_ptr);
@@ -846,7 +846,7 @@ void binary_serialize_spec(zval* zthis, PHPOutputTransport& transport, HashTable
       throw_tprotocolexception("Bad keytype in TSPEC (expected 'long')", INVALID_DATA);
       return;
     }
-    HashTable* fieldspec = Z_ARRVAL_PP(val_ptr);
+    HashTable* fieldspec = Z_ARRIVAL_PP(val_ptr);
 
     // field name
     zend_hash_find(fieldspec, "var", 4, (void**)&val_ptr);
@@ -923,7 +923,7 @@ PHP_FUNCTION(thrift_protocol_write_binary) {
     if (Z_TYPE_P(spec) != IS_ARRAY) {
         throw_tprotocolexception("Attempt to send non-Thrift object", INVALID_DATA);
     }
-    binary_serialize_spec(request_struct, transport, Z_ARRVAL_P(spec));
+    binary_serialize_spec(request_struct, transport, Z_ARRIVAL_P(spec));
   } catch (const PHPExceptionWrapper& ex) {
     zend_throw_exception_object(ex TSRMLS_CC);
     RETURN_NULL();
@@ -990,13 +990,13 @@ PHP_FUNCTION(thrift_protocol_read_binary) {
       MAKE_STD_ZVAL(ex);
       createObject("TApplicationException", ex);
       zval* spec = zend_read_static_property(zend_get_class_entry(ex TSRMLS_CC), "_TSPEC", 6, false TSRMLS_CC);
-      binary_deserialize_spec(ex, transport, Z_ARRVAL_P(spec));
+      binary_deserialize_spec(ex, transport, Z_ARRIVAL_P(spec));
       throw PHPExceptionWrapper(ex);
     }
 
     createObject(obj_typename, return_value);
     zval* spec = zend_read_static_property(zend_get_class_entry(return_value TSRMLS_CC), "_TSPEC", 6, false TSRMLS_CC);
-    binary_deserialize_spec(return_value, transport, Z_ARRVAL_P(spec));
+    binary_deserialize_spec(return_value, transport, Z_ARRIVAL_P(spec));
   } catch (const PHPExceptionWrapper& ex) {
     zend_throw_exception_object(ex TSRMLS_CC);
     RETURN_NULL();

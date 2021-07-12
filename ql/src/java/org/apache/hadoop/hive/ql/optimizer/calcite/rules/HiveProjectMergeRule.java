@@ -74,7 +74,7 @@ public class HiveProjectMergeRule extends ProjectMergeRule {
     final Project bottomProject = call.rel(1);
 
     // If top project does not reference any column at the bottom project,
-    // we can just remove botton project
+    // we can just remove bottom project
     final ImmutableBitSet topRefs =
         RelOptUtil.InputFinder.bits(topProject.getProjects(), null);
     if (topRefs.isEmpty()) {

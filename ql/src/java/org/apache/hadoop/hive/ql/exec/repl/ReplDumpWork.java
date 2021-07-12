@@ -128,7 +128,7 @@ public class ReplDumpWork implements Serializable {
     // If we are bootstrapping ACID tables, we need to dump all the events upto the event id at
     // the beginning of the bootstrap dump and also not dump any event after that. So we override
     // both, the last event as well as any user specified limit on the number of events. See
-    // bootstrampDump() for more details.
+    // bootstrapDump() for more details.
     if (bootstrapLastId > 0) {
       eventTo = bootstrapLastId;
       LoggerFactory.getLogger(this.getClass())

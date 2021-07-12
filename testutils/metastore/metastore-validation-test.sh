@@ -324,7 +324,7 @@ firstValue() {
 # arg1 is name of the map to retrieve from.
 # arg2 key to be found in the map.
 containsKey() {
-  # find a line that contains the key value at the begining of line.
+  # find a line that contains the key value at the beginning of line.
   ret=$(grep "^$2=" /tmp/hashmap.$1 | cut -d'=' -f1)
   if [[ "$2" = "$ret" ]]
   then

@@ -2026,7 +2026,7 @@ public class TestCompactor {
      * It should be the default.
      */
     List<String> rs = execSelectAndDumpData("select distinct INPUT__FILE__NAME from "
-      + tblName1, driver, "Find Orc File bufer default");
+      + tblName1, driver, "Find Orc File buffer default");
     Assert.assertTrue("empty rs?", rs != null && rs.size() > 0);
     Path p = new Path(rs.get(0));
     Reader orcReader = OrcFile.createReader(p.getFileSystem(conf), p);

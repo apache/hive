@@ -1202,7 +1202,7 @@ public final class Utilities {
    * Some jobs like "INSERT INTO" jobs create copies of files like 0000001_0_copy_2.
    * For such files,
    * Group 1: 00000001 [taskId]
-   * Group 3: 0        [task attempId]
+   * Group 3: 0        [task attemptId]
    * Group 4: _copy_2  [copy suffix]
    * Group 6: copy     [copy keyword]
    * Group 8: 2        [copy file index]
@@ -4185,7 +4185,7 @@ public final class Utilities {
     // if its auto-stats gather for inserts or CTAS, stats dir will be in FileSink
     Set<Operator<? extends OperatorDesc>> ops = work.getAllLeafOperators();
     if (work instanceof MapWork) {
-      // if its an anlayze statement, stats dir will be in TableScan
+      // if its an analyze statement, stats dir will be in TableScan
       ops.addAll(work.getAllRootOperators());
     }
     for (Operator<? extends OperatorDesc> op : ops) {
@@ -4669,7 +4669,7 @@ public final class Utilities {
   static List<Path> selectManifestFiles(FileStatus[] manifestFiles) {
     List<Path> manifests = new ArrayList<>();
     if (manifestFiles != null) {
-      Map<String, Integer> fileNameToAttempId = new HashMap<>();
+      Map<String, Integer> fileNameToAttemptId = new HashMap<>();
       Map<String, Path> fileNameToPath = new HashMap<>();
 
       for (FileStatus manifestFile : manifestFiles) {
@@ -4685,13 +4685,13 @@ public final class Utilities {
           if (matcher.matches()) {
             String taskId = matcher.group(1);
             int attemptId = Integer.parseInt(matcher.group(2));
-            Integer maxAttemptId = fileNameToAttempId.get(taskId);
+            Integer maxAttemptId = fileNameToAttemptId.get(taskId);
             if (maxAttemptId == null) {
-              fileNameToAttempId.put(taskId, attemptId);
+              fileNameToAttemptId.put(taskId, attemptId);
               fileNameToPath.put(taskId, path);
               Utilities.FILE_OP_LOGGER.info("Found manifest file {} with attemptId {}.", path, attemptId);
             } else if (attemptId > maxAttemptId) {
-              fileNameToAttempId.put(taskId, attemptId);
+              fileNameToAttemptId.put(taskId, attemptId);
               fileNameToPath.put(taskId, path);
               Utilities.FILE_OP_LOGGER.info(
                   "Found manifest file {} which has higher attemptId than {}. Ignore the manifest files with attemptId below {}.",

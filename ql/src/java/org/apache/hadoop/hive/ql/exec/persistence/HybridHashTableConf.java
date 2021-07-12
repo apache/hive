@@ -27,7 +27,7 @@ import java.util.List;
  * among them, which is used in n-way join (multiple small tables are involved).
  */
 public class HybridHashTableConf {
-  private List<HybridHashTableContainer> loadedContainerList; // A list of alrady loaded containers
+  private List<HybridHashTableContainer> loadedContainerList; // A list of already loaded containers
   private int numberOfPartitions = 0; // Number of partitions each table should have
   private int nextSpillPartition = -1;       // The partition to be spilled next
 

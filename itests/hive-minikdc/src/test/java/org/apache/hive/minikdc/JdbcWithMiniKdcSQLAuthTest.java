@@ -90,7 +90,7 @@ public abstract class JdbcWithMiniKdcSQLAuthTest {
 
     String tableName1 = "test_jdbc_sql_auth1";
     String tableName2 = "test_jdbc_sql_auth2";
-    // using different code blocks so that jdbc variables are not accidently re-used
+    // using different code blocks so that jdbc variables are not accidentally re-used
     // between the actions. Different connection/statement object should be used for each action.
     {
       // create tables as user1

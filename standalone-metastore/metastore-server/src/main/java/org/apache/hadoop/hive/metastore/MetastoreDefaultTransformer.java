@@ -261,7 +261,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
         continue;
       }
 
-      // WITH CAPABLITIES ON TABLE
+      // WITH CAPABILITIES ON TABLE
       tCapabilities = tCapabilities.replaceAll("\\s","").toUpperCase(); // remove spaces between tCapabilities + toUppercase
       List<String> requiredCapabilities = Arrays.asList(tCapabilities.split(","));
       switch (tableType) {

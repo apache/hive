@@ -273,14 +273,14 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
 
   private void iterateNoNullsRepeatingWithAggregationSelection(
     VectorAggregationBufferRow[] aggregationBufferSets,
-    int aggregrateIndex,
+    int aggregateIndex,
     ColumnVector inputColumn,
     int batchSize) {
 
     for (int i=0; i < batchSize; ++i) {
       Aggregation myagg = getCurrentAggregationBuffer(
         aggregationBufferSets,
-        aggregrateIndex,
+        aggregateIndex,
         i);
       valueProcessor.processValue(myagg, inputColumn, 0);
     }
@@ -288,7 +288,7 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
 
   private void iterateNoNullsSelectionWithAggregationSelection(
     VectorAggregationBufferRow[] aggregationBufferSets,
-    int aggregrateIndex,
+    int aggregateIndex,
     ColumnVector inputColumn,
     int[] selection,
     int batchSize) {
@@ -297,7 +297,7 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
       int row = selection[i];
       Aggregation myagg = getCurrentAggregationBuffer(
         aggregationBufferSets,
-        aggregrateIndex,
+        aggregateIndex,
         i);
       valueProcessor.processValue(myagg, inputColumn, row);
     }
@@ -305,13 +305,13 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
 
   private void iterateNoNullsWithAggregationSelection(
     VectorAggregationBufferRow[] aggregationBufferSets,
-    int aggregrateIndex,
+    int aggregateIndex,
     ColumnVector inputColumn,
     int batchSize) {
     for (int i=0; i < batchSize; ++i) {
       Aggregation myagg = getCurrentAggregationBuffer(
         aggregationBufferSets,
-        aggregrateIndex,
+        aggregateIndex,
         i);
       valueProcessor.processValue(myagg, inputColumn, i);
     }
@@ -319,7 +319,7 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
 
   private void iterateHasNullsSelectionWithAggregationSelection(
     VectorAggregationBufferRow[] aggregationBufferSets,
-    int aggregrateIndex,
+    int aggregateIndex,
     ColumnVector inputColumn,
     int batchSize,
     int[] selection) {
@@ -329,7 +329,7 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
       if (!inputColumn.isNull[row]) {
         Aggregation myagg = getCurrentAggregationBuffer(
           aggregationBufferSets,
-          aggregrateIndex,
+          aggregateIndex,
           i);
         valueProcessor.processValue(myagg, inputColumn, i);
       }
@@ -338,7 +338,7 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
 
   private void iterateHasNullsWithAggregationSelection(
     VectorAggregationBufferRow[] aggregationBufferSets,
-    int aggregrateIndex,
+    int aggregateIndex,
     ColumnVector inputColumn,
     int batchSize) {
 
@@ -346,7 +346,7 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
       if (!inputColumn.isNull[i]) {
         Aggregation myagg = getCurrentAggregationBuffer(
           aggregationBufferSets,
-          aggregrateIndex,
+          aggregateIndex,
           i);
         valueProcessor.processValue(myagg, inputColumn, i);
       }
@@ -355,10 +355,10 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
 
   private Aggregation getCurrentAggregationBuffer(
       VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregrateIndex,
+      int aggregateIndex,
       int row) {
     VectorAggregationBufferRow mySet = aggregationBufferSets[row];
-    Aggregation myagg = (Aggregation) mySet.getAggregationBuffer(aggregrateIndex);
+    Aggregation myagg = (Aggregation) mySet.getAggregationBuffer(aggregateIndex);
     return myagg;
   }
 

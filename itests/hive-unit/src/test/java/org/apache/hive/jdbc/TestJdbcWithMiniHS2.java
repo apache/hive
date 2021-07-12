@@ -873,7 +873,7 @@ public class TestJdbcWithMiniHS2 {
     for (String funcName : funcNames) {
       funcNameStr += "," + funcName;
     }
-    funcNameStr = funcNameStr.substring(1); // remove ',' at begining
+    funcNameStr = funcNameStr.substring(1); // remove ',' at beginning
     testConf.setVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_WHITELIST, funcNameStr);
     startMiniHS2(testConf);
     Connection conn =
@@ -940,7 +940,7 @@ public class TestJdbcWithMiniHS2 {
     for (String funcName : funcNames) {
       funcNameStr += "," + funcName;
     }
-    funcNameStr = funcNameStr.substring(1); // remove ',' at begining
+    funcNameStr = funcNameStr.substring(1); // remove ',' at beginning
     testConf.setVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_WHITELIST, funcNameStr);
     testConf.setVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST, "reflect");
     startMiniHS2(testConf);

@@ -157,7 +157,7 @@ class DirWatcher {
 
   private void trackWatchForAttempt(WatchedPathInfo watchedPathInfo, WatchKey watchKey) {
     assert watchedPathInfo.pathIdentifier != null;
-    // TODO May be possible to do finer grained locks.
+    // TODO May be possible to do finer-grained locks.
     synchronized (watchesPerAttempt) {
       List<WatchKey> list = watchesPerAttempt.get(watchedPathInfo.pathIdentifier);
       if (list == null) {
@@ -169,7 +169,7 @@ class DirWatcher {
   }
 
   private void cancelWatchesForAttempt(AttemptPathIdentifier pathIdentifier) {
-    // TODO May be possible to do finer grained locks.
+    // TODO May be possible to do finer-grained locks.
     synchronized(watchesPerAttempt) {
       List<WatchKey> list = watchesPerAttempt.remove(pathIdentifier);
       if (list != null) {

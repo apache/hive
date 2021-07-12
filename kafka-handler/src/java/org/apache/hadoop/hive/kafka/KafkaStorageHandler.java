@@ -299,7 +299,7 @@ import java.util.function.Predicate;
     final Predicate<Throwable>
         isRetrayable = (error) -> !KafkaUtils.exceptionIsFatal(error) && !(error instanceof ProducerFencedException);
     try {
-      RetryUtils.retry(buildProducersTask, isRetrayable, cleanUpTheMap, maxTries, "Error while Builing Producers");
+      RetryUtils.retry(buildProducersTask, isRetrayable, cleanUpTheMap, maxTries, "Error while Building Producers");
     } catch (Exception e) {
       // Can not go further
       LOG.error("Can not fetch build produces due [{}]", e);

@@ -205,7 +205,7 @@ public class PTestClient {
     System.out.print(logsResponse.getBody());
     return logsResponse.getOffset();
   }
-  private <S extends GenericResponse> S post(Object payload, boolean agressiveRetry)
+  private <S extends GenericResponse> S post(Object payload, boolean aggressiveRetry)
       throws Exception {
     EndPointResponsePair endPointResponse = Preconditions.
         checkNotNull(REQUEST_TO_ENDPOINT.get(payload.getClass()), payload.getClass().getName());
@@ -215,7 +215,7 @@ public class PTestClient {
       StringEntity params = new StringEntity(payloadString);
       request.addHeader("content-type", "application/json");
       request.setEntity(params);
-      if(agressiveRetry) {
+      if(aggressiveRetry) {
         mHttpClient.setHttpRequestRetryHandler(new PTestHttpRequestRetryHandler());          
       }
       HttpResponse httpResponse = mHttpClient.execute(request);

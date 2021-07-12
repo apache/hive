@@ -983,7 +983,7 @@ public class CachedStore implements RawStore, Configurable {
         List<String> partNames = rawStore.listPartitionNames(catName, dbName, tblName, (short) -1);
         List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
         if ((partNames != null) && (partNames.size() > 0)) {
-          Deadline.startTimer("getAggregareStatsForAllPartitions");
+          Deadline.startTimer("getAggregateStatsForAllPartitions");
           AggrStats aggrStatsAllPartitions = rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
           Deadline.stopTimer();
           // Remove default partition from partition names and get aggregate stats again
@@ -997,7 +997,7 @@ public class CachedStore implements RawStore, Configurable {
           }
           String defaultPartitionName = FileUtils.makePartName(partCols, partVals);
           partNames.remove(defaultPartitionName);
-          Deadline.startTimer("getAggregareStatsForAllPartitionsExceptDefault");
+          Deadline.startTimer("getAggregateStatsForAllPartitionsExceptDefault");
           AggrStats aggrStatsAllButDefaultPartition =
               rawStore.get_aggr_stats_for(catName, dbName, tblName, partNames, colNames, CacheUtils.HIVE_ENGINE);
           Deadline.stopTimer();

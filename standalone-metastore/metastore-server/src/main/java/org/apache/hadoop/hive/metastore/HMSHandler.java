@@ -469,7 +469,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
     if (conf.getBoolean(ConfVars.METASTORE_CACHE_CAN_USE_EVENT.getVarname(), false) &&
         !canCachedStoreCanUseEvent) {
-      throw new MetaException("CahcedStore can not use events for invalidation as there is no " +
+      throw new MetaException("CachedStore can not use events for invalidation as there is no " +
           " TransactionalMetaStoreEventListener to add events to notification table");
     }
 

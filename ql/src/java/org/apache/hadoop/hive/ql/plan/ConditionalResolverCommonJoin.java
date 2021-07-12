@@ -119,7 +119,7 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
       ctx.setHdfsTmpDir(hdfsTmpDir);
       ctx.setLocalTmpDir(localTmpDir);
       // if any of join participants is from other MR, it has alias like '[pos:]$INTNAME'
-      // which of size should be caculated for each resolver.
+      // which of size should be calculated for each resolver.
       ctx.setAliasToKnownSize(new HashMap<String, Long>(aliasToKnownSize));
       return ctx;
     }

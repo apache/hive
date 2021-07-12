@@ -2130,7 +2130,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
         break;
       }
     }
-    // reposition at the begining
+    // reposition at the beginning
     res.beforeFirst();
     assertTrue(res.isBeforeFirst());
     rowNum = 0;

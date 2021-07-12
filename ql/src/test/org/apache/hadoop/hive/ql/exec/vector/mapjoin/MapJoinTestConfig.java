@@ -854,7 +854,7 @@ public class MapJoinTestConfig {
           new VectorizationContext("test", testDesc.bigTableColumnNameList);
 
       /*
-      // UNDONE: Unclear this belonds in the input VectorizationContext...
+      // UNDONE: Unclear this belongs in the input VectorizationContext...
       // Create scratch columns to hold small table results.
       for (int i = 0; i < testDesc.smallTableValueTypeInfos.length; i++) {
         vContext.allocateScratchColumn(testDesc.smallTableValueTypeInfos[i]);

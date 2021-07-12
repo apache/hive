@@ -421,7 +421,7 @@ Release Notes - Hive - Version 3.0.0
     * [HIVE-16837] - MetadataOnly optimizer conflicts with count distinct rewrite
     * [HIVE-16838] - Improve plans for subqueries with non-equi co-related predicates
     * [HIVE-16848] - NPE during CachedStore refresh
-    * [HIVE-16892] - Move creation of _files from ReplCopyTask to analysis phase for boostrap replication 
+    * [HIVE-16892] - Move creation of _files from ReplCopyTask to analysis phase for bootstrap replication 
     * [HIVE-16893] - move replication dump related work in semantic analysis phase to execution phase using a task
     * [HIVE-16895] -  Multi-threaded execution of bootstrap dump of partitions
     * [HIVE-16896] - move replication load related work in semantic analysis phase to execution phase using a task
@@ -887,7 +887,7 @@ Release Notes - Hive - Version 3.0.0
     * [HIVE-16399] - create an index for tc_txnid in TXN_COMPONENTS
     * [HIVE-16402] - Upgrade to Hadoop 2.8.0
     * [HIVE-16403] - LLAP UI shows the wrong number of executors
-    * [HIVE-16404] - Renaming of public classes in Calcite 12 breeaking druid integration
+    * [HIVE-16404] - Renaming of public classes in Calcite 12 breaking druid integration
     * [HIVE-16406] - Remove unwanted interning when creating PartitionDesc
     * [HIVE-16409] - TestEventHandlerFactory  has lacked the ASF header
     * [HIVE-16413] - Create table as select does not check ownership of the location
@@ -1152,7 +1152,7 @@ Release Notes - Hive - Version 3.0.0
     * [HIVE-17321] - HoS: analyze ORC table doesn't compute raw data size when noscan/partialscan is not specified
     * [HIVE-17322] - Serialise BeeLine qtest execution to prevent flakyness
     * [HIVE-17327] - LLAP IO: restrict native file ID usage to default FS to avoid hypothetical collisions when HDFS federation is used
-    * [HIVE-17331] - Path must be used as key type of the pathToAlises
+    * [HIVE-17331] - Path must be used as key type of the pathToAliases
     * [HIVE-17333] - Schema changes in HIVE-12274 for Oracle may not work for upgrade
     * [HIVE-17336] - Missing class 'org.apache.hadoop.hive.hbase.HiveHBaseTableInputFormat' from Hive on Spark when inserting into hbase based table
     * [HIVE-17338] - Utilities.get*Tasks multiple methods duplicate code
@@ -1823,7 +1823,7 @@ Release Notes - Hive - Version 3.0.0
     * [HIVE-16855] - org.apache.hadoop.hive.ql.exec.mr.HashTableLoader Improvements
     * [HIVE-16856] - Allow For Customization Of Buffer Size In MapJoinTableContainerSerDe
     * [HIVE-16857] - SparkPartitionPruningSinkOperator Buffer Size
-    * [HIVE-16858] - Acumulo Utils Improvements
+    * [HIVE-16858] - Accumulo Utils Improvements
     * [HIVE-16866] - existing available UDF is used in TestReplicationScenariosAcrossInstances#testDropFunctionIncrementalReplication 
     * [HIVE-16867] - Extend shared scan optimizer to reuse computation from other operators
     * [HIVE-16873] - Remove Thread Cache From Logging

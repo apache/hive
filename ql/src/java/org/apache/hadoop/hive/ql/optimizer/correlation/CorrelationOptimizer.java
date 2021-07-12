@@ -240,7 +240,7 @@ public class CorrelationOptimizer extends Transform {
       }
     } else {
       // transform the operator tree
-      LOG.info("Begain query plan transformation based on intra-query correlations. " +
+      LOG.info("Begin query plan transformation based on intra-query correlations. " +
           corrCtx.getCorrelations().size() + " correlation(s) to be applied");
       for (IntraQueryCorrelation correlation : corrCtx.getCorrelations()) {
         QueryPlanTreeTransformation.applyCorrelation(pCtx, corrCtx, correlation);

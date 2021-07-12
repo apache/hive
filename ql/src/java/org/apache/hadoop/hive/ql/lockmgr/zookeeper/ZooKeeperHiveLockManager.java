@@ -635,15 +635,15 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       return locks;
     }
 
-    Queue<String> childn = new LinkedList<String>();
+    Queue<String> childrenToCheck = new LinkedList<String>();
     if (children != null && !children.isEmpty()) {
       for (String child : children) {
-        childn.add(commonParent + "/" + child);
+        childrenToCheck.add(commonParent + "/" + child);
       }
     }
 
     while (true) {
-      String curChild = childn.poll();
+      String curChild = childrenToCheck.poll();
       if (curChild == null) {
         return locks;
       }
@@ -652,7 +652,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
         try {
           children = curatorFramework.getChildren().forPath(curChild);
           for (String child : children) {
-            childn.add(curChild + "/" + child);
+            childrenToCheck.add(curChild + "/" + child);
           }
         } catch (Exception e) {
           // nothing to do

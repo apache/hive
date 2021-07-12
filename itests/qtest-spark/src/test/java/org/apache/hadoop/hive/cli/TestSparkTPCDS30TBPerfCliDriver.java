@@ -34,7 +34,7 @@ import org.junit.runners.Parameterized.Parameters;
  * The test exists only as a replacement of the old SparkPerfDriver. 
  * 
  * The test was never executed since Spark tests are broken at the time being and there was relevant discussion
- * to entirely remove supoort for Spark. Currently, the test script calle by maven cannot locate the Spark artifacts:
+ * to entirely remove supoort for Spark. Currently, the test script called by maven cannot locate the Spark artifacts:
  * http://d3jw87u4immizc.cloudfront.net/spark-tarball/spark-2.4.5-bin-hadoop3-beta1-without-hive.tgz
  */
 @RunWith(Parameterized.class)

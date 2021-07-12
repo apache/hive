@@ -211,7 +211,7 @@ final class PartitionTree {
    */
   void alterPartitions(List<Partition> newParts)
       throws MetaException, InvalidOperationException, NoSuchObjectException {
-    //altering partitions in a batch must be transactional, therefore bofore starting the altering, clone the original
+    //altering partitions in a batch must be transactional, therefore before starting the altering, clone the original
     //partitions map. If something fails, revert it back.
     Map<String, Partition> clonedPartitions = new LinkedHashMap<>();
     parts.forEach((key, value) -> clonedPartitions.put(key, new Partition(value)));

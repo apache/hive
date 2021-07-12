@@ -28,7 +28,7 @@
   <property>
     <name>hive.metastore.client.cache.enabled</name>
     <value>true</value>
-    <description>This property enables a Caffeiene Cache for Metastore client</description>
+    <description>This property enables a Caffeine Cache for Metastore client</description>
   </property>
 
   <property>

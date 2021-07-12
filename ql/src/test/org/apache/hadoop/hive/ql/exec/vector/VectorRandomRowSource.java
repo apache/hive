@@ -723,7 +723,7 @@ public class VectorRandomRowSource {
         primitiveObjectInspectorList.add(null);
         break;
       default:
-        throw new RuntimeException("Unexpected catagory " + category);
+        throw new RuntimeException("Unexpected category " + category);
       }
       objectInspectorList.add(objectInspector);
 

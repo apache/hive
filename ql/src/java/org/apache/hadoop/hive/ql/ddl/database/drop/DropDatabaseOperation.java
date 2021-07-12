@@ -49,7 +49,7 @@ public class DropDatabaseOperation extends DDLOperation<DropDatabaseDesc> {
         }
       }
 
-      context.getDb().dropDatabase(dbName, true, desc.getIfExists(), desc.isCasdade());
+      context.getDb().dropDatabase(dbName, true, desc.getIfExists(), desc.isCascade());
 
       if (LlapHiveUtils.isLlapMode(context.getConf())) {
         ProactiveEviction.Request.Builder llapEvictRequestBuilder = ProactiveEviction.Request.Builder.create();
@@ -57,7 +57,7 @@ public class DropDatabaseOperation extends DDLOperation<DropDatabaseDesc> {
         ProactiveEviction.evict(context.getConf(), llapEvictRequestBuilder.build());
       }
       // Unregister the functions as well
-      if (desc.isCasdade()) {
+      if (desc.isCascade()) {
         FunctionRegistry.unregisterPermanentFunctions(dbName);
       }
     } catch (NoSuchObjectException ex) {

@@ -253,7 +253,7 @@ public class BytesColumnVector extends ColumnVector {
    * @param leftLen length of left argument
    * @param rightSourceBuf container of right argument
    * @param rightStart start of right argument
-   * @param rightLen length of right arugment
+   * @param rightLen length of right argument
    */
   public void setConcat(int elementNum, byte[] leftSourceBuf, int leftStart, int leftLen,
       byte[] rightSourceBuf, int rightStart, int rightLen) {

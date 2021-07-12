@@ -143,7 +143,7 @@ public class TestStreaming {
     public FileStatus getFileStatus(Path path) throws IOException {
       File file = pathToFile(path);
       if (!file.exists()) {
-        throw new FileNotFoundException("Can'table find " + path);
+        throw new FileNotFoundException("Can't find " + path);
       }
       // get close enough
       short mod = 0;

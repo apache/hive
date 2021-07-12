@@ -81,7 +81,7 @@ public class TestJIRAService extends AbstractTestPhase {
     JIRAService.formatBuildTag("abc123");
   }
   @Test
-  public void testTrimMesssagesBoundry() {
+  public void testTrimMesssagesBoundary() {
     List<String> messages = Lists.newArrayList();
     Assert.assertEquals(messages, JIRAService.trimMessages(messages));
     messages.clear();

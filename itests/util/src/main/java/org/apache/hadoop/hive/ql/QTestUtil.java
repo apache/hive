@@ -692,7 +692,7 @@ public class QTestUtil {
     }
   }
 
-  public int executeAdhocCommand(String q) throws CommandProcessorException {
+  public int executeAdHocCommand(String q) throws CommandProcessorException {
     if (!q.contains(";")) {
       return -1;
     }

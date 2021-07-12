@@ -673,7 +673,7 @@ import org.junit.Test;
   }
 
   /**
-   * Select null from table , check if setting null to empty string works - Using beeling cmd line
+   * Select null from table , check if setting null to empty string works - Using beeline cmd line
    *  argument.
    * Original beeline/sqlline used to print nulls as empty strings
    * Print PASSED or FAILED
