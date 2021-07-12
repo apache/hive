@@ -21,6 +21,7 @@ package org.apache.hive.hplsql;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -178,9 +179,9 @@ public class Copy {
     else {
       filename = ctx.copy_target().getText();
     }
-    byte[] del = delimiter.getBytes();
-    byte[] rowdel = "\n".getBytes();
-    byte[] nullstr = "NULL".getBytes();
+    byte[] del = delimiter.getBytes(StandardCharsets.UTF_8);
+    byte[] rowdel = "\n".getBytes(StandardCharsets.UTF_8);
+    byte[] nullstr = "NULL".getBytes(StandardCharsets.UTF_8);
     int cols = query.columnCount();
     int rows = 0;
     long bytes = 0;
@@ -233,7 +234,7 @@ public class Copy {
             if (sqlInsert) {
               col = Utils.quoteString(col);
             }
-            byte[] b = col.getBytes();
+            byte[] b = col.getBytes(StandardCharsets.UTF_8);
             out.write(b);
             bytes += b.length;
           }
