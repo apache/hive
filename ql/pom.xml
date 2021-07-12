@@ -885,6 +885,10 @@
               </artifactSet>
               <relocations>
                 <relocation>
+                  <pattern>org.apache.calcite</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.calcite</shadedPattern>
+                </relocation>
+                <relocation>
                   <pattern>org.apache.orc</pattern>
                   <shadedPattern>org.apache.hive.org.apache.orc</shadedPattern>
                 </relocation>
