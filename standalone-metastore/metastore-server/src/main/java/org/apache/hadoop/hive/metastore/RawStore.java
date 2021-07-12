@@ -155,15 +155,13 @@ public interface RawStore extends Configurable {
   void createCatalog(Catalog cat) throws MetaException;
 
   /**
-   * Alter an existing catalog.  Only description and location can be changed, and the change of
-   * location is for internal use only.
+   * Alter an existing catalog. Only description and location can be changed,
+   * and the change of location is for internal use only.
+   *
    * @param catName name of the catalog to alter.
    * @param cat new version of the catalog.
-   * @throws MetaException something went wrong, usually in the database.
-   * @throws InvalidOperationException attempt to change something about the catalog that is not
-   * changeable, like the name.
    */
-  void alterCatalog(String catName, Catalog cat) throws MetaException, InvalidOperationException;
+  void alterCatalog(String catName, Catalog cat);
 
   /**
    * Get a catalog.

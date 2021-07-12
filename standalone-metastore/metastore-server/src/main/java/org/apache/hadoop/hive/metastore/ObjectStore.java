@@ -657,10 +657,10 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void alterCatalog(String catName, Catalog cat)
-      throws MetaException, InvalidOperationException {
+  public void alterCatalog(String catName, Catalog cat) {
     if (!cat.getName().equals(catName)) {
-      throw new InvalidOperationException("You cannot change a catalog's name");
+      throw new HiveMetaRuntimeException(
+          "Catalogs cannot be renamed. Alter attempt: " + cat.getName() + " -> " + catName);
     }
     boolean committed = false;
     try {
@@ -674,6 +674,8 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       pm.makePersistent(mCat);
       committed = commitTransaction();
+    } catch (Exception e) {
+      throw new HiveMetaDataAccessException("Failed to alter catalog: " + catName, e);
     } finally {
       if (!committed) {
         rollbackTransaction();

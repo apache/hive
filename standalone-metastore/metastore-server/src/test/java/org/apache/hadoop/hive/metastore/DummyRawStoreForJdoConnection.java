@@ -191,8 +191,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public void alterCatalog(String catName, Catalog cat) throws MetaException,
-      InvalidOperationException {
+  public void alterCatalog(String catName, Catalog cat) {
 
   }
 
