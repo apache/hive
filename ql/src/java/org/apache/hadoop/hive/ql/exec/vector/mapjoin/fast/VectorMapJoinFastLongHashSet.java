@@ -49,11 +49,11 @@ public class VectorMapJoinFastLongHashSet
   }
 
   @Override
-  public void putRow(BytesWritable currentKey, BytesWritable currentValue)
+  public void putRow(long hashCode, BytesWritable currentKey, BytesWritable currentValue)
       throws HiveException, IOException {
 
     // Ignore NULL keys (HashSet not used for FULL OUTER).
-    adaptPutRow(currentKey, currentValue);
+    adaptPutRow(hashCode, currentKey, currentValue);
   }
 
   @Override
@@ -67,7 +67,8 @@ public class VectorMapJoinFastLongHashSet
    */
   @VisibleForTesting
   public void testPutRow(long currentKey) throws HiveException, IOException {
-    add(currentKey, null);
+    long hashCode = HashCodeUtil.calculateLongHashCode(currentKey);
+    add(hashCode, currentKey, null);
   }
 
   @Override
@@ -83,13 +84,18 @@ public class VectorMapJoinFastLongHashSet
 
   @Override
   public JoinResult contains(long key, VectorMapJoinHashSetResult hashSetResult) {
+    long hashCode = HashCodeUtil.calculateLongHashCode(key);
+    return this.contains(hashCode, key, hashSetResult);
+  }
+
+  @Override
+  public JoinResult contains(long hashCode, long key, VectorMapJoinHashSetResult hashSetResult) {
 
     VectorMapJoinFastHashSet.HashSetResult optimizedHashSetResult =
         (VectorMapJoinFastHashSet.HashSetResult) hashSetResult;
 
     optimizedHashSetResult.forget();
 
-    long hashCode = HashCodeUtil.calculateLongHashCode(key);
     int pairIndex = findReadSlot(key, hashCode);
     JoinUtil.JoinResult joinResult;
     if (pairIndex == -1) {

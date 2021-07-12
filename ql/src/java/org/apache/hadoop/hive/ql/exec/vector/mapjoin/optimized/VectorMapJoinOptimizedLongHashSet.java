@@ -75,6 +75,12 @@ public class VectorMapJoinOptimizedLongHashSet
 
   }
 
+  @Override
+  public JoinResult contains(long hashCode, long key,
+      VectorMapJoinHashSetResult hashSetResult) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
   public VectorMapJoinOptimizedLongHashSet(
           boolean minMaxEnabled, boolean isOuterJoin, HashTableKeyType hashTableKeyType,
           MapJoinTableContainer originalTableContainer, ReusableGetAdaptor hashMapRowGetter, TableDesc tableDesc) {

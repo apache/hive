@@ -44,6 +44,8 @@ public interface VectorMapJoinLongHashMap
    */
   JoinUtil.JoinResult lookup(long key, VectorMapJoinHashMapResult hashMapResult) throws IOException;
 
+  JoinUtil.JoinResult lookup(long hashCode, long key, VectorMapJoinHashMapResult hashMapResult) throws IOException;
+
   /*
    * A version of lookup with match tracking.
    * ...
@@ -55,5 +57,8 @@ public interface VectorMapJoinLongHashMap
    * ...
    */
   JoinUtil.JoinResult lookup(long key, VectorMapJoinHashMapResult hashMapResult,
+      MatchTracker matchTracker) throws IOException;
+
+  JoinUtil.JoinResult lookup(long hashCode, long key, VectorMapJoinHashMapResult hashMapResult,
       MatchTracker matchTracker) throws IOException;
 }

@@ -110,6 +110,12 @@ public class VectorMapJoinOptimizedStringHashMap
   }
 
   @Override
+  public JoinResult lookup(long hashCode, byte[] keyBytes, int keyStart, int keyLength,
+      VectorMapJoinHashMapResult hashMapResult) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public JoinResult lookup(byte[] keyBytes, int keyStart, int keyLength,
       VectorMapJoinHashMapResult hashMapResult, MatchTracker matchTracker) throws IOException {
 
@@ -118,6 +124,12 @@ public class VectorMapJoinOptimizedStringHashMap
     return super.lookup(serializedBytes.bytes, serializedBytes.offset, serializedBytes.length,
             hashMapResult, matchTracker);
 
+  }
+
+  @Override
+  public JoinResult lookup(long hashCode, byte[] keyBytes, int keyStart, int keyLength,
+      VectorMapJoinHashMapResult hashMapResult, MatchTracker matchTracker) throws IOException {
+    throw new UnsupportedOperationException();
   }
 
   public VectorMapJoinOptimizedStringHashMap(boolean isOuterJoin, MapJoinTableContainer originalTableContainer,

@@ -44,15 +44,13 @@ public abstract class VectorMapJoinFastBytesHashSet
     return new VectorMapJoinFastBytesHashSetStore.HashSetResult();
   }
 
-  public void add(byte[] keyBytes, int keyStart, int keyLength, BytesWritable currentValue) {
+  public void add(long hashCode, byte[] keyBytes, int keyLength, BytesWritable currentValue, int keyStart) {
 
     if (checkResize()) {
       expandAndRehash();
     }
 
-    long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
-    int intHashCode = (int) hashCode;
-    int slot = (intHashCode & logicalHashBucketMask);
+    int slot = ((int) hashCode & logicalHashBucketMask);
     long probeSlot = slot;
     int i = 0;
     boolean isNewKey;
@@ -99,14 +97,19 @@ public abstract class VectorMapJoinFastBytesHashSet
 
   @Override
   public JoinUtil.JoinResult contains(byte[] keyBytes, int keyStart, int keyLength,
+      VectorMapJoinHashSetResult hashSetResult) {
+    long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
+    return this.contains(hashCode, keyBytes, keyStart, keyLength, hashSetResult);
+  }
+
+  @Override
+  public JoinUtil.JoinResult contains(long hashCode, byte[] keyBytes, int keyStart, int keyLength,
           VectorMapJoinHashSetResult hashSetResult) {
 
     VectorMapJoinFastBytesHashSetStore.HashSetResult fastHashSetResult =
         (VectorMapJoinFastBytesHashSetStore.HashSetResult) hashSetResult;
 
     fastHashSetResult.forget();
-
-    long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
 
     doHashSetContains(
         keyBytes, keyStart, keyLength, hashCode, fastHashSetResult);

@@ -216,7 +216,7 @@ public class MapJoinTableContainerSerDe {
       FileSystem fs, Path folder, Configuration hconf) throws HiveException {
     try {
       VectorMapJoinFastTableContainer tableContainer =
-          new VectorMapJoinFastTableContainer(mapJoinDesc, hconf, -1);
+          new VectorMapJoinFastTableContainer(mapJoinDesc, hconf, -1, 1);
       tableContainer.setSerde(keyContext, valueContext);
 
       if (fs.exists(folder)) {

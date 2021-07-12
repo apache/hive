@@ -32,13 +32,12 @@ import org.apache.hadoop.io.BytesWritable;
  */
 public interface VectorMapJoinHashTable extends MemoryEstimate {
 
-  /*
-   * @param currentKey
-   *          The current key.
-   * @param currentValue
-   *          The current value.
+  /**
+   * @param hashCode current HashCode to avoid re-computation
+   * @param currentKey The current Key in bytes
+   * @param currentValue The current Value in bytes
    */
-  void putRow(BytesWritable currentKey, BytesWritable currentValue)
+  void putRow(long hashCode, BytesWritable currentKey, BytesWritable currentValue)
       throws SerDeException, HiveException, IOException;
 
   /**

@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinNonMatchedIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -27,14 +27,12 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.NonMatchedSmallTableIterator;
 import org.apache.hadoop.hive.ql.exec.persistence.MatchTracker;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHashTable;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinTableContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc;
-import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationType;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKind;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -45,7 +43,7 @@ import org.apache.hadoop.io.Writable;
  * HashTableLoader for Tez constructs the hashtable from records read from
  * a broadcast edge.
  */
-public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContainer {
+public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContainer, VectorMapJoinHashTable {
 
   private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastTableContainer.class.getName());
 
@@ -55,16 +53,16 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
   private final float keyCountAdj;
   private final int threshold;
   private final float loadFactor;
-  private final int wbSize;
 
   private final long estimatedKeyCount;
 
-
-  private final VectorMapJoinFastHashTable vectorMapJoinFastHashTable;
   private String key;
+  private int numThreads;
+
+  private final VectorMapJoinFastHashTableContainerBase INSTANCE;
 
   public VectorMapJoinFastTableContainer(MapJoinDesc desc, Configuration hconf,
-      long estimatedKeyCount) throws SerDeException {
+      long estimatedKeys, int numThreads) throws SerDeException {
 
     this.desc = desc;
     this.hconf = hconf;
@@ -72,21 +70,19 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
     keyCountAdj = HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEKEYCOUNTADJUSTMENT);
     threshold = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD);
     loadFactor = HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR);
-    wbSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEWBSIZE);
 
-    this.estimatedKeyCount = estimatedKeyCount;
+    this.numThreads = numThreads;
+    this.estimatedKeyCount = estimatedKeys > numThreads ? (estimatedKeys/numThreads) : estimatedKeys;
 
-    int newThreshold = HashMapWrapper.calculateTableSize(
-        keyCountAdj, threshold, loadFactor, estimatedKeyCount);
+    int newThreshold = HashMapWrapper.calculateTableSize(keyCountAdj, threshold, loadFactor, estimatedKeyCount);
 
     // LOG.debug("VectorMapJoinFastTableContainer load newThreshold " + newThreshold);
-
-    vectorMapJoinFastHashTable = createHashTable(newThreshold);
+    this.INSTANCE = createHashTables(newThreshold);
   }
 
   @Override
   public VectorMapJoinHashTable vectorMapJoinHashTable() {
-    return vectorMapJoinFastHashTable;
+    return this.INSTANCE;
   }
 
   @Override
@@ -99,10 +95,9 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
     return key;
   }
 
-  private VectorMapJoinFastHashTable createHashTable(int newThreshold) {
+  private VectorMapJoinFastHashTableContainerBase createHashTables(int newThreshold) {
 
     VectorMapJoinDesc vectorDesc = (VectorMapJoinDesc) desc.getVectorDesc();
-    HashTableImplementationType hashTableImplementationType = vectorDesc.getHashTableImplementationType();
     HashTableKind hashTableKind = vectorDesc.getHashTableKind();
     HashTableKeyType hashTableKeyType = vectorDesc.getHashTableKeyType();
     boolean isFullOuter = vectorDesc.getIsFullOuter();
@@ -110,8 +105,7 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
 
     int writeBufferSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEWBSIZE);
 
-    VectorMapJoinFastHashTable hashTable = null;
-
+    VectorMapJoinFastHashTableContainerBase htWrapper = null;
     switch (hashTableKeyType) {
     case BOOLEAN:
     case BYTE:
@@ -121,25 +115,16 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
     case LONG:
       switch (hashTableKind) {
       case HASH_MAP:
-        hashTable = new VectorMapJoinFastLongHashMap(
-            isFullOuter,
-            minMaxEnabled,
-            hashTableKeyType,
-            newThreshold, loadFactor, writeBufferSize, estimatedKeyCount, desc.getKeyTblDesc());
+        htWrapper = new VectorMapJoinFastLongHashMapContainer(isFullOuter, minMaxEnabled,
+            hashTableKeyType, newThreshold, loadFactor, writeBufferSize, estimatedKeyCount, desc.getKeyTblDesc(), numThreads);
         break;
       case HASH_MULTISET:
-        hashTable = new VectorMapJoinFastLongHashMultiSet(
-            isFullOuter,
-            minMaxEnabled,
-            hashTableKeyType,
-            newThreshold, loadFactor, writeBufferSize, estimatedKeyCount, desc.getKeyTblDesc());
+        htWrapper = new VectorMapJoinFastLongHashMultiSetContainer(isFullOuter, minMaxEnabled,
+            hashTableKeyType, newThreshold, loadFactor, writeBufferSize, estimatedKeyCount, desc.getKeyTblDesc(), numThreads);
         break;
       case HASH_SET:
-        hashTable = new VectorMapJoinFastLongHashSet(
-            isFullOuter,
-            minMaxEnabled,
-            hashTableKeyType,
-            newThreshold, loadFactor, writeBufferSize, estimatedKeyCount, desc.getKeyTblDesc());
+        htWrapper = new VectorMapJoinFastLongHashSetContainer(isFullOuter, minMaxEnabled,
+            hashTableKeyType, newThreshold, loadFactor, writeBufferSize, estimatedKeyCount, desc.getKeyTblDesc(), numThreads);
         break;
       }
       break;
@@ -147,19 +132,16 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
     case STRING:
       switch (hashTableKind) {
       case HASH_MAP:
-        hashTable = new VectorMapJoinFastStringHashMap(
-            isFullOuter,
-            newThreshold, loadFactor, writeBufferSize, estimatedKeyCount, desc.getKeyTblDesc());
+        htWrapper = new VectorMapJoinFastStringHashMapContainer(isFullOuter, newThreshold,
+            loadFactor, writeBufferSize, estimatedKeyCount, desc.getKeyTblDesc(), numThreads);
         break;
       case HASH_MULTISET:
-        hashTable = new VectorMapJoinFastStringHashMultiSet(
-            isFullOuter,
-            newThreshold, loadFactor, writeBufferSize, estimatedKeyCount, desc.getKeyTblDesc());
+        htWrapper = new VectorMapJoinFastStringHashMultiSetContainer(isFullOuter, newThreshold,
+            loadFactor, writeBufferSize, estimatedKeyCount, desc.getKeyTblDesc(), numThreads);
         break;
       case HASH_SET:
-        hashTable = new VectorMapJoinFastStringHashSet(
-            isFullOuter,
-            newThreshold, loadFactor, writeBufferSize, estimatedKeyCount, desc.getKeyTblDesc());
+        htWrapper = new VectorMapJoinFastStringHashSetContainer(isFullOuter, newThreshold,
+            loadFactor, writeBufferSize, estimatedKeyCount, desc.getKeyTblDesc(), numThreads);
         break;
       }
       break;
@@ -167,34 +149,40 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
     case MULTI_KEY:
       switch (hashTableKind) {
       case HASH_MAP:
-        hashTable = new VectorMapJoinFastMultiKeyHashMap(
-            isFullOuter,
-            newThreshold, loadFactor, writeBufferSize, estimatedKeyCount);
+        htWrapper = new VectorMapJoinFastMultiKeyHashMapContainer(isFullOuter, newThreshold,
+            loadFactor, writeBufferSize, estimatedKeyCount, numThreads);
         break;
       case HASH_MULTISET:
-        hashTable = new VectorMapJoinFastMultiKeyHashMultiSet(
-            isFullOuter,
-            newThreshold, loadFactor, writeBufferSize, estimatedKeyCount);
+        htWrapper = new VectorMapJoinFastMultiKeyHashMultiSetContainer(isFullOuter, newThreshold,
+            loadFactor, writeBufferSize, estimatedKeyCount, numThreads);
         break;
       case HASH_SET:
-        hashTable = new VectorMapJoinFastMultiKeyHashSet(
-            isFullOuter,
-            newThreshold, loadFactor, writeBufferSize, estimatedKeyCount);
+        htWrapper = new VectorMapJoinFastMultiKeyHashSetContainer(isFullOuter, newThreshold,
+            loadFactor, writeBufferSize, estimatedKeyCount, numThreads);
         break;
       }
       break;
     }
+    return htWrapper;
+  }
 
-    return hashTable;
+  public long getHashCode(BytesWritable currentKey) throws HiveException, IOException {
+    return INSTANCE.getHashCode(currentKey);
   }
 
   @Override
   public MapJoinKey putRow(Writable currentKey, Writable currentValue)
       throws SerDeException, HiveException, IOException {
-
-    // We are not using the key and value contexts, nor do we support a MapJoinKey.
-    vectorMapJoinFastHashTable.putRow((BytesWritable) currentKey, (BytesWritable) currentValue);
+    long hashCode = INSTANCE.getHashCode((BytesWritable) currentKey);
+    INSTANCE.putRow(hashCode, (BytesWritable) currentKey, (BytesWritable) currentValue);
     return null;
+  }
+
+  @Override
+  public void putRow(long hashCode, BytesWritable currentKey, BytesWritable currentValue)
+      throws SerDeException, HiveException, IOException {
+    // We are not using the key and value contexts, nor do we support a MapJoinKey.
+    INSTANCE.putRow(hashCode, currentKey, currentValue);
   }
 
   @Override
@@ -208,9 +196,8 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
   }
 
   @Override
-  public NonMatchedSmallTableIterator createNonMatchedSmallTableIterator(
-      MatchTracker matchTracker) {
-    throw new RuntimeException("Not applicable");
+  public NonMatchedSmallTableIterator createNonMatchedSmallTableIterator(MatchTracker matchTracker) {
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -220,7 +207,7 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
 
   @Override
   public MapJoinKey getAnyKey() {
-    throw new RuntimeException("Not applicable");
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -234,19 +221,33 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
   }
 
   @Override
+  public boolean containsLongKey(long currentKey) {
+    return INSTANCE.containsLongKey(currentKey);
+  }
+
+  @Override
   public int size() {
-    return vectorMapJoinFastHashTable.size();
+    return INSTANCE.size();
+  }
+
+  @Override
+  public MatchTracker createMatchTracker() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public VectorMapJoinNonMatchedIterator createNonMatchedIterator(MatchTracker matchTracker) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public int spillPartitionId() {
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public long getEstimatedMemorySize() {
-    JavaDataModel jdm = JavaDataModel.get();
-    long size = 0;
-    size += vectorMapJoinFastHashTable.getEstimatedMemorySize();
-    size += (4 * jdm.primitive1());
-    size += (2 * jdm.object());
-    size += (jdm.primitive2());
-    return size;
+    return INSTANCE.getEstimatedMemorySize();
   }
 
   @Override

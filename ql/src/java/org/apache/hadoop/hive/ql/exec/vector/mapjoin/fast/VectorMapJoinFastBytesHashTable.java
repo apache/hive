@@ -28,8 +28,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.WriteBuffers;
 import org.apache.hadoop.io.BytesWritable;
 
-import com.google.common.annotations.VisibleForTesting;
-
 /*
  * An single byte array value hash map optimized for vector map join.
  */
@@ -46,11 +44,12 @@ public abstract class VectorMapJoinFastBytesHashTable
   protected BytesWritable testKeyBytesWritable;
 
   @Override
-  public void putRow(BytesWritable currentKey, BytesWritable currentValue) throws HiveException, IOException {
+  public void putRow(long hashCode, BytesWritable currentKey, BytesWritable currentValue)
+      throws HiveException, IOException {
     // No deserialization of key(s) here -- just get reference to bytes.
     byte[] keyBytes = currentKey.getBytes();
     int keyLength = currentKey.getLength();
-    add(keyBytes, 0, keyLength, currentValue);
+    add(hashCode, keyBytes, keyLength, currentValue, 0);
   }
 
   @Override
@@ -59,8 +58,7 @@ public abstract class VectorMapJoinFastBytesHashTable
     throw new RuntimeException("Not supported yet!");
   }
 
-  public abstract void add(byte[] keyBytes, int keyStart, int keyLength,
-      BytesWritable currentValue);
+  public abstract void add(long hashCode, byte[] keyBytes, int keyLength, BytesWritable currentValue, int keyStart);
 
   protected void expandAndRehash() {
 

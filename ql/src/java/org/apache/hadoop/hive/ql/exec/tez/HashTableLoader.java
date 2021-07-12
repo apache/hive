@@ -257,6 +257,8 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
 
         tableContainer.setSerde(keyCtx, valCtx);
         long startTime = System.currentTimeMillis();
+
+        // HIVE-25149
         while (kvReader.next()) {
           tableContainer.putRow((Writable) kvReader.getCurrentKey(), (Writable) kvReader.getCurrentValue());
           numEntries++;

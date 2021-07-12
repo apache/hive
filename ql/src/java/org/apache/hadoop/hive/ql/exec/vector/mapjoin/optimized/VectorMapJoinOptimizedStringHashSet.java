@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.optimized;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.JoinUtil.JoinResult;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.ReusableGetAdaptor;
@@ -54,6 +55,12 @@ public class VectorMapJoinOptimizedStringHashSet
     return super.contains(serializedBytes.bytes, serializedBytes.offset, serializedBytes.length,
         hashSetResult);
 
+  }
+
+  @Override
+  public JoinUtil.JoinResult contains(long hashCode, byte[] keyBytes, int keyOffset, int keyLength,
+      VectorMapJoinHashSetResult hashSetResult) throws IOException {
+    throw new UnsupportedOperationException();
   }
 
   public VectorMapJoinOptimizedStringHashSet(boolean isOuterJoin, MapJoinTableContainer originalTableContainer,

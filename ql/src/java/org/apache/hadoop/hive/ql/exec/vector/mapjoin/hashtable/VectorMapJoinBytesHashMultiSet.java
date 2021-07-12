@@ -48,4 +48,7 @@ public interface VectorMapJoinBytesHashMultiSet
   JoinUtil.JoinResult contains(byte[] keyBytes, int keyStart, int keyLength,
           VectorMapJoinHashMultiSetResult hashMultiSetResult) throws IOException;
 
+  JoinUtil.JoinResult contains(long hashCode, byte[] keyBytes, int keyStart, int keyLength,
+      VectorMapJoinHashMultiSetResult hashMultiSetResult) throws IOException;
+
 }
