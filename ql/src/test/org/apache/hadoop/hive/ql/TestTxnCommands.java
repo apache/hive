@@ -433,6 +433,30 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
   }
 
   @Test
+  public void testAddAndDropPartitionAdvancingWriteIds() throws Exception {
+    runStatementOnDriver("create database ex2");
+
+    String tableName = "ex2.exchange_part_test2";
+    IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
+
+    runStatementOnDriver(String.format("CREATE TABLE %s (f1 string) PARTITIONED BY (ds STRING) " +
+    "TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')"
+    ,tableName));
+
+    String validWriteIds = msClient.getValidWriteIds(tableName).toString();
+    LOG.info("ValidWriteIds before add partition::"+ validWriteIds);
+    Assert.assertEquals("ex2.exchange_part_test2:0:9223372036854775807::", validWriteIds);
+    runStatementOnDriver("ALTER TABLE ex2.exchange_part_test2 ADD PARTITION (ds='2013-04-05')");
+    validWriteIds = msClient.getValidWriteIds(tableName).toString();
+    LOG.info("ValidWriteIds after add partition::"+ validWriteIds);
+    Assert.assertEquals("ex2.exchange_part_test2:1:9223372036854775807::", validWriteIds);
+    runStatementOnDriver("ALTER TABLE ex2.exchange_part_test2 DROP PARTITION (ds='2013-04-05')");
+    validWriteIds = msClient.getValidWriteIds(tableName).toString();
+    LOG.info("ValidWriteIds after drop partition::"+ validWriteIds);
+    Assert.assertEquals("ex2.exchange_part_test2:2:9223372036854775807::", validWriteIds);
+  }
+
+  @Test
   public void testParallelInsertAnalyzeStats() throws Exception {
     String tableName = "mm_table";
     List<ColumnStatisticsObj> stats;
