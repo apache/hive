@@ -305,6 +305,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
   }
 
+  @Override
+  public boolean supportsTruncateOnNonNativeTables() {
+    return true;
+  }
+
   public boolean addDynamicSplitPruningEdge(org.apache.hadoop.hive.ql.metadata.Table table,
       ExprNodeDesc syntheticFilterPredicate) {
     try {

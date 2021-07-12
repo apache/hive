@@ -284,4 +284,14 @@ public interface HiveStorageHandler extends Configurable {
   default void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
     throw new UnsupportedOperationException();
   }
+
+  /**
+   * Check if the underlying storage handler implementation supports truncate operation
+   * for non native tables.
+   * @return true if the storage handler can support it
+   * @return
+   */
+  default boolean supportsTruncateOnNonNativeTables() {
+    return false;
+  }
 }
