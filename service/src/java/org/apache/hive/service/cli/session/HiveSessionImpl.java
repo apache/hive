@@ -319,7 +319,7 @@ public class HiveSessionImpl implements HiveSession {
       LOG.warn("The operation log root directory is not writable: " +
           operationLogRootDir.getAbsolutePath());
     }
-    sessionLogDir = new File(operationLogRootDir, sessionHandle.getHandleIdentifier().toString());
+    sessionLogDir = new File(operationLogRootDir, sessionState.getSessionId());
     isOperationLogEnabled = true;
     if (!sessionLogDir.exists()) {
       if (!sessionLogDir.mkdir()) {
