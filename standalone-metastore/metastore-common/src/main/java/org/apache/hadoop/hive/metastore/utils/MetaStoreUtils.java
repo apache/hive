@@ -237,7 +237,9 @@ public class MetaStoreUtils {
   }
 
   public static boolean isDbReplIncompatible(Database db) {
-    assert (db != null);
+    if (db == null) {
+      return false;
+    }
     Map<String, String> dbParameters = db.getParameters();
     return dbParameters != null && ReplConst.TRUE.equalsIgnoreCase(dbParameters.get(ReplConst.REPL_INCOMPATIBLE));
   }
