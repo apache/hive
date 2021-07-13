@@ -33,11 +33,14 @@ import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.formatting.MapBuilder;
+import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 
 import java.io.DataOutputStream;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Formats DESC TABLE results to json format.
@@ -239,6 +242,21 @@ public class JsonDescTableFormatter extends DescTableFormatter {
       builder.put("partitionInfo", partition.getTPartition());
     } else {
       builder.put("tableInfo", table.getTTable());
+    }
+    if (table.isNonNative() && table.getStorageHandler() != null &&
+        table.getStorageHandler().supportsPartitionTransform()) {
+      List<PartitionTransformSpec> specs = table.getStorageHandler().getPartitionTransformSpec(table);
+      if (!specs.isEmpty()) {
+        builder.put("partitionSpecInfo", specs.stream().map(s -> {
+          Map<String, String> result = new LinkedHashMap<>();
+          result.put("column_name", s.getColumnName());
+          result.put("transform_type", s.getTransformType().name());
+          if (s.getTransformParam().isPresent()) {
+            result.put("transform_param", String.valueOf(s.getTransformParam().get()));
+          }
+          return result;
+        }).collect(Collectors.toList()));
+      }
     }
     if (PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(table.getPrimaryKeyInfo())) {
       builder.put("primaryKeyInfo", table.getPrimaryKeyInfo());
