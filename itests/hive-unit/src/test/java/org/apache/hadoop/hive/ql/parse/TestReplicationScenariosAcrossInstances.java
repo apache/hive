@@ -693,6 +693,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("alter database default set dbproperties ('hive.repl.ckpt.key'='', 'repl.last.id'='')");
     try {
       replica.load("", "`*`");
+      Assert.fail();
     } catch (HiveException e) {
       assertEquals("MetaException(message:Database name cannot be null.)", e.getMessage());
     }

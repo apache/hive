@@ -190,7 +190,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
       WarehouseInstance.Tuple dumpData = primary.dump(primaryDbName);
 
       assertFalse(ReplUtils.failedWithNonRecoverableError(new Path(dumpData.dumpLocation), conf));
-      replica.loadFailure(replicatedDbName, primaryDbName);
+      replica.loadFailure(replicatedDbName, primaryDbName, null, ErrorMsg.REPL_INCOMPATIBLE_EXCEPTION.getErrorCode());
       assertTrue(ReplUtils.failedWithNonRecoverableError(new Path(dumpData.dumpLocation), conf));
 
       primary.dumpFailure(primaryDbName);
@@ -1197,6 +1197,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     //End of additional steps
     try {
       replica.loadWithoutExplain("", "`*`");
+      fail();
     } catch (HiveException e) {
       assertEquals("MetaException(message:Database name cannot be null.)", e.getMessage());
     }

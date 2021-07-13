@@ -317,7 +317,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         .getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase()), conf), conf)) {
         throw new Exception(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getMsg());
       }
-
       if (loadPath != null) {
         DumpMetaData dmd = new DumpMetaData(loadPath, conf);
 
