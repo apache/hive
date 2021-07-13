@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
@@ -42,6 +44,7 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
+import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -268,6 +271,31 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public boolean supportsPartitionTransform() {
     return true;
+  }
+
+  @Override
+  public List<PartitionTransformSpec> getPartitionTransformSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    List<PartitionTransformSpec> result = new ArrayList<>();
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+    Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+    return table.spec().fields().stream().map(f -> {
+      PartitionTransformSpec spec = new PartitionTransformSpec();
+      spec.setColumnName(table.schema().findColumnName(f.sourceId()));
+      // right now the only way to fetch the transform type and its params is through the toString() call
+      String transformName = f.transform().toString().toUpperCase();
+      // if the transform name contains '[' it means it has some config params
+      if (transformName.contains("[")) {
+        spec.setTransformType(PartitionTransformSpec.TransformType
+            .valueOf(transformName.substring(0, transformName.indexOf("["))));
+        spec.setTransformParam(Optional.of(Integer
+            .valueOf(transformName.substring(transformName.indexOf("[") + 1, transformName.indexOf("]")))));
+      } else {
+        spec.setTransformType(PartitionTransformSpec.TransformType.valueOf(transformName));
+        spec.setTransformParam(Optional.empty());
+      }
+
+      return spec;
+    }).collect(Collectors.toList());
   }
 
   @Override

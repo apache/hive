@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.PartitionTransform;
+import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 
@@ -53,7 +54,7 @@ public class AlterTableSetPartitionSpecAnalyzer extends AbstractAlterTableAnalyz
     Table table = getTable(tableName);
     validateAlterTableType(table, AlterTableType.SETPARTITIONSPEC, false);
     inputs.add(new ReadEntity(table));
-    List<PartitionTransform.PartitionTransformSpec> partitionTransformSpec =
+    List<PartitionTransformSpec> partitionTransformSpec =
         PartitionTransform.getPartitionTransformSpec(command);
     if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC,
         partitionTransformSpec)) {
