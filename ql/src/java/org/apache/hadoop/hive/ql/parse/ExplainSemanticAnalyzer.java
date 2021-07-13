@@ -189,9 +189,8 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       fetchTask.getWork().initializeForFetch(ctx.getOpContext());
     }
 
-    ParseContext pCtx = null;
     if (sem instanceof SemanticAnalyzer) {
-      pCtx = ((SemanticAnalyzer)sem).getParseContext();
+      pCtx = sem.getParseContext();
     }
 
     config.setUserLevelExplain(!config.isExtended()
@@ -289,5 +288,4 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     return super.skipAuthorization();
   }
-
 }
