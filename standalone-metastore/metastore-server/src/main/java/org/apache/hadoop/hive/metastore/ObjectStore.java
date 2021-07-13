@@ -8092,23 +8092,22 @@ public class ObjectStore implements RawStore, Configurable {
 
     final Query query;
     final String[] args;
+    final List<MDCPrivilege> mSecurityDCList;
 
     if (authorizer != null) {
       query = pm.newQuery(MDCPrivilege.class, "dataConnector.name == t1 && authorizer == t2");
       query.declareParameters("java.lang.String t1, java.lang.String t2");
       args = new String[] { dcName, authorizer };
+      mSecurityDCList = (List<MDCPrivilege>) query.executeWithArray(args);
     } else {
       query = pm.newQuery(MDCPrivilege.class, "dataConnector.name == t1");
       query.declareParameters("java.lang.String t1, java.lang.String t2");
       args = new String[] { dcName };
+      mSecurityDCList = (List<MDCPrivilege>) query.execute(args);
     }
-
-    try (Query q = query) {
-      final List<MDCPrivilege> mSecurityDCList = (List<MDCPrivilege>) query.executeWithArray(args);
-      pm.retrieveAll(mSecurityDCList);
-      LOG.debug("Done retrieving all objects for listDataConnectorGrants: {}", mSecurityDCList);
-      return Collections.unmodifiableList(new ArrayList<>(mSecurityDCList));
-    }
+    pm.retrieveAll(mSecurityDCList);
+    LOG.debug("Done retrieving all objects for listDataConnectorGrants: {}", mSecurityDCList);
+    return Collections.unmodifiableList(new ArrayList<>(mSecurityDCList));
   }
 
   private List<MPartitionPrivilege> listPartitionGrants(String catName, String dbName, String tableName,
