@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
@@ -78,6 +79,7 @@ import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTest
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.base.Throwables;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.SerializationUtil;
 import org.slf4j.Logger;
@@ -88,6 +90,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String TABLE_NAME_SEPARATOR = "..";
+
+  private static final List<AlterTableType> ALLOWED_ALTER_OPS = ImmutableList.of(
+      AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.ADDCOLS,
+      AlterTableType.REPLACE_COLUMNS, AlterTableType.RENAME_COLUMN, AlterTableType.SETPARTITIONSPEC);
 
   static final String WRITE_KEY = "HiveIcebergStorageHandler_write";
 
@@ -333,8 +339,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
   }
 
+  @Override
+  public boolean isAllowedAlterOperation(AlterTableType opType) {
+    return ALLOWED_ALTER_OPS.contains(opType);
+  }
+
   public boolean addDynamicSplitPruningEdge(org.apache.hadoop.hive.ql.metadata.Table table,
-      ExprNodeDesc syntheticFilterPredicate) {
+                                            ExprNodeDesc syntheticFilterPredicate) {
     try {
       Collection<String> partitionColumns = ((HiveIcebergSerDe) table.getDeserializer()).partitionColumns();
       if (partitionColumns.size() > 0) {
