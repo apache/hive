@@ -54,12 +54,4 @@ implements ConstantObjectInspector {
     }
     return result;
   }
-
-  @Override
-  public int precision() {
-    if (value == null) {
-      return super.precision();
-    }
-    return value.precision();
-  }
 }

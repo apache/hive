@@ -37,7 +37,11 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.MANUALLY_INITIATED_COMPACTION;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.*;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.NO_VAL;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getHostFromId;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getThreadIdFromId;
 
 /**
  * Collect and publish ACID and compaction related metrics.
@@ -45,7 +49,6 @@ import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.*;
 public class AcidMetricService  implements MetastoreTaskThread {
 
   private static final Logger LOG = LoggerFactory.getLogger(AcidMetricService.class);
-  private static final String NO_VAL = " --- ";
 
   private Configuration conf;
   private TxnStore txnHandler;
@@ -148,6 +151,8 @@ public class AcidMetricService  implements MetastoreTaskThread {
     }
 
     long initiatorsCount = lastElements.values().stream()
+        //manually initiated compactions don't count
+        .filter(e -> !MANUALLY_INITIATED_COMPACTION.equals(getThreadIdFromId(e.getInitiatorId())))
         .map(e -> getHostFromId(e.getInitiatorId())).distinct().filter(e -> !NO_VAL.equals(e)).count();
     Metrics.getOrCreateGauge(COMPACTION_NUM_INITIATORS).set((int) initiatorsCount);
     long workersCount = lastElements.values().stream()
@@ -171,14 +176,6 @@ public class AcidMetricService  implements MetastoreTaskThread {
   @Override
   public Configuration getConf() {
     return this.conf;
-  }
-
-  private static String getHostFromId(String id) {
-    if (id == null) {
-      return NO_VAL;
-    }
-    int lastDash = id.lastIndexOf('-');
-    return id.substring(0, lastDash > -1 ? lastDash : id.length());
   }
 
   @VisibleForTesting
