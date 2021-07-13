@@ -893,10 +893,6 @@
                   <shadedPattern>org.apache.hive.org.apache.orc</shadedPattern>
                 </relocation>
                 <relocation>
-                  <pattern>org.apache.avro</pattern>
-                  <shadedPattern>org.apache.hive.org.apache.avro</shadedPattern>
-                </relocation>
-                <relocation>
                   <pattern>org.apache.commons</pattern>
                   <shadedPattern>org.apache.hive.org.apache.commons</shadedPattern>
                 </relocation>
@@ -915,10 +911,6 @@
                 <relocation>
                   <pattern>org.jodd</pattern>
                   <shadedPattern>org.apache.hive.org.jodd</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.google.protobuf</pattern>
-                  <shadedPattern>org.apache.hive.com.google.protobuf</shadedPattern>
                 </relocation>
                 <relocation>
                   <pattern>org.codehaus.jackson</pattern>
