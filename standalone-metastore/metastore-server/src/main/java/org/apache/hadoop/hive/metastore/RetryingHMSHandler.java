@@ -23,6 +23,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.util.AbstractMap;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -31,6 +33,9 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
+
+import com.facebook.fb303.FacebookBase;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -61,6 +66,7 @@ public class RetryingHMSHandler implements InvocationHandler {
 
   private final Configuration origConf;            // base configuration
   private final Configuration activeConf;  // active configuration
+  private final List<MetaStoreEndFunctionListener> endFunctionListeners; // the end function listener
 
   private RetryingHMSHandler(Configuration origConf, IHMSHandler baseHandler, boolean local) throws MetaException {
     this.origConf = origConf;
@@ -74,6 +80,8 @@ public class RetryingHMSHandler implements InvocationHandler {
     // over settings in *.xml.  The thread local conf needs to be used because at this point
     // it has already been initialized using hiveConf.
     MetaStoreInit.updateConnectionURL(origConf, getActiveConf(), null, metaStoreInitData);
+    endFunctionListeners = MetaStoreServerUtils.getMetaStoreListeners(
+        MetaStoreEndFunctionListener.class, origConf, MetastoreConf.getVar(origConf, ConfVars.END_FUNCTION_LISTENERS));
     try {
       //invoking init method of baseHandler this way since it adds the retry logic
       //in case of transient failures in init method
@@ -105,7 +113,7 @@ public class RetryingHMSHandler implements InvocationHandler {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
     perfLogger.perfLogBegin(CLASS_NAME, method.getName());
     try {
-      Result result = invokeInternal(proxy, method, args);
+      Result result = invokeInternal(method, args);
       retryCount = result.numRetries;
       error = false;
       return result.result;
@@ -117,7 +125,7 @@ public class RetryingHMSHandler implements InvocationHandler {
     }
   }
 
-  public Result invokeInternal(final Object proxy, final Method method, final Object[] args) throws Throwable {
+  public Result invokeInternal(final Method method, final Object[] args) throws Throwable {
 
     boolean gotNewConnectUrl = false;
     boolean reloadConf = MetastoreConf.getBoolVar(origConf, ConfVars.HMS_HANDLER_FORCE_RELOAD_CONF);
@@ -135,14 +143,17 @@ public class RetryingHMSHandler implements InvocationHandler {
     }
 
     int retryCount = 0;
-    Throwable caughtException = null;
+    Throwable caughtException, ex = null;
+    Object object = null;
     while (true) {
       try {
         if (reloadConf || gotNewConnectUrl) {
           baseHandler.setConf(getActiveConf());
         }
-        Object object = null;
         boolean isStarted = Deadline.startTimer(method.getName());
+        if (baseHandler instanceof FacebookBase) {
+          ((FacebookBase)baseHandler).incrementCounter(method.getName());
+        }
         try {
           object = method.invoke(baseHandler, args);
         } finally {
@@ -153,6 +164,7 @@ public class RetryingHMSHandler implements InvocationHandler {
         return new Result(object, retryCount);
 
       } catch (UndeclaredThrowableException e) {
+        ex = e.getCause();
         if (e.getCause() != null) {
           if (e.getCause() instanceof javax.jdo.JDOException) {
             // Due to reflection, the jdo exception is wrapped in
@@ -171,6 +183,7 @@ public class RetryingHMSHandler implements InvocationHandler {
           throw e;
         }
       } catch (InvocationTargetException e) {
+        ex = e.getCause();
         if (e.getCause() instanceof javax.jdo.JDOException) {
           // Due to reflection, the jdo exception is wrapped in
           // invocationTargetException
@@ -202,6 +215,8 @@ public class RetryingHMSHandler implements InvocationHandler {
           LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
           throw e.getCause();
         }
+      } finally {
+        endFunction(method, object, ex, args);
       }
 
       if (retryCount >= retryLimit) {
@@ -230,4 +245,21 @@ public class RetryingHMSHandler implements InvocationHandler {
   public Configuration getActiveConf() {
     return activeConf;
   }
+
+  private void endFunction(Method method, Object result, Throwable ex, Object[] fArgs) {
+    String function = method.getName();
+    if ("getCounters".equals(function) && fArgs == null
+        && endFunctionListeners != null) {
+      AbstractMap<String, Long> counters = (AbstractMap<String, Long>) result;
+      for (MetaStoreEndFunctionListener listener : endFunctionListeners) {
+        listener.exportCounters(counters);
+      }
+    } else {
+      MetaStoreEndFunctionContext context = new MetaStoreEndFunctionContext(ex, fArgs);
+      for (MetaStoreEndFunctionListener listener : endFunctionListeners) {
+        listener.onEndFunction(function, context);
+      }
+    }
+  }
+
 }
