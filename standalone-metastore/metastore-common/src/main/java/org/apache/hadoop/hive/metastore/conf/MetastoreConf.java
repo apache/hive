@@ -77,8 +77,6 @@ public class MetastoreConf {
   @VisibleForTesting
   static final String RUNTIME_STATS_CLEANER_TASK_CLASS =
       "org.apache.hadoop.hive.metastore.RuntimeStatsCleanerTask";
-  static final String PARTITION_MANAGEMENT_TASK_CLASS =
-    "org.apache.hadoop.hive.metastore.PartitionManagementTask";
   @VisibleForTesting
   static final String EVENT_CLEANER_TASK_CLASS =
       "org.apache.hadoop.hive.metastore.events.EventCleanerTask";
@@ -1067,8 +1065,7 @@ public class MetastoreConf {
         ACID_HOUSE_KEEPER_SERVICE_CLASS + "," +
             ACID_TXN_CLEANER_SERVICE_CLASS + "," +
             ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS + "," +
-            MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS + "," +
-            PARTITION_MANAGEMENT_TASK_CLASS,
+            MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS,
         "Comma-separated list of tasks that will be started in separate threads.  These will be" +
             " started only when the metastore is running as a separate service.  They must " +
             "implement " + METASTORE_TASK_THREAD_CLASS),
