@@ -1549,41 +1549,45 @@ public class ObjectStore implements RawStore, Configurable {
     constraintname = constraintname!=null?normalizeIdentifier(constraintname):null;
     List<MConstraint> mConstraints = null;
     List<String> constraintNames = new ArrayList<>();
-    Query query = null;
+    Query queryForConstraintName = null;
+    Query queryForMConstraint = null;
 
     try {
-      query = pm.newQuery("select constraintName from org.apache.hadoop.hive.metastore.model.MConstraint  where "
+      queryForConstraintName = pm.newQuery("select constraintName from org.apache.hadoop.hive.metastore.model.MConstraint  where "
         + "((parentTable.tableName == ptblname && parentTable.database.name == pdbname && " +
               "parentTable.database.catalogName == pcatname) || "
         + "(childTable != null && childTable.tableName == ctblname &&" +
               "childTable.database.name == cdbname && childTable.database.catalogName == ccatname)) " +
           (constraintname != null ? " && constraintName == constraintname" : ""));
-      query.declareParameters("java.lang.String ptblname, java.lang.String pdbname,"
+      queryForConstraintName.declareParameters("java.lang.String ptblname, java.lang.String pdbname,"
           + "java.lang.String pcatname, java.lang.String ctblname, java.lang.String cdbname," +
           "java.lang.String ccatname" +
         (constraintname != null ? ", java.lang.String constraintname" : ""));
       Collection<?> constraintNamesColl =
         constraintname != null ?
-          ((Collection<?>) query.
+          ((Collection<?>) queryForConstraintName.
             executeWithArray(tableName, dbName, catName, tableName, dbName, catName, constraintname)):
-          ((Collection<?>) query.
+          ((Collection<?>) queryForConstraintName.
             executeWithArray(tableName, dbName, catName, tableName, dbName, catName));
       for (Iterator<?> i = constraintNamesColl.iterator(); i.hasNext();) {
         String currName = (String) i.next();
         constraintNames.add(currName);
       }
-      query = pm.newQuery(MConstraint.class);
-      query.setFilter("param.contains(constraintName)");
-      query.declareParameters("java.util.Collection param");
-      Collection<?> constraints = (Collection<?>)query.execute(constraintNames);
+      queryForMConstraint = pm.newQuery(MConstraint.class);
+      queryForMConstraint.setFilter("param.contains(constraintName)");
+      queryForMConstraint.declareParameters("java.util.Collection param");
+      Collection<?> constraints = (Collection<?>)queryForMConstraint.execute(constraintNames);
       mConstraints = new ArrayList<>();
       for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
         MConstraint currConstraint = (MConstraint) i.next();
         mConstraints.add(currConstraint);
       }
     } finally {
-      if (query != null) {
-        query.closeAll();
+      if (queryForConstraintName != null) {
+        queryForConstraintName.closeAll();
+      }
+      if (queryForMConstraint != null) {
+        queryForMConstraint.closeAll();
       }
     }
     return mConstraints;
@@ -10068,9 +10072,6 @@ public class ObjectStore implements RawStore, Configurable {
         }
       }
       ret = commitTransaction();
-    } catch (NoSuchObjectException e) {
-      rollbackTransaction();
-      throw e;
     } finally {
       rollbackAndCleanup(ret, query);
     }
@@ -10161,9 +10162,6 @@ public class ObjectStore implements RawStore, Configurable {
         }
       }
       ret = commitTransaction();
-    } catch (NoSuchObjectException e) {
-      rollbackTransaction();
-      throw e;
     } finally {
       rollbackAndCleanup(ret, query);
     }
@@ -14153,6 +14151,7 @@ public class ObjectStore implements RawStore, Configurable {
       returnList.add(MReplicationMetrics.toThrift(mReplicationMetric));
     }
     ret.setReplicationMetricList(returnList);
+    query.closeAll();
     return ret;
   }
 
