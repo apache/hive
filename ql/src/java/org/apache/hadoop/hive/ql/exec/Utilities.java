@@ -2545,9 +2545,6 @@ public final class Utilities {
     final long[] summary = {0L, 0L, 0L};
     final Set<Path> pathNeedProcess = new HashSet<>();
 
-    // Since multiple threads could call this method concurrently, locking
-    // this method will avoid number of threads out of control.
-    synchronized (INPUT_SUMMARY_LOCK) {
       // For each input path, calculate the total size.
       for (final Path path : work.getPathToAliases().keySet()) {
         if (path == null) {
@@ -2572,18 +2569,24 @@ public final class Utilities {
 
       int numExecutors = getMaxExecutorsForInputListing(ctx.getConf(), pathNeedProcess.size());
       if (numExecutors > 1) {
-        LOG.info("Using {} threads for getContentSummary", numExecutors);
-        executor = Executors.newFixedThreadPool(numExecutors,
-                new ThreadFactoryBuilder().setDaemon(true)
-                        .setNameFormat("Get-Input-Summary-%d").build());
+        // Since multiple threads could call this method concurrently, locking
+        // this method will avoid number of threads out of control.
+        synchronized (INPUT_SUMMARY_LOCK) {
+          LOG.info("Using {} threads for getContentSummary", numExecutors);
+          executor = Executors.newFixedThreadPool(numExecutors,
+              new ThreadFactoryBuilder().setDaemon(true)
+                  .setNameFormat("Get-Input-Summary-%d").build());
+          getInputSummaryWithPool(ctx, Collections.unmodifiableSet(pathNeedProcess),
+              work, summary, executor);
+        }
       } else {
         LOG.info("Not using thread pool for getContentSummary");
         executor = MoreExecutors.newDirectExecutorService();
+        getInputSummaryWithPool(ctx, Collections.unmodifiableSet(pathNeedProcess),
+            work, summary, executor);
       }
-      getInputSummaryWithPool(ctx, Collections.unmodifiableSet(pathNeedProcess),
-          work, summary, executor);
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
-    }
+
     return new ContentSummary.Builder().length(summary[0])
         .fileCount(summary[1]).directoryCount(summary[2]).build();
   }
@@ -2680,9 +2683,9 @@ public final class Utilities {
                   total += estimator.estimate(jobConf, scanOp, -1).getTotalLength();
                 }
                 recordSummary(path, new ContentSummary(total, -1, -1));
-              } else {
-                // todo: should nullify summary for non-native tables,
-                // not to be selected as a mapjoin target
+              } else if (handler == null) {
+                // Nullify summary for non-native tables,
+                // in order not to be selected as a mapjoin target
                 FileSystem fs = path.getFileSystem(myConf);
                 recordSummary(path, fs.getContentSummary(path));
               }
