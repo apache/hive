@@ -507,35 +507,32 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   }
 
   private void handleReplaceColumns(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws MetaException {
-    HiveSchemaUtil.SchemaDifference schemaDifference = HiveSchemaUtil.getSchemaDiff(hmsTable.getSd().getCols(),
-        HiveSchemaUtil.convert(icebergTable.schema()), true);
-    if (!schemaDifference.isEmpty()) {
+    List<FieldSchema> hmsCols = hmsTable.getSd().getCols();
+    List<FieldSchema> icebergCols = HiveSchemaUtil.convert(icebergTable.schema());
+    HiveSchemaUtil.SchemaDifference schemaDifference = HiveSchemaUtil.getSchemaDiff(hmsCols, icebergCols, true);
+    Pair<String, Optional<String>> outOfOrder =
+        HiveSchemaUtil.getFirstOutOfOrderColumn(hmsCols, icebergCols, ImmutableMap.of());
+
+    // limit the scope of this operation to only dropping columns
+    if (!schemaDifference.getMissingFromSecond().isEmpty() || !schemaDifference.getTypeChanged().isEmpty() ||
+        !schemaDifference.getCommentChanged().isEmpty()) {
+      throw new MetaException("Unsupported operation to use REPLACE COLUMNS for adding a column, changing a " +
+          "column type or comment. Only use REPLACE COLUMNS for dropping columns. " +
+          "For the other operations, consider using the ADD COLUMNS or CHANGE COLUMN commands.");
+    }
+
+    // check if there were any column drops
+    if (!schemaDifference.getMissingFromFirst().isEmpty()) {
       updateSchema = icebergTable.updateSchema();
+      LOG.info("Dropping the following columns for table {}, cols: {}",
+          hmsTable.getTableName(), schemaDifference.getMissingFromFirst());
+      for (FieldSchema droppedCol : schemaDifference.getMissingFromFirst()) {
+        updateSchema.deleteColumn(droppedCol.getName());
+      }
     } else {
       // we should get here if the user restated the exactly the existing columns in the REPLACE COLUMNS command
       LOG.info("Found no difference between new and old schema for ALTER TABLE REPLACE COLUMNS for" +
-          " table: {}. There will be no Iceberg commit.", hmsTable.getTableName());
-      return;
-    }
-
-    for (FieldSchema droppedCol : schemaDifference.getMissingFromFirst()) {
-      updateSchema.deleteColumn(droppedCol.getName());
-    }
-
-    for (FieldSchema addedCol : schemaDifference.getMissingFromSecond()) {
-      updateSchema.addColumn(
-          addedCol.getName(),
-          HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType())),
-          addedCol.getComment()
-      );
-    }
-
-    for (FieldSchema updatedCol : schemaDifference.getTypeChanged()) {
-      updateSchema.updateColumn(updatedCol.getName(), getPrimitiveTypeOrThrow(updatedCol), updatedCol.getComment());
-    }
-
-    for (FieldSchema updatedCol : schemaDifference.getCommentChanged()) {
-      updateSchema.updateColumnDoc(updatedCol.getName(), updatedCol.getComment());
+              " table: {}. There will be no Iceberg commit.", hmsTable.getTableName());
     }
   }
 
