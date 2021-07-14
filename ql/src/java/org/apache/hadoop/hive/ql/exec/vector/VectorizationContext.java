@@ -845,6 +845,11 @@ import com.google.common.annotations.VisibleForTesting;
     return ocm.allocateOutputColumn(typeInfo);
   }
 
+  public int allocateScratchColumn(TypeInfo typeInfo, DataTypePhysicalVariation dataTypePhysicalVariation)
+      throws HiveException {
+    return ocm.allocateOutputColumn(typeInfo, dataTypePhysicalVariation);
+  }
+
   public int[] currentScratchColumns() {
     return ocm.currentScratchColumns();
   }

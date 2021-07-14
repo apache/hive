@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 
@@ -44,6 +45,7 @@ public class VectorPTFInfo {
 
   private VectorExpression[] evaluatorInputExpressions;
   private Type[] evaluatorInputColumnVectorTypes;
+  private DataTypePhysicalVariation[] evaluatorInputDataTypePhysicalVariations;
 
   private int[] keyInputColumnMap;
   private int[] nonKeyInputColumnMap;
@@ -135,8 +137,17 @@ public class VectorPTFInfo {
     return evaluatorInputColumnVectorTypes;
   }
 
+  public DataTypePhysicalVariation[] getEvaluatorInputDataTypePhysicalVariations() {
+    return evaluatorInputDataTypePhysicalVariations;
+  }
+
   public void setEvaluatorInputColumnVectorTypes(Type[] evaluatorInputColumnVectorTypes) {
     this.evaluatorInputColumnVectorTypes = evaluatorInputColumnVectorTypes;
+  }
+
+  public void setEvaluatorInputDataTypePhysicalVariations(
+      DataTypePhysicalVariation[] evaluatorInputDataTypePhysicalVariations) {
+    this.evaluatorInputDataTypePhysicalVariations = evaluatorInputDataTypePhysicalVariations;
   }
 
   public int[] getKeyInputColumnMap() {

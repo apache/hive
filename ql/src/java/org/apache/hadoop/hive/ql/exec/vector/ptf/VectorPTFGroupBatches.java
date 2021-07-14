@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.IntervalDayTimeColumnVector;
@@ -668,6 +669,10 @@ public class VectorPTFGroupBatches extends PTFPartition {
             case DECIMAL:
               ((DecimalColumnVector) outputColVector).set(i,
                   (HiveDecimalWritable) result);
+              break;
+            case DECIMAL_64:
+              ((Decimal64ColumnVector) outputColVector).vector[i] =
+                  (long) result;
               break;
             default:
               throw new RuntimeException(

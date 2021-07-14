@@ -4929,7 +4929,10 @@ public class Vectorizer implements PhysicalPlanResolver {
       TypeInfo typeInfo = colInfo.getType();
       outputColumnNames[i] = colInfo.getInternalName();
       outputTypeInfos[i] = typeInfo;
-      outputDataTypePhysicalVariations[i] = DataTypePhysicalVariation.NONE;
+      outputDataTypePhysicalVariations[i] = ((typeInfo instanceof DecimalTypeInfo) &&
+          ((DecimalTypeInfo)typeInfo).precision() <= 18)
+          ? DataTypePhysicalVariation.DECIMAL_64
+          : DataTypePhysicalVariation.NONE;
     }
 
     // Followed by key and non-key input columns (some may be missing).
@@ -5051,6 +5054,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     final int evaluatorCount = evaluatorFunctionNames.length;
     List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists = vectorPTFDesc.getEvaluatorInputExprNodeDescLists();
+    DataTypePhysicalVariation[] outputDataTypePhysicalVariations = vectorPTFDesc.getOutputDataTypePhysicalVariations();
 
     /*
      * Output columns.
@@ -5062,7 +5066,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       ColumnInfo colInfo = outputSignature.get(i);
       TypeInfo typeInfo = colInfo.getType();
       final int outputColumnNum;
-        outputColumnNum = vContext.allocateScratchColumn(typeInfo);
+        outputColumnNum = vContext.allocateScratchColumn(typeInfo, outputDataTypePhysicalVariations[i]);
       outputColumnProjectionMap[i] = outputColumnNum;
     }
 
@@ -5116,6 +5120,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     VectorExpression[] evaluatorInputExpressions = new VectorExpression[evaluatorCount];
     Type[] evaluatorInputColumnVectorTypes = new Type[evaluatorCount];
+    DataTypePhysicalVariation[] evaluatorInputDataTypePhysicalVariations = new DataTypePhysicalVariation[evaluatorCount];
     for (int i = 0; i < evaluatorCount; i++) {
       List<ExprNodeDesc> exprNodeDescList = evaluatorInputExprNodeDescLists[i];
       VectorExpression inputVectorExpression;
@@ -5127,13 +5132,25 @@ public class Vectorizer implements PhysicalPlanResolver {
 
         // Determine input vector expression using the VectorizationContext.
         inputVectorExpression = vContext.getVectorExpression(exprNodeDesc);
+        boolean useDecimal = false;
 
-        if (inputVectorExpression.getOutputColumnVectorType() == ColumnVector.Type.DECIMAL_64) {
+        if (inputVectorExpression.getOutputColumnVectorType() == ColumnVector.Type.DECIMAL_64
+            && (((DecimalTypeInfo) inputVectorExpression.getOutputTypeInfo()).getPrecision() == 18
+            || outputDataTypePhysicalVariations[i] == DataTypePhysicalVariation.NONE)
+            && (evaluatorFunctionNames[i].equals("sum") || evaluatorFunctionNames[i].equals("avg"))) {
           inputVectorExpression = vContext.wrapWithDecimal64ToDecimalConversion(inputVectorExpression);
+          useDecimal = true;
         }
 
-        TypeInfo typeInfo = exprNodeDesc.getTypeInfo();
-        columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
+        if (inputVectorExpression.getInputTypeInfos() != null && inputVectorExpression.getInputTypeInfos().length > 0) {
+          TypeInfo typeInfo = inputVectorExpression.getInputTypeInfos()[0];
+          DataTypePhysicalVariation dataTypePhysicalVariation =
+              useDecimal ? DataTypePhysicalVariation.NONE : inputVectorExpression.getInputDataTypePhysicalVariations()[0];
+          columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo, dataTypePhysicalVariation);
+        } else {
+          TypeInfo typeInfo = exprNodeDesc.getTypeInfo();
+          columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
+        }
       } else {
         inputVectorExpression =  null;
         columnVectorType = ColumnVector.Type.NONE;
@@ -5141,6 +5158,8 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       evaluatorInputExpressions[i] = inputVectorExpression;
       evaluatorInputColumnVectorTypes[i] = columnVectorType;
+      evaluatorInputDataTypePhysicalVariations[i] = (columnVectorType == ColumnVector.Type.DECIMAL_64) ?
+          DataTypePhysicalVariation.DECIMAL_64 : DataTypePhysicalVariation.NONE;
     }
 
     VectorPTFInfo vectorPTFInfo = new VectorPTFInfo();
@@ -5157,6 +5176,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     vectorPTFInfo.setEvaluatorInputExpressions(evaluatorInputExpressions);
     vectorPTFInfo.setEvaluatorInputColumnVectorTypes(evaluatorInputColumnVectorTypes);
+    vectorPTFInfo.setEvaluatorInputDataTypePhysicalVariations(evaluatorInputDataTypePhysicalVariations);
 
     vectorPTFInfo.setKeyInputColumnMap(keyInputColumnMap);
     vectorPTFInfo.setNonKeyInputColumnMap(nonKeyInputColumnMap);
