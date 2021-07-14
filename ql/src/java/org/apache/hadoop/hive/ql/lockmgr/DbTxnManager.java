@@ -791,13 +791,14 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   public ValidTxnWriteIdList getValidWriteIds(List<String> tableList,
                                               String validTxnList) throws LockException {
     assert isTxnOpen();
-    assert validTxnList != null && !validTxnList.isEmpty();
-    try {
-      return TxnCommonUtils.createValidTxnWriteIdList(
-          txnId, getMS().getValidWriteIds(tableList, validTxnList));
-    } catch (TException e) {
-      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+    if (!StringUtils.isEmpty(validTxnList)) {
+      try {
+        return TxnCommonUtils.createValidTxnWriteIdList(txnId, getMS().getValidWriteIds(tableList, validTxnList));
+      } catch (TException e) {
+        throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+      }
     }
+    return null;
   }
 
   @Override

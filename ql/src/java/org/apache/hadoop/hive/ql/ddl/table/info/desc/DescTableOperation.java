@@ -284,8 +284,9 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
   private void setConstraintsAndStorageHandlerInfo(Table table) throws HiveException {
     if (desc.isExtended() || desc.isFormatted()) {
-      TableConstraintsInfo tableConstraintsInfo = context.getDb().getTableConstraints(table.getDbName(),
-          table.getTableName(), false, false);
+      TableConstraintsInfo tableConstraintsInfo = context.getDb()
+          .getTableConstraints(table.getDbName(), table.getTableName(), false, false,
+              table.getTTable() != null ? table.getTTable().getId() : -1);
       table.setTableConstraintsInfo(tableConstraintsInfo);
       table.setStorageHandlerInfo(context.getDb().getStorageHandlerInfo(table));
     }

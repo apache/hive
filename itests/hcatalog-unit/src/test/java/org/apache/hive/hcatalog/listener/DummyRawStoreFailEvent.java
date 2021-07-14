@@ -21,18 +21,25 @@ package org.apache.hive.hcatalog.listener;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
+import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
+import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
 import org.apache.hadoop.hive.metastore.api.ListPackageRequest;
 import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
+import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.Package;
+import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.StoredProcedure;
+import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 
 import java.nio.ByteBuffer;
@@ -1106,9 +1113,19 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest request) throws MetaException {
+    return null;
+  }
+
+  @Override
   public List<SQLForeignKey> getForeignKeys(String catName, String parent_db_name,
                                             String parent_tbl_name, String foreign_db_name, String foreign_tbl_name)
       throws MetaException {
+    return null;
+  }
+
+  @Override
+  public List<SQLForeignKey> getForeignKeys(ForeignKeysRequest request) throws MetaException {
     return null;
   }
 
@@ -1119,8 +1136,18 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public List<SQLUniqueConstraint> getUniqueConstraints(UniqueConstraintsRequest request) throws MetaException {
+    return null;
+  }
+
+  @Override
   public List<SQLNotNullConstraint> getNotNullConstraints(String catName, String db_name, String tbl_name)
       throws MetaException {
+    return null;
+  }
+
+  @Override
+  public List<SQLNotNullConstraint> getNotNullConstraints(NotNullConstraintsRequest request) throws MetaException {
     return null;
   }
 
@@ -1131,13 +1158,29 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest request) throws MetaException {
+    return null;
+  }
+
+  @Override
   public List<SQLDefaultConstraint> getDefaultConstraints(String catName, String db_name, String tbl_name)
       throws MetaException {
     return null;
   }
 
   @Override
+  public List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest request) throws MetaException {
+    return null;
+  }
+
+  @Override
   public SQLAllTableConstraints getAllTableConstraints(String catName, String dbName, String tblName)
+      throws MetaException, NoSuchObjectException {
+    return null;
+  }
+
+  @Override
+  public SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request)
       throws MetaException, NoSuchObjectException {
     return null;
   }
