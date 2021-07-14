@@ -8101,7 +8101,7 @@ public class ObjectStore implements RawStore, Configurable {
       mSecurityDCList = (List<MDCPrivilege>) query.executeWithArray(args);
     } else {
       query = pm.newQuery(MDCPrivilege.class, "dataConnector.name == t1");
-      query.declareParameters("java.lang.String t1, java.lang.String t2");
+      query.declareParameters("java.lang.String t1");
       mSecurityDCList = (List<MDCPrivilege>) query.execute(dcName);
     }
     pm.retrieveAll(mSecurityDCList);
