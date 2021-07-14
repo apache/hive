@@ -91,10 +91,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String TABLE_NAME_SEPARATOR = "..";
 
-  private static final List<AlterTableType> ALLOWED_ALTER_OPS = ImmutableList.of(
-      AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.ADDCOLS,
-      AlterTableType.REPLACE_COLUMNS, AlterTableType.RENAME_COLUMN, AlterTableType.SETPARTITIONSPEC);
-
   static final String WRITE_KEY = "HiveIcebergStorageHandler_write";
 
   private Configuration conf;
@@ -341,7 +337,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public boolean isAllowedAlterOperation(AlterTableType opType) {
-    return ALLOWED_ALTER_OPS.contains(opType);
+    return HiveIcebergMetaHook.SUPPORTED_ALTER_OPS.contains(opType);
   }
 
   public boolean addDynamicSplitPruningEdge(org.apache.hadoop.hive.ql.metadata.Table table,

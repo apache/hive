@@ -83,7 +83,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       // since the snapshot pointer in HMS would always be one step ahead
       .of(BaseMetastoreTableOperations.METADATA_LOCATION_PROP,
       BaseMetastoreTableOperations.PREVIOUS_METADATA_LOCATION_PROP);
-  private static final EnumSet<AlterTableType> SUPPORTED_ALTER_OPS = EnumSet.of(
+  static final EnumSet<AlterTableType> SUPPORTED_ALTER_OPS = EnumSet.of(
       AlterTableType.ADDCOLS, AlterTableType.REPLACE_COLUMNS, AlterTableType.RENAME_COLUMN,
       AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.SETPARTITIONSPEC);
 
