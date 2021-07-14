@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.MetaStoreDirectSql.SqlFilterForPushdown;
+import org.apache.hadoop.hive.metastore.OperatorEqualsToLikeReplacer;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Catalog;
@@ -4694,6 +4695,17 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   /**
+   * Conditionally alters an {@link ExpressionTree} to be compatible with certain database products.
+   */
+  private void reconcileTreeWithDatabaseProduct(ExpressionTree tree) throws MetaException {
+    if (sqlGenerator.getDbProduct().isDERBY()) {
+      // Derby's "TABLE_PARAMS"."PARAM_VALUE" column is a CLOB type that must be compared using the LIKE operator.
+      // See https://issues.apache.org/jira/browse/HIVE-21614.
+      tree.accept(new OperatorEqualsToLikeReplacer());
+    }
+  }
+
+  /**
    * Makes a JDO query filter string.
    * Makes a JDO query filter string for tables or partitions.
    * @param dbName Database name.
@@ -4737,6 +4749,8 @@ public class ObjectStore implements RawStore, Configurable {
       params.put("catName", catName);
     }
 
+    reconcileTreeWithDatabaseProduct(tree);
+
     tree.generateJDOFilterFragment(getConf(), params, queryBuilder, table != null ? table.getPartitionKeys() : null);
     if (queryBuilder.hasError()) {
       assert !isValidatedFilter;
@@ -4757,6 +4771,9 @@ public class ObjectStore implements RawStore, Configurable {
     params.put("t1", tblName);
     params.put("t2", dbName);
     params.put("t3", catName);
+
+    reconcileTreeWithDatabaseProduct(tree);
+
     tree.generateJDOFilterFragment(getConf(), params, queryBuilder, partitionKeys);
     if (queryBuilder.hasError()) {
       assert !isValidatedFilter;

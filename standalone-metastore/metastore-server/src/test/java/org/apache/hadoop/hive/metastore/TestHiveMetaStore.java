@@ -2692,6 +2692,15 @@ public abstract class TestHiveMetaStore {
       assert(tableNames.contains(table1.getTableName()));
       assert(tableNames.contains(table2.getTableName()));
 
+      // HIVE-21614: = is externally "supported" for CLOB:
+      filter = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS +
+          "test_param_2 = \"50\"";
+
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
+      assertEquals(2, tableNames.size());
+      assert(tableNames.contains(table1.getTableName()));
+      assert(tableNames.contains(table2.getTableName()));
+
       //test_param_2 = "75"
       filter = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS +
           "test_param_2 LIKE \"75\"";
