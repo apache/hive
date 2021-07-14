@@ -177,7 +177,7 @@
     <storage-api.version>3.1.3000.7.2.12.0-SNAPSHOT</storage-api.version>
     <tez.version>0.9.1.7.2.12.0-SNAPSHOT</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
-    <spark.version>2.4.7.7.2.12.0-SNAPSHOT</spark.version>
+    <spark.version>2.4.8.7.2.12.0-SNAPSHOT</spark.version>
     <spark.scala.version>2.11</spark.scala.version>
     <scala.binary.version>2.12</scala.binary.version>
     <scala.version>2.12.10</scala.version>
