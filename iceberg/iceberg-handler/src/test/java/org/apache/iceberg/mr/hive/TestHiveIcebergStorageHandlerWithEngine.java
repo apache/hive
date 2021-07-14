@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -76,7 +75,6 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.ArgumentMatchers;
@@ -181,8 +179,8 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
 
-  @Rule
-  public Timeout timeout = new Timeout(400_000, TimeUnit.MILLISECONDS);
+//  @Rule
+//  public Timeout timeout = new Timeout(400_000, TimeUnit.MILLISECONDS);
 
   @BeforeClass
   public static void beforeClass() {

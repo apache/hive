@@ -37,10 +37,14 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.parse.PartitionTransform;
+import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
@@ -233,15 +237,21 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       preAlterTableProperties.tableLocation = sd.getLocation();
       preAlterTableProperties.format = sd.getInputFormat();
       preAlterTableProperties.schema = schema(catalogProperties, hmsTable);
-      preAlterTableProperties.spec = spec(conf, preAlterTableProperties.schema, hmsTable);
       preAlterTableProperties.partitionKeys = hmsTable.getPartitionKeys();
 
       context.getProperties().put(HiveMetaHook.ALLOW_PARTITION_KEY_CHANGE, "true");
       // If there are partition keys specified remove them from the HMS table and add them to the column list
-      if (hmsTable.isSetPartitionKeys()) {
+      if (hmsTable.isSetPartitionKeys() && !hmsTable.getPartitionKeys().isEmpty()) {
+        List<PartitionTransformSpec> spec = PartitionTransform.getPartitionTransformSpec(hmsTable.getPartitionKeys());
+        if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC, spec)) {
+          throw new MetaException("Query state attached to Session state must be not null. " +
+              "Partition transform metadata cannot be saved.");
+        }
         hmsTable.getSd().getCols().addAll(hmsTable.getPartitionKeys());
         hmsTable.setPartitionKeysIsSet(false);
       }
+      preAlterTableProperties.spec = spec(conf, preAlterTableProperties.schema, hmsTable);
+
       sd.setInputFormat(HiveIcebergInputFormat.class.getCanonicalName());
       sd.setOutputFormat(HiveIcebergOutputFormat.class.getCanonicalName());
       sd.setSerdeInfo(new SerDeInfo("icebergSerde", HiveIcebergSerDe.class.getCanonicalName(),
