@@ -9324,123 +9324,104 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public PrimaryKeysResponse get_primary_keys(PrimaryKeysRequest request) throws TException {
-    String catName = request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf);
-    String db_name = request.getDb_name();
-    String tbl_name = request.getTbl_name();
-    startTableFunction("get_primary_keys", catName, db_name, tbl_name);
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
+    startTableFunction("get_primary_keys", request.getCatName(), request.getDb_name(), request.getTbl_name());
     List<SQLPrimaryKey> ret = null;
     Exception ex = null;
     try {
-      ret = getMS().getPrimaryKeys(catName, db_name, tbl_name);
+      ret = getMS().getPrimaryKeys(request);
     } catch (Exception e) {
       ex = e;
       throwMetaException(e);
     } finally {
-      endFunction("get_primary_keys", ret != null, ex, tbl_name);
+      endFunction("get_primary_keys", ret != null, ex, request.getTbl_name());
     }
     return new PrimaryKeysResponse(ret);
   }
 
   @Override
   public ForeignKeysResponse get_foreign_keys(ForeignKeysRequest request) throws TException {
-    String catName = request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf);
-    String parent_db_name = request.getParent_db_name();
-    String parent_tbl_name = request.getParent_tbl_name();
-    String foreign_db_name = request.getForeign_db_name();
-    String foreign_tbl_name = request.getForeign_tbl_name();
-    startFunction("get_foreign_keys", " : parentdb=" + parent_db_name +
-        " parenttbl=" + parent_tbl_name + " foreigndb=" + foreign_db_name +
-        " foreigntbl=" + foreign_tbl_name);
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
+    startFunction("get_foreign_keys",
+        " : parentdb=" + request.getParent_db_name() + " parenttbl=" + request.getParent_tbl_name() + " foreigndb="
+            + request.getForeign_db_name() + " foreigntbl=" + request.getForeign_tbl_name());
     List<SQLForeignKey> ret = null;
     Exception ex = null;
     try {
-      ret = getMS().getForeignKeys(catName, parent_db_name, parent_tbl_name,
-          foreign_db_name, foreign_tbl_name);
+      ret = getMS().getForeignKeys(request);
     } catch (Exception e) {
       ex = e;
       throwMetaException(e);
     } finally {
-      endFunction("get_foreign_keys", ret != null, ex, foreign_tbl_name);
+      endFunction("get_foreign_keys", ret != null, ex, request.getForeign_tbl_name());
     }
     return new ForeignKeysResponse(ret);
   }
 
   @Override
-  public UniqueConstraintsResponse get_unique_constraints(UniqueConstraintsRequest request)
-      throws TException {
-    String catName = request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf);
-    String db_name = request.getDb_name();
-    String tbl_name = request.getTbl_name();
-    startTableFunction("get_unique_constraints", catName, db_name, tbl_name);
+  public UniqueConstraintsResponse get_unique_constraints(UniqueConstraintsRequest request) throws TException {
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
+    startTableFunction("get_unique_constraints", request.getCatName(), request.getDb_name(), request.getTbl_name());
     List<SQLUniqueConstraint> ret = null;
     Exception ex = null;
     try {
-      ret = getMS().getUniqueConstraints(catName, db_name, tbl_name);
+      ret = getMS().getUniqueConstraints(request);
     } catch (Exception e) {
       ex = e;
       throw newMetaException(e);
     } finally {
-      endFunction("get_unique_constraints", ret != null, ex, tbl_name);
+      endFunction("get_unique_constraints", ret != null, ex, request.getTbl_name());
     }
     return new UniqueConstraintsResponse(ret);
   }
 
   @Override
-  public NotNullConstraintsResponse get_not_null_constraints(NotNullConstraintsRequest request)
-      throws TException {
-    String catName = request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf);
-    String db_name = request.getDb_name();
-    String tbl_name = request.getTbl_name();
-    startTableFunction("get_not_null_constraints", catName, db_name, tbl_name);
+  public NotNullConstraintsResponse get_not_null_constraints(NotNullConstraintsRequest request) throws TException {
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
+    startTableFunction("get_not_null_constraints", request.getCatName(), request.getDb_name(), request.getTbl_name());
     List<SQLNotNullConstraint> ret = null;
     Exception ex = null;
     try {
-      ret = getMS().getNotNullConstraints(catName, db_name, tbl_name);
+      ret = getMS().getNotNullConstraints(request);
     } catch (Exception e) {
       ex = e;
       throw newMetaException(e);
     } finally {
-      endFunction("get_not_null_constraints", ret != null, ex, tbl_name);
+      endFunction("get_not_null_constraints", ret != null, ex, request.getTbl_name());
     }
     return new NotNullConstraintsResponse(ret);
   }
 
   @Override
-  public DefaultConstraintsResponse get_default_constraints(DefaultConstraintsRequest request)
-      throws TException {
-    String catName = request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf);
-    String db_name = request.getDb_name();
-    String tbl_name = request.getTbl_name();
-    startTableFunction("get_default_constraints", catName, db_name, tbl_name);
+  public DefaultConstraintsResponse get_default_constraints(DefaultConstraintsRequest request) throws TException {
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
+    startTableFunction("get_default_constraints", request.getCatName(), request.getDb_name(), request.getTbl_name());
     List<SQLDefaultConstraint> ret = null;
     Exception ex = null;
     try {
-      ret = getMS().getDefaultConstraints(catName, db_name, tbl_name);
+      ret = getMS().getDefaultConstraints(request);
     } catch (Exception e) {
       ex = e;
       throw newMetaException(e);
     } finally {
-      endFunction("get_default_constraints", ret != null, ex, tbl_name);
+      endFunction("get_default_constraints", ret != null, ex, request.getTbl_name());
     }
     return new DefaultConstraintsResponse(ret);
   }
 
   @Override
-  public CheckConstraintsResponse get_check_constraints(CheckConstraintsRequest request)
-      throws TException {
-    String catName = request.getCatName();
-    String db_name = request.getDb_name();
-    String tbl_name = request.getTbl_name();
-    startTableFunction("get_check_constraints", catName, db_name, tbl_name);
+  public CheckConstraintsResponse get_check_constraints(CheckConstraintsRequest request) throws TException {
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
+    startTableFunction("get_check_constraints", request.getCatName(), request.getDb_name(), request.getTbl_name());
     List<SQLCheckConstraint> ret = null;
     Exception ex = null;
     try {
-      ret = getMS().getCheckConstraints(catName, db_name, tbl_name);
+      ret = getMS().getCheckConstraints(request);
     } catch (Exception e) {
       ex = e;
       throw newMetaException(e);
     } finally {
-      endFunction("get_check_constraints", ret != null, ex, tbl_name);
+      endFunction("get_check_constraints", ret != null, ex, request.getTbl_name());
     }
     return new CheckConstraintsResponse(ret);
   }
@@ -9454,19 +9435,17 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public AllTableConstraintsResponse get_all_table_constraints(AllTableConstraintsRequest request)
       throws TException, MetaException, NoSuchObjectException {
-    String catName = request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf);
-    String dbName = request.getDbName();
-    String tblName = request.getTblName();
-    startTableFunction("get_all_table_constraints", catName, dbName, tblName);
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
+    startTableFunction("get_all_table_constraints", request.getCatName(), request.getDbName(), request.getTblName());
     SQLAllTableConstraints ret = null;
     Exception ex = null;
     try {
-      ret = getMS().getAllTableConstraints(catName, dbName, tblName);
+      ret = getMS().getAllTableConstraints(request);
     } catch (Exception e) {
       ex = e;
       throwMetaException(e);
     } finally {
-      endFunction("get_all_table_constraints", ret != null, ex, tblName);
+      endFunction("get_all_table_constraints", ret != null, ex, request.getTblName());
     }
     return new AllTableConstraintsResponse(ret);
   }

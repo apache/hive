@@ -1171,7 +1171,8 @@ public class Table implements Serializable {
 
     if (!isTableConstraintsFetched) {
       try {
-        tableConstraintsInfo = Hive.get().getTableConstraints(this.getDbName(), this.getTableName(), true, true);
+        tableConstraintsInfo = Hive.get().getTableConstraints(this.getDbName(), this.getTableName(), true, true,
+            this.getTTable() != null ? this.getTTable().getId() : -1);
         this.isTableConstraintsFetched = true;
       } catch (HiveException e) {
         LOG.warn("Cannot retrieve Table Constraints info for table : " + this.getTableName() + " ignoring exception: " + e);

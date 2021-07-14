@@ -1038,7 +1038,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               // Just log a debug message and skip it.
               LOG.debug(te.getMessage());
             }
-            dumpConstraintMetadata(dbName, tblName, dbRoot, hiveDb);
+            dumpConstraintMetadata(dbName, tblName, dbRoot, hiveDb, table != null ? table.getTTable().getId() : -1);
             if (tableList != null && isTableSatifiesConfig(table)) {
               tableList.add(tblName);
             }
@@ -1402,12 +1402,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return functionsBinaryCopyPaths;
   }
 
-  void dumpConstraintMetadata(String dbName, String tblName, Path dbRoot, Hive hiveDb) throws Exception {
+  void dumpConstraintMetadata(String dbName, String tblName, Path dbRoot, Hive hiveDb, long tableId) throws Exception {
     try {
       Path constraintsRoot = new Path(dbRoot, ReplUtils.CONSTRAINTS_ROOT_DIR_NAME);
       Path commonConstraintsFile = new Path(constraintsRoot, ConstraintFileType.COMMON.getPrefix() + tblName);
       Path fkConstraintsFile = new Path(constraintsRoot, ConstraintFileType.FOREIGNKEY.getPrefix() + tblName);
-      SQLAllTableConstraints tableConstraints = hiveDb.getTableConstraints(dbName, tblName);
+      SQLAllTableConstraints tableConstraints = hiveDb.getTableConstraints(dbName, tblName, tableId);
       if (CollectionUtils.isNotEmpty(tableConstraints.getPrimaryKeys())
           || CollectionUtils.isNotEmpty(tableConstraints.getUniqueConstraints())
           || CollectionUtils.isNotEmpty(tableConstraints.getNotNullConstraints())
