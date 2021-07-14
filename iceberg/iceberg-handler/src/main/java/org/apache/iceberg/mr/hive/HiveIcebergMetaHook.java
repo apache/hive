@@ -535,7 +535,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     if (!schemaDifference.isEmpty() || outOfOrder != null) {
       updateSchema = icebergTable.updateSchema();
     } else {
-      // we should get here if the user restated the exactly the existing column in the CHANGE COLUMN command
+      // we should get here if the user didn't change anything about the column
+      // i.e. no changes to the name, type, comment or order
       LOG.info("Found no difference between new and old schema for ALTER TABLE CHANGE COLUMN for" +
           " table: {}. There will be no Iceberg commit.", hmsTable.getTableName());
       return;
