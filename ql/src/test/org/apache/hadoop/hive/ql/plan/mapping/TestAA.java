@@ -129,6 +129,8 @@ public class TestAA {
   private static IDriver createDriver() {
     HiveConf conf = env_setup.getTestCtx().hiveConf;
 
+    conf.set("tez.counters.max", "50000");
+
     SessionState.start(conf);
 
     IDriver driver = DriverFactory.newDriver(conf);
