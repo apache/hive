@@ -261,7 +261,7 @@ public class DatabaseProduct implements Configurable {
             "'), current_timestamp) } / 1000000");
         put(DbType.CUSTOM, "{ fn timestampdiff(sql_tsi_frac_second, timestamp('" + new Timestamp(0) +
             "'), current_timestamp) } / 1000000");
-        put(DbType.MYSQL, "round(unix_timestamp(now(3)) * 1000)");
+        put(DbType.MYSQL, "round(to_unix_timestamp(now(3)) * 1000)");
         put(DbType.POSTGRES, "round(extract(epoch from current_timestamp) * 1000)");
         put(DbType.ORACLE, "(cast(systimestamp at time zone 'UTC' as date) - date '1970-01-01')*24*60*60*1000 " +
             "+ cast(mod( extract( second from systimestamp ), 1 ) * 1000 as int)");

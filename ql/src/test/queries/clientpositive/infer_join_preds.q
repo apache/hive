@@ -163,7 +163,7 @@ explain select * from src join src1 on src.key = src1.key and src.value = src1.v
                                     ELSE s.prmodby
                     END,',',
                     CASE
-                                    WHEN s.prmodtime IS NULL THEN cast(from_unixtime(unix_timestamp('2017-12-08','yyyy-MM-dd') ) AS timestamp)
+                                    WHEN s.prmodtime IS NULL THEN cast(from_unixtime(to_unix_timestamp('2017-12-08','yyyy-MM-dd') ) AS timestamp)
                                     ELSE s.prmodtime
                     END,',',
                     CASE
@@ -239,7 +239,7 @@ explain select * from src join src1 on src.key = src1.key and src.value = src1.v
                                     ELSE d.prmodby
                     END,',',
                     CASE
-                                    WHEN d.prmodtime IS NULL THEN cast(from_unixtime(unix_timestamp('2017-12-08','yyyy-MM-dd') ) AS timestamp)
+                                    WHEN d.prmodtime IS NULL THEN cast(from_unixtime(to_unix_timestamp('2017-12-08','yyyy-MM-dd') ) AS timestamp)
                                     ELSE d.prmodtime
                     END,',',
                     CASE

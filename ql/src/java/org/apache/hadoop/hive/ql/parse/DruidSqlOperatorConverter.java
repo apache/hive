@@ -268,7 +268,7 @@ public class DruidSqlOperatorConverter {
       final String format = call.getOperands().size() == 2 ? DruidExpressions
           .toDruidExpression(call.getOperands().get(1), rowType, query) : DEFAULT_TS_FORMAT;
       return DruidExpressions
-          .functionCall("unix_timestamp", ImmutableList.of(arg0, DruidExpressions.stringLiteral(format)));
+          .functionCall("to_unix_timestamp", ImmutableList.of(arg0, DruidExpressions.stringLiteral(format)));
     }
   }
 

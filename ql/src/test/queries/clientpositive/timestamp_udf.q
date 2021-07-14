@@ -13,7 +13,7 @@ from (select * from src tablesample (1 rows)) s
     select '2011-05-06 07:08:09.1234567';
 
 -- Test UDFs with Timestamp input
-select unix_timestamp(t), year(t), month(t), day(t), dayofmonth(t),
+select to_unix_timestamp(t), year(t), month(t), day(t), dayofmonth(t),
     weekofyear(t), hour(t), minute(t), second(t), to_date(t)
   from timestamp_udf_n0;
 
@@ -42,7 +42,7 @@ select t, to_utc_timestamp(t, 'America/Chicago'), t, to_utc_timestamp(t, 'Americ
   from timestamp_udf_n0;
 
 -- Test UDFs with string input
-select unix_timestamp(t), year(t), month(t), day(t), dayofmonth(t), 
+select to_unix_timestamp(t), year(t), month(t), day(t), dayofmonth(t),
     weekofyear(t), hour(t), minute(t), second(t), to_date(t)
   from timestamp_udf_string;
 

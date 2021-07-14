@@ -78,7 +78,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
@@ -376,7 +375,7 @@ public final class ConstantPropagateProcFactory {
    * the value will be calculated immediately (during compilation time vs. runtime).
    * e.g.:
    *   concat(year, month) => 200112 for year=2001, month=12 since concat is deterministic UDF
-   *   unix_timestamp(time) => unix_timestamp(123) for time=123 since unix_timestamp is nondeterministic UDF
+   *   to_unix_timestamp(time) => to_unix_timestamp(123) for time=123 since to_unix_timestamp is nondeterministic UDF
    * @param desc folding expression
    * @param constants current propagated constant map
    * @param cppCtx
@@ -456,7 +455,7 @@ public final class ConstantPropagateProcFactory {
   private static boolean isConstantFoldableUdf(GenericUDF udf,  List<ExprNodeDesc> children) {
     // Runtime constants + deterministic functions can be folded.
     if (!FunctionRegistry.isConsistentWithinQuery(udf)) {
-      if (udf.getClass().equals(GenericUDFUnixTimeStamp.class)
+      if (udf.getClass().equals(GenericUDFToUnixTimeStamp.class)
           && children != null && children.size() > 0) {
         // unix_timestamp is polymorphic (ignore class annotations)
         return true;
@@ -822,7 +821,7 @@ public final class ConstantPropagateProcFactory {
       }
     }
 
-    if (udf instanceof GenericUDFUnixTimeStamp) {
+    if (udf instanceof GenericUDFToUnixTimeStamp) {
       if (newExprs.size() >= 1) {
         // unix_timestamp(args) -> to_unix_timestamp(args)
         return ExprNodeGenericFuncDesc.newInstance(new GenericUDFToUnixTimeStamp(), newExprs);

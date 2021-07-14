@@ -111,7 +111,7 @@ public class FunctionMisc extends BuiltinFunctions {
   void currentSql(HplsqlParser.Expr_spec_funcContext ctx) {
     if (ctx.T_DATE() != null) {
       if (exec.getConnectionType() == Conn.Type.HIVE) {
-        evalString("TO_DATE(FROM_UNIXTIME(UNIX_TIMESTAMP()))");
+        evalString("TO_DATE(FROM_UNIXTIME(to_unix_timestamp()))");
       } 
       else {
         evalString("CURRENT_DATE");
@@ -119,7 +119,7 @@ public class FunctionMisc extends BuiltinFunctions {
     }
     else if (ctx.T_TIMESTAMP() != null) {
       if (exec.getConnectionType() == Conn.Type.HIVE) {
-        evalString("FROM_UNIXTIME(UNIX_TIMESTAMP())");
+        evalString("FROM_UNIXTIME(to_unix_timestamp())");
       } 
       else {
         evalString("CURRENT_TIMESTAMP");

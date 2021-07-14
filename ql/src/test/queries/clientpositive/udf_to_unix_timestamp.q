@@ -28,5 +28,5 @@ SELECT
 FROM oneline_n0;
 
 -- PPD
-explain select * from (select * from src) a where unix_timestamp(a.key) > 10;
+explain select * from (select * from src) a where to_unix_timestamp(a.key) > 10;
 explain select * from (select * from src) a where to_unix_timestamp(a.key) > 10;

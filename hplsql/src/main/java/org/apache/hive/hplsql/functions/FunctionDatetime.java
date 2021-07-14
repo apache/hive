@@ -72,7 +72,7 @@ public class FunctionDatetime extends BuiltinFunctions {
    */
   public void currentDateSql(HplsqlParser.Expr_spec_funcContext ctx) {
     if (exec.getConnectionType() == Conn.Type.HIVE) {
-      evalString("TO_DATE(FROM_UNIXTIME(UNIX_TIMESTAMP()))");
+      evalString("TO_DATE(FROM_UNIXTIME(to_unix_timestamp()))");
     } 
     else {
       evalString(exec.getFormattedText(ctx));
@@ -102,7 +102,7 @@ public class FunctionDatetime extends BuiltinFunctions {
    */
   public void currentTimestampSql(HplsqlParser.Expr_spec_funcContext ctx) {
     if (exec.getConnectionType() == Conn.Type.HIVE) {
-      evalString("FROM_UNIXTIME(UNIX_TIMESTAMP())");
+      evalString("FROM_UNIXTIME(to_unix_timestamp())");
     } 
     else {
       evalString(Exec.getFormattedText(ctx));
