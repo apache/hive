@@ -104,6 +104,7 @@ import com.google.common.collect.Lists;
 public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   private final String CLASS_NAME = HiveMetaStoreClient.class.getName();
+  public static final String MANUALLY_INITIATED_COMPACTION = "manual";
 
   /**
    * Capabilities of the current client. If this client talks to a MetaStore server in a manner
@@ -4075,7 +4076,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     cr.setType(type);
     cr.setProperties(tblproperties);
-    cr.setInitiatorId(JavaUtils.hostname() + "-manual");
+    cr.setInitiatorId(JavaUtils.hostname() + "-" + MANUALLY_INITIATED_COMPACTION);
     cr.setInitiatorVersion(HiveMetaStoreClient.class.getPackage().getImplementationVersion());
     return client.compact2(cr);
   }

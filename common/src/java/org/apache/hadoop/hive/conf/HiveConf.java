@@ -623,10 +623,14 @@ public class HiveConf extends Configuration {
                     + "with the hive data and metadata replication. Set the configuration "
                     + "hive.repl.include.authorization.metadata to false to disable "
                     + "security policies being replicated "),
+    REPL_RANGER_HANDLE_DENY_POLICY_TARGET("hive.repl.handle.ranger.deny.policy",
+            false,
+            "Indicates whether ranger deny policy for target database should be handled automatically by hive or not."),
     REPL_RANGER_ADD_DENY_POLICY_TARGET("hive.repl.ranger.target.deny.policy",
       true,
       "This configuration will add a deny policy on the target database for all users except hive"
-        + " to avoid any update to the target database"),
+        + " to avoid any update to the target database. Effective only if hive.repl.handle.ranger.deny.policy is set" +
+              "to true."),
     REPL_RANGER_CLIENT_READ_TIMEOUT("hive.repl.ranger.client.read.timeout", "300s",
             new TimeValidator(TimeUnit.SECONDS), "Ranger client read timeout for Ranger REST API calls."),
     REPL_INCLUDE_ATLAS_METADATA("hive.repl.include.atlas.metadata", false,

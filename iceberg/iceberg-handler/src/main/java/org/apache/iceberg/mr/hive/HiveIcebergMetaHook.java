@@ -66,23 +66,23 @@ import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.types.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HiveIcebergMetaHook implements HiveMetaHook {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergMetaHook.class);
   private static final Set<String> PARAMETERS_TO_REMOVE = ImmutableSet
-      .of(InputFormatConfig.TABLE_SCHEMA, Catalogs.LOCATION, Catalogs.NAME);
+      .of(InputFormatConfig.TABLE_SCHEMA, Catalogs.LOCATION, Catalogs.NAME, InputFormatConfig.PARTITION_SPEC);
   private static final Set<String> PROPERTIES_TO_REMOVE = ImmutableSet
       // We don't want to push down the metadata location props to Iceberg from HMS,
       // since the snapshot pointer in HMS would always be one step ahead
       .of(BaseMetastoreTableOperations.METADATA_LOCATION_PROP,
-      BaseMetastoreTableOperations.PREVIOUS_METADATA_LOCATION_PROP,
-      // Initially we'd like to cache the partition spec in HMS, but not push it down later to Iceberg during alter
-      // table commands since by then the HMS info can be stale + Iceberg does not store its partition spec in the props
-      InputFormatConfig.PARTITION_SPEC);
+      BaseMetastoreTableOperations.PREVIOUS_METADATA_LOCATION_PROP);
   private static final EnumSet<AlterTableType> SUPPORTED_ALTER_OPS = EnumSet.of(
-      AlterTableType.ADDCOLS, AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.SETPARTITIONSPEC);
+      AlterTableType.ADDCOLS, AlterTableType.REPLACE_COLUMNS, AlterTableType.ADDPROPS, AlterTableType.DROPPROPS,
+      AlterTableType.SETPARTITIONSPEC);
+
   private final Configuration conf;
   private Table icebergTable = null;
   private Properties catalogProperties;
@@ -250,18 +250,20 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     }
 
     if (AlterTableType.ADDCOLS.equals(currentAlterTableOp)) {
-      Collection<FieldSchema> addedCols =
-          HiveSchemaUtil.schemaDifference(hmsTable.getSd().getCols(), HiveSchemaUtil.convert(icebergTable.schema()));
+      Collection<FieldSchema> addedCols = HiveSchemaUtil.getSchemaDiff(
+          hmsTable.getSd().getCols(), HiveSchemaUtil.convert(icebergTable.schema()), false).getMissingFromSecond();
+      if (!addedCols.isEmpty()) {
+        updateSchema = icebergTable.updateSchema();
+      }
       for (FieldSchema addedCol : addedCols) {
-        if (updateSchema == null) {
-          updateSchema = icebergTable.updateSchema();
-        }
         updateSchema.addColumn(
             addedCol.getName(),
             HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType())),
             addedCol.getComment()
         );
       }
+    } else if (AlterTableType.REPLACE_COLUMNS.equals(currentAlterTableOp)) {
+      handleReplaceColumns(hmsTable);
     }
   }
 
@@ -278,9 +280,10 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       }
       HiveTableUtil.importFiles(preAlterTableProperties.tableLocation, preAlterTableProperties.format,
           partitionSpecProxy, preAlterTableProperties.partitionKeys, catalogProperties, conf);
-    } else {
+    } else if (currentAlterTableOp != null) {
       Map<String, String> contextProperties = context.getProperties();
       switch (currentAlterTableOp) {
+        case REPLACE_COLUMNS:
         case ADDCOLS:
           if (updateSchema != null) {
             updateSchema.commit();
@@ -288,7 +291,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           break;
         case ADDPROPS:
         case DROPPROPS:
-          alterTableProperties(hmsTable, context.getProperties());
+          alterTableProperties(hmsTable, contextProperties);
           break;
         case SETPARTITIONSPEC:
           IcebergTableUtil.updateSpec(conf, icebergTable);
@@ -471,6 +474,44 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       return HiveSchemaUtil.spec(schema, hmsTable.getPartitionKeys());
     } else {
       return PartitionSpec.unpartitioned();
+    }
+  }
+
+  private void handleReplaceColumns(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws MetaException {
+    HiveSchemaUtil.SchemaDifference schemaDifference = HiveSchemaUtil.getSchemaDiff(hmsTable.getSd().getCols(),
+        HiveSchemaUtil.convert(icebergTable.schema()), true);
+    if (!schemaDifference.isEmpty()) {
+      updateSchema = icebergTable.updateSchema();
+    } else {
+      // we should get here if the user restated the exactly the existing columns in the REPLACE COLUMNS command
+      LOG.info("Found no difference between new and old schema for ALTER TABLE REPLACE COLUMNS for" +
+          " table: {}. There will be no Iceberg commit.", hmsTable.getTableName());
+      return;
+    }
+
+    for (FieldSchema droppedCol : schemaDifference.getMissingFromFirst()) {
+      updateSchema.deleteColumn(droppedCol.getName());
+    }
+
+    for (FieldSchema addedCol : schemaDifference.getMissingFromSecond()) {
+      updateSchema.addColumn(
+          addedCol.getName(),
+          HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType())),
+          addedCol.getComment()
+      );
+    }
+
+    for (FieldSchema updatedCol : schemaDifference.getTypeChanged()) {
+      Type newType = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(updatedCol.getType()));
+      if (!(newType instanceof Type.PrimitiveType)) {
+        throw new MetaException(String.format("Cannot promote type of column: '%s' to a non-primitive type: %s.",
+            updatedCol.getName(), newType));
+      }
+      updateSchema.updateColumn(updatedCol.getName(), (Type.PrimitiveType) newType, updatedCol.getComment());
+    }
+
+    for (FieldSchema updatedCol : schemaDifference.getCommentChanged()) {
+      updateSchema.updateColumnDoc(updatedCol.getName(), updatedCol.getComment());
     }
   }
 

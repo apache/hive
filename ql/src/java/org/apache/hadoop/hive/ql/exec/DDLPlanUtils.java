@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
+import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -86,6 +87,7 @@ public class DDLPlanUtils {
   private static final String LIST_COLUMNS = "columns";
   private static final String COMMENT = "comment";
   private static final String PARTITIONS = "partitions";
+  private static final String PARTITIONS_BY_SPEC = "partitions_by_spec";
   private static final String BUCKETS = "buckets";
   private static final String SKEWED = "skewedinfo";
   private static final String ROW_FORMAT = "row_format";
@@ -131,6 +133,7 @@ public class DDLPlanUtils {
           "<" + LIST_COLUMNS + ">)\n" +
           "<" + COMMENT + ">\n" +
           "<" + PARTITIONS + ">\n" +
+          "<" + PARTITIONS_BY_SPEC + ">\n" +
           "<" + BUCKETS + ">\n" +
           "<" + SKEWED + ">\n" +
           "<" + ROW_FORMAT + ">\n" +
@@ -776,6 +779,7 @@ public class DDLPlanUtils {
     command.add(LIST_COLUMNS, getColumns(table));
     command.add(COMMENT, getComment(table));
     command.add(PARTITIONS, getPartitions(table));
+    command.add(PARTITIONS_BY_SPEC, getPartitionsBySpec(table));
     command.add(BUCKETS, getBuckets(table));
     command.add(SKEWED, getSkewed(table));
     command.add(ROW_FORMAT, getRowFormat(table));
@@ -885,6 +889,28 @@ public class DDLPlanUtils {
       partitionDescs.add(partitionDesc);
     }
     return "PARTITIONED BY ( \n" + StringUtils.join(partitionDescs, ", \n") + ")";
+  }
+
+  private String getPartitionsBySpec(Table table) {
+    if (table.isNonNative() && table.getStorageHandler() != null &&
+        table.getStorageHandler().supportsPartitionTransform()) {
+      List<PartitionTransformSpec> specs = table.getStorageHandler().getPartitionTransformSpec(table);
+      if (specs.isEmpty()) {
+        return "";
+      }
+      List<String> partitionTransforms = new ArrayList<>();
+      for (PartitionTransformSpec spec : specs) {
+        if (spec.getTransformType() == PartitionTransformSpec.TransformType.IDENTITY) {
+          partitionTransforms.add(spec.getColumnName());
+        } else {
+          partitionTransforms.add(spec.getTransformType().name() + "(" +
+              (spec.getTransformParam().isPresent() ? spec.getTransformParam().get() + ", " : "") +
+              spec.getColumnName() + ")");
+        }
+      }
+      return "PARTITIONED BY SPEC ( \n" + StringUtils.join(partitionTransforms, ", \n") + ")";
+    }
+    return "";
   }
 
   private String getBuckets(Table table) {

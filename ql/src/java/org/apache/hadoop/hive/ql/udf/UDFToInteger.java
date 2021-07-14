@@ -221,7 +221,7 @@ public class UDFToInteger extends UDF {
     if (i == null) {
       return null;
     } else {
-      final long longValue = i.getSeconds();
+      final long longValue = UDFUtils.getTimestampTZFromTimestamp(i.getTimestamp()).getEpochSecond();
       final int intValue = (int) longValue;
       if (intValue != longValue) {
         return null;

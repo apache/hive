@@ -58,9 +58,11 @@ final class StageType
 
     const RANGER_LOAD = 20;
 
-    const ATLAS_DUMP = 21;
+    const RANGER_DENY = 21;
 
-    const ATLAS_LOAD = 22;
+    const ATLAS_DUMP = 22;
+
+    const ATLAS_LOAD = 23;
 
     static public $__names = array(
         0 => 'CONDITIONAL',
@@ -84,8 +86,9 @@ final class StageType
         18 => 'ACK',
         19 => 'RANGER_DUMP',
         20 => 'RANGER_LOAD',
-        21 => 'ATLAS_DUMP',
-        22 => 'ATLAS_LOAD',
+        21 => 'RANGER_DENY',
+        22 => 'ATLAS_DUMP',
+        23 => 'ATLAS_LOAD',
     );
 }
 

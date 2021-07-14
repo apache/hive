@@ -64,13 +64,22 @@ destination
 information_schema
 src
 sys
-PREHOOK: query: select scheduled_execution_id, policy_name, dump_execution_id from sys.replication_metrics
+PREHOOK: query: select policy_name, dump_execution_id from sys.replication_metrics
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@replication_metrics
 #### A masked pattern was here ####
-POSTHOOK: query: select scheduled_execution_id, policy_name, dump_execution_id from sys.replication_metrics
+POSTHOOK: query: select policy_name, dump_execution_id from sys.replication_metrics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@replication_metrics
 #### A masked pattern was here ####
-1	repl1	0
-2	repl2	1
+repl1	0
+repl2	1
+PREHOOK: query: select count(*) from sys.replication_metrics where scheduled_execution_id > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@replication_metrics
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from sys.replication_metrics where scheduled_execution_id > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@replication_metrics
+#### A masked pattern was here ####
+2

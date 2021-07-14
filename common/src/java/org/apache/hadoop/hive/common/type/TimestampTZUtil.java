@@ -39,6 +39,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hive.common.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -185,5 +186,9 @@ public class TimestampTZUtil {
     // get nanos between [epoch at toZone] and [local time at toZone]
     return Timestamp.ofEpochSecond(localDateTimeAtToZone.toEpochSecond(ZoneOffset.UTC),
         localDateTimeAtToZone.getNano());
+  }
+
+  public static double convertTimestampTZToDouble(TimestampTZ timestampTZ) {
+    return timestampTZ.getEpochSecond() + timestampTZ.getNanos() / DateUtils.NANOS_PER_SEC;
   }
 }
