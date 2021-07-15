@@ -14,8 +14,6 @@ into 256 buckets stored as textfile;
 
 load data local inpath '../../data/files/sortdp/000000_0' overwrite into table t1_staging partition (e='epart');
 
-set hive.optimize.sort.dynamic.partition=true;
-
 
 
 drop table t1_n147;
@@ -41,10 +39,6 @@ select 'bucket_6';
 dfs -cat ${hiveconf:hive.metastore.warehouse.dir}/t1_n147/e=epart/000006_0;
 select 'bucket_8';
 dfs -cat ${hiveconf:hive.metastore.warehouse.dir}/t1_n147/e=epart/000008_0;
-
-set hive.optimize.sort.dynamic.partition=false;
-
-
 
 -- disable sorted dynamic partition optimization to make sure the results are correct
 drop table t1_n147;

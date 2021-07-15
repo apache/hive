@@ -125,8 +125,6 @@ create table missing_ddl_2_n0(name string, age int);
 insert overwrite table missing_ddl_2_n0 select value, key from srcbucket;
 alter table missing_ddl_2_n0 add columns (gps double);
 
-set hive.optimize.sort.dynamic.partition=true;
-
 DROP TABLE IF EXISTS all100kjson_textfile_orc_n0;
 CREATE TABLE all100kjson_textfile_orc_n0 (
                              si smallint,

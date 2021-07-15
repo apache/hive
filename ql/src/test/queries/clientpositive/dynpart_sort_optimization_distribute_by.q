@@ -1,5 +1,4 @@
 set hive.exec.dynamic.partition.mode=nonstrict;
-set hive.optimize.sort.dynamic.partition=true;
 set hive.vectorized.execution.enabled=false;
 
 
