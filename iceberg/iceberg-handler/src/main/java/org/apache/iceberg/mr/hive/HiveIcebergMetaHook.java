@@ -303,9 +303,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   }
 
   @Override
-  public void rollbackAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
-      throws MetaException {
-    if (Boolean.valueOf(context.getProperties().getOrDefault(MIGRATE_HIVE_TO_ICEBERG, "false"))) {
+  public void rollbackAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context) {
+    if (Boolean.parseBoolean(context.getProperties().getOrDefault(MIGRATE_HIVE_TO_ICEBERG, "false"))) {
       LOG.debug("Initiating rollback for table {} at location {}",
           hmsTable.getTableName(), hmsTable.getSd().getLocation());
       context.getProperties().put(INITIALIZE_ROLLBACK_MIGRATION, "true");
@@ -358,7 +357,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       if (SUPPORTED_ALTER_OPS.stream().noneMatch(op -> op.equals(currentAlterTableOp))) {
         throw new MetaException(
             "Unsupported ALTER TABLE operation type on Iceberg table " + tableName + ", must be one of: " +
-                SUPPORTED_ALTER_OPS.toString());
+                SUPPORTED_ALTER_OPS);
       }
     }
   }
@@ -488,7 +487,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
     // limit the scope of this operation to only dropping columns
     if (!schemaDifference.getMissingFromSecond().isEmpty() || !schemaDifference.getTypeChanged().isEmpty() ||
-        !schemaDifference.getCommentChanged().isEmpty() || outOfOrder != null) {
+        !schemaDifference.getCommentChanged().isEmpty() || isOutOfOrder(schemaDifference, outOfOrder)) {
       throw new MetaException("Unsupported operation to use REPLACE COLUMNS for adding a column, changing a " +
           "column type or column comment, or reordering columns. Only use REPLACE COLUMNS for dropping columns. " +
           "For the other operations, consider using the ADD COLUMNS or CHANGE COLUMN statements.");
@@ -505,6 +504,10 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       LOG.info("Found no difference between new and old schema for ALTER TABLE REPLACE COLUMNS for" +
           " table: {}. There will be no Iceberg commit.", hmsTable.getTableName());
     }
+  }
+
+  private boolean isOutOfOrder(HiveSchemaUtil.SchemaDifference diff, Pair<String, Optional<String>> outOfOrder) {
+    return diff.getMissingFromFirst().isEmpty() && diff.getMissingFromSecond().isEmpty() && outOfOrder != null;
   }
 
   private class PreAlterTableProperties {
