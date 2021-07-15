@@ -61,8 +61,8 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
       <classifier>core</classifier>
+      <scope>test</scope>
       <exclusions>
         <exclusion>
           <groupId>org.apache.calcite</groupId>
