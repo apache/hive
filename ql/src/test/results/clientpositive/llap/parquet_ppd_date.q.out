@@ -204,16 +204,6 @@ POSTHOOK: query: select * from newtypestbl_n2 where da<'1970-02-29' sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl_n2
 #### A masked pattern was here ####
-apple     	bee	0.220	1970-02-20
-apple     	bee	0.220	1970-02-20
-apple     	bee	0.220	1970-02-20
-apple     	bee	0.220	1970-02-20
-apple     	bee	0.220	1970-02-20
-apple     	bee	0.220	1970-02-20
-apple     	bee	0.220	1970-02-20
-apple     	bee	0.220	1970-02-20
-apple     	bee	0.220	1970-02-20
-apple     	bee	0.220	1970-02-20
 PREHOOK: query: select * from newtypestbl_n2 where da<'1970-02-29' sort by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl_n2
@@ -222,16 +212,6 @@ POSTHOOK: query: select * from newtypestbl_n2 where da<'1970-02-29' sort by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl_n2
 #### A masked pattern was here ####
-apple     	bee	0.220	1970-02-20
-apple     	bee	0.220	1970-02-20
-apple     	bee	0.220	1970-02-20
-apple     	bee	0.220	1970-02-20
-apple     	bee	0.220	1970-02-20
-apple     	bee	0.220	1970-02-20
-apple     	bee	0.220	1970-02-20
-apple     	bee	0.220	1970-02-20
-apple     	bee	0.220	1970-02-20
-apple     	bee	0.220	1970-02-20
 PREHOOK: query: select * from newtypestbl_n2 where da<'1970-02-15'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl_n2

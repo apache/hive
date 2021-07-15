@@ -1,0 +1,29 @@
+PREHOOK: query: select cast ('2001-01-32' as date)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: file:/home/ashish/azure/hive/itests/qtest/target/tmp/localscratchdir/82ba6207-ff4c-401a-b792-c72207520ae4/hive_2021-07-08_01-33-43_374_4254966534564547705-1/-mr-10001
+POSTHOOK: query: select cast ('2001-01-32' as date)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: file:/home/ashish/azure/hive/itests/qtest/target/tmp/localscratchdir/82ba6207-ff4c-401a-b792-c72207520ae4/hive_2021-07-08_01-33-43_374_4254966534564547705-1/-mr-10001
+NULL
+PREHOOK: query: select cast ('2001-13-30' as date)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: file:/home/ashish/azure/hive/itests/qtest/target/tmp/localscratchdir/82ba6207-ff4c-401a-b792-c72207520ae4/hive_2021-07-08_01-33-47_505_6155121800556586145-1/-mr-10001
+POSTHOOK: query: select cast ('2001-13-30' as date)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: file:/home/ashish/azure/hive/itests/qtest/target/tmp/localscratchdir/82ba6207-ff4c-401a-b792-c72207520ae4/hive_2021-07-08_01-33-47_505_6155121800556586145-1/-mr-10001
+NULL
+PREHOOK: query: select cast ('0000-00-00' as date)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: file:/home/ashish/azure/hive/itests/qtest/target/tmp/localscratchdir/82ba6207-ff4c-401a-b792-c72207520ae4/hive_2021-07-08_01-33-47_685_9119722427567537861-1/-mr-10001
+POSTHOOK: query: select cast ('0000-00-00' as date)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: file:/home/ashish/azure/hive/itests/qtest/target/tmp/localscratchdir/82ba6207-ff4c-401a-b792-c72207520ae4/hive_2021-07-08_01-33-47_685_9119722427567537861-1/-mr-10001
+NULL
+FAILED: AssertionError java.lang.AssertionError: Client Execution was expected to fail, but succeeded with error code 0 for fname=invalid_cast_to_date.q 
+See ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, or check ./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific test cases logs.

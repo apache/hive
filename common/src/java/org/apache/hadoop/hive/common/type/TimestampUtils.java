@@ -198,11 +198,11 @@ public class TimestampUtils {
       try {
         return Timestamp.valueOf(
             TimestampTZUtil.parse(s).getZonedDateTime().toLocalDateTime().toString());
-      } catch (IllegalArgumentException | DateTimeParseException eTZ) {
+      } catch (IllegalArgumentException | DateTimeException eTZ) {
         try {
           // Try HH:mm:ss format (For Hour, Minute & Second UDF).
           return Timestamp.getTimestampFromTime(s);
-        } catch(DateTimeParseException e) {
+        } catch(DateTimeException e) {
           // Last attempt
           return Timestamp.ofEpochMilli(Date.valueOf(s).toEpochMilli());
         }
