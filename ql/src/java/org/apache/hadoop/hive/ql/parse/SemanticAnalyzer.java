@@ -13379,6 +13379,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.KW_MANAGED:
         isManaged = true;
+        isTransactional = true;
         break;
       case HiveParser.KW_TEMPORARY:
         isTemporary = true;
