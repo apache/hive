@@ -1,0 +1,18 @@
+#### A masked pattern was here ####
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:testdb
+#### A masked pattern was here ####
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:testdb
+#### A masked pattern was here ####
+PREHOOK: query: create table testdb.test as select 1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:testdb
+PREHOOK: Output: testdb@test
+POSTHOOK: query: create table testdb.test as select 1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:testdb
+POSTHOOK: Output: testdb@test
+POSTHOOK: Lineage: test._c0 SIMPLE []

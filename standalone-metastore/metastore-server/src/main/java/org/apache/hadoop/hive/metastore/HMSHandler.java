@@ -1342,7 +1342,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           madeExternalDir = true;
         }
       } else {
-        if (dbMgdPath != null) {
+        if (!isInTest && dbMgdPath != null) {
           try {
             // Since this may be done as random user (if doAs=true) he may not have access
             // to the managed directory. We run this as an admin user
