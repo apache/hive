@@ -17,9 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.plan.mapping;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.AfterClass;
@@ -29,7 +34,41 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Stopwatch;
+import com.google.common.base.Ticker;
+import com.google.common.io.Files;
+
 public class TestAA {
+
+  static class ProcStatTicker extends Ticker {
+    // ideally this should be sysconf(_SC_CLK_TCK) ; but it's aint easy to access that from java and its almost always 100Hz
+    public static final int TICKS = 100;
+    public static final long TICK_US = 1_000_000_000l / TICKS;
+
+    public static boolean available() {
+      try {
+      getTickCount();
+      return true;
+      } catch (Exception e) {
+        return false;
+      }
+    }
+
+    private static long getTickCount() {
+      try {
+        String line = Files.toString(new File("/proc/self/stat"), Charsets.UTF_8);
+        return Long.parseLong(line.split(" ")[13]) * TICK_US;
+      } catch (IOException e) {
+        throw new RuntimeException("unable to read stat", e);
+      }
+    }
+
+    @Override
+    public long read() {
+      return getTickCount();
+    }
+  }
 
   @ClassRule
   public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
@@ -103,10 +142,27 @@ public class TestAA {
 
   @Test
   public void testQ1() throws Exception {
+
     IDriver driver = createDriver();
 
-    String h = "INSERT OVERWRITE TABLE table_name ";
+    int nRuns = 9;
+    double[] compileTimes = new double[nRuns];
+    for (int i = 0; i < nRuns; i++) {
+      compileTimes[i] = unionQueryCompileTime(driver, 1 << i);
+    }
+    int k = 1 << (nRuns - 2);
+    double w = (compileTimes[nRuns - 1] - compileTimes[nRuns - 2]) / k;
+    double base = compileTimes[nRuns - 2] - k * w;
 
+    double expected2 = base + (1 << 2) * w;
+    double ratio = expected2 / compileTimes[2];
+    System.out.println(ratio);
+    System.out.println(compileTimes);
+
+  }
+
+  private long unionQueryCompileTime(IDriver driver, int n) throws CommandProcessorException {
+    String h = "INSERT OVERWRITE TABLE table_name ";
     String b =
         "SELECT 'ABCD EFGH','1900-01-01','9999-12-31','MAS','XYZ RTQU','ABC','KIT TYPE','LOCK TYPE','RATE_PERCENTAGE','RATE_DOLLAR','MXX','MXD','','','','2121','42','1392','0','NOT APPLICABLE','NOT APPLICABLE','NOT APPLICABLE','','','','','1900-01-01','9999-12-31',from_unixtime(unix_timestamp(\"1900-01-01 00:45:39\", \"yyyy-MM-dd HH:mm:ss\")),from_unixtime(unix_timestamp(\"9999-12-31 00:59:59\", \"yyyy-MM-ddHH:mm:ss\")),CURRENT_TIMESTAMP(),substr(current_timestamp(),1,4),substr(current_timestamp(),6,2),substr(current_timestamp(),9,2) ";
     String c = "UNION ALL ";
@@ -115,15 +171,16 @@ public class TestAA {
 
     sb.append(h);
     sb.append(b);
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < n; i++) {
       sb.append(c);
       sb.append(b);
     }
 
     String query = sb.toString();
 
-    driver.run(query);
-
+    Stopwatch sw = Stopwatch.createStarted(new ProcStatTicker());
+    driver.compileAndRespond(query);
+    return sw.elapsed(TimeUnit.MILLISECONDS);
   }
 
   private static IDriver createDriver() {
