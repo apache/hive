@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
+import org.apache.hadoop.hive.metastore.TServerSocketKeepAlive;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.CLIService;
@@ -80,11 +81,14 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
       TProcessorFactory processorFactory = hiveAuthFactory.getAuthProcFactory(this);
       TServerSocket serverSocket = null;
       List<String> sslVersionBlacklist = new ArrayList<String>();
+      int socketTimeout =
+          (int) hiveConf.getTimeVar(ConfVars.HIVE_SERVER2_TCP_SOCKET_BLOCKING_TIMEOUT, TimeUnit.SECONDS);
+      boolean keepAlive = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TCP_KEEP_ALIVE);
       for (String sslVersion : hiveConf.getVar(ConfVars.HIVE_SSL_PROTOCOL_BLACKLIST).split(",")) {
         sslVersionBlacklist.add(sslVersion);
       }
       if (!hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_USE_SSL)) {
-        serverSocket = HiveAuthUtils.getServerSocket(hiveHost, portNum);
+        serverSocket = HiveAuthUtils.getServerSocket(hiveHost, portNum, socketTimeout);
       } else {
         String keyStorePath = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PATH).trim();
         if (keyStorePath.isEmpty()) {
@@ -97,7 +101,11 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
         String keyStoreAlgorithm = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_KEYMANAGERFACTORY_ALGORITHM).trim();
         String includeCiphersuites = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_BINARY_INCLUDE_CIPHERSUITES).trim();
         serverSocket = HiveAuthUtils.getServerSSLSocket(hiveHost, portNum, keyStorePath, keyStorePassword,
-            keyStoreType, keyStoreAlgorithm, sslVersionBlacklist, includeCiphersuites);
+            keyStoreType, keyStoreAlgorithm, sslVersionBlacklist, includeCiphersuites, socketTimeout);
+      }
+      if (keepAlive) {
+        // TServerSocket is simple wrapper of internal server socket
+        serverSocket = new TServerSocketKeepAlive(serverSocket);
       }
 
       // Server args

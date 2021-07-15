@@ -3987,6 +3987,9 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_LONG_POLLING_TIMEOUT("hive.server2.long.polling.timeout", "5000ms",
         new TimeValidator(TimeUnit.MILLISECONDS),
         "Time that HiveServer2 will wait before responding to asynchronous calls that use long polling"),
+    HIVE_SERVER2_TCP_SOCKET_BLOCKING_TIMEOUT("hive.server2.tcp.socket.blocking.timeout", "0s", new TimeValidator(TimeUnit.SECONDS),
+        "Timeout (in seconds) on blocking socket operations (accept, read). 0 means infinite timeout."),
+    HIVE_SERVER2_TCP_KEEP_ALIVE("hive.server2.tcp.keepalive", false, "Whether to enable TCP keepalive for HiveServer2. Not effective in http mode."),
 
     HIVE_SESSION_IMPL_CLASSNAME("hive.session.impl.classname", null, "Classname for custom implementation of hive session"),
     HIVE_SESSION_IMPL_WITH_UGI_CLASSNAME("hive.session.impl.withugi.classname", null, "Classname for custom implementation of hive session with UGI"),
