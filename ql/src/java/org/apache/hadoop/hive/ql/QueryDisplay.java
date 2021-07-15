@@ -30,6 +30,8 @@ import org.apache.hadoop.mapred.RunningJob;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -40,6 +42,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
  *
  * The class is synchronized, as WebUI may access information about a running query.
  */
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class QueryDisplay {
 
   // Member variables
@@ -75,12 +78,14 @@ public class QueryDisplay {
     EXECUTION,
   }
 
+  @JsonIgnore
   public String getFullLogLocation() {
     return LogUtils.getLogFilePath();
   }
 
   @JsonInclude(Include.NON_NULL)
   @JsonIgnoreProperties(ignoreUnknown = true)
+  @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
   public static class TaskDisplay {
 
     public static final String NUMBER_OF_MAPPERS = "Number of Mappers";
@@ -185,6 +190,7 @@ public class QueryDisplay {
       return countersJson;
     }
 
+    @JsonIgnore
     public synchronized Long getElapsedTime() {
       if (endTime == null) {
         if (beginTime == null) {
@@ -279,6 +285,7 @@ public class QueryDisplay {
     this.queryStr = queryStr;
   }
 
+  @JsonIgnore
   public synchronized String getQueryString() {
     return returnStringOrUnknown(queryStr);
   }
