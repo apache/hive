@@ -4321,4 +4321,10 @@ public interface IMetaStoreClient {
   List<String> listPackages(ListPackageRequest request) throws TException;
 
   void dropPackage(DropPackageRequest request) throws TException;
+
+  /**
+   * Get acid write events of a specific transaction.
+   * @throws TException
+   */
+  List<WriteEventInfo> getAllWriteEventInfo(GetAllWriteEventInfoRequest request) throws TException;
 }
