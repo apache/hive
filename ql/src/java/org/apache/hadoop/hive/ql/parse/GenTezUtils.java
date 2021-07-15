@@ -223,7 +223,7 @@ public class GenTezUtils {
    *
    * It does the following simplifications:
    * <ul>
-   *  <li> hides backward edges from UNION operators
+   *  <li> hides UNION operator parents which are unrelated to the current set of roots
    *  <li> hides childs from RS and FS operators
    * <ul>
    */
