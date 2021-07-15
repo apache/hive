@@ -2854,18 +2854,23 @@ public class ObjectStore implements RawStore, Configurable {
     return ret;
   }
 
+  private MPartition convertToMPart(Partition part, MTable mt, boolean useTableCD)
+      throws InvalidObjectException, MetaException {
+    return convertToMPart(part, mt, useTableCD, null);
+  }
+
   /**
    * Convert a Partition object into an MPartition, which is an object backed by the db
-   * If the Partition's set of columns is the same as the parent table's AND useTableCD
-   * is true, then this partition's storage descriptor's column descriptor will point
+   * If the Partition's set of columns is the same as other partition's and `newCd` was given
+   * then this partition's storage descriptor's column descriptor will point
    * to the same one as the table's storage descriptor.
    * @param part the partition to convert
    * @param mt the parent table object
-   * @param useTableCD whether to try to use the parent table's column descriptor.
+   * @param existedMc convert to MPartition with the existed MCD
    * @return the model partition object, and null if the input partition is null.
    */
-  private MPartition convertToMPart(Partition part, MTable mt, boolean useTableCD)
-      throws InvalidObjectException, MetaException {
+  private MPartition convertToMPart(Partition part, MTable mt, boolean useTableCD,
+      MColumnDescriptor existedMc) throws InvalidObjectException, MetaException {
     // NOTE: we don't set writeId in this method. Write ID is only set after validating the
     //       existing write ID against the caller's valid list.
     if (part == null) {
@@ -2885,8 +2890,10 @@ public class ObjectStore implements RawStore, Configurable {
         mt.getSd().getCD().getCols() != null &&
         part.getSd() != null &&
         convertToFieldSchemas(mt.getSd().getCD().getCols()).
-        equals(part.getSd().getCols())) {
+            equals(part.getSd().getCols())) {
       msd = convertToMStorageDescriptor(part.getSd(), mt.getSd().getCD());
+    } else if (existedMc != null) {
+      msd = convertToMStorageDescriptor(part.getSd(), existedMc);
     } else {
       msd = convertToMStorageDescriptor(part.getSd());
     }
@@ -4993,19 +5000,19 @@ public class ObjectStore implements RawStore, Configurable {
       throws InvalidObjectException, MetaException {
     MTable table = this.getMTable(newPart.getCatName(), newPart.getDbName(), newPart.getTableName());
     return alterPartitionNoTxn(catName, dbname, name, part_vals, newPart,
-        validWriteIds, oldCd, table);
+        validWriteIds, oldCd, table, null);
   }
 
   private Partition alterPartitionNoTxn(String catName, String dbname,
       String name, List<String> part_vals, Partition newPart,
       String validWriteIds,
-      Ref<MColumnDescriptor> oldCd, MTable table)
+      Ref<MColumnDescriptor> oldCd, MTable table, MColumnDescriptor newCd)
       throws InvalidObjectException, MetaException {
     catName = normalizeIdentifier(catName);
     name = normalizeIdentifier(name);
     dbname = normalizeIdentifier(dbname);
     MPartition oldp = getMPartition(catName, dbname, name, part_vals);
-    MPartition newp = convertToMPart(newPart, table, false);
+    MPartition newp = convertToMPart(newPart, table, false, newCd);
     MColumnDescriptor oldCD = null;
     MStorageDescriptor oldSD = oldp.getSd();
     if (oldSD != null) {
@@ -5113,8 +5120,12 @@ public class ObjectStore implements RawStore, Configurable {
         if (table == null) {
           table = this.getMTable(tmpPart.getCatName(), tmpPart.getDbName(), tmpPart.getTableName());
         }
+        MColumnDescriptor mc = null;
+        if (allPartitionHasSameColumns(newParts)) {
+          mc = createNewMColumnDescriptor(convertToMFieldSchemas(newParts.get(0).getSd().getCols()));
+        }
         Partition result = alterPartitionNoTxn(
-            catName, dbname, name, tmpPartVals, tmpPart, queryWriteIdList, oldCdRef, table);
+            catName, dbname, name, tmpPartVals, tmpPart, queryWriteIdList, oldCdRef, table, mc);
         results.add(result);
         if (oldCdRef.t != null) {
           oldCds.add(oldCdRef.t);
@@ -5140,6 +5151,24 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return results;
+  }
+
+  private boolean allPartitionHasSameColumns(List<Partition> parts) {
+    if (parts.isEmpty()) {
+      return false;
+    }
+    Partition refPart = parts.get(0);
+    if (refPart.getSd() == null || refPart.getSd().getCols() == null) {
+      return false;
+    }
+    for (Partition part : parts) {
+      if (part.getSd() == null || part.getSd().getCols() == null ||
+          !MetaStoreServerUtils.areSameColumns(refPart.getSd().getCols(),
+              part.getSd().getCols())) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private void copyMSD(MStorageDescriptor newSd, MStorageDescriptor oldSd) {
