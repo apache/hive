@@ -192,7 +192,7 @@ public class TestPartitionManagement {
         }
       }
     }
-    client.flushCache();
+    
     return partNames;
   }
 
