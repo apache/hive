@@ -20,11 +20,13 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +69,11 @@ public class TestPartitionManagement {
   @Before
   public void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
+    //Enable PartitionManagementTask
+    Collection<String> remoteThreads = MetastoreConf.getStringCollection(conf, ConfVars.TASK_THREADS_REMOTE_ONLY);
+    remoteThreads.add(PartitionManagementTask.class.getName());
+    String[] remoteThreadsStr = remoteThreads.toArray(new String[remoteThreads.size()]);
+    conf.setStrings(MetastoreConf.ConfVars.TASK_THREADS_REMOTE_ONLY.getVarname(), remoteThreadsStr);
     conf.setClass(MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS.getVarname(),
       MsckPartitionExpressionProxy.class, PartitionExpressionProxy.class);
     MetastoreConf.setVar(conf, ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS, " ");
