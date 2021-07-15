@@ -39,7 +39,7 @@ public class JSONAllocWriteIdMessage extends AllocWriteIdMessage {
   private List<Long> txnIdList, writeIdList;
 
   @JsonProperty
-  private Long timestamp;
+  private Long timestamp, tableId;
 
   private List<TxnToWriteId> txnToWriteIdList;
 
@@ -50,7 +50,7 @@ public class JSONAllocWriteIdMessage extends AllocWriteIdMessage {
   }
 
   public JSONAllocWriteIdMessage(String server, String servicePrincipal,
-                                 List<TxnToWriteId> txnToWriteIdList, String dbName, String tableName, Long timestamp) {
+      List<TxnToWriteId> txnToWriteIdList, String dbName, String tableName, Long tableId, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.timestamp = timestamp;
@@ -62,6 +62,7 @@ public class JSONAllocWriteIdMessage extends AllocWriteIdMessage {
     }
     this.tableName = tableName;
     this.dbName = dbName;
+    this.tableId = tableId;
     this.txnToWriteIdList = txnToWriteIdList;
   }
 
@@ -100,6 +101,11 @@ public class JSONAllocWriteIdMessage extends AllocWriteIdMessage {
       }
     }
     return txnToWriteIdList;
+  }
+
+  @Override
+  public Long getTableId() {
+    return  tableId;
   }
 
   @Override

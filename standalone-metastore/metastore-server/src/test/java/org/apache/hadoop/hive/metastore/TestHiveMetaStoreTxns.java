@@ -360,6 +360,42 @@ public class TestHiveMetaStoreTxns {
   }
 
   @Test
+  public void testAllocateTableWriteId() throws TException {
+    final String dbName = "db";
+    final String tblName = "tbl";
+
+    // can allocate write id without created table
+    long txnId = client.openTxn("me");
+    long writeId = client.allocateTableWriteId(txnId, dbName, tblName);
+    Assert.assertTrue(writeId > 0);
+    client.commitTxn(txnId);
+
+    Database db = new DatabaseBuilder()
+        .setName(dbName)
+        .build(conf);
+    db.unsetCatalogName();
+    client.createDatabase(db);
+
+    Table tbl = new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(tblName)
+        .addCol("id", "int")
+        .addCol("name", "string")
+        .setType(TableType.MANAGED_TABLE.name())
+        .build(conf);
+    client.createTable(tbl);
+
+    // can allocate write id with created table
+    txnId = client.openTxn("me");
+    writeId = client.allocateTableWriteId(txnId, dbName, tblName);
+    Assert.assertTrue(writeId > 0);
+    client.commitTxn(txnId);
+
+    client.dropTable(dbName, tblName);
+    client.dropDatabase(dbName);
+  }
+
+  @Test
   public void testGetValidWriteIds() throws TException {
     List<Long> tids = client.openTxns("me", 3).getTxn_ids();
     client.allocateTableWriteIdsBatch(tids, "db", "tbl");
@@ -458,9 +494,7 @@ public class TestHiveMetaStoreTxns {
 
   @Before
   public void setUp() throws Exception {
-
     String connectionStr = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
-
     conn = DriverManager.getConnection(connectionStr);
   }
 

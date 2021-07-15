@@ -35,16 +35,23 @@ public class AllocWriteIdEvent extends ListenerEvent {
   private final List<TxnToWriteId> txnToWriteIdList;
   private final String tableName;
   private final String dbName;
+  private final long tableId;
 
-  public AllocWriteIdEvent(List<TxnToWriteId> txnToWriteIdList, String dbName, String tableName) {
-    this(txnToWriteIdList, dbName, tableName, null);
+  public AllocWriteIdEvent(List<TxnToWriteId> txnToWriteIdList, String dbName, String tableName, long tableId) {
+    this(txnToWriteIdList, dbName, tableName, tableId, null);
   }
 
   public AllocWriteIdEvent(List<TxnToWriteId> txnToWriteIdList, String dbName, String tableName, IHMSHandler handler) {
+    this(txnToWriteIdList, dbName, tableName, -1, handler);
+  }
+
+  public AllocWriteIdEvent(List<TxnToWriteId> txnToWriteIdList, String dbName, String tableName, long tableId,
+      IHMSHandler handler) {
     super(true, handler);
     this.txnToWriteIdList = txnToWriteIdList;
     this.tableName = tableName;
     this.dbName = dbName;
+    this.tableId = tableId;
   }
 
   public List<TxnToWriteId> getTxnToWriteIdList() {
@@ -57,5 +64,9 @@ public class AllocWriteIdEvent extends ListenerEvent {
 
   public String getDbName() {
     return dbName;
+  }
+
+  public long getTableId() {
+    return tableId;
   }
 }
