@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
@@ -64,9 +65,10 @@ import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
-import org.apache.iceberg.types.Type;
+import org.apache.iceberg.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -301,9 +303,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   }
 
   @Override
-  public void rollbackAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
-      throws MetaException {
-    if (Boolean.valueOf(context.getProperties().getOrDefault(MIGRATE_HIVE_TO_ICEBERG, "false"))) {
+  public void rollbackAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context) {
+    if (Boolean.parseBoolean(context.getProperties().getOrDefault(MIGRATE_HIVE_TO_ICEBERG, "false"))) {
       LOG.debug("Initiating rollback for table {} at location {}",
           hmsTable.getTableName(), hmsTable.getSd().getLocation());
       context.getProperties().put(INITIALIZE_ROLLBACK_MIGRATION, "true");
@@ -356,7 +357,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       if (SUPPORTED_ALTER_OPS.stream().noneMatch(op -> op.equals(currentAlterTableOp))) {
         throw new MetaException(
             "Unsupported ALTER TABLE operation type on Iceberg table " + tableName + ", must be one of: " +
-                SUPPORTED_ALTER_OPS.toString());
+                SUPPORTED_ALTER_OPS);
       }
     }
   }
@@ -478,41 +479,35 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   }
 
   private void handleReplaceColumns(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws MetaException {
-    HiveSchemaUtil.SchemaDifference schemaDifference = HiveSchemaUtil.getSchemaDiff(hmsTable.getSd().getCols(),
-        HiveSchemaUtil.convert(icebergTable.schema()), true);
-    if (!schemaDifference.isEmpty()) {
+    List<FieldSchema> hmsCols = hmsTable.getSd().getCols();
+    List<FieldSchema> icebergCols = HiveSchemaUtil.convert(icebergTable.schema());
+    HiveSchemaUtil.SchemaDifference schemaDifference = HiveSchemaUtil.getSchemaDiff(hmsCols, icebergCols, true);
+    Pair<String, Optional<String>> outOfOrder =
+        HiveSchemaUtil.getFirstOutOfOrderColumn(hmsCols, icebergCols, ImmutableMap.of());
+
+    // limit the scope of this operation to only dropping columns
+    if (!schemaDifference.getMissingFromSecond().isEmpty() || !schemaDifference.getTypeChanged().isEmpty() ||
+        !schemaDifference.getCommentChanged().isEmpty() || isOutOfOrder(schemaDifference, outOfOrder)) {
+      throw new MetaException("Unsupported operation to use REPLACE COLUMNS for adding a column, changing a " +
+          "column type or column comment, or reordering columns. Only use REPLACE COLUMNS for dropping columns. " +
+          "For the other operations, consider using the ADD COLUMNS or CHANGE COLUMN statements.");
+    }
+
+    // check if there were any column drops
+    if (!schemaDifference.getMissingFromFirst().isEmpty()) {
       updateSchema = icebergTable.updateSchema();
+      for (FieldSchema droppedCol : schemaDifference.getMissingFromFirst()) {
+        updateSchema.deleteColumn(droppedCol.getName());
+      }
     } else {
       // we should get here if the user restated the exactly the existing columns in the REPLACE COLUMNS command
       LOG.info("Found no difference between new and old schema for ALTER TABLE REPLACE COLUMNS for" +
           " table: {}. There will be no Iceberg commit.", hmsTable.getTableName());
-      return;
     }
+  }
 
-    for (FieldSchema droppedCol : schemaDifference.getMissingFromFirst()) {
-      updateSchema.deleteColumn(droppedCol.getName());
-    }
-
-    for (FieldSchema addedCol : schemaDifference.getMissingFromSecond()) {
-      updateSchema.addColumn(
-          addedCol.getName(),
-          HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType())),
-          addedCol.getComment()
-      );
-    }
-
-    for (FieldSchema updatedCol : schemaDifference.getTypeChanged()) {
-      Type newType = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(updatedCol.getType()));
-      if (!(newType instanceof Type.PrimitiveType)) {
-        throw new MetaException(String.format("Cannot promote type of column: '%s' to a non-primitive type: %s.",
-            updatedCol.getName(), newType));
-      }
-      updateSchema.updateColumn(updatedCol.getName(), (Type.PrimitiveType) newType, updatedCol.getComment());
-    }
-
-    for (FieldSchema updatedCol : schemaDifference.getCommentChanged()) {
-      updateSchema.updateColumnDoc(updatedCol.getName(), updatedCol.getComment());
-    }
+  private boolean isOutOfOrder(HiveSchemaUtil.SchemaDifference diff, Pair<String, Optional<String>> outOfOrder) {
+    return diff.getMissingFromFirst().isEmpty() && diff.getMissingFromSecond().isEmpty() && outOfOrder != null;
   }
 
   private class PreAlterTableProperties {
