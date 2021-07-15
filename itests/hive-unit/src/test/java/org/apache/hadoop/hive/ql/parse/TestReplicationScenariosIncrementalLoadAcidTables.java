@@ -70,7 +70,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
-           new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
+           new MiniDFSCluster.Builder(conf).numDataNodes(2).format(true).build();
     HashMap<String, String> acidConfs = new HashMap<String, String>() {{
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
         put("hive.support.concurrency", "true");

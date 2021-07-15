@@ -82,7 +82,7 @@ public class TestCleanerWithReplication extends CompactorTest {
     hadoopConf.set("dfs.client.use.datanode.hostname", "true");
     hadoopConf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     miniDFSCluster =
-        new MiniDFSCluster.Builder(hadoopConf).numDataNodes(1).format(true).build();
+        new MiniDFSCluster.Builder(hadoopConf).numDataNodes(2).format(true).build();
     fs = miniDFSCluster.getFileSystem();
   }
 

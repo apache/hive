@@ -67,7 +67,7 @@ public class TestReplicationOnHDFSEncryptedZones {
     conf.setBoolean(METASTORE_AGGREGATE_STATS_CACHE_ENABLED.varname, false);
 
     miniDFSCluster =
-        new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
+        new MiniDFSCluster.Builder(conf).numDataNodes(2).format(true).build();
 
     DFSTestUtil.createKey("test_key", miniDFSCluster, conf);
     primary = new WarehouseInstance(LOG, miniDFSCluster, new HashMap<String, String>() {{
