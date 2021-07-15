@@ -233,6 +233,19 @@ public class MetaStoreUtils {
     return isExternal(params);
   }
 
+  public static String getDbNameFromReplPolicy(String replPolicy) {
+    assert replPolicy != null;
+    return replPolicy.split(Pattern.quote("."))[0];
+  }
+
+  public static boolean isDbReplIncompatible(Database db) {
+    if (db == null) {
+      return false;
+    }
+    Map<String, String> dbParameters = db.getParameters();
+    return dbParameters != null && ReplConst.TRUE.equalsIgnoreCase(dbParameters.get(ReplConst.REPL_INCOMPATIBLE));
+  }
+
   public static boolean isDbBeingFailedOver(Database db) {
     assert (db != null);
     Map<String, String> dbParameters = db.getParameters();
