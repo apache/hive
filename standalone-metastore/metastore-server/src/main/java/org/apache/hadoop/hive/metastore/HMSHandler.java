@@ -89,6 +89,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -5127,10 +5128,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   private void deleteParentRecursive(Path parent, int depth, boolean mustPurge, boolean needRecycle)
       throws IOException, MetaException {
-    if (depth > 0 && parent != null && wh.isWritable(parent)) {
-      if (wh.isDir(parent) && wh.isEmptyDir(parent)) {
-        wh.deleteDir(parent, true, mustPurge, needRecycle);
-      }
+    if (depth > 0 && parent != null && wh.isWritable(parent) && wh.isDir(parent) && wh.isEmptyDir(parent)) {
+      wh.deleteDir(parent, true, mustPurge, needRecycle);
       deleteParentRecursive(parent.getParent(), depth - 1, mustPurge, needRecycle);
     }
   }
@@ -5143,14 +5142,34 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         null);
   }
 
-  private static class PathAndPartValSize {
-    PathAndPartValSize(Path path, int partValSize) {
-      this.path = path;
-      this.partValSize = partValSize;
+    /** Stores a path and its size. */
+    private static class PathAndPartValSize implements Comparable<PathAndPartValSize> {
+
+      public Path path;
+      int partValSize;
+
+      public PathAndPartValSize(Path path, int partValSize) {
+        this.path = path;
+        this.partValSize = partValSize;
+      }
+
+      @Override
+      public boolean equals(Object o) {
+        if (o == this) {
+          return true;
+        }
+        if (!(o instanceof PathAndPartValSize)) {
+          return false;
+        }
+        return path.equals(((PathAndPartValSize) o).path);
+      }
+
+      /** The highest {@code partValSize} is processed first in a {@link PriorityQueue}. */
+      @Override
+      public int compareTo(PathAndPartValSize o) {
+        return ((PathAndPartValSize) o).partValSize - partValSize;
+      }
     }
-    public Path path;
-    int partValSize;
-  }
 
   @Override
   public DropPartitionsResult drop_partitions_req(
@@ -5279,16 +5298,38 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         for (Path path : archToDelete) {
           wh.deleteDir(path, true, mustPurge, needsCm);
         }
+
+        // Uses a priority queue to delete the parents of deleted directories if empty.
+        // The parent with the largest size is always processed first. It guarantees that
+        // the emptiness of a parent won't be changed once it has been processed. So duplicated
+        // processing can be avoided.
+        PriorityQueue<PathAndPartValSize> parentsToDelete = new PriorityQueue<>();
         for (PathAndPartValSize p : dirsToDelete) {
           wh.deleteDir(p.path, true, mustPurge, needsCm);
+          addParentForDel(parentsToDelete, p);
+        }
+
+        HashSet<PathAndPartValSize> processed = new HashSet<>();
+        while (!parentsToDelete.isEmpty()) {
           try {
-            deleteParentRecursive(p.path.getParent(), p.partValSize - 1, mustPurge, needsCm);
+            PathAndPartValSize p = parentsToDelete.poll();
+            if (processed.contains(p)) {
+              continue;
+            }
+            processed.add(p);
+
+            Path path = p.path;
+            if (wh.isWritable(path) && wh.isDir(path) && wh.isEmptyDir(path)) {
+              wh.deleteDir(path, true, mustPurge, needsCm);
+              addParentForDel(parentsToDelete, p);
+            }
           } catch (IOException ex) {
-            LOG.warn("Error from deleteParentRecursive", ex);
+            LOG.warn("Error from recursive parent deletion", ex);
             throw new MetaException("Failed to delete parent: " + ex.getMessage());
           }
         }
       }
+
       if (parts != null) {
         if (parts != null && !parts.isEmpty() && !listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners,
@@ -5298,6 +5339,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                 transactionalListenerResponses, ms);
         }
       }
+    }
+  }
+
+  private static void addParentForDel(PriorityQueue<PathAndPartValSize> parentsToDelete, PathAndPartValSize p) {
+    Path parent = p.path.getParent();
+    if (parent != null && p.partValSize - 1 > 0) {
+      parentsToDelete.add(new PathAndPartValSize(parent, p.partValSize - 1));
     }
   }
 
