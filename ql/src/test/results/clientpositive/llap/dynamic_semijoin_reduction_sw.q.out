@@ -148,7 +148,7 @@ POSTHOOK: Output: default@srcpart_small_n2
 POSTHOOK: Output: default@srcpart_small_n2@ds1=2008-04-08
 POSTHOOK: Output: default@srcpart_small_n2@ds1=2008-04-09
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[106][tables = [$hdt$_1, $hdt$_2, $hdt$_0, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[106][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT count(*)
 FROM (
