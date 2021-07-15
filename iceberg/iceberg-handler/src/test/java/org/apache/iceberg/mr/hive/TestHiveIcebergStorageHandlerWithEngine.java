@@ -1464,6 +1464,10 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
     // Add a new column (age long) to the Iceberg table.
     icebergTable.updateSchema().addColumn("age", Types.LongType.get()).commit();
+    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+      // We need to update columns for non-Hive catalogs
+      shell.executeStatement("ALTER TABLE customers UPDATE COLUMNS");
+    }
 
     Schema customerSchemaWithAge = new Schema(optional(1, "customer_id", Types.LongType.get()),
         optional(2, "first_name", Types.StringType.get(), "This is first name"),
@@ -1527,6 +1531,10 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
     // Add a new required column (age long) to the Iceberg table.
     icebergTable.updateSchema().allowIncompatibleChanges().addRequiredColumn("age", Types.LongType.get()).commit();
+    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+      // We need to update columns for non-Hive catalogs
+      shell.executeStatement("ALTER TABLE customers UPDATE COLUMNS");
+    }
 
     Schema customerSchemaWithAge = new Schema(optional(1, "customer_id", Types.LongType.get()),
         optional(2, "first_name", Types.StringType.get(), "This is first name"),
@@ -1743,6 +1751,10 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
     // Rename the last_name column to family_name
     icebergTable.updateSchema().renameColumn("last_name", "family_name").commit();
+    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+      // We need to update columns for non-Hive catalogs
+      shell.executeStatement("ALTER TABLE customers UPDATE COLUMNS");
+    }
 
     Schema schemaWithFamilyName = new Schema(optional(1, "customer_id", Types.LongType.get()),
         optional(2, "first_name", Types.StringType.get(), "This is first name"),
