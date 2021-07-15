@@ -117,14 +117,14 @@ class SetPartitionsStatsRequest
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->colStats = array();
-                        $_size322 = 0;
-                        $_etype325 = 0;
-                        $xfer += $input->readListBegin($_etype325, $_size322);
-                        for ($_i326 = 0; $_i326 < $_size322; ++$_i326) {
-                            $elem327 = null;
-                            $elem327 = new \metastore\ColumnStatistics();
-                            $xfer += $elem327->read($input);
-                            $this->colStats []= $elem327;
+                        $_size345 = 0;
+                        $_etype348 = 0;
+                        $xfer += $input->readListBegin($_etype348, $_size345);
+                        for ($_i349 = 0; $_i349 < $_size345; ++$_i349) {
+                            $elem350 = null;
+                            $elem350 = new \metastore\ColumnStatistics();
+                            $xfer += $elem350->read($input);
+                            $this->colStats []= $elem350;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -179,8 +179,8 @@ class SetPartitionsStatsRequest
             }
             $xfer += $output->writeFieldBegin('colStats', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->colStats));
-            foreach ($this->colStats as $iter328) {
-                $xfer += $iter328->write($output);
+            foreach ($this->colStats as $iter351) {
+                $xfer += $iter351->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

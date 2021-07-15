@@ -185,16 +185,16 @@ class DataConnector
                 case 5:
                     if ($ftype == TType::MAP) {
                         $this->parameters = array();
-                        $_size580 = 0;
-                        $_ktype581 = 0;
-                        $_vtype582 = 0;
-                        $xfer += $input->readMapBegin($_ktype581, $_vtype582, $_size580);
-                        for ($_i584 = 0; $_i584 < $_size580; ++$_i584) {
-                            $key585 = '';
-                            $val586 = '';
-                            $xfer += $input->readString($key585);
-                            $xfer += $input->readString($val586);
-                            $this->parameters[$key585] = $val586;
+                        $_size603 = 0;
+                        $_ktype604 = 0;
+                        $_vtype605 = 0;
+                        $xfer += $input->readMapBegin($_ktype604, $_vtype605, $_size603);
+                        for ($_i607 = 0; $_i607 < $_size603; ++$_i607) {
+                            $key608 = '';
+                            $val609 = '';
+                            $xfer += $input->readString($key608);
+                            $xfer += $input->readString($val609);
+                            $this->parameters[$key608] = $val609;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -262,9 +262,9 @@ class DataConnector
             }
             $xfer += $output->writeFieldBegin('parameters', TType::MAP, 5);
             $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
-            foreach ($this->parameters as $kiter587 => $viter588) {
-                $xfer += $output->writeString($kiter587);
-                $xfer += $output->writeString($viter588);
+            foreach ($this->parameters as $kiter610 => $viter611) {
+                $xfer += $output->writeString($kiter610);
+                $xfer += $output->writeString($viter611);
             }
             $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();

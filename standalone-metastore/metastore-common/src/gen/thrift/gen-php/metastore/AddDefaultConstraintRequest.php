@@ -69,14 +69,14 @@ class AddDefaultConstraintRequest
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->defaultConstraintCols = array();
-                        $_size424 = 0;
-                        $_etype427 = 0;
-                        $xfer += $input->readListBegin($_etype427, $_size424);
-                        for ($_i428 = 0; $_i428 < $_size424; ++$_i428) {
-                            $elem429 = null;
-                            $elem429 = new \metastore\SQLDefaultConstraint();
-                            $xfer += $elem429->read($input);
-                            $this->defaultConstraintCols []= $elem429;
+                        $_size447 = 0;
+                        $_etype450 = 0;
+                        $xfer += $input->readListBegin($_etype450, $_size447);
+                        for ($_i451 = 0; $_i451 < $_size447; ++$_i451) {
+                            $elem452 = null;
+                            $elem452 = new \metastore\SQLDefaultConstraint();
+                            $xfer += $elem452->read($input);
+                            $this->defaultConstraintCols []= $elem452;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class AddDefaultConstraintRequest
             }
             $xfer += $output->writeFieldBegin('defaultConstraintCols', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->defaultConstraintCols));
-            foreach ($this->defaultConstraintCols as $iter430) {
-                $xfer += $iter430->write($output);
+            foreach ($this->defaultConstraintCols as $iter453) {
+                $xfer += $iter453->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

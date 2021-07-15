@@ -69,14 +69,14 @@ class AllocateTableWriteIdsResponse
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->txnToWriteIds = array();
-                        $_size687 = 0;
-                        $_etype690 = 0;
-                        $xfer += $input->readListBegin($_etype690, $_size687);
-                        for ($_i691 = 0; $_i691 < $_size687; ++$_i691) {
-                            $elem692 = null;
-                            $elem692 = new \metastore\TxnToWriteId();
-                            $xfer += $elem692->read($input);
-                            $this->txnToWriteIds []= $elem692;
+                        $_size710 = 0;
+                        $_etype713 = 0;
+                        $xfer += $input->readListBegin($_etype713, $_size710);
+                        for ($_i714 = 0; $_i714 < $_size710; ++$_i714) {
+                            $elem715 = null;
+                            $elem715 = new \metastore\TxnToWriteId();
+                            $xfer += $elem715->read($input);
+                            $this->txnToWriteIds []= $elem715;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class AllocateTableWriteIdsResponse
             }
             $xfer += $output->writeFieldBegin('txnToWriteIds', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->txnToWriteIds));
-            foreach ($this->txnToWriteIds as $iter693) {
-                $xfer += $iter693->write($output);
+            foreach ($this->txnToWriteIds as $iter716) {
+                $xfer += $iter716->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

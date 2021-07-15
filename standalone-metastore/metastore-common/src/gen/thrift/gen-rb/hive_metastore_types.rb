@@ -346,6 +346,10 @@ class ColumnStatisticsDesc; end
 
 class ColumnStatistics; end
 
+class FileMetadata; end
+
+class ObjectDictionary; end
+
 class Table; end
 
 class Partition; end
@@ -2212,6 +2216,43 @@ class ColumnStatistics
   ::Thrift::Struct.generate_accessors self
 end
 
+class FileMetadata
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TYPE = 1
+  VERSION = 2
+  DATA = 3
+
+  FIELDS = {
+    TYPE => {:type => ::Thrift::Types::BYTE, :name => 'type', :default => 1},
+    VERSION => {:type => ::Thrift::Types::BYTE, :name => 'version', :default => 1},
+    DATA => {:type => ::Thrift::Types::LIST, :name => 'data', :element => {:type => ::Thrift::Types::STRING, :binary => true}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ObjectDictionary
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  VALUES = 1
+
+  FIELDS = {
+    VALUES => {:type => ::Thrift::Types::MAP, :name => 'values', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRING, :binary => true}}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field values is unset!') unless @values
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class Table
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TABLENAME = 1
@@ -2239,6 +2280,8 @@ class Table
   REQUIREDREADCAPABILITIES = 23
   REQUIREDWRITECAPABILITIES = 24
   ID = 25
+  FILEMETADATA = 26
+  DICTIONARY = 27
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -2265,7 +2308,9 @@ class Table
     ACCESSTYPE => {:type => ::Thrift::Types::BYTE, :name => 'accessType', :optional => true},
     REQUIREDREADCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'requiredReadCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     REQUIREDWRITECAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'requiredWriteCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true}
+    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
+    FILEMETADATA => {:type => ::Thrift::Types::STRUCT, :name => 'fileMetadata', :class => ::FileMetadata, :optional => true},
+    DICTIONARY => {:type => ::Thrift::Types::STRUCT, :name => 'dictionary', :class => ::ObjectDictionary, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2293,6 +2338,7 @@ class Partition
   WRITEID = 10
   ISSTATSCOMPLIANT = 11
   COLSTATS = 12
+  FILEMETADATA = 13
 
   FIELDS = {
     VALUES => {:type => ::Thrift::Types::LIST, :name => 'values', :element => {:type => ::Thrift::Types::STRING}},
@@ -2306,7 +2352,8 @@ class Partition
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
     WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
     ISSTATSCOMPLIANT => {:type => ::Thrift::Types::BOOL, :name => 'isStatsCompliant', :optional => true},
-    COLSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'colStats', :class => ::ColumnStatistics, :optional => true}
+    COLSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'colStats', :class => ::ColumnStatistics, :optional => true},
+    FILEMETADATA => {:type => ::Thrift::Types::STRUCT, :name => 'fileMetadata', :class => ::FileMetadata, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3378,9 +3425,11 @@ end
 class GetPartitionsByNamesResult
   include ::Thrift::Struct, ::Thrift::Struct_Union
   PARTITIONS = 1
+  DICTIONARY = 2
 
   FIELDS = {
-    PARTITIONS => {:type => ::Thrift::Types::LIST, :name => 'partitions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}}
+    PARTITIONS => {:type => ::Thrift::Types::LIST, :name => 'partitions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}},
+    DICTIONARY => {:type => ::Thrift::Types::STRUCT, :name => 'dictionary', :class => ::ObjectDictionary, :optional => true}
   }
 
   def struct_fields; FIELDS; end

@@ -2300,6 +2300,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return res;
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
           List<String> part_names, boolean getColStats, String engine)
@@ -2307,6 +2311,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, getColStats, engine);
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
           List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)
@@ -2315,12 +2323,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       validWriteIdList, tableId);
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
       List<String> part_names) throws TException {
     return getPartitionsByNames(catName, db_name, tbl_name, part_names, false, null);
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
       List<String> part_names, String validWriteIdList, Long tableId) throws TException {
@@ -2328,6 +2344,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       validWriteIdList, tableId);
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
           List<String> part_names, boolean getColStats, String engine)
@@ -2336,6 +2356,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       null, null);
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
           List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)

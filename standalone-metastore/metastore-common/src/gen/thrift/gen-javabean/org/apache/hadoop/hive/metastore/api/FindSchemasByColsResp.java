@@ -325,14 +325,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // SCHEMA_VERSIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1162 = iprot.readListBegin();
-                struct.schemaVersions = new java.util.ArrayList<SchemaVersionDescriptor>(_list1162.size);
-                @org.apache.thrift.annotation.Nullable SchemaVersionDescriptor _elem1163;
-                for (int _i1164 = 0; _i1164 < _list1162.size; ++_i1164)
+                org.apache.thrift.protocol.TList _list1188 = iprot.readListBegin();
+                struct.schemaVersions = new java.util.ArrayList<SchemaVersionDescriptor>(_list1188.size);
+                @org.apache.thrift.annotation.Nullable SchemaVersionDescriptor _elem1189;
+                for (int _i1190 = 0; _i1190 < _list1188.size; ++_i1190)
                 {
-                  _elem1163 = new SchemaVersionDescriptor();
-                  _elem1163.read(iprot);
-                  struct.schemaVersions.add(_elem1163);
+                  _elem1189 = new SchemaVersionDescriptor();
+                  _elem1189.read(iprot);
+                  struct.schemaVersions.add(_elem1189);
                 }
                 iprot.readListEnd();
               }
@@ -358,9 +358,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(SCHEMA_VERSIONS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.schemaVersions.size()));
-          for (SchemaVersionDescriptor _iter1165 : struct.schemaVersions)
+          for (SchemaVersionDescriptor _iter1191 : struct.schemaVersions)
           {
-            _iter1165.write(oprot);
+            _iter1191.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -391,9 +391,9 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetSchemaVersions()) {
         {
           oprot.writeI32(struct.schemaVersions.size());
-          for (SchemaVersionDescriptor _iter1166 : struct.schemaVersions)
+          for (SchemaVersionDescriptor _iter1192 : struct.schemaVersions)
           {
-            _iter1166.write(oprot);
+            _iter1192.write(oprot);
           }
         }
       }
@@ -405,14 +405,14 @@ package org.apache.hadoop.hive.metastore.api;
       java.util.BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list1167 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.schemaVersions = new java.util.ArrayList<SchemaVersionDescriptor>(_list1167.size);
-          @org.apache.thrift.annotation.Nullable SchemaVersionDescriptor _elem1168;
-          for (int _i1169 = 0; _i1169 < _list1167.size; ++_i1169)
+          org.apache.thrift.protocol.TList _list1193 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.schemaVersions = new java.util.ArrayList<SchemaVersionDescriptor>(_list1193.size);
+          @org.apache.thrift.annotation.Nullable SchemaVersionDescriptor _elem1194;
+          for (int _i1195 = 0; _i1195 < _list1193.size; ++_i1195)
           {
-            _elem1168 = new SchemaVersionDescriptor();
-            _elem1168.read(iprot);
-            struct.schemaVersions.add(_elem1168);
+            _elem1194 = new SchemaVersionDescriptor();
+            _elem1194.read(iprot);
+            struct.schemaVersions.add(_elem1194);
           }
         }
         struct.setSchemaVersionsIsSet(true);

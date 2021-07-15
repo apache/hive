@@ -567,6 +567,30 @@ struct ColumnStatistics {
 4: optional string engine
 }
 
+// FileMetadata represents the table-level (in case of unpartitioned) or partition-level
+// file metadata. Each partition could have more than 1 files and hence the list of
+// binary data field. Each value in data field corresponds to metadata for one file.
+struct FileMetadata {
+  // current supported type mappings are
+  // 1 -> IMPALA
+  1: byte type = 1
+  2: byte version = 1
+  3: list<binary> data
+}
+
+// this field can be used to store repeatitive information
+// (like network addresses in filemetadata). Instead of
+// sending the same object repeatedly, we can send the indices
+// corresponding to the object in this list.
+struct ObjectDictionary {
+  // the key can be used to determine the object type
+  // the value is the list of the objects which can be accessed
+  // using their indices. These indices can be used to send instead of
+  // full object which can reduce the payload significantly in case of
+  // repetitive objects.
+  1: required map<string, list<binary>> values
+}
+
 // table information
 struct Table {
   1: string tableName,                // name of the table
@@ -595,6 +619,9 @@ struct Table {
   24: optional list<string> requiredWriteCapabilities
   25: optional i64 id,                 // id of the table. It will be ignored if set. It's only for
                                         // read purposed
+  26: optional FileMetadata fileMetadata // optional serialized file-metadata for this table
+  // for certain execution engines
+  27: optional ObjectDictionary dictionary
 }
 
 struct Partition {
@@ -610,6 +637,8 @@ struct Partition {
   10: optional i64 writeId=-1,
   11: optional bool isStatsCompliant,
   12: optional ColumnStatistics colStats // column statistics for partition
+  13: optional FileMetadata fileMetadata  // optional serialized file-metadata useful
+    // for certain execution engines
 }
 
 struct PartitionWithoutSD {
@@ -930,6 +959,7 @@ struct GetPartitionsByNamesRequest {
 
 struct GetPartitionsByNamesResult {
   1: required list<Partition> partitions
+  2: optional ObjectDictionary dictionary
 }
 
 struct DataConnector {

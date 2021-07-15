@@ -528,6 +528,10 @@ class ColumnStatisticsDesc;
 
 class ColumnStatistics;
 
+class FileMetadata;
+
+class ObjectDictionary;
+
 class Table;
 
 class Partition;
@@ -4564,8 +4568,98 @@ void swap(ColumnStatistics &a, ColumnStatistics &b);
 
 std::ostream& operator<<(std::ostream& out, const ColumnStatistics& obj);
 
+typedef struct _FileMetadata__isset {
+  _FileMetadata__isset() : type(true), version(true), data(false) {}
+  bool type :1;
+  bool version :1;
+  bool data :1;
+} _FileMetadata__isset;
+
+class FileMetadata : public virtual ::apache::thrift::TBase {
+ public:
+
+  FileMetadata(const FileMetadata&);
+  FileMetadata& operator=(const FileMetadata&);
+  FileMetadata() : type(1), version(1) {
+  }
+
+  virtual ~FileMetadata() noexcept;
+  int8_t type;
+  int8_t version;
+  std::vector<std::string>  data;
+
+  _FileMetadata__isset __isset;
+
+  void __set_type(const int8_t val);
+
+  void __set_version(const int8_t val);
+
+  void __set_data(const std::vector<std::string> & val);
+
+  bool operator == (const FileMetadata & rhs) const
+  {
+    if (!(type == rhs.type))
+      return false;
+    if (!(version == rhs.version))
+      return false;
+    if (!(data == rhs.data))
+      return false;
+    return true;
+  }
+  bool operator != (const FileMetadata &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FileMetadata & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(FileMetadata &a, FileMetadata &b);
+
+std::ostream& operator<<(std::ostream& out, const FileMetadata& obj);
+
+
+class ObjectDictionary : public virtual ::apache::thrift::TBase {
+ public:
+
+  ObjectDictionary(const ObjectDictionary&);
+  ObjectDictionary& operator=(const ObjectDictionary&);
+  ObjectDictionary() {
+  }
+
+  virtual ~ObjectDictionary() noexcept;
+  std::map<std::string, std::vector<std::string> >  values;
+
+  void __set_values(const std::map<std::string, std::vector<std::string> > & val);
+
+  bool operator == (const ObjectDictionary & rhs) const
+  {
+    if (!(values == rhs.values))
+      return false;
+    return true;
+  }
+  bool operator != (const ObjectDictionary &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ObjectDictionary & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ObjectDictionary &a, ObjectDictionary &b);
+
+std::ostream& operator<<(std::ostream& out, const ObjectDictionary& obj);
+
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), writeId(true), isStatsCompliant(false), colStats(false), accessType(false), requiredReadCapabilities(false), requiredWriteCapabilities(false), id(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), writeId(true), isStatsCompliant(false), colStats(false), accessType(false), requiredReadCapabilities(false), requiredWriteCapabilities(false), id(false), fileMetadata(false), dictionary(false) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -4591,6 +4685,8 @@ typedef struct _Table__isset {
   bool requiredReadCapabilities :1;
   bool requiredWriteCapabilities :1;
   bool id :1;
+  bool fileMetadata :1;
+  bool dictionary :1;
 } _Table__isset;
 
 class Table : public virtual ::apache::thrift::TBase {
@@ -4633,6 +4729,8 @@ class Table : public virtual ::apache::thrift::TBase {
   std::vector<std::string>  requiredReadCapabilities;
   std::vector<std::string>  requiredWriteCapabilities;
   int64_t id;
+  FileMetadata fileMetadata;
+  ObjectDictionary dictionary;
 
   _Table__isset __isset;
 
@@ -4685,6 +4783,10 @@ class Table : public virtual ::apache::thrift::TBase {
   void __set_requiredWriteCapabilities(const std::vector<std::string> & val);
 
   void __set_id(const int64_t val);
+
+  void __set_fileMetadata(const FileMetadata& val);
+
+  void __set_dictionary(const ObjectDictionary& val);
 
   bool operator == (const Table & rhs) const
   {
@@ -4764,6 +4866,14 @@ class Table : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.id && !(id == rhs.id))
       return false;
+    if (__isset.fileMetadata != rhs.__isset.fileMetadata)
+      return false;
+    else if (__isset.fileMetadata && !(fileMetadata == rhs.fileMetadata))
+      return false;
+    if (__isset.dictionary != rhs.__isset.dictionary)
+      return false;
+    else if (__isset.dictionary && !(dictionary == rhs.dictionary))
+      return false;
     return true;
   }
   bool operator != (const Table &rhs) const {
@@ -4783,7 +4893,7 @@ void swap(Table &a, Table &b);
 std::ostream& operator<<(std::ostream& out, const Table& obj);
 
 typedef struct _Partition__isset {
-  _Partition__isset() : values(false), dbName(false), tableName(false), createTime(false), lastAccessTime(false), sd(false), parameters(false), privileges(false), catName(false), writeId(true), isStatsCompliant(false), colStats(false) {}
+  _Partition__isset() : values(false), dbName(false), tableName(false), createTime(false), lastAccessTime(false), sd(false), parameters(false), privileges(false), catName(false), writeId(true), isStatsCompliant(false), colStats(false), fileMetadata(false) {}
   bool values :1;
   bool dbName :1;
   bool tableName :1;
@@ -4796,6 +4906,7 @@ typedef struct _Partition__isset {
   bool writeId :1;
   bool isStatsCompliant :1;
   bool colStats :1;
+  bool fileMetadata :1;
 } _Partition__isset;
 
 class Partition : public virtual ::apache::thrift::TBase {
@@ -4819,6 +4930,7 @@ class Partition : public virtual ::apache::thrift::TBase {
   int64_t writeId;
   bool isStatsCompliant;
   ColumnStatistics colStats;
+  FileMetadata fileMetadata;
 
   _Partition__isset __isset;
 
@@ -4845,6 +4957,8 @@ class Partition : public virtual ::apache::thrift::TBase {
   void __set_isStatsCompliant(const bool val);
 
   void __set_colStats(const ColumnStatistics& val);
+
+  void __set_fileMetadata(const FileMetadata& val);
 
   bool operator == (const Partition & rhs) const
   {
@@ -4881,6 +4995,10 @@ class Partition : public virtual ::apache::thrift::TBase {
     if (__isset.colStats != rhs.__isset.colStats)
       return false;
     else if (__isset.colStats && !(colStats == rhs.colStats))
+      return false;
+    if (__isset.fileMetadata != rhs.__isset.fileMetadata)
+      return false;
+    else if (__isset.fileMetadata && !(fileMetadata == rhs.fileMetadata))
       return false;
     return true;
   }
@@ -7525,6 +7643,10 @@ void swap(GetPartitionsByNamesRequest &a, GetPartitionsByNamesRequest &b);
 
 std::ostream& operator<<(std::ostream& out, const GetPartitionsByNamesRequest& obj);
 
+typedef struct _GetPartitionsByNamesResult__isset {
+  _GetPartitionsByNamesResult__isset() : dictionary(false) {}
+  bool dictionary :1;
+} _GetPartitionsByNamesResult__isset;
 
 class GetPartitionsByNamesResult : public virtual ::apache::thrift::TBase {
  public:
@@ -7536,12 +7658,21 @@ class GetPartitionsByNamesResult : public virtual ::apache::thrift::TBase {
 
   virtual ~GetPartitionsByNamesResult() noexcept;
   std::vector<Partition>  partitions;
+  ObjectDictionary dictionary;
+
+  _GetPartitionsByNamesResult__isset __isset;
 
   void __set_partitions(const std::vector<Partition> & val);
+
+  void __set_dictionary(const ObjectDictionary& val);
 
   bool operator == (const GetPartitionsByNamesResult & rhs) const
   {
     if (!(partitions == rhs.partitions))
+      return false;
+    if (__isset.dictionary != rhs.__isset.dictionary)
+      return false;
+    else if (__isset.dictionary && !(dictionary == rhs.dictionary))
       return false;
     return true;
   }

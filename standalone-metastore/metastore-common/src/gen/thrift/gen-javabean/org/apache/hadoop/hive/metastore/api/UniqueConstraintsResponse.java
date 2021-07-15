@@ -329,14 +329,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // UNIQUE_CONSTRAINTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list416 = iprot.readListBegin();
-                struct.uniqueConstraints = new java.util.ArrayList<SQLUniqueConstraint>(_list416.size);
-                @org.apache.thrift.annotation.Nullable SQLUniqueConstraint _elem417;
-                for (int _i418 = 0; _i418 < _list416.size; ++_i418)
+                org.apache.thrift.protocol.TList _list442 = iprot.readListBegin();
+                struct.uniqueConstraints = new java.util.ArrayList<SQLUniqueConstraint>(_list442.size);
+                @org.apache.thrift.annotation.Nullable SQLUniqueConstraint _elem443;
+                for (int _i444 = 0; _i444 < _list442.size; ++_i444)
                 {
-                  _elem417 = new SQLUniqueConstraint();
-                  _elem417.read(iprot);
-                  struct.uniqueConstraints.add(_elem417);
+                  _elem443 = new SQLUniqueConstraint();
+                  _elem443.read(iprot);
+                  struct.uniqueConstraints.add(_elem443);
                 }
                 iprot.readListEnd();
               }
@@ -362,9 +362,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(UNIQUE_CONSTRAINTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.uniqueConstraints.size()));
-          for (SQLUniqueConstraint _iter419 : struct.uniqueConstraints)
+          for (SQLUniqueConstraint _iter445 : struct.uniqueConstraints)
           {
-            _iter419.write(oprot);
+            _iter445.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -389,9 +389,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.uniqueConstraints.size());
-        for (SQLUniqueConstraint _iter420 : struct.uniqueConstraints)
+        for (SQLUniqueConstraint _iter446 : struct.uniqueConstraints)
         {
-          _iter420.write(oprot);
+          _iter446.write(oprot);
         }
       }
     }
@@ -400,14 +400,14 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, UniqueConstraintsResponse struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list421 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.uniqueConstraints = new java.util.ArrayList<SQLUniqueConstraint>(_list421.size);
-        @org.apache.thrift.annotation.Nullable SQLUniqueConstraint _elem422;
-        for (int _i423 = 0; _i423 < _list421.size; ++_i423)
+        org.apache.thrift.protocol.TList _list447 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.uniqueConstraints = new java.util.ArrayList<SQLUniqueConstraint>(_list447.size);
+        @org.apache.thrift.annotation.Nullable SQLUniqueConstraint _elem448;
+        for (int _i449 = 0; _i449 < _list447.size; ++_i449)
         {
-          _elem422 = new SQLUniqueConstraint();
-          _elem422.read(iprot);
-          struct.uniqueConstraints.add(_elem422);
+          _elem448 = new SQLUniqueConstraint();
+          _elem448.read(iprot);
+          struct.uniqueConstraints.add(_elem448);
         }
       }
       struct.setUniqueConstraintsIsSet(true);

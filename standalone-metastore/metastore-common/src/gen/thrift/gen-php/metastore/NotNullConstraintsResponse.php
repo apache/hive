@@ -69,14 +69,14 @@ class NotNullConstraintsResponse
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->notNullConstraints = array();
-                        $_size375 = 0;
-                        $_etype378 = 0;
-                        $xfer += $input->readListBegin($_etype378, $_size375);
-                        for ($_i379 = 0; $_i379 < $_size375; ++$_i379) {
-                            $elem380 = null;
-                            $elem380 = new \metastore\SQLNotNullConstraint();
-                            $xfer += $elem380->read($input);
-                            $this->notNullConstraints []= $elem380;
+                        $_size398 = 0;
+                        $_etype401 = 0;
+                        $xfer += $input->readListBegin($_etype401, $_size398);
+                        for ($_i402 = 0; $_i402 < $_size398; ++$_i402) {
+                            $elem403 = null;
+                            $elem403 = new \metastore\SQLNotNullConstraint();
+                            $xfer += $elem403->read($input);
+                            $this->notNullConstraints []= $elem403;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class NotNullConstraintsResponse
             }
             $xfer += $output->writeFieldBegin('notNullConstraints', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->notNullConstraints));
-            foreach ($this->notNullConstraints as $iter381) {
-                $xfer += $iter381->write($output);
+            foreach ($this->notNullConstraints as $iter404) {
+                $xfer += $iter404->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

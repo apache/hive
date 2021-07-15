@@ -89,26 +89,26 @@ class PartitionsStatsResult
                 case 1:
                     if ($ftype == TType::MAP) {
                         $this->partStats = array();
-                        $_size459 = 0;
-                        $_ktype460 = 0;
-                        $_vtype461 = 0;
-                        $xfer += $input->readMapBegin($_ktype460, $_vtype461, $_size459);
-                        for ($_i463 = 0; $_i463 < $_size459; ++$_i463) {
-                            $key464 = '';
-                            $val465 = array();
-                            $xfer += $input->readString($key464);
-                            $val465 = array();
-                            $_size466 = 0;
-                            $_etype469 = 0;
-                            $xfer += $input->readListBegin($_etype469, $_size466);
-                            for ($_i470 = 0; $_i470 < $_size466; ++$_i470) {
-                                $elem471 = null;
-                                $elem471 = new \metastore\ColumnStatisticsObj();
-                                $xfer += $elem471->read($input);
-                                $val465 []= $elem471;
+                        $_size482 = 0;
+                        $_ktype483 = 0;
+                        $_vtype484 = 0;
+                        $xfer += $input->readMapBegin($_ktype483, $_vtype484, $_size482);
+                        for ($_i486 = 0; $_i486 < $_size482; ++$_i486) {
+                            $key487 = '';
+                            $val488 = array();
+                            $xfer += $input->readString($key487);
+                            $val488 = array();
+                            $_size489 = 0;
+                            $_etype492 = 0;
+                            $xfer += $input->readListBegin($_etype492, $_size489);
+                            for ($_i493 = 0; $_i493 < $_size489; ++$_i493) {
+                                $elem494 = null;
+                                $elem494 = new \metastore\ColumnStatisticsObj();
+                                $xfer += $elem494->read($input);
+                                $val488 []= $elem494;
                             }
                             $xfer += $input->readListEnd();
-                            $this->partStats[$key464] = $val465;
+                            $this->partStats[$key487] = $val488;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -142,11 +142,11 @@ class PartitionsStatsResult
             }
             $xfer += $output->writeFieldBegin('partStats', TType::MAP, 1);
             $output->writeMapBegin(TType::STRING, TType::LST, count($this->partStats));
-            foreach ($this->partStats as $kiter472 => $viter473) {
-                $xfer += $output->writeString($kiter472);
-                $output->writeListBegin(TType::STRUCT, count($viter473));
-                foreach ($viter473 as $iter474) {
-                    $xfer += $iter474->write($output);
+            foreach ($this->partStats as $kiter495 => $viter496) {
+                $xfer += $output->writeString($kiter495);
+                $output->writeListBegin(TType::STRUCT, count($viter496));
+                foreach ($viter496 as $iter497) {
+                    $xfer += $iter497->write($output);
                 }
                 $output->writeListEnd();
             }

@@ -36,6 +36,8 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField REQUIRED_READ_CAPABILITIES_FIELD_DESC = new org.apache.thrift.protocol.TField("requiredReadCapabilities", org.apache.thrift.protocol.TType.LIST, (short)23);
   private static final org.apache.thrift.protocol.TField REQUIRED_WRITE_CAPABILITIES_FIELD_DESC = new org.apache.thrift.protocol.TField("requiredWriteCapabilities", org.apache.thrift.protocol.TType.LIST, (short)24);
   private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.I64, (short)25);
+  private static final org.apache.thrift.protocol.TField FILE_METADATA_FIELD_DESC = new org.apache.thrift.protocol.TField("fileMetadata", org.apache.thrift.protocol.TType.STRUCT, (short)26);
+  private static final org.apache.thrift.protocol.TField DICTIONARY_FIELD_DESC = new org.apache.thrift.protocol.TField("dictionary", org.apache.thrift.protocol.TType.STRUCT, (short)27);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new TableStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new TableTupleSchemeFactory();
@@ -65,6 +67,8 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> requiredReadCapabilities; // optional
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> requiredWriteCapabilities; // optional
   private long id; // optional
+  private @org.apache.thrift.annotation.Nullable FileMetadata fileMetadata; // optional
+  private @org.apache.thrift.annotation.Nullable ObjectDictionary dictionary; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -96,7 +100,9 @@ package org.apache.hadoop.hive.metastore.api;
     ACCESS_TYPE((short)22, "accessType"),
     REQUIRED_READ_CAPABILITIES((short)23, "requiredReadCapabilities"),
     REQUIRED_WRITE_CAPABILITIES((short)24, "requiredWriteCapabilities"),
-    ID((short)25, "id");
+    ID((short)25, "id"),
+    FILE_METADATA((short)26, "fileMetadata"),
+    DICTIONARY((short)27, "dictionary");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -162,6 +168,10 @@ package org.apache.hadoop.hive.metastore.api;
           return REQUIRED_WRITE_CAPABILITIES;
         case 25: // ID
           return ID;
+        case 26: // FILE_METADATA
+          return FILE_METADATA;
+        case 27: // DICTIONARY
+          return DICTIONARY;
         default:
           return null;
       }
@@ -213,7 +223,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __ACCESSTYPE_ISSET_ID = 7;
   private static final int __ID_ISSET_ID = 8;
   private short __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.TEMPORARY,_Fields.REWRITE_ENABLED,_Fields.CREATION_METADATA,_Fields.CAT_NAME,_Fields.OWNER_TYPE,_Fields.WRITE_ID,_Fields.IS_STATS_COMPLIANT,_Fields.COL_STATS,_Fields.ACCESS_TYPE,_Fields.REQUIRED_READ_CAPABILITIES,_Fields.REQUIRED_WRITE_CAPABILITIES,_Fields.ID};
+  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.TEMPORARY,_Fields.REWRITE_ENABLED,_Fields.CREATION_METADATA,_Fields.CAT_NAME,_Fields.OWNER_TYPE,_Fields.WRITE_ID,_Fields.IS_STATS_COMPLIANT,_Fields.COL_STATS,_Fields.ACCESS_TYPE,_Fields.REQUIRED_READ_CAPABILITIES,_Fields.REQUIRED_WRITE_CAPABILITIES,_Fields.ID,_Fields.FILE_METADATA,_Fields.DICTIONARY};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -272,6 +282,10 @@ package org.apache.hadoop.hive.metastore.api;
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.FILE_METADATA, new org.apache.thrift.meta_data.FieldMetaData("fileMetadata", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FileMetadata.class)));
+    tmpMap.put(_Fields.DICTIONARY, new org.apache.thrift.meta_data.FieldMetaData("dictionary", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ObjectDictionary.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Table.class, metaDataMap);
   }
@@ -386,6 +400,12 @@ package org.apache.hadoop.hive.metastore.api;
       this.requiredWriteCapabilities = __this__requiredWriteCapabilities;
     }
     this.id = other.id;
+    if (other.isSetFileMetadata()) {
+      this.fileMetadata = new FileMetadata(other.fileMetadata);
+    }
+    if (other.isSetDictionary()) {
+      this.dictionary = new ObjectDictionary(other.dictionary);
+    }
   }
 
   public Table deepCopy() {
@@ -429,6 +449,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.requiredWriteCapabilities = null;
     setIdIsSet(false);
     this.id = 0;
+    this.fileMetadata = null;
+    this.dictionary = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -1080,6 +1102,54 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ID_ISSET_ID, value);
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public FileMetadata getFileMetadata() {
+    return this.fileMetadata;
+  }
+
+  public void setFileMetadata(@org.apache.thrift.annotation.Nullable FileMetadata fileMetadata) {
+    this.fileMetadata = fileMetadata;
+  }
+
+  public void unsetFileMetadata() {
+    this.fileMetadata = null;
+  }
+
+  /** Returns true if field fileMetadata is set (has been assigned a value) and false otherwise */
+  public boolean isSetFileMetadata() {
+    return this.fileMetadata != null;
+  }
+
+  public void setFileMetadataIsSet(boolean value) {
+    if (!value) {
+      this.fileMetadata = null;
+    }
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public ObjectDictionary getDictionary() {
+    return this.dictionary;
+  }
+
+  public void setDictionary(@org.apache.thrift.annotation.Nullable ObjectDictionary dictionary) {
+    this.dictionary = dictionary;
+  }
+
+  public void unsetDictionary() {
+    this.dictionary = null;
+  }
+
+  /** Returns true if field dictionary is set (has been assigned a value) and false otherwise */
+  public boolean isSetDictionary() {
+    return this.dictionary != null;
+  }
+
+  public void setDictionaryIsSet(boolean value) {
+    if (!value) {
+      this.dictionary = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case TABLE_NAME:
@@ -1282,6 +1352,22 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case FILE_METADATA:
+      if (value == null) {
+        unsetFileMetadata();
+      } else {
+        setFileMetadata((FileMetadata)value);
+      }
+      break;
+
+    case DICTIONARY:
+      if (value == null) {
+        unsetDictionary();
+      } else {
+        setDictionary((ObjectDictionary)value);
+      }
+      break;
+
     }
   }
 
@@ -1363,6 +1449,12 @@ package org.apache.hadoop.hive.metastore.api;
     case ID:
       return getId();
 
+    case FILE_METADATA:
+      return getFileMetadata();
+
+    case DICTIONARY:
+      return getDictionary();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -1424,6 +1516,10 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetRequiredWriteCapabilities();
     case ID:
       return isSetId();
+    case FILE_METADATA:
+      return isSetFileMetadata();
+    case DICTIONARY:
+      return isSetDictionary();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -1666,6 +1762,24 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_fileMetadata = true && this.isSetFileMetadata();
+    boolean that_present_fileMetadata = true && that.isSetFileMetadata();
+    if (this_present_fileMetadata || that_present_fileMetadata) {
+      if (!(this_present_fileMetadata && that_present_fileMetadata))
+        return false;
+      if (!this.fileMetadata.equals(that.fileMetadata))
+        return false;
+    }
+
+    boolean this_present_dictionary = true && this.isSetDictionary();
+    boolean that_present_dictionary = true && that.isSetDictionary();
+    if (this_present_dictionary || that_present_dictionary) {
+      if (!(this_present_dictionary && that_present_dictionary))
+        return false;
+      if (!this.dictionary.equals(that.dictionary))
+        return false;
+    }
+
     return true;
   }
 
@@ -1766,6 +1880,14 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetId()) ? 131071 : 524287);
     if (isSetId())
       hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(id);
+
+    hashCode = hashCode * 8191 + ((isSetFileMetadata()) ? 131071 : 524287);
+    if (isSetFileMetadata())
+      hashCode = hashCode * 8191 + fileMetadata.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetDictionary()) ? 131071 : 524287);
+    if (isSetDictionary())
+      hashCode = hashCode * 8191 + dictionary.hashCode();
 
     return hashCode;
   }
@@ -2028,6 +2150,26 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetFileMetadata(), other.isSetFileMetadata());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetFileMetadata()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.fileMetadata, other.fileMetadata);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetDictionary(), other.isSetDictionary());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetDictionary()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.dictionary, other.dictionary);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -2238,6 +2380,26 @@ package org.apache.hadoop.hive.metastore.api;
       sb.append(this.id);
       first = false;
     }
+    if (isSetFileMetadata()) {
+      if (!first) sb.append(", ");
+      sb.append("fileMetadata:");
+      if (this.fileMetadata == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.fileMetadata);
+      }
+      first = false;
+    }
+    if (isSetDictionary()) {
+      if (!first) sb.append(", ");
+      sb.append("dictionary:");
+      if (this.dictionary == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.dictionary);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -2256,6 +2418,12 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (colStats != null) {
       colStats.validate();
+    }
+    if (fileMetadata != null) {
+      fileMetadata.validate();
+    }
+    if (dictionary != null) {
+      dictionary.validate();
     }
   }
 
@@ -2355,14 +2523,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 8: // PARTITION_KEYS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list270 = iprot.readListBegin();
-                struct.partitionKeys = new java.util.ArrayList<FieldSchema>(_list270.size);
-                @org.apache.thrift.annotation.Nullable FieldSchema _elem271;
-                for (int _i272 = 0; _i272 < _list270.size; ++_i272)
+                org.apache.thrift.protocol.TList _list296 = iprot.readListBegin();
+                struct.partitionKeys = new java.util.ArrayList<FieldSchema>(_list296.size);
+                @org.apache.thrift.annotation.Nullable FieldSchema _elem297;
+                for (int _i298 = 0; _i298 < _list296.size; ++_i298)
                 {
-                  _elem271 = new FieldSchema();
-                  _elem271.read(iprot);
-                  struct.partitionKeys.add(_elem271);
+                  _elem297 = new FieldSchema();
+                  _elem297.read(iprot);
+                  struct.partitionKeys.add(_elem297);
                 }
                 iprot.readListEnd();
               }
@@ -2374,15 +2542,15 @@ package org.apache.hadoop.hive.metastore.api;
           case 9: // PARAMETERS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map273 = iprot.readMapBegin();
-                struct.parameters = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map273.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _key274;
-                @org.apache.thrift.annotation.Nullable java.lang.String _val275;
-                for (int _i276 = 0; _i276 < _map273.size; ++_i276)
+                org.apache.thrift.protocol.TMap _map299 = iprot.readMapBegin();
+                struct.parameters = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map299.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _key300;
+                @org.apache.thrift.annotation.Nullable java.lang.String _val301;
+                for (int _i302 = 0; _i302 < _map299.size; ++_i302)
                 {
-                  _key274 = iprot.readString();
-                  _val275 = iprot.readString();
-                  struct.parameters.put(_key274, _val275);
+                  _key300 = iprot.readString();
+                  _val301 = iprot.readString();
+                  struct.parameters.put(_key300, _val301);
                 }
                 iprot.readMapEnd();
               }
@@ -2501,13 +2669,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 23: // REQUIRED_READ_CAPABILITIES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list277 = iprot.readListBegin();
-                struct.requiredReadCapabilities = new java.util.ArrayList<java.lang.String>(_list277.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem278;
-                for (int _i279 = 0; _i279 < _list277.size; ++_i279)
+                org.apache.thrift.protocol.TList _list303 = iprot.readListBegin();
+                struct.requiredReadCapabilities = new java.util.ArrayList<java.lang.String>(_list303.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem304;
+                for (int _i305 = 0; _i305 < _list303.size; ++_i305)
                 {
-                  _elem278 = iprot.readString();
-                  struct.requiredReadCapabilities.add(_elem278);
+                  _elem304 = iprot.readString();
+                  struct.requiredReadCapabilities.add(_elem304);
                 }
                 iprot.readListEnd();
               }
@@ -2519,13 +2687,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 24: // REQUIRED_WRITE_CAPABILITIES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list280 = iprot.readListBegin();
-                struct.requiredWriteCapabilities = new java.util.ArrayList<java.lang.String>(_list280.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem281;
-                for (int _i282 = 0; _i282 < _list280.size; ++_i282)
+                org.apache.thrift.protocol.TList _list306 = iprot.readListBegin();
+                struct.requiredWriteCapabilities = new java.util.ArrayList<java.lang.String>(_list306.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem307;
+                for (int _i308 = 0; _i308 < _list306.size; ++_i308)
                 {
-                  _elem281 = iprot.readString();
-                  struct.requiredWriteCapabilities.add(_elem281);
+                  _elem307 = iprot.readString();
+                  struct.requiredWriteCapabilities.add(_elem307);
                 }
                 iprot.readListEnd();
               }
@@ -2538,6 +2706,24 @@ package org.apache.hadoop.hive.metastore.api;
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.id = iprot.readI64();
               struct.setIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 26: // FILE_METADATA
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.fileMetadata = new FileMetadata();
+              struct.fileMetadata.read(iprot);
+              struct.setFileMetadataIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 27: // DICTIONARY
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.dictionary = new ObjectDictionary();
+              struct.dictionary.read(iprot);
+              struct.setDictionaryIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -2588,9 +2774,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(PARTITION_KEYS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitionKeys.size()));
-          for (FieldSchema _iter283 : struct.partitionKeys)
+          for (FieldSchema _iter309 : struct.partitionKeys)
           {
-            _iter283.write(oprot);
+            _iter309.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -2600,10 +2786,10 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.parameters.size()));
-          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter284 : struct.parameters.entrySet())
+          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter310 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter284.getKey());
-            oprot.writeString(_iter284.getValue());
+            oprot.writeString(_iter310.getKey());
+            oprot.writeString(_iter310.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -2689,9 +2875,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(REQUIRED_READ_CAPABILITIES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.requiredReadCapabilities.size()));
-            for (java.lang.String _iter285 : struct.requiredReadCapabilities)
+            for (java.lang.String _iter311 : struct.requiredReadCapabilities)
             {
-              oprot.writeString(_iter285);
+              oprot.writeString(_iter311);
             }
             oprot.writeListEnd();
           }
@@ -2703,9 +2889,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(REQUIRED_WRITE_CAPABILITIES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.requiredWriteCapabilities.size()));
-            for (java.lang.String _iter286 : struct.requiredWriteCapabilities)
+            for (java.lang.String _iter312 : struct.requiredWriteCapabilities)
             {
-              oprot.writeString(_iter286);
+              oprot.writeString(_iter312);
             }
             oprot.writeListEnd();
           }
@@ -2716,6 +2902,20 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(ID_FIELD_DESC);
         oprot.writeI64(struct.id);
         oprot.writeFieldEnd();
+      }
+      if (struct.fileMetadata != null) {
+        if (struct.isSetFileMetadata()) {
+          oprot.writeFieldBegin(FILE_METADATA_FIELD_DESC);
+          struct.fileMetadata.write(oprot);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.dictionary != null) {
+        if (struct.isSetDictionary()) {
+          oprot.writeFieldBegin(DICTIONARY_FIELD_DESC);
+          struct.dictionary.write(oprot);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -2810,7 +3010,13 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetId()) {
         optionals.set(24);
       }
-      oprot.writeBitSet(optionals, 25);
+      if (struct.isSetFileMetadata()) {
+        optionals.set(25);
+      }
+      if (struct.isSetDictionary()) {
+        optionals.set(26);
+      }
+      oprot.writeBitSet(optionals, 27);
       if (struct.isSetTableName()) {
         oprot.writeString(struct.tableName);
       }
@@ -2835,19 +3041,19 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetPartitionKeys()) {
         {
           oprot.writeI32(struct.partitionKeys.size());
-          for (FieldSchema _iter287 : struct.partitionKeys)
+          for (FieldSchema _iter313 : struct.partitionKeys)
           {
-            _iter287.write(oprot);
+            _iter313.write(oprot);
           }
         }
       }
       if (struct.isSetParameters()) {
         {
           oprot.writeI32(struct.parameters.size());
-          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter288 : struct.parameters.entrySet())
+          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter314 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter288.getKey());
-            oprot.writeString(_iter288.getValue());
+            oprot.writeString(_iter314.getKey());
+            oprot.writeString(_iter314.getValue());
           }
         }
       }
@@ -2893,30 +3099,36 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetRequiredReadCapabilities()) {
         {
           oprot.writeI32(struct.requiredReadCapabilities.size());
-          for (java.lang.String _iter289 : struct.requiredReadCapabilities)
+          for (java.lang.String _iter315 : struct.requiredReadCapabilities)
           {
-            oprot.writeString(_iter289);
+            oprot.writeString(_iter315);
           }
         }
       }
       if (struct.isSetRequiredWriteCapabilities()) {
         {
           oprot.writeI32(struct.requiredWriteCapabilities.size());
-          for (java.lang.String _iter290 : struct.requiredWriteCapabilities)
+          for (java.lang.String _iter316 : struct.requiredWriteCapabilities)
           {
-            oprot.writeString(_iter290);
+            oprot.writeString(_iter316);
           }
         }
       }
       if (struct.isSetId()) {
         oprot.writeI64(struct.id);
       }
+      if (struct.isSetFileMetadata()) {
+        struct.fileMetadata.write(oprot);
+      }
+      if (struct.isSetDictionary()) {
+        struct.dictionary.write(oprot);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Table struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(25);
+      java.util.BitSet incoming = iprot.readBitSet(27);
       if (incoming.get(0)) {
         struct.tableName = iprot.readString();
         struct.setTableNameIsSet(true);
@@ -2948,29 +3160,29 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (incoming.get(7)) {
         {
-          org.apache.thrift.protocol.TList _list291 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.partitionKeys = new java.util.ArrayList<FieldSchema>(_list291.size);
-          @org.apache.thrift.annotation.Nullable FieldSchema _elem292;
-          for (int _i293 = 0; _i293 < _list291.size; ++_i293)
+          org.apache.thrift.protocol.TList _list317 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.partitionKeys = new java.util.ArrayList<FieldSchema>(_list317.size);
+          @org.apache.thrift.annotation.Nullable FieldSchema _elem318;
+          for (int _i319 = 0; _i319 < _list317.size; ++_i319)
           {
-            _elem292 = new FieldSchema();
-            _elem292.read(iprot);
-            struct.partitionKeys.add(_elem292);
+            _elem318 = new FieldSchema();
+            _elem318.read(iprot);
+            struct.partitionKeys.add(_elem318);
           }
         }
         struct.setPartitionKeysIsSet(true);
       }
       if (incoming.get(8)) {
         {
-          org.apache.thrift.protocol.TMap _map294 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING); 
-          struct.parameters = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map294.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _key295;
-          @org.apache.thrift.annotation.Nullable java.lang.String _val296;
-          for (int _i297 = 0; _i297 < _map294.size; ++_i297)
+          org.apache.thrift.protocol.TMap _map320 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING); 
+          struct.parameters = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map320.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _key321;
+          @org.apache.thrift.annotation.Nullable java.lang.String _val322;
+          for (int _i323 = 0; _i323 < _map320.size; ++_i323)
           {
-            _key295 = iprot.readString();
-            _val296 = iprot.readString();
-            struct.parameters.put(_key295, _val296);
+            _key321 = iprot.readString();
+            _val322 = iprot.readString();
+            struct.parameters.put(_key321, _val322);
           }
         }
         struct.setParametersIsSet(true);
@@ -3032,26 +3244,26 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (incoming.get(22)) {
         {
-          org.apache.thrift.protocol.TList _list298 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.requiredReadCapabilities = new java.util.ArrayList<java.lang.String>(_list298.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem299;
-          for (int _i300 = 0; _i300 < _list298.size; ++_i300)
+          org.apache.thrift.protocol.TList _list324 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.requiredReadCapabilities = new java.util.ArrayList<java.lang.String>(_list324.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem325;
+          for (int _i326 = 0; _i326 < _list324.size; ++_i326)
           {
-            _elem299 = iprot.readString();
-            struct.requiredReadCapabilities.add(_elem299);
+            _elem325 = iprot.readString();
+            struct.requiredReadCapabilities.add(_elem325);
           }
         }
         struct.setRequiredReadCapabilitiesIsSet(true);
       }
       if (incoming.get(23)) {
         {
-          org.apache.thrift.protocol.TList _list301 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.requiredWriteCapabilities = new java.util.ArrayList<java.lang.String>(_list301.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem302;
-          for (int _i303 = 0; _i303 < _list301.size; ++_i303)
+          org.apache.thrift.protocol.TList _list327 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.requiredWriteCapabilities = new java.util.ArrayList<java.lang.String>(_list327.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem328;
+          for (int _i329 = 0; _i329 < _list327.size; ++_i329)
           {
-            _elem302 = iprot.readString();
-            struct.requiredWriteCapabilities.add(_elem302);
+            _elem328 = iprot.readString();
+            struct.requiredWriteCapabilities.add(_elem328);
           }
         }
         struct.setRequiredWriteCapabilitiesIsSet(true);
@@ -3059,6 +3271,16 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(24)) {
         struct.id = iprot.readI64();
         struct.setIdIsSet(true);
+      }
+      if (incoming.get(25)) {
+        struct.fileMetadata = new FileMetadata();
+        struct.fileMetadata.read(iprot);
+        struct.setFileMetadataIsSet(true);
+      }
+      if (incoming.get(26)) {
+        struct.dictionary = new ObjectDictionary();
+        struct.dictionary.read(iprot);
+        struct.setDictionaryIsSet(true);
       }
     }
   }
