@@ -61,7 +61,6 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
@@ -76,7 +75,6 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
-import org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -89,7 +87,6 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -1358,46 +1355,6 @@ public class TestObjectStore {
     result = objectStore.listPackages(req);
     assertThat(result, hasItems("pkg1"));
     Assert.assertEquals(1, result.size());
-  }
-
-  @Test
-  public void testGetAllWriteEventInfo() throws Exception {
-    final long testTxnId = 1;
-    final long wrongTxnId = -1;
-    final String wrongDbName = "wrongdb";
-    final String wrongTableName = "wrongtable";
-    List<WriteEventInfo> writeEventInfoList = null;
-
-    writeEventInfoList = objectStore.getAllWriteEventInfo(testTxnId, null, null);
-    Assert.assertNull(writeEventInfoList);
-
-    insertTxnWriteNotificationLog(testTxnId, DB1, TABLE1);
-    writeEventInfoList = objectStore.getAllWriteEventInfo(testTxnId, null, null);
-    Assert.assertNotNull(writeEventInfoList);
-    Assert.assertEquals(1, writeEventInfoList.size());
-
-    writeEventInfoList = objectStore.getAllWriteEventInfo(testTxnId, DB1, TABLE1);
-    Assert.assertNotNull(writeEventInfoList);
-    Assert.assertEquals(1, writeEventInfoList.size());
-
-    writeEventInfoList = objectStore.getAllWriteEventInfo(wrongTxnId, null, null);
-    Assert.assertNull(writeEventInfoList);
-
-    writeEventInfoList = objectStore.getAllWriteEventInfo(testTxnId, wrongDbName, null);
-    Assert.assertNull(writeEventInfoList);
-
-    writeEventInfoList = objectStore.getAllWriteEventInfo(testTxnId, null, wrongTableName);
-    Assert.assertNull(writeEventInfoList);
-  }
-
-  private void insertTxnWriteNotificationLog(long txnId, String dbName, String tableName) {
-    PersistenceManager pm = objectStore.getPersistenceManager();
-    MTxnWriteNotificationLog log = new MTxnWriteNotificationLog();
-    log.setTxnId(txnId);
-    log.setDatabase(dbName);
-    log.setTable(tableName);
-    log.setPartition("");
-    pm.makePersistent(log);
   }
 
   /**
