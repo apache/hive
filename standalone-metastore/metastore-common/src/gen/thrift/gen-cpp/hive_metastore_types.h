@@ -28,7 +28,8 @@ struct HiveObjectType {
     DATABASE = 2,
     TABLE = 3,
     PARTITION = 4,
-    COLUMN = 5
+    COLUMN = 5,
+    DATACONNECTOR = 6
   };
 };
 

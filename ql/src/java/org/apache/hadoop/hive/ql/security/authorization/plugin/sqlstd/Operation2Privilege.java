@@ -138,7 +138,8 @@ public class Operation2Privilege {
 
     op2Priv.put(HiveOperationType.CREATEDATABASE, PrivRequirement.newPrivRequirementList(
         new PrivRequirement(INS_SEL_DEL_NOGRANT_AR, HivePrivilegeObjectType.DFS_URI),
-        new PrivRequirement(INS_SEL_DEL_NOGRANT_AR, HivePrivilegeObjectType.LOCAL_URI)));
+        new PrivRequirement(INS_SEL_DEL_NOGRANT_AR, HivePrivilegeObjectType.LOCAL_URI),
+        new PrivRequirement(ADMIN_PRIV_AR, HivePrivilegeObjectType.DATACONNECTOR)));
 
     op2Priv.put(HiveOperationType.DROPDATABASE, PrivRequirement.newIOPrivRequirement(null, OWNER_PRIV_AR));
     // this should be database usage privilege once it is supported

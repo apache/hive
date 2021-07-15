@@ -541,6 +541,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     return objectStore.getDBPrivilegeSet(catName, dbName, userName, groupNames);
   }
 
+    @Override
+    public PrincipalPrivilegeSet getConnectorPrivilegeSet(String catName, String connectorName, String userName,
+       List<String> groupNames) throws InvalidObjectException, MetaException {
+      return objectStore.getConnectorPrivilegeSet(catName, connectorName, userName, groupNames);
+    }
+
   @Override
   public PrincipalPrivilegeSet getTablePrivilegeSet(String catName, String dbName, String tableName,
       String userName, List<String> groupNames)
@@ -574,6 +580,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public List<HiveObjectPrivilege> listPrincipalDBGrants(String principalName,
       PrincipalType principalType, String catName, String dbName) {
     return objectStore.listPrincipalDBGrants(principalName, principalType, catName, dbName);
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listPrincipalDCGrants(String principalName,
+       PrincipalType principalType, String dbName) {
+    return objectStore.listPrincipalDCGrants(principalName, principalType, dbName);
   }
 
   @Override
@@ -692,6 +704,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public List<HiveObjectPrivilege> listPrincipalDCGrantsAll(
+      String principalName, PrincipalType principalType) {
+    return objectStore.listPrincipalDCGrantsAll(principalName, principalType);
+  }
+
+  @Override
   public List<HiveObjectPrivilege> listPrincipalTableGrantsAll(
       String principalName, PrincipalType principalType) {
     return objectStore.listPrincipalTableGrantsAll(principalName, principalType);
@@ -723,6 +741,11 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public List<HiveObjectPrivilege> listDBGrantsAll(String catName, String dbName) {
     return objectStore.listDBGrantsAll(catName, dbName);
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listDCGrantsAll(String dcName) {
+    return objectStore.listDCGrantsAll(dcName);
   }
 
   @Override
