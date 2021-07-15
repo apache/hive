@@ -179,6 +179,7 @@ public interface TxnStore extends Configurable {
      * @param rqst info on transaction and list of table names associated with given transaction
      * @throws NoSuchTxnException
      * @throws MetaException
+     * @return
      */
   @RetrySemantics.ReadOnly
   GetValidWriteIdsResponse getValidWriteIds(GetValidWriteIdsRequest rqst)
