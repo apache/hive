@@ -165,7 +165,6 @@ public class ReplUtils {
   public static final String DISTCP_JOB_ID_CONF = "distcp.job.id";
   public static final String DISTCP_JOB_ID_CONF_DEFAULT = "UNAVAILABLE";
 
-
   private static transient Logger LOG = LoggerFactory.getLogger(ReplUtils.class);
 
   public static Map<Integer, List<ExprNodeGenericFuncDesc>> genPartSpecs(
@@ -273,21 +272,6 @@ public class ReplUtils {
     List<Task<?>> taskList = new ArrayList<>();
     taskList.add(childTask);
     return taskList;
-  }
-
-  public static List<Task<?>> addTasksForLoadingColStats(ColumnStatistics colStats,
-                                                                              HiveConf conf,
-                                                                              UpdatedMetaDataTracker updatedMetadata,
-                                                                              org.apache.hadoop.hive.metastore.api.Table tableObj,
-                                                                              long writeId)
-          throws IOException, TException {
-    List<Task<?>> taskList = new ArrayList<>();
-    ColumnStatsUpdateWork work = new ColumnStatsUpdateWork(colStats);
-    work.setWriteId(writeId);
-    Task<?> task = TaskFactory.get(work, conf);
-    taskList.add(task);
-    return taskList;
-
   }
 
   public static List<Task<?>> addTasksForLoadingColStats(ColumnStatistics colStats,
