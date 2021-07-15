@@ -58,14 +58,10 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
     // if cascade=true, then we need to authorize the drop table action as well, and add the tables to the outputs
     if (cascade) {
       try {
-        List<String> tableNames = db.getAllTables(databaseName);
-        if (tableNames != null) {
-          for (String tableName : tableNames) {
-            Table table = getTable(databaseName, tableName, true);
-            // We want no lock here, as the database lock will cover the tables,
-            // and putting a lock will actually cause us to deadlock on ourselves.
-            outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK));
-          }
+        for (Table table : db.getAllTableObjects(databaseName)) {
+          // We want no lock here, as the database lock will cover the tables,
+          // and putting a lock will actually cause us to deadlock on ourselves.
+          outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK));
         }
       } catch (HiveException e) {
         throw new SemanticException(e);
