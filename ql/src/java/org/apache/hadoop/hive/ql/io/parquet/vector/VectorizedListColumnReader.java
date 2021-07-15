@@ -115,6 +115,8 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
         } else {
           lastValue = readPrimitiveTypedRow(category);
         }
+      } else {
+        lastValue = null;
       }
       return true;
     } else {
@@ -129,21 +131,16 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
   private void addElement(ListColumnVector lcv, List<Object> elements, PrimitiveObjectInspector.PrimitiveCategory category, int index) throws IOException {
     lcv.offsets[index] = elements.size();
 
-    // Return directly if last value is null
-    if (definitionLevel < maxDefLevel) {
-      lcv.isNull[index] = true;
-      lcv.lengths[index] = 0;
-      // fetch the data from parquet data page for next call
-      fetchNextValue(category);
-      return;
-    }
-
     do {
       // add all data for an element in ListColumnVector, get out the loop if there is no data or the data is for new element
+      if (definitionLevel < maxDefLevel) {
+        lcv.lengths[index] = 0;
+        lcv.isNull[index] = true;
+        lcv.noNulls = false;
+      }
       elements.add(lastValue);
     } while (fetchNextValue(category) && (repetitionLevel != 0));
 
-    lcv.isNull[index] = false;
     lcv.lengths[index] = elements.size() - lcv.offsets[index];
   }
 
@@ -193,7 +190,7 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
     case SHORT:
       resultList = new ArrayList<Integer>(total);
       for (int i = 0; i < total; ++i) {
-        resultList.add(dictionary.readInteger(intList.get(i)));
+        resultList.add(intList.get(i) == null ? null : dictionary.readInteger(intList.get(i)));
       }
       break;
     case DATE:
@@ -201,25 +198,25 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
     case LONG:
       resultList = new ArrayList<Long>(total);
       for (int i = 0; i < total; ++i) {
-        resultList.add(dictionary.readLong(intList.get(i)));
+        resultList.add(intList.get(i) == null ? null : dictionary.readLong(intList.get(i)));
       }
       break;
     case BOOLEAN:
       resultList = new ArrayList<Long>(total);
       for (int i = 0; i < total; ++i) {
-        resultList.add(dictionary.readBoolean(intList.get(i)) ? 1 : 0);
+        resultList.add(intList.get(i) == null ? null : dictionary.readBoolean(intList.get(i)));
       }
       break;
     case DOUBLE:
       resultList = new ArrayList<Long>(total);
       for (int i = 0; i < total; ++i) {
-        resultList.add(dictionary.readDouble(intList.get(i)));
+        resultList.add(intList.get(i) == null ? null : dictionary.readDouble(intList.get(i)));
       }
       break;
     case BINARY:
       resultList = new ArrayList<Long>(total);
       for (int i = 0; i < total; ++i) {
-        resultList.add(dictionary.readBytes(intList.get(i)));
+        resultList.add(intList.get(i) == null ? null : dictionary.readBytes(intList.get(i)));
       }
       break;
     case STRING:
@@ -227,25 +224,25 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
     case VARCHAR:
       resultList = new ArrayList<Long>(total);
       for (int i = 0; i < total; ++i) {
-        resultList.add(dictionary.readString(intList.get(i)));
+        resultList.add(intList.get(i) == null ? null : dictionary.readString(intList.get(i)));
       }
       break;
     case FLOAT:
       resultList = new ArrayList<Float>(total);
       for (int i = 0; i < total; ++i) {
-        resultList.add(dictionary.readFloat(intList.get(i)));
+        resultList.add(intList.get(i) == null ? null : dictionary.readFloat(intList.get(i)));
       }
       break;
     case DECIMAL:
       resultList = new ArrayList<Long>(total);
       for (int i = 0; i < total; ++i) {
-        resultList.add(dictionary.readDecimal(intList.get(i)));
+        resultList.add(intList.get(i) == null ? null : dictionary.readDecimal(intList.get(i)));
       }
       break;
     case TIMESTAMP:
       resultList = new ArrayList<Long>(total);
       for (int i = 0; i < total; ++i) {
-        resultList.add(dictionary.readTimestamp(intList.get(i)));
+        resultList.add(intList.get(i) == null ? null : dictionary.readTimestamp(intList.get(i)));
       }
       break;
     case INTERVAL_DAY_TIME:
@@ -279,7 +276,11 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
     case BOOLEAN:
       lcv.child = new LongColumnVector(total);
       for (int i = 0; i < valueList.size(); i++) {
-        ((LongColumnVector) lcv.child).vector[i] = ((List<Integer>) valueList).get(i);
+        if (valueList.get(i) == null) {
+          lcv.child.isNull[i] = true;
+        } else {
+          ((LongColumnVector) lcv.child).vector[i] = ((List<Integer>) valueList).get(i);
+        }
       }
       break;
     case INT:
@@ -290,13 +291,21 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
     case LONG:
       lcv.child = new LongColumnVector(total);
       for (int i = 0; i < valueList.size(); i++) {
-        ((LongColumnVector) lcv.child).vector[i] = ((List<Long>) valueList).get(i);
+        if (valueList.get(i) == null) {
+          lcv.child.isNull[i] = true;
+        } else {
+          ((LongColumnVector) lcv.child).vector[i] = ((List<Long>) valueList).get(i);
+        }
       }
       break;
     case DOUBLE:
       lcv.child = new DoubleColumnVector(total);
       for (int i = 0; i < valueList.size(); i++) {
-        ((DoubleColumnVector) lcv.child).vector[i] = ((List<Double>) valueList).get(i);
+        if (valueList.get(i) == null) {
+          lcv.child.isNull[i] = true;
+        } else {
+          ((DoubleColumnVector) lcv.child).vector[i] = ((List<Double>) valueList).get(i);
+        }
       }
       break;
     case BINARY:
@@ -307,13 +316,22 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
       lcv.child.init();
       for (int i = 0; i < valueList.size(); i++) {
         byte[] src = ((List<byte[]>) valueList).get(i);
-        ((BytesColumnVector) lcv.child).setRef(i, src, 0, src.length);
+        if (src == null) {
+          ((BytesColumnVector) lcv.child).setRef(i, src, 0, 0);
+          lcv.child.isNull[i] = true;
+        } else {
+          ((BytesColumnVector) lcv.child).setRef(i, src, 0, src.length);
+        }
       }
       break;
     case FLOAT:
       lcv.child = new DoubleColumnVector(total);
       for (int i = 0; i < valueList.size(); i++) {
-        ((DoubleColumnVector) lcv.child).vector[i] = ((List<Float>) valueList).get(i);
+        if (valueList.get(i) == null) {
+          lcv.child.isNull[i] = true;
+        } else {
+          ((DoubleColumnVector) lcv.child).vector[i] = ((List<Float>) valueList).get(i);
+        }
       }
       break;
     case DECIMAL:
@@ -323,7 +341,11 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
       int scale = logicalType.getScale();
       lcv.child = new DecimalColumnVector(total, precision, scale);
       for (int i = 0; i < valueList.size(); i++) {
-        ((DecimalColumnVector) lcv.child).vector[i].set(((List<byte[]>) valueList).get(i), scale);
+        if (valueList.get(i) == null) {
+          lcv.child.isNull[i] = true;
+        } else {
+          ((DecimalColumnVector) lcv.child).vector[i].set(((List<byte[]>) valueList).get(i), scale);
+        }
       }
       break;
     case INTERVAL_DAY_TIME:
@@ -479,6 +501,9 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
     int length2 = cv2.vector.length;
     if (length1 == length2) {
       for (int i = 0; i < length1; i++) {
+        if (cv1.vector[i] == null && cv2.vector[i] == null) {
+          continue;
+        }
         int innerLen1 = cv1.vector[i].length;
         int innerLen2 = cv2.vector[i].length;
         if (innerLen1 == innerLen2) {
