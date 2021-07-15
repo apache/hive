@@ -626,6 +626,9 @@ public class HiveConf extends Configuration {
     REPL_RANGER_HANDLE_DENY_POLICY_TARGET("hive.repl.handle.ranger.deny.policy",
             false,
             "Indicates whether ranger deny policy for target database should be handled automatically by hive or not."),
+    HIVE_REPL_FAILOVER_START("hive.repl.failover.start",false,
+            "A replication policy level config to indicate if user wants to initiate fail-over " +
+                    "to replicate the database in reverse direction."),
     REPL_RANGER_ADD_DENY_POLICY_TARGET("hive.repl.ranger.target.deny.policy",
       true,
       "This configuration will add a deny policy on the target database for all users except hive"

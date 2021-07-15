@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.metric.BootstrapDumpMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.dump.metric.IncrementalDumpMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.load.FailoverMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.IncrementalLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
@@ -40,6 +41,7 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Map;
@@ -58,12 +60,17 @@ public class TestReplicationMetricCollector {
 
   HiveConf conf;
 
+  @Mock
+  private FailoverMetaData fmd;
+
   @Before
   public void setup() throws Exception {
     conf = new HiveConf();
     conf.set(Constants.SCHEDULED_QUERY_SCHEDULENAME, "repl");
     conf.set(Constants.SCHEDULED_QUERY_EXECUTIONID, "1");
     MetricCollector.getInstance().init(conf);
+    Mockito.when(fmd.getFailoverEventId()).thenReturn(10L);
+    Mockito.when(fmd.getFilePath()).thenReturn("staging");
   }
 
   @After
@@ -203,6 +210,42 @@ public class TestReplicationMetricCollector {
     expectedMetric.setProgress(expectedProgress);
     checkSuccess(actualMetrics.get(0), expectedMetric, "dump",
         Arrays.asList(ReplUtils.MetricName.TABLES.name(), ReplUtils.MetricName.FUNCTIONS.name()));
+  }
+
+  @Test
+  public void testFailoverReadyDumpMetrics() throws Exception {
+    ReplicationMetricCollector incrDumpMetricCollector = new IncrementalDumpMetricCollector("db",
+            "staging", conf);
+    Map<String, Long> metricMap = new HashMap<>();
+    metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) 10);
+    incrDumpMetricCollector.reportFailoverStart("dump", metricMap, fmd);
+    incrDumpMetricCollector.reportStageProgress("dump", ReplUtils.MetricName.EVENTS.name(), 2);
+    List<ReplicationMetric> actualMetrics = MetricCollector.getInstance().getMetrics();
+    Assert.assertEquals(1, actualMetrics.size());
+
+    incrDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10, new SnapshotUtils.ReplSnapshotCount(),
+            new ReplStatsTracker(0));
+    incrDumpMetricCollector.reportEnd(Status.FAILOVER_READY);
+    actualMetrics = MetricCollector.getInstance().getMetrics();
+    Assert.assertEquals(1, actualMetrics.size());
+
+    Metadata expectedMetadata = new Metadata("db", Metadata.ReplicationType.INCREMENTAL, "staging");
+    expectedMetadata.setLastReplId(10);
+    expectedMetadata.setFailoverEventId(10);
+    expectedMetadata.setFailoverMetadataLoc("staging");
+    Progress expectedProgress = new Progress();
+    expectedProgress.setStatus(Status.FAILOVER_READY);
+    Stage dumpStage = new Stage("dump", Status.SUCCESS, 0);
+    dumpStage.setEndTime(0);
+    Metric expectedEventMetric = new Metric(ReplUtils.MetricName.EVENTS.name(), 10);
+    expectedEventMetric.setCurrentCount(2);
+    dumpStage.addMetric(expectedEventMetric);
+    expectedProgress.addStage(dumpStage);
+    ReplicationMetric expectedMetric = new ReplicationMetric(1, "repl", 0,
+            expectedMetadata);
+    expectedMetric.setProgress(expectedProgress);
+    checkSuccess(actualMetrics.get(0), expectedMetric, "dump",
+            Arrays.asList(ReplUtils.MetricName.EVENTS.name()));
   }
 
   @Test

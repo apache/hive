@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.load.FailoverMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Progress;
@@ -80,6 +81,26 @@ public abstract class ReplicationMetricCollector {
       }
       progress.addStage(stage);
       replicationMetric.setProgress(progress);
+      metricCollector.addMetric(replicationMetric);
+    }
+  }
+
+  public void reportFailoverStart(String stageName, Map<String, Long> metricMap,
+                                  FailoverMetaData failoverMd) throws SemanticException {
+    if (isEnabled) {
+      LOG.debug("Failover Stage Started {}, {}, {}", stageName, metricMap.size(), metricMap );
+      Progress progress = replicationMetric.getProgress();
+      progress.setStatus(Status.FAILOVER_IN_PROGRESS);
+      Stage stage = new Stage(stageName, Status.IN_PROGRESS, System.currentTimeMillis());
+      for (Map.Entry<String, Long> metric : metricMap.entrySet()) {
+        stage.addMetric(new Metric(metric.getKey(), metric.getValue()));
+      }
+      progress.addStage(stage);
+      replicationMetric.setProgress(progress);
+      Metadata metadata = replicationMetric.getMetadata();
+      metadata.setFailoverMetadataLoc(failoverMd.getFilePath());
+      metadata.setFailoverEventId(failoverMd.getFailoverEventId());
+      replicationMetric.setMetadata(metadata);
       metricCollector.addMetric(replicationMetric);
     }
   }

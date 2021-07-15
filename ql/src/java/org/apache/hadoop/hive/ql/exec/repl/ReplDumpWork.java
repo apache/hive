@@ -30,8 +30,8 @@ import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.load.FailoverMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.slf4j.Logger;
@@ -71,6 +71,9 @@ public class ReplDumpWork implements Serializable {
   private transient ReplicationMetricCollector metricCollector;
   private ReplicationSpec replicationSpec;
   private ReplLogger replLogger;
+  private FailoverMetaData fmd;
+  private boolean failoverInProgress;
+  private boolean firstDumpAfterFailover;
 
   public static void injectNextDumpDirForTest(String dumpDir) {
     injectNextDumpDirForTest(dumpDir, false);
@@ -119,16 +122,47 @@ public class ReplDumpWork implements Serializable {
     return maxEventLimit;
   }
 
+  public boolean isFirstDumpAfterFailover() {
+    return firstDumpAfterFailover;
+  }
+
+  public void setFirstDumpAfterFailover(boolean firstDumpAfterFailover) {
+    this.firstDumpAfterFailover = firstDumpAfterFailover;
+  }
+
+  FailoverMetaData getFailoverMetadata() {
+    return fmd;
+  }
+
+  void setFailoverMetadata(FailoverMetaData fmd) {
+    this.fmd = fmd;
+  }
+
+  public boolean isFailoverInProgress() {
+    return failoverInProgress;
+  }
+
+  public void setFailoverInProgress(boolean failoverInProgress) {
+    this.failoverInProgress = failoverInProgress;
+  }
+
   void setEventFrom(long eventId) {
     eventFrom = eventId;
   }
 
   // Override any user specification that changes the last event to be dumped.
-  void overrideLastEventToDump(Hive fromDb, long bootstrapLastId) throws Exception {
+  void overrideLastEventToDump(Hive fromDb, long bootstrapLastId, long failoverEventId) throws Exception {
     // If we are bootstrapping ACID tables, we need to dump all the events upto the event id at
     // the beginning of the bootstrap dump and also not dump any event after that. So we override
     // both, the last event as well as any user specified limit on the number of events. See
     // bootstrampDump() for more details.
+    if (failoverInProgress) {
+      assert failoverEventId > 0;
+      eventTo = failoverEventId;
+      LoggerFactory.getLogger(this.getClass())
+              .debug("eventTo : {} marked as failover eventId.", eventTo);
+      return;
+    }
     if (bootstrapLastId > 0) {
       eventTo = bootstrapLastId;
       LoggerFactory.getLogger(this.getClass())
@@ -143,6 +177,10 @@ public class ReplDumpWork implements Serializable {
       LoggerFactory.getLogger(this.getClass())
           .debug("eventTo not specified, using current event id : {}", eventTo);
     }
+  }
+
+  public boolean isBootstrap() {
+    return isBootstrap || firstDumpAfterFailover;
   }
 
   void setBootstrap(boolean bootstrap) {
