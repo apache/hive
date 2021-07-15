@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ResultFileFormat;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -472,6 +473,25 @@ public abstract class TaskCompiler {
       loc = cmv.getLocation();
     }
     Path location = (loc == null) ? getDefaultCtasLocation(pCtx) : new Path(loc);
+    boolean isExternal = false;
+    boolean isAcid = false;
+    if (pCtx.getQueryProperties().isCTAS()) {
+      isExternal = pCtx.getCreateTable().isExternal();
+      isAcid = pCtx.getCreateTable().getTblProps().getOrDefault(
+              hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false").equalsIgnoreCase("true") ||
+              pCtx.getCreateTable().getTblProps().containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+      if(location != null && (HiveConf.getBoolVar(conf, HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL) || (isExternal || !isAcid))){
+        CreateTableDesc ctd = pCtx.getCreateTable();
+        ctd.setLocation(location.toString());
+        if(ctd.getSerdeProps().containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES)){
+          ctd.getSerdeProps().remove(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+        }
+        if(ctd.getSerdeProps().containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)){
+          ctd.getSerdeProps().remove(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+        }
+        pCtx.setCreateTable(ctd);
+      }
+    }
     if (txnId != null) {
       dataSink.setDirName(location);
       location = new Path(location, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
@@ -491,9 +511,13 @@ public abstract class TaskCompiler {
     try {
       String protoName = null;
       boolean isExternal = false;
+      boolean isAcid = false;
       if (pCtx.getQueryProperties().isCTAS()) {
         protoName = pCtx.getCreateTable().getDbTableName();
         isExternal = pCtx.getCreateTable().isExternal();
+        isAcid = pCtx.getCreateTable().getTblProps().getOrDefault(
+                hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false").equalsIgnoreCase("true") ||
+                pCtx.getCreateTable().getTblProps().containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
       } else if (pCtx.getQueryProperties().isMaterializedView()) {
         protoName = pCtx.getCreateViewDesc().getViewName();
       }
@@ -502,7 +526,7 @@ public abstract class TaskCompiler {
         throw new SemanticException("ERROR: The database " + names[0] + " does not exist.");
       }
       Warehouse wh = new Warehouse(conf);
-      return wh.getDefaultTablePath(db.getDatabase(names[0]), names[1], isExternal);
+      return wh.getDefaultTablePath(db.getDatabase(names[0]), names[1], (isExternal || !isAcid));
     } catch (HiveException e) {
       throw new SemanticException(e);
     } catch (MetaException e) {
