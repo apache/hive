@@ -1,0 +1,48 @@
+PREHOOK: query: DROP TABLE parquet_map_type
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE parquet_map_type
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE parquet_map_type (
+id int,
+stringMap map<string, string>
+) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_map_type
+POSTHOOK: query: CREATE TABLE parquet_map_type (
+id int,
+stringMap map<string, string>
+) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_map_type
+PREHOOK: query: insert overwrite table parquet_map_type
+SELECT 1, MAP('k1', null, 'k2', 'v2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquet_map_type
+POSTHOOK: query: insert overwrite table parquet_map_type
+SELECT 1, MAP('k1', null, 'k2', 'v2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquet_map_type
+POSTHOOK: Lineage: parquet_map_type.id SIMPLE []
+POSTHOOK: Lineage: parquet_map_type.stringmap EXPRESSION []
+PREHOOK: query: select id, stringMap from parquet_map_type
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, stringMap from parquet_map_type
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	{"k1":null,"k2":"v2"}
+PREHOOK: query: select id, stringMap['k1'] from parquet_map_type group by id, stringMap['k1']
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, stringMap['k1'] from parquet_map_type group by id, stringMap['k1']
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	NULL
