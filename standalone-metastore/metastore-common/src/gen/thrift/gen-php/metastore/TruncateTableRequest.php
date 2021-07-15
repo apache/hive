@@ -50,6 +50,12 @@ class TruncateTableRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        6 => array(
+            'var' => 'environmentContext',
+            'isRequired' => false,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\EnvironmentContext',
+        ),
     );
 
     /**
@@ -72,6 +78,10 @@ class TruncateTableRequest
      * @var string
      */
     public $validWriteIdList = null;
+    /**
+     * @var \metastore\EnvironmentContext
+     */
+    public $environmentContext = null;
 
     public function __construct($vals = null)
     {
@@ -90,6 +100,9 @@ class TruncateTableRequest
             }
             if (isset($vals['validWriteIdList'])) {
                 $this->validWriteIdList = $vals['validWriteIdList'];
+            }
+            if (isset($vals['environmentContext'])) {
+                $this->environmentContext = $vals['environmentContext'];
             }
         }
     }
@@ -157,6 +170,14 @@ class TruncateTableRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 6:
+                    if ($ftype == TType::STRUCT) {
+                        $this->environmentContext = new \metastore\EnvironmentContext();
+                        $xfer += $this->environmentContext->read($input);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -201,6 +222,14 @@ class TruncateTableRequest
         if ($this->validWriteIdList !== null) {
             $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 5);
             $xfer += $output->writeString($this->validWriteIdList);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->environmentContext !== null) {
+            if (!is_object($this->environmentContext)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('environmentContext', TType::STRUCT, 6);
+            $xfer += $this->environmentContext->write($output);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

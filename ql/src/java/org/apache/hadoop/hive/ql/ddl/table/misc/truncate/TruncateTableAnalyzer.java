@@ -102,7 +102,8 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
       throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_MANAGED_TABLE.format(tableName));
     }
 
-    if (table.isNonNative()) {
+    if (table.isNonNative()
+        && (table.getStorageHandler() == null || !table.getStorageHandler().supportsTruncateOnNonNativeTables())) {
       throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_NATIVE_TABLE.format(tableName)); //TODO
     }
 

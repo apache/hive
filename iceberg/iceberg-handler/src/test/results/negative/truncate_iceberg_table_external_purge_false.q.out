@@ -1,0 +1,29 @@
+PREHOOK: query: drop table if exists test_truncate_neg1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists test_truncate_neg1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table test_truncate_neg1 (id int, value string) stored by iceberg stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_truncate_neg1
+POSTHOOK: query: create external table test_truncate_neg1 (id int, value string) stored by iceberg stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_truncate_neg1
+PREHOOK: query: alter table test_truncate_neg1 set tblproperties('external.table.purge'='false')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@test_truncate_neg1
+PREHOOK: Output: default@test_truncate_neg1
+POSTHOOK: query: alter table test_truncate_neg1 set tblproperties('external.table.purge'='false')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@test_truncate_neg1
+POSTHOOK: Output: default@test_truncate_neg1
+PREHOOK: query: insert into test_truncate_neg1 values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_truncate_neg1
+POSTHOOK: query: insert into test_truncate_neg1 values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_truncate_neg1
+FAILED: SemanticException [Error 10146]: Cannot truncate non-managed table test_truncate_neg1.

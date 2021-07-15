@@ -132,7 +132,7 @@ abstract class TestTables {
   public String createHiveTableSQL(TableIdentifier identifier, Map<String, String> tableProps) {
     Preconditions.checkArgument(!identifier.namespace().isEmpty(), "Namespace should not be empty");
     Preconditions.checkArgument(identifier.namespace().levels().length == 1, "Namespace should be single level");
-    return String.format("CREATE TABLE %s.%s STORED BY '%s' %s %s", identifier.namespace(), identifier.name(),
+    return String.format("CREATE EXTERNAL TABLE %s.%s STORED BY '%s' %s %s", identifier.namespace(), identifier.name(),
         HiveIcebergStorageHandler.class.getName(), locationForCreateTableSQL(identifier),
             propertiesForCreateTableSQL(tableProps));
   }
