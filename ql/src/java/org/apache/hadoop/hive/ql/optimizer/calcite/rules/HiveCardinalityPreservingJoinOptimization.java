@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import static java.util.Collections.singletonList;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.findRexTableInputRefs;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -41,8 +42,6 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.rex.RexUtil;
-import org.apache.calcite.rex.RexVisitor;
-import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
@@ -255,7 +254,7 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
       }
 
       RexNode rexNode = expressionLineage.iterator().next();
-      List<RexTableInputRef> refs = rexTableInputRef(rexNode);
+      Set<RexTableInputRef> refs = findRexTableInputRefs(rexNode);
       if (refs.isEmpty()) {
         if (!RexUtil.isConstant(rexNode)) {
           LOG.debug("Unknown expression that should be a constant: {}", rexNode);
@@ -278,20 +277,6 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
     return tablesOrdered.stream()
         .map(relOptHiveTable -> fieldMappingBuilders.get(relOptHiveTable).build())
         .collect(Collectors.toList());
-  }
-
-  public List<RexTableInputRef> rexTableInputRef(RexNode rexNode) {
-    List<RexTableInputRef> rexTableInputRefList = new ArrayList<>();
-    RexVisitor<RexTableInputRef> visitor = new RexVisitorImpl<RexTableInputRef>(true) {
-      @Override
-      public RexTableInputRef visitTableInputRef(RexTableInputRef ref) {
-        rexTableInputRefList.add(ref);
-        return ref;
-      }
-    };
-
-    rexNode.accept(visitor);
-    return rexTableInputRefList;
   }
 
   private RexNode joinCondition(
