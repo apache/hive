@@ -58,6 +58,7 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.tuple.Pair;
@@ -419,9 +420,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           rs.next();
         }
       }
-      dbConn.rollback();
     } catch (SQLException e) {
-      rollbackDBConn(dbConn);
       LOG.debug("Catching sql exception in min history level check", e);
       if (DatabaseProduct.isTableNotExistsError(dbProduct, e)) {
         tableExists = false;
@@ -521,12 +520,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
           txnInfos.add(txnInfo);
         }
-        dbConn.rollback();
         LOG.debug("Got OpenTxnList with hwm: {} and openTxnList size {}.", hwm, txnInfos.size());
         return new OpenTxnList(hwm, txnInfos);
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
-        rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "getOpenTxnsList");
         throw new MetaException("Unable to select from transaction database, "
           + StringUtils.stringifyException(e));
@@ -598,7 +594,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         dbConn.commit();
         return new OpenTxnsResponse(txnIds);
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
+        LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "openTxns(" + rqst + ")");
         throw new MetaException("Unable to select from transaction database "
@@ -761,8 +757,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         assert (targetTxnIds.size() == 1);
         return targetTxnIds.get(0);
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
-        rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "getTargetTxnId(" + replPolicy + sourceTxnId + ")");
         throw new MetaException("Unable to get target transaction id "
                 + StringUtils.stringifyException(e));
@@ -840,7 +834,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
+        LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "abortTxn(" + rqst + ")");
         throw new MetaException("Unable to update transaction database "
@@ -901,7 +895,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
+        LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "abortTxns(" + rqst + ")");
         throw new MetaException("Unable to update transaction database "
@@ -1224,7 +1218,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           deleteReplTxnMapEntry(dbConn, sourceTxnId, rqst.getReplPolicy());
         }
         updateCommitIdAndCleanUpMetadata(stmt, txnid, txnType.get(), commitId, tempCommitId);
-        removeCommittedTxnFromMinHistoryLevel(dbConn, txnid);
+        removeTxnsFromMinHistoryLevel(dbConn, ImmutableList.of(txnid));
         if (rqst.isSetKeyValue()) {
           updateKeyValueAssociatedWithTxn(rqst, stmt);
         }
@@ -1237,7 +1231,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
+        LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "commitTxn(" + rqst + ")");
         throw new MetaException("Unable to update transaction database "
@@ -1495,7 +1489,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
+        LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "replTableWriteIdState(" + rqst + ")", true);
         throw new MetaException("Unable to update transaction database "
@@ -1602,13 +1596,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           tblValidWriteIdsList.add(getValidWriteIdsForTable(dbConn, fullTableName, validTxnList));
         }
 
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
         GetValidWriteIdsResponse owr = new GetValidWriteIdsResponse(tblValidWriteIdsList);
         return owr;
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
-        rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "getValidWriteIds");
         throw new MetaException("Unable to select from transaction database, "
                 + StringUtils.stringifyException(e));
@@ -1643,7 +1633,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       // Find the writeId high water mark based upon txnId high water mark. If found, then, need to
       // traverse through all write Ids less than writeId HWM to make exceptions list.
       // The writeHWM = min(NEXT_WRITE_ID.nwi_next-1, max(TXN_TO_WRITE_ID.t2w_writeid under txnHwm))
-      String s = "SELECT MAX(\"T2W_WRITEID\") FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_TXNID\" <= " + Long.toString(txnHwm)
+      String s = "SELECT MAX(\"T2W_WRITEID\") FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_TXNID\" <= " + txnHwm
               + " AND \"T2W_DATABASE\" = ? AND \"T2W_TABLE\" = ?";
       pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
       LOG.debug("Going to execute query<" + s.replaceAll("\\?", "{}") + ">",
@@ -2060,9 +2050,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                 EventMessage.EventType.ACID_WRITE, acidWriteEvent, dbConn, sqlGenerator);
         LOG.debug("Going to commit");
         dbConn.commit();
-        return;
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
+        LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
         if (isDuplicateKeyError(e)) {
           // in case of key duplicate error, retry as it might be because of race condition
@@ -2377,7 +2366,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         // It could be renewed, return that information
         return true;
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
+        LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e,
             "heartbeatLockMaterializationRebuild(" + TableName.getDbTable(dbName, tableName) + ", " + txnId + ")");
@@ -2433,7 +2422,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         dbConn.commit();
         return cnt;
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
+        LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "cleanupMaterializationRebuildLocks");
         throw new MetaException("Unable to clean rebuild locks due to " +
@@ -3050,8 +3039,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           e.setAgentInfo(rs.getString(15));
           sortedList.add(new LockInfoExt(e));
         }
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
       } catch (SQLException e) {
         checkRetryable(dbConn, e, "showLocks(" + rqst + ")");
         throw new MetaException("Unable to select from transaction database " +
@@ -3088,7 +3075,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         heartbeatLock(dbConn, ids.getLockid());
         heartbeatTxn(dbConn, ids.getTxnid());
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
+        LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "heartbeat(" + ids + ")");
         throw new MetaException("Unable to select from transaction database " +
@@ -3155,7 +3142,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
         return rsp;
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
+        LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "heartbeatTxnRange(" + rqst + ")");
         throw new MetaException("Unable to select from transaction database " +
@@ -3208,11 +3195,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         if (rs.next()) {
           txnId = rs.getLong(1);
         }
-        dbConn.rollback();
         return txnId;
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
-        rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "getTxnIdForWriteId");
         throw new MetaException("Unable to select from transaction database, "
                 + StringUtils.stringifyException(e));
@@ -3319,7 +3303,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         dbConn.commit();
         return new CompactionResponse(id, INITIATED_RESPONSE, true);
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
+        LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "COMPACT(" + rqst + ")");
         throw new MetaException("Unable to select from transaction database " +
@@ -3406,11 +3390,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
           response.addToCompacts(e);
         }
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
-        rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "showCompact(" + rqst + ")");
         throw new MetaException("Unable to select from transaction database " +
           StringUtils.stringifyException(e));
@@ -3496,8 +3476,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.error("Unable to execute query " + e.getMessage());
         checkRetryable(dbConn, e, "getLatestCommittedCompactionInfo");
       } finally {
-        LOG.debug("Going to rollback");
-        rollbackDBConn(dbConn);
         close(rs, pst, dbConn);
       }
       return response;
@@ -3574,7 +3552,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
+        LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "addDynamicPartitions(" + rqst + ")");
         throw new MetaException("Unable to insert into from transaction database " +
@@ -3793,7 +3771,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
+        LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "cleanupRecords");
         if (e.getMessage().contains("does not exist")) {
@@ -4444,7 +4422,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (txnids.isEmpty()) {
       return 0;
     }
-    removeAbortedTxnsFromMinHistoryLevel(dbConn, txnids);
+    removeTxnsFromMinHistoryLevel(dbConn, txnids);
     try {
       stmt = dbConn.createStatement();
       //This is an update statement, thus at any Isolation level will take Write locks so will block
@@ -5150,8 +5128,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
         }
       } catch (SQLException e) {
-        LOG.debug("Going to rollback");
-        rollbackDBConn(dbConn);
         LOG.info("Failed to update number of open transactions");
         checkRetryable(dbConn, e, "countOpenTxns()");
       } finally {
@@ -5198,40 +5174,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   /**
-   * Remove record from min_history_level for a committed transaction
+   * Remove txns from min_history_level table
    * @param dbConn connection
-   * @param txnid committed transaction
-   * @deprecated Remove this method when min_history_level table is dropped
-   * @throws SQLException ex
-   */
-  @Deprecated
-  private void removeCommittedTxnFromMinHistoryLevel(Connection dbConn, long txnid) throws SQLException {
-    if (!useMinHistoryLevel) {
-      return;
-    }
-    try (PreparedStatement pStmt = dbConn.prepareStatement("DELETE FROM \"MIN_HISTORY_LEVEL\" WHERE \"MHL_TXNID\" = ?")) {
-      pStmt.setLong(1, txnid);
-      pStmt.executeUpdate();
-      LOG.debug("Removed committed transaction txnId: (" + txnid + ") from MIN_HISTORY_LEVEL");
-    } catch (SQLException e) {
-      if (DatabaseProduct.isTableNotExistsError(dbProduct, e)) {
-        // If the table does not exists anymore, we disable the flag and start to work the new way
-        // This enables to switch to the new funcionality without a restart
-        useMinHistoryLevel = false;
-      } else {
-        throw e;
-      }
-    }
-  }
-
-  /**
-   * Remove aborted txns from min_history_level table
-   * @param dbConn connection
-   * @param abortedTxnids aborted transactions
+   * @param txnids transactions
    * @deprecated Remove this method when min_history_level table is dropped
    */
   @Deprecated
-  private void removeAbortedTxnsFromMinHistoryLevel(Connection dbConn, List<Long> abortedTxnids) throws SQLException {
+  private void removeTxnsFromMinHistoryLevel(Connection dbConn, List<Long> txnids) throws SQLException {
     if (!useMinHistoryLevel) {
       return;
     }
@@ -5239,10 +5188,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       List<String> queries = new ArrayList<>();
       StringBuilder prefix = new StringBuilder();
       prefix.append("DELETE FROM \"MIN_HISTORY_LEVEL\" WHERE ");
-      TxnUtils.buildQueryWithINClause(conf, queries, prefix, new StringBuilder(), abortedTxnids, "\"MHL_TXNID\"", false,
+      TxnUtils.buildQueryWithINClause(conf, queries, prefix, new StringBuilder(), txnids, "\"MHL_TXNID\"", false,
           false);
-      executeQueriesInBatch(stmt, queries, maxBatchSize);
-      LOG.info("Removed aborted transactions: (" + abortedTxnids + ") from MIN_HISTORY_LEVEL");
+      executeQueriesInBatchNoCount(dbProduct, stmt, queries, maxBatchSize);
+      LOG.info("Removed transactions: (" + txnids + ") from MIN_HISTORY_LEVEL");
     } catch (SQLException e) {
       if (DatabaseProduct.isTableNotExistsError(dbProduct, e)) {
         // If the table does not exists anymore, we disable the flag and start to work the new way

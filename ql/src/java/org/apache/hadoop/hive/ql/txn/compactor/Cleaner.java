@@ -110,7 +110,7 @@ public class Cleaner extends MetaStoreCompactorThread {
             long minTxnIdSeenOpen = txnHandler.findMinTxnIdSeenOpen();
             final long cleanerWaterMark = minTxnIdSeenOpen < 0 ? minOpenTxnId : Math.min(minOpenTxnId, minTxnIdSeenOpen);
 
-            LOG.info("Cleaning based on min open txn id: " + minOpenTxnId);
+            LOG.info("Cleaning based on min open txn id: " + cleanerWaterMark);
             List<CompletableFuture<Void>> cleanerList = new ArrayList<>();
             // For checking which compaction can be cleaned we can use the minOpenTxnId
             // However findReadyToClean will return all records that were compacted with old version of HMS
