@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.util.ShutdownHookManager;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -367,6 +368,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     boolean tcpKeepAlive = MetastoreConf.getBoolVar(conf, ConfVars.TCP_KEEP_ALIVE);
     boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
     boolean useSSL = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
+    ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
     HMSHandler baseHandler = new HMSHandler("new db based metaserver", conf, false);
     AuthFactory authFactory = new AuthFactory(bridge, conf, baseHandler);
     useSasl = authFactory.isSASLWithKerberizedHadoop();

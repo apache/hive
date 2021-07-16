@@ -176,10 +176,9 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     authorize(path, readRequiredPriv, writeRequiredPriv);
   }
 
-  private static boolean userHasProxyPrivilege(String user, Configuration conf) {
+  private static boolean userHasProxyPrivilege(String user) {
     try {
-      if (MetaStoreServerUtils.checkUserHasHostProxyPrivileges(user, conf,
-              HMSHandler.getIPAddress())) {
+      if (MetaStoreServerUtils.checkUserHasHostProxyPrivileges(user, HMSHandler.getIPAddress())) {
         LOG.info("user {} has host proxy privilege.", user);
         return true;
       }
@@ -402,7 +401,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
       throw new IllegalArgumentException("path is null");
     }
 
-    if (userHasProxyPrivilege(authenticator.getUserName(), conf)) {
+    if (userHasProxyPrivilege(authenticator.getUserName())) {
       LOG.info("Path authorization is skipped for path {}.", path);
       return;
     }

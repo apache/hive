@@ -51,6 +51,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FutureDataInputStreamBuilder;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
@@ -830,6 +831,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
 
     @Override
+    public FutureDataInputStreamBuilder openFile(Path path) throws IOException, UnsupportedOperationException {
+      return super.openFile(ProxyFileSystem23.super.swizzleParamPath(path));
+    }
+
+    @Override
     public RemoteIterator<LocatedFileStatus> listLocatedStatus(final Path f)
       throws FileNotFoundException, IOException {
       return new RemoteIterator<LocatedFileStatus>() {
@@ -1208,6 +1214,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
       // HIVE-13704 states that we should use run() instead of execute() due to a hadoop known issue
       // added by HADOOP-10459
+      LOG.info("Running DistCp with args: {} :: options: {}", params, options);
       if (distcp.run(params.toArray(new String[0])) == 0) {
         return true;
       } else {

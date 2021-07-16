@@ -29,7 +29,6 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <druid.guava.version>16.0.1</druid.guava.version>
   </properties>
 
   <dependencies>
@@ -79,7 +78,6 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>${druid.guava.version}</version>
     </dependency>
     <dependency>
       <groupId>joda-time</groupId>

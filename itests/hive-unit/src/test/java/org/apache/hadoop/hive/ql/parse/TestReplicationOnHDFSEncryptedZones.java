@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -119,16 +120,15 @@ public class TestReplicationOnHDFSEncryptedZones {
             .run("insert into table encrypted_table values (2,'value2')")
             .dump(primaryDbName, dumpWithClause);
 
-    replica
-        .run("repl load " + primaryDbName + " into " + replicatedDbName
-                + " with('hive.repl.add.raw.reserved.namespace'='true', "
-                + "'hive.repl.replica.external.table.base.dir'='" + replica.externalTableWarehouseRoot + "', "
-                + "'distcp.options.pugpbx'='', 'distcp.options.skipcrccheck'='')")
-        .run("use " + replicatedDbName)
-        .run("repl status " + replicatedDbName)
-        .verifyResult(tuple.lastReplicationId)
-        .run("select value from encrypted_table")
-        .verifyFailure(new String[] { "value1", "value2" });
+    try {
+      replica.run("repl load " + primaryDbName + " into " + replicatedDbName
+          + " with('hive.repl.add.raw.reserved.namespace'='true', " + "'hive.repl.replica.external.table.base.dir'='"
+          + replica.externalTableWarehouseRoot + "', "
+          + "'distcp.options.pugpbx'='', 'distcp.options.skipcrccheck'='')");
+      Assert.fail("Test should have thrown an exception because cross-encryption-zone is not allowed for RAW");
+    } catch (IOException ioe) {
+      // ignore
+    }
   }
 
   @Ignore("this is ignored as minidfs cluster as of writing this test looked like did not copy the "

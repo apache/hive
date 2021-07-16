@@ -243,6 +243,7 @@ public class TestReplicationScenarios {
     FileUtils.deleteDirectory(new File("metastore_db2"));
     HiveConf hconfMirrorServer = new HiveConf();
     hconfMirrorServer.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, "jdbc:derby:;databaseName=metastore_db2;create=true");
+    hconfMirrorServer.set(proxySettingName, "*");
     MetaStoreTestUtils.startMetaStoreWithRetry(hconfMirrorServer, true);
     hconfMirror = new HiveConf(hconf);
     String thriftUri = MetastoreConf.getVar(hconfMirrorServer, MetastoreConf.ConfVars.THRIFT_URIS);
@@ -4120,28 +4121,33 @@ public class TestReplicationScenarios {
     createDB(dbName, driver);
     NotificationEventResponse rsp = metaStoreClient.getNextNotification(firstEventId, 0, null);
     assertEquals(1, rsp.getEventsSize());
+
     // Test various scenarios
-    // Remove the proxy privilege and the auth should fail (in reality the proxy setting should not be changed on the fly)
-    hconf.unset(proxySettingName);
-    // Need to explicitly update ProxyUsers
-    ProxyUsers.refreshSuperUserGroupsConfiguration(hconf);
-    // Verify if the auth should fail
-    Exception ex = null;
+    // Remove the proxy privilege by reseting proxy configuration to default value.
+    // The auth should fail (in reality the proxy setting should not be changed on the fly)
+    // Pretty hacky: Affects both instances of HMS
+    ProxyUsers.refreshSuperUserGroupsConfiguration();
+
     try {
       rsp = metaStoreClient.getNextNotification(firstEventId, 0, null);
+      Assert.fail("Get Next Nofitication should have failed due to no proxy auth");
     } catch (TException e) {
-      ex = e;
     }
-    assertNotNull(ex);
+
     // Disable auth so the call should succeed
     MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
+    MetastoreConf.setBoolVar(hconfMirror, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
+
     try {
       rsp = metaStoreClient.getNextNotification(firstEventId, 0, null);
       assertEquals(1, rsp.getEventsSize());
     } finally {
       // Restore the settings
       MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, true);
-      hconf.set(proxySettingName, "*");
+      MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, true);
+
+      // Restore Proxy configurations to test values
+      // Pretty hacky: Applies one setting to both instances of HMS
       ProxyUsers.refreshSuperUserGroupsConfiguration(hconf);
     }
   }
