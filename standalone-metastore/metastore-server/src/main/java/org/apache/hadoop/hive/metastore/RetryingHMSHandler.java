@@ -206,7 +206,7 @@ public class RetryingHMSHandler implements InvocationHandler {
 
       if (retryCount >= retryLimit) {
         LOG.error("HMSHandler Fatal error: " + ExceptionUtils.getStackTrace(caughtException));
-        MetaException me = new MetaException(caughtException.getMessage());
+        MetaException me = new MetaException(caughtException.toString());
         me.initCause(caughtException);
         throw me;
       }
