@@ -22,6 +22,8 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.routing.IdlePurgePolicy;
+import org.apache.logging.log4j.core.appender.routing.PurgePolicy;
 import org.apache.logging.log4j.core.appender.routing.Route;
 import org.apache.logging.log4j.core.appender.routing.Routes;
 import org.apache.logging.log4j.core.appender.routing.RoutingAppender;
@@ -34,6 +36,8 @@ import org.apache.logging.log4j.core.config.plugins.processor.PluginEntry;
 import org.apache.logging.log4j.core.config.plugins.util.PluginType;
 import org.apache.logging.log4j.core.filter.AbstractFilter;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Divert appender to redirect and filter test operation logs to match the output of the original
@@ -172,6 +176,12 @@ public final class LogDivertAppenderForTest {
 
     LoggerContext context = (LoggerContext)LogManager.getContext(false);
     Configuration configuration = context.getConfiguration();
+    String timeToLive = String.valueOf(HiveConf
+        .getTimeVar(conf, HiveConf.ConfVars.HIVE_SERVER2_OPERATION_LOG_PURGEPOLICY_TIMETOLIVE, TimeUnit.SECONDS));
+    PurgePolicy purgePolicy = IdlePurgePolicy.createPurgePolicy(timeToLive, null, "SECONDS", configuration);
+    // Hack: due to the (non-standard) way that log4j configuration is extended to introduce the routing appender
+    // the life-cycle methods are not called as expected leading to initialization problems (such as the scheduler)
+    configuration.getScheduler().incrementScheduledItems();
 
     // Create the appender
     RoutingAppender routingAppender = RoutingAppender.createAppender(TEST_QUERY_ROUTING_APPENDER,
@@ -179,7 +189,7 @@ public final class LogDivertAppenderForTest {
         routes,
         configuration,
         null,
-        null,
+        purgePolicy,
         null);
 
     LoggerConfig loggerConfig = configuration.getRootLogger();
