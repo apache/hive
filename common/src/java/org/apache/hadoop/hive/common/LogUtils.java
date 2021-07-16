@@ -65,6 +65,7 @@ public class LogUtils {
   public static final String SESSIONID_LOG_KEY = "sessionId";
   public static final String QUERYID_LOG_KEY = "queryId";
   public static final String OPERATIONLOG_LEVEL_KEY = "operationLogLevel";
+  public static final String OPERATIONLOG_LOCATION_KEY = "operationLogLocation";
 
   @SuppressWarnings("serial")
   public static class LogInitializationException extends Exception {
@@ -223,6 +224,7 @@ public class LogUtils {
       MDC.put(SESSIONID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVESESSIONID));
       MDC.put(QUERYID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID));
       MDC.put(OPERATIONLOG_LEVEL_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL));
+      MDC.put(OPERATIONLOG_LOCATION_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION));
       l4j.info("Thread context registration is done.");
     } else {
       l4j.info("Thread context registration is skipped.");
@@ -237,6 +239,7 @@ public class LogUtils {
     MDC.remove(SESSIONID_LOG_KEY);
     MDC.remove(QUERYID_LOG_KEY);
     MDC.remove(OPERATIONLOG_LEVEL_KEY);
+    MDC.remove(OPERATIONLOG_LOCATION_KEY);
     l4j.info("Unregistered logging context.");
   }
 
