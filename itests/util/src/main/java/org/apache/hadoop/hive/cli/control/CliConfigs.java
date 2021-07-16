@@ -24,6 +24,7 @@ import java.net.URL;
 import org.apache.hadoop.hive.ql.QTestMiniClusters;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.apache.hadoop.hive.ql.parse.CoreParseNegative;
+import org.apache.hadoop.hive.ql.QTestExternalDB;
 
 public class CliConfigs {
 
@@ -231,6 +232,30 @@ public class CliConfigs {
 
         setInitScript("q_test_init.sql");
         setCleanupScript("q_test_cleanup.sql");
+
+        setHiveConfDir("data/conf/llap");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
+  public static class MiniLlapExtDBCliConfig extends AbstractCliConfig {
+
+    public MiniLlapExtDBCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("ql/src/test/queries/clientpositive");
+
+        includesFrom(testConfigProps, "externalDB.llap.query.files");
+
+        setResultsDir("ql/src/test/results/clientpositive/llap");
+        setLogDir("itests/qtest/target/qfile-results/clientpositive");
+
+        addExternalDB(QTestExternalDB.createDefaultExtDB("derby"));
+        addExternalDB(QTestExternalDB.createDefaultExtDB("mysql"));
+        addExternalDB(QTestExternalDB.createDefaultExtDB("postgres"));
 
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.LLAP_LOCAL);
