@@ -366,6 +366,16 @@ public class Warehouse {
         new Path(dbPath, MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
   }
 
+  public Path getExternalTablePath(Path tblPath,Database db)
+          throws MetaException {
+    if (tblPath.toUri().getAuthority() != null) {
+      return getDnsPath(tblPath);
+    }
+    Path dbPath = getDatabasePath(db);
+    return getDnsPath(new Path(dbPath.toUri().getScheme(), dbPath.toUri().getAuthority(), tblPath
+            .toUri().getPath()));
+  }
+
   public Path getDefaultManagedTablePath(Database db, String tableName) throws MetaException {
     Path dbPath = getDatabaseManagedPath(db);
     return getDnsPath(
