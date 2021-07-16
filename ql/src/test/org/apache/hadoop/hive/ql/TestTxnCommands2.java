@@ -1245,7 +1245,26 @@ public class TestTxnCommands2 {
     Set<String> expectedDeltas = new HashSet<>();
     expectedDeltas.add("delete_delta_0000001_0000002_v0000019");
     expectedDeltas.add("delta_0000001_0000002_v0000019");
+    expectedDeltas.add("delete_delta_0000003_0000003_0000");
     Set<String> actualDeltas = new HashSet<>();
+    for(FileStatus file : status) {
+      actualDeltas.add(file.getPath().getName());
+    }
+    Assert.assertEquals(expectedDeltas, actualDeltas);
+
+    runStatementOnDriver("insert into " + tblName + " values(4, 'xyz')");
+    expected.add("4\txyz");
+    //run Worker to execute compaction
+    txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MINOR));
+    runWorker(hiveConf);
+    runCleaner(hiveConf);
+
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" + tblName.toLowerCase()),
+        FileUtils.HIDDEN_FILES_PATH_FILTER);
+    expectedDeltas = new HashSet<>();
+    expectedDeltas.add("delete_delta_0000001_0000004_v0000023");
+    expectedDeltas.add("delta_0000001_0000004_v0000023");
+    actualDeltas = new HashSet<>();
     for(FileStatus file : status) {
       actualDeltas.add(file.getPath().getName());
     }
