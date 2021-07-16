@@ -80,8 +80,8 @@ public class GenericUDFTimestamp extends GenericUDF {
     checkArgGroups(arguments, 0, tsInputTypes, STRING_GROUP, DATE_GROUP, NUMERIC_GROUP, VOID_GROUP, BOOLEAN_GROUP);
 
     strict = SessionState.get() != null ? SessionState.get().getConf()
-        .getBoolVar(ConfVars.HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS) : new HiveConf()
-        .getBoolVar(ConfVars.HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS);
+        .getBoolVar(ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION) : new HiveConf()
+        .getBoolVar(ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION);
 
     if (strict) {
       if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(tsInputTypes[0]) == PrimitiveGrouping.NUMERIC_GROUP) {
@@ -97,8 +97,8 @@ public class GenericUDFTimestamp extends GenericUDF {
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     intToTimestampInSeconds = SessionState.get() != null ? SessionState.get().getConf()
-        .getBoolVar(ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION) : new HiveConf()
-        .getBoolVar(ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION);
+        .getBoolVar(ConfVars.HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS) : new HiveConf()
+        .getBoolVar(ConfVars.HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS);
     PrimitiveObjectInspectorConverter.TimestampConverter ts =
         (PrimitiveObjectInspectorConverter.TimestampConverter) tsConvertors[0];
     ts.setIntToTimestampInSeconds(intToTimestampInSeconds);
