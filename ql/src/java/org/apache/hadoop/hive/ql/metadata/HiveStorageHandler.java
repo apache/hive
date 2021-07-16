@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
@@ -25,6 +26,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -62,6 +64,10 @@ import java.util.Properties;
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public interface HiveStorageHandler extends Configurable {
+
+  List<AlterTableType> DEFAULT_ALLOWED_ALTER_OPS = ImmutableList.of(
+      AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.ADDCOLS);
+
   /**
    * @return Class providing an implementation of {@link InputFormat}
    */
@@ -295,5 +301,15 @@ public interface HiveStorageHandler extends Configurable {
    */
   default void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
     throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Checks whether a certain ALTER TABLE operation is supported by the storage handler implementation.
+   *
+   * @param opType The alter operation type (e.g. RENAME_COLUMNS)
+   * @return whether the operation is supported by the storage handler
+   */
+  default boolean isAllowedAlterOperation(AlterTableType opType) {
+    return DEFAULT_ALLOWED_ALTER_OPS.contains(opType);
   }
 }
