@@ -1,0 +1,32 @@
+PREHOOK: query: create managed table test as select 1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: create managed table test as select 1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test._c0 SIMPLE []
+PREHOOK: query: show create table test
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@test
+POSTHOOK: query: show create table test
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@test
+CREATE TABLE `test`(
+  `_c0` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'transactional'='true', 
+  'transactional_properties'='insert_only', 
+#### A masked pattern was here ####
