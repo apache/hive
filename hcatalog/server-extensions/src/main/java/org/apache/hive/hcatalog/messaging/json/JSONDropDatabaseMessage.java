@@ -20,7 +20,7 @@
 package org.apache.hive.hcatalog.messaging.json;
 
 import org.apache.hive.hcatalog.messaging.DropDatabaseMessage;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * JSON implementation of DropDatabaseMessage.

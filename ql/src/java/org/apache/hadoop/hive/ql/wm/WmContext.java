@@ -33,13 +33,14 @@ import javax.management.MXBean;
 import org.apache.hadoop.hive.ql.exec.tez.WmEvent;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.PrintSummary;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.codehaus.jackson.annotate.JsonAutoDetect;
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
  * Some context information that are required for rule evaluation.
@@ -204,9 +205,9 @@ public class WmContext implements PrintSummary {
     try {
       waitForReturnSessionEvent();
       ObjectMapper objectMapper = new ObjectMapper();
-      objectMapper.configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false);
+      objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
       // serialize json based on field annotations only
-      objectMapper.setVisibilityChecker(objectMapper.getSerializationConfig().getDefaultVisibilityChecker()
+      objectMapper.setVisibility(objectMapper.getSerializationConfig().getDefaultVisibilityChecker()
         .withSetterVisibility(JsonAutoDetect.Visibility.NONE));
       String wmContextJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
       console.printInfo("");

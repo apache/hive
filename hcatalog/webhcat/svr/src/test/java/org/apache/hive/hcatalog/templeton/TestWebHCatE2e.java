@@ -27,14 +27,16 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.eclipse.jetty.http.HttpStatus;
 
 import java.io.IOException;
@@ -276,7 +278,7 @@ public class TestWebHCatE2e {
     Assert.assertEquals(HttpStatus.NOT_IMPLEMENTED_501, p.httpStatusCode);
     Map<String, Object> props = JsonBuilder.jsonToMap(p.responseBody);
     Assert.assertEquals(p.getAssertMsg(), "Pig version request not yet " +
-        "implemented", (String)props.get("error"));
+        "implemented", props.get("error"));
   }
 
   /**

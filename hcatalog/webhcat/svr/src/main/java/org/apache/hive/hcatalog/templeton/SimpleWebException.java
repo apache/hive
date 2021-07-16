@@ -24,7 +24,7 @@ import java.util.HashMap;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Simple exception that will return a json error payload if thrown
@@ -55,8 +55,9 @@ public class SimpleWebException extends Exception {
                     String msg) {
     HashMap<String, Object> err = new HashMap<String, Object>();
     err.put("error", msg);
-    if (params != null)
+    if (params != null) {
       err.putAll(params);
+    }
 
     String json = "\"error\"";
     try {

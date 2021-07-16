@@ -19,7 +19,8 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.log.state;
 
 import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import org.apache.hive.common.util.SuppressFBWarnings;
-import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * AtlasDumpBegin.
