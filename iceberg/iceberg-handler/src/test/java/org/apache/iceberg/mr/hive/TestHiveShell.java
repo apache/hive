@@ -36,6 +36,7 @@ import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.server.HiveServer2;
 import org.apache.iceberg.hive.TestHiveMetastore;
+import org.apache.iceberg.relocated.com.google.common.base.Joiner;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 
 /**
@@ -157,13 +158,13 @@ public class TestHiveShell {
 
   /**
    * Used for debugging. Please do not remove even if unused in the codebase.
-   * @param statement EXPLAIN statement
-   * @return EXPLAIN statement output in a single String which is IDE friendly for viewing
+   * @param statement The statement to execute
+   * @return The formatted statement output in a single String which is IDE friendly for viewing
    */
-  public String executeExplain(String statement) {
+  public String executeAndStringify(String statement) {
     List<Object[]> objects = executeStatement(statement);
     return objects.stream()
-        .map(o -> (String) o[0])
+        .map(o -> Joiner.on("\t").useForNull("NULL").join(o))
         .collect(Collectors.joining("\n"));
   }
 
