@@ -90,13 +90,14 @@ abstract class AbstractDropPartitionAnalyzer extends AbstractAlterTableAnalyzer 
         throw se;
       }
     }
+    validateAlterTableType(table, AlterTableType.DROPPARTITION, expectView());
+
     Map<Integer, List<ExprNodeGenericFuncDesc>> partitionSpecs = ParseUtils.getFullPartitionSpecs(command, table,
         conf, canGroupExprs);
     if (partitionSpecs.isEmpty()) { // nothing to do
       return;
     }
 
-    validateAlterTableType(table, AlterTableType.DROPPARTITION, expectView());
     ReadEntity re = new ReadEntity(table);
     re.noLockNeeded();
     inputs.add(re);

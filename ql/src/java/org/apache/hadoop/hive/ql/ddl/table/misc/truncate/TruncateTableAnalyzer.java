@@ -102,6 +102,8 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
       throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_MANAGED_TABLE.format(tableName));
     }
 
+    validateUnsupportedPartitionClause(table, root.getChildCount() > 1);
+
     if (table.isNonNative()) {
       throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_NATIVE_TABLE.format(tableName)); //TODO
     }
