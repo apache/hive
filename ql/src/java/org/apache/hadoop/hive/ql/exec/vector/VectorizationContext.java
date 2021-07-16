@@ -594,7 +594,7 @@ import com.google.common.annotations.VisibleForTesting;
     castExpressionUdfs.add(GenericUDFToIntervalYearMonth.class);
     castExpressionUdfs.add(GenericUDFToIntervalDayTime.class);
     castExpressionUdfs.add(UDFToByte.class);
-    castExpressionUdfs.add(UDFToBoolean.class);
+    castExpressionUdfs.add(GenericUDFToBoolean.class);
     castExpressionUdfs.add(UDFToDouble.class);
     castExpressionUdfs.add(UDFToFloat.class);
     castExpressionUdfs.add(UDFToInteger.class);
@@ -1379,7 +1379,7 @@ import com.google.common.annotations.VisibleForTesting;
         genericUdf = new GenericUDFToVarchar();
         break;
       case BOOLEAN:
-        udfClass = new UDFToBoolean();
+        genericUdf = new GenericUDFToBoolean();
         break;
       case DATE:
         genericUdf = new GenericUDFToDate();
@@ -1480,7 +1480,7 @@ import com.google.common.annotations.VisibleForTesting;
   }
 
   public static boolean isCastToBoolean(Class<? extends UDF> udfClass) {
-    return udfClass.equals(UDFToBoolean.class);
+    return udfClass.equals(GenericUDFToBoolean.class);
   }
 
   public static boolean isCastToFloatFamily(Class<? extends UDF> udfClass) {
@@ -3495,7 +3495,7 @@ import com.google.common.annotations.VisibleForTesting;
           VectorExpressionDescriptor.Mode.PROJECTION, TypeInfoFactory.booleanTypeInfo, DataTypePhysicalVariation.NONE);
     } else {
       // Ok, try the UDF.
-      ve = getVectorExpressionForUdf(null, UDFToBoolean.class, childExpr,
+      ve = getVectorExpressionForUdf(null, GenericUDFToBoolean.class, childExpr,
           VectorExpressionDescriptor.Mode.PROJECTION, TypeInfoFactory.booleanTypeInfo);
     }
 

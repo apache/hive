@@ -23,5 +23,5 @@ Synonyms: udftoboolean
 Example:
    > SELECT boolean(0);
   false
-Function class:org.apache.hadoop.hive.ql.udf.UDFToBoolean
+Function class:org.apache.hadoop.hive.ql.udf.GenericUDFToBoolean
 Function type:BUILTIN

@@ -101,7 +101,7 @@ import org.apache.hadoop.hive.ql.udf.UDFSpace;
 import org.apache.hadoop.hive.ql.udf.UDFSqrt;
 import org.apache.hadoop.hive.ql.udf.UDFSubstr;
 import org.apache.hadoop.hive.ql.udf.UDFTan;
-import org.apache.hadoop.hive.ql.udf.UDFToBoolean;
+import org.apache.hadoop.hive.ql.udf.GenericUDFToBoolean;
 import org.apache.hadoop.hive.ql.udf.UDFToByte;
 import org.apache.hadoop.hive.ql.udf.UDFToDouble;
 import org.apache.hadoop.hive.ql.udf.UDFToFloat;
@@ -399,7 +399,6 @@ public final class FunctionRegistry {
 
     // Aliases for Java Class Names
     // These are used in getImplicitConvertUDFMethod
-    system.registerUDF(serdeConstants.BOOLEAN_TYPE_NAME, UDFToBoolean.class, false, UDFToBoolean.class.getSimpleName());
     system.registerUDF(serdeConstants.TINYINT_TYPE_NAME, UDFToByte.class, false, UDFToByte.class.getSimpleName());
     system.registerUDF(serdeConstants.SMALLINT_TYPE_NAME, UDFToShort.class, false, UDFToShort.class.getSimpleName());
     system.registerUDF(serdeConstants.INT_TYPE_NAME, UDFToInteger.class, false, UDFToInteger.class.getSimpleName());
@@ -411,7 +410,6 @@ public final class FunctionRegistry {
     //  UDFToString we need the following mappings
     // Rest of the types e.g. DATE, CHAR, VARCHAR etc are already registered
     // TODO: According to vgarg, these function mappings are no longer necessary as the default value logic has changed.
-    system.registerUDF(UDFToBoolean.class.getSimpleName(), UDFToBoolean.class, false, UDFToBoolean.class.getSimpleName());
     system.registerUDF(UDFToDouble.class.getSimpleName(), UDFToDouble.class, false, UDFToDouble.class.getSimpleName());
     system.registerUDF(UDFToFloat.class.getSimpleName(), UDFToFloat.class, false, UDFToFloat.class.getSimpleName());
     system.registerUDF(UDFToInteger.class.getSimpleName(), UDFToInteger.class, false, UDFToInteger.class.getSimpleName());
@@ -429,6 +427,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF(serdeConstants.DECIMAL_TYPE_NAME, GenericUDFToDecimal.class);
     system.registerGenericUDF(serdeConstants.VARCHAR_TYPE_NAME, GenericUDFToVarchar.class);
     system.registerGenericUDF(serdeConstants.CHAR_TYPE_NAME, GenericUDFToChar.class);
+    system.registerGenericUDF(serdeConstants.BOOLEAN_TYPE_NAME, GenericUDFToBoolean.class);
 
     // Aggregate functions
     system.registerGenericUDAF("max", new GenericUDAFMax());
@@ -1395,7 +1394,7 @@ public final class FunctionRegistry {
     Class udfClass = (genericUDF instanceof GenericUDFBridge) ?
         ((GenericUDFBridge)genericUDF).getUdfClass() : genericUDF.getClass();
 
-    return udfClass == UDFToBoolean.class || udfClass == UDFToByte.class ||
+    return udfClass == GenericUDFToBoolean.class || udfClass == UDFToByte.class ||
         udfClass == UDFToDouble.class || udfClass == UDFToFloat.class ||
         udfClass == UDFToInteger.class || udfClass == UDFToLong.class ||
         udfClass == UDFToShort.class || udfClass == GenericUDFToString.class ||
