@@ -1709,14 +1709,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           for (Table materializedView : materializedViews) {
             if (materializedView.getSd().getLocation() != null) {
               Path materializedViewPath = wh.getDnsPath(new Path(materializedView.getSd().getLocation()));
-              if (!wh.isWritable(materializedViewPath.getParent())) {
-                throw new MetaException("Database metadata not deleted since table: " +
-                    materializedView.getTableName() + " has a parent location " + materializedViewPath.getParent() +
-                    " which is not writable by " + SecurityUtils.getUser());
-              }
 
               if (!FileUtils.isSubdirectory(databasePath.toString(),
                   materializedViewPath.toString())) {
+                if (!wh.isWritable(materializedViewPath.getParent())) {
+                  throw new MetaException("Database metadata not deleted since table: " +
+                      materializedView.getTableName() + " has a parent location " + materializedViewPath.getParent() +
+                      " which is not writable by " + SecurityUtils.getUser());
+                }
                 tablePaths.add(materializedViewPath);
               }
             }
@@ -1752,13 +1752,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table, deleteData);
             if (table.getSd().getLocation() != null && tableDataShouldBeDeleted) {
               tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
-              if (!wh.isWritable(tablePath.getParent())) {
-                throw new MetaException("Database metadata not deleted since table: " +
-                    table.getTableName() + " has a parent location " + tablePath.getParent() +
-                    " which is not writable by " + SecurityUtils.getUser());
-              }
 
               if (!FileUtils.isSubdirectory(databasePath.toString(), tablePath.toString())) {
+                if (!wh.isWritable(tablePath.getParent())) {
+                  throw new MetaException("Database metadata not deleted since table: " +
+                      table.getTableName() + " has a parent location " + tablePath.getParent() +
+                      " which is not writable by " + SecurityUtils.getUser());
+                }
                 tablePaths.add(tablePath);
               }
             }
@@ -1769,8 +1769,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                 tablePath, tableDataShouldBeDeleted);
 
             // Drop the table but not its data
-            drop_table(MetaStoreUtils.prependCatalogToDbName(table.getCatName(), table.getDbName(), conf),
-                table.getTableName(), false);
+            drop_table_with_environment_context(
+                MetaStoreUtils.prependCatalogToDbName(table.getCatName(), table.getDbName(), conf),
+                table.getTableName(), false, null, false);
           }
         }
 
@@ -2925,7 +2926,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   private boolean drop_table_core(final RawStore ms, final String catName, final String dbname,
                                   final String name, final boolean deleteData,
-                                  final EnvironmentContext envContext, final String indexName)
+                                  final EnvironmentContext envContext, final String indexName, boolean dropPartitions)
       throws NoSuchObjectException, MetaException, IOException, InvalidObjectException,
       InvalidInputException {
     boolean success = false;
@@ -2982,9 +2983,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
 
       // Drop the partitions and get a list of locations which need to be deleted
-      partPaths = dropPartitionsAndGetLocations(ms, catName, dbname, name, tblPath,
-          tableDataShouldBeDeleted);
-
+      // In case of drop database cascade we need not to drop the partitions, they are already dropped.
+      if (dropPartitions) {
+        partPaths = dropPartitionsAndGetLocations(ms, catName, dbname, name, tblPath, tableDataShouldBeDeleted);
+      }
       // Drop any constraints on the table
       ms.dropConstraint(catName, dbname, name, null, true);
 
@@ -3217,26 +3219,28 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public void drop_table_with_environment_context(final String dbname, final String name,
-                                                  final boolean deleteData, final EnvironmentContext envContext)
-      throws NoSuchObjectException, MetaException {
+  public void drop_table_with_environment_context(final String dbname, final String name, final boolean deleteData,
+      final EnvironmentContext envContext) throws NoSuchObjectException, MetaException {
+    drop_table_with_environment_context(dbname, name, deleteData, envContext, true);
+  }
+
+  private void drop_table_with_environment_context(final String dbname, final String name, final boolean deleteData,
+      final EnvironmentContext envContext, boolean dropPartitions) throws MetaException {
     String[] parsedDbName = parseDbName(dbname, conf);
     startTableFunction("drop_table", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name);
 
     boolean success = false;
     Exception ex = null;
     try {
-      success = drop_table_core(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name,
-          deleteData, envContext, null);
+      success =
+          drop_table_core(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, deleteData, envContext, null, dropPartitions);
     } catch (Exception e) {
       ex = e;
       throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
-          .convertIfInstance(IOException.class, MetaException.class)
-          .defaultMetaException();
+          .convertIfInstance(IOException.class, MetaException.class).defaultMetaException();
     } finally {
       endFunction("drop_table", success, ex, name);
     }
-
   }
 
   private void updateStatsForTruncate(Map<String,String> props, EnvironmentContext environmentContext) {
