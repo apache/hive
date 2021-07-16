@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
+import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.HiveStringUtils;
@@ -82,6 +83,7 @@ class TextDescTableFormatter extends DescTableFormatter {
     try {
       addStatsData(out, columnPath, columns, isFormatted, columnStats, isOutputPadded);
       addPartitionData(out, conf, columnPath, table, isFormatted, isOutputPadded);
+      addPartitionTransformData(out, table, isOutputPadded);
 
       if (columnPath == null) {
         if (isFormatted) {
@@ -98,6 +100,32 @@ class TextDescTableFormatter extends DescTableFormatter {
     } catch (IOException e) {
       throw new HiveException(e);
     }
+  }
+
+  private void addPartitionTransformData(DataOutputStream out, Table table, boolean isOutputPadded) throws IOException {
+    String partitionTransformOutput = "";
+    if (table.isNonNative() && table.getStorageHandler() != null &&
+        table.getStorageHandler().supportsPartitionTransform()) {
+
+      List<PartitionTransformSpec> partSpecs = table.getStorageHandler().getPartitionTransformSpec(table);
+      if (partSpecs != null && !partSpecs.isEmpty()) {
+        TextMetaDataTable metaDataTable = new TextMetaDataTable();
+        partitionTransformOutput += LINE_DELIM + "# Partition Transform Information" + LINE_DELIM + "# ";
+        metaDataTable.addRow(DescTableDesc.PARTITION_TRANSFORM_SPEC_SCHEMA.split("#")[0].split(","));
+        for (PartitionTransformSpec spec : partSpecs) {
+          String[] row = new String[2];
+          row[0] = spec.getColumnName();
+          if (spec.getTransformType() != null) {
+            row[1] = spec.getTransformParam().isPresent() ?
+                spec.getTransformType().name() + "[" + spec.getTransformParam().get() + "]" :
+                spec.getTransformType().name();
+          }
+          metaDataTable.addRow(row);
+        }
+        partitionTransformOutput += metaDataTable.renderTable(isOutputPadded);
+      }
+    }
+    out.write(partitionTransformOutput.getBytes(StandardCharsets.UTF_8));
   }
 
   private void addStatsData(DataOutputStream out, String columnPath, List<FieldSchema> columns, boolean isFormatted,
