@@ -136,7 +136,7 @@ public class GenericUDFAddMonths extends GenericUDF {
     if (ts != null) {
       addMonth(ts, numMonthInt);
     } else {
-      Date date = getDateValue(arguments, 0, dtInputTypes, dtConverters);
+      Date date = getDateValue(arguments, 0, dtConverters);
       if (date != null) {
         addMonth(date, numMonthInt);
       } else {

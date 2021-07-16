@@ -64,9 +64,9 @@ public class TestGenericUDFLastDay {
     runAndVerify("2016-02-29 10:30:45", "2016-02-29", udf);
 
     // negative Unix time
-    runAndVerifyTs("1966-01-31 00:00:01", "1966-01-31", udf);
-    runAndVerifyTs("1966-01-31 10:00:01", "1966-01-31", udf);
-    runAndVerifyTs("1966-01-31 23:59:59", "1966-01-31", udf);
+    runAndVerify("1966-01-31 00:00:01", "1966-01-31", udf);
+    runAndVerify("1966-01-31 10:00:01", "1966-01-31", udf);
+    runAndVerify("1966-01-31 23:59:59", "1966-01-31", udf);
   }
 
   @Test
