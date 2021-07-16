@@ -79,7 +79,6 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
         type = DatabaseType.REMOTE.name();
         ASTNode nextNode = (ASTNode) root.getChild(i);
         connectorName = ((ASTNode)nextNode).getChild(0).getText();
-        outputs.add(toWriteEntity(connectorName));
         DataConnector connector = getDataConnector(connectorName, true);
         if (connector == null) {
           throw new SemanticException("Cannot retrieve connector with name: " + connectorName);
