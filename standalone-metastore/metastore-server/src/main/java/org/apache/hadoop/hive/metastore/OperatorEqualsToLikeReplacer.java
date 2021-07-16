@@ -34,10 +34,8 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
 final class OperatorEqualsToLikeReplacer extends TreeVisitor {
   @Override
   protected void visit(LeafNode node) throws MetaException {
-    if (
-      node.keyName.startsWith(hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS)
-      && node.operator == Operator.EQUALS
-    ) {
+    if (node.keyName.startsWith(hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS)
+        && node.operator == Operator.EQUALS) {
       node.operator = Operator.LIKE;
     }
   }
