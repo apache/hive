@@ -157,6 +157,9 @@ public class UDFConv extends UDF {
     }
 
     byte[] num = n.getBytes();
+    if (num.length == 0) {
+      return null;
+    }
     boolean negative = (num[0] == '-');
     int first = 0;
     if (negative) {
