@@ -22,5 +22,5 @@ Synonyms: udftobyte
 Example:
    > SELECT tinyint(true);
   1
-Function class:org.apache.hadoop.hive.ql.udf.UDFToByte
+Function class:org.apache.hadoop.hive.ql.udf.GenericUDFToByte
 Function type:BUILTIN

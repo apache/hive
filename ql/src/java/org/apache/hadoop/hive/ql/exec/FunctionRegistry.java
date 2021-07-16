@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.udf.GenericUDFToByte;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.UDAFPercentile;
 import org.apache.hadoop.hive.ql.udf.UDFAcos;
@@ -102,7 +103,6 @@ import org.apache.hadoop.hive.ql.udf.UDFSqrt;
 import org.apache.hadoop.hive.ql.udf.UDFSubstr;
 import org.apache.hadoop.hive.ql.udf.UDFTan;
 import org.apache.hadoop.hive.ql.udf.UDFToBoolean;
-import org.apache.hadoop.hive.ql.udf.UDFToByte;
 import org.apache.hadoop.hive.ql.udf.UDFToDouble;
 import org.apache.hadoop.hive.ql.udf.UDFToFloat;
 import org.apache.hadoop.hive.ql.udf.UDFToInteger;
@@ -400,7 +400,6 @@ public final class FunctionRegistry {
     // Aliases for Java Class Names
     // These are used in getImplicitConvertUDFMethod
     system.registerUDF(serdeConstants.BOOLEAN_TYPE_NAME, UDFToBoolean.class, false, UDFToBoolean.class.getSimpleName());
-    system.registerUDF(serdeConstants.TINYINT_TYPE_NAME, UDFToByte.class, false, UDFToByte.class.getSimpleName());
     system.registerUDF(serdeConstants.SMALLINT_TYPE_NAME, UDFToShort.class, false, UDFToShort.class.getSimpleName());
     system.registerUDF(serdeConstants.INT_TYPE_NAME, UDFToInteger.class, false, UDFToInteger.class.getSimpleName());
     system.registerUDF(serdeConstants.BIGINT_TYPE_NAME, UDFToLong.class, false, UDFToLong.class.getSimpleName());
@@ -417,7 +416,6 @@ public final class FunctionRegistry {
     system.registerUDF(UDFToInteger.class.getSimpleName(), UDFToInteger.class, false, UDFToInteger.class.getSimpleName());
     system.registerUDF(UDFToLong.class.getSimpleName(), UDFToLong.class, false, UDFToLong.class.getSimpleName());
     system.registerUDF(UDFToShort.class.getSimpleName(), UDFToShort.class, false, UDFToShort.class.getSimpleName());
-    system.registerUDF(UDFToByte.class.getSimpleName(), UDFToByte.class, false, UDFToByte.class.getSimpleName());
 
     system.registerGenericUDF(serdeConstants.STRING_TYPE_NAME, GenericUDFToString.class);
     system.registerGenericUDF(serdeConstants.DATE_TYPE_NAME, GenericUDFToDate.class);
@@ -425,10 +423,12 @@ public final class FunctionRegistry {
     system.registerGenericUDF(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME, GenericUDFToTimestampLocalTZ.class);
     system.registerGenericUDF(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME, GenericUDFToIntervalYearMonth.class);
     system.registerGenericUDF(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME, GenericUDFToIntervalDayTime.class);
+    system.registerGenericUDF(serdeConstants.TINYINT_TYPE_NAME, GenericUDFToByte.class);
     system.registerGenericUDF(serdeConstants.BINARY_TYPE_NAME, GenericUDFToBinary.class);
     system.registerGenericUDF(serdeConstants.DECIMAL_TYPE_NAME, GenericUDFToDecimal.class);
     system.registerGenericUDF(serdeConstants.VARCHAR_TYPE_NAME, GenericUDFToVarchar.class);
     system.registerGenericUDF(serdeConstants.CHAR_TYPE_NAME, GenericUDFToChar.class);
+
 
     // Aggregate functions
     system.registerGenericUDAF("max", new GenericUDAFMax());
@@ -1395,7 +1395,7 @@ public final class FunctionRegistry {
     Class udfClass = (genericUDF instanceof GenericUDFBridge) ?
         ((GenericUDFBridge)genericUDF).getUdfClass() : genericUDF.getClass();
 
-    return udfClass == UDFToBoolean.class || udfClass == UDFToByte.class ||
+    return udfClass == UDFToBoolean.class || udfClass == GenericUDFToByte.class ||
         udfClass == UDFToDouble.class || udfClass == UDFToFloat.class ||
         udfClass == UDFToInteger.class || udfClass == UDFToLong.class ||
         udfClass == UDFToShort.class || udfClass == GenericUDFToString.class ||
