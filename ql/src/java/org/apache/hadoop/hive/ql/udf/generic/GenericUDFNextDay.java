@@ -98,7 +98,7 @@ public class GenericUDFNextDay extends GenericUDF {
       return null;
     }
 
-    Date d = getDateValue(arguments, 0, inputTypes, converters);
+    Date d = getDateValue(arguments, 0, converters);
     if (d == null) {
       return null;
     }
