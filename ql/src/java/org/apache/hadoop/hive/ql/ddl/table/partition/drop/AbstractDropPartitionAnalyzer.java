@@ -108,7 +108,6 @@ abstract class AbstractDropPartitionAnalyzer extends AbstractAlterTableAnalyzer 
     AlterTableDropPartitionDesc desc =
         new AlterTableDropPartitionDesc(tableName, partitionSpecs, mustPurge, replicationSpec);
 
-    Task<DDLWork> ddlTask = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 
     postProcess(tableName, table, desc);
