@@ -31,15 +31,18 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.BOOLEAN_GROUP;
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.DATE_GROUP;
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.NUMERIC_GROUP;
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.VOID_GROUP;
 
 /**
  *
@@ -74,8 +77,7 @@ public class GenericUDFTimestamp extends GenericUDF {
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     checkArgsSize(arguments, 1, 1);
     checkArgPrimitive(arguments, 0);
-    checkArgGroups(arguments, 0, tsInputTypes, STRING_GROUP, DATE_GROUP, NUMERIC_GROUP);
-    obtainTimestampConverter(arguments, 1, tsInputTypes, tsConvertors);
+    checkArgGroups(arguments, 0, tsInputTypes, STRING_GROUP, DATE_GROUP, NUMERIC_GROUP, VOID_GROUP, BOOLEAN_GROUP);
 
     strict = SessionState.get() != null ? SessionState.get().getConf()
         .getBoolVar(ConfVars.HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS) : new HiveConf()
@@ -88,6 +90,7 @@ public class GenericUDFTimestamp extends GenericUDF {
       }
     }
 
+    obtainTimestampConverter(arguments, 0, tsInputTypes, tsConvertors);
     return PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
   }
 
@@ -99,7 +102,7 @@ public class GenericUDFTimestamp extends GenericUDF {
     PrimitiveObjectInspectorConverter.TimestampConverter ts =
         (PrimitiveObjectInspectorConverter.TimestampConverter) tsConvertors[0];
     ts.setIntToTimestampInSeconds(intToTimestampInSeconds);
-    return ts.convert(arguments[0]);
+    return ts.convert(arguments[0].get());
   }
 
   @Override
