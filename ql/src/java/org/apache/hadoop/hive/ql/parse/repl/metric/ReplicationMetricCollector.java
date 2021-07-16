@@ -88,7 +88,7 @@ public abstract class ReplicationMetricCollector {
   public void reportFailoverStart(String stageName, Map<String, Long> metricMap,
                                   FailoverMetaData failoverMd) throws SemanticException {
     if (isEnabled) {
-      LOG.debug("Failover Stage Started {}, {}, {}", stageName, metricMap.size(), metricMap );
+      LOG.info("Failover Stage Started {}, {}, {}", stageName, metricMap.size(), metricMap);
       Progress progress = replicationMetric.getProgress();
       progress.setStatus(Status.FAILOVER_IN_PROGRESS);
       Stage stage = new Stage(stageName, Status.IN_PROGRESS, System.currentTimeMillis());

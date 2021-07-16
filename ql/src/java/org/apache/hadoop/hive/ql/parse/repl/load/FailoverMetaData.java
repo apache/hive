@@ -54,21 +54,20 @@ public class FailoverMetaData {
     private List<Long> txnsWithoutLock;
 
     @JsonIgnore
-    private boolean initialized = false;
+    private volatile boolean initialized = false;
     @JsonIgnore
-    private final Path dumpFile;
+    private final Path metadataFile;
     @JsonIgnore
     private final HiveConf hiveConf;
 
     public FailoverMetaData() {
-        //to be instantiated by JSON ObjectMapper.
-        dumpFile = null;
+        metadataFile = null;
         hiveConf = null;
     }
 
     public FailoverMetaData(Path dumpDir, HiveConf hiveConf) {
         this.hiveConf = hiveConf;
-        this.dumpFile = new Path(dumpDir, FAILOVER_METADATA);
+        this.metadataFile = new Path(dumpDir, FAILOVER_METADATA);
     }
 
     private void initializeIfNot() throws SemanticException {
@@ -78,8 +77,7 @@ public class FailoverMetaData {
         }
     }
 
-    public void setMetaData(FailoverMetaData otherDMD) throws SemanticException {
-        otherDMD.initializeIfNot();
+    public void setMetaData(FailoverMetaData otherDMD) {
         this.failoverEventId = otherDMD.failoverEventId;
         this.abortedTxns = otherDMD.abortedTxns;
         this.openTxns = otherDMD.openTxns;
@@ -88,29 +86,31 @@ public class FailoverMetaData {
         this.initialized = true;
     }
 
-    private void loadMetadataFromFile() throws SemanticException {
-        LOG.info("Reading failover metadata from file: ", dumpFile);
-        BufferedReader br = null;
-        try {
-            FileSystem fs = dumpFile.getFileSystem(hiveConf);
-            br = new BufferedReader(new InputStreamReader(fs.open(dumpFile)));
-            String line;
-            if ((line = br.readLine()) != null) {
-                FailoverMetaData otherDMD = JSON_OBJECT_MAPPER.readValue(line, FailoverMetaData.class);
-                setMetaData(otherDMD);
-            } else {
-                throw new IOException("Unable to read valid values from failover Metadata file:"
-                        + dumpFile.toUri().toString());
-            }
+    private synchronized void loadMetadataFromFile() throws SemanticException {
+        if (!initialized) {
+            LOG.info("Reading failover metadata from file: ", metadataFile);
+            BufferedReader br = null;
+            try {
+                FileSystem fs = metadataFile.getFileSystem(hiveConf);
+                br = new BufferedReader(new InputStreamReader(fs.open(metadataFile)));
+                String line;
+                if ((line = br.readLine()) != null) {
+                    FailoverMetaData otherDMD = JSON_OBJECT_MAPPER.readValue(line, FailoverMetaData.class);
+                    setMetaData(otherDMD);
+                } else {
+                    throw new IOException("Unable to read valid values from failover Metadata file:"
+                            + metadataFile.toUri().toString());
+                }
 
-        } catch (IOException ioe) {
-            throw new SemanticException(ioe);
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    throw new SemanticException(e);
+            } catch (IOException ioe) {
+                throw new SemanticException(ioe);
+            } finally {
+                if (br != null) {
+                    try {
+                        br.close();
+                    } catch (IOException e) {
+                        throw new SemanticException(e);
+                    }
                 }
             }
         }
@@ -192,16 +192,15 @@ public class FailoverMetaData {
 
     @JsonIgnore
     public String getFilePath() {
-        return (dumpFile == null) ? null : dumpFile.toString();
+        return (metadataFile == null) ? null : metadataFile.toString();
     }
 
     public void write() throws SemanticException {
-        String failoverContentAsJSON = null;
         try {
-            failoverContentAsJSON = JSON_OBJECT_MAPPER.writeValueAsString(this);
+            String failoverContentAsJSON = JSON_OBJECT_MAPPER.writeValueAsString(this);
+            Utils.writeOutput(failoverContentAsJSON, metadataFile, hiveConf);
         } catch (JsonProcessingException e) {
             throw new SemanticException(e);
         }
-        Utils.writeOutput(failoverContentAsJSON, dumpFile, hiveConf);
     }
 }

@@ -72,7 +72,6 @@ public class ReplDumpWork implements Serializable {
   private ReplicationSpec replicationSpec;
   private ReplLogger replLogger;
   private FailoverMetaData fmd;
-  private boolean failoverInProgress;
   private boolean firstDumpAfterFailover;
 
   public static void injectNextDumpDirForTest(String dumpDir) {
@@ -138,14 +137,6 @@ public class ReplDumpWork implements Serializable {
     this.fmd = fmd;
   }
 
-  public boolean isFailoverInProgress() {
-    return failoverInProgress;
-  }
-
-  public void setFailoverInProgress(boolean failoverInProgress) {
-    this.failoverInProgress = failoverInProgress;
-  }
-
   void setEventFrom(long eventId) {
     eventFrom = eventId;
   }
@@ -156,11 +147,9 @@ public class ReplDumpWork implements Serializable {
     // the beginning of the bootstrap dump and also not dump any event after that. So we override
     // both, the last event as well as any user specified limit on the number of events. See
     // bootstrampDump() for more details.
-    if (failoverInProgress) {
-      assert failoverEventId > 0;
+    if (failoverEventId > 0) {
+      LOG.info("eventTo : {} marked as failover eventId.", eventTo);
       eventTo = failoverEventId;
-      LoggerFactory.getLogger(this.getClass())
-              .debug("eventTo : {} marked as failover eventId.", eventTo);
       return;
     }
     if (bootstrapLastId > 0) {
@@ -296,7 +285,7 @@ public class ReplDumpWork implements Serializable {
             //In case of bootstrap checkpointing we will not delete the entire dir and just do a sync
             Task<?> copyTask = ReplCopyTask.getDumpCopyTask(
                     managedTableCopyPath.getReplicationSpec(), managedTableCopyPath.getSrcPath(),
-                    managedTableCopyPath.getTargetPath(), conf, false, shouldOverwrite, !isBootstrap,
+                    managedTableCopyPath.getTargetPath(), conf, false, shouldOverwrite, !isBootstrap(),
                     getCurrentDumpPath().toString(), getMetricCollector());
             tasks.add(copyTask);
             tracker.addTask(copyTask);
