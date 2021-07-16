@@ -593,7 +593,7 @@ import com.google.common.annotations.VisibleForTesting;
     castExpressionUdfs.add(GenericUDFTimestamp.class);
     castExpressionUdfs.add(GenericUDFToIntervalYearMonth.class);
     castExpressionUdfs.add(GenericUDFToIntervalDayTime.class);
-    castExpressionUdfs.add(UDFToByte.class);
+    castExpressionUdfs.add(GenericUDFToByte.class);
     castExpressionUdfs.add(UDFToBoolean.class);
     castExpressionUdfs.add(UDFToDouble.class);
     castExpressionUdfs.add(UDFToFloat.class);
@@ -1352,7 +1352,7 @@ import com.google.common.annotations.VisibleForTesting;
     GenericUDF genericUdf = null;
     switch (((PrimitiveTypeInfo) castType).getPrimitiveCategory()) {
       case BYTE:
-        udfClass = new UDFToByte();
+        genericUdf = new GenericUDFToByte();
         break;
       case SHORT:
         udfClass = new UDFToShort();
@@ -1471,7 +1471,7 @@ import com.google.common.annotations.VisibleForTesting;
   }
 
   public static boolean isCastToIntFamily(Class<? extends UDF> udfClass) {
-    return udfClass.equals(UDFToByte.class)
+    return udfClass.equals(GenericUDFToByte.class)
         || udfClass.equals(UDFToShort.class)
         || udfClass.equals(UDFToInteger.class)
         || udfClass.equals(UDFToLong.class);
@@ -2971,7 +2971,7 @@ import com.google.common.annotations.VisibleForTesting;
   }
 
   private PrimitiveCategory getAnyIntegerPrimitiveCategoryFromUdfClass(Class<? extends UDF> udfClass) {
-    if (udfClass.equals(UDFToByte.class)) {
+    if (udfClass.equals(GenericUDFToByte.class)) {
       return PrimitiveCategory.BYTE;
     } else if (udfClass.equals(UDFToShort.class)) {
       return PrimitiveCategory.SHORT;
