@@ -76,13 +76,14 @@ public class GenericUDFToBoolean extends GenericUDF {
     checkArgsSize(arguments,1,1);
     checkArgPrimitive(arguments,0);
     checkArgGroups(arguments,0, booleanInputTypes,NUMERIC_GROUP, VOID_GROUP,STRING_GROUP,DATE_GROUP);
-    obtainDateConverter(arguments,0,booleanInputTypes,booleanConverters);
+    obtainBooleanConverter(arguments,0,booleanConverters);
     return PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
   }
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    return booleanConverters[0].convert(arguments[0].get());
+    return booleanInputTypes[0] == PrimitiveObjectInspector.PrimitiveCategory.DATE ? null : booleanConverters[0]
+        .convert(arguments[0].get());
   }
 
   @Override

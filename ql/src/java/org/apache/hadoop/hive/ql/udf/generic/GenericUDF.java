@@ -425,6 +425,13 @@ public abstract class GenericUDF implements Closeable {
     inputTypes[i] = inputType;
   }
 
+  protected void obtainBooleanConverter(ObjectInspector[] arguments, int i, Converter[] converters)
+      throws UDFArgumentTypeException {
+    PrimitiveObjectInspector inOi = (PrimitiveObjectInspector) arguments[i];
+    converters[i] =
+        ObjectInspectorConverters.getConverter(inOi, PrimitiveObjectInspectorFactory.writableBooleanObjectInspector);
+  }
+
   protected void obtainTimestampConverter(ObjectInspector[] arguments, int i,
       PrimitiveCategory[] inputTypes, Converter[] converters) throws UDFArgumentTypeException {
     PrimitiveObjectInspector inOi = (PrimitiveObjectInspector) arguments[i];

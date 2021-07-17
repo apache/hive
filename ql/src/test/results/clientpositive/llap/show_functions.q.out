@@ -363,7 +363,6 @@ trim
 trunc
 tumbling_window
 ucase
-udftoboolean
 udftobyte
 udftodouble
 udftofloat
@@ -880,7 +879,6 @@ trim
 trunc
 tumbling_window
 ucase
-udftoboolean
 udftobyte
 udftodouble
 udftofloat

@@ -29,7 +29,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: UDFToBoolean(cstring1) (type: boolean)
+                  filterExpr: CAST( cstring1 AS BOOLEAN) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 899146 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -37,8 +37,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsTrue(col 14:boolean)(children: CastStringToBoolean(col 6) -> 14:boolean)
-                    predicate: UDFToBoolean(cstring1) (type: boolean)
+                        predicateExpression: SelectColumnIsTrue(col 14:boolean)(children: VectorUDFAdaptor(CAST( cstring1 AS BOOLEAN)) -> 14:boolean)
+                    predicate: CAST( cstring1 AS BOOLEAN) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 449620 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cint (type: int)
@@ -80,7 +80,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: false
+                usesVectorUDFAdaptor: true
                 vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
@@ -203,7 +203,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: UDFToBoolean(cint) (type: boolean)
+                  filterExpr: CAST( cint AS BOOLEAN) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -211,8 +211,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsTrue(col 14:boolean)(children: CastLongToBooleanViaLongToLong(col 2:int) -> 14:boolean)
-                    predicate: UDFToBoolean(cint) (type: boolean)
+                        predicateExpression: SelectColumnIsTrue(col 14:boolean)(children: VectorUDFAdaptor(CAST( cint AS BOOLEAN)) -> 14:boolean)
+                    predicate: CAST( cint AS BOOLEAN) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 18348 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       Group By Vectorization:
@@ -246,7 +246,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: false
+                usesVectorUDFAdaptor: true
                 vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
@@ -369,7 +369,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: UDFToBoolean(cfloat) (type: boolean)
+                  filterExpr: CAST( cfloat AS BOOLEAN) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 73392 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -377,8 +377,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsTrue(col 14:boolean)(children: CastDoubleToBooleanViaDoubleToLong(col 4:float) -> 14:boolean)
-                    predicate: UDFToBoolean(cfloat) (type: boolean)
+                        predicateExpression: SelectColumnIsTrue(col 14:boolean)(children: VectorUDFAdaptor(CAST( cfloat AS BOOLEAN)) -> 14:boolean)
+                    predicate: CAST( cfloat AS BOOLEAN) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cint (type: int)
@@ -420,7 +420,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: false
+                usesVectorUDFAdaptor: true
                 vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
@@ -543,7 +543,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: UDFToBoolean(ctimestamp1) (type: boolean)
+                  filterExpr: CAST( ctimestamp1 AS BOOLEAN) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 403656 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -551,8 +551,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsTrue(col 14:boolean)(children: CastTimestampToBoolean(col 8:timestamp) -> 14:boolean)
-                    predicate: UDFToBoolean(ctimestamp1) (type: boolean)
+                        predicateExpression: SelectColumnIsTrue(col 14:boolean)(children: VectorUDFAdaptor(CAST( ctimestamp1 AS BOOLEAN)) -> 14:boolean)
+                    predicate: CAST( ctimestamp1 AS BOOLEAN) (type: boolean)
                     Statistics: Num rows: 6144 Data size: 201828 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cint (type: int)
@@ -594,7 +594,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: false
+                usesVectorUDFAdaptor: true
                 vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
