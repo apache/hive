@@ -1252,4 +1252,18 @@ public class HiveCalciteUtil {
     }
     return refs.build();
   }
+
+  public static Set<RexTableInputRef> findRexTableInputRefs(RexNode rexNode) {
+    Set<RexTableInputRef> rexTableInputRefs = new HashSet<>();
+    RexVisitor<RexTableInputRef> visitor = new RexVisitorImpl<RexTableInputRef>(true) {
+      @Override
+      public RexTableInputRef visitTableInputRef(RexTableInputRef ref) {
+        rexTableInputRefs.add(ref);
+        return ref;
+      }
+    };
+
+    rexNode.accept(visitor);
+    return rexTableInputRefs;
+  }
 }
