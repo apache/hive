@@ -15,4 +15,4 @@ POSTHOOK: query: select cast(' 1 ' as tinyint), cast(' 1 ' as smallint), cast(' 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-1	1	1	1	1.0	1.0	1.00
+NULL	1	1	1	1.0	1.0	1.00

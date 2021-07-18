@@ -104,6 +104,7 @@ day
 dayofmonth
 dayofweek
 decode
+default.test_udf2
 degrees
 dense_rank
 div
@@ -364,7 +365,6 @@ trunc
 tumbling_window
 ucase
 udftoboolean
-udftobyte
 udftodouble
 udftofloat
 udftointeger
@@ -509,7 +509,6 @@ space
 to_date
 translate
 ucase
-udftobyte
 udftodouble
 variance
 xpath_double
@@ -621,6 +620,7 @@ day
 dayofmonth
 dayofweek
 decode
+default.test_udf2
 degrees
 dense_rank
 div
@@ -881,7 +881,6 @@ trunc
 tumbling_window
 ucase
 udftoboolean
-udftobyte
 udftodouble
 udftofloat
 udftointeger

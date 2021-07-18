@@ -67,7 +67,8 @@ public class GenericUDFToByte extends GenericUDF {
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    return byteConvertors[0].convert(arguments[0].get());
+    return byteInputType[0] == PrimitiveObjectInspector.PrimitiveCategory.DATE ? null : byteConvertors[0]
+        .convert(arguments[0].get());
   }
 
   @Override

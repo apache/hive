@@ -3371,7 +3371,7 @@ STAGE PLANS:
                           predicate: enforce_constraint((null) IN (4, 5) is not false) (type: boolean)
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
-                            expressions: UDFToByte(_col0) (type: tinyint), _col1 (type: bigint)
+                            expressions: CAST( _col0 AS BYTE) (type: tinyint), _col1 (type: bigint)
                             outputColumnNames: _col0, _col1
                             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                             Reduce Output Operator

@@ -8,7 +8,6 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED tinyint
 POSTHOOK: type: DESCFUNCTION
 tinyint(x) - converts it's parameter to tinyint
-Synonyms: udftobyte
 - x is NULL -> NULL
 - byte, short, integer, long, float, double, decimal, timestamp:
   x fits into the type tinyint -> integer part of x

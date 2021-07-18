@@ -616,7 +616,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@dest_l2
 Result schema has 4 fields, but we don't get as many dependencies
-{"version":"1.0","engine":"tez","database":"default","hash":"f9a01e400eb50cc3c5ec0741ed20994c","queryText":"insert into dest_l2 values(0, 1, 100, 10000)","edges":[{"sources":[],"targets":[0,1],"expression":"col1","edgeType":"PROJECTION"},{"sources":[],"targets":[2],"expression":"UDFToByte(col1)","edgeType":"PROJECTION"},{"sources":[],"targets":[3],"expression":"UDFToLong(col1)","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.dest_l2.id"},{"id":1,"vertexType":"COLUMN","vertexId":"default.dest_l2.c2"},{"id":2,"vertexType":"COLUMN","vertexId":"default.dest_l2.c1"},{"id":3,"vertexType":"COLUMN","vertexId":"default.dest_l2.c3"}]}
+{"version":"1.0","engine":"tez","database":"default","hash":"f9a01e400eb50cc3c5ec0741ed20994c","queryText":"insert into dest_l2 values(0, 1, 100, 10000)","edges":[{"sources":[],"targets":[0,1],"expression":"col1","edgeType":"PROJECTION"},{"sources":[],"targets":[2],"expression":"CAST( col1 AS BYTE)","edgeType":"PROJECTION"},{"sources":[],"targets":[3],"expression":"UDFToLong(col1)","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.dest_l2.id"},{"id":1,"vertexType":"COLUMN","vertexId":"default.dest_l2.c2"},{"id":2,"vertexType":"COLUMN","vertexId":"default.dest_l2.c1"},{"id":3,"vertexType":"COLUMN","vertexId":"default.dest_l2.c3"}]}
 PREHOOK: query: select * from (
   select c1 + c2 x from dest_l2
   union all
