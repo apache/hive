@@ -222,8 +222,13 @@ public class ThriftHttpServlet extends TServlet {
               clientUserName = doSamlAuth(request, response);
             }
           } else {
-            // For password based authentication
-            clientUserName = doPasswdAuth(request, authType);
+            String proxyHeader = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TRUSTED_PROXY_TRUSTHEADER).trim();
+            if (!proxyHeader.equals("") && request.getHeader(proxyHeader) != null) { //Trusted header is present, which means the user is already authorized.
+              clientUserName = getUsername(request, authType);
+            } else {
+              // For password based authentication
+              clientUserName = doPasswdAuth(request, authType);
+            }
           }
         }
       }
