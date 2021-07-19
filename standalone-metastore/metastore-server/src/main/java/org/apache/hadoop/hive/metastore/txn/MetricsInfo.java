@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import java.util.Set;
+
 /**
  * ACID metrics info object.
  */
@@ -35,7 +37,8 @@ public class MetricsInfo {
   private int oldestAbortedTxnAge;
   private int locksCount;
   private int oldestLockAge;
-  private int tablesWithXAbortedTxns;
+  private int tablesWithXAbortedTxnsCount;
+  private Set<String> tablesWithXAbortedTxns;
   private int oldestReadyForCleaningAge;
 
   public int getTxnToWriteIdCount() {
@@ -142,11 +145,19 @@ public class MetricsInfo {
     return oldestLockAge;
   }
 
-  public int getTablesWithXAbortedTxns() {
+  public int getTablesWithXAbortedTxnsCount() {
+    return tablesWithXAbortedTxnsCount;
+  }
+
+  public void setTablesWithXAbortedTxnsCount(int tablesWithXAbortedTxnsCount) {
+    this.tablesWithXAbortedTxnsCount = tablesWithXAbortedTxnsCount;
+  }
+
+  public Set<String> getTablesWithXAbortedTxns() {
     return tablesWithXAbortedTxns;
   }
 
-  public void setTablesWithXAbortedTxns(int tablesWithXAbortedTxns) {
+  public void setTablesWithXAbortedTxns(Set<String> tablesWithXAbortedTxns) {
     this.tablesWithXAbortedTxns = tablesWithXAbortedTxns;
   }
 

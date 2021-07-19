@@ -478,7 +478,7 @@ public class TestCompactionMetrics  extends CompactorTest {
             System.currentTimeMillis(),true, "4.0.0", "4.0.0"));
 
     scr.setCompacts(elements);
-    AcidMetricService.updateMetricsFromShowCompact(scr);
+    AcidMetricService.updateMetricsFromShowCompact(scr, conf);
 
     Assert.assertEquals(1,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX +
@@ -516,7 +516,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     elements.add(generateElement(14, "db3", "tb4", null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE, 5L));
 
     scr.setCompacts(elements);
-    AcidMetricService.updateMetricsFromShowCompact(scr);
+    AcidMetricService.updateMetricsFromShowCompact(scr, conf);
     // Check that it is not set
     Assert.assertEquals(0, Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE).intValue());
   }
@@ -529,7 +529,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     elements.add(generateElement(15,"db3", "tb5", null, CompactionType.MINOR, TxnStore.INITIATED_RESPONSE, start));
 
     scr.setCompacts(elements);
-    AcidMetricService.updateMetricsFromShowCompact(scr);
+    AcidMetricService.updateMetricsFromShowCompact(scr, conf);
     long diff = (System.currentTimeMillis() - start)/1000;
     // Check that we have at least 1s old compaction age, but not more than expected
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE).intValue() <= diff);
@@ -547,7 +547,7 @@ public class TestCompactionMetrics  extends CompactorTest {
         start - 100000L));
 
     scr.setCompacts(elements);
-    AcidMetricService.updateMetricsFromShowCompact(scr);
+    AcidMetricService.updateMetricsFromShowCompact(scr, conf);
     // Check that the age is older than 10s
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE).intValue() > 10);
 

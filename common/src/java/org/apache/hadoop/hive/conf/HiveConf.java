@@ -3194,6 +3194,24 @@ public class HiveConf extends Configuration {
         "Age of table/partition's oldest aborted transaction when compaction will be triggered. " +
         "Default time unit is: hours. Set to a negative number to disable."),
 
+    HIVE_COMPACTOR_ACTIVE_DELTA_DIR_THRESHOLD("hive.compactor.active.delta.dir.threshold", 200,
+        "If the number of active delta directories under a table/partition passes this threshold, a warning" +
+        " message will be logged."),
+
+    HIVE_COMPACTOR_OBSOLETE_DELTA_DIR_THRESHOLD("hive.compactor.obsolete.delta.dir.threshold", 200,
+        "If the number of obsolete delta directories under a table/partition passes this threshold, a " +
+            "warning message will be logged."),
+
+    HIVE_COMPACTOR_SMALL_DELTA_DIR_THRESHOLD("hive.compactor.small.delta.dir.threshold", 200,
+        "If the number of small delta directories under a table/partition passes this threshold, a " +
+            "warning message will be logged."),
+
+    HIVE_COMPACTOR_ACID_METRICS_LOGGER_FREQUENCY(
+        "hive.compactor.acid.metrics.logger.frequency",
+        "360m", new TimeValidator(TimeUnit.MINUTES),
+        "Logging frequency of ACID related metrics. Set this value to 0 to completely turn off logging. " +
+            "Default time unit: minutes"),
+
     HIVE_COMPACTOR_WAIT_TIMEOUT("hive.compactor.wait.timeout", 300000L, "Time out in "
         + "milliseconds for blocking compaction. It's value has to be higher than 2000 milliseconds. "),
 
