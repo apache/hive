@@ -602,9 +602,10 @@ public class TestCompactionMetrics  extends CompactorTest {
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_LOCK_AGE).intValue() <= diff);
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.OLDEST_LOCK_AGE).intValue() >= 1);
 
+    txnHandler.performWriteSetGC();
     txnHandler.cleanTxnToWriteIdTable();
     runAcidMetricService();
-    Assert.assertEquals(2,
+    Assert.assertEquals(3,
         Metrics.getOrCreateGauge(MetricsConstants.NUM_TXN_TO_WRITEID).intValue());
 
     start = System.currentTimeMillis();

@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
+import org.apache.hadoop.hive.metastore.txn.OperationType;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.TestTxnCommands2;
@@ -1234,9 +1235,11 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
         "default", "TAB_PART", Collections.singletonList("p=blah"));
     adp.setOperationType(DataOperationType.UPDATE);
     txnHandler.addDynamicPartitions(adp);
-    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\""));
+    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\""
+        + " where WS_OPERATION_TYPE != " + OperationType.INSERT));
     txnMgr2.commitTxn(); //since conflicting txn rolled back, commit succeeds
-    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\""));
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\""
+        + " where WS_OPERATION_TYPE != " + OperationType.INSERT));
   }
 
   /**
@@ -2134,10 +2137,13 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     txnMgr.commitTxn(); //commit T1
 
     Assert.assertEquals("WRITE_SET mismatch(" + JavaUtils.txnIdToString(txnid1) + "): " +
-        TestTxnDbUtil.queryToString(conf, "select * from \"WRITE_SET\""),
-        causeConflict ? 1 : 0, //Inserts are not tracked by WRITE_SET
+        TestTxnDbUtil.queryToString(conf, "select * from \"WRITE_SET\" where WS_OPERATION_TYPE != "
+            + OperationType.INSERT),
+        causeConflict ? 1 : 0,
+        // can't use inserts for non-conflicting case, but there should not be a compaction present at this time in WS table
         TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\" where \"WS_TXNID\"=" + txnid1 +
-            " and \"WS_OPERATION_TYPE\"=" + (causeConflict ? "'u'" : "'i'")));
+            " and \"WS_OPERATION_TYPE\"=" + (causeConflict ? "'u'" : "'c'")));
+
 
     //re-check locks which were in Waiting state - should now be Acquired
     ((DbLockManager)txnMgr2.getLockManager()).checkLock(extLockId);
@@ -2774,9 +2780,11 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
           TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\" where \"WS_TXNID\"=" + txnid2 +
               " and \"WS_OPERATION_TYPE\"='u'"));
       Assert.assertEquals("WRITE_SET mismatch(" + JavaUtils.txnIdToString(txnid2) + "): " +
-          TestTxnDbUtil.queryToString(conf, "select * from \"WRITE_SET\""),
+          TestTxnDbUtil.queryToString(conf, "select * from \"WRITE_SET\" "
+                  + "where WS_OPERATION_TYPE != " + OperationType.INSERT),
           1, //1 partitions updated (and no other entries)
-          TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\" where \"WS_TXNID\"=" + txnid2));
+          TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\" where "
+              + "\"WS_TXNID\"=" + txnid2 + "and WS_OPERATION_TYPE != " + OperationType.INSERT));
     }
     dropTable(new String[] {"target","source"});
   }
@@ -3242,5 +3250,43 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
+  }
+
+  @Test
+  public void testInsertSnapshotIsolation() throws Exception {
+    driver.run("create table if not exists acid_insert_snapshot_isolation (a int, b int) " +
+        "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.compileAndRespond("insert into acid_insert_snapshot_isolation values(1,2)");
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    driver2.compileAndRespond("select * from acid_insert_snapshot_isolation");
+    swapTxnManager(txnMgr);
+    driver.run();
+    txnHandler.cleanTxnToWriteIdTable();
+    swapTxnManager(txnMgr2);
+    driver2.run();
+    List res = new ArrayList();
+    driver2.getFetchTask().fetch(res);
+    Assert.assertEquals(0, res.size());
+  }
+
+  @Test
+  public void testUpdateSnapshotIsolation() throws Exception {
+    driver.run("create table if not exists acid_update_snapshot_isolation (a int, b int) " +
+        "stored as orc TBLPROPERTIES ('transactional'='true')");
+        driver.run("insert into acid_update_snapshot_isolation values(1,2)");
+        driver.compileAndRespond("update acid_update_snapshot_isolation set a=2");
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    driver2.compileAndRespond("select * from acid_update_snapshot_isolation");
+    swapTxnManager(txnMgr);
+    driver.run();
+    txnHandler.cleanTxnToWriteIdTable();
+    swapTxnManager(txnMgr2);
+    driver2.run();
+    List res = new ArrayList();
+    driver2.getFetchTask().fetch(res);
+    Assert.assertEquals(1, res.size());
+    Assert.assertEquals("1\t2", res.get(0));
   }
 }

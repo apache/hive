@@ -2087,6 +2087,7 @@ public class TestTxnCommands2 {
     txnHandler.compact(new CompactionRequest("default", Table.ACIDTBL.name().toLowerCase(), CompactionType.MAJOR));
     runWorker(hiveConf);
     runCleaner(hiveConf);
+    txnHandler.performWriteSetGC();
     txnHandler.cleanTxnToWriteIdTable();
 
     // After compaction/cleanup, all entries from TXN_TO_WRITE_ID should be cleaned up as all txns are committed.
@@ -2126,6 +2127,7 @@ public class TestTxnCommands2 {
     // aborted txn would be removed from TXNS only after the compaction. Also, committed txn > open txn is retained.
     // As open txn doesn't allocate writeid, the 2 entries for aborted and committed should be retained.
     txnHandler.cleanEmptyAbortedAndCommittedTxns();
+    txnHandler.performWriteSetGC();
     txnHandler.cleanTxnToWriteIdTable();
     Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID" + acidTblWhereClause),
             3, TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID" + acidTblWhereClause));
@@ -2138,6 +2140,7 @@ public class TestTxnCommands2 {
     runWorker(hiveConf);
     runCleaner(hiveConf);
     txnHandler.cleanEmptyAbortedAndCommittedTxns();
+    txnHandler.performWriteSetGC();
     txnHandler.cleanTxnToWriteIdTable();
     Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID"),
             3, TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID"));
@@ -2149,6 +2152,7 @@ public class TestTxnCommands2 {
     // The txn opened after the compaction commit should not effect the Cleaner
     runCleaner(hiveConf);
     txnHandler.cleanEmptyAbortedAndCommittedTxns();
+    txnHandler.performWriteSetGC();
     txnHandler.cleanTxnToWriteIdTable();
 
     Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID"),
