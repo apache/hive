@@ -3256,8 +3256,6 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   public void testInsertSnapshotIsolation() throws Exception {
     driver.run("create table if not exists tab_acid (a int, b int) " +
         "stored as orc TBLPROPERTIES ('transactional'='true')");
-//    driver.run("insert into tab_acid values(1,2)");
-    //    driver.compileAndRespond("update tab_acid set a=2");
     driver.compileAndRespond("insert into tab_acid values(1,2)");
     DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     swapTxnManager(txnMgr2);

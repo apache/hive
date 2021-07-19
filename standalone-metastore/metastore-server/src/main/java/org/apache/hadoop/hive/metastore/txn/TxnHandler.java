@@ -166,6 +166,7 @@ import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatchNoCount;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatch;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.metastore.utils.StringUtils.intern;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 
@@ -1442,7 +1443,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         String conflictSQLSuffix = "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"=" + txnid + " AND \"TC_OPERATION_TYPE\" IN (" +
-                OperationType.UPDATE + "," + OperationType.DELETE + "," + OperationType.INSERT + ")";
+                OperationType.UPDATE + "," + OperationType.DELETE  + "," + OperationType.INSERT + ")";
+        String insertFilter = "FROM \"TXN_COMPONENTS\" WHERE  \"TC_TXNID\"=" + txnid +
+            " AND \"TC_OPERATION_TYPE\" IN (" + OperationType.INSERT + ")";
 
         long tempCommitId = generateTemporaryId();
         if (txnType.get() != TxnType.READ_ONLY
@@ -1511,6 +1514,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             }
           }
         } else if (txnType.get() == TxnType.COMPACTION) {
+          acquireTxnLock(stmt, false);
+          commitId = getHighWaterMark(stmt);
+        } else if (txnType.get() != TxnType.READ_ONLY && isInsert(stmt, insertFilter)) {
+          stmt.executeUpdate("INSERT INTO \"WRITE_SET\" (\"WS_DATABASE\", \"WS_TABLE\", \"WS_PARTITION\", \"WS_TXNID\", \"WS_COMMIT_ID\", \"WS_OPERATION_TYPE\")" +
+              " SELECT DISTINCT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_TXNID\", " + tempCommitId + ", \"TC_OPERATION_TYPE\" " + insertFilter);
           acquireTxnLock(stmt, false);
           commitId = getHighWaterMark(stmt);
         } else {
@@ -1604,6 +1612,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private boolean isUpdateOrDelete(Statement stmt, String conflictSQLSuffix) throws SQLException, MetaException {
     try (ResultSet rs = stmt.executeQuery(sqlGenerator.addLimitClause(1,
             "\"TC_OPERATION_TYPE\" " + conflictSQLSuffix))) {
+      return rs.next();
+    }
+  }
+
+  private boolean isInsert(Statement stmt, String insertFilter) throws SQLException, MetaException {
+
+    try (ResultSet rs = stmt.executeQuery(sqlGenerator.addLimitClause(1,
+        "\"TC_OPERATION_TYPE\" " + insertFilter))) {
       return rs.next();
     }
   }
