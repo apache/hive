@@ -22,6 +22,8 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.util.Set;
+import java.util.LinkedHashSet;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -54,6 +56,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.ql.QTestExternalDB;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
@@ -127,6 +130,7 @@ public class QTestUtil {
   protected QTestReplaceHandler replaceHandler;
   private final String initScript;
   private final String cleanupScript;
+  private final Set<QTestExternalDB> externalDBs = new LinkedHashSet<>();
   QTestOptionDispatcher dispatcher = new QTestOptionDispatcher();
 
   private boolean isSessionStateStarted = false;
@@ -177,13 +181,14 @@ public class QTestUtil {
 
   public QTestUtil(QTestArguments testArgs) throws Exception {
     LOG.info("Setting up QTestUtil with outDir={}, logDir={}, clusterType={}, confDir={},"
-            + " initScript={}, cleanupScript={}, withLlapIo={}, fsType={}",
+            + " initScript={}, cleanupScript={}, externalDBs={}, withLlapIo={}, fsType={}",
         testArgs.getOutDir(),
         testArgs.getLogDir(),
         testArgs.getClusterType(),
         testArgs.getConfDir(),
         testArgs.getInitScript(),
         testArgs.getCleanupScript(),
+        testArgs.getExternalDBs(),
         testArgs.isWithLlapIo(),
         testArgs.getFsType());
 
@@ -235,6 +240,15 @@ public class QTestUtil {
 
     this.initScript = scriptsDir + File.separator + testArgs.getInitScript();
     this.cleanupScript = scriptsDir + File.separator + testArgs.getCleanupScript();
+
+    QTestExternalDB newExternalDB;
+    for (QTestExternalDB externalDB : testArgs.getExternalDBs()) {
+      newExternalDB = new QTestExternalDB();
+      newExternalDB.setExternalDBType(externalDB.getExternalDBType());
+      newExternalDB.setExternalDBInitScript(scriptsDir + File.separator + externalDB.getExternalDBType() + File.separator + externalDB.getExternalDBInitScript());
+      newExternalDB.setExternalDBCleanupScript(scriptsDir + File.separator + externalDB.getExternalDBType() + File.separator + externalDB.getExternalDBCleanupScript());
+      this.externalDBs.add(newExternalDB);
+    }
 
     savedConf = new HiveConf(conf);
 
@@ -537,6 +551,13 @@ public class QTestUtil {
       startSessionState(canReuseSession);
     }
 
+    // connect to externalDB if size is not zero
+    if (this.externalDBs != null && this.externalDBs.size() != 0) {
+      for (QTestExternalDB externalDB : this.externalDBs) {
+        externalDBinitFromScript(externalDB.getExternalDBType(), externalDB.getExternalDBInitScript());
+      }
+    }
+
     getCliDriver().processLine("set test.data.dir=" + testFiles + ";");
 
     conf.setBoolean("hive.test.init.phase", true);
@@ -544,6 +565,26 @@ public class QTestUtil {
     initFromScript();
 
     conf.setBoolean("hive.test.init.phase", false);
+  }
+
+  private void externalDBinitFromScript(String externalDBType, String externalDBInitScript) throws IOException {
+    // get externalDB initScript
+    File scriptFile = new File(externalDBInitScript);
+    if (!scriptFile.isFile()) {
+      Assert.fail("cannot getting externaldb scirpt file");
+      LOG.info("No externalDB init script detected. Skipping");
+      return;
+    }
+
+    String initCommands = FileUtils.readFileToString(scriptFile);
+    LOG.info("Initial setup for (" + externalDBInitScript + ") in (" + externalDBType + "):\n" + initCommands);
+
+    try {
+      // cliDriver.processLine(initCommands);
+      LOG.info("Result from initialize external databases in createSources=0");
+    } catch (Exception e) {
+      Assert.fail("Failed during createSources processLine");
+    }
   }
 
   private void initFromScript() throws IOException {

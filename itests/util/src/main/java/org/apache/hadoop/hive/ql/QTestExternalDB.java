@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.io.File;
+
 /**
  * QTestExternalDB composite used as information holder for creating external databases of different types.
  */
@@ -40,15 +42,15 @@ public final class QTestExternalDB {
         return externalDB;
     }
 
-    private void setExternalDBType(String dbType) { this.externalDBType = dbType; }
+    public void setExternalDBType(String dbType) { this.externalDBType = dbType; }
 
     public String getExternalDBType() { return externalDBType; }
 
-    private void setExternalDBInitScript(String InitScript) { this.externalDBInitScript = InitScript; }
+    public void setExternalDBInitScript(String InitScript) { this.externalDBInitScript = InitScript; }
 
     public String getExternalDBInitScript() { return externalDBInitScript; }
 
-    private void setExternalDBCleanupScript(String cleanupScript) { this.externalDBCleanupScript = cleanupScript; }
+    public void setExternalDBCleanupScript(String cleanupScript) { this.externalDBCleanupScript = cleanupScript; }
 
     public String getExternalDBCleanupScript() { return externalDBCleanupScript; }
 
