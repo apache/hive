@@ -85,7 +85,7 @@ public class TestGenericUDFNextDay extends TestCase {
     runAndVerify("2015-02-30 10:30:00", "WE", null, udf);
     runAndVerify("2015-02-32 10:30:00", "WE", null, udf);
     runAndVerify("2015/01/14 14:04:34", "SAT", null, udf);
-    runAndVerify("2015-01-14T14:04:34", "SAT", null, udf);
+    runAndVerify("2015-01-14T14:04:34", "SAT", "2015-01-17", udf);
   }
 
   public void testNextDayErrorArg1() throws HiveException {
