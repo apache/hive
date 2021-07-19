@@ -557,25 +557,28 @@ class PartitionHelper {
         if (skewedInfo == null) {
           continue;
         }
+        long idx1 = 0;
+        Map<List<String>,String> listStringMap = skewedInfo.getSkewedColValueLocationMaps();
         for (List<String> values : skewedInfo.getSkewedColValues()) {
           long idx = 0;
-          long idx1 = 0;
           for (String value : values) {
             pst.setLong(1, listId);
             pst.setString(2, value);
             pst.setLong(3, idx++);
             numRecords = addBatch(pst, numRecords, maxBatchSize);
-
-            pstValues.setLong(1, sdId);
-            pstValues.setLong(2, listId);
-            pstValues.setLong(3, idx1++);
-            numRecordsVals = addBatch(pstValues, numRecordsVals, maxBatchSize);
           }
 
-          pstMap.setLong(1, sdId);
-          pstMap.setLong(2, listId);
-          pstMap.setString(3, skewedInfo.getSkewedColValueLocationMaps().get(values));
-          numRecordsMap = addBatch(pstMap, numRecordsMap, maxBatchSize);
+          pstValues.setLong(1, sdId);
+          pstValues.setLong(2, listId);
+          pstValues.setLong(3, idx1++);
+          numRecordsVals = addBatch(pstValues, numRecordsVals, maxBatchSize);
+
+          if (listStringMap.containsKey(values)) {
+            pstMap.setLong(1, sdId);
+            pstMap.setLong(2, listId);
+            pstMap.setString(3, listStringMap.get(values));
+            numRecordsMap = addBatch(pstMap, numRecordsMap, maxBatchSize);
+          }
 
           listId++;
         }

@@ -3060,11 +3060,6 @@ class MetaStoreDirectSql {
 
       long batchSizeMax = MetastoreConf.getIntVar(conf, ConfVars.JDBC_MAX_BATCH_SIZE);
 
-      if (PartitionHelper.needToAddPrivilegeInfo(dbConn, tblId)) {
-        PartitionHelper.addPartitionPrivilegeInfo(dbConn, parts, tblId, partId, dbType, batchSizeMax);
-        PartitionHelper.addPartitionColPrivilegeInfo(dbConn, parts, tblId, partId, dbType, batchSizeMax);
-      }
-
       PartitionHelper.addSerdeInfo(dbConn, parts, serId, batchSizeMax);
       PartitionHelper.addColDescInfo(dbConn, numPart, colDescId, batchSizeMax);
       PartitionHelper.addSDInfo(dbConn, parts, sdId, serId, colDescId, dbType, batchSizeMax);
@@ -3087,6 +3082,11 @@ class MetaStoreDirectSql {
       PartitionHelper.addPartitionInfo(dbConn, parts, partKeys, tblId, partId, sdId, batchSizeMax);
       PartitionHelper.addPartitionParaInfo(dbConn, parts, partId, batchSizeMax);
       PartitionHelper.addPartitionKeyValInfo(dbConn, parts, partId, batchSizeMax);
+
+      if (PartitionHelper.needToAddPrivilegeInfo(dbConn, tblId)) {
+        PartitionHelper.addPartitionPrivilegeInfo(dbConn, parts, tblId, partId, dbType, batchSizeMax);
+        PartitionHelper.addPartitionColPrivilegeInfo(dbConn, parts, tblId, partId, dbType, batchSizeMax);
+      }
     } catch (Exception e) {
       LOG.error("Failed to add partition", e);
       throw new MetaException("Failed to add partition" + e.getMessage());
