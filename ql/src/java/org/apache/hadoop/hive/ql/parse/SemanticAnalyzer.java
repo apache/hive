@@ -28,6 +28,7 @@ import static org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverte
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.AccessControlException;
+import java.time.ZoneId;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,6 +80,10 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.common.type.TimestampUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -1097,6 +1102,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int propsIndex = indexes[1];
     int tsampleIndex = indexes[2];
     int ssampleIndex = indexes[3];
+    int asOfTimeIndex = indexes[4];
+    int asOfVersionIndex = indexes[5];
 
     ASTNode tableTree = (ASTNode) (tabref.getChild(0));
 
@@ -1112,6 +1119,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qb.getAliasInsideView().add(alias.toLowerCase());
       }
       qb.setTabProps(alias, props);
+    }
+
+    if (asOfTimeIndex != -1 || asOfVersionIndex != -1) {
+      String asOfVersion = asOfVersionIndex == -1 ? null : tabref.getChild(asOfVersionIndex).getChild(0).getText();
+      String asOfTime = asOfTimeIndex == -1 ? null : tabref.getChild(asOfTimeIndex).getChild(0).getText();
+      Pair<String, String> asOf = Pair.of(asOfVersion, asOfTime);
+      qb.setAsOf(alias, asOf);
     }
 
     // If the alias is already there then we have a conflict
@@ -2220,6 +2234,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(ASTErrorUtils.getMsg(ErrorMsg.INVALID_TABLE.getMsg(), src));
         } else {
           throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(alias));
+        }
+      }
+
+      Pair<String, String> asOf = qb.getAsOfForAlias(alias);
+      if (asOf != null) {
+        if (asOf.getLeft() != null) {
+          tab.setAsOfVersion(Long.parseLong(asOf.getLeft()));
+        }
+        if (asOf.getRight() != null) {
+          ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() :
+                                 SessionState.get().getConf().getLocalTimeZone();
+          TimestampTZ ts = TimestampTZUtil.parse(stripQuotes(asOf.getRight()), timeZone);
+          tab.setAsOfTimestamp(ts.toEpochMilli());
         }
       }
 

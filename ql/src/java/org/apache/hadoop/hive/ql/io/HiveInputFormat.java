@@ -477,6 +477,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
     if (tableScan != null) {
       pushFilters(conf, tableScan, this.mrwork);
+      pushAsOf(conf, tableScan);
     }
 
     List<Path> dirsWithFileOriginals = Collections.synchronizedList(new ArrayList<>()),
@@ -766,6 +767,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
           pushDownProjection = true;
           // push down filters
           pushFilters(newjob, tableScan, this.mrwork);
+          // push down as of
+          pushAsOf(newjob, tableScan);
         }
       } else {
         if (LOG.isDebugEnabled()) {
@@ -932,6 +935,17 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     jobConf.set(TableScanDesc.FILTER_EXPR_CONF_STR, serializedFilterExpr);
   }
 
+  public static void pushAsOf(Configuration jobConf, TableScanOperator ts) {
+    TableScanDesc scanDesc = ts.getConf();
+    if (scanDesc.getAsOfTimestamp() != -1) {
+      jobConf.set(TableScanDesc.AS_OF_TIMESTAMP, Long.toString(scanDesc.getAsOfTimestamp()));
+    }
+
+    if (scanDesc.getAsOfVersion() != -1) {
+      jobConf.set(TableScanDesc.AS_OF_VERSION, Long.toString(scanDesc.getAsOfVersion()));
+    }
+  }
+
   protected void pushProjectionsAndFilters(JobConf jobConf, Class inputFormatClass,
       Path splitPath) {
     pushProjectionsAndFilters(jobConf, inputFormatClass, splitPath, false);
@@ -1001,6 +1015,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
             jobConf, ts.getNeededColumnIDs(), ts.getNeededColumns(), ts.getNeededNestedColumnPaths());
         // push down filters
         pushFilters(jobConf, ts, this.mrwork);
+        // push down as of
+        pushAsOf(jobConf, ts);
 
         AcidUtils.setAcidOperationalProperties(job, ts.getConf().isTranscationalTable(),
             ts.getConf().getAcidOperationalProperties(), ts.getConf().isFetchDeletedRows());

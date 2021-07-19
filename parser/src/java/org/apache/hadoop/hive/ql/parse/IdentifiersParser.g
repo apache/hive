@@ -961,6 +961,7 @@ nonReserved
     | KW_WITHIN
     | KW_TRIM
     | KW_SPEC
+    | KW_SYSTEM_TIME | KW_SYSTEM_VERSION
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.

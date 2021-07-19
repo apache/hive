@@ -82,6 +82,8 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
             job, ts.getNeededColumnIDs(), ts.getNeededColumns(), ts.getNeededNestedColumnPaths());
         // push down filters
         HiveInputFormat.pushFilters(job, ts, null);
+        // push down as of
+        HiveInputFormat.pushAsOf(job, ts);
 
         AcidUtils.setAcidOperationalProperties(job, ts.getConf().isTranscationalTable(),
             ts.getConf().getAcidOperationalProperties(), ts.getConf().isFetchDeletedRows());

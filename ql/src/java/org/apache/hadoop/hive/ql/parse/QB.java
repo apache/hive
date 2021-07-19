@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.view.create.CreateMaterializedViewDesc;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -50,6 +51,7 @@ public class QB {
   private HashMap<String, QBExpr> aliasToSubqExpr;
   private HashMap<String, Table> viewAliasToViewSchema;
   private HashMap<String, Map<String, String>> aliasToProps;
+  private HashMap<String, Pair<String, String>> aliasToAsOf;
   private List<String> aliases;
   private QBParseInfo qbp;
   private QBMetaData qbm;
@@ -132,6 +134,7 @@ public class QB {
     destToWindowingSpec = new LinkedHashMap<String, WindowingSpec>();
     id = getAppendedAliasFromId(outer_id, alias);
     aliasInsideView = new HashSet<>();
+    aliasToAsOf = new LinkedHashMap<>();
   }
 
   // For sub-queries, the id. and alias should be appended since same aliases can be re-used
@@ -192,6 +195,10 @@ public class QB {
     aliasToProps.put(alias.toLowerCase(), props);
   }
 
+  public void setAsOf(String alias, Pair<String, String> asOf) {
+    aliasToAsOf.put(alias.toLowerCase(), asOf);
+  }
+
   public void addAlias(String alias) {
     if (!aliases.contains(alias.toLowerCase())) {
       aliases.add(alias.toLowerCase());
@@ -248,6 +255,10 @@ public class QB {
 
   public Map<String, String> getTabPropsForAlias(String alias) {
     return aliasToProps.get(alias.toLowerCase());
+  }
+
+  public Pair<String, String> getAsOfForAlias(String alias) {
+    return aliasToAsOf.get(alias.toLowerCase());
   }
 
   public void rewriteViewToSubq(String alias, String viewName, QBExpr qbexpr, Table tab) {
