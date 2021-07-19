@@ -1750,14 +1750,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             // add it's locations to the list of paths to delete
             Path tablePath = null;
             boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table, deleteData);
+            boolean isManagedTable = table.getTableType().equals(TableType.MANAGED_TABLE.toString());
             if (table.getSd().getLocation() != null && tableDataShouldBeDeleted) {
               tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
-
-              if (!FileUtils.isSubdirectory(databasePath.toString(), tablePath.toString())) {
+              if (!isManagedTable) {
                 if (!wh.isWritable(tablePath.getParent())) {
-                  throw new MetaException("Database metadata not deleted since table: " +
-                      table.getTableName() + " has a parent location " + tablePath.getParent() +
-                      " which is not writable by " + SecurityUtils.getUser());
+                  throw new MetaException(
+                      "Database metadata not deleted since table: " + table.getTableName() + " has a parent location "
+                          + tablePath.getParent() + " which is not writable by " + SecurityUtils.getUser());
                 }
                 tablePaths.add(tablePath);
               }
