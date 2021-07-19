@@ -3730,6 +3730,11 @@ public class HiveConf extends Configuration {
         "The parent node in ZooKeeper used by HiveServer2 when supporting dynamic service discovery."),
     HIVE_SERVER2_ZOOKEEPER_PUBLISH_CONFIGS("hive.server2.zookeeper.publish.configs", true,
         "Whether we should publish HiveServer2's configs to ZooKeeper."),
+    HIVE_SERVER2_TRUSTED_PROXY_TRUSTHEADER("hive.server2.proxy.trustheader", "", "This config " +
+            "indicates whether the connection is authenticated before the requests lands on HiveServer2, So that we can" +
+            "avoid the authentication is again in HS2. Default value is empty, if it's value is set to some header say " +
+            "'X-Trusted-Proxy-Auth-Header' then we need to look for this header in the connection string, if present " +
+            "we directly extarct the client name from header."),
 
     // HiveServer2 global init file location
     HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
