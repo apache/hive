@@ -33,8 +33,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import static org.junit.Assert.assertEquals;
 
 import java.io.StringWriter;
@@ -345,10 +343,15 @@ public class TestQueryDisplay {
     qd.setQueryStr("qstr");
     Task<?> tTask = new MyTask();
     qd.updateTaskStatus(tTask);
+    tTask.setStarted();
+    qd.updateTaskStatus(tTask);
+    tTask.setDone();
+    qd.updateTaskStatus(tTask);
 
-    ObjectMapper om = new ObjectMapper();
-    String json = om.writeValueAsString(qd);
-    QueryDisplay n = om.readValue(json, QueryDisplay.class);
+    Long ee = qd.getTaskDisplays().get(0).getElapsedTime();
+    System.out.println(ee);
+    String json = QueryDisplay.OBJECT_MAPPER.writeValueAsString(qd);
+    QueryDisplay n = QueryDisplay.OBJECT_MAPPER.readValue(json, QueryDisplay.class);
 
     assertEquals(qd.getQueryString(), n.getQueryString());
     assertEquals(qd.getExplainPlan(), n.getExplainPlan());

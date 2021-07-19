@@ -36,6 +36,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Some limited query information to save for WebUI.
@@ -44,6 +45,13 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
  */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class QueryDisplay {
+
+  /**
+   * Preffered objectmapper for this class.
+   *
+   * It must be used to have things work in shaded environment (and its also more performant).
+   */
+  public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   // Member variables
   private String queryStr;
@@ -190,7 +198,6 @@ public class QueryDisplay {
       return countersJson;
     }
 
-    @JsonIgnore
     public synchronized Long getElapsedTime() {
       if (endTime == null) {
         if (beginTime == null) {
