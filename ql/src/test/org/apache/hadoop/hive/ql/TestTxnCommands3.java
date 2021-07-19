@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.OperationType;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -105,7 +106,8 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from COMPACTION_QUEUE where CQ_TABLE='s'"));
     Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,
-        "select count(*) from WRITE_SET where WS_TABLE='s'"));
+        "select count(*) from WRITE_SET where WS_TABLE='s' "
+            + "and WS_OPERATION_TYPE != " + OperationType.INSERT));
     Assert.assertEquals(3, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE='s'"));
     Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,
@@ -120,7 +122,8 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from COMPACTION_QUEUE where CQ_TABLE='bar'"));
     Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,
-        "select count(*) from WRITE_SET where WS_TABLE='bar'"));
+        "select count(*) from WRITE_SET where WS_TABLE='bar'"
+            + "and WS_OPERATION_TYPE != " + OperationType.INSERT));
     Assert.assertEquals(4, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE='bar'"));
     Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,

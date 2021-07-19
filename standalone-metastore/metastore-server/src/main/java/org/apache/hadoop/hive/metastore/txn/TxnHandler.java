@@ -1446,7 +1446,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         String conflictSQLSuffix = "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"=" + txnid + " AND \"TC_OPERATION_TYPE\" IN (" +
-                OperationType.UPDATE + "," + OperationType.DELETE + ")";
+                OperationType.UPDATE + "," + OperationType.DELETE + "," + OperationType.INSERT + ")";
 
         long tempCommitId = generateTemporaryId();
         if (txnType.get() != TxnType.READ_ONLY
@@ -5654,7 +5654,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private boolean isDuplicateKeyError(SQLException ex) {
     return dbProduct.isDuplicateKeyError(ex);
   }
-  
+
   private static String getMessage(SQLException ex) {
     return ex.getMessage() + " (SQLState=" + ex.getSQLState() + ", ErrorCode=" + ex.getErrorCode() + ")";
   }

@@ -514,7 +514,7 @@ class CompactionTxnHandler extends TxnHandler {
         String s = "SELECT MIN(\"RES\".\"ID\") AS \"ID\" FROM (" +
             "SELECT MAX(\"TXN_ID\") + 1 AS \"ID\" FROM \"TXNS\" " +
             "UNION " +
-            "SELECT MIN(\"WS_COMMIT_ID\") AS \"ID\" FROM \"WRITE_SET\" " +
+            "SELECT MIN(\"WS_TXNID\") AS \"ID\" FROM \"WRITE_SET\" " +
             "UNION " +
             "SELECT MIN(\"TXN_ID\") AS \"ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED +
             " OR \"TXN_STATE\" = " + TxnStatus.OPEN +
