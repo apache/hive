@@ -80,6 +80,7 @@ public class CreateViewOperation extends DDLOperation<CreateViewDesc> {
         oldview.setProperty("comment", desc.getComment());
       }
       if (desc.getProperties() != null) {
+        oldview.getTTable().getParameters().clear();
         oldview.getTTable().getParameters().putAll(desc.getProperties());
       }
       oldview.setPartCols(desc.getPartitionColumns());
