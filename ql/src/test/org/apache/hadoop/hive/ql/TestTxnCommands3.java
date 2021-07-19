@@ -606,7 +606,8 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
         TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXNS"));
   }
 
-  @Test public void testWritesToDisabledCompactionTableCtas() throws Exception {
+  @Test
+  public void testWritesToDisabledCompactionTableCtas() throws Exception {
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS,
         HMSMetricsListener.class.getName());
