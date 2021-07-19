@@ -2091,6 +2091,8 @@ public class StatsRulesProcFactory {
           // Update largest relation
           if (rowCount > maxRowCount) {
             maxRowCount = rowCount;
+          }
+          if (dataSize > maxDataSize) {
             maxDataSize = dataSize;
           }
         }
