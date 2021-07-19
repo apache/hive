@@ -618,10 +618,6 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from " + table), 0,
         TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from " + table));
   }
-  private void assertOneTxn() throws Exception {
-    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from TXNS"), 1,
-        TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXNS"));
-  }
 
   @Test
   public void testWritesToDisabledCompactionTableCtas() throws Exception {

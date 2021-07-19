@@ -1381,11 +1381,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    */
   @Override
   @RetrySemantics.Idempotent("No-op if already committed")
-  public void commitTxn(CommitTxnRequest rqst)
-    throws NoSuchTxnException, TxnAbortedException, MetaException {
+  public void commitTxn(CommitTxnRequest rqst) throws NoSuchTxnException, TxnAbortedException, MetaException {
     char isUpdateDelete = 'N';
     long txnid = rqst.getTxnid();
     long sourceTxnId = -1;
+
     boolean isReplayedReplTxn = TxnType.REPL_CREATED.equals(rqst.getTxn_type());
     boolean isHiveReplTxn = rqst.isSetReplPolicy() && TxnType.DEFAULT.equals(rqst.getTxn_type());
     try {
@@ -1444,76 +1444,84 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         String conflictSQLSuffix = "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"=" + txnid + " AND \"TC_OPERATION_TYPE\" IN (" +
                 OperationType.UPDATE + "," + OperationType.DELETE + ")";
-
         long tempCommitId = generateTemporaryId();
-        if (txnType.get() != TxnType.READ_ONLY
-                && !isReplayedReplTxn
-                && isUpdateOrDelete(stmt, conflictSQLSuffix)) {
 
-          isUpdateDelete = 'Y';
-          //if here it means currently committing txn performed update/delete and we should check WW conflict
-          /**
-           * "select distinct" is used below because
-           * 1. once we get to multi-statement txns, we only care to record that something was updated once
-           * 2. if {@link #addDynamicPartitions(AddDynamicPartitions)} is retried by caller it may create
-           *  duplicate entries in TXN_COMPONENTS
-           * but we want to add a PK on WRITE_SET which won't have unique rows w/o this distinct
-           * even if it includes all of its columns
-           *
-           * First insert into write_set using a temporary commitID, which will be updated in a separate call,
-           * see: {@link #updateWSCommitIdAndCleanUpMetadata(Statement, long, TxnType, Long, long)}}.
-           * This should decrease the scope of the S4U lock on the next_txn_id table.
-           */
-          Savepoint undoWriteSetForCurrentTxn = dbConn.setSavepoint();
-          stmt.executeUpdate("INSERT INTO \"WRITE_SET\" (\"WS_DATABASE\", \"WS_TABLE\", \"WS_PARTITION\", \"WS_TXNID\", \"WS_COMMIT_ID\", \"WS_OPERATION_TYPE\")" +
-                          " SELECT DISTINCT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_TXNID\", " + tempCommitId + ", \"TC_OPERATION_TYPE\" " + conflictSQLSuffix);
-
-          /**
-           * This S4U will mutex with other commitTxn() and openTxns().
-           * -1 below makes txn intervals look like [3,3] [4,4] if all txns are serial
-           * Note: it's possible to have several txns have the same commit id.  Suppose 3 txns start
-           * at the same time and no new txns start until all 3 commit.
-           * We could've incremented the sequence for commitId as well but it doesn't add anything functionally.
-           */
+        if (txnType.get() == TxnType.COMPACTION) {
           acquireTxnLock(stmt, false);
           commitId = getHighWaterMark(stmt);
 
-          if (!rqst.isExclWriteEnabled()) {
+        } else if (txnType.get() != TxnType.READ_ONLY && !isReplayedReplTxn) {
+          String writeSetInsertSql = "INSERT INTO \"WRITE_SET\" (\"WS_DATABASE\", \"WS_TABLE\", \"WS_PARTITION\"," +
+            "   \"WS_TXNID\", \"WS_COMMIT_ID\", \"WS_OPERATION_TYPE\")" +
+            " SELECT DISTINCT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_TXNID\", " + tempCommitId + ", \"TC_OPERATION_TYPE\" ";
+
+          if (isUpdateOrDelete(stmt, conflictSQLSuffix)) {
+            isUpdateDelete = 'Y';
+            //if here it means currently committing txn performed update/delete and we should check WW conflict
             /**
-             * see if there are any overlapping txns that wrote the same element, i.e. have a conflict
-             * Since entire commit operation is mutexed wrt other start/commit ops,
-             * committed.ws_commit_id <= current.ws_commit_id for all txns
-             * thus if committed.ws_commit_id < current.ws_txnid, transactions do NOT overlap
-             * For example, [17,20] is committed, [6,80] is being committed right now - these overlap
-             * [17,20] committed and [21,21] committing now - these do not overlap.
-             * [17,18] committed and [18,19] committing now - these overlap  (here 18 started while 17 was still running)
+             * "select distinct" is used below because
+             * 1. once we get to multi-statement txns, we only care to record that something was updated once
+             * 2. if {@link #addDynamicPartitions(AddDynamicPartitions)} is retried by caller it may create
+             *  duplicate entries in TXN_COMPONENTS
+             * but we want to add a PK on WRITE_SET which won't have unique rows w/o this distinct
+             * even if it includes all of its columns
+             *
+             * First insert into write_set using a temporary commitID, which will be updated in a separate call,
+             * see: {@link #updateWSCommitIdAndCleanUpMetadata(Statement, long, TxnType, Long, long)}}.
+             * This should decrease the scope of the S4U lock on the next_txn_id table.
              */
-            try (ResultSet rs = checkForWriteConflict(stmt, txnid)) {
-              if (rs.next()) {
-                //found a conflict, so let's abort the txn
-                String committedTxn = "[" + JavaUtils.txnIdToString(rs.getLong(1)) + "," + rs.getLong(2) + "]";
-                StringBuilder resource = new StringBuilder(rs.getString(3)).append("/").append(rs.getString(4));
-                String partitionName = rs.getString(5);
-                if (partitionName != null) {
-                  resource.append('/').append(partitionName);
+            Savepoint undoWriteSetForCurrentTxn = dbConn.setSavepoint();
+            stmt.executeUpdate(writeSetInsertSql + (useMinHistoryLevel ? conflictSQLSuffix :
+              "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"=" + txnid + " AND \"TC_OPERATION_TYPE\" <> " + OperationType.COMPACT));
+
+            /**
+             * This S4U will mutex with other commitTxn() and openTxns().
+             * -1 below makes txn intervals look like [3,3] [4,4] if all txns are serial
+             * Note: it's possible to have several txns have the same commit id.  Suppose 3 txns start
+             * at the same time and no new txns start until all 3 commit.
+             * We could've incremented the sequence for commitId as well but it doesn't add anything functionally.
+             */
+            acquireTxnLock(stmt, false);
+            commitId = getHighWaterMark(stmt);
+
+            if (!rqst.isExclWriteEnabled()) {
+              /**
+               * see if there are any overlapping txns that wrote the same element, i.e. have a conflict
+               * Since entire commit operation is mutexed wrt other start/commit ops,
+               * committed.ws_commit_id <= current.ws_commit_id for all txns
+               * thus if committed.ws_commit_id < current.ws_txnid, transactions do NOT overlap
+               * For example, [17,20] is committed, [6,80] is being committed right now - these overlap
+               * [17,20] committed and [21,21] committing now - these do not overlap.
+               * [17,18] committed and [18,19] committing now - these overlap  (here 18 started while 17 was still running)
+               */
+              try (ResultSet rs = checkForWriteConflict(stmt, txnid)) {
+                if (rs.next()) {
+                  //found a conflict, so let's abort the txn
+                  String committedTxn = "[" + JavaUtils.txnIdToString(rs.getLong(1)) + "," + rs.getLong(2) + "]";
+                  StringBuilder resource = new StringBuilder(rs.getString(3)).append("/").append(rs.getString(4));
+                  String partitionName = rs.getString(5);
+                  if (partitionName != null) {
+                    resource.append('/').append(partitionName);
+                  }
+                  String msg = "Aborting [" + JavaUtils.txnIdToString(txnid) + "," + commitId + "]" + " due to a write conflict on " + resource +
+                          " committed by " + committedTxn + " " + rs.getString(7) + "/" + rs.getString(8);
+                  //remove WRITE_SET info for current txn since it's about to abort
+                  dbConn.rollback(undoWriteSetForCurrentTxn);
+                  LOG.info(msg);
+                  //todo: should make abortTxns() write something into TXNS.TXN_META_INFO about this
+                  if (abortTxns(dbConn, Collections.singletonList(txnid), false, isReplayedReplTxn) != 1) {
+                    throw new IllegalStateException(msg + " FAILED!");
+                  }
+                  dbConn.commit();
+                  throw new TxnAbortedException(msg);
                 }
-                String msg = "Aborting [" + JavaUtils.txnIdToString(txnid) + "," + commitId + "]" + " due to a write conflict on " + resource +
-                        " committed by " + committedTxn + " " + rs.getString(7) + "/" + rs.getString(8);
-                //remove WRITE_SET info for current txn since it's about to abort
-                dbConn.rollback(undoWriteSetForCurrentTxn);
-                LOG.info(msg);
-                //todo: should make abortTxns() write something into TXNS.TXN_META_INFO about this
-                if (abortTxns(dbConn, Collections.singletonList(txnid), false, isReplayedReplTxn) != 1) {
-                  throw new IllegalStateException(msg + " FAILED!");
-                }
-                dbConn.commit();
-                throw new TxnAbortedException(msg);
               }
             }
+          } else if (!useMinHistoryLevel) {
+            stmt.executeUpdate(writeSetInsertSql + "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"=" + txnid +
+              " AND \"TC_OPERATION_TYPE\" <> " + OperationType.COMPACT);
+            commitId = getHighWaterMark(stmt);
           }
-        } else if (txnType.get() == TxnType.COMPACTION) {
-          acquireTxnLock(stmt, false);
-          commitId = getHighWaterMark(stmt);
         } else {
           /*
            * current txn didn't update/delete anything (may have inserted), so just proceed with commit
@@ -1617,42 +1625,52 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * @return max Id for the conflicting transaction, if any, otherwise -1
    * @throws MetaException
    */
+  @RetrySemantics.ReadOnly
   public long getLatestTxnIdInConflict(long txnid) throws MetaException {
-    Connection dbConn = null;
-    Statement stmt = null;
-
     try {
-      dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-      stmt = dbConn.createStatement();
+      Connection dbConn = null;
+      Statement stmt = null;
 
-      String writeConflictQuery = "SELECT MAX(\"COMMITTED\".\"WS_TXNID\")" +
-        " FROM \"WRITE_SET\" \"COMMITTED\" " +
-        "   INNER JOIN (" +
-        "SELECT DISTINCT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_TXNID\" " +
-        " FROM \"TXN_COMPONENTS\"  " +
-        "   WHERE \"TC_TXNID\" = " + txnid +
-        "     AND \"TC_OPERATION_TYPE\" IN (" + OperationType.UPDATE + "," + OperationType.DELETE + ")) \"CUR\" " +
-        "   ON \"COMMITTED\".\"WS_DATABASE\" = \"CUR\".\"TC_DATABASE\" " +
-        "     AND \"COMMITTED\".\"WS_TABLE\" = \"CUR\".\"TC_TABLE\" " +
-        //For partitioned table we always track writes at partition level (never at table)
-        //and for non partitioned - always at table level, thus the same table should never
-        //have entries with partition key and w/o
-        "     AND (\"COMMITTED\".\"WS_PARTITION\" = \"CUR\".\"TC_PARTITION\" OR " +
-        "       \"CUR\".\"TC_PARTITION\" IS NULL) " +
-        " WHERE \"CUR\".\"TC_TXNID\" <= \"COMMITTED\".\"WS_COMMIT_ID\""; //txns overlap
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
 
-      LOG.debug("Going to execute query: <" + writeConflictQuery + ">");
-      ResultSet rs = stmt.executeQuery(writeConflictQuery);
-      return rs.next() ? rs.getLong(1) : -1;
+        String writeConflictQuery = "SELECT MAX(\"COMMITTED\".\"WS_TXNID\")" +
+          " FROM \"WRITE_SET\" \"COMMITTED\"" +
+          " INNER JOIN (" +
+          "   SELECT DISTINCT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_TXNID\"" +
+          "   FROM \"TXN_COMPONENTS\"" +
+          "   WHERE \"TC_TXNID\" = " + txnid +
+          "     AND \"TC_OPERATION_TYPE\" IN (" + OperationType.UPDATE + "," + OperationType.DELETE + ")" +
+          " ) \"CUR\"" +
+          " ON \"COMMITTED\".\"WS_DATABASE\" = \"CUR\".\"TC_DATABASE\"" +
+          "   AND \"COMMITTED\".\"WS_TABLE\" = \"CUR\".\"TC_TABLE\"" +
+          (useMinHistoryLevel ? "" :
+          "   AND \"COMMITTED\".\"WS_OPERATION_TYPE\" != " + OperationType.INSERT) +
+          // For partitioned table we always track writes at partition level (never at table)
+          // and for non partitioned - always at table level, thus the same table should never
+          // have entries with partition key and w/o
+          "   AND (\"COMMITTED\".\"WS_PARTITION\" = \"CUR\".\"TC_PARTITION\" OR" +
+          "     \"CUR\".\"TC_PARTITION\" IS NULL) " +
+          // txns overlap
+          " WHERE \"CUR\".\"TC_TXNID\" <= \"COMMITTED\".\"WS_COMMIT_ID\"";
 
-    } catch (Exception e) {
-      throw new MetaException(StringUtils.stringifyException(e));
+        LOG.debug("Going to execute query: <" + writeConflictQuery + ">");
+        try (ResultSet rs = stmt.executeQuery(writeConflictQuery)) {
+          return rs.next() ? rs.getLong(1) : -1;
+        }
 
-    } finally {
-      closeStmt(stmt);
-      closeDbConn(dbConn);
+      } catch (SQLException e) {
+        checkRetryable(dbConn, e, "getLatestTxnIdInConflict");
+        throw new MetaException(StringUtils.stringifyException(e));
+      } finally {
+        closeStmt(stmt);
+        closeDbConn(dbConn);
+      }
+    } catch (RetryException e) {
+      return getLatestTxnIdInConflict(txnid);
     }
-  }
+   }
 
   private ResultSet checkForWriteConflict(Statement stmt, long txnid) throws SQLException, MetaException {
     String writeConflictQuery = sqlGenerator.addLimitClause(1, "\"COMMITTED\".\"WS_TXNID\", \"COMMITTED\".\"WS_COMMIT_ID\", " +
@@ -5515,7 +5533,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
     // Need to register minimum open txnid for current transactions into MIN_HISTORY table.
     try (Statement stmt = dbConn.createStatement()) {
-
       List<String> rows = txnIds.stream().map(txnId -> txnId + ", " + minOpenTxnId).collect(Collectors.toList());
 
       // Insert transaction entries into MIN_HISTORY_LEVEL.

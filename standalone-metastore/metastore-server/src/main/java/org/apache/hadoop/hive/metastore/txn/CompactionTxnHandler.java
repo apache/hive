@@ -520,6 +520,8 @@ class CompactionTxnHandler extends TxnHandler {
       ResultSet rs = null;
 
       try {
+        long minTxnIdSeenOpen = findMinTxnIdSeenOpen();
+
         // We query for minimum values in all the queries and they can only increase by any concurrent
         // operations. So, READ COMMITTED is sufficient.
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
@@ -529,19 +531,22 @@ class CompactionTxnHandler extends TxnHandler {
         // If there are no txns which are currently open or aborted in the system, then current value of
         // max(TXNS.txn_id) could be min_uncommitted_txnid.
         String s = "SELECT MIN(\"RES\".\"ID\") AS \"ID\" FROM (" +
-            "SELECT MAX(\"TXN_ID\") + 1 AS \"ID\" FROM \"TXNS\" " +
-            "UNION " +
-            "SELECT MIN(\"WS_COMMIT_ID\") AS \"ID\" FROM \"WRITE_SET\" " +
-            "UNION " +
-            "SELECT MIN(\"TXN_ID\") AS \"ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED +
-            " OR \"TXN_STATE\" = " + TxnStatus.OPEN +
-            ") \"RES\"";
+          " SELECT MAX(\"TXN_ID\") + 1 AS \"ID\" FROM \"TXNS\"" +
+          (useMinHistoryLevel ? "" :
+          "   UNION" +
+          " SELECT MIN(\"WS_TXNID\") AS \"ID\" FROM \"WRITE_SET\"") +
+          "   UNION" +
+          " SELECT MIN(\"TXN_ID\") AS \"ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED +
+          (useMinHistoryLevel ? "" :
+          "   OR \"TXN_STATE\" = " + TxnStatus.OPEN) +
+          " ) \"RES\"";
+
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         if (!rs.next()) {
           throw new MetaException("Transaction tables not properly initialized, no record found in TXNS");
         }
-        long minUncommitedTxnid = rs.getLong(1);
+        long minUncommitedTxnid = minTxnIdSeenOpen < 0 ? rs.getLong(1) : Math.min(rs.getLong(1), minTxnIdSeenOpen);
 
         // As all txns below min_uncommitted_txnid are either committed or empty_aborted, we are allowed
         // to cleanup the entries less than min_uncommitted_txnid from the TXN_TO_WRITE_ID table.
