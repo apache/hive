@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse.repl;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
@@ -43,6 +44,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyListOf;
 import static org.mockito.ArgumentMatchers.eq;
@@ -57,7 +59,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
  * Unit Test class for CopyUtils class.
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ CopyUtils.class, FileUtils.class, Utils.class, UserGroupInformation.class})
+@PrepareForTest({ CopyUtils.class, FileUtils.class, Utils.class, UserGroupInformation.class, ReplChangeManager.class})
 @PowerMockIgnore({ "javax.management.*" })
 public class TestCopyUtils {
   /*
@@ -108,6 +110,40 @@ public class TestCopyUtils {
     doReturn(false).when(copyUtils).regularCopy(same(fs), anyListOf(ReplChangeManager.FileInfo.class));
 
     copyUtils.doCopy(destination, srcPaths);
+  }
+
+  @Test
+  public void testRetryableFSCalls() throws Exception {
+    mockStatic(UserGroupInformation.class);
+    mockStatic(ReplChangeManager.class);
+    when(UserGroupInformation.getCurrentUser()).thenReturn(mock(UserGroupInformation.class));
+    HiveConf conf = mock(HiveConf.class);
+    conf.set(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY.varname, "1s");
+    FileSystem fs = mock(FileSystem.class);
+    Path source = mock(Path.class);
+    Path destination = mock(Path.class);
+    ContentSummary cs = mock(ContentSummary.class);
+
+    when(ReplChangeManager.checksumFor(source, fs)).thenThrow(new IOException("Failed")).thenReturn("dummy");
+    when(fs.exists(same(source))).thenThrow(new IOException("Failed")).thenReturn(true);
+    when(fs.delete(same(source), anyBoolean())).thenThrow(new IOException("Failed")).thenReturn(true);
+    when(fs.mkdirs(same(source))).thenThrow(new IOException("Failed")).thenReturn(true);
+    when(fs.rename(same(source), same(destination))).thenThrow(new IOException("Failed")).thenReturn(true);
+    when(fs.getContentSummary(same(source))).thenThrow(new IOException("Failed")).thenReturn(cs);
+
+    CopyUtils copyUtils = new CopyUtils(UserGroupInformation.getCurrentUser().getUserName(), conf, fs);
+    CopyUtils copyUtilsSpy = Mockito.spy(copyUtils);
+    assertEquals (copyUtilsSpy.exists(fs, source), true);
+    Mockito.verify(fs, Mockito.times(2)).exists(source);
+    assertEquals (copyUtils.delete(fs, source, true), true);
+    Mockito.verify(fs, Mockito.times(2)).delete(source, true);
+    assertEquals (copyUtils.mkdirs(fs, source), true);
+    Mockito.verify(fs, Mockito.times(2)).mkdirs(source);
+    assertEquals (copyUtils.rename(fs, source, destination), true);
+    Mockito.verify(fs, Mockito.times(2)).rename(source, destination);
+    assertEquals (copyUtilsSpy.getContentSummary(fs, source), cs);
+    Mockito.verify(fs, Mockito.times(2)).getContentSummary(source);
+    assertEquals (copyUtilsSpy.checkSumFor(source, fs), "dummy");
   }
 
   @Test
