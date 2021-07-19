@@ -159,8 +159,8 @@ public abstract class AbstractBaseAlterTableAnalyzer extends BaseSemanticAnalyze
         throw new SemanticException(ErrorMsg.ALTER_COMMAND_FOR_TABLES.getMsg());
       }
     }
-    if (table.isNonNative()) {
-      if (!AlterTableType.NON_NATIVE_TABLE_ALLOWED.contains(op) ||
+    if (table.isNonNative() && table.getStorageHandler() != null) {
+      if (!table.getStorageHandler().isAllowedAlterOperation(op) ||
           (op == AlterTableType.SETPARTITIONSPEC && !table.getStorageHandler().supportsPartitionTransform())) {
         throw new SemanticException(ErrorMsg.ALTER_TABLE_NON_NATIVE.format(
             AlterTableType.NON_NATIVE_TABLE_ALLOWED.toString(), table.getTableName()));
