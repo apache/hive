@@ -20,6 +20,8 @@ package org.apache.hive.service.cli.session;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryDisplay;
 import org.apache.hadoop.hive.ql.QueryInfo;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.TaskResult;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -30,6 +32,8 @@ import org.apache.hive.tmpl.QueryProfileTmpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -298,6 +302,63 @@ public class TestQueryDisplay {
     Assert.assertEquals(assertCondition, html.contains(stmt));
 
     Assert.assertTrue(html.contains("testuser"));
+  }
+
+  static class MyTask extends Task<Integer> {
+
+    public MyTask() {
+      id = "x";
+    }
+
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public String getName() {
+      return "my";
+
+    }
+
+    @Override
+    public int execute() {
+      return 0;
+    }
+
+    @Override
+    public StageType getType() {
+      return StageType.ATLAS_DUMP;
+
+    }
+
+  }
+
+  @Test
+  public void testJSONSerialization() throws Exception {
+    QueryDisplay qd = new QueryDisplay();
+    qd.setErrorMessage("asd");
+    qd.setTaskResult("a", new TaskResult());
+    qd.setExplainPlan("explainPlan");
+    qd.setQueryStr("qstr");
+    Task<?> tTask = new MyTask();
+    qd.updateTaskStatus(tTask);
+    tTask.setStarted();
+    qd.updateTaskStatus(tTask);
+    tTask.setDone();
+    qd.updateTaskStatus(tTask);
+
+    Long ee = qd.getTaskDisplays().get(0).getElapsedTime();
+    System.out.println(ee);
+    String json = QueryDisplay.OBJECT_MAPPER.writeValueAsString(qd);
+    QueryDisplay n = QueryDisplay.OBJECT_MAPPER.readValue(json, QueryDisplay.class);
+
+    assertEquals(qd.getQueryString(), n.getQueryString());
+    assertEquals(qd.getExplainPlan(), n.getExplainPlan());
+    assertEquals(qd.getErrorMessage(), n.getErrorMessage());
+    assertEquals(qd.getTaskDisplays().size(), n.getTaskDisplays().size());
+    assertEquals(qd.getTaskDisplays().get(0).taskState, n.getTaskDisplays().get(0).taskState);
+
   }
 
 }

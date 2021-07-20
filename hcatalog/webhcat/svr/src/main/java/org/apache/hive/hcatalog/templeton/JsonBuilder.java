@@ -27,8 +27,9 @@ import javax.ws.rs.core.Response;
 
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.eclipse.jetty.http.HttpStatus;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Helper class to build new json objects with new top level
@@ -93,8 +94,9 @@ public class JsonBuilder {
    * Add a non-null value to the map.
    */
   public JsonBuilder put(String name, Object val) {
-    if (val != null)
+    if (val != null) {
       map.put(name, val);
+    }
     return this;
   }
 
@@ -134,7 +136,9 @@ public class JsonBuilder {
   public Response buildResponse() {
     int status = HttpStatus.OK_200;        // Server ok.
     if (map.containsKey("error"))
+     {
       status = HttpStatus.INTERNAL_SERVER_ERROR_500; // Generic http server error.
+    }
     Object o = map.get("errorCode");
     if (o != null) {
       if(hiveError2HttpStatusCode.containsKey(o)) {
@@ -173,9 +177,9 @@ public class JsonBuilder {
    */
   public static Map jsonToMap(String json)
     throws IOException {
-    if (!TempletonUtils.isset(json))
+    if (!TempletonUtils.isset(json)) {
       return new HashMap<String, Object>();
-    else {
+    } else {
       ObjectMapper mapper = new ObjectMapper();
       return mapper.readValue(json, Map.class);
     }
