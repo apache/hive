@@ -90,6 +90,7 @@ import org.apache.hadoop.hive.ql.qoption.QTestTransactional;
 import org.apache.hadoop.hive.ql.scheduled.QTestScheduledQueryCleaner;
 import org.apache.hadoop.hive.ql.scheduled.QTestScheduledQueryServiceProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.externalDB.*;
 import org.apache.hive.common.util.ProcessUtils;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -576,14 +577,12 @@ public class QTestUtil {
       return;
     }
 
-    String initCommands = FileUtils.readFileToString(scriptFile);
-    LOG.info("Initial setup for (" + externalDBInitScript + ") in (" + externalDBType + "):\n" + initCommands);
-
     try {
-      // cliDriver.processLine(initCommands);
-      LOG.info("Result from initialize external databases in createSources=0");
+      AbstractExternalDB abstractExternalDB = AbstractExternalDB.initalizeExternalDB(externalDBType);
+      abstractExternalDB.execute(externalDBInitScript);
+      LOG.info("initialize external databases succeed!");
     } catch (Exception e) {
-      Assert.fail("Failed during createSources processLine");
+      Assert.fail("Failed during initialize external database");
     }
   }
 
