@@ -236,19 +236,23 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
    * deal with external token store by only loading into memory the minimum data needed.
    */
   protected void removeExpiredTokens() {
-    long now = System.currentTimeMillis();
-    Iterator<DelegationTokenIdentifier> i = tokenStore.getAllDelegationTokenIdentifiers()
-        .iterator();
-    while (i.hasNext()) {
-      DelegationTokenIdentifier id = i.next();
-      if (now > id.getMaxDate()) {
-        this.tokenStore.removeToken(id); // no need to look at token info
-      } else {
-        // get token info to check renew date
-        DelegationTokenInformation tokenInfo = tokenStore.getToken(id);
-        if (tokenInfo != null) {
-          if (now > tokenInfo.getRenewDate()) {
-            this.tokenStore.removeToken(id);
+    if (tokenStore.isTokenStoreExpirySupported()) {
+      tokenStore.removeExpiredTokens();
+    } else {
+      long now = System.currentTimeMillis();
+      Iterator<DelegationTokenIdentifier> i = tokenStore.getAllDelegationTokenIdentifiers()
+              .iterator();
+      while (i.hasNext()) {
+        DelegationTokenIdentifier id = i.next();
+        if (now > id.getMaxDate()) {
+          this.tokenStore.removeToken(id); // no need to look at token info
+        } else {
+          // get token info to check renew date
+          DelegationTokenInformation tokenInfo = tokenStore.getToken(id);
+          if (tokenInfo != null) {
+            if (now > tokenInfo.getRenewDate()) {
+              this.tokenStore.removeToken(id);
+            }
           }
         }
       }

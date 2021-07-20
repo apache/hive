@@ -133,7 +133,7 @@ public class DBTokenStore implements DelegationTokenStore {
     this.serverMode = serverMode;
   }
 
-  private Object invokeOnTokenStore(String methName, Object[] params, Class<?> ... paramTypes)
+  protected Object invokeOnTokenStore(String methName, Object[] params, Class<?> ... paramTypes)
       throws TokenStoreException{
     Object tokenStore;
     try {

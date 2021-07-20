@@ -113,4 +113,21 @@ public interface DelegationTokenStore extends Configurable, Closeable {
    */
   void init(Object hmsHandler, HadoopThriftAuthBridge.Server.ServerMode serverMode);
 
+  /**
+   * If the token store handles deletion of expired token  and does not depend on
+   * TokenStoreDelegationTokenSecretManager for the expiration logic, this method returns true.
+   * @return true if store supports deletion, else return false
+   */
+  default boolean isTokenStoreExpirySupported() {
+    return false;
+  }
+
+  /**
+   * Token store's logic for deletion of expired tokens. This is executed only if
+   * isTokenStoreExpirySupported() return true.
+   * Implementation can be empty if isTokenStoreExpirySupported() returns false.
+   */
+  default void removeExpiredTokens() {
+    // no-op
+  }
 }
