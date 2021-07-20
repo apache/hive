@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.log.syslog;
 
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.log.syslog.SyslogSerDe;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.io.Text;
 import org.junit.Assert;
 import org.junit.Test;

@@ -44,10 +44,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 /*
  * This servlet is based off of the JMXProxyServlet from Tomcat 7.0.14. It has
@@ -72,7 +73,7 @@ import org.slf4j.LoggerFactory;
  * attribute of a JMX bean.  The format of the URL is
  * <code>http://.../jmx?get=MXBeanName::AttributeName</code>
  * <p>
- * For example 
+ * For example
  * <code>
  * http://../jmx?get=Hadoop:service=NameNode,name=NameNodeInfo::ClusterId
  * </code> will return the cluster id of the namenode mxbean.
@@ -98,23 +99,23 @@ import org.slf4j.LoggerFactory;
  *  <p>
  *  The servlet attempts to convert the JMXBeans into JSON. Each
  *  bean's attributes will be converted to a JSON object member.
- *  
+ *
  *  If the attribute is a boolean, a number, a string, or an array
- *  it will be converted to the JSON equivalent. 
- *  
+ *  it will be converted to the JSON equivalent.
+ *
  *  If the value is a {@link CompositeData} then it will be converted
  *  to a JSON object with the keys as the name of the JSON member and
  *  the value is converted following these same rules.
- *  
+ *
  *  If the value is a {@link TabularData} then it will be converted
  *  to an array of the {@link CompositeData} elements that it contains.
- *  
+ *
  *  All other objects will be converted to a string and output as such.
- *  
+ *
  *  The bean's name and modelerType will be returned for all beans.
  *
  *  Optional paramater "callback" should be used to deliver JSONP response.
- *  
+ *
  */
 public class JMXJsonServlet extends HttpServlet {
   private static final Logger LOG = LoggerFactory.getLogger(JMXJsonServlet.class);
@@ -144,7 +145,7 @@ public class JMXJsonServlet extends HttpServlet {
 
   /**
    * Process a GET request for the specified resource.
-   * 
+   *
    * @param request
    *          The servlet request we are processing
    * @param response
@@ -210,8 +211,8 @@ public class JMXJsonServlet extends HttpServlet {
   }
 
   // --------------------------------------------------------- Private Methods
-  private void listBeans(JsonGenerator jg, ObjectName qry, String attribute, 
-      HttpServletResponse response) 
+  private void listBeans(JsonGenerator jg, ObjectName qry, String attribute,
+      HttpServletResponse response)
   throws IOException {
     LOG.debug("Listing beans for "+qry);
     Set<ObjectName> names = null;
@@ -255,7 +256,7 @@ public class JMXJsonServlet extends HttpServlet {
               + " threw an exception", e);
         } catch ( ReflectionException e ) {
           // This happens when the code inside the JMX bean (setter?? from the
-          // java docs) threw an exception, so log it and fall back on the 
+          // java docs) threw an exception, so log it and fall back on the
           // class name
           LOG.error("getting attribute " + prs + " of " + oname
               + " threw an exception", e);

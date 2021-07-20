@@ -25,6 +25,11 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.json.JsonReadFeature;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -35,11 +40,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.io.Text;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonParser.Feature;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.type.TypeFactory;
-import org.codehaus.jackson.type.JavaType;
 
 /**
  * GenericUDTFJSONTuple: this
@@ -53,15 +53,15 @@ public class GenericUDTFJSONTuple extends GenericUDTF {
 
   private static final Logger LOG = LoggerFactory.getLogger(GenericUDTFJSONTuple.class.getName());
 
-  private static final JsonFactory JSON_FACTORY = new JsonFactory();
+  private static final ObjectMapper MAPPER = new ObjectMapper();
+  private static final JavaType MAP_TYPE = MAPPER.getTypeFactory().constructType(Map.class);
   static {
     // Allows for unescaped ASCII control characters in JSON values
-    JSON_FACTORY.enable(Feature.ALLOW_UNQUOTED_CONTROL_CHARS);
+    MAPPER.enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature());
     // Enabled to accept quoting of all character backslash qooting mechanism
-    JSON_FACTORY.enable(Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER);
+    MAPPER.enable(JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER.mappedFeature());
+
   }
-  private static final ObjectMapper MAPPER = new ObjectMapper(JSON_FACTORY);
-  private static final JavaType MAP_TYPE = TypeFactory.fromClass(Map.class);
 
   int numCols;    // number of output columns
   String[] paths; // array of path expressions, each of which corresponds to a column
