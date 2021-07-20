@@ -1493,6 +1493,7 @@
                     <bannedImport>org.spark_project.guava.**</bannedImport>
                     <bannedImport>org.apache.spark.api.java.Optional</bannedImport>
                     <bannedImport>jersey.repackaged.com.google.**</bannedImport>
+                    <bannedImport>org.codehaus.jackson.**</bannedImport>
                   </bannedImports>
                   <includeTestCode>true</includeTestCode>
                 </restrictImports>

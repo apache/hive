@@ -81,7 +81,6 @@ import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.server.ThreadWithGarbageCleanup;
-import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  * SQLOperation.
@@ -507,7 +506,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       List<QueryDisplay.TaskDisplay> statuses = driver.getQueryDisplay().getTaskDisplays();
       if (statuses != null) {
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-          new ObjectMapper().writeValue(out, statuses);
+          QueryDisplay.OBJECT_MAPPER.writeValue(out, statuses);
           return out.toString(StandardCharsets.UTF_8.name());
         } catch (Exception e) {
           throw new HiveSQLException(e);
