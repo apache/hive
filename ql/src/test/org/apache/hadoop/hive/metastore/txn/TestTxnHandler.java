@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -78,6 +79,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -97,7 +99,6 @@ import static org.apache.hadoop.hive.metastore.utils.LockTypeUtil.getEncoding;
 /**
  * Tests for TxnHandler.
  */
-@org.junit.Ignore("HIVE-25290")
 public class TestTxnHandler {
   static final private String CLASS_NAME = TxnHandler.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
@@ -241,12 +242,23 @@ public class TestTxnHandler {
 
   @Test
   public void testAbortTxns() throws Exception {
+    createDatabaseForReplTests("default", MetaStoreUtils.getDefaultCatalog(conf));
     OpenTxnsResponse openedTxns = txnHandler.openTxns(new OpenTxnRequest(3, "me", "localhost"));
     List<Long> txnList = openedTxns.getTxn_ids();
     txnHandler.abortTxns(new AbortTxnsRequest(txnList));
 
+    OpenTxnRequest replRqst = new OpenTxnRequest(2, "me", "localhost");
+    replRqst.setReplPolicy("default.*");
+    replRqst.setTxn_type(TxnType.REPL_CREATED);
+    replRqst.setReplSrcTxnIds(Arrays.asList(1L, 2L));
+    List<Long> targetTxns = txnHandler.openTxns(replRqst).getTxn_ids();
+
+    assertTrue(targetTxnsPresentInReplTxnMap(1L, 2L, targetTxns));
+    txnHandler.abortTxns(new AbortTxnsRequest(targetTxns));
+    assertFalse(targetTxnsPresentInReplTxnMap(1L, 2L, targetTxns));
+
     GetOpenTxnsInfoResponse txnsInfo = txnHandler.getOpenTxnsInfo();
-    assertEquals(3, txnsInfo.getOpen_txns().size());
+    assertEquals(5, txnsInfo.getOpen_txns().size());
     txnsInfo.getOpen_txns().forEach(txn ->
       assertEquals(TxnState.ABORTED, txn.getState())
     );
@@ -1240,6 +1252,7 @@ public class TestTxnHandler {
 
   @Test
   public void testReplTimeouts() throws Exception {
+    createDatabaseForReplTests("default", MetaStoreUtils.getDefaultCatalog(conf));
     long timeout = txnHandler.setTimeout(1);
     try {
       OpenTxnRequest request = new OpenTxnRequest(3, "me", "localhost");
@@ -1691,12 +1704,32 @@ public class TestTxnHandler {
     }
   }
 
+  private boolean targetTxnsPresentInReplTxnMap(Long startTxnId, Long endTxnId, List<Long> targetTxnId) throws Exception {
+    String[] output = TestTxnDbUtil.queryToString(conf, "SELECT \"RTM_TARGET_TXN_ID\" FROM \"REPL_TXN_MAP\" WHERE " +
+            " \"RTM_SRC_TXN_ID\" >=  " + startTxnId + "AND \"RTM_SRC_TXN_ID\" <=  " + endTxnId).split("\n");
+    List<Long> replayedTxns = new ArrayList<>();
+    for (int idx = 1; idx < output.length; idx++) {
+      replayedTxns.add(Long.parseLong(output[idx].trim()));
+    }
+    return replayedTxns.equals(targetTxnId);
+  }
+
+  private void createDatabaseForReplTests(String dbName, String catalog) throws Exception {
+    String query = "select \"DB_ID\" from \"DBS\" where \"NAME\" = '" + dbName + "' and \"CTLG_NAME\" = '" + catalog + "'";
+    String[] output = TestTxnDbUtil.queryToString(conf, query).split("\n");
+    if (output.length == 1) {
+      query = "INSERT INTO \"DBS\"(\"DB_ID\", \"NAME\", \"CTLG_NAME\", \"DB_LOCATION_URI\")  VALUES (1, '" + dbName + "','" + catalog + "','dummy')";
+      TestTxnDbUtil.executeUpdate(conf, query);
+    }
+  }
+
   @Test
   public void testReplOpenTxn() throws Exception {
+    createDatabaseForReplTests("default", MetaStoreUtils.getDefaultCatalog(conf));
     int numTxn = 50000;
     String[] output = TestTxnDbUtil.queryToString(conf, "SELECT MAX(\"TXN_ID\") + 1 FROM \"TXNS\"").split("\n");
     long startTxnId = Long.parseLong(output[1].trim());
-    txnHandler.setOpenTxnTimeOutMillis(30000);
+    txnHandler.setOpenTxnTimeOutMillis(50000);
     List<Long> txnList = replOpenTxnForTest(startTxnId, numTxn, "default.*");
     txnHandler.setOpenTxnTimeOutMillis(1000);
     assert(txnList.size() == numTxn);

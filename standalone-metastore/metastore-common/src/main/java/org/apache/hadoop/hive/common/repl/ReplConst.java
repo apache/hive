@@ -51,4 +51,6 @@ public class ReplConst {
   public static final String REPL_FAILOVER_ENABLED = "repl.failover.enabled";
 
   public static final String TARGET_OF_REPLICATION = "repl.target.for";
+
+  public static final String REPL_INCOMPATIBLE = "repl.incompatible";
 }
