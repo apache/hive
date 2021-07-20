@@ -29,15 +29,6 @@ public class PartitionTransformSpec {
   private TransformType transformType;
   private Optional<Integer> transformParam;
 
-  public PartitionTransformSpec() {
-  }
-
-  public PartitionTransformSpec(String columnName, TransformType transformType, Optional<Integer> transformParam) {
-    this.columnName = columnName;
-    this.transformType = transformType;
-    this.transformParam = transformParam;
-  }
-
   public String getColumnName() {
     return columnName;
   }
