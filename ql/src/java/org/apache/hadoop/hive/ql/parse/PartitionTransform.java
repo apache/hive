@@ -17,9 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec.TransformType;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,26 +26,15 @@ import java.util.stream.Stream;
 
 public class PartitionTransform {
 
-  private static final Map<Integer, TransformType> TRANSFORMS = Stream
-      .of(new Object[][] { { HiveParser.TOK_IDENTITY, TransformType.IDENTITY },
-          { HiveParser.TOK_YEAR, TransformType.YEAR },
-          { HiveParser.TOK_MONTH, TransformType.MONTH },
-          { HiveParser.TOK_DAY, TransformType.DAY },
-          { HiveParser.TOK_HOUR, TransformType.HOUR },
-          { HiveParser.TOK_TRUNCATE, TransformType.TRUNCATE },
-          { HiveParser.TOK_BUCKET, TransformType.BUCKET } })
-      .collect(Collectors.toMap(e -> (Integer) e[0], e -> (TransformType) e[1]));
-
-  /**
-   * Get the identity transform specification based on the partition columns
-   * @param fields The partition column fields
-   * @return list of partition transforms
-   */
-  public static List<PartitionTransformSpec> getPartitionTransformSpec(List<FieldSchema> fields) {
-    return fields.stream()
-               .map(field -> new PartitionTransformSpec(field.getName(), TransformType.IDENTITY, Optional.empty()))
-               .collect(Collectors.toList());
-  }
+  private static final Map<Integer, PartitionTransformSpec.TransformType> TRANSFORMS = Stream
+      .of(new Object[][] { { HiveParser.TOK_IDENTITY, PartitionTransformSpec.TransformType.IDENTITY },
+          { HiveParser.TOK_YEAR, PartitionTransformSpec.TransformType.YEAR },
+          { HiveParser.TOK_MONTH, PartitionTransformSpec.TransformType.MONTH },
+          { HiveParser.TOK_DAY, PartitionTransformSpec.TransformType.DAY },
+          { HiveParser.TOK_HOUR, PartitionTransformSpec.TransformType.HOUR },
+          { HiveParser.TOK_TRUNCATE, PartitionTransformSpec.TransformType.TRUNCATE },
+          { HiveParser.TOK_BUCKET, PartitionTransformSpec.TransformType.BUCKET } })
+      .collect(Collectors.toMap(e -> (Integer) e[0], e -> (PartitionTransformSpec.TransformType) e[1]));
 
   /**
    * Parse the partition transform specifications from the AST Tree node.
