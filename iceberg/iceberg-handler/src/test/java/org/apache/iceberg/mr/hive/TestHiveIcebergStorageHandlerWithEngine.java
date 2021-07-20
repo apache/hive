@@ -1458,8 +1458,10 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     shell.executeStatement("ALTER TABLE " + identifier + " SET TBLPROPERTIES('external.table.purge'='true')");
     shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS");
 
-    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
-        "Partition spec for non partitioned table", () -> {
+    AssertHelpers.assertThrows("should throw exception", UnsupportedOperationException.class,
+        "Using partition spec in query is unsupported for non-native table backed by: " +
+            "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler",
+        () -> {
           shell.executeStatement("TRUNCATE " + identifier + " PARTITION (customer_id=1)");
         });
 
