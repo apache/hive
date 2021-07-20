@@ -264,18 +264,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     }
 
     if (AlterTableType.ADDCOLS.equals(currentAlterTableOp)) {
-      Collection<FieldSchema> addedCols = HiveSchemaUtil.getSchemaDiff(
-          hmsTable.getSd().getCols(), HiveSchemaUtil.convert(icebergTable.schema()), false).getMissingFromSecond();
-      if (!addedCols.isEmpty()) {
-        updateSchema = icebergTable.updateSchema();
-      }
-      for (FieldSchema addedCol : addedCols) {
-        updateSchema.addColumn(
-            addedCol.getName(),
-            HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType())),
-            addedCol.getComment()
-        );
-      }
+      handleAddColumns(hmsTable);
     } else if (AlterTableType.REPLACE_COLUMNS.equals(currentAlterTableOp)) {
       handleReplaceColumns(hmsTable);
     } else if (AlterTableType.RENAME_COLUMN.equals(currentAlterTableOp)) {
@@ -488,6 +477,19 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       return PartitionSpecParser.fromJson(schema, hmsTable.getParameters().get(InputFormatConfig.PARTITION_SPEC));
     } else {
       return PartitionSpec.unpartitioned();
+    }
+  }
+
+  private void handleAddColumns(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    Collection<FieldSchema> addedCols =
+        HiveSchemaUtil.getSchemaDiff(hmsTable.getSd().getCols(), HiveSchemaUtil.convert(icebergTable.schema()), false)
+            .getMissingFromSecond();
+    if (!addedCols.isEmpty()) {
+      updateSchema = icebergTable.updateSchema();
+    }
+    for (FieldSchema addedCol : addedCols) {
+      updateSchema.addColumn(addedCol.getName(),
+          HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType())), addedCol.getComment());
     }
   }
 
