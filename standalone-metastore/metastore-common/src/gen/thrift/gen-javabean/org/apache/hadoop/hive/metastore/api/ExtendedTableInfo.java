@@ -602,13 +602,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 3: // REQUIRED_READ_CAPABILITIES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1066 = iprot.readListBegin();
-                struct.requiredReadCapabilities = new java.util.ArrayList<java.lang.String>(_list1066.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem1067;
-                for (int _i1068 = 0; _i1068 < _list1066.size; ++_i1068)
+                org.apache.thrift.protocol.TList _list1092 = iprot.readListBegin();
+                struct.requiredReadCapabilities = new java.util.ArrayList<java.lang.String>(_list1092.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem1093;
+                for (int _i1094 = 0; _i1094 < _list1092.size; ++_i1094)
                 {
-                  _elem1067 = iprot.readString();
-                  struct.requiredReadCapabilities.add(_elem1067);
+                  _elem1093 = iprot.readString();
+                  struct.requiredReadCapabilities.add(_elem1093);
                 }
                 iprot.readListEnd();
               }
@@ -620,13 +620,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 4: // REQUIRED_WRITE_CAPABILITIES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1069 = iprot.readListBegin();
-                struct.requiredWriteCapabilities = new java.util.ArrayList<java.lang.String>(_list1069.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem1070;
-                for (int _i1071 = 0; _i1071 < _list1069.size; ++_i1071)
+                org.apache.thrift.protocol.TList _list1095 = iprot.readListBegin();
+                struct.requiredWriteCapabilities = new java.util.ArrayList<java.lang.String>(_list1095.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem1096;
+                for (int _i1097 = 0; _i1097 < _list1095.size; ++_i1097)
                 {
-                  _elem1070 = iprot.readString();
-                  struct.requiredWriteCapabilities.add(_elem1070);
+                  _elem1096 = iprot.readString();
+                  struct.requiredWriteCapabilities.add(_elem1096);
                 }
                 iprot.readListEnd();
               }
@@ -663,9 +663,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(REQUIRED_READ_CAPABILITIES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.requiredReadCapabilities.size()));
-            for (java.lang.String _iter1072 : struct.requiredReadCapabilities)
+            for (java.lang.String _iter1098 : struct.requiredReadCapabilities)
             {
-              oprot.writeString(_iter1072);
+              oprot.writeString(_iter1098);
             }
             oprot.writeListEnd();
           }
@@ -677,9 +677,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(REQUIRED_WRITE_CAPABILITIES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.requiredWriteCapabilities.size()));
-            for (java.lang.String _iter1073 : struct.requiredWriteCapabilities)
+            for (java.lang.String _iter1099 : struct.requiredWriteCapabilities)
             {
-              oprot.writeString(_iter1073);
+              oprot.writeString(_iter1099);
             }
             oprot.writeListEnd();
           }
@@ -721,18 +721,18 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetRequiredReadCapabilities()) {
         {
           oprot.writeI32(struct.requiredReadCapabilities.size());
-          for (java.lang.String _iter1074 : struct.requiredReadCapabilities)
+          for (java.lang.String _iter1100 : struct.requiredReadCapabilities)
           {
-            oprot.writeString(_iter1074);
+            oprot.writeString(_iter1100);
           }
         }
       }
       if (struct.isSetRequiredWriteCapabilities()) {
         {
           oprot.writeI32(struct.requiredWriteCapabilities.size());
-          for (java.lang.String _iter1075 : struct.requiredWriteCapabilities)
+          for (java.lang.String _iter1101 : struct.requiredWriteCapabilities)
           {
-            oprot.writeString(_iter1075);
+            oprot.writeString(_iter1101);
           }
         }
       }
@@ -750,26 +750,26 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (incoming.get(1)) {
         {
-          org.apache.thrift.protocol.TList _list1076 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.requiredReadCapabilities = new java.util.ArrayList<java.lang.String>(_list1076.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem1077;
-          for (int _i1078 = 0; _i1078 < _list1076.size; ++_i1078)
+          org.apache.thrift.protocol.TList _list1102 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.requiredReadCapabilities = new java.util.ArrayList<java.lang.String>(_list1102.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem1103;
+          for (int _i1104 = 0; _i1104 < _list1102.size; ++_i1104)
           {
-            _elem1077 = iprot.readString();
-            struct.requiredReadCapabilities.add(_elem1077);
+            _elem1103 = iprot.readString();
+            struct.requiredReadCapabilities.add(_elem1103);
           }
         }
         struct.setRequiredReadCapabilitiesIsSet(true);
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list1079 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.requiredWriteCapabilities = new java.util.ArrayList<java.lang.String>(_list1079.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem1080;
-          for (int _i1081 = 0; _i1081 < _list1079.size; ++_i1081)
+          org.apache.thrift.protocol.TList _list1105 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.requiredWriteCapabilities = new java.util.ArrayList<java.lang.String>(_list1105.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem1106;
+          for (int _i1107 = 0; _i1107 < _list1105.size; ++_i1107)
           {
-            _elem1080 = iprot.readString();
-            struct.requiredWriteCapabilities.add(_elem1080);
+            _elem1106 = iprot.readString();
+            struct.requiredWriteCapabilities.add(_elem1106);
           }
         }
         struct.setRequiredWriteCapabilitiesIsSet(true);

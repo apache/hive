@@ -89,14 +89,14 @@ class Schema
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->fieldSchemas = array();
-                        $_size329 = 0;
-                        $_etype332 = 0;
-                        $xfer += $input->readListBegin($_etype332, $_size329);
-                        for ($_i333 = 0; $_i333 < $_size329; ++$_i333) {
-                            $elem334 = null;
-                            $elem334 = new \metastore\FieldSchema();
-                            $xfer += $elem334->read($input);
-                            $this->fieldSchemas []= $elem334;
+                        $_size352 = 0;
+                        $_etype355 = 0;
+                        $xfer += $input->readListBegin($_etype355, $_size352);
+                        for ($_i356 = 0; $_i356 < $_size352; ++$_i356) {
+                            $elem357 = null;
+                            $elem357 = new \metastore\FieldSchema();
+                            $xfer += $elem357->read($input);
+                            $this->fieldSchemas []= $elem357;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -106,16 +106,16 @@ class Schema
                 case 2:
                     if ($ftype == TType::MAP) {
                         $this->properties = array();
-                        $_size335 = 0;
-                        $_ktype336 = 0;
-                        $_vtype337 = 0;
-                        $xfer += $input->readMapBegin($_ktype336, $_vtype337, $_size335);
-                        for ($_i339 = 0; $_i339 < $_size335; ++$_i339) {
-                            $key340 = '';
-                            $val341 = '';
-                            $xfer += $input->readString($key340);
-                            $xfer += $input->readString($val341);
-                            $this->properties[$key340] = $val341;
+                        $_size358 = 0;
+                        $_ktype359 = 0;
+                        $_vtype360 = 0;
+                        $xfer += $input->readMapBegin($_ktype359, $_vtype360, $_size358);
+                        for ($_i362 = 0; $_i362 < $_size358; ++$_i362) {
+                            $key363 = '';
+                            $val364 = '';
+                            $xfer += $input->readString($key363);
+                            $xfer += $input->readString($val364);
+                            $this->properties[$key363] = $val364;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -142,8 +142,8 @@ class Schema
             }
             $xfer += $output->writeFieldBegin('fieldSchemas', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->fieldSchemas));
-            foreach ($this->fieldSchemas as $iter342) {
-                $xfer += $iter342->write($output);
+            foreach ($this->fieldSchemas as $iter365) {
+                $xfer += $iter365->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -154,9 +154,9 @@ class Schema
             }
             $xfer += $output->writeFieldBegin('properties', TType::MAP, 2);
             $output->writeMapBegin(TType::STRING, TType::STRING, count($this->properties));
-            foreach ($this->properties as $kiter343 => $viter344) {
-                $xfer += $output->writeString($kiter343);
-                $xfer += $output->writeString($viter344);
+            foreach ($this->properties as $kiter366 => $viter367) {
+                $xfer += $output->writeString($kiter366);
+                $xfer += $output->writeString($viter367);
             }
             $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();
