@@ -115,7 +115,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
    * @throws Exception if underlying calls throw, or if the partition name resolves to more than
    * one partition.
    */
-  protected Partition resolvePartition(CompactionInfo ci) throws Exception {
+  protected Partition resolvePartition(CompactionInfo ci) throws MetaException {
     if (ci.partName != null) {
       List<Partition> parts;
       try {
@@ -150,8 +150,8 @@ public abstract class CompactorThread extends Thread implements Configurable {
   }
 
   /**
-   * Determine which user to run an operation as. If metastore.compactor.run.as.user is set, that user will be 
-   * returned; if not: the the owner of the directory to be compacted. 
+   * Determine which user to run an operation as. If metastore.compactor.run.as.user is set, that user will be
+   * returned; if not: the the owner of the directory to be compacted.
    * It is asserted that either the user running the hive metastore or the table
    * owner must be able to stat the directory and determine the owner.
    * @param location directory that will be read or written to.
