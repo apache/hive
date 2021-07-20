@@ -25,7 +25,7 @@ import org.junit.Test;
 /**
  * Test suite for parsing timestamps.
  */
-public class TestTimestampParser {
+public class  TestTimestampParser {
 
   /**
    * No timestamp patterns, should default to normal timestamp format.
@@ -53,32 +53,12 @@ public class TestTimestampParser {
   @Test
   public void testDefaultInvalid() {
     final TimestampParser tsp = new TimestampParser();
-    String expectedMessage = "Cannot create timestamp, parsing error";
-
-    Assert.assertTrue(Assert.assertThrows(IllegalArgumentException.class, () -> {
-      tsp.parseTimestamp("12345");
-    }).getMessage().contains(expectedMessage));
-
-    Assert.assertTrue(Assert.assertThrows(IllegalArgumentException.class, () -> {
-      tsp.parseTimestamp("1945-12-45 23:59:59");
-    }).getMessage().contains(expectedMessage));
-
-    Assert.assertTrue(Assert.assertThrows(IllegalArgumentException.class, () -> {
-      tsp.parseTimestamp("1945-15-20 23:59:59");
-    }).getMessage().contains(expectedMessage));
-
-    Assert.assertTrue(Assert.assertThrows(IllegalArgumentException.class, () -> {
-      tsp.parseTimestamp("0000-00-00 00:00:00");
-    }).getMessage().contains(expectedMessage));
-
-    Assert.assertTrue(Assert.assertThrows(IllegalArgumentException.class, () -> {
-      tsp.parseTimestamp("");
-    }).getMessage().contains(expectedMessage));
-
-    Assert.assertTrue(Assert.assertThrows(IllegalArgumentException.class, () -> {
-      tsp.parseTimestamp("null");
-    }).getMessage().contains(expectedMessage));
-
+    Assert.assertEquals(null, tsp.parseTimestamp("12345"));
+    Assert.assertEquals(null, tsp.parseTimestamp("1945-12-45 23:59:59"));
+    Assert.assertEquals(null, tsp.parseTimestamp("1945-15-20 23:59:59"));
+    Assert.assertEquals(null, tsp.parseTimestamp("0000-00-00 00:00:00"));
+    Assert.assertEquals(null, tsp.parseTimestamp(""));
+    Assert.assertEquals(null, tsp.parseTimestamp("null"));
   }
 
   @Test
@@ -120,24 +100,24 @@ public class TestTimestampParser {
         tsp.parseTimestamp("1945-12-31T23:59:59.12345"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testPatternInvalid1() {
     final String[] patterns = {"yyyy-MM-dd'T'HH:mm:ss",
         "yyyy-MM-dd'T'HH:mm:ss.S", "yyyy-MM-dd'T'HH:mm:ss.SS",
         "yyyy-MM-dd'T'HH:mm:ss.SSS", "yyyy-MM-dd'T'HH:mm:ss.SSSS"};
 
     final TimestampParser tsp = new TimestampParser(patterns);
-    tsp.parseTimestamp("1945-12-31-23:59:59");
+    Assert.assertEquals(null,tsp.parseTimestamp("1945-12-31-23:59:59"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test()
   public void testPatternInvalid2() {
     final String[] patterns = {"yyyy-MM-dd'T'HH:mm:ss",
         "yyyy-MM-dd'T'HH:mm:ss.S", "yyyy-MM-dd'T'HH:mm:ss.SS",
         "yyyy-MM-dd'T'HH:mm:ss.SSS", "yyyy-MM-dd'T'HH:mm:ss.SSSS"};
 
     final TimestampParser tsp = new TimestampParser(patterns);
-    tsp.parseTimestamp("12345");
+    Assert.assertEquals(null,tsp.parseTimestamp("12345"));
   }
 
   @Test
@@ -159,21 +139,19 @@ public class TestTimestampParser {
         tsp.parseTimestamp("1420509274123.456789"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testMillisParserInvalid1() {
-    final String[] patterns = {"millis", "yyyy-MM-dd'T'HH:mm:ss"};
-
+    final String[] patterns = { "millis", "yyyy-MM-dd'T'HH:mm:ss" };
     final TimestampParser tsp = new TimestampParser(patterns);
-    tsp.parseTimestamp("1420509274123-");
+    Assert.assertEquals(null, tsp.parseTimestamp("1420509274123-"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testMillisParserInvalid2() {
     // Also try other patterns
-    final String[] patterns = {"millis", "yyyy-MM-dd'T'HH:mm:ss"};
-
+    final String[] patterns = { "millis", "yyyy-MM-dd'T'HH:mm:ss" };
     final TimestampParser tsp = new TimestampParser(patterns);
-    tsp.parseTimestamp("1945-12-31-23:59:59");
+    Assert.assertEquals(null, tsp.parseTimestamp("1945-12-31-23:59:59"));
   }
 
   /**
