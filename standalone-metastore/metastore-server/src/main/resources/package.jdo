@@ -964,7 +964,27 @@
         <column name="TOKEN" length="767" jdbc-type="VARCHAR" />
       </field>
             
-    </class>    
+    </class>
+
+    <class name="MDelegationTokenV2" table="DELEGATION_TOKENS_V2" identity-type="application" detachable="true">
+
+      <field name="tokenIdentifier" primary-key="true">
+        <column name="TOKEN_IDENT" length="767" jdbc-type="VARCHAR" />
+      </field>
+
+      <field name="tokenStr">
+        <column name="TOKEN" length="767" jdbc-type="VARCHAR" />
+      </field>
+
+      <field name="maxDate">
+        <column name="MAX_DATE" jdbc-type="integer" />
+      </field>
+
+      <field name="renewDate">
+        <column name="RENEW_DATE" jdbc-type="integer" />
+      </field>
+
+    </class>
 
     <class name="MTableColumnStatistics" table="TAB_COL_STATS" identity-type="datastore" detachable="true">
       <datastore-identity>
