@@ -22,7 +22,7 @@ package org.apache.hive.hcatalog.messaging.json;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hive.hcatalog.messaging.CreateIndexMessage;
 import org.apache.thrift.TException;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * JSON Implementation of CreateIndexMessage.
