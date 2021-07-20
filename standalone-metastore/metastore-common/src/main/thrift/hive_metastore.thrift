@@ -636,9 +636,8 @@ struct Partition {
   9: optional string catName,
   10: optional i64 writeId=-1,
   11: optional bool isStatsCompliant,
-  12: optional ColumnStatistics colStats // column statistics for partition
-  13: optional FileMetadata fileMetadata  // optional serialized file-metadata useful
-    // for certain execution engines
+  12: optional ColumnStatistics colStats, // column statistics for partition
+  13: optional FileMetadata fileMetadata  // optional serialized file-metadata useful for certain execution engines
 }
 
 struct PartitionWithoutSD {
