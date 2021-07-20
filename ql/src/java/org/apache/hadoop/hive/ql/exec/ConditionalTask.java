@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolver;
@@ -32,6 +33,8 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 public class ConditionalTask extends Task<ConditionalWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
+  private static final ReentrantLock RESOLVE_TASK_LOCK = new ReentrantLock();
+
   private List<Task<?>> listTasks;
 
   private boolean resolved = false;
@@ -79,10 +82,13 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
     resolved = true;
 
     try {
+      RESOLVE_TASK_LOCK.lock();
       resolveTask();
     } catch (Exception e) {
       setException(e);
       return 1;
+    } finally {
+      RESOLVE_TASK_LOCK.unlock();
     }
     return 0;
   }
