@@ -116,12 +116,10 @@ PREHOOK: query: CREATE REMOTE DATABASE db_derby USING derby_test with DBPROPERTI
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Input: connector:derby_test
 PREHOOK: Output: database:db_derby
-#### A masked pattern was here ####
 POSTHOOK: query: CREATE REMOTE DATABASE db_derby USING derby_test with DBPROPERTIES("connector.remoteDbName"="APP")
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Input: connector:derby_test
 POSTHOOK: Output: database:db_derby
-#### A masked pattern was here ####
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES

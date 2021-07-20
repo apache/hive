@@ -6,7 +6,6 @@ COMMENT 'test connector'
 WITH DCPROPERTIES (
 "hive.sql.dbcp.username"="hive1",
 "hive.sql.dbcp.password"="hive1");
-SHOW CONNECTORS;
 
 -- reject location and managedlocation config in remote database
 create REMOTE database mysql_rej location '/tmp/rej1.db' managedlocation '/tmp/rej2.db' using mysql_test with DBPROPERTIES("connector.remoteDbName"="hive1");

@@ -207,7 +207,7 @@ public class PrivilegeSynchronizer implements Runnable {
             addGrantPrivilegesToBag(policyProvider, grantDataConnectorBag, HiveObjectType.DATACONNECTOR,
                     null, dcName, null, authorizer);
             hiveClient.refresh_privileges(dcToRefresh, authorizer, grantDataConnectorBag);
-            LOG.debug("processing " + dcName);
+            LOG.debug("processing data connector: " + dcName);
           }
           LOG.info("Success synchronize privilege " + policyProvider.getClass().getName() + ":" + numDc + " dataconnectors");
 
