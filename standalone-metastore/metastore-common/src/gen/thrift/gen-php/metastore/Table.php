@@ -172,6 +172,18 @@ class Table
             'isRequired' => false,
             'type' => TType::I64,
         ),
+        26 => array(
+            'var' => 'fileMetadata',
+            'isRequired' => false,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\FileMetadata',
+        ),
+        27 => array(
+            'var' => 'dictionary',
+            'isRequired' => false,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\ObjectDictionary',
+        ),
     );
 
     /**
@@ -274,6 +286,14 @@ class Table
      * @var int
      */
     public $id = null;
+    /**
+     * @var \metastore\FileMetadata
+     */
+    public $fileMetadata = null;
+    /**
+     * @var \metastore\ObjectDictionary
+     */
+    public $dictionary = null;
 
     public function __construct($vals = null)
     {
@@ -353,6 +373,12 @@ class Table
             if (isset($vals['id'])) {
                 $this->id = $vals['id'];
             }
+            if (isset($vals['fileMetadata'])) {
+                $this->fileMetadata = $vals['fileMetadata'];
+            }
+            if (isset($vals['dictionary'])) {
+                $this->dictionary = $vals['dictionary'];
+            }
         }
     }
 
@@ -428,14 +454,14 @@ class Table
                 case 8:
                     if ($ftype == TType::LST) {
                         $this->partitionKeys = array();
-                        $_size239 = 0;
-                        $_etype242 = 0;
-                        $xfer += $input->readListBegin($_etype242, $_size239);
-                        for ($_i243 = 0; $_i243 < $_size239; ++$_i243) {
-                            $elem244 = null;
-                            $elem244 = new \metastore\FieldSchema();
-                            $xfer += $elem244->read($input);
-                            $this->partitionKeys []= $elem244;
+                        $_size262 = 0;
+                        $_etype265 = 0;
+                        $xfer += $input->readListBegin($_etype265, $_size262);
+                        for ($_i266 = 0; $_i266 < $_size262; ++$_i266) {
+                            $elem267 = null;
+                            $elem267 = new \metastore\FieldSchema();
+                            $xfer += $elem267->read($input);
+                            $this->partitionKeys []= $elem267;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -445,16 +471,16 @@ class Table
                 case 9:
                     if ($ftype == TType::MAP) {
                         $this->parameters = array();
-                        $_size245 = 0;
-                        $_ktype246 = 0;
-                        $_vtype247 = 0;
-                        $xfer += $input->readMapBegin($_ktype246, $_vtype247, $_size245);
-                        for ($_i249 = 0; $_i249 < $_size245; ++$_i249) {
-                            $key250 = '';
-                            $val251 = '';
-                            $xfer += $input->readString($key250);
-                            $xfer += $input->readString($val251);
-                            $this->parameters[$key250] = $val251;
+                        $_size268 = 0;
+                        $_ktype269 = 0;
+                        $_vtype270 = 0;
+                        $xfer += $input->readMapBegin($_ktype269, $_vtype270, $_size268);
+                        for ($_i272 = 0; $_i272 < $_size268; ++$_i272) {
+                            $key273 = '';
+                            $val274 = '';
+                            $xfer += $input->readString($key273);
+                            $xfer += $input->readString($val274);
+                            $this->parameters[$key273] = $val274;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -558,13 +584,13 @@ class Table
                 case 23:
                     if ($ftype == TType::LST) {
                         $this->requiredReadCapabilities = array();
-                        $_size252 = 0;
-                        $_etype255 = 0;
-                        $xfer += $input->readListBegin($_etype255, $_size252);
-                        for ($_i256 = 0; $_i256 < $_size252; ++$_i256) {
-                            $elem257 = null;
-                            $xfer += $input->readString($elem257);
-                            $this->requiredReadCapabilities []= $elem257;
+                        $_size275 = 0;
+                        $_etype278 = 0;
+                        $xfer += $input->readListBegin($_etype278, $_size275);
+                        for ($_i279 = 0; $_i279 < $_size275; ++$_i279) {
+                            $elem280 = null;
+                            $xfer += $input->readString($elem280);
+                            $this->requiredReadCapabilities []= $elem280;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -574,13 +600,13 @@ class Table
                 case 24:
                     if ($ftype == TType::LST) {
                         $this->requiredWriteCapabilities = array();
-                        $_size258 = 0;
-                        $_etype261 = 0;
-                        $xfer += $input->readListBegin($_etype261, $_size258);
-                        for ($_i262 = 0; $_i262 < $_size258; ++$_i262) {
-                            $elem263 = null;
-                            $xfer += $input->readString($elem263);
-                            $this->requiredWriteCapabilities []= $elem263;
+                        $_size281 = 0;
+                        $_etype284 = 0;
+                        $xfer += $input->readListBegin($_etype284, $_size281);
+                        for ($_i285 = 0; $_i285 < $_size281; ++$_i285) {
+                            $elem286 = null;
+                            $xfer += $input->readString($elem286);
+                            $this->requiredWriteCapabilities []= $elem286;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -590,6 +616,22 @@ class Table
                 case 25:
                     if ($ftype == TType::I64) {
                         $xfer += $input->readI64($this->id);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 26:
+                    if ($ftype == TType::STRUCT) {
+                        $this->fileMetadata = new \metastore\FileMetadata();
+                        $xfer += $this->fileMetadata->read($input);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 27:
+                    if ($ftype == TType::STRUCT) {
+                        $this->dictionary = new \metastore\ObjectDictionary();
+                        $xfer += $this->dictionary->read($input);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -652,8 +694,8 @@ class Table
             }
             $xfer += $output->writeFieldBegin('partitionKeys', TType::LST, 8);
             $output->writeListBegin(TType::STRUCT, count($this->partitionKeys));
-            foreach ($this->partitionKeys as $iter264) {
-                $xfer += $iter264->write($output);
+            foreach ($this->partitionKeys as $iter287) {
+                $xfer += $iter287->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -664,9 +706,9 @@ class Table
             }
             $xfer += $output->writeFieldBegin('parameters', TType::MAP, 9);
             $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
-            foreach ($this->parameters as $kiter265 => $viter266) {
-                $xfer += $output->writeString($kiter265);
-                $xfer += $output->writeString($viter266);
+            foreach ($this->parameters as $kiter288 => $viter289) {
+                $xfer += $output->writeString($kiter288);
+                $xfer += $output->writeString($viter289);
             }
             $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();
@@ -751,8 +793,8 @@ class Table
             }
             $xfer += $output->writeFieldBegin('requiredReadCapabilities', TType::LST, 23);
             $output->writeListBegin(TType::STRING, count($this->requiredReadCapabilities));
-            foreach ($this->requiredReadCapabilities as $iter267) {
-                $xfer += $output->writeString($iter267);
+            foreach ($this->requiredReadCapabilities as $iter290) {
+                $xfer += $output->writeString($iter290);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -763,8 +805,8 @@ class Table
             }
             $xfer += $output->writeFieldBegin('requiredWriteCapabilities', TType::LST, 24);
             $output->writeListBegin(TType::STRING, count($this->requiredWriteCapabilities));
-            foreach ($this->requiredWriteCapabilities as $iter268) {
-                $xfer += $output->writeString($iter268);
+            foreach ($this->requiredWriteCapabilities as $iter291) {
+                $xfer += $output->writeString($iter291);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -772,6 +814,22 @@ class Table
         if ($this->id !== null) {
             $xfer += $output->writeFieldBegin('id', TType::I64, 25);
             $xfer += $output->writeI64($this->id);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->fileMetadata !== null) {
+            if (!is_object($this->fileMetadata)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('fileMetadata', TType::STRUCT, 26);
+            $xfer += $this->fileMetadata->write($output);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->dictionary !== null) {
+            if (!is_object($this->dictionary)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('dictionary', TType::STRUCT, 27);
+            $xfer += $this->dictionary->write($output);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
