@@ -80,6 +80,10 @@ POSTHOOK: Input: default@test_truncate
 a                   	int                 	from deserializer   
 b                   	string              	from deserializer   
 	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+b                   	IDENTITY            	 
+	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
@@ -111,11 +115,11 @@ Compressed:         	No
 Num Buckets:        	0                   	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-PREHOOK: query: select * from test_truncate order by a
+PREHOOK: query: select * from test_truncate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_truncate
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from test_truncate order by a
+POSTHOOK: query: select * from test_truncate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_truncate
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -143,11 +147,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_truncate
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
-PREHOOK: query: select * from test_truncate order by a
+PREHOOK: query: select * from test_truncate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_truncate
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from test_truncate order by a
+POSTHOOK: query: select * from test_truncate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_truncate
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -160,6 +164,10 @@ POSTHOOK: Input: default@test_truncate
 # col_name            	data_type           	comment             
 a                   	int                 	from deserializer   
 b                   	string              	from deserializer   
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+b                   	IDENTITY            	 
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

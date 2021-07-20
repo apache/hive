@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 set hive.vectorized.execution.enabled=false;
 
 drop table if exists test_truncate;
@@ -8,13 +10,13 @@ insert into test_truncate values (6, 'six'), (7, 'seven');
 insert into test_truncate values (8, 'eight'), (9, 'nine'), (10, 'ten');
 analyze table test_truncate compute statistics;
 
-select * from test_truncate order by id;
+select * from test_truncate;
 describe formatted test_truncate;
 
 truncate test_truncate force;
 
 select count(*) from test_truncate;
-select * from test_truncate order by id;
+select * from test_truncate;
 describe formatted test_truncate;
 
 drop table if exists test_truncate;

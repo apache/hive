@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 set hive.vectorized.execution.enabled=false;
 
 drop table if exists test_truncate;
@@ -11,11 +13,11 @@ alter table test_truncate set tblproperties ('storage_handler'='org.apache.icebe
 
 analyze table test_truncate compute statistics;
 describe formatted test_truncate;
-select * from test_truncate order by a;
+select * from test_truncate;
 
 truncate test_truncate;
 select count(*) from test_truncate;
-select * from test_truncate order by a;
+select * from test_truncate;
 describe formatted test_truncate;
 
 drop table if exists test_truncate;

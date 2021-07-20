@@ -152,6 +152,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @VisibleForTesting
   static long testTimeoutValue = -1;
 
+  public static final String TRUNCATE_SKIP_DATA_DELETION = "truncateSkipDataDeletion";
   public static final String ADMIN = "admin";
   public static final String PUBLIC = "public";
 
@@ -3380,11 +3381,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       String[] parsedDbName = parseDbName(dbName, conf);
       Table tbl = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
 
-      boolean skipDataDeletion = false;
-      if (context != null && context.getProperties() != null
-          && context.getProperties().get("truncateSkipDataDeletion") != null) {
-        skipDataDeletion = Boolean.parseBoolean(context.getProperties().get("truncateSkipDataDeletion"));
-      }
+      boolean skipDataDeletion = Optional.ofNullable(context)
+          .map(EnvironmentContext::getProperties)
+          .map(prop -> prop.get(TRUNCATE_SKIP_DATA_DELETION))
+          .map(Boolean::parseBoolean)
+          .orElse(false);
 
       if (!skipDataDeletion) {
         boolean truncateFiles = !TxnUtils.isTransactionalTable(tbl)

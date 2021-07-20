@@ -1361,24 +1361,24 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     // Create an empty Iceberg table and execute a truncate table command on it.
     String databaseName = "default";
     String tableName = "customers";
-    String fullTableName = databaseName + "." + tableName;
+    TableIdentifier identifier = TableIdentifier.of(databaseName, tableName);
     Table icebergTable = testTables.createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, null);
     // Set the 'external.table.purge' table property on the table
     String alterTableCommand =
-        "ALTER TABLE " + fullTableName + " SET TBLPROPERTIES('external.table.purge'='true')";
+        "ALTER TABLE " + identifier + " SET TBLPROPERTIES('external.table.purge'='true')";
     shell.executeStatement(alterTableCommand);
 
-    shell.executeStatement("ANALYZE TABLE " + fullTableName + " COMPUTE STATISTICS");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS");
 
-    shell.executeStatement("TRUNCATE " + fullTableName);
+    shell.executeStatement("TRUNCATE " + identifier);
 
     icebergTable = testTables.loadTable(TableIdentifier.of(databaseName, tableName));
     Map<String, String> summary = icebergTable.currentSnapshot().summary();
     for (String key : STATS_MAPPING.values()) {
       Assert.assertEquals("0", summary.get(key));
     }
-    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + fullTableName);
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + identifier);
     Assert.assertEquals(0, rows.size());
     validateBasicStats(icebergTable, databaseName, tableName);
   }
@@ -1414,18 +1414,18 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     // Then check if the data is not deleted from the table and also the statistics are not changed.
     String databaseName = "default";
     String tableName = "customers";
-    String fullTableName = databaseName + "." + tableName;
+    TableIdentifier identifier = TableIdentifier.of(databaseName, tableName);
     Table icebergTable = testTables.createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
-    shell.executeStatement("ALTER TABLE " + fullTableName + " SET TBLPROPERTIES('external.table.purge'='false')");
-    shell.executeStatement("ANALYZE TABLE " + fullTableName + " COMPUTE STATISTICS");
+    shell.executeStatement("ALTER TABLE " + identifier + " SET TBLPROPERTIES('external.table.purge'='false')");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS");
 
     AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
         "Cannot truncate non-managed table", () -> {
-          shell.executeStatement("TRUNCATE " + fullTableName);
+          shell.executeStatement("TRUNCATE " + identifier);
         });
 
-    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + fullTableName);
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + identifier);
     HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
         HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, rows), 0);
     icebergTable = testTables.loadTable(TableIdentifier.of(databaseName, tableName));
@@ -1452,18 +1452,18 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     // initial data and the table statistics are not changed.
     String databaseName = "default";
     String tableName = "customers";
-    String fullTableName = databaseName + "." + tableName;
+    TableIdentifier identifier = TableIdentifier.of(databaseName, tableName);
     Table icebergTable = testTables.createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
-    shell.executeStatement("ALTER TABLE " + fullTableName + " SET TBLPROPERTIES('external.table.purge'='true')");
-    shell.executeStatement("ANALYZE TABLE " + fullTableName + " COMPUTE STATISTICS");
+    shell.executeStatement("ALTER TABLE " + identifier + " SET TBLPROPERTIES('external.table.purge'='true')");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS");
 
     AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
         "Partition spec for non partitioned table", () -> {
-          shell.executeStatement("TRUNCATE " + fullTableName + " PARTITION (customer_id=1)");
+          shell.executeStatement("TRUNCATE " + identifier + " PARTITION (customer_id=1)");
         });
 
-    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + fullTableName);
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + identifier);
     HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
         HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, rows), 0);
     icebergTable = testTables.loadTable(TableIdentifier.of(databaseName, tableName));
@@ -1493,20 +1493,20 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   private void testTruncateTable(String databaseName, String tableName, Table icebergTable, List<Record> records,
       Schema schema, boolean externalTablePurge, boolean force) throws TException, InterruptedException {
-    String fullTableName = databaseName + "." + tableName;
+    TableIdentifier identifier = TableIdentifier.of(databaseName, tableName);
     // Set the 'external.table.purge' table property on the table
     String alterTableCommand =
-        "ALTER TABLE " + fullTableName + " SET TBLPROPERTIES('external.table.purge'='" + externalTablePurge + "')";
+        "ALTER TABLE " + identifier + " SET TBLPROPERTIES('external.table.purge'='" + externalTablePurge + "')";
     shell.executeStatement(alterTableCommand);
 
     // Validate the initial data and the table statistics
-    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + fullTableName);
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + identifier);
     HiveIcebergTestUtils.validateData(records, HiveIcebergTestUtils.valueForRow(schema, rows), 0);
-    shell.executeStatement("ANALYZE TABLE " + fullTableName + " COMPUTE STATISTICS");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS");
     validateBasicStats(icebergTable, databaseName, tableName);
 
     // Run a 'truncate table' or 'truncate table force' command
-    String truncateCommand = "TRUNCATE " + fullTableName;
+    String truncateCommand = "TRUNCATE " + identifier;
     if (force) {
       truncateCommand = truncateCommand + " FORCE";
     }
@@ -1514,12 +1514,12 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
     // Validate if the data is deleted from the table and also that the table
     // statistics are reset to 0.
-    Table table = testTables.loadTable(TableIdentifier.of(databaseName, tableName));
+    Table table = testTables.loadTable(identifier);
     Map<String, String> summary = table.currentSnapshot().summary();
     for (String key : STATS_MAPPING.values()) {
       Assert.assertEquals("0", summary.get(key));
     }
-    rows = shell.executeStatement("SELECT * FROM " + fullTableName);
+    rows = shell.executeStatement("SELECT * FROM " + identifier);
     Assert.assertEquals(0, rows.size());
     validateBasicStats(table, databaseName, tableName);
   }
