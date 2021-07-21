@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -208,13 +207,8 @@ public class TestGenericUDFDateFormat {
     DeferredObject valueObj0 = new DeferredJavaObject(str != null ? new Text(str) : null);
     DeferredObject valueObj1 = new DeferredJavaObject(fmtText);
     DeferredObject[] args = { valueObj0, valueObj1 };
-    try {
-      Text output = (Text) udf.evaluate(args);
-      assertEquals("date_format() test ", expResult, output != null ? output.toString() : null);
-    } catch (IllegalArgumentException e){
-      e.getMessage().contains("Cannot parse");
-    }
-
+    Text output = (Text) udf.evaluate(args);
+    assertEquals("date_format() test ", expResult, output != null ? output.toString() : null);
   }
 
   private void runAndVerifyDate(String str, Text fmtText, String expResult, GenericUDF udf)

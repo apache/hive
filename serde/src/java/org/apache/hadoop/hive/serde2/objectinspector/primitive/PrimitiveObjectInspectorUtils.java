@@ -69,6 +69,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hive.common.util.DateParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector
@@ -79,6 +81,8 @@ import org.apache.hive.common.util.DateParser;
  */
 public final class PrimitiveObjectInspectorUtils {
 
+  static final Logger LOG =
+      LoggerFactory.getLogger(PrimitiveObjectInspectorUtils.class);
   /**
    * TypeEntry stores information about a Hive Primitive TypeInfo.
    */
@@ -1262,6 +1266,7 @@ public final class PrimitiveObjectInspectorUtils {
     try {
       return TimestampUtils.stringToTimestamp(s);
     } catch (IllegalArgumentException | DateTimeException e) {
+      LOG.info("cannot parse datetime : {}", s);
       return null;
     }
   }

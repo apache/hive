@@ -12,8 +12,8 @@ ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-11', hr=16, rs='AS');
 ALTER TABLE mpart1 ADD PARTITION (ds='1980-11-11', hr=22, rs='AS');
 
 CREATE TABLE srcpart1 (key1 INT, value1 STRING, ds DATE, hr INT, rs STRING);
-INSERT INTO TABLE srcpart1 VALUES (1, 'val1', null, null, 'AS'), (2, 'val2', '1980-11-11', '12', 'AS'),
-    (3, 'val3', '1980-11-10', '21', 'NA'), (4, 'val4', '1980-11-11', null, 'NA'), (5, 'val5', '1980-11-10', null, 'NA');
+INSERT INTO TABLE srcpart1 VALUES (1, 'val1', 'null', 'null', 'AS'), (2, 'val2', '1980-11-11', '12', 'AS'),
+    (3, 'val3', '1980-11-10', '21', 'NA'), (4, 'val4', '1980-11-11', 'null', 'NA'), (5, 'val5', '1980-11-10', 'null', 'NA');
 
 set hive.exec.dynamic.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;

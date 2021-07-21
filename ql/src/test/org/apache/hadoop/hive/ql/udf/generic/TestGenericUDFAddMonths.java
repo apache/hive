@@ -241,12 +241,8 @@ public class TestGenericUDFAddMonths {
     DeferredObject valueObj0 = new DeferredJavaObject(new Text(str));
     DeferredObject valueObj1 = new DeferredJavaObject(new IntWritable(months));
     DeferredObject[] args = { valueObj0, valueObj1 };
-    try {
-      Text output = (Text) udf.evaluate(args);
-      assertEquals("add_months() test ", expResult, output != null ? output.toString() : null);
-    } catch (IllegalArgumentException e){
-      e.getMessage().contains("Cannot parse");
-    }
+    Text output = (Text) udf.evaluate(args);
+    assertEquals("add_months() test ", expResult, output != null ? output.toString() : null);
   }
 
   private void runAndVerify(String str, int months, Text dateFormat, String expResult,

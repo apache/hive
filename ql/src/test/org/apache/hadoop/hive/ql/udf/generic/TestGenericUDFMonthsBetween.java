@@ -241,18 +241,13 @@ public class TestGenericUDFMonthsBetween {
     DeferredJavaObject valueObj1 = new DeferredJavaObject(date1 == null ? null : new Text(date1));
     DeferredJavaObject valueObj2 = new DeferredJavaObject(date2 == null ? null : new Text(date2));
     DeferredObject[] args = new DeferredObject[] { valueObj1, valueObj2 };
-    try {
-      DoubleWritable output = (DoubleWritable) udf.evaluate(args);
-      if (expDiff == null) {
-        assertNull("months_between() test for NULL STRING failed", output);
-      } else {
-        assertNotNull("months_between() test for NOT NULL STRING failed", output);
-        assertEquals("months_between() test for STRING failed", expDiff, output.get(), 0.00000001D);
-      }
-    } catch (IllegalArgumentException e){
-      e.getMessage().contains("Cannot parse");
+    DoubleWritable output = (DoubleWritable) udf.evaluate(args);
+    if (expDiff == null) {
+      assertNull("months_between() test for NULL STRING failed", output);
+    } else {
+      assertNotNull("months_between() test for NOT NULL STRING failed", output);
+      assertEquals("months_between() test for STRING failed", expDiff, output.get(), 0.00000001D);
     }
-
   }
 
   protected void runTestTs(String ts1, String ts2, Double expDiff, GenericUDFMonthsBetween udf)

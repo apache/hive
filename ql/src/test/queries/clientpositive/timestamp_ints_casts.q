@@ -13,6 +13,8 @@ select
   ,cast (cboolean1 as timestamp)
   ,cast (cbigint * 0 as timestamp)
   ,cast (ctimestamp1 as timestamp)
+  ,cast (cstring1 as timestamp)
+  ,cast (substr(cstring1, 1, 1) as timestamp)
 from alltypesorc
 -- limit output to a reasonably small number of rows
 where cbigint % 250 = 0;
@@ -28,6 +30,8 @@ select
   ,cast (cboolean1 as timestamp)
   ,cast (cbigint * 0 as timestamp)
   ,cast (ctimestamp1 as timestamp)
+  ,cast (cstring1 as timestamp)
+  ,cast (substr(cstring1, 1, 1) as timestamp)
 from alltypesorc
 -- limit output to a reasonably small number of rows
 where cbigint % 250 = 0;
@@ -63,6 +67,8 @@ select
   ,cast (cboolean1 as timestamp)
   ,cast (cbigint * 0 as timestamp)
   ,cast (ctimestamp1 as timestamp)
+  ,cast (cstring1 as timestamp)
+  ,cast (substr(cstring1, 1, 1) as timestamp)
 from alltypesorc
 -- limit output to a reasonably small number of rows
 where cbigint % 250 = 0;

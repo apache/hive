@@ -83,6 +83,17 @@ POSTHOOK: Output: default@orders_fact
 POSTHOOK: Lineage: orders_fact.dt SCRIPT []
 POSTHOOK: Lineage: orders_fact.key2 SCRIPT []
 POSTHOOK: Lineage: orders_fact.key3 SCRIPT []
+PREHOOK: query: INSERT INTO orders_fact values(23456, 104, '2002-02-30 00:00:00')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orders_fact
+POSTHOOK: query: INSERT INTO orders_fact values(23456, 104, '2002-02-30 00:00:00')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orders_fact
+POSTHOOK: Lineage: orders_fact.dt SCRIPT []
+POSTHOOK: Lineage: orders_fact.key2 SCRIPT []
+POSTHOOK: Lineage: orders_fact.key3 SCRIPT []
 PREHOOK: query: INSERT INTO orders_fact values(34567, 108, '2003-03-30 00:00:00')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -180,8 +191,8 @@ STAGE PLANS:
                 TableScan
                   alias: orders_fact
                   filterExpr: (key2 is not null and key3 is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_46_container, bigKeyColName:key3, smallTablePos:1, keyRatio:0.2
-                  Statistics: Num rows: 5 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_46_container, bigKeyColName:key3, smallTablePos:1, keyRatio:0.16666666666666666
+                  Statistics: Num rows: 6 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key3:int, 1:key2:int, 2:dt:timestamp, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
@@ -191,7 +202,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1:int), SelectColumnIsNotNull(col 0:int))
                     predicate: (key2 is not null and key3 is not null) (type: boolean)
-                    Statistics: Num rows: 5 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 6 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key3 (type: int), key2 (type: int), dt (type: timestamp)
                       outputColumnNames: _col0, _col1, _col2
@@ -199,7 +210,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1, 2]
-                      Statistics: Num rows: 5 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 6 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -405,3 +416,4 @@ POSTHOOK: Input: default@orders_fact
 POSTHOOK: Input: default@seller_dim
 #### A masked pattern was here ####
 101	101	12345	12345	Seller 1	Item 101	2001-01-30 00:00:00
+104	104	23456	23456	Seller 2	Item 104	NULL

@@ -32,9 +32,11 @@ select int(1.2) from src limit 1;
 select bigint(1.34) from src limit 1;
 select binary('1') from src limit 1;
 select boolean(1) from src limit 1;
+select date('1') from src limit 2;
 select double(1) from src limit 1;
 select float(1) from src limit 1;
 select smallint(0.9) from src limit 1;
+select timestamp('1') from src limit 2;
 
 explain extended desc default.src key;
 

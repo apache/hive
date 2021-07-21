@@ -20,7 +20,7 @@ INSERT INTO item_dim_dt values('2001-01-30', "Item 101");
 INSERT INTO item_dim_dt values('2002-01-30', "Item 102");
 
 INSERT INTO orders_fact_dt values(12345, '2001-01-30', '2011-01-30 00:00:00');
-INSERT INTO orders_fact_dt values(23456, '2004-01-30', '2014-02-28 00:00:00');
+INSERT INTO orders_fact_dt values(23456, '2004-01-30', '2014-02-30 00:00:00');
 INSERT INTO orders_fact_dt values(34567, '2008-01-30', '2018-03-30 00:00:00');
 INSERT INTO orders_fact_dt values(45678, '2002-01-30', '2012-04-30 00:00:00');
 INSERT INTO orders_fact_dt values(56789, '2009-01-30', '2019-05-30 00:00:00');
@@ -39,7 +39,7 @@ INSERT INTO item_dim_ts values('2001-01-30 00:00:00', "Item 101");
 INSERT INTO item_dim_ts values('2002-01-30 00:00:00', "Item 102");
 
 INSERT INTO orders_fact_ts values(12345, '2001-01-30 00:00:00', '2011-01-30 00:00:00');
-INSERT INTO orders_fact_ts values(23456, '2004-01-30 00:00:00', '2014-02-28 00:00:00');
+INSERT INTO orders_fact_ts values(23456, '2004-01-30 00:00:00', '2014-02-30 00:00:00');
 INSERT INTO orders_fact_ts values(34567, '2008-01-30 00:00:00', '2018-03-30 00:00:00');
 INSERT INTO orders_fact_ts values(45678, '2002-01-30 00:00:00', '2012-04-30 00:00:00');
 INSERT INTO orders_fact_ts values(56789, '2009-01-30 00:00:00', '2019-05-30 00:00:00');

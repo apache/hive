@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.common.type;
 
 import org.apache.hive.common.util.SuppressFBWarnings;
 
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,7 +27,6 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.time.format.SignStyle;
 import java.time.temporal.ChronoField;
@@ -187,7 +187,7 @@ public class Date implements Comparable<Date> {
     LocalDate localDate;
     try {
       localDate = LocalDate.parse(s, PARSE_FORMATTER);
-    } catch (DateTimeParseException e) {
+    } catch (DateTimeException e) {
       throw new IllegalArgumentException("Cannot create date, parsing error");
     }
     return new Date(localDate);
