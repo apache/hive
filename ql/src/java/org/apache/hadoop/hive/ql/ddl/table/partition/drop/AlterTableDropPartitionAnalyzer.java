@@ -18,13 +18,8 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.partition.drop;
 
-import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
-import org.apache.hadoop.hive.ql.ddl.DDLWork;
-import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
@@ -40,14 +35,5 @@ public class AlterTableDropPartitionAnalyzer extends AbstractDropPartitionAnalyz
   @Override
   protected boolean expectView() {
     return false;
-  }
-
-  @Override
-  protected void postProcess(TableName tableName, Table table, AlterTableDropPartitionDesc desc) {
-    if (!AcidUtils.isTransactionalTable(table)) {
-      return;
-    }
-
-    setAcidDdlDesc(desc);
   }
 }

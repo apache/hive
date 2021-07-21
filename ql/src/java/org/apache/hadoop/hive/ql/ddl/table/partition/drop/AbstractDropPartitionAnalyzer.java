@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
-import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -108,14 +107,9 @@ abstract class AbstractDropPartitionAnalyzer extends AbstractAlterTableAnalyzer 
     AlterTableDropPartitionDesc desc =
         new AlterTableDropPartitionDesc(tableName, partitionSpecs, mustPurge, replicationSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
-
-    postProcess(tableName, table, desc);
-
   }
 
   protected abstract boolean expectView();
-
-  protected abstract void postProcess(TableName tableName, Table table, AlterTableDropPartitionDesc desc);
 
   /**
    * Add the table partitions to be modified in the output, so that it is available for the
