@@ -1402,12 +1402,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
    * @return
    */
   private SelectHostResult selectHost(TaskInfo request, Map<String, List<NodeInfo>> availableHostMap) {
-    // short-circuit when all nodes are busy
-    if (availableHostMap.values().isEmpty()) {
-      // reset locality delay
-      if (request.localityDelayTimeout > 0 && isRequestedHostPresent(request)) {
-        request.resetLocalityDelayInfo();
-      }
+    // short-circuit when no-active instances exist
+    if (availableHostMap.isEmpty()) {
       return SELECT_HOST_RESULT_DELAYED_RESOURCES;
     }
     String[] requestedHosts = request.requestedHosts;
@@ -1537,7 +1533,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
             ((requestedHosts == null || requestedHosts.length == 0) ? "null" : requestedHostsDebugStr));
         return new SelectHostResult(nextSlot);
       }
-
+      // When all nodes are busy, reset locality delay
+      if (request.localityDelayTimeout > 0 && isRequestedHostPresent(request)) {
+        request.resetLocalityDelayInfo();
+      }
       return SELECT_HOST_RESULT_DELAYED_RESOURCES;
     } finally {
       readLock.unlock();
@@ -1812,7 +1811,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       boolean foundSlot = false;
       for (LlapServiceInstance inst : instances) {
         NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
-        if (nodeInfo != null) {
+        if (nodeInfo != null && !nodeInfo.getHost().isEmpty()) {
           List<NodeInfo> hostList = availableHostMap.get(nodeInfo.getHost());
           if (hostList == null) {
             hostList = new ArrayList<>();

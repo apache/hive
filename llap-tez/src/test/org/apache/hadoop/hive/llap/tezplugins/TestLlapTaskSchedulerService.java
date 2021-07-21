@@ -905,6 +905,48 @@ public class TestLlapTaskSchedulerService {
   }
 
   @Test(timeout = 10000)
+  public void testAdjustLocalityDelay() throws IOException, InterruptedException {
+    Priority priority1 = Priority.newInstance(1);
+    String[] host = new String[]{HOST1};
+
+    TestTaskSchedulerServiceWrapper tsWrapper =
+        new TestTaskSchedulerServiceWrapper(2000, new String[]{}, 0, 0, 1000l);
+    try {
+      TezTaskAttemptID task1 = TestTaskSchedulerServiceWrapper.generateTaskAttemptId();
+      Object clientCookie1 = "cookie1";
+
+      tsWrapper.controlScheduler(true);
+      tsWrapper.allocateTask(task1, host, priority1, clientCookie1);
+
+      tsWrapper.signalSchedulerRun();
+      tsWrapper.awaitSchedulerRun();
+
+      // No available hosts should return DELAYED_RESOURCES
+      assertEquals(0, tsWrapper.ts.delayedTaskQueue.size());
+
+      tsWrapper =
+          new TestTaskSchedulerServiceWrapper(2000, host, 0, 0, 1000l);
+      tsWrapper.controlScheduler(true);
+      tsWrapper.allocateTask(task1, host, priority1, clientCookie1);
+      assertFalse(tsWrapper.ts.getTaskInfo(task1).adjustedLocalityDelay);
+      long delayTimeout = tsWrapper.ts.getTaskInfo(task1).localityDelayTimeout;
+
+      tsWrapper.signalSchedulerRun();
+      tsWrapper.awaitSchedulerRun();
+
+      // Host is now available so task should be added on Delayed queue DELAYED_LOCALITY
+      assertEquals(1, tsWrapper.ts.delayedTaskQueue.size());
+      assertEquals(task1, tsWrapper.ts.delayedTaskQueue.peek().task);
+      // make sure the delay is reset!
+      assertTrue(tsWrapper.ts.getTaskInfo(task1).adjustedLocalityDelay);
+      assertTrue(tsWrapper.ts.delayedTaskQueue.peek().localityDelayTimeout >= delayTimeout);
+    } finally {
+      tsWrapper.shutdown();
+    }
+  }
+
+
+  @Test(timeout = 10000)
   public void testForcedLocalityUnknownHost() throws IOException, InterruptedException {
     Priority priority1 = Priority.newInstance(1);
 
