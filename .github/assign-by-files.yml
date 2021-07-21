@@ -45,9 +45,6 @@
   - kasakrisz
 '**/*CardinalityPreserving*java':
   - kasakrisz
-# query optimizer
-'**/ql/optimizer/**':
-  - jcamachor
 # llap stuff
 '**/*Llap*java':
   - pgaref
