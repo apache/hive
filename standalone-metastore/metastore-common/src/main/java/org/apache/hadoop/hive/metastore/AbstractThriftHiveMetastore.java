@@ -1143,12 +1143,11 @@ public abstract class AbstractThriftHiveMetastore implements Iface {
         throw new UnsupportedOperationException("this method is not supported");
     }
 
-  @Override
-  public OptionalCompactionInfoStruct find_next_compact2(FindNextCompactRequest rqst)
-          throws MetaException, TException {
-    throw new UnsupportedOperationException("this method is not supported");
-  }
-
+    @Override
+    public OptionalCompactionInfoStruct find_next_compact2(FindNextCompactRequest rqst)
+            throws MetaException, TException {
+        throw new UnsupportedOperationException("this method is not supported");
+    }
 
     @Override
     public void update_compactor_state(CompactionInfoStruct cr, long txn_id) throws TException {

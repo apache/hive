@@ -180,8 +180,7 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   /**
-   * This will grab the next compaction request off of
-   * the queue, and assign it to the worker.
+   * This will grab the next compaction request off of the queue, and assign it to the worker.
    * @param rqst request to find next compaction to run
    * @return an info element for next compaction in the queue, or null if there is no work to do now.
    */
