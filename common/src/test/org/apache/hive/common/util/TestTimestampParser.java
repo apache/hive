@@ -25,7 +25,7 @@ import org.junit.Test;
 /**
  * Test suite for parsing timestamps.
  */
-public class  TestTimestampParser {
+public class TestTimestampParser {
 
   /**
    * No timestamp patterns, should default to normal timestamp format.
@@ -53,12 +53,12 @@ public class  TestTimestampParser {
   @Test
   public void testDefaultInvalid() {
     final TimestampParser tsp = new TimestampParser();
-    Assert.assertEquals(null, tsp.parseTimestamp("12345"));
-    Assert.assertEquals(null, tsp.parseTimestamp("1945-12-45 23:59:59"));
-    Assert.assertEquals(null, tsp.parseTimestamp("1945-15-20 23:59:59"));
-    Assert.assertEquals(null, tsp.parseTimestamp("0000-00-00 00:00:00"));
-    Assert.assertEquals(null, tsp.parseTimestamp(""));
-    Assert.assertEquals(null, tsp.parseTimestamp("null"));
+    Assert.assertNull(tsp.parseTimestamp("12345"));
+    Assert.assertNull(tsp.parseTimestamp("1945-12-45 23:59:59"));
+    Assert.assertNull(tsp.parseTimestamp("1945-15-20 23:59:59"));
+    Assert.assertNull(tsp.parseTimestamp("0000-00-00 00:00:00"));
+    Assert.assertNull(tsp.parseTimestamp(""));
+    Assert.assertNull(tsp.parseTimestamp("null"));
   }
 
   @Test
@@ -107,7 +107,7 @@ public class  TestTimestampParser {
         "yyyy-MM-dd'T'HH:mm:ss.SSS", "yyyy-MM-dd'T'HH:mm:ss.SSSS"};
 
     final TimestampParser tsp = new TimestampParser(patterns);
-    Assert.assertEquals(null,tsp.parseTimestamp("1945-12-31-23:59:59"));
+    Assert.assertNull(tsp.parseTimestamp("1945-12-31-23:59:59"));
   }
 
   @Test()
@@ -117,7 +117,7 @@ public class  TestTimestampParser {
         "yyyy-MM-dd'T'HH:mm:ss.SSS", "yyyy-MM-dd'T'HH:mm:ss.SSSS"};
 
     final TimestampParser tsp = new TimestampParser(patterns);
-    Assert.assertEquals(null,tsp.parseTimestamp("12345"));
+    Assert.assertNull(tsp.parseTimestamp("12345"));
   }
 
   @Test
@@ -143,7 +143,7 @@ public class  TestTimestampParser {
   public void testMillisParserInvalid1() {
     final String[] patterns = { "millis", "yyyy-MM-dd'T'HH:mm:ss" };
     final TimestampParser tsp = new TimestampParser(patterns);
-    Assert.assertEquals(null, tsp.parseTimestamp("1420509274123-"));
+    Assert.assertNull(tsp.parseTimestamp("1420509274123-"));
   }
 
   @Test
@@ -151,7 +151,7 @@ public class  TestTimestampParser {
     // Also try other patterns
     final String[] patterns = { "millis", "yyyy-MM-dd'T'HH:mm:ss" };
     final TimestampParser tsp = new TimestampParser(patterns);
-    Assert.assertEquals(null, tsp.parseTimestamp("1945-12-31-23:59:59"));
+    Assert.assertNull(tsp.parseTimestamp("1945-12-31-23:59:59"));
   }
 
   /**

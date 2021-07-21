@@ -190,13 +190,13 @@ public class TimestampParser {
         LOG.debug("Could not parse timestamp text: {}", text);
       }
     }
-    Timestamp timestamp = null;
+
     try {
-      timestamp = Timestamp.valueOf(text);
+      return Timestamp.valueOf(text);
     } catch (IllegalArgumentException e) {
-      LOG.info(e.getMessage());
+      return null;
     }
-    return timestamp;
+
   }
 
   /**
