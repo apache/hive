@@ -33,9 +33,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.Queue;
 import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
@@ -51,6 +53,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
@@ -2702,6 +2705,77 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     return result;
   }
+
+  /**
+   * Based on the file schema and the low level file includes provided in the SchemaEvolution instance, this method
+   * calculates which top level columns should be included i.e. if any of the nested columns inside complex types is
+   * required, then its relevant top level parent column will be considered as required (and thus the full subtree).
+   * Hive and LLAP currently only supports column pruning on the first level, thus we need to calculate this ourselves.
+   * @param evolution
+   * @return bool array of include values, where 0th element is root struct, and any Nth element is a first level
+   * column within that
+   */
+  public static boolean[] firstLevelFileIncludes(SchemaEvolution evolution) {
+    // This is the leaf level type description include bool array
+    boolean[] lowLevelIncludes = evolution.getFileIncluded();
+    Map<Integer, TypeDescription> idMap = new HashMap<>();
+    Map<Integer, Integer> parentIdMap = new HashMap<>();
+    idToFieldSchemaMap(evolution.getFileSchema(), idMap, parentIdMap);
+
+    // Root + N top level columns...
+    boolean[] result = new boolean[evolution.getFileSchema().getChildren().size() + 1];
+
+    Set<Integer> requiredTopLevelSchemaIds = new HashSet<>();
+    for (int i = 1; i < lowLevelIncludes.length; ++i) {
+      if (lowLevelIncludes[i]) {
+        int topLevelParentId = getTopLevelParentId(i, parentIdMap);
+        if (!requiredTopLevelSchemaIds.contains(topLevelParentId)) {
+          requiredTopLevelSchemaIds.add(topLevelParentId);
+        }
+      }
+    }
+
+    List<TypeDescription> topLevelFields = evolution.getFileSchema().getChildren();
+
+    for (int typeDescriptionId : requiredTopLevelSchemaIds) {
+      result[IntStream.range(0, topLevelFields.size()).filter(
+          i -> typeDescriptionId == topLevelFields.get(i).getId()).findFirst().getAsInt() + 1] = true;
+    }
+
+    return result;
+  }
+
+  /**
+   * Recursively builds 2 maps:
+   *  ID to type description
+   *  child to parent type description
+   * @param typeDescription - the considered type description, root on first invocation
+   * @param idMap
+   * @param parentIdMap
+   */
+  private static void idToFieldSchemaMap(TypeDescription typeDescription, Map<Integer, TypeDescription> idMap,
+      Map<Integer, Integer> parentIdMap) {
+    List<TypeDescription> children = typeDescription.getChildren();
+    idMap.put(typeDescription.getId(), typeDescription);
+    if (children != null) {
+      for (TypeDescription child : children) {
+        // Outermost struct column (always id=0) is not of any concern.
+        if (typeDescription.getId() != 0) {
+          parentIdMap.put(child.getId(), typeDescription.getId());
+        }
+        idToFieldSchemaMap(child, idMap, parentIdMap);
+      }
+    }
+  }
+
+  private static Integer getTopLevelParentId(Integer id, Map<Integer, Integer> parentMap) {
+    if (parentMap.get(id) == null) {
+      return id;
+    } else {
+      return getTopLevelParentId(parentMap.get(id), parentMap);
+    }
+  }
+
 
   @VisibleForTesting
   protected ExternalFooterCachesByConf createExternalCaches() {
