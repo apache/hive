@@ -2239,6 +2239,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       Pair<String, String> asOf = qb.getAsOfForAlias(alias);
       if (asOf != null) {
+        if (!Optional.ofNullable(tab.getStorageHandler()).map(HiveStorageHandler::isTimeTravelAllowed).orElse(false)) {
+          throw new SemanticException(ErrorMsg.TIME_TRAVEL_NOT_ALLOWED, alias);
+        }
         if (asOf.getLeft() != null) {
           tab.setAsOfVersion(Long.parseLong(asOf.getLeft()));
         }

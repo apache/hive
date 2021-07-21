@@ -2346,8 +2346,8 @@ public class TestHiveIcebergStorageHandlerWithEngine {
    * into the table.
    * @param versions The number of snapshots we want to create
    * @return The table created
-   * @throws IOException
-   * @throws InterruptedException
+   * @throws IOException When there is a problem during table creation
+   * @throws InterruptedException When there is a problem during adding new data to the table
    */
   private Table prepareTableWithVersions(int versions) throws IOException, InterruptedException {
     Table table = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
@@ -2356,7 +2356,8 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     for (int i = 0; i < versions - 1; ++i) {
       // Just wait a little so we definitely will not have the same timestamp for the snapshots
       Thread.sleep(100);
-      shell.executeStatement("INSERT INTO customers values(" + (i + HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.size()) + ",'Alice','Green_" + i + "')");
+      shell.executeStatement("INSERT INTO customers values(" +
+          (i + HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.size()) + ",'Alice','Green_" + i + "')");
     }
 
     table.refresh();
