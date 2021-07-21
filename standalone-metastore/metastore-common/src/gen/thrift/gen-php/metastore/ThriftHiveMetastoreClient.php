@@ -12298,17 +12298,16 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         return;
     }
 
-    public function find_next_compact($workerId, $workerVersion)
+    public function find_next_compact($workerId)
     {
-        $this->send_find_next_compact($workerId, $workerVersion);
+        $this->send_find_next_compact($workerId);
         return $this->recv_find_next_compact();
     }
 
-    public function send_find_next_compact($workerId, $workerVersion)
+    public function send_find_next_compact($workerId)
     {
         $args = new \metastore\ThriftHiveMetastore_find_next_compact_args();
         $args->workerId = $workerId;
-        $args->workerVersion = $workerVersion;
         $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
         if ($bin_accel) {
             thrift_protocol_write_binary(
@@ -12359,6 +12358,68 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
             throw $result->o1;
         }
         throw new \Exception("find_next_compact failed: unknown result");
+    }
+
+    public function find_next_compact2(\metastore\FindNextCompactRequest $rqst)
+    {
+        $this->send_find_next_compact2($rqst);
+        return $this->recv_find_next_compact2();
+    }
+
+    public function send_find_next_compact2(\metastore\FindNextCompactRequest $rqst)
+    {
+        $args = new \metastore\ThriftHiveMetastore_find_next_compact2_args();
+        $args->rqst = $rqst;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'find_next_compact2',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('find_next_compact2', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_find_next_compact2()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_find_next_compact2_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_find_next_compact2_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->success !== null) {
+            return $result->success;
+        }
+        if ($result->o1 !== null) {
+            throw $result->o1;
+        }
+        throw new \Exception("find_next_compact2 failed: unknown result");
     }
 
     public function update_compactor_state(\metastore\CompactionInfoStruct $cr, $txn_id)

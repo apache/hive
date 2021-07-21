@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -176,7 +177,7 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.SafeToRetry
   public CompactionInfo findNextToCompact(String workerId) throws MetaException {
-    findNextToCompact(new FindNextCompactRequest(workerId, null));
+    return findNextToCompact(new FindNextCompactRequest(workerId, null));
   }
 
   /**
@@ -217,8 +218,8 @@ class CompactionTxnHandler extends TxnHandler {
           info.properties = rs.getString(6);
           // Now, update this record as being worked on by this worker.
           long now = getDbTime(dbConn);
-          s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = '" + rqst.workerId + "', " +
-            "\"CQ_WORKER_VERSION\" = '" + rqst.workerVersion + "', " +
+          s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = '" + rqst.getWorkerId() + "', " +
+            "\"CQ_WORKER_VERSION\" = '" + rqst.getWorkerVersion() + "', " +
             "\"CQ_START\" = " + now + ", \"CQ_STATE\" = '" + WORKING_STATE + "' WHERE \"CQ_ID\" = " + info.id +
             " AND \"CQ_STATE\"='" + INITIATED_STATE + "'";
           LOG.debug("Going to execute update <" + s + ">");
@@ -228,11 +229,12 @@ class CompactionTxnHandler extends TxnHandler {
             return info;
           }
           if(updCount == 0) {
-            LOG.debug("Another Worker picked up " + info);
+            LOG.debug("Worker " + rqst.getWorkerId() + " picked up " + info);
             continue;
           }
           LOG.error("Unable to set to cq_state=" + WORKING_STATE + " for compaction record: " +
-            info + ". updCnt=" + updCount + ".");
+            info + ". updCnt=" + updCount + ". workerId=" + rqst.getWorkerId() +
+            ". workerVersion=" + rqst.getWorkerVersion());
           dbConn.rollback();
           return null;
         } while( rs.next());
