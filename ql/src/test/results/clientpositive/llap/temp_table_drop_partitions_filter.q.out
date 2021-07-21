@@ -127,10 +127,10 @@ POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: default@ptestfilter_n1_temp
 POSTHOOK: Output: default@ptestfilter_n1_temp@c=US/d=1
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-0
     Drop Partition
       table: default.ptestfilter_n1_temp
 
@@ -232,10 +232,10 @@ POSTHOOK: Input: default@ptestfilter_n1_temp
 POSTHOOK: Output: default@ptestfilter_n1_temp@c=Greece/d=2
 POSTHOOK: Output: default@ptestfilter_n1_temp@c=India/d=3
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-0
     Drop Partition
       table: default.ptestfilter_n1_temp
 

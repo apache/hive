@@ -432,59 +432,6 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
   }
 
-  /**
-   * If you are disabling or removing this test case, it probably means now we support exchange partition for
-   * transactional tables. If that is the case, we also have to make sure we advance the Write IDs during exchange
-   * partition DDL for transactional tables. You can look at https://github.com/apache/hive/pull/2465 as an example.
-   * @throws Exception
-   */
-  @Test
-  public void exchangePartitionShouldNotWorkForTransactionalTables() throws Exception {
-    runStatementOnDriver("create database IF NOT EXISTS db1");
-    runStatementOnDriver("create database IF NOT EXISTS db2");
-
-    runStatementOnDriver("CREATE TABLE db1.exchange_part_test1 (f1 string) PARTITIONED BY (ds STRING)");
-
-    String tableName = "db2.exchange_part_test2";
-    runStatementOnDriver(String.format("CREATE TABLE %s (f1 string) PARTITIONED BY (ds STRING) " +
-    "TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')"
-    ,tableName));
-
-    runStatementOnDriver("ALTER TABLE db2.exchange_part_test2 ADD PARTITION (ds='2013-04-05')");
-
-    try {
-      runStatementOnDriver("ALTER TABLE db1.exchange_part_test1 EXCHANGE PARTITION (ds='2013-04-05') " +
-              "WITH TABLE db2.exchange_part_test2");
-      Assert.fail("Exchange partition should not be allowed for transaction tables" );
-    }catch(Exception e) {
-      Assert.assertTrue(e.getMessage().contains("Exchange partition is not allowed with transactional tables"));
-    }
-  }
-
-  @Test
-  public void testAddAndDropPartitionAdvancingWriteIds() throws Exception {
-    runStatementOnDriver("create database IF NOT EXISTS db1");
-
-    String tableName = "db1.add_drop_partition";
-    IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
-
-    runStatementOnDriver(String.format("CREATE TABLE %s (f1 string) PARTITIONED BY (ds STRING) " +
-    "TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')"
-    ,tableName));
-
-    String validWriteIds = msClient.getValidWriteIds(tableName).toString();
-    LOG.info("ValidWriteIds before add partition::"+ validWriteIds);
-    Assert.assertEquals("db1.add_drop_partition:0:9223372036854775807::", validWriteIds);
-    runStatementOnDriver("ALTER TABLE ex2.add_drop_partition ADD PARTITION (ds='2013-04-05')");
-    validWriteIds = msClient.getValidWriteIds(tableName).toString();
-    LOG.info("ValidWriteIds after add partition::"+ validWriteIds);
-    Assert.assertEquals("db1.add_drop_partition:1:9223372036854775807::", validWriteIds);
-    runStatementOnDriver("ALTER TABLE db1.add_drop_partition DROP PARTITION (ds='2013-04-05')");
-    validWriteIds = msClient.getValidWriteIds(tableName).toString();
-    LOG.info("ValidWriteIds after drop partition::"+ validWriteIds);
-    Assert.assertEquals("db1.add_drop_partition:2:9223372036854775807::", validWriteIds);
-  }
-
   @Test
   public void testParallelInsertAnalyzeStats() throws Exception {
     String tableName = "mm_table";
