@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -339,6 +340,7 @@ public class TestStatsUpdaterThread {
     msClient.close();
   }
 
+  @Ignore("HIVE-25363")
   @Test(timeout=160000)
   public void testQueueingWithThreads() throws Exception {
     final int PART_COUNT = 12;
