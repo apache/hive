@@ -235,7 +235,7 @@ class CompactionTxnHandler extends TxnHandler {
             continue;
           }
           LOG.error("Unable to set to cq_state=" + WORKING_STATE + " for compaction record: " +
-            info + ". updCnt=" + updCount + ". workerId=" + rqst.getWorkerVersion() +
+            info + ". updCnt=" + updCount + ". workerId=" + rqst.getWorkerId() +
             ". workerVersion=" + rqst.getWorkerVersion());
           dbConn.rollback();
           return null;
