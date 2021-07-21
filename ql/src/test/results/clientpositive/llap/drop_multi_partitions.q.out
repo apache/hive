@@ -53,10 +53,10 @@ POSTHOOK: Input: dmp@mp_n0
 POSTHOOK: Output: dmp@mp_n0@b=1/c=1
 POSTHOOK: Output: dmp@mp_n0@b=1/c=2
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-0
     Drop Partition
       table: dmp.mp_n0
 
