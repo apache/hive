@@ -27,8 +27,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
-import org.apache.hadoop.hive.metastore.metrics.Metrics;
-import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -166,12 +164,13 @@ class CompactionTxnHandler extends TxnHandler {
     }
   }
 
-
   /**
    * This will grab the next compaction request off of
    * the queue, and assign it to the worker.
    * @param workerId id of the worker calling this, will be recorded in the db
-   * @return an info element for this compaction request, or null if there is no work to do now.
+   * @deprecated  Replaced by
+   *     {@link CompactionTxnHandler#findNextToCompact(org.apache.hadoop.hive.metastore.api.FindNextCompactRequest)}
+   * @return an info element for next compaction in the queue, or null if there is no work to do now.
    */
   @Deprecated
   @Override
@@ -190,6 +189,9 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.SafeToRetry
   public CompactionInfo findNextToCompact(FindNextCompactRequest rqst) throws MetaException {
     try {
+      if (rqst == null) {
+        throw new MetaException("FindNextCompactRequest is null");
+      }
       Connection dbConn = null;
       Statement stmt = null;
       //need a separate stmt for executeUpdate() otherwise it will close the ResultSet(HIVE-12725)
@@ -229,11 +231,11 @@ class CompactionTxnHandler extends TxnHandler {
             return info;
           }
           if(updCount == 0) {
-            LOG.debug("Worker " + rqst.getWorkerId() + " picked up " + info);
+            LOG.debug("Worker {} (version: {}) picked up {}", rqst.getWorkerId(), rqst.getWorkerVersion(), info);
             continue;
           }
           LOG.error("Unable to set to cq_state=" + WORKING_STATE + " for compaction record: " +
-            info + ". updCnt=" + updCount + ". workerId=" + rqst.getWorkerId() +
+            info + ". updCnt=" + updCount + ". workerId=" + rqst.getWorkerVersion() +
             ". workerVersion=" + rqst.getWorkerVersion());
           dbConn.rollback();
           return null;

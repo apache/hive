@@ -457,7 +457,8 @@ public class TestCompactionMetrics  extends CompactorTest {
     // Check for overwrite where the order is different
     elements.add(generateElement(4,"db", "tb3", "p1", CompactionType.MINOR, TxnStore.FAILED_RESPONSE));
 
-    elements.add(generateElement(6,"db1", "tb", null, CompactionType.MINOR, TxnStore.FAILED_RESPONSE, true));
+    elements.add(generateElement(6,"db1", "tb", null, CompactionType.MINOR, TxnStore.FAILED_RESPONSE,
+            System.currentTimeMillis(), true, "4.0.0", "4.0.0"));
     elements.add(generateElement(7,"db1", "tb2", null, CompactionType.MINOR, TxnStore.FAILED_RESPONSE));
     elements.add(generateElement(8,"db1", "tb3", null, CompactionType.MINOR, TxnStore.FAILED_RESPONSE));
 
@@ -467,10 +468,14 @@ public class TestCompactionMetrics  extends CompactorTest {
     elements.add(generateElement(12,"db2", "tb4", null, CompactionType.MINOR, TxnStore.SUCCEEDED_RESPONSE));
 
     elements.add(generateElement(13,"db3", "tb3", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE));
-    elements.add(generateElement(14,"db3", "tb4", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE));
-    elements.add(generateElement(15,"db3", "tb5", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE, true));
+    // test null initiator version and worker version
+    elements.add(generateElement(14,"db3", "tb4", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE,
+            System.currentTimeMillis(), false, null, null));
+    elements.add(generateElement(15,"db3", "tb5", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE,
+            System.currentTimeMillis(),true, "4.0.0", "4.0.0"));
     elements.add(generateElement(16,"db3", "tb6", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE));
-    elements.add(generateElement(17,"db3", "tb7", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE, true));
+    elements.add(generateElement(17,"db3", "tb7", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE,
+            System.currentTimeMillis(),true, "4.0.0", "4.0.0"));
 
     scr.setCompacts(elements);
     AcidMetricService.updateMetricsFromShowCompact(scr);
@@ -833,21 +838,23 @@ public class TestCompactionMetrics  extends CompactorTest {
 
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
       CompactionType type, String state) {
-    return generateElement(id, db, table, partition, type, state, false);
-  }
-
-  private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
-      CompactionType type, String state, boolean manuallyInitiatedCompaction) {
-    return generateElement(id, db, table, partition, type, state, manuallyInitiatedCompaction, System.currentTimeMillis());
+    return generateElement(id, db, table, partition, type, state, System.currentTimeMillis());
   }
 
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
       CompactionType type, String state, long enqueueTime) {
-    return generateElement(id, db, table, partition, type, state, false, enqueueTime);
+    return generateElement(id, db, table, partition, type, state, enqueueTime, false);
   }
 
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
-      CompactionType type, String state, boolean manuallyInitiatedCompaction, long enqueueTime) {
+      CompactionType type, String state, long enqueueTime, boolean manuallyInitiatedCompaction) {
+    return generateElement(id, db, table, partition, type, state, enqueueTime, manuallyInitiatedCompaction,
+            null, null);
+  }
+
+  private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
+          CompactionType type, String state, long enqueueTime, boolean manuallyInitiatedCompaction,
+          String initiatorVersion, String workerVersion) {
     ShowCompactResponseElement element = new ShowCompactResponseElement(db, table, type, state);
     element.setId(id);
     element.setPartitionname(partition);
@@ -863,8 +870,8 @@ public class TestCompactionMetrics  extends CompactorTest {
     String workerId = "hs2-host-" + ThreadLocalRandom.current().nextInt(999);
     element.setInitiatorId(runtimeId);
     element.setWorkerid(workerId);
-    element.setInitiatorVersion("4.0.0");
-    element.setWorkerVersion("4.0.0");
+    element.setInitiatorVersion(initiatorVersion);
+    element.setWorkerVersion(workerVersion);
     return element;
   }
 
