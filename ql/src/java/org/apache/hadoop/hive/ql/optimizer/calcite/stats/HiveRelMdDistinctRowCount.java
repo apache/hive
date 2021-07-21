@@ -17,15 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.Join;
+import org.apache.calcite.rel.SingleRel;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdDistinctRowCount;
 import org.apache.calcite.rel.metadata.RelMdUtil;
@@ -38,14 +33,15 @@ import org.apache.calcite.util.BuiltInMethod;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.NumberUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCost;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.JdbcHiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 
-import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
 
@@ -93,6 +89,16 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
            groupKey, predicate, true);
   }
 
+  public Double getDistinctRowCount(RelNode r, RelMetadataQuery mq, ImmutableBitSet groupKey,
+                                    RexNode predicate) {
+    if (r instanceof SingleRel) {
+      return mq.getDistinctRowCount(r.getInput(0), groupKey, predicate);
+    } else if (r instanceof JdbcHiveTableScan) {
+      return getDistinctRowCount(((JdbcHiveTableScan) r).getHiveTableScan(), mq, groupKey, predicate);
+    }
+
+    return super.getDistinctRowCount(r, mq, groupKey, predicate);
+  }
   /**
    * TODO: This method is a copy of {@link RelMdUtil#getJoinDistinctRowCount}.
    * We will remove it once we replace Math.max with a null-safe method in
