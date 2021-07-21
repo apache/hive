@@ -4861,12 +4861,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Deprecated
   @Override
   public OptionalCompactionInfoStruct findNextCompact(String workerId) throws MetaException, TException {
-    return client.find_next_compact(workerId, null);
+    return client.find_next_compact(workerId);
   }
 
   @Override
-  public OptionalCompactionInfoStruct findNextCompact(String workerId, String workerVersion) throws MetaException, TException {
-    return client.find_next_compact(workerId, workerVersion);
+  public OptionalCompactionInfoStruct findNextCompact(FindNextCompactRequest rqst) throws MetaException, TException {
+    return client.find_next_compact2(rqst);
   }
 
   @Override

@@ -3866,8 +3866,8 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public OptionalCompactionInfoStruct findNextCompact(String workerId, String workerVersion) throws MetaException, TException {
-    return client.find_next_compact(workerId, workerVersion);
+  public OptionalCompactionInfoStruct findNextCompact(FindNextCompactRequest rqst) throws MetaException, TException {
+    return client.find_next_compact2(rqst);
   }
 
   @Override

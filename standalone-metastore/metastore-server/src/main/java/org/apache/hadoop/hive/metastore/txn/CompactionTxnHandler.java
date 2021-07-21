@@ -165,16 +165,29 @@ class CompactionTxnHandler extends TxnHandler {
     }
   }
 
+
   /**
    * This will grab the next compaction request off of
    * the queue, and assign it to the worker.
    * @param workerId id of the worker calling this, will be recorded in the db
-   * @param workerVersion runtime version of the Worker calling this
    * @return an info element for this compaction request, or null if there is no work to do now.
+   */
+  @Deprecated
+  @Override
+  @RetrySemantics.SafeToRetry
+  public CompactionInfo findNextToCompact(String workerId) throws MetaException {
+    findNextToCompact(new FindNextCompactRequest(workerId, null));
+  }
+
+  /**
+   * This will grab the next compaction request off of
+   * the queue, and assign it to the worker.
+   * @param rqst request to find next compaction to run
+   * @return an info element for next compaction in the queue, or null if there is no work to do now.
    */
   @Override
   @RetrySemantics.SafeToRetry
-  public CompactionInfo findNextToCompact(String workerId, String workerVersion) throws MetaException {
+  public CompactionInfo findNextToCompact(FindNextCompactRequest rqst) throws MetaException {
     try {
       Connection dbConn = null;
       Statement stmt = null;
@@ -204,7 +217,8 @@ class CompactionTxnHandler extends TxnHandler {
           info.properties = rs.getString(6);
           // Now, update this record as being worked on by this worker.
           long now = getDbTime(dbConn);
-          s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = '" + workerId + "', \"CQ_WORKER_VERSION\" = '" + workerVersion + "', " +
+          s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = '" + rqst.workerId + "', " +
+            "\"CQ_WORKER_VERSION\" = '" + rqst.workerVersion + "', " +
             "\"CQ_START\" = " + now + ", \"CQ_STATE\" = '" + WORKING_STATE + "' WHERE \"CQ_ID\" = " + info.id +
             " AND \"CQ_STATE\"='" + INITIATED_STATE + "'";
           LOG.debug("Going to execute update <" + s + ">");
@@ -228,7 +242,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.error("Unable to select next element for compaction, " + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "findNextToCompact(workerId:" + workerId + ")");
+        checkRetryable(dbConn, e, "findNextToCompact(rqst:" + rqst + ")");
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -236,7 +250,7 @@ class CompactionTxnHandler extends TxnHandler {
         close(rs, stmt, dbConn);
       }
     } catch (RetryException e) {
-      return findNextToCompact(workerId, workerVersion);
+      return findNextToCompact(rqst);
     }
   }
 

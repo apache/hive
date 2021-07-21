@@ -4214,7 +4214,7 @@ public interface IMetaStoreClient {
    * @throws MetaException
    * @throws TException
    */
-  OptionalCompactionInfoStruct findNextCompact(String workerId, String workerVersion) throws MetaException, TException;
+  OptionalCompactionInfoStruct findNextCompact(FindNextCompactRequest rqst) throws MetaException, TException;
 
   /**
    * Set the compaction highest write id.
