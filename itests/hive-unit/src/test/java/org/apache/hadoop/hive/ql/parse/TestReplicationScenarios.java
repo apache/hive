@@ -4132,6 +4132,7 @@ public class TestReplicationScenarios {
       rsp = metaStoreClient.getNextNotification(firstEventId, 0, null);
       Assert.fail("Get Next Nofitication should have failed due to no proxy auth");
     } catch (TException e) {
+      // Expected to throw an Exception - keep going
     }
 
     // Disable auth so the call should succeed
