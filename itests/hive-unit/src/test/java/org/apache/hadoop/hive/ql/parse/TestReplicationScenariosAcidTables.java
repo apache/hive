@@ -1145,6 +1145,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     primary.run("drop database " + dbName);
   }
 
+  @org.junit.Ignore("HIVE-25367")
   @Test
   public void testMultiDBTxn() throws Throwable {
     String tableName = testName.getMethodName();
