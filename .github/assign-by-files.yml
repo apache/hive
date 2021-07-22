@@ -6,6 +6,7 @@
 # thrift changes
 '**/*.thrift':
   - kgyrtkirk
+  - klcopp
 # parser changes
 '**/*.g':
   - kgyrtkirk
