@@ -160,6 +160,9 @@ public class SessionState implements ISessionAuthState{
   // Session-scope compile lock.
   private final ReentrantLock compileLock = new ReentrantLock(true);
 
+  // Session-scope lock for ConditionalTask#resolveTask.
+  private final ReentrantLock resolveConditionalTaskLock = new ReentrantLock(true);
+
   /**
    * current configuration.
    */
@@ -430,6 +433,10 @@ public class SessionState implements ISessionAuthState{
 
   public ReentrantLock getCompileLock() {
     return compileLock;
+  }
+
+  public ReentrantLock getResolveConditionalTaskLock() {
+    return resolveConditionalTaskLock;
   }
 
   public boolean getIsVerbose() {
