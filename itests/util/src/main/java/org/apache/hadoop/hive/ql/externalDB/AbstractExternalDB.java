@@ -153,7 +153,7 @@ public abstract class AbstractExternalDB {
     public void execute(String script) throws IOException, SQLException, ClassNotFoundException {
         testConnectionToExternalDB();
         LOG.info("Starting external database initialization to " + this.externalDBType);
-        /*
+
         try {
             LOG.info("Initialization script " + script);
             execSql(script);
@@ -162,6 +162,6 @@ public abstract class AbstractExternalDB {
         } catch (IOException e) {
             throw new IOException("initialization in external database FAILED!");
         }
-        */
+
     }
 }
