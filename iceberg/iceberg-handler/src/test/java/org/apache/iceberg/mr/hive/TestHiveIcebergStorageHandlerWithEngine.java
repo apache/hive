@@ -582,9 +582,6 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
   @Test
   public void testAlterChangeColumn() throws IOException {
-    // TODO: remove once vectorized execution can handle column reorders/renames
-    Assume.assumeTrue(!isVectorized);
-
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
@@ -609,6 +606,121 @@ public class TestHiveIcebergStorageHandlerWithEngine {
     Assert.assertArrayEquals(new Object[]{0L, "Brown"}, result.get(0));
     Assert.assertArrayEquals(new Object[]{1L, "Green"}, result.get(1));
     Assert.assertArrayEquals(new Object[]{2L, "Pink"}, result.get(2));
+
+  }
+
+  // Tests CHANGE COLUMN feature similarly like above, but with a more complex schema, aimed to verify vectorized
+  // reads support the feature properly, also combining with other schema changes e.g. ADD COLUMN
+  @Test
+  public void testSchemaEvolutionOnVectorizedReads() throws Exception {
+    // Currently only ORC, but in the future this should run against each fileformat with vectorized read support.
+    Assume.assumeTrue("Vectorized reads only.", isVectorized);
+
+    Schema orderSchema = new Schema(
+        optional(1, "order_id", Types.IntegerType.get()),
+        optional(2, "customer_first_name", Types.StringType.get()),
+        optional(3, "customer_last_name", Types.StringType.get()),
+        optional(4, "quantity", Types.IntegerType.get()),
+        optional(5, "price", Types.IntegerType.get()),
+        optional(6, "item", Types.StringType.get())
+    );
+
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(orderSchema)
+        .add(1, "Doctor", "Strange", 100, 3, "apple")
+        .add(2, "Tony", "Stark", 150, 2, "apple")
+        .add(3, "Tony", "Stark", 200, 6, "orange")
+        .add(4, "Steve", "Rogers", 100, 8, "banana")
+        .add(5, "Doctor", "Strange", 800, 7, "orange")
+        .add(6, "Thor", "Odinson", 650, 3, "apple")
+        .build();
+
+    testTables.createTable(shell, "orders", orderSchema, fileFormat, records);
+
+    // Reorder columns and rename one column
+    shell.executeStatement("ALTER TABLE orders CHANGE COLUMN " +
+        "customer_first_name customer_first_name string AFTER customer_last_name");
+    shell.executeStatement("ALTER TABLE orders CHANGE COLUMN " +
+        "quantity quantity int AFTER price");
+    shell.executeStatement("ALTER TABLE orders CHANGE COLUMN " +
+        "item fruit string");
+    List<Object[]> result = shell.executeStatement("SELECT customer_first_name, customer_last_name, SUM(quantity) " +
+        "FROM orders where price >= 3 group by customer_first_name, customer_last_name");
+
+    assertQueryResult(result, 4,
+        "Doctor", "Strange", 900L,
+        "Steve", "Rogers", 100L,
+        "Thor", "Odinson", 650L,
+        "Tony", "Stark", 200L);
+
+
+    // Adding a new column (will end up as last col of the schema)
+    shell.executeStatement("ALTER TABLE orders ADD COLUMNS (nickname string)");
+    shell.executeStatement("INSERT INTO orders VALUES (7, 'Romanoff', 'Natasha', 3, 250, 'apple', 'Black Widow')");
+    result = shell.executeStatement("SELECT customer_first_name, customer_last_name, nickname, SUM(quantity) " +
+        " FROM orders where price >= 3 group by customer_first_name, customer_last_name, nickname");
+    assertQueryResult(result, 5,
+        "Doctor", "Strange", null, 900L,
+        "Natasha", "Romanoff", "Black Widow", 250L,
+        "Steve", "Rogers", null, 100L,
+        "Thor", "Odinson", null, 650L,
+        "Tony", "Stark", null, 200L);
+
+    // Re-order newly added column (move it away from being the last column)
+    shell.executeStatement("ALTER TABLE orders CHANGE COLUMN fruit fruit string AFTER nickname");
+    result = shell.executeStatement("SELECT customer_first_name, customer_last_name, nickname, fruit, SUM(quantity) " +
+        " FROM orders where price >= 3 and fruit < 'o' group by customer_first_name, customer_last_name, nickname, " +
+        "fruit");
+    assertQueryResult(result, 4,
+        "Doctor", "Strange", null, "apple", 100L,
+        "Natasha", "Romanoff", "Black Widow", "apple", 250L,
+        "Steve", "Rogers", null, "banana", 100L,
+        "Thor", "Odinson", null, "apple", 650L);
+
+    // Rename newly added column (+ reading with different file includes)
+    shell.executeStatement("ALTER TABLE orders CHANGE COLUMN nickname nick string");
+    result = shell.executeStatement("SELECT customer_first_name, nick, SUM(quantity) " +
+        " FROM orders where fruit < 'o'and nick IS NOT NULL group by customer_first_name, nick");
+    assertQueryResult(result, 1, "Natasha", "Black Widow", 250L);
+
+    // Re-order between different types
+    shell.executeStatement("ALTER TABLE orders CHANGE COLUMN order_id order_id int AFTER customer_first_name");
+    result = shell.executeStatement("SELECT customer_first_name, nick, SUM(quantity), MIN(order_id) " +
+        " FROM orders where fruit < 'o'and nick IS NOT NULL group by customer_first_name, nick");
+    assertQueryResult(result, 1, "Natasha", "Black Widow", 250L, 7);
+
+    // Drop columns via REPLACE COLUMNS (as per query there's also a column re-order, but it should be handled as no-op)
+    shell.executeStatement("ALTER TABLE orders REPLACE COLUMNS (" +
+        "order_id int, customer_last_name string, nick string, quantity int, fruit string)");
+
+    result = shell.executeStatement("DESCRIBE orders");
+    assertQueryResult(result, 5,
+        "customer_last_name", "string", "from deserializer",
+        "order_id", "int", "from deserializer",
+        "quantity", "int", "from deserializer",
+        "nick", "string", "from deserializer",
+        "fruit", "string", "from deserializer");
+    result = shell.executeStatement("SELECT * FROM orders ORDER BY order_id");
+    assertQueryResult(result, 7,
+        "Strange", 1, 100, null, "apple",
+        "Stark", 2, 150, null, "apple",
+        "Stark", 3, 200, null, "orange",
+        "Rogers", 4, 100, null, "banana",
+        "Strange", 5, 800, null, "orange",
+        "Odinson", 6, 650, null, "apple",
+        "Romanoff", 7, 250, "Black Widow", "apple");
+
+  }
+
+  private static void assertQueryResult(List<Object[]> result, int expectedCount, Object... expectedRows) {
+    Assert.assertEquals(expectedCount, result.size());
+    int colCount = expectedRows.length / expectedCount;
+    for (int i = 0; i < expectedCount; ++i) {
+      Object[] rows = new Object[colCount];
+      for (int j = 0; j < colCount; ++j) {
+        rows[j] = expectedRows[i * colCount + j];
+      }
+      Assert.assertArrayEquals(rows, result.get(i));
+    }
   }
 
   @Test
