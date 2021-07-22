@@ -125,7 +125,6 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHO
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.getReplPolicyIdString;
-import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.FAILOVER_READY_MARKER;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.cleanupSnapshots;
@@ -178,17 +177,22 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           return ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getErrorCode();
         }
         Path previousValidHiveDumpPath = getPreviousValidDumpMetadataPath(dumpRoot);
-        work.setBootstrap(previousValidHiveDumpPath == null);
-        if (previousValidHiveDumpPath != null) {
+        boolean isPrevDumpFailoverReady = false;
+        if (previousValidHiveDumpPath == null) {
+          work.setBootstrap(true);
+        } else {
           work.setOldReplScope(new DumpMetaData(previousValidHiveDumpPath, conf).getReplScope());
+          isPrevDumpFailoverReady = isDumpFailoverReady(previousValidHiveDumpPath);
         }
-        boolean isPrevDumpFailoverReady = checkFailoverStatus(previousValidHiveDumpPath);
         //Proceed with dump operation in following cases:
         //1. No previous dump is present.
         //2. Previous dump is already loaded and it is not in failover ready status.
         if (shouldDump(previousValidHiveDumpPath, isPrevDumpFailoverReady)) {
           Path currentDumpPath = getCurrentDumpPath(dumpRoot, work.isBootstrap());
           Path hiveDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
+          if (!work.isBootstrap()) {
+            preProcessFailoverIfRequired(previousValidHiveDumpPath, hiveDumpRoot, isPrevDumpFailoverReady);
+          }
           // Set distCp custom name corresponding to the replication policy.
           String mapRedCustomName = ReplUtils.getDistCpCustomName(conf, work.dbNameOrPattern);
           conf.set(JobContext.JOB_NAME, mapRedCustomName);
@@ -247,60 +251,53 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       }
       catch (Exception ex){
         LOG.error("Failed to collect replication metrics: ", ex);
-        return errorCode;        
+        return errorCode;
       }
     }
     return 0;
   }
 
-  private void rollbackFailover(Path failoverReadyMarker, Path failoverMetadataFile, Database db)
-          throws HiveException, IOException {
-    LOG.info("Rolling back failover initiated in previous dump iteration.");
-    FileSystem fs = failoverMetadataFile.getFileSystem(conf);
-    if (failoverMetadataFile != null) {
-      fs.delete(failoverMetadataFile, true);
-    }
-    if (failoverReadyMarker != null) {
-      fs.delete(failoverReadyMarker, true);
-    }
-    unsetReplFailoverEnabledIfSet(db);
-  }
-
-  private boolean checkFailoverStatus(Path previousValidHiveDumpPath) throws HiveException, IOException {
-    if (previousValidHiveDumpPath == null) {
-      return false;
-    }
-    FileSystem fs = previousValidHiveDumpPath.getFileSystem(conf);
-    Path failoverReadyMarkerFile = new Path(previousValidHiveDumpPath, ReplAck.FAILOVER_READY_MARKER.toString());
-    boolean isFailoverReadyMarkerPresent = fs.exists(failoverReadyMarkerFile);
-    boolean failoverEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_FAILOVER_START);
-    if (isFailoverReadyMarkerPresent && failoverEnabled) {
-      //If failoverReadyMarker is present and failover config is enabled, this means Failover ready state is already
-      //achieved and this dump iteration will be skipped.
-      return true;
-    }
+  private void preProcessFailoverIfRequired(Path previousValidHiveDumpDir, Path currentHiveDumpDir,
+                                            boolean isPrevDumpFailoverReady) throws HiveException, IOException {
+    FileSystem fs = currentHiveDumpDir.getFileSystem(conf);
+    boolean shouldFailover = shouldFailover();
     Database db = getHive().getDatabase(work.dbNameOrPattern);
-    boolean isDbFailedOver = MetaStoreUtils.isDbBeingFailedOver(db);
-    if (isFailoverReadyMarkerPresent) {
-      //Since failoverReadyMarker is present and failover config is disabled, Just check the repl.failover.enabled
-      //property for database. If this property is enabled, that means we've to revert the changes done by the failover
-      //process in previous dump iteration and if this prop is disabled, that means this is the first dump operation
-      //after failover on the original target cluster.
+    if (isPrevDumpFailoverReady) {
+      boolean isDbFailedOver = MetaStoreUtils.isDbBeingFailedOver(db);
       if (isDbFailedOver) {
-        Path failoverMetadataFile = new Path(previousValidHiveDumpPath, FAILOVER_READY_MARKER.toString());
-        assert fs.exists(failoverMetadataFile);
-        rollbackFailover(failoverReadyMarkerFile, failoverMetadataFile, db);
+        //Since previous valid dump is failover ready and repl.failover.enabled is set for database, just rollback
+        // the failover process initiated in the previous iteration.
+        LOG.info("Rolling back failover initiated in previous dump iteration.");
+        fs.delete(new Path(previousValidHiveDumpDir, ReplAck.FAILOVER_READY_MARKER.toString()), true);
       } else {
+        //Since previous valid dump is failover ready and repl.failover.enabled is not set for database, this means
+        //this is first dump operation in the reverse direction.
         LOG.info("Switching to bootstrap dump as this is the first dump execution after failover.");
         work.setFirstDumpAfterFailover(true);
       }
-    } else if (!failoverEnabled) {
-      //If failoverReadyMarkerFile is not present and failover config is also disabled, then just make sure that
-      //repl.failover.enabled property is unset for the database under replication as it would restrict some background
-      //threads to run for this database unnecessarily.
+    } else if (work.shouldOverWrite()) {
+      //shouldOverWrite is set when previous failed dump iteration is resumed.
+      Path failoverMetadataFile = new Path(currentHiveDumpDir, FailoverMetaData.FAILOVER_METADATA);
+      Path failoverReadyMarkerFile = new Path(currentHiveDumpDir, ReplAck.FAILOVER_READY_MARKER.toString());
+      if (fs.exists(failoverReadyMarkerFile)) {
+        //If failoverReadyMarker exists, this means previous dump failed while creating dump ACK. Just delete and proceed.
+        LOG.info("Deleting failover ready marker file: {}.", failoverReadyMarkerFile);
+        fs.delete(failoverReadyMarkerFile, true);
+      }
+      if (fs.exists(failoverMetadataFile) && !shouldFailover) {
+        LOG.info("Rolling back failover initiated in previous dump iteration.");
+        fs.delete(failoverMetadataFile, true);
+      }
+    }
+    if (!shouldFailover) {
       unsetReplFailoverEnabledIfSet(db);
     }
-    return false;
+  }
+
+  private boolean isDumpFailoverReady(Path previousValidHiveDumpPath) throws HiveException, IOException {
+    FileSystem fs = previousValidHiveDumpPath.getFileSystem(conf);
+    Path failoverReadyMarkerFile = new Path(previousValidHiveDumpPath, ReplAck.FAILOVER_READY_MARKER.toString());
+    return fs.exists(failoverReadyMarkerFile);
   }
 
   private void initiateAuthorizationDumpTask() throws SemanticException {
@@ -329,35 +326,11 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_ATLAS_METADATA);
   }
 
-  private Path getCurrentDumpPath(Path dumpRoot, boolean isBootstrap) throws IOException, HiveException {
+  private Path getCurrentDumpPath(Path dumpRoot, boolean isBootstrap) throws IOException {
     Path lastDumpPath = ReplUtils.getLatestDumpPath(dumpRoot, conf);
     if (lastDumpPath != null && shouldResumePreviousDump(lastDumpPath, isBootstrap)) {
       //Resume previous dump
       LOG.info("Resuming the dump with existing dump directory {}", lastDumpPath);
-      FileSystem fs = lastDumpPath.getFileSystem(conf);
-      Path hiveDumpDir = new Path(lastDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
-      Path failoverMetadataFile = new Path(hiveDumpDir, FailoverMetaData.FAILOVER_METADATA);
-      Path failoverReadyMarkerFile = new Path(hiveDumpDir, ReplAck.FAILOVER_READY_MARKER.toString());
-      if (fs.exists(failoverReadyMarkerFile)) {
-        //If failoverReadyMarkerFile exists, this means previous dump iteration failed while creating dump ACK file.
-        //So, just delete this file and proceed further.
-        LOG.info("Deleting failover ready marker file: {} created in previous dump iteration.", failoverReadyMarkerFile);
-        fs.delete(failoverReadyMarkerFile, true);
-      }
-      if (fs.exists(failoverMetadataFile)) {
-        //If failoverMetadata file exists, this means previous dump iteration failed after writing failover metadata info
-        //Now, if the failover start config is enabled, then just use the same metadata in current iteration also.
-        //    Else just rollback failover initiated in previous failed dump iteration.
-        if (conf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_FAILOVER_START)) {
-          FailoverMetaData fmd = new FailoverMetaData(hiveDumpDir, conf);
-          if (fmd.isValidMetadata()) {
-            LOG.info("Resuming the dump with existing failover metadata: {}", fmd.getFilePath());
-            work.setFailoverMetadata(fmd);
-          }
-        } else {
-          rollbackFailover(null, failoverMetadataFile, getHive().getDatabase(work.dbNameOrPattern));
-        }
-      }
       work.setShouldOverwrite(true);
       return lastDumpPath;
     } else {
@@ -405,11 +378,11 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
 
   private void finishRemainingTasks() throws SemanticException {
-    boolean isFailoverInProgress = conf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_FAILOVER_START) && !work.isBootstrap();
+    boolean isFailoverInProgress = shouldFailover() && !work.isBootstrap();
     if (isFailoverInProgress) {
       Utils.create(new Path(work.getCurrentDumpPath(), ReplUtils.REPL_HIVE_BASE_DIR + File.separator
               + ReplAck.FAILOVER_READY_MARKER), conf);
-      LOG.info("Dump marked as failover ready");
+      LOG.info("Dump marked as failover ready.");
     }
     Path dumpAckFile = new Path(work.getCurrentDumpPath(), ReplUtils.REPL_HIVE_BASE_DIR + File.separator
                     + ReplAck.DUMP_ACKNOWLEDGEMENT);
@@ -518,12 +491,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return false;
   }
 
-  private boolean shouldDump(Path previousDumpPath, boolean isPrevDumpFailoverReady) throws IOException {
+  private boolean shouldDump(Path previousDumpPath, boolean isFailoverMarkerPresent) throws IOException {
     //If no previous dump means bootstrap. So return true as there was no
     //previous dump to load
     if (previousDumpPath == null) {
       return true;
-    } else if (isPrevDumpFailoverReady) {
+    } else if (isFailoverMarkerPresent && shouldFailover()) {
       return false;
     } else {
       FileSystem fs = previousDumpPath.getFileSystem(conf);
@@ -547,6 +520,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             || !tablesForBootstrap.isEmpty()
             || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)
             || conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES);
+  }
+
+  private boolean shouldFailover() {
+    return conf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_FAILOVER_START);
   }
 
   private boolean previousReplScopeModified() {
@@ -648,23 +625,28 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return true;
   }
 
-  private void fetchFailoverMetadata(Hive hiveDb) throws HiveException, TException {
-    FailoverMetaData fmd = new FailoverMetaData(
-            new Path(work.getCurrentDumpPath(), ReplUtils.REPL_HIVE_BASE_DIR), conf);
+  private void fetchFailoverMetadata(Hive hiveDb) throws HiveException, IOException, TException {
+    Path hiveDumpDir = new Path(work.getCurrentDumpPath(), ReplUtils.REPL_HIVE_BASE_DIR);
+    FailoverMetaData fmd = new FailoverMetaData(hiveDumpDir, conf);
+    FileSystem fs = hiveDumpDir.getFileSystem(conf);
+    if (fs.exists(new Path(hiveDumpDir, FailoverMetaData.FAILOVER_METADATA)) && fmd.isValidMetadata()) {
+      work.setFailoverMetadata(fmd);
+      return;
+    }
     List<Long> txnsForDb = getOpenTxns(getTxnMgr().getValidTxns(excludedTxns), work.dbNameOrPattern);
     if (!txnsForDb.isEmpty()) {
+      LOG.debug("Going to abort transactions: {} for database: {}.", txnsForDb, work.dbNameOrPattern);
       hiveDb.abortTransactions(txnsForDb);
     }
     fmd.setAbortedTxns(txnsForDb);
     fmd.setCursorPoint(currentNotificationId(hiveDb));
-    ValidTxnList failoverTxns = getTxnMgr().getValidTxns(excludedTxns);
-    List<Long> openTxns = getOpenTxns(failoverTxns);
+    ValidTxnList allValidTxns = getTxnMgr().getValidTxns(excludedTxns);
+    List<Long> openTxns = getOpenTxns(allValidTxns);
     fmd.setOpenTxns(openTxns);
     fmd.setTxnsWithoutLock(getTxnsNotPresentInHiveLocksTable(openTxns));
-    txnsForDb = getOpenTxns(failoverTxns, work.dbNameOrPattern);
+    txnsForDb = getOpenTxns(allValidTxns, work.dbNameOrPattern);
     if (!txnsForDb.isEmpty()) {
-      LOG.warn("Txns: " + txnsForDb + " initiated for database: "
-              + work.dbNameOrPattern + " while failover is in progress.");
+      LOG.debug("Going to abort transactions: {} for database: {}.", txnsForDb, work.dbNameOrPattern);
       hiveDb.abortTransactions(txnsForDb);
       fmd.addToAbortedTxns(txnsForDb);
     }
@@ -708,13 +690,11 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     if (!HiveConf.getBoolVar(conf, REPL_DUMP_METADATA_ONLY)) {
       setReplSourceFor(hiveDb, dbName, db);
     }
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_FAILOVER_START)) {
+    if (shouldFailover()) {
       if (!MetaStoreUtils.isDbBeingFailedOver(db)) {
         setReplFailoverEnabled(db);
       }
-      if (work.getFailoverMetadata() == null) {
-        fetchFailoverMetadata(hiveDb);
-      }
+      fetchFailoverMetadata(hiveDb);
       assert work.getFailoverMetadata().isValidMetadata();
       work.overrideLastEventToDump(hiveDb, bootDumpBeginReplId, work.getFailoverMetadata().getFailoverEventId());
     } else {

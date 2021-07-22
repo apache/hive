@@ -320,6 +320,10 @@ public class ReplDumpWork implements Serializable {
     return tasks;
   }
 
+  public boolean shouldOverWrite() {
+    return shouldOverwrite;
+  }
+
   public void setShouldOverwrite(boolean shouldOverwrite) {
     this.shouldOverwrite = shouldOverwrite;
   }
