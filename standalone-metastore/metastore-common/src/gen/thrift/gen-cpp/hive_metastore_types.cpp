@@ -4448,6 +4448,11 @@ void TruncateTableRequest::__set_validWriteIdList(const std::string& val) {
   this->validWriteIdList = val;
 __isset.validWriteIdList = true;
 }
+
+void TruncateTableRequest::__set_environmentContext(const EnvironmentContext& val) {
+  this->environmentContext = val;
+__isset.environmentContext = true;
+}
 std::ostream& operator<<(std::ostream& out, const TruncateTableRequest& obj)
 {
   obj.printTo(out);
@@ -4530,6 +4535,14 @@ uint32_t TruncateTableRequest::read(::apache::thrift::protocol::TProtocol* iprot
           xfer += iprot->skip(ftype);
         }
         break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->environmentContext.read(iprot);
+          this->__isset.environmentContext = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -4582,6 +4595,11 @@ uint32_t TruncateTableRequest::write(::apache::thrift::protocol::TProtocol* opro
     xfer += oprot->writeString(this->validWriteIdList);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.environmentContext) {
+    xfer += oprot->writeFieldBegin("environmentContext", ::apache::thrift::protocol::T_STRUCT, 6);
+    xfer += this->environmentContext.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -4594,6 +4612,7 @@ void swap(TruncateTableRequest &a, TruncateTableRequest &b) {
   swap(a.partNames, b.partNames);
   swap(a.writeId, b.writeId);
   swap(a.validWriteIdList, b.validWriteIdList);
+  swap(a.environmentContext, b.environmentContext);
   swap(a.__isset, b.__isset);
 }
 
@@ -4603,6 +4622,7 @@ TruncateTableRequest::TruncateTableRequest(const TruncateTableRequest& other140)
   partNames = other140.partNames;
   writeId = other140.writeId;
   validWriteIdList = other140.validWriteIdList;
+  environmentContext = other140.environmentContext;
   __isset = other140.__isset;
 }
 TruncateTableRequest& TruncateTableRequest::operator=(const TruncateTableRequest& other141) {
@@ -4611,6 +4631,7 @@ TruncateTableRequest& TruncateTableRequest::operator=(const TruncateTableRequest
   partNames = other141.partNames;
   writeId = other141.writeId;
   validWriteIdList = other141.validWriteIdList;
+  environmentContext = other141.environmentContext;
   __isset = other141.__isset;
   return *this;
 }
@@ -4622,6 +4643,7 @@ void TruncateTableRequest::printTo(std::ostream& out) const {
   out << ", " << "partNames="; (__isset.partNames ? (out << to_string(partNames)) : (out << "<null>"));
   out << ", " << "writeId="; (__isset.writeId ? (out << to_string(writeId)) : (out << "<null>"));
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
+  out << ", " << "environmentContext="; (__isset.environmentContext ? (out << to_string(environmentContext)) : (out << "<null>"));
   out << ")";
 }
 

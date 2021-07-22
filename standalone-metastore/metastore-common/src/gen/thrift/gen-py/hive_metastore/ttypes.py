@@ -2541,16 +2541,18 @@ class TruncateTableRequest(object):
      - partNames
      - writeId
      - validWriteIdList
+     - environmentContext
 
     """
 
 
-    def __init__(self, dbName=None, tableName=None, partNames=None, writeId=-1, validWriteIdList=None,):
+    def __init__(self, dbName=None, tableName=None, partNames=None, writeId=-1, validWriteIdList=None, environmentContext=None,):
         self.dbName = dbName
         self.tableName = tableName
         self.partNames = partNames
         self.writeId = writeId
         self.validWriteIdList = validWriteIdList
+        self.environmentContext = environmentContext
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -2591,6 +2593,12 @@ class TruncateTableRequest(object):
                     self.validWriteIdList = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.STRUCT:
+                    self.environmentContext = EnvironmentContext()
+                    self.environmentContext.read(iprot)
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -2623,6 +2631,10 @@ class TruncateTableRequest(object):
         if self.validWriteIdList is not None:
             oprot.writeFieldBegin('validWriteIdList', TType.STRING, 5)
             oprot.writeString(self.validWriteIdList.encode('utf-8') if sys.version_info[0] == 2 else self.validWriteIdList)
+            oprot.writeFieldEnd()
+        if self.environmentContext is not None:
+            oprot.writeFieldBegin('environmentContext', TType.STRUCT, 6)
+            self.environmentContext.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -28828,6 +28840,7 @@ TruncateTableRequest.thrift_spec = (
     (3, TType.LIST, 'partNames', (TType.STRING, 'UTF8', False), None, ),  # 3
     (4, TType.I64, 'writeId', None, -1, ),  # 4
     (5, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 5
+    (6, TType.STRUCT, 'environmentContext', [EnvironmentContext, None], None, ),  # 6
 )
 all_structs.append(TruncateTableResponse)
 TruncateTableResponse.thrift_spec = (

@@ -160,4 +160,13 @@ public interface HiveMetaHook {
     // Do nothing
   }
 
+  /**
+   * Called before deleting the data and statistics from the table in the metastore during TRUNCATE TABLE.
+   * @param table table to be truncated
+   * @param context context of the truncate operation
+   * @throws MetaException
+   */
+  public default void preTruncateTable(Table table, EnvironmentContext context) throws MetaException {
+    // Do nothing
+  }
 }

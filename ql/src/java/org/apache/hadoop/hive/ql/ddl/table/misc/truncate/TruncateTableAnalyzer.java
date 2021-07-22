@@ -104,7 +104,8 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
 
     validateUnsupportedPartitionClause(table, root.getChildCount() > 1);
 
-    if (table.isNonNative()) {
+    if (table.isNonNative()
+        && (table.getStorageHandler() == null || !table.getStorageHandler().supportsTruncateOnNonNativeTables())) {
       throw new SemanticException(ErrorMsg.TRUNCATE_FOR_NON_NATIVE_TABLE.format(tableName)); //TODO
     }
 

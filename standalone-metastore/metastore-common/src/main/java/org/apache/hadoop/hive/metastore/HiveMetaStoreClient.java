@@ -1849,11 +1849,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   private void truncateTableInternal(String catName, String dbName, String tableName,
       List<String> partNames, String validWriteIds, long writeId)
           throws MetaException, TException {
+    Table table = getTable(catName, dbName, tableName);
+    HiveMetaHook hook = getHook(table);
+    EnvironmentContext envContext = new EnvironmentContext();
+    if (hook != null) {
+      hook.preTruncateTable(table, envContext);
+    }
     TruncateTableRequest req = new TruncateTableRequest(
         prependCatalogToDbName(catName, dbName, conf), tableName);
     req.setPartNames(partNames);
     req.setValidWriteIdList(validWriteIds);
     req.setWriteId(writeId);
+    req.setEnvironmentContext(envContext);
     client.truncate_table_req(req);
   }
 

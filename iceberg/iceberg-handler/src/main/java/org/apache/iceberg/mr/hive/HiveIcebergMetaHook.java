@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.CatalogUtil;
+import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
@@ -59,6 +60,7 @@ import org.apache.iceberg.UpdateProperties;
 import org.apache.iceberg.UpdateSchema;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.io.FileIO;
@@ -335,6 +337,16 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     }
   }
 
+  @Override
+  public void preTruncateTable(org.apache.hadoop.hive.metastore.api.Table table, EnvironmentContext context)
+      throws MetaException {
+    this.catalogProperties = getCatalogProperties(table);
+    this.icebergTable = Catalogs.loadTable(conf, catalogProperties);
+    DeleteFiles delete = icebergTable.newDelete();
+    delete.deleteFromRowFilter(Expressions.alwaysTrue());
+    delete.commit();
+    context.putToProperties("truncateSkipDataDeletion", "true");
+  }
 
   private void alterTableProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable,
       Map<String, String> contextProperties) {
