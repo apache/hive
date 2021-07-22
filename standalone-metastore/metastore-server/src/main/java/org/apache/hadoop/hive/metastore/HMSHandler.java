@@ -152,6 +152,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @VisibleForTesting
   static long testTimeoutValue = -1;
 
+  public static final String TRUNCATE_SKIP_DATA_DELETION = "truncateSkipDataDeletion";
   public static final String ADMIN = "admin";
   public static final String PUBLIC = "public";
 
@@ -3362,42 +3363,50 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public void truncate_table(final String dbName, final String tableName, List<String> partNames)
       throws NoSuchObjectException, MetaException {
     // Deprecated path, won't work for txn tables.
-    truncateTableInternal(dbName, tableName, partNames, null, -1);
+    truncateTableInternal(dbName, tableName, partNames, null, -1, null);
   }
 
   @Override
   public TruncateTableResponse truncate_table_req(TruncateTableRequest req)
       throws MetaException, TException {
     truncateTableInternal(req.getDbName(), req.getTableName(), req.getPartNames(),
-        req.getValidWriteIdList(), req.getWriteId());
+        req.getValidWriteIdList(), req.getWriteId(), req.getEnvironmentContext());
     return new TruncateTableResponse();
   }
 
   private void truncateTableInternal(String dbName, String tableName, List<String> partNames,
-                                     String validWriteIds, long writeId) throws MetaException, NoSuchObjectException {
+                                     String validWriteIds, long writeId, EnvironmentContext context) throws MetaException, NoSuchObjectException {
     boolean isSkipTrash = false, needCmRecycle = false;
     try {
       String[] parsedDbName = parseDbName(dbName, conf);
       Table tbl = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
 
-      boolean truncateFiles = !TxnUtils.isTransactionalTable(tbl) ||
-          !MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE);
+      boolean skipDataDeletion = Optional.ofNullable(context)
+          .map(EnvironmentContext::getProperties)
+          .map(prop -> prop.get(TRUNCATE_SKIP_DATA_DELETION))
+          .map(Boolean::parseBoolean)
+          .orElse(false);
 
-      if (truncateFiles) {
-        isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
-        Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-        needCmRecycle = ReplChangeManager.shouldEnableCm(db, tbl);
-      }
-      // This is not transactional
-      for (Path location : getLocationsForTruncate(getMS(), parsedDbName[CAT_NAME],
-          parsedDbName[DB_NAME], tableName, tbl, partNames)) {
-        FileSystem fs = location.getFileSystem(getConf());
+      if (!skipDataDeletion) {
+        boolean truncateFiles = !TxnUtils.isTransactionalTable(tbl)
+            || !MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE);
+
         if (truncateFiles) {
-          truncateDataFiles(location, fs, isSkipTrash, needCmRecycle);
-        } else {
-          // For Acid tables we don't need to delete the old files, only write an empty baseDir.
-          // Compaction and cleaner will take care of the rest
-          addTruncateBaseFile(location, writeId, fs);
+          isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
+          Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+          needCmRecycle = ReplChangeManager.shouldEnableCm(db, tbl);
+        }
+        // This is not transactional
+        for (Path location : getLocationsForTruncate(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
+            tbl, partNames)) {
+          FileSystem fs = location.getFileSystem(getConf());
+          if (truncateFiles) {
+            truncateDataFiles(location, fs, isSkipTrash, needCmRecycle);
+          } else {
+            // For Acid tables we don't need to delete the old files, only write an empty baseDir.
+            // Compaction and cleaner will take care of the rest
+            addTruncateBaseFile(location, writeId, fs);
+          }
         }
       }
 

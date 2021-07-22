@@ -302,7 +302,8 @@ struct TruncateTableRequest {
   2: required string tableName,
   3: optional list<string> partNames,
   4: optional i64 writeId=-1,
-  5: optional string validWriteIdList
+  5: optional string validWriteIdList,
+  6: optional EnvironmentContext environmentContext
 }
 
 struct TruncateTableResponse {
