@@ -811,6 +811,9 @@ public class TestCompactionMetrics  extends CompactorTest {
         2, Metrics.getOrCreateGauge(MetricsConstants.TABLES_WITH_X_ABORTED_TXNS).intValue());
   }
 
+  /**
+   * See also org.apache.hadoop.hive.ql.TestTxnCommands3#testWritesToDisabledCompactionTableCtas()
+   */
   @Test
   public void testWritesToDisabledCompactionTable() throws Exception {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS, HMSMetricsListener.class.getName());
