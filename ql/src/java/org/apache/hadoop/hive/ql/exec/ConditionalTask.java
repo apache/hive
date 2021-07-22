@@ -80,7 +80,7 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
     resTasks = resolver.getTasks(conf, resolverCtx);
     resolved = true;
 
-    ReentrantLock resolveTaskLock = SessionState.get().getResolveConditionalTaskLock();
+    ReentrantLock resolveTaskLock = queryState.getResolveConditionalTaskLock();
     try {
       resolveTaskLock.lock();
       resolveTask();
