@@ -85,6 +85,7 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
   private ReplStatsTracker replStatsTracker;
   private String scheduledQueryName;
   private String executionId;
+  private boolean shouldFailover;
 
   /*
   these are sessionState objects that are copied over to work to allow for parallel execution.
@@ -129,16 +130,19 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
       if (metricCollector != null) {
         metricCollector.setMetricsMBean(name);
       }
+      Path failoverReadyMarker = new Path(dumpDirectory, ReplAck.FAILOVER_READY_MARKER.toString());
+      FileSystem fs = failoverReadyMarker.getFileSystem(hiveConf);
+      shouldFailover = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_REPL_FAILOVER_START)
+              && fs.exists(failoverReadyMarker);
       incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
           new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector,
-          replStatsTracker);
+          replStatsTracker, shouldFailover);
 
       /*
        * If the current incremental dump also includes bootstrap for some tables, then create iterator
        * for the same.
        */
       Path incBootstrapDir = new Path(dumpDirectory, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
-      FileSystem fs = incBootstrapDir.getFileSystem(hiveConf);
       if (fs.exists(incBootstrapDir)) {
         this.bootstrapIterator = new BootstrapEventsIterator(
                 new Path(incBootstrapDir, EximUtil.METADATA_PATH_NAME).toString(), dbNameToLoadIn, true,
@@ -196,6 +200,10 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
 
   BootstrapEventsIterator bootstrapIterator() {
     return bootstrapIterator;
+  }
+
+  boolean shouldFailover() {
+    return this.shouldFailover;
   }
 
   ConstraintEventsIterator constraintsIterator() {
