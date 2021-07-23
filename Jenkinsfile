@@ -81,7 +81,9 @@ def buildHive(args) {
   configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
     withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
       sh '''#!/bin/bash -e
-ls -l
+echo "@@ set"
+set
+echo "@@ set"
 set -x
 . /etc/profile.d/confs.sh
 export USER="`whoami`"
