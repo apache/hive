@@ -152,6 +152,121 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice_orc_all_types
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1.1	1.2	false	4	567890123456789	6	col7	2012-10-03 19:58:08	1234-09-02	10.01
+PREHOOK: query: create external table tbl_ice_orc_parted (
+    a int,
+    b string
+    ) partitioned by (p1 string, p2 string)
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_ice_orc_parted
+POSTHOOK: query: create external table tbl_ice_orc_parted (
+    a int,
+    b string
+    ) partitioned by (p1 string, p2 string)
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_ice_orc_parted
+PREHOOK: query: insert into tbl_ice_orc_parted values
+                                      (1, 'aa', 'Europe', 'Hungary'),
+                                      (1, 'bb', 'Europe', 'Hungary'),
+                                      (2, 'aa', 'America', 'USA'),
+                                      (2, 'bb', 'America', 'Canada')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_ice_orc_parted
+POSTHOOK: query: insert into tbl_ice_orc_parted values
+                                      (1, 'aa', 'Europe', 'Hungary'),
+                                      (1, 'bb', 'Europe', 'Hungary'),
+                                      (2, 'aa', 'America', 'USA'),
+                                      (2, 'bb', 'America', 'Canada')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_ice_orc_parted
+PREHOOK: query: select p1, a, min(b) from tbl_ice_orc_parted group by p1, a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_orc_parted
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select p1, a, min(b) from tbl_ice_orc_parted group by p1, a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_orc_parted
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Europe	1	aa
+America	2	aa
+PREHOOK: query: alter table tbl_ice_orc_parted change column p1 p1 string after a
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@tbl_ice_orc_parted
+PREHOOK: Output: default@tbl_ice_orc_parted
+POSTHOOK: query: alter table tbl_ice_orc_parted change column p1 p1 string after a
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@tbl_ice_orc_parted
+POSTHOOK: Output: default@tbl_ice_orc_parted
+PREHOOK: query: select p1, a, min(b) from tbl_ice_orc_parted group by p1, a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_orc_parted
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select p1, a, min(b) from tbl_ice_orc_parted group by p1, a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_orc_parted
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Europe	1	aa
+America	2	aa
+PREHOOK: query: alter table tbl_ice_orc_parted change column a a int after b
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@tbl_ice_orc_parted
+PREHOOK: Output: default@tbl_ice_orc_parted
+POSTHOOK: query: alter table tbl_ice_orc_parted change column a a int after b
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@tbl_ice_orc_parted
+POSTHOOK: Output: default@tbl_ice_orc_parted
+PREHOOK: query: describe tbl_ice_orc_parted
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_ice_orc_parted
+POSTHOOK: query: describe tbl_ice_orc_parted
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_ice_orc_parted
+p1                  	string              	from deserializer   
+a                   	int                 	from deserializer   
+b                   	string              	from deserializer   
+p2                  	string              	from deserializer   
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+p1                  	IDENTITY            	 
+p2                  	IDENTITY            	 
+PREHOOK: query: select p1, a, min(b) from tbl_ice_orc_parted group by p1, a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_orc_parted
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select p1, a, min(b) from tbl_ice_orc_parted group by p1, a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_orc_parted
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+America	2	aa
+Europe	1	aa
+PREHOOK: query: insert into tbl_ice_orc_parted values ('Europe', 3, 'cc', 'Austria')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_ice_orc_parted
+POSTHOOK: query: insert into tbl_ice_orc_parted values ('Europe', 3, 'cc', 'Austria')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_ice_orc_parted
+PREHOOK: query: select p1, p2, a, min(b) from tbl_ice_orc_parted group by p1, p2, a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_orc_parted
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select p1, p2, a, min(b) from tbl_ice_orc_parted group by p1, p2, a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_orc_parted
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+America	Canada	2	bb
+America	USA	2	aa
+Europe	Hungary	1	aa
+Europe	Austria	3	cc
 PREHOOK: query: drop table tbl_ice_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_orc
@@ -168,3 +283,11 @@ POSTHOOK: query: drop table tbl_ice_orc_all_types
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice_orc_all_types
 POSTHOOK: Output: default@tbl_ice_orc_all_types
+PREHOOK: query: drop table tbl_ice_orc_parted
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_ice_orc_parted
+PREHOOK: Output: default@tbl_ice_orc_parted
+POSTHOOK: query: drop table tbl_ice_orc_parted
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_ice_orc_parted
+POSTHOOK: Output: default@tbl_ice_orc_parted
