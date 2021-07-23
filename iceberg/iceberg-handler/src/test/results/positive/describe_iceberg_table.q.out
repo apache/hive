@@ -220,14 +220,19 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
 	external.table.purge	TRUE                
 	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
 	serialization.format	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -238,3 +243,79 @@ Compressed:         	No
 Num Buckets:        	0                   	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+PREHOOK: query: DESCRIBE FORMATTED ice_t i
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_t
+POSTHOOK: query: DESCRIBE FORMATTED ice_t i
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_t
+col_name            	i                   
+data_type           	int                 
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d\":\"true\",\"i\":\"true\",\"s\":\"true\",\"ts\":\"true\"}}
+PREHOOK: query: DESCRIBE FORMATTED ice_t_transform year_field
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_t_transform
+POSTHOOK: query: DESCRIBE FORMATTED ice_t_transform year_field
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_t_transform
+col_name            	year_field          
+data_type           	date                
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"bucket_field\":\"true\",\"day_field\":\"true\",\"hour_field\":\"true\",\"identity_field\":\"true\",\"month_field\":\"true\",\"truncate_field\":\"true\",\"year_field\":\"true\"}}
+PREHOOK: query: DESCRIBE FORMATTED ice_t_transform_prop id
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_t_transform_prop
+POSTHOOK: query: DESCRIBE FORMATTED ice_t_transform_prop id
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_t_transform_prop
+col_name            	id                  
+data_type           	int                 
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"bucket_field\":\"true\",\"day_field\":\"true\",\"hour_field\":\"true\",\"id\":\"true\",\"identity_field\":\"true\",\"month_field\":\"true\",\"truncate_field\":\"true\",\"year_field\":\"true\"}}
+PREHOOK: query: DESCRIBE FORMATTED ice_t_identity_part a
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_t_identity_part
+POSTHOOK: query: DESCRIBE FORMATTED ice_t_identity_part a
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_t_identity_part
+col_name            	a                   
+data_type           	int                 
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
