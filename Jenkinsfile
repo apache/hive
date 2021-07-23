@@ -16,10 +16,7 @@
  * limitations under the License.
  */
 
-def envs = sh(returnStdout: true, script: 'env').split('\n')
-envs.each { name  ->
-    println "$name = ${env[name]}"
-}
+env.each { name, value -> println "Name: $name -> Value $value" } 
 
 properties([
     // max 5 build/branch/day
