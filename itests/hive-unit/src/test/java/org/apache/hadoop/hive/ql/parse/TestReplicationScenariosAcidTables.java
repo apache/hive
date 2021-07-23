@@ -392,13 +392,15 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     Path dumpAckFile = new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString());
+    Path failoverMdFile = new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA);
     assertTrue(fs.exists(dumpAckFile));
-    assertTrue(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
+    assertTrue(fs.exists(failoverMdFile));
     assertTrue(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
     assertTrue(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(primaryDbName)));
     FailoverMetaData previousFmd = new FailoverMetaData(dumpPath, conf);
     Long failoverEventId = previousFmd.getFailoverEventId();
     assertTrue(failoverEventId >= Long.parseLong(dumpData.lastReplicationId));
+    Long failoverMdModifTime = fs.getFileStatus(failoverMdFile).getModificationTime();
 
     fs.delete(dumpAckFile, false);
 
@@ -407,8 +409,10 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .dump(primaryDbName, failoverConfigs);
 
     dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    failoverMdFile = new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA);
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
-    assertTrue(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
+    assertTrue(fs.exists(failoverMdFile));
+    assertTrue(failoverMdModifTime.equals(fs.getFileStatus(failoverMdFile).getModificationTime()));
     assertTrue(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
     assertTrue(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(primaryDbName)));
     assertTrue(failoverEventId >= Long.parseLong(dumpData.lastReplicationId));
