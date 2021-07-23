@@ -16,6 +16,11 @@
  * limitations under the License.
  */
 
+def envs = sh(returnStdout: true, script: 'env').split('\n')
+envs.each { name  ->
+    println "$name = ${env[name]}"
+}
+
 properties([
     // max 5 build/branch/day
     rateLimitBuilds(throttle: [count: 5, durationName: 'day', userBoost: true]),
@@ -67,6 +72,7 @@ setPrLabel("PENDING");
 
 def executorNode(run) {
   hdbPodTemplate {
+        error('AAA;aborting current build')
     timeout(time: 6, unit: 'HOURS') {
       node(POD_LABEL) {
         container('hdb') {
