@@ -25,7 +25,6 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -131,7 +130,6 @@ public class SharedWorkOptimizer extends Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
-    LOG.info("Before SharedWorkOptimizer!");
 
     final Map<String, TableScanOperator> topOps = pctx.getTopOps();
     if (topOps.size() < 2) {
@@ -222,8 +220,14 @@ public class SharedWorkOptimizer extends Transform {
       // reduce sink operator.
       final Multimap<Operator<?>, MapJoinOperator> parentToMapJoinOperators =
           ArrayListMultimap.create();
-      for (Set<Operator<?>> workOperators : optimizerCache.getWorkGroups()) {
-        for (Operator<?> op : workOperators) {
+      final Set<Operator<?>> visitedOperators = new HashSet<>();
+      for (Entry<Operator<?>, Collection<Operator<?>>> e :
+          optimizerCache.operatorToWorkOperators.asMap().entrySet()) {
+        if (visitedOperators.contains(e.getKey())) {
+          // Already visited this work, we move on
+          continue;
+        }
+        for (Operator<?> op : e.getValue()) {
           if (op instanceof MapJoinOperator) {
             MapJoinOperator mapJoinOp = (MapJoinOperator) op;
             // Only allowed for mapjoin operator
@@ -233,6 +237,7 @@ public class SharedWorkOptimizer extends Transform {
                   obtainBroadcastInput(mapJoinOp).getParentOperators().get(0), mapJoinOp);
             }
           }
+          visitedOperators.add(op);
         }
       }
       // For each group, set the cache key accordingly if there is more than one operator
@@ -283,7 +288,6 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
 
-    LOG.info("After SharedWorkOptimizer!");
     return pctx;
   }
 
@@ -1998,12 +2002,14 @@ public class SharedWorkOptimizer extends Transform {
   // Stores result in cache
   private static Set<Operator<?>> findWorkOperators(
           SharedWorkOptimizerCache optimizerCache, Operator<?> start) {
-    Set<Operator<?>> c = optimizerCache.getWorkGroup(start);
+    Set<Operator<?>> c = optimizerCache.operatorToWorkOperators.get(start);
     if (!c.isEmpty()) {
       return c;
     }
     c = findWorkOperators(start, new HashSet<Operator<?>>());
-    optimizerCache.addWorkGroup(c);
+    for (Operator<?> op : c) {
+      optimizerCache.operatorToWorkOperators.putAll(op, c);
+    }
     return c;
   }
 
