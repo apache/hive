@@ -122,6 +122,13 @@ java.io.IOException: Cannot initialize Cluster. Please check your configuration 
         </dependency>
     </dependencies>
 
+    <repositories>
+        <repository>
+            <id>conjars</id>
+            <name>conjarsc</name>
+            <url>https://conjars.wensel.net/repo/</url>
+        </repository>
+    </repositories>
 
     <build>
         <resources>

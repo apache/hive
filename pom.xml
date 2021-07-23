@@ -196,7 +196,7 @@
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.10</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
-    <storage-api.version>2.7.3-SNAPSHOT</storage-api.version>
+    <storage-api.version>2.7.3</storage-api.version>
     <tez.version>0.9.1</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <spark.version>2.3.0</spark.version>
@@ -221,7 +221,7 @@
     <repository>
       <id>datanucleus</id>
       <name>datanucleus maven repository</name>
-      <url>http://www.datanucleus.org/downloads/maven2</url>
+      <url>https://www.datanucleus.org/downloads/maven2</url>
       <layout>default</layout>
       <releases>
         <enabled>true</enabled>
@@ -233,7 +233,7 @@
     </repository>
     <repository>
       <id>glassfish-repository</id>
-      <url>http://maven.glassfish.org/content/groups/glassfish</url>
+      <url>https://maven.glassfish.org/content/groups/glassfish</url>
       <releases>
         <enabled>false</enabled>
       </releases>
@@ -243,7 +243,7 @@
     </repository>
     <repository>
       <id>glassfish-repo-archive</id>
-      <url>http://maven.glassfish.org/content/groups/glassfish</url>
+      <url>https://maven.glassfish.org/content/groups/glassfish</url>
       <releases>
         <enabled>false</enabled>
       </releases>
