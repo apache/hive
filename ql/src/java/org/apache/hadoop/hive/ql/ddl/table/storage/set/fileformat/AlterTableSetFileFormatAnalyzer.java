@@ -54,5 +54,6 @@ public class AlterTableSetFileFormatAnalyzer extends AbstractAlterTableAnalyzer 
         format.getInputFormat(), format.getOutputFormat(), format.getSerde());
     addInputsOutputsAlterTable(tableName, partitionSpec, desc, AlterTableType.SET_FILE_FORMAT, false);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
+    setAcidDdlDesc(getTable(tableName), desc);
   }
 }
