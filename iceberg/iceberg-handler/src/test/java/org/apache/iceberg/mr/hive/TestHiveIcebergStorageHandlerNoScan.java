@@ -655,7 +655,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
     TableIdentifier identifier = TableIdentifier.of("default", "comment_table");
     shell.executeStatement("CREATE EXTERNAL TABLE comment_table (" +
         "t_int INT COMMENT 'int column',  " +
-        "t_string STRING COMMENT 'string column') " +
+        "t_string STRING COMMENT 'string column', " +
+        "t_string_2 STRING) " +
         "STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
@@ -666,7 +667,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     for (int i = 0; i < icebergTable.schema().columns().size(); i++) {
       Types.NestedField field = icebergTable.schema().columns().get(i);
       Assert.assertArrayEquals(new Object[] {field.name(), HiveSchemaUtil.convert(field.type()).getTypeName(),
-          field.doc()}, rows.get(i));
+          field.doc() != null ? field.doc() : "from deserializer"}, rows.get(i));
     }
   }
 
