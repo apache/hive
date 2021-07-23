@@ -3166,13 +3166,13 @@ module ThriftHiveMetastore
       return
     end
 
-    def find_next_compact(workerId, workerVersion)
-      send_find_next_compact(workerId, workerVersion)
+    def find_next_compact(workerId)
+      send_find_next_compact(workerId)
       return recv_find_next_compact()
     end
 
-    def send_find_next_compact(workerId, workerVersion)
-      send_message('find_next_compact', Find_next_compact_args, :workerId => workerId, :workerVersion => workerVersion)
+    def send_find_next_compact(workerId)
+      send_message('find_next_compact', Find_next_compact_args, :workerId => workerId)
     end
 
     def recv_find_next_compact()
@@ -3180,6 +3180,22 @@ module ThriftHiveMetastore
       return result.success unless result.success.nil?
       raise result.o1 unless result.o1.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'find_next_compact failed: unknown result')
+    end
+
+    def find_next_compact2(rqst)
+      send_find_next_compact2(rqst)
+      return recv_find_next_compact2()
+    end
+
+    def send_find_next_compact2(rqst)
+      send_message('find_next_compact2', Find_next_compact2_args, :rqst => rqst)
+    end
+
+    def recv_find_next_compact2()
+      result = receive_message(Find_next_compact2_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'find_next_compact2 failed: unknown result')
     end
 
     def update_compactor_state(cr, txn_id)
@@ -6749,11 +6765,22 @@ module ThriftHiveMetastore
       args = read_args(iprot, Find_next_compact_args)
       result = Find_next_compact_result.new()
       begin
-        result.success = @handler.find_next_compact(args.workerId, args.workerVersion)
+        result.success = @handler.find_next_compact(args.workerId)
       rescue ::MetaException => o1
         result.o1 = o1
       end
       write_result(result, oprot, 'find_next_compact', seqid)
+    end
+
+    def process_find_next_compact2(seqid, iprot, oprot)
+      args = read_args(iprot, Find_next_compact2_args)
+      result = Find_next_compact2_result.new()
+      begin
+        result.success = @handler.find_next_compact2(args.rqst)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'find_next_compact2', seqid)
     end
 
     def process_update_compactor_state(seqid, iprot, oprot)
@@ -14637,11 +14664,9 @@ module ThriftHiveMetastore
   class Find_next_compact_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     WORKERID = 1
-    WORKERVERSION = 2
 
     FIELDS = {
-      WORKERID => {:type => ::Thrift::Types::STRING, :name => 'workerId'},
-      WORKERVERSION => {:type => ::Thrift::Types::STRING, :name => 'workerVersion'}
+      WORKERID => {:type => ::Thrift::Types::STRING, :name => 'workerId'}
     }
 
     def struct_fields; FIELDS; end
@@ -14653,6 +14678,40 @@ module ThriftHiveMetastore
   end
 
   class Find_next_compact_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::OptionalCompactionInfoStruct},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Find_next_compact2_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::FindNextCompactRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Find_next_compact2_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
     O1 = 1

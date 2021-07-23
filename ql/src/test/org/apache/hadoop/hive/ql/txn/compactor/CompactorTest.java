@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -631,7 +632,7 @@ public abstract class CompactorTest {
 
   protected long compactInTxn(CompactionRequest rqst) throws Exception {
     txnHandler.compact(rqst);
-    CompactionInfo ci = txnHandler.findNextToCompact("fred", WORKER_VERSION);
+    CompactionInfo ci = txnHandler.findNextToCompact(new FindNextCompactRequest("fred", WORKER_VERSION));
     ci.runAs = System.getProperty("user.name");
     long compactorTxnId = openTxn(TxnType.COMPACTION);
     // Need to create a valid writeIdList to set the highestWriteId in ci
