@@ -2911,6 +2911,9 @@ public class HiveConf extends Configuration {
         "UDTFs change the number of rows of the output. A common UDTF is the explode() method that creates\n" +
         "multiple rows for each element in the input array. This factor is applied to the number of\n" +
         "output rows and output size."),
+    HIVE_STATS_MAX_NUM_STATS("hive.stats.max.num.stats", (long) 10000,
+        "When the number of stats to be updated is huge, this value is used to control the number of \n" +
+        " stats to be sent to HMS for update."),
 
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false,

@@ -920,3 +920,295 @@ num_falses
 bit_vector          	                    
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"t\":\"true\"}}
+PREHOOK: query: ANALYZE TABLE datatype_stats_n0 PARTITION(t) COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@datatype_stats_n0
+PREHOOK: Input: default@datatype_stats_n0@t=1
+PREHOOK: Input: default@datatype_stats_n0@t=2
+PREHOOK: Input: default@datatype_stats_n0@t=4
+PREHOOK: Input: default@datatype_stats_n0@t=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: default@datatype_stats_n0
+PREHOOK: Output: default@datatype_stats_n0@t=1
+PREHOOK: Output: default@datatype_stats_n0@t=2
+PREHOOK: Output: default@datatype_stats_n0@t=4
+PREHOOK: Output: default@datatype_stats_n0@t=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE datatype_stats_n0 PARTITION(t) COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@datatype_stats_n0
+POSTHOOK: Input: default@datatype_stats_n0@t=1
+POSTHOOK: Input: default@datatype_stats_n0@t=2
+POSTHOOK: Input: default@datatype_stats_n0@t=4
+POSTHOOK: Input: default@datatype_stats_n0@t=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@datatype_stats_n0
+POSTHOOK: Output: default@datatype_stats_n0@t=1
+POSTHOOK: Output: default@datatype_stats_n0@t=2
+POSTHOOK: Output: default@datatype_stats_n0@t=4
+POSTHOOK: Output: default@datatype_stats_n0@t=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 s
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 s
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	s                   
+data_type           	smallint            
+min                 	2                   
+max                 	4                   
+num_nulls           	1                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"s\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 i
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 i
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	i                   
+data_type           	int                 
+min                 	44                  
+max                 	46                  
+num_nulls           	1                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 b
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 b
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	b                   
+data_type           	bigint              
+min                 	455                 
+max                 	457                 
+num_nulls           	1                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"b\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 f
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 f
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	f                   
+data_type           	float               
+min                 	45454.30078125      
+max                 	45454.5             
+num_nulls           	1                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"f\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 d
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 d
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	d                   
+data_type           	double              
+min                 	454.6564            
+max                 	454.6566            
+num_nulls           	1                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"d\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 dem
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 dem
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	dem                 
+data_type           	decimal(10,0)       
+min                 	2354                
+max                 	2356                
+num_nulls           	1                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"dem\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	ts                  
+data_type           	timestamp           
+min                 	2012-01-01 01:02:02 
+max                 	2012-01-01 01:02:04 
+num_nulls           	1                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ts\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 dt
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 dt
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	dt                  
+data_type           	date                
+min                 	2011-12-31          
+max                 	2012-01-02          
+num_nulls           	1                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"dt\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 str
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 str
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	str                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	3                   
+avg_col_len         	19.0                
+max_col_len         	19                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"str\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 v
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 v
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	v                   
+data_type           	varchar(12)         
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	3                   
+avg_col_len         	7.0                 
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"v\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 c
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 c
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	c                   
+data_type           	char(5)             
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	3                   
+avg_col_len         	5.0                 
+max_col_len         	5                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"c\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 bl
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 bl
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	bl                  
+data_type           	boolean             
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	2                   
+num_falses          	1                   
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"bl\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 bin
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 bin
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	bin                 
+data_type           	binary              
+min                 	                    
+max                 	                    
+num_nulls           	1                   
+distinct_count      	                    
+avg_col_len         	5.0                 
+max_col_len         	5                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"bin\":\"true\"}}
+PREHOOK: query: DESC FORMATTED datatype_stats_n0 t
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats_n0
+POSTHOOK: query: DESC FORMATTED datatype_stats_n0 t
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats_n0
+col_name            	t                   
+data_type           	tinyint             
+min                 	1                   
+max                 	4                   
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"t\":\"true\"}}
