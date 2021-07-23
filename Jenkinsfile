@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-env.getEnvironment().each { name, value -> println "Name: $name -> Value $value" } 
+env.environment.each { name, value -> println "Name: $name -> Value $value" } 
 
 properties([
     // max 5 build/branch/day
