@@ -384,12 +384,22 @@ public interface TxnStore extends Configurable {
   /**
    * This will grab the next compaction request off of
    * the queue, and assign it to the worker.
+   * @deprecated Replaced by
+   *     {@link TxnStore#findNextToCompact(org.apache.hadoop.hive.metastore.api.FindNextCompactRequest)}
    * @param workerId id of the worker calling this, will be recorded in the db
-   * @param workerVersion runtime version of the worker calling this
    * @return an info element for this compaction request, or null if there is no work to do now.
    */
+  @Deprecated
   @RetrySemantics.ReadOnly
-  CompactionInfo findNextToCompact(String workerId, String workerVersion) throws MetaException;
+  CompactionInfo findNextToCompact(String workerId) throws MetaException;
+
+  /**
+   * This will grab the next compaction request off of the queue, and assign it to the worker.
+   * @param rqst request to find next compaction to run
+   * @return an info element for next compaction in the queue, or null if there is no work to do now.
+   */
+  @RetrySemantics.ReadOnly
+  CompactionInfo findNextToCompact(FindNextCompactRequest rqst) throws MetaException;
 
   /**
    * This will mark an entry in the queue as compacted

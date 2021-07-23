@@ -213,7 +213,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  CompactionResponse compact2(CompactionRequest rqst)')
     print('  ShowCompactResponse show_compact(ShowCompactRequest rqst)')
     print('  void add_dynamic_partitions(AddDynamicPartitions rqst)')
-    print('  OptionalCompactionInfoStruct find_next_compact(string workerId, string workerVersion)')
+    print('  OptionalCompactionInfoStruct find_next_compact(string workerId)')
+    print('  OptionalCompactionInfoStruct find_next_compact2(FindNextCompactRequest rqst)')
     print('  void update_compactor_state(CompactionInfoStruct cr, i64 txn_id)')
     print('   find_columns_with_stats(CompactionInfoStruct cr)')
     print('  void mark_cleaned(CompactionInfoStruct cr)')
@@ -1512,10 +1513,16 @@ elif cmd == 'add_dynamic_partitions':
     pp.pprint(client.add_dynamic_partitions(eval(args[0]),))
 
 elif cmd == 'find_next_compact':
-    if len(args) != 2:
-        print('find_next_compact requires 2 args')
+    if len(args) != 1:
+        print('find_next_compact requires 1 args')
         sys.exit(1)
-    pp.pprint(client.find_next_compact(args[0], args[1],))
+    pp.pprint(client.find_next_compact(args[0],))
+
+elif cmd == 'find_next_compact2':
+    if len(args) != 1:
+        print('find_next_compact2 requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.find_next_compact2(eval(args[0]),))
 
 elif cmd == 'update_compactor_state':
     if len(args) != 2:
