@@ -84,6 +84,8 @@ public class DeltaFilesMetricReporter {
 
   public static final String OBJECT_NAME_PREFIX = "metrics:type=compaction,name=";
 
+  private static long lastSuccessfulLoggingTime = 0;
+
   public enum DeltaFilesMetricType {
     NUM_OBSOLETE_DELTAS("HIVE_ACID_NUM_OBSOLETE_DELTAS"),
     NUM_DELTAS("HIVE_ACID_NUM_DELTAS"),
@@ -193,7 +195,8 @@ public class DeltaFilesMetricReporter {
   }
 
   public static void mergeDeltaFilesStats(AcidDirectory dir, long checkThresholdInSec,
-        float deltaPctThreshold, EnumMap<DeltaFilesMetricType, Map<String, Integer>> deltaFilesStats) throws IOException {
+        float deltaPctThreshold, EnumMap<DeltaFilesMetricType, Map<String, Integer>> deltaFilesStats,
+      Configuration conf) throws IOException {
     long baseSize = getBaseSize(dir);
     int numObsoleteDeltas = getNumObsoleteDeltas(dir, checkThresholdInSec);
 
@@ -212,9 +215,39 @@ public class DeltaFilesMetricReporter {
         }
       }
     }
+
+    logDeltaDirMetrics(dir, conf, numObsoleteDeltas, numDeltas, numSmallDeltas);
+
     String path = getRelPath(dir);
     newDeltaFilesStats(numObsoleteDeltas, numDeltas, numSmallDeltas)
       .forEach((type, cnt) -> deltaFilesStats.computeIfAbsent(type, v -> new HashMap<>()).put(path, cnt));
+  }
+
+  private static void logDeltaDirMetrics(AcidDirectory dir, Configuration conf, int numObsoleteDeltas, int numDeltas,
+      int numSmallDeltas) {
+    long loggerFrequency = HiveConf
+        .getTimeVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ACID_METRICS_LOGGER_FREQUENCY, TimeUnit.MILLISECONDS);
+    if (loggerFrequency <= 0) {
+      return;
+    }
+    long currentTime = System.currentTimeMillis();
+    if (lastSuccessfulLoggingTime == 0 || currentTime >= lastSuccessfulLoggingTime + loggerFrequency) {
+      if (numDeltas >= HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ACTIVE_DELTA_DIR_THRESHOLD)) {
+        LOG.warn("Directory " + dir.getPath() + " contains " + numDeltas + " active delta directories. This can " +
+            "cause performance degradation.");
+      }
+
+      if (numObsoleteDeltas >=
+          HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_OBSOLETE_DELTA_DIR_THRESHOLD)) {
+        LOG.warn("Directory " + dir.getPath() + " contains " + numDeltas + " obsolete delta directories. This can " +
+            "indicate compaction cleaner issues.");
+      }
+
+      if (numSmallDeltas >= HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_SMALL_DELTA_DIR_THRESHOLD)) {
+        LOG.warn("Directory " + dir.getPath() + " contains " + numDeltas + " small delta directories. This can " +
+            "indicate performance degradation and there might be a problem with your streaming setup.");
+      }
+    }
   }
 
   private static int getNumObsoleteDeltas(AcidDirectory dir, long checkThresholdInSec) throws IOException {

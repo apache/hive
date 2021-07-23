@@ -295,11 +295,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       "SELECT COUNT(*), MIN(\"TXN_ID\"), ({0} - MIN(\"TXN_STARTED\"))/1000 FROM \"TXNS\" WHERE \"TXN_STATE\"='" +
         TxnStatus.ABORTED + "') \"A\" CROSS JOIN (" +
       "SELECT COUNT(*), ({0} - MIN(\"HL_ACQUIRED_AT\"))/1000 FROM \"HIVE_LOCKS\") \"HL\" CROSS JOIN (" +
-      "SELECT COUNT(*) FROM (SELECT COUNT(\"TXN_ID\"), \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" FROM \"TXN_COMPONENTS\" " +
-          "INNER JOIN \"TXNS\" ON \"TC_TXNID\" = \"TXN_ID\" WHERE \"TXN_STATE\"='" + TxnStatus.ABORTED + "' " +
-          "GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" HAVING COUNT(\"TXN_ID\") > ?) \"L\") \"L\" CROSS JOIN (" +
       "SELECT ({0} - MIN(\"CQ_COMMIT_TIME\"))/1000 from \"COMPACTION_QUEUE\" WHERE " +
           "\"CQ_STATE\"=''" + Character.toString(READY_FOR_CLEANING) + "'') OLDEST_CLEAN";
+  private static final String SELECT_TABLES_WITH_X_ABORTED_TXNS =
+      "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" FROM \"TXN_COMPONENTS\" " +
+          "INNER JOIN \"TXNS\" ON \"TC_TXNID\" = \"TXN_ID\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED +
+      " GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" HAVING COUNT(\"TXN_ID\") > ?";
 
 
 
@@ -3836,9 +3837,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       String s = MessageFormat.format(SELECT_METRICS_INFO_QUERY, getEpochFn(dbProduct));
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        try(PreparedStatement pstmt = dbConn.prepareStatement(s)){
-          pstmt.setInt(1, MetastoreConf.getIntVar(conf, ConfVars.METASTORE_ACIDMETRICS_TABLES_WITH_ABORTED_TXNS_THRESHOLD));
-          ResultSet rs = pstmt.executeQuery();
+        try (Statement stmt = dbConn.createStatement()){
+          ResultSet rs = stmt.executeQuery(s);
           if (rs.next()) {
             metrics.setTxnToWriteIdCount(rs.getInt(1));
             metrics.setCompletedTxnsCount(rs.getInt(2));
@@ -3853,9 +3853,21 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             metrics.setOldestAbortedTxnAge(rs.getInt(11));
             metrics.setLocksCount(rs.getInt(12));
             metrics.setOldestLockAge(rs.getInt(13));
-            metrics.setTablesWithXAbortedTxns(rs.getInt(14));
-            metrics.setOldestReadyForCleaningAge(rs.getInt(15));
+            metrics.setOldestReadyForCleaningAge(rs.getInt(14));
           }
+        }
+        try (PreparedStatement pstmt = dbConn.prepareStatement(SELECT_TABLES_WITH_X_ABORTED_TXNS)) {
+          Set<String> resourceNames = new TreeSet<>();
+          pstmt.setInt(1, MetastoreConf.getIntVar(conf, ConfVars.METASTORE_ACIDMETRICS_TABLES_WITH_ABORTED_TXNS_THRESHOLD));
+          ResultSet rs = pstmt.executeQuery();
+          while (rs.next()) {
+            String resourceName = rs.getString(1) + "." + rs.getString(2);
+            String partName = rs.getString(3);
+            resourceName = partName != null ? resourceName + "#" + partName : resourceName;
+            resourceNames.add(resourceName);
+          }
+          metrics.setTablesWithXAbortedTxnsCount(resourceNames.size());
+          metrics.setTablesWithXAbortedTxns(resourceNames);
         }
         return metrics;
       } catch (SQLException e) {
