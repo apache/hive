@@ -14,3 +14,9 @@ DESCRIBE FORMATTED ice_t;
 DESCRIBE FORMATTED ice_t_transform;
 DESCRIBE FORMATTED ice_t_transform_prop;
 DESCRIBE FORMATTED ice_t_identity_part;
+
+-- make sure that we do not print partition transforms when describing columns
+DESCRIBE FORMATTED ice_t i;
+DESCRIBE FORMATTED ice_t_transform year_field;
+DESCRIBE FORMATTED ice_t_transform_prop id;
+DESCRIBE FORMATTED ice_t_identity_part a;
