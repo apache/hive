@@ -91,7 +91,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       BaseMetastoreTableOperations.PREVIOUS_METADATA_LOCATION_PROP);
   static final EnumSet<AlterTableType> SUPPORTED_ALTER_OPS = EnumSet.of(
       AlterTableType.ADDCOLS, AlterTableType.REPLACE_COLUMNS, AlterTableType.RENAME_COLUMN,
-      AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.SETPARTITIONSPEC);
+      AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.SETPARTITIONSPEC,
+      AlterTableType.UPDATE_COLUMNS);
 
   private final Configuration conf;
   private Table icebergTable = null;
