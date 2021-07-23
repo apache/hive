@@ -1329,6 +1329,11 @@ struct GetLatestCommittedCompactionInfoResponse {
     1: required list<CompactionInfoStruct> compactions,
 }
 
+struct FindNextCompactRequest {
+    1: required string workerId,
+    2: required string workerVersion
+}
+
 struct AddDynamicPartitions {
     1: required i64 txnid,
     2: required i64 writeid,
@@ -2874,7 +2879,9 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   CompactionResponse compact2(1:CompactionRequest rqst) 
   ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
   void add_dynamic_partitions(1:AddDynamicPartitions rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
-  OptionalCompactionInfoStruct find_next_compact(1: string workerId, 2: string workerVersion) throws(1:MetaException o1)
+  // Deprecated, use find_next_compact2()
+  OptionalCompactionInfoStruct find_next_compact(1: string workerId) throws(1:MetaException o1)
+  OptionalCompactionInfoStruct find_next_compact2(1: FindNextCompactRequest rqst) throws(1:MetaException o1)
   void update_compactor_state(1: CompactionInfoStruct cr, 2: i64 txn_id)
   list<string> find_columns_with_stats(1: CompactionInfoStruct cr)
   void mark_cleaned(1:CompactionInfoStruct cr) throws(1:MetaException o1)

@@ -16008,6 +16008,78 @@ class GetLatestCommittedCompactionInfoResponse(object):
         return not (self == other)
 
 
+class FindNextCompactRequest(object):
+    """
+    Attributes:
+     - workerId
+     - workerVersion
+
+    """
+
+
+    def __init__(self, workerId=None, workerVersion=None,):
+        self.workerId = workerId
+        self.workerVersion = workerVersion
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.workerId = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.workerVersion = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('FindNextCompactRequest')
+        if self.workerId is not None:
+            oprot.writeFieldBegin('workerId', TType.STRING, 1)
+            oprot.writeString(self.workerId.encode('utf-8') if sys.version_info[0] == 2 else self.workerId)
+            oprot.writeFieldEnd()
+        if self.workerVersion is not None:
+            oprot.writeFieldBegin('workerVersion', TType.STRING, 2)
+            oprot.writeString(self.workerVersion.encode('utf-8') if sys.version_info[0] == 2 else self.workerVersion)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.workerId is None:
+            raise TProtocolException(message='Required field workerId is unset!')
+        if self.workerVersion is None:
+            raise TProtocolException(message='Required field workerVersion is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
 class AddDynamicPartitions(object):
     """
     Attributes:
@@ -29918,6 +29990,12 @@ all_structs.append(GetLatestCommittedCompactionInfoResponse)
 GetLatestCommittedCompactionInfoResponse.thrift_spec = (
     None,  # 0
     (1, TType.LIST, 'compactions', (TType.STRUCT, [CompactionInfoStruct, None], False), None, ),  # 1
+)
+all_structs.append(FindNextCompactRequest)
+FindNextCompactRequest.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'workerId', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'workerVersion', 'UTF8', None, ),  # 2
 )
 all_structs.append(AddDynamicPartitions)
 AddDynamicPartitions.thrift_spec = (
