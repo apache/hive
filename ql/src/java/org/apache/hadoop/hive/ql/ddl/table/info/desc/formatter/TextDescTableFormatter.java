@@ -83,9 +83,9 @@ class TextDescTableFormatter extends DescTableFormatter {
     try {
       addStatsData(out, columnPath, columns, isFormatted, columnStats, isOutputPadded);
       addPartitionData(out, conf, columnPath, table, isFormatted, isOutputPadded);
-      addPartitionTransformData(out, table, isOutputPadded);
 
       if (columnPath == null) {
+        addPartitionTransformData(out, table, isOutputPadded);
         if (isFormatted) {
           addFormattedTableData(out, table, partition, isOutputPadded);
         }
