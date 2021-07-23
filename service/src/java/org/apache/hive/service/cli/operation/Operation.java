@@ -228,11 +228,8 @@ public abstract class Operation {
 
   protected void createOperationLog() {
     if (parentSession.isOperationLogEnabled()) {
-      File operationLogFile = new File(parentSession.getOperationLogSessionDir(), queryState.getQueryId());
+      operationLog = OperationLogManager.createOperationLog(this, queryState);
       isOperationLogEnabled = true;
-
-      // create OperationLog object with above log file
-      operationLog = new OperationLog(opHandle.toString(), operationLogFile, parentSession.getHiveConf());
     }
   }
 
