@@ -15,8 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-env.environment.each { name, value -> println "Name: $name -> Value $value" } 
+node {
+    sh 'set'
+}
 
 properties([
     // max 5 build/branch/day
