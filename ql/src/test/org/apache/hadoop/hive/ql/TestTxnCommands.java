@@ -477,6 +477,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     Assert.assertEquals("db1.add_drop_partition:0:9223372036854775807::", validWriteIds);
     validWriteIds = msClient.getValidWriteIds(tableName).toString();
     runStatementOnDriver("ALTER TABLE db1.add_drop_partition ADD PARTITION (ds='2013-04-05')");
+    validWriteIds = msClient.getValidWriteIds(tableName).toString();
     LOG.info("ValidWriteIds after add partition::"+ validWriteIds);
     Assert.assertEquals("db1.add_drop_partition:1:9223372036854775807::", validWriteIds);
     runStatementOnDriver("ALTER TABLE db1.add_drop_partition DROP PARTITION (ds='2013-04-05')");
