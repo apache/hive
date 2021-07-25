@@ -170,6 +170,11 @@ a                   	int                 	from deserializer
 b                   	string              	from deserializer   
 c                   	string              	from deserializer   
 	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+b                   	IDENTITY            	 
+c                   	IDENTITY            	 
+	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
@@ -403,6 +408,11 @@ a                   	int                 	from deserializer
 b                   	string              	from deserializer   
 c                   	string              	from deserializer   
 	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+b                   	IDENTITY            	 
+c                   	IDENTITY            	 
+	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
@@ -635,6 +645,11 @@ POSTHOOK: Input: default@tbl_avro
 a                   	int                 	from deserializer   
 b                   	string              	from deserializer   
 c                   	string              	from deserializer   
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+b                   	IDENTITY            	 
+c                   	IDENTITY            	 
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

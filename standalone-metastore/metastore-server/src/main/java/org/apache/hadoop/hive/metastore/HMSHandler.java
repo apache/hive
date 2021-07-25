@@ -152,6 +152,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @VisibleForTesting
   static long testTimeoutValue = -1;
 
+  public static final String TRUNCATE_SKIP_DATA_DELETION = "truncateSkipDataDeletion";
   public static final String ADMIN = "admin";
   public static final String PUBLIC = "public";
 
@@ -3362,42 +3363,50 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public void truncate_table(final String dbName, final String tableName, List<String> partNames)
       throws NoSuchObjectException, MetaException {
     // Deprecated path, won't work for txn tables.
-    truncateTableInternal(dbName, tableName, partNames, null, -1);
+    truncateTableInternal(dbName, tableName, partNames, null, -1, null);
   }
 
   @Override
   public TruncateTableResponse truncate_table_req(TruncateTableRequest req)
       throws MetaException, TException {
     truncateTableInternal(req.getDbName(), req.getTableName(), req.getPartNames(),
-        req.getValidWriteIdList(), req.getWriteId());
+        req.getValidWriteIdList(), req.getWriteId(), req.getEnvironmentContext());
     return new TruncateTableResponse();
   }
 
   private void truncateTableInternal(String dbName, String tableName, List<String> partNames,
-                                     String validWriteIds, long writeId) throws MetaException, NoSuchObjectException {
+                                     String validWriteIds, long writeId, EnvironmentContext context) throws MetaException, NoSuchObjectException {
     boolean isSkipTrash = false, needCmRecycle = false;
     try {
       String[] parsedDbName = parseDbName(dbName, conf);
       Table tbl = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
 
-      boolean truncateFiles = !TxnUtils.isTransactionalTable(tbl) ||
-          !MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE);
+      boolean skipDataDeletion = Optional.ofNullable(context)
+          .map(EnvironmentContext::getProperties)
+          .map(prop -> prop.get(TRUNCATE_SKIP_DATA_DELETION))
+          .map(Boolean::parseBoolean)
+          .orElse(false);
 
-      if (truncateFiles) {
-        isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
-        Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-        needCmRecycle = ReplChangeManager.shouldEnableCm(db, tbl);
-      }
-      // This is not transactional
-      for (Path location : getLocationsForTruncate(getMS(), parsedDbName[CAT_NAME],
-          parsedDbName[DB_NAME], tableName, tbl, partNames)) {
-        FileSystem fs = location.getFileSystem(getConf());
+      if (!skipDataDeletion) {
+        boolean truncateFiles = !TxnUtils.isTransactionalTable(tbl)
+            || !MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE);
+
         if (truncateFiles) {
-          truncateDataFiles(location, fs, isSkipTrash, needCmRecycle);
-        } else {
-          // For Acid tables we don't need to delete the old files, only write an empty baseDir.
-          // Compaction and cleaner will take care of the rest
-          addTruncateBaseFile(location, writeId, fs);
+          isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
+          Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+          needCmRecycle = ReplChangeManager.shouldEnableCm(db, tbl);
+        }
+        // This is not transactional
+        for (Path location : getLocationsForTruncate(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
+            tbl, partNames)) {
+          FileSystem fs = location.getFileSystem(getConf());
+          if (truncateFiles) {
+            truncateDataFiles(location, fs, isSkipTrash, needCmRecycle);
+          } else {
+            // For Acid tables we don't need to delete the old files, only write an empty baseDir.
+            // Compaction and cleaner will take care of the rest
+            addTruncateBaseFile(location, writeId, fs);
+          }
         }
       }
 
@@ -5116,7 +5125,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     try {
       String[] parsedDbName = parseDbName(name, conf);
       Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-      if (db != null && db.getType() == DatabaseType.REMOTE) {
+      if (db != null && db.getType() != null && db.getType() == DatabaseType.REMOTE) {
         return true;
       }
     } catch (Exception e) {
@@ -5994,14 +6003,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     List<String> ret = null;
     Exception ex = null;
-    Database db = null;
     String[] parsedDbName = parseDbName(dbname, conf);
     try {
-      db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-      if (db != null && db.getType() != null) {
-        if (db.getType().equals(DatabaseType.REMOTE)) {
-          return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
-        }
+      if (isDatabaseRemote(dbname)) {
+        Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+        return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
       }
     } catch (Exception e) { /* appears we return empty set instead of throwing an exception */ }
 
@@ -7379,6 +7385,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                                  List<String> groupNames) throws TException {
     firePreEvent(new PreAuthorizationCallEvent(this));
     String catName = hiveObject.isSetCatName() ? hiveObject.getCatName() : getDefaultCatalog(conf);
+    HiveObjectType debug = hiveObject.getObjectType();
     if (hiveObject.getObjectType() == HiveObjectType.COLUMN) {
       String partName = getPartName(hiveObject);
       return this.get_column_privilege_set(catName, hiveObject.getDbName(), hiveObject
@@ -7391,6 +7398,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     } else if (hiveObject.getObjectType() == HiveObjectType.DATABASE) {
       return this.get_db_privilege_set(catName, hiveObject.getDbName(), userName,
           groupNames);
+    } else if (hiveObject.getObjectType() == HiveObjectType.DATACONNECTOR) {
+      return this.get_connector_privilege_set(catName, hiveObject.getObjectName(), userName, groupNames);
     } else if (hiveObject.getObjectType() == HiveObjectType.TABLE) {
       return this.get_table_privilege_set(catName, hiveObject.getDbName(), hiveObject
           .getObjectName(), userName, groupNames);
@@ -7444,6 +7453,22 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw handleException(e).throwIfInstance(MetaException.class).defaultRuntimeException();
     }
     return ret;
+  }
+
+  private PrincipalPrivilegeSet get_connector_privilege_set(String catName, final String connectorName,
+                                                            final String userName, final List<String> groupNames) throws TException {
+    incrementCounter("get_connector_privilege_set");
+
+    PrincipalPrivilegeSet ret;
+    try {
+      ret = getMS().getConnectorPrivilegeSet(catName, connectorName, userName, groupNames);
+    } catch (MetaException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+    return ret;
+
   }
 
   private PrincipalPrivilegeSet get_partition_privilege_set(
@@ -7761,6 +7786,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       return list_db_privileges(principalName, principalType, catName, hiveObject
           .getDbName());
     }
+    if (hiveObject.getObjectType() == HiveObjectType.DATACONNECTOR) {
+      return list_dc_privileges(principalName, principalType, hiveObject
+              .getObjectName());
+    }
     if (hiveObject.getObjectType() == HiveObjectType.TABLE) {
       return list_table_privileges(principalName, principalType,
           catName, hiveObject.getDbName(), hiveObject.getObjectName());
@@ -7787,6 +7816,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     List<HiveObjectPrivilege> privs = new ArrayList<>();
     privs.addAll(list_global_privileges(principalName, principalType));
     privs.addAll(list_db_privileges(principalName, principalType, catName, null));
+    privs.addAll(list_dc_privileges(principalName, principalType, null));
     privs.addAll(list_table_privileges(principalName, principalType, catName, null, null));
     privs.addAll(list_partition_privileges(principalName, principalType, catName, null, null, null));
     privs.addAll(list_table_column_privileges(principalName, principalType, catName, null, null, null));
@@ -7849,6 +7879,24 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         return getMS().listDBGrantsAll(catName, dbName);
       } else {
         return getMS().listPrincipalDBGrants(principalName, principalType, catName, dbName);
+      }
+    } catch (Exception e) {
+      throw handleException(e).throwIfInstance(MetaException.class).defaultRuntimeException();
+    }
+  }
+
+  private List<HiveObjectPrivilege> list_dc_privileges(final String principalName,
+                                                       final PrincipalType principalType, final String dcName) throws TException {
+    incrementCounter("list_security_dc_grant");
+
+    try {
+      if (dcName == null) {
+        return getMS().listPrincipalDCGrantsAll(principalName, principalType);
+      }
+      if (principalName == null) {
+        return getMS().listDCGrantsAll(dcName);
+      } else {
+        return getMS().listPrincipalDCGrants(principalName, principalType, dcName);
       }
     } catch (Exception e) {
       throw handleException(e).throwIfInstance(MetaException.class).defaultRuntimeException();
@@ -8573,10 +8621,17 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     getTxnHandler().setHadoopJobId(jobId, cqId);
   }
 
+  @Deprecated
   @Override
-  public OptionalCompactionInfoStruct find_next_compact(String workerId, String workerVersion) throws MetaException{
+  public OptionalCompactionInfoStruct find_next_compact(String workerId) throws MetaException{
     return CompactionInfo.compactionInfoToOptionalStruct(
-        getTxnHandler().findNextToCompact(workerId, workerVersion));
+        getTxnHandler().findNextToCompact(workerId));
+  }
+
+  @Override
+  public OptionalCompactionInfoStruct find_next_compact2(FindNextCompactRequest rqst) throws MetaException{
+    return CompactionInfo.compactionInfoToOptionalStruct(
+            getTxnHandler().findNextToCompact(rqst));
   }
 
   @Override

@@ -129,6 +129,10 @@ POSTHOOK: Input: default@tbl_orc
 a                   	int                 	from deserializer   
 b                   	string              	from deserializer   
 	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+b                   	IDENTITY            	 
+	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
@@ -315,6 +319,10 @@ POSTHOOK: Input: default@tbl_parquet
 a                   	int                 	from deserializer   
 b                   	string              	from deserializer   
 	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+b                   	IDENTITY            	 
+	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
@@ -500,6 +508,10 @@ POSTHOOK: Input: default@tbl_avro
 # col_name            	data_type           	comment             
 a                   	int                 	from deserializer   
 b                   	string              	from deserializer   
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+b                   	IDENTITY            	 
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

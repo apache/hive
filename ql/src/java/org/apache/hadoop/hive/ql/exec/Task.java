@@ -351,8 +351,8 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   public static List<Task<?>>
-      findLeafs(List<Task<? extends Serializable>> rootTasks) {
-    final List<Task<? extends Serializable>> leafTasks = new ArrayList<Task<?>>();
+      findLeafs(List<Task<?>> rootTasks) {
+    final List<Task<?>> leafTasks = new ArrayList<Task<?>>();
 
     NodeUtils.iterateTask(rootTasks, Task.class, new NodeUtils.Function<Task>() {
       @Override

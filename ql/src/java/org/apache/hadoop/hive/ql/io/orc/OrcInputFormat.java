@@ -585,7 +585,14 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   }
 
   static String getNeededColumnNamesString(Configuration conf) {
-    return conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
+    String icebergOrcSchema = conf.get(ColumnProjectionUtils.ICEBERG_ORC_SCHEMA_STRING);
+
+    if (icebergOrcSchema != null) {
+      final String columnNameDelimiter = conf.get(serdeConstants.COLUMN_NAME_DELIMITER, String.valueOf(SerDeUtils.COMMA));
+      return String.join(columnNameDelimiter, TypeDescription.fromString(icebergOrcSchema).getFieldNames());
+    } else {
+      return conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
+    }
   }
 
   static String getSargColumnIDsString(Configuration conf) {
@@ -1810,7 +1817,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
         if (metricsEnabled && directory instanceof AcidDirectory) {
           DeltaFilesMetricReporter.mergeDeltaFilesStats((AcidDirectory) directory, checkThresholdInSec,
-              deltaPctThreshold, deltaFilesStats);
+              deltaPctThreshold, deltaFilesStats, conf);
         }
         // We have received a new directory information, make split strategies.
         --resultsLeft;

@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
 import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoRequest;
 import org.apache.hadoop.hive.metastore.api.GetLatestCommittedCompactionInfoResponse;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
@@ -418,7 +419,7 @@ public class TestHiveMetaStoreTxns {
     tbl = client.getTable(dbName, tblName);
 
     client.compact2(tbl.getDbName(), tbl.getTableName(), null, CompactionType.MINOR, new HashMap<>());
-    OptionalCompactionInfoStruct optionalCi = client.findNextCompact("myworker");
+    OptionalCompactionInfoStruct optionalCi = client.findNextCompact(new FindNextCompactRequest("myworker", null));
     client.markCleaned(optionalCi.getCi());
 
     GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();

@@ -14,8 +14,9 @@ module HiveObjectType
   TABLE = 3
   PARTITION = 4
   COLUMN = 5
-  VALUE_MAP = {1 => "GLOBAL", 2 => "DATABASE", 3 => "TABLE", 4 => "PARTITION", 5 => "COLUMN"}
-  VALID_VALUES = Set.new([GLOBAL, DATABASE, TABLE, PARTITION, COLUMN]).freeze
+  DATACONNECTOR = 6
+  VALUE_MAP = {1 => "GLOBAL", 2 => "DATABASE", 3 => "TABLE", 4 => "PARTITION", 5 => "COLUMN", 6 => "DATACONNECTOR"}
+  VALID_VALUES = Set.new([GLOBAL, DATABASE, TABLE, PARTITION, COLUMN, DATACONNECTOR]).freeze
 end
 
 module PrincipalType
@@ -346,6 +347,10 @@ class ColumnStatisticsDesc; end
 
 class ColumnStatistics; end
 
+class FileMetadata; end
+
+class ObjectDictionary; end
+
 class Table; end
 
 class Partition; end
@@ -535,6 +540,8 @@ class ShowCompactResponse; end
 class GetLatestCommittedCompactionInfoRequest; end
 
 class GetLatestCommittedCompactionInfoResponse; end
+
+class FindNextCompactRequest; end
 
 class AddDynamicPartitions; end
 
@@ -1291,13 +1298,15 @@ class TruncateTableRequest
   PARTNAMES = 3
   WRITEID = 4
   VALIDWRITEIDLIST = 5
+  ENVIRONMENTCONTEXT = 6
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     PARTNAMES => {:type => ::Thrift::Types::LIST, :name => 'partNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
+    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
+    ENVIRONMENTCONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'environmentContext', :class => ::EnvironmentContext, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2212,6 +2221,43 @@ class ColumnStatistics
   ::Thrift::Struct.generate_accessors self
 end
 
+class FileMetadata
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TYPE = 1
+  VERSION = 2
+  DATA = 3
+
+  FIELDS = {
+    TYPE => {:type => ::Thrift::Types::BYTE, :name => 'type', :default => 1},
+    VERSION => {:type => ::Thrift::Types::BYTE, :name => 'version', :default => 1},
+    DATA => {:type => ::Thrift::Types::LIST, :name => 'data', :element => {:type => ::Thrift::Types::STRING, :binary => true}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ObjectDictionary
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  VALUES = 1
+
+  FIELDS = {
+    VALUES => {:type => ::Thrift::Types::MAP, :name => 'values', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRING, :binary => true}}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field values is unset!') unless @values
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class Table
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TABLENAME = 1
@@ -2239,6 +2285,8 @@ class Table
   REQUIREDREADCAPABILITIES = 23
   REQUIREDWRITECAPABILITIES = 24
   ID = 25
+  FILEMETADATA = 26
+  DICTIONARY = 27
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -2265,7 +2313,9 @@ class Table
     ACCESSTYPE => {:type => ::Thrift::Types::BYTE, :name => 'accessType', :optional => true},
     REQUIREDREADCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'requiredReadCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     REQUIREDWRITECAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'requiredWriteCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true}
+    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
+    FILEMETADATA => {:type => ::Thrift::Types::STRUCT, :name => 'fileMetadata', :class => ::FileMetadata, :optional => true},
+    DICTIONARY => {:type => ::Thrift::Types::STRUCT, :name => 'dictionary', :class => ::ObjectDictionary, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2293,6 +2343,7 @@ class Partition
   WRITEID = 10
   ISSTATSCOMPLIANT = 11
   COLSTATS = 12
+  FILEMETADATA = 13
 
   FIELDS = {
     VALUES => {:type => ::Thrift::Types::LIST, :name => 'values', :element => {:type => ::Thrift::Types::STRING}},
@@ -2306,7 +2357,8 @@ class Partition
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
     WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId', :default => -1, :optional => true},
     ISSTATSCOMPLIANT => {:type => ::Thrift::Types::BOOL, :name => 'isStatsCompliant', :optional => true},
-    COLSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'colStats', :class => ::ColumnStatistics, :optional => true}
+    COLSTATS => {:type => ::Thrift::Types::STRUCT, :name => 'colStats', :class => ::ColumnStatistics, :optional => true},
+    FILEMETADATA => {:type => ::Thrift::Types::STRUCT, :name => 'fileMetadata', :class => ::FileMetadata, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3378,9 +3430,11 @@ end
 class GetPartitionsByNamesResult
   include ::Thrift::Struct, ::Thrift::Struct_Union
   PARTITIONS = 1
+  DICTIONARY = 2
 
   FIELDS = {
-    PARTITIONS => {:type => ::Thrift::Types::LIST, :name => 'partitions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}}
+    PARTITIONS => {:type => ::Thrift::Types::LIST, :name => 'partitions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}},
+    DICTIONARY => {:type => ::Thrift::Types::STRUCT, :name => 'dictionary', :class => ::ObjectDictionary, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4550,6 +4604,26 @@ class GetLatestCommittedCompactionInfoResponse
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field compactions is unset!') unless @compactions
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class FindNextCompactRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  WORKERID = 1
+  WORKERVERSION = 2
+
+  FIELDS = {
+    WORKERID => {:type => ::Thrift::Types::STRING, :name => 'workerId'},
+    WORKERVERSION => {:type => ::Thrift::Types::STRING, :name => 'workerVersion'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field workerId is unset!') unless @workerId
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field workerVersion is unset!') unless @workerVersion
   end
 
   ::Thrift::Struct.generate_accessors self

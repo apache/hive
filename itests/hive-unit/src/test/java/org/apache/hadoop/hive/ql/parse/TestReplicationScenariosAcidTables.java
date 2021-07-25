@@ -101,7 +101,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     conf.set("metastore.warehouse.tenant.colocation", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
-        new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
+        new MiniDFSCluster.Builder(conf).numDataNodes(2).format(true).build();
     Map<String, String> acidEnableConf = new HashMap<String, String>() {{
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
         put("hive.support.concurrency", "true");
@@ -1378,6 +1378,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     primary.run("drop database " + dbName);
   }
 
+  @org.junit.Ignore("HIVE-25367")
   @Test
   public void testMultiDBTxn() throws Throwable {
     String tableName = testName.getMethodName();

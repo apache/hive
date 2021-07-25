@@ -23,12 +23,12 @@ POSTHOOK: type: SHOWDATACONNECTORS
 mysql_test
 PREHOOK: query: CREATE REMOTE database mysql_db using mysql_test with DBPROPERTIES("connector.remoteDbName"="hive1")
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Input: connector:mysql_test
 PREHOOK: Output: database:mysql_db
-#### A masked pattern was here ####
 POSTHOOK: query: CREATE REMOTE database mysql_db using mysql_test with DBPROPERTIES("connector.remoteDbName"="hive1")
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Input: connector:mysql_test
 POSTHOOK: Output: database:mysql_db
-#### A masked pattern was here ####
 PREHOOK: query: USE mysql_db
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:mysql_db

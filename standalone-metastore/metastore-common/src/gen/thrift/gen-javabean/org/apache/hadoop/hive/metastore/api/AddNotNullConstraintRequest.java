@@ -329,14 +329,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // NOT_NULL_CONSTRAINT_COLS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list472 = iprot.readListBegin();
-                struct.notNullConstraintCols = new java.util.ArrayList<SQLNotNullConstraint>(_list472.size);
-                @org.apache.thrift.annotation.Nullable SQLNotNullConstraint _elem473;
-                for (int _i474 = 0; _i474 < _list472.size; ++_i474)
+                org.apache.thrift.protocol.TList _list498 = iprot.readListBegin();
+                struct.notNullConstraintCols = new java.util.ArrayList<SQLNotNullConstraint>(_list498.size);
+                @org.apache.thrift.annotation.Nullable SQLNotNullConstraint _elem499;
+                for (int _i500 = 0; _i500 < _list498.size; ++_i500)
                 {
-                  _elem473 = new SQLNotNullConstraint();
-                  _elem473.read(iprot);
-                  struct.notNullConstraintCols.add(_elem473);
+                  _elem499 = new SQLNotNullConstraint();
+                  _elem499.read(iprot);
+                  struct.notNullConstraintCols.add(_elem499);
                 }
                 iprot.readListEnd();
               }
@@ -362,9 +362,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(NOT_NULL_CONSTRAINT_COLS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.notNullConstraintCols.size()));
-          for (SQLNotNullConstraint _iter475 : struct.notNullConstraintCols)
+          for (SQLNotNullConstraint _iter501 : struct.notNullConstraintCols)
           {
-            _iter475.write(oprot);
+            _iter501.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -389,9 +389,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.notNullConstraintCols.size());
-        for (SQLNotNullConstraint _iter476 : struct.notNullConstraintCols)
+        for (SQLNotNullConstraint _iter502 : struct.notNullConstraintCols)
         {
-          _iter476.write(oprot);
+          _iter502.write(oprot);
         }
       }
     }
@@ -400,14 +400,14 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, AddNotNullConstraintRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list477 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.notNullConstraintCols = new java.util.ArrayList<SQLNotNullConstraint>(_list477.size);
-        @org.apache.thrift.annotation.Nullable SQLNotNullConstraint _elem478;
-        for (int _i479 = 0; _i479 < _list477.size; ++_i479)
+        org.apache.thrift.protocol.TList _list503 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.notNullConstraintCols = new java.util.ArrayList<SQLNotNullConstraint>(_list503.size);
+        @org.apache.thrift.annotation.Nullable SQLNotNullConstraint _elem504;
+        for (int _i505 = 0; _i505 < _list503.size; ++_i505)
         {
-          _elem478 = new SQLNotNullConstraint();
-          _elem478.read(iprot);
-          struct.notNullConstraintCols.add(_elem478);
+          _elem504 = new SQLNotNullConstraint();
+          _elem504.read(iprot);
+          struct.notNullConstraintCols.add(_elem504);
         }
       }
       struct.setNotNullConstraintColsIsSet(true);

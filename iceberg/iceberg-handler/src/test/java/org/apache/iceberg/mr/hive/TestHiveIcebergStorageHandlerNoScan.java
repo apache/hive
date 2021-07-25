@@ -955,7 +955,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         optional(1, "customer_id", Types.IntegerType.get()),
         optional(2, "first_name", Types.StringType.get(), "This is first name"),
         optional(3, "last_name", Types.StringType.get(), "This is last name"),
-        optional(4, "address",  Types.StructType.of(
+        optional(4, "address", Types.StructType.of(
             optional(5, "city", Types.StringType.get()),
             optional(6, "street", Types.StringType.get())), null)
     );
@@ -987,6 +987,66 @@ public class TestHiveIcebergStorageHandlerNoScan {
     Assert.assertEquals(expectedSchema, hmsSchema);
   }
 
+  @Test
+  public void testAlterTableChangeColumnNameAndComment() throws TException, InterruptedException {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    Schema schema = new Schema(
+        optional(1, "customer_id", Types.IntegerType.get()),
+        optional(2, "last_name", Types.StringType.get(), "This is last name")
+    );
+    testTables.createTable(shell, identifier.name(), schema, SPEC, FileFormat.PARQUET, ImmutableList.of());
+
+    shell.executeStatement("ALTER TABLE default.customers CHANGE COLUMN " +
+        "last_name family_name string COMMENT 'This is family name'");
+
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "customers");
+
+    List<FieldSchema> icebergSchema = HiveSchemaUtil.convert(icebergTable.schema());
+    List<FieldSchema> hmsSchema = hmsTable.getSd().getCols();
+
+    List<FieldSchema> expectedSchema = Lists.newArrayList(
+        new FieldSchema("customer_id", "int", null),
+        new FieldSchema("family_name", "string", "This is family name"));
+
+    Assert.assertEquals(expectedSchema, icebergSchema);
+    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+      expectedSchema.stream().filter(fs -> fs.getComment() == null).forEach(fs -> fs.setComment("from deserializer"));
+    }
+    Assert.assertEquals(expectedSchema, hmsSchema);
+  }
+
+  @Test
+  public void testAlterTableChangeColumnTypeAndComment() throws TException, InterruptedException {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    Schema schema = new Schema(
+        optional(1, "customer_id", Types.IntegerType.get()),
+        optional(2, "last_name", Types.StringType.get(), "This is last name")
+    );
+    testTables.createTable(shell, identifier.name(), schema, SPEC, FileFormat.PARQUET, ImmutableList.of());
+
+    shell.executeStatement("ALTER TABLE default.customers CHANGE COLUMN " +
+        "customer_id customer_id bigint COMMENT 'This is an identifier'");
+
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "customers");
+
+    List<FieldSchema> icebergSchema = HiveSchemaUtil.convert(icebergTable.schema());
+    List<FieldSchema> hmsSchema = hmsTable.getSd().getCols();
+
+    List<FieldSchema> expectedSchema = Lists.newArrayList(
+        new FieldSchema("customer_id", "bigint", "This is an identifier"),
+        new FieldSchema("last_name", "string", "This is last name"));
+
+    Assert.assertEquals(expectedSchema, icebergSchema);
+    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+      expectedSchema.stream().filter(fs -> fs.getComment() == null).forEach(fs -> fs.setComment("from deserializer"));
+    }
+    Assert.assertEquals(expectedSchema, hmsSchema);
+  }
+
   /**
    * Checks that HiveIcebergMetaHook doesn't run into failures with undefined alter operation type (e.g. stat updates)
    * @throws Exception - any test failure
@@ -1005,6 +1065,28 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     metaHook.preAlterTable(hmsTable, environmentContext);
     metaHook.commitAlterTable(hmsTable, environmentContext, null);
+  }
+
+  @Test
+  public void testCommandsWithPartitionClauseThrow() {
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .identity("last_name").build();
+    testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, FileFormat.PARQUET, ImmutableList.of());
+
+    String[] commands = {
+        "INSERT INTO target PARTITION (last_name='Johnson') VALUES (1, 'Rob')",
+        "INSERT OVERWRITE TABLE target PARTITION (last_name='Johnson') SELECT * FROM target WHERE FALSE",
+        "DESCRIBE target PARTITION (last_name='Johnson')",
+        "TRUNCATE target PARTITION (last_name='Johnson')"
+    };
+
+    for (String command : commands) {
+      AssertHelpers.assertThrows("Should throw unsupported operation exception for queries with partition spec",
+          IllegalArgumentException.class, "Using partition spec in query is unsupported",
+          () -> shell.executeStatement(command));
+    }
   }
 
   /**

@@ -34,6 +34,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.hive.iceberg.org.apache.orc.OrcConf;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.PartitionField;
@@ -42,6 +43,7 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
+import org.apache.iceberg.orc.VectorizedReadUtils;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 
 /**
@@ -98,6 +100,11 @@ public class HiveVectorizedReader {
     try {
       switch (format) {
         case ORC:
+          // Need to turn positional schema evolution off since we use column name based schema evolution for projection
+          // and Iceberg will make a mapping between the file schema and the current reading schema.
+          job.setBoolean(OrcConf.FORCE_POSITIONAL_EVOLUTION.getHiveConfName(), false);
+          VectorizedReadUtils.handleIcebergProjection(inputFile, task, job);
+
           InputSplit split = new OrcSplit(path, null, task.start(), task.length(), (String[]) null, null,
               false, false, com.google.common.collect.Lists.newArrayList(), 0, task.length(), path.getParent(), null);
           RecordReader<NullWritable, VectorizedRowBatch> recordReader = null;

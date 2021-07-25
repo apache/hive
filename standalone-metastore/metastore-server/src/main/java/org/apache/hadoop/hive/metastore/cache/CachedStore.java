@@ -1812,6 +1812,11 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.getDBPrivilegeSet(catName, dbName, userName, groupNames);
   }
 
+  @Override public PrincipalPrivilegeSet getConnectorPrivilegeSet(String catName, String connectorName, String userName,
+      List<String> groupNames) throws InvalidObjectException, MetaException {
+    return rawStore.getConnectorPrivilegeSet(catName, connectorName, userName, groupNames);
+  }
+
   @Override public PrincipalPrivilegeSet getTablePrivilegeSet(String catName, String dbName, String tableName,
       String userName, List<String> groupNames) throws InvalidObjectException, MetaException {
     return rawStore.getTablePrivilegeSet(catName, dbName, tableName, userName, groupNames);
@@ -1836,6 +1841,11 @@ public class CachedStore implements RawStore, Configurable {
   @Override public List<HiveObjectPrivilege> listPrincipalDBGrants(String principalName, PrincipalType principalType,
       String catName, String dbName) {
     return rawStore.listPrincipalDBGrants(principalName, principalType, catName, dbName);
+  }
+
+  @Override public List<HiveObjectPrivilege> listPrincipalDCGrants(String principalName, PrincipalType principalType,
+                                                                   String dcName) {
+    return rawStore.listPrincipalDCGrants(principalName, principalType, dcName);
   }
 
   @Override public List<HiveObjectPrivilege> listAllTableGrants(String principalName, PrincipalType principalType,
@@ -2484,6 +2494,11 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.listPrincipalDBGrantsAll(principalName, principalType);
   }
 
+  @Override public List<HiveObjectPrivilege> listPrincipalDCGrantsAll(String principalName,
+                                                                      PrincipalType principalType) {
+    return rawStore.listPrincipalDCGrantsAll(principalName, principalType);
+  }
+
   @Override public List<HiveObjectPrivilege> listPrincipalTableGrantsAll(String principalName,
       PrincipalType principalType) {
     return rawStore.listPrincipalTableGrantsAll(principalName, principalType);
@@ -2510,6 +2525,10 @@ public class CachedStore implements RawStore, Configurable {
 
   @Override public List<HiveObjectPrivilege> listDBGrantsAll(String catName, String dbName) {
     return rawStore.listDBGrantsAll(catName, dbName);
+  }
+
+  @Override public List<HiveObjectPrivilege> listDCGrantsAll(String dcName) {
+    return rawStore.listDCGrantsAll(dcName);
   }
 
   @Override public List<HiveObjectPrivilege> listPartitionColumnGrantsAll(String catName, String dbName,

@@ -965,9 +965,14 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("add_dynamic_partitions\n");
   }
 
-  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId, const std::string& workerVersion) {
+  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId) {
     // Your implementation goes here
     printf("find_next_compact\n");
+  }
+
+  void find_next_compact2(OptionalCompactionInfoStruct& _return, const FindNextCompactRequest& rqst) {
+    // Your implementation goes here
+    printf("find_next_compact2\n");
   }
 
   void update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id) {

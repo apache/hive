@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
 import org.apache.hadoop.hive.metastore.api.LockState;
@@ -78,8 +79,8 @@ public class TestInitiator extends CompactorTest {
     rqst = new CompactionRequest("default", "rflw2", CompactionType.MINOR);
     txnHandler.compact(rqst);
 
-    txnHandler.findNextToCompact(ServerUtils.hostname() + "-193892", "4.0.0");
-    txnHandler.findNextToCompact("nosuchhost-193892", "4.0.0");
+    txnHandler.findNextToCompact(new FindNextCompactRequest(ServerUtils.hostname() + "-193892", "4.0.0"));
+    txnHandler.findNextToCompact(new FindNextCompactRequest("nosuchhost-193892", "4.0.0"));
 
     startInitiator();
 
@@ -105,7 +106,7 @@ public class TestInitiator extends CompactorTest {
     CompactionRequest rqst = new CompactionRequest("default", "rfrw1", CompactionType.MINOR);
     txnHandler.compact(rqst);
 
-    txnHandler.findNextToCompact("nosuchhost-193892", "4.0.0");
+    txnHandler.findNextToCompact(new FindNextCompactRequest("nosuchhost-193892", "4.0.0"));
 
     conf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, 1L, TimeUnit.MILLISECONDS);
 

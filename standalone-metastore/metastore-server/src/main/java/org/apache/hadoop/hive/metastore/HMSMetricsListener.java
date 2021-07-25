@@ -99,9 +99,16 @@ public class HMSMetricsListener extends MetaStoreEventListener {
   public void onAllocWriteId(AllocWriteIdEvent allocWriteIdEvent, Connection dbConn, SQLGenerator sqlGenerator) throws MetaException {
     if (MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
       Table table = getTable(allocWriteIdEvent);
-
-      if (MetaStoreUtils.isNoAutoCompactSet(table.getParameters())) {
-        Metrics.getOrCreateGauge(MetricsConstants.WRITES_TO_DISABLED_COMPACTION_TABLE).incrementAndGet();
+      // In the case of CTAS, the table is created after write ids are allocated, so we'll skip metrics collection.
+      if (table != null && MetaStoreUtils.isNoAutoCompactSet(table.getParameters())) {
+        int noAutoCompactSet =
+            Metrics.getOrCreateGauge(MetricsConstants.WRITES_TO_DISABLED_COMPACTION_TABLE).incrementAndGet();
+        if (noAutoCompactSet >=
+            MetastoreConf.getIntVar(getConf(),
+                MetastoreConf.ConfVars.COMPACTOR_NUMBER_OF_DISABLED_COMPACTION_TABLES_THRESHOLD)) {
+          LOGGER.warn("There has been a write to table " + table.getDbName() + "." + table.getTableName() +
+              " where auto-compaction is disabled (tblproperties (\"no_auto_compact\"=\"true\")).");
+        }
       }
     }
   }

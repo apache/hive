@@ -581,6 +581,149 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   }
 
   @Test
+  public void testAlterChangeColumn() throws IOException {
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+
+    shell.executeStatement("ALTER TABLE customers CHANGE COLUMN last_name family_name string AFTER customer_id");
+
+    List<Object[]> result = shell.executeStatement("SELECT * FROM customers ORDER BY customer_id");
+    Assert.assertEquals(3, result.size());
+    Assert.assertArrayEquals(new Object[]{0L, "Brown", "Alice"}, result.get(0));
+    Assert.assertArrayEquals(new Object[]{1L, "Green", "Bob"}, result.get(1));
+    Assert.assertArrayEquals(new Object[]{2L, "Pink", "Trudy"}, result.get(2));
+
+    shell.executeStatement("ALTER TABLE customers CHANGE COLUMN family_name family_name string FIRST");
+
+    result = shell.executeStatement("SELECT * FROM customers ORDER BY customer_id");
+    Assert.assertEquals(3, result.size());
+    Assert.assertArrayEquals(new Object[]{"Brown", 0L, "Alice"}, result.get(0));
+    Assert.assertArrayEquals(new Object[]{"Green", 1L, "Bob"}, result.get(1));
+    Assert.assertArrayEquals(new Object[]{"Pink", 2L, "Trudy"}, result.get(2));
+
+    result = shell.executeStatement("SELECT customer_id, family_name FROM customers ORDER BY customer_id");
+    Assert.assertEquals(3, result.size());
+    Assert.assertArrayEquals(new Object[]{0L, "Brown"}, result.get(0));
+    Assert.assertArrayEquals(new Object[]{1L, "Green"}, result.get(1));
+    Assert.assertArrayEquals(new Object[]{2L, "Pink"}, result.get(2));
+
+  }
+
+  // Tests CHANGE COLUMN feature similarly like above, but with a more complex schema, aimed to verify vectorized
+  // reads support the feature properly, also combining with other schema changes e.g. ADD COLUMN
+  @Test
+  public void testSchemaEvolutionOnVectorizedReads() throws Exception {
+    // Currently only ORC, but in the future this should run against each fileformat with vectorized read support.
+    Assume.assumeTrue("Vectorized reads only.", isVectorized);
+
+    Schema orderSchema = new Schema(
+        optional(1, "order_id", Types.IntegerType.get()),
+        optional(2, "customer_first_name", Types.StringType.get()),
+        optional(3, "customer_last_name", Types.StringType.get()),
+        optional(4, "quantity", Types.IntegerType.get()),
+        optional(5, "price", Types.IntegerType.get()),
+        optional(6, "item", Types.StringType.get())
+    );
+
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(orderSchema)
+        .add(1, "Doctor", "Strange", 100, 3, "apple")
+        .add(2, "Tony", "Stark", 150, 2, "apple")
+        .add(3, "Tony", "Stark", 200, 6, "orange")
+        .add(4, "Steve", "Rogers", 100, 8, "banana")
+        .add(5, "Doctor", "Strange", 800, 7, "orange")
+        .add(6, "Thor", "Odinson", 650, 3, "apple")
+        .build();
+
+    testTables.createTable(shell, "orders", orderSchema, fileFormat, records);
+
+    // Reorder columns and rename one column
+    shell.executeStatement("ALTER TABLE orders CHANGE COLUMN " +
+        "customer_first_name customer_first_name string AFTER customer_last_name");
+    shell.executeStatement("ALTER TABLE orders CHANGE COLUMN " +
+        "quantity quantity int AFTER price");
+    shell.executeStatement("ALTER TABLE orders CHANGE COLUMN " +
+        "item fruit string");
+    List<Object[]> result = shell.executeStatement("SELECT customer_first_name, customer_last_name, SUM(quantity) " +
+        "FROM orders where price >= 3 group by customer_first_name, customer_last_name");
+
+    assertQueryResult(result, 4,
+        "Doctor", "Strange", 900L,
+        "Steve", "Rogers", 100L,
+        "Thor", "Odinson", 650L,
+        "Tony", "Stark", 200L);
+
+
+    // Adding a new column (will end up as last col of the schema)
+    shell.executeStatement("ALTER TABLE orders ADD COLUMNS (nickname string)");
+    shell.executeStatement("INSERT INTO orders VALUES (7, 'Romanoff', 'Natasha', 3, 250, 'apple', 'Black Widow')");
+    result = shell.executeStatement("SELECT customer_first_name, customer_last_name, nickname, SUM(quantity) " +
+        " FROM orders where price >= 3 group by customer_first_name, customer_last_name, nickname");
+    assertQueryResult(result, 5,
+        "Doctor", "Strange", null, 900L,
+        "Natasha", "Romanoff", "Black Widow", 250L,
+        "Steve", "Rogers", null, 100L,
+        "Thor", "Odinson", null, 650L,
+        "Tony", "Stark", null, 200L);
+
+    // Re-order newly added column (move it away from being the last column)
+    shell.executeStatement("ALTER TABLE orders CHANGE COLUMN fruit fruit string AFTER nickname");
+    result = shell.executeStatement("SELECT customer_first_name, customer_last_name, nickname, fruit, SUM(quantity) " +
+        " FROM orders where price >= 3 and fruit < 'o' group by customer_first_name, customer_last_name, nickname, " +
+        "fruit");
+    assertQueryResult(result, 4,
+        "Doctor", "Strange", null, "apple", 100L,
+        "Natasha", "Romanoff", "Black Widow", "apple", 250L,
+        "Steve", "Rogers", null, "banana", 100L,
+        "Thor", "Odinson", null, "apple", 650L);
+
+    // Rename newly added column (+ reading with different file includes)
+    shell.executeStatement("ALTER TABLE orders CHANGE COLUMN nickname nick string");
+    result = shell.executeStatement("SELECT customer_first_name, nick, SUM(quantity) " +
+        " FROM orders where fruit < 'o'and nick IS NOT NULL group by customer_first_name, nick");
+    assertQueryResult(result, 1, "Natasha", "Black Widow", 250L);
+
+    // Re-order between different types
+    shell.executeStatement("ALTER TABLE orders CHANGE COLUMN order_id order_id int AFTER customer_first_name");
+    result = shell.executeStatement("SELECT customer_first_name, nick, SUM(quantity), MIN(order_id) " +
+        " FROM orders where fruit < 'o'and nick IS NOT NULL group by customer_first_name, nick");
+    assertQueryResult(result, 1, "Natasha", "Black Widow", 250L, 7);
+
+    // Drop columns via REPLACE COLUMNS (as per query there's also a column re-order, but it should be handled as no-op)
+    shell.executeStatement("ALTER TABLE orders REPLACE COLUMNS (" +
+        "order_id int, customer_last_name string, nick string, quantity int, fruit string)");
+
+    result = shell.executeStatement("DESCRIBE orders");
+    assertQueryResult(result, 5,
+        "customer_last_name", "string", "from deserializer",
+        "order_id", "int", "from deserializer",
+        "quantity", "int", "from deserializer",
+        "nick", "string", "from deserializer",
+        "fruit", "string", "from deserializer");
+    result = shell.executeStatement("SELECT * FROM orders ORDER BY order_id");
+    assertQueryResult(result, 7,
+        "Strange", 1, 100, null, "apple",
+        "Stark", 2, 150, null, "apple",
+        "Stark", 3, 200, null, "orange",
+        "Rogers", 4, 100, null, "banana",
+        "Strange", 5, 800, null, "orange",
+        "Odinson", 6, 650, null, "apple",
+        "Romanoff", 7, 250, "Black Widow", "apple");
+
+  }
+
+  private static void assertQueryResult(List<Object[]> result, int expectedCount, Object... expectedRows) {
+    Assert.assertEquals(expectedCount, result.size());
+    int colCount = expectedRows.length / expectedCount;
+    for (int i = 0; i < expectedCount; ++i) {
+      Object[] rows = new Object[colCount];
+      for (int j = 0; j < colCount; ++j) {
+        rows[j] = expectedRows[i * colCount + j];
+      }
+      Assert.assertArrayEquals(rows, result.get(i));
+    }
+  }
+
+  @Test
   public void testInsertOverwriteNonPartitionedTable() throws IOException {
     TableIdentifier target = TableIdentifier.of("default", "target");
     Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
@@ -1314,6 +1457,188 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   }
 
   @Test
+  public void testTruncateTable() throws IOException, TException, InterruptedException {
+    // Create an Iceberg table with some records in it then execute a truncate table command.
+    // Then check if the data is deleted and the table statistics are reset to 0.
+    String databaseName = "default";
+    String tableName = "customers";
+    Table icebergTable = testTables.createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    testTruncateTable(databaseName, tableName, icebergTable, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, true, false);
+  }
+
+  @Test
+  public void testTruncateEmptyTable() throws IOException, TException, InterruptedException {
+    // Create an empty Iceberg table and execute a truncate table command on it.
+    String databaseName = "default";
+    String tableName = "customers";
+    TableIdentifier identifier = TableIdentifier.of(databaseName, tableName);
+    Table icebergTable = testTables.createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, null);
+    // Set the 'external.table.purge' table property on the table
+    String alterTableCommand =
+        "ALTER TABLE " + identifier + " SET TBLPROPERTIES('external.table.purge'='true')";
+    shell.executeStatement(alterTableCommand);
+
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS");
+
+    shell.executeStatement("TRUNCATE " + identifier);
+
+    icebergTable = testTables.loadTable(TableIdentifier.of(databaseName, tableName));
+    Map<String, String> summary = icebergTable.currentSnapshot().summary();
+    for (String key : STATS_MAPPING.values()) {
+      Assert.assertEquals("0", summary.get(key));
+    }
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + identifier);
+    Assert.assertEquals(0, rows.size());
+    validateBasicStats(icebergTable, databaseName, tableName);
+  }
+
+  @Test
+  public void testMultipleTruncateTable() throws IOException, TException, InterruptedException {
+    // Create an Iceberg table with come records in it, then execute a truncate table command
+    // and check the result. Then insert some new data and run an other truncate table command.
+    // The purpose of this test is to make sure that multiple truncate table commands can
+    // run after each other without any issue (like issues with locking).
+    String databaseName = "default";
+    String tableName = "customers";
+    Table icebergTable = testTables.createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    testTruncateTable(databaseName, tableName, icebergTable, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, true, false);
+
+    List<Record> newRecords = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(3L, "Jane", "Purple").add(4L, "Tim", "Grey").add(5L, "Eva", "Yellow").add(6L, "James", "White")
+        .add(7L, "Jack", "Black").build();
+    shell.executeStatement("INSERT INTO default.customers values (3, 'Jane', 'Purple'), (4, 'Tim', 'Grey')," +
+        "(5, 'Eva', 'Yellow'), (6, 'James', 'White'), (7, 'Jack', 'Black')");
+
+    icebergTable = testTables.loadTable(TableIdentifier.of(databaseName, tableName));
+    testTruncateTable(databaseName, tableName, icebergTable, newRecords,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, true, false);
+  }
+
+  @Test
+  public void testTruncateTableExternalPurgeFalse() throws IOException, TException, InterruptedException {
+    // Create an Iceberg table with some records in it and set the 'external.table.purge' table property
+    // to false and try to run a truncate table command on it. The command should fail with a SemanticException.
+    // Then check if the data is not deleted from the table and also the statistics are not changed.
+    String databaseName = "default";
+    String tableName = "customers";
+    TableIdentifier identifier = TableIdentifier.of(databaseName, tableName);
+    Table icebergTable = testTables.createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    shell.executeStatement("ALTER TABLE " + identifier + " SET TBLPROPERTIES('external.table.purge'='false')");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS");
+
+    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+        "Cannot truncate non-managed table", () -> {
+          shell.executeStatement("TRUNCATE " + identifier);
+        });
+
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + identifier);
+    HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, rows), 0);
+    icebergTable = testTables.loadTable(TableIdentifier.of(databaseName, tableName));
+    validateBasicStats(icebergTable, databaseName, tableName);
+  }
+
+  @Test
+  public void testTruncateTableForceExternalPurgeFalse() throws IOException, TException, InterruptedException {
+    // Create an Iceberg table with some records and set the 'external.table.purge' table parameter to false.
+    // Then execute a truncate table force command which should run without any error.
+    // Then check if the data is deleted from the table and the statistics are reset.
+    String databaseName = "default";
+    String tableName = "customers";
+    Table icebergTable = testTables.createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    testTruncateTable(databaseName, tableName, icebergTable, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, false, true);
+  }
+
+  @Test
+  public void testTruncateTableWithPartitionSpec() throws IOException, TException, InterruptedException {
+    // Create an Iceberg table with some record and try to run a truncate table command with partition
+    // spec. The command should fail as the table is unpartitioned in Hive. Then check if the
+    // initial data and the table statistics are not changed.
+    String databaseName = "default";
+    String tableName = "customers";
+    TableIdentifier identifier = TableIdentifier.of(databaseName, tableName);
+    Table icebergTable = testTables.createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    shell.executeStatement("ALTER TABLE " + identifier + " SET TBLPROPERTIES('external.table.purge'='true')");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS");
+
+    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+        "Using partition spec in query is unsupported for non-native table backed by: " +
+            "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler",
+        () -> {
+          shell.executeStatement("TRUNCATE " + identifier + " PARTITION (customer_id=1)");
+        });
+
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + identifier);
+    HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, rows), 0);
+    icebergTable = testTables.loadTable(TableIdentifier.of(databaseName, tableName));
+    validateBasicStats(icebergTable, databaseName, tableName);
+  }
+
+  @Test
+  public void testTruncateTablePartitionedIcebergTable() throws IOException, TException, InterruptedException {
+    // Create a partitioned Iceberg table with some initial data and run a truncate table command on this table.
+    // Then check if the data is deleted and the table statistics are reset to 0.
+    String databaseName = "default";
+    String tableName = "customers";
+    PartitionSpec spec =
+        PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).identity("last_name").build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(0L, "Alice", "Brown")
+        .add(1L, "Bob", "Brown")
+        .add(2L, "Trudy", "Green")
+        .add(3L, "John", "Pink")
+        .add(4L, "Jane", "Pink")
+        .build();
+    Table icebergTable = testTables.createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, records);
+    testTruncateTable(databaseName, tableName, icebergTable, records,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, true, false);
+  }
+
+  private void testTruncateTable(String databaseName, String tableName, Table icebergTable, List<Record> records,
+      Schema schema, boolean externalTablePurge, boolean force) throws TException, InterruptedException {
+    TableIdentifier identifier = TableIdentifier.of(databaseName, tableName);
+    // Set the 'external.table.purge' table property on the table
+    String alterTableCommand =
+        "ALTER TABLE " + identifier + " SET TBLPROPERTIES('external.table.purge'='" + externalTablePurge + "')";
+    shell.executeStatement(alterTableCommand);
+
+    // Validate the initial data and the table statistics
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + identifier);
+    HiveIcebergTestUtils.validateData(records, HiveIcebergTestUtils.valueForRow(schema, rows), 0);
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS");
+    validateBasicStats(icebergTable, databaseName, tableName);
+
+    // Run a 'truncate table' or 'truncate table force' command
+    String truncateCommand = "TRUNCATE " + identifier;
+    if (force) {
+      truncateCommand = truncateCommand + " FORCE";
+    }
+    shell.executeStatement(truncateCommand);
+
+    // Validate if the data is deleted from the table and also that the table
+    // statistics are reset to 0.
+    Table table = testTables.loadTable(identifier);
+    Map<String, String> summary = table.currentSnapshot().summary();
+    for (String key : STATS_MAPPING.values()) {
+      Assert.assertEquals("0", summary.get(key));
+    }
+    rows = shell.executeStatement("SELECT * FROM " + identifier);
+    Assert.assertEquals(0, rows.size());
+    validateBasicStats(table, databaseName, tableName);
+  }
+
+  @Test
   public void testAddColumnToIcebergTable() throws IOException {
     // Create an Iceberg table with the columns customer_id, first_name and last_name with some initial data.
     Table icebergTable = testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
@@ -1321,6 +1646,10 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
     // Add a new column (age long) to the Iceberg table.
     icebergTable.updateSchema().addColumn("age", Types.LongType.get()).commit();
+    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+      // We need to update columns for non-Hive catalogs
+      shell.executeStatement("ALTER TABLE customers UPDATE COLUMNS");
+    }
 
     Schema customerSchemaWithAge = new Schema(optional(1, "customer_id", Types.LongType.get()),
         optional(2, "first_name", Types.StringType.get(), "This is first name"),
@@ -1384,6 +1713,10 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
     // Add a new required column (age long) to the Iceberg table.
     icebergTable.updateSchema().allowIncompatibleChanges().addRequiredColumn("age", Types.LongType.get()).commit();
+    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+      // We need to update columns for non-Hive catalogs
+      shell.executeStatement("ALTER TABLE customers UPDATE COLUMNS");
+    }
 
     Schema customerSchemaWithAge = new Schema(optional(1, "customer_id", Types.LongType.get()),
         optional(2, "first_name", Types.StringType.get(), "This is first name"),
@@ -1600,6 +1933,10 @@ public class TestHiveIcebergStorageHandlerWithEngine {
 
     // Rename the last_name column to family_name
     icebergTable.updateSchema().renameColumn("last_name", "family_name").commit();
+    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+      // We need to update columns for non-Hive catalogs
+      shell.executeStatement("ALTER TABLE customers UPDATE COLUMNS");
+    }
 
     Schema schemaWithFamilyName = new Schema(optional(1, "customer_id", Types.LongType.get()),
         optional(2, "first_name", Types.StringType.get(), "This is first name"),
@@ -1842,6 +2179,103 @@ public class TestHiveIcebergStorageHandlerWithEngine {
         .add(4L, -3147483648L, 55d, "-2234.5").build();
     rows = shell.executeStatement("SELECT * FROM types_table where id in(3, 4)");
     HiveIcebergTestUtils.validateData(expectedResults, HiveIcebergTestUtils.valueForRow(schemaForResultSet, rows), 0);
+  }
+
+  @Test
+  public void testStatWithInsert() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
+
+    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+      // If the location is set and we have to gather stats, then we have to update the table stats now
+      shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+    }
+
+    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, false);
+    shell.executeStatement(insert);
+
+    checkColStat(identifier.name(), "customer_id");
+  }
+
+  @Test
+  public void testStatWithInsertOverwrite() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
+
+    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, true);
+    shell.executeStatement(insert);
+
+    checkColStat(identifier.name(), "customer_id");
+  }
+
+  @Test
+  public void testStatWithPartitionedInsert() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .identity("last_name").build();
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec,
+        fileFormat, ImmutableList.of());
+
+    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+      // If the location is set and we have to gather stats, then we have to update the table stats now
+      shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+    }
+
+    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, false);
+    shell.executeStatement(insert);
+
+    checkColStat("customers", "customer_id");
+    checkColStat("customers", "first_name");
+  }
+
+  @Test
+  public void testStatWithCTAS() {
+    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
+    shell.executeStatement(testTables.getInsertQuery(
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    shell.executeStatement(String.format(
+        "CREATE TABLE target STORED BY ICEBERG %s TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
+        testTables.locationForCreateTableSQL(TableIdentifier.of("default", "target")),
+        TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
+
+    checkColStat("target", "id");
+  }
+
+  @Test
+  public void testStatWithPartitionedCTAS() {
+    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
+    shell.executeStatement(testTables.getInsertQuery(
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    shell.executeStatement(String.format(
+        "CREATE TABLE target PARTITIONED BY (dept, name) " +
+        "STORED BY ICEBERG TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source s",
+        TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
+
+    checkColStat("target", "id");
+    checkColStat("target", "dept");
+  }
+
+  private void checkColStat(String tableName, String colName) {
+    List<Object[]> rows = shell.executeStatement("DESCRIBE " + tableName + " " + colName);
+
+    Assert.assertEquals(2, rows.size());
+    Assert.assertEquals(StatsSetupConst.COLUMN_STATS_ACCURATE, rows.get(1)[0]);
   }
 
   private void testComplexTypeWrite(Schema schema, List<Record> records) throws IOException {
