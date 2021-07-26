@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
@@ -221,7 +222,12 @@ public class RetryingMetaStoreClient implements InvocationHandler {
         }
         break;
       } catch (UndeclaredThrowableException e) {
-        throw e.getCause();
+        // Caught when an undeclared checked exception thrown below...
+        Throwable cause = e.getCause();
+        if (cause instanceof InterruptedException) {
+          throw new MetaException(ExceptionUtils.getStackTrace(cause));
+        }
+        throw cause;
       } catch (InvocationTargetException e) {
         Throwable t = e.getCause();
         if (t instanceof TApplicationException) {

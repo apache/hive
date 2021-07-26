@@ -153,22 +153,21 @@ public class RetryingHMSHandler implements InvocationHandler {
         return new Result(object, retryCount);
 
       } catch (UndeclaredThrowableException e) {
-        if (e.getCause() != null) {
-          if (e.getCause() instanceof javax.jdo.JDOException) {
-            // Due to reflection, the jdo exception is wrapped in
-            // invocationTargetException
-            caughtException = e.getCause();
-          } else if (e.getCause() instanceof MetaException && e.getCause().getCause() != null
-              && e.getCause().getCause() instanceof javax.jdo.JDOException) {
-            // The JDOException may be wrapped further in a MetaException
-            caughtException = e.getCause().getCause();
-          } else {
-            LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
-            throw e.getCause();
-          }
+        // Caught when an undeclared checked exception thrown below...
+        Throwable cause = e.getCause();
+        if (cause instanceof InterruptedException) {
+          throw new MetaException(ExceptionUtils.getStackTrace(cause));
+        } else if (cause instanceof javax.jdo.JDOException) {
+          // Due to reflection, the jdo exception is wrapped in
+          // invocationTargetException
+          caughtException = cause;
+        } else if (cause instanceof MetaException && cause.getCause() != null
+                && cause.getCause() instanceof javax.jdo.JDOException) {
+          // The JDOException may be wrapped further in a MetaException
+          caughtException = cause.getCause();
         } else {
-          LOG.error(ExceptionUtils.getStackTrace(e));
-          throw e;
+          LOG.error(ExceptionUtils.getStackTrace(cause));
+          throw cause;
         }
       } catch (InvocationTargetException e) {
         if (e.getCause() instanceof javax.jdo.JDOException) {

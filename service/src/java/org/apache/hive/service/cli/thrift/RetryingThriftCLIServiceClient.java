@@ -334,7 +334,12 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
       Object methodResult = method.invoke(base, args);
       result = new InvocationResult(true, methodResult, null);
     } catch (UndeclaredThrowableException e) {
-      throw e.getCause();
+      // Caught when an undeclared checked exception thrown below...
+      Throwable cause = e.getCause();
+      if (cause instanceof InterruptedException) {
+        throw new HiveSQLException(cause);
+      }
+      throw cause;
     } catch (InvocationTargetException e) {
       if (e.getCause() instanceof HiveSQLException) {
         HiveSQLException hiveExc = (HiveSQLException) e.getCause();
