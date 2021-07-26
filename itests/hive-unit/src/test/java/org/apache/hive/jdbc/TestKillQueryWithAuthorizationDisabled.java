@@ -246,6 +246,7 @@ public class TestKillQueryWithAuthorizationDisabled {
     assertTrue(tKillHolder.throwable.getMessage(), tKillHolder.throwable.getMessage().contains("No privilege"));
   }
 
+  @org.junit.Ignore("HIVE-25389")
   @Test public void testKillQueryByTagAdmin() throws Exception {
     ExceptionHolder tExecuteHolder = new ExceptionHolder();
     ExceptionHolder tKillHolder = new ExceptionHolder();
