@@ -3,7 +3,6 @@ set hive.mapred.mode=nonstrict;
 SET hive.vectorized.execution.enabled = true;
 SET hive.int.timestamp.conversion.in.seconds=false;
 set hive.fetch.task.conversion=none;
-set hive.strict.timestamp.conversion=false;
 
 explain vectorization expression
 select
