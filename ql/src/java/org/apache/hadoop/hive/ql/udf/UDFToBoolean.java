@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf;
 
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToBoolean;
@@ -188,7 +189,8 @@ public class UDFToBoolean extends UDF {
     if (i == null) {
       return null;
     } else {
-      booleanWritable.set(i.getSeconds() != 0 || i.getNanos() != 0);
+      TimestampTZ timestamp = UDFUtils.getTimestampTZFromTimestamp(i.getTimestamp());
+      booleanWritable.set((timestamp.getEpochSecond() != 0) || (timestamp.getNanos() != 0));
       return booleanWritable;
     }
   }

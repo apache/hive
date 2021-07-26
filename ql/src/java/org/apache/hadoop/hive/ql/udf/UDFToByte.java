@@ -42,7 +42,7 @@ import org.apache.hadoop.io.Text;
  * UDFToByte.
  *
  */
-@VectorizedExpressions({CastTimestampToLong.class, CastDoubleToLong.class,
+@VectorizedExpressions({CastDoubleToLong.class,
     CastDecimalToLong.class, CastStringToLong.class})
 public class UDFToByte extends UDF {
   private final ByteWritable byteWritable = new ByteWritable();
@@ -187,7 +187,7 @@ public class UDFToByte extends UDF {
     if (i == null) {
       return null;
     } else {
-      final long longValue = i.getSeconds();
+      final long longValue = UDFUtils.getTimestampTZFromTimestamp(i.getTimestamp()).getEpochSecond();
       final byte byteValue = (byte) longValue;
       if (byteValue != longValue) {
         return null;
