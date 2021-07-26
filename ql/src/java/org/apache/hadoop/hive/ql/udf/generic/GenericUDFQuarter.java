@@ -58,7 +58,7 @@ public class GenericUDFQuarter extends GenericUDF {
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    Date date = getDateValue(arguments, 0, inputTypes, converters);
+    Date date = getDateValue(arguments, 0, converters);
     if (date == null) {
       return null;
     }
