@@ -389,6 +389,10 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
             RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider,
             HiveRelOptMaterialization materialization, RelNode calcitePreMVRewritingPlan) {
 
+      if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_PARTITION)) {
+        return null;
+      }
+
       RelOptHiveTable hiveTable = (RelOptHiveTable) materialization.tableRel.getTable();
       if (!AcidUtils.isInsertOnlyTable(hiveTable.getHiveTableMD())) {
         // TODO: plan may contains TS on fully ACID table and aggregate functions which are not supported the

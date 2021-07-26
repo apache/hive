@@ -29,8 +29,15 @@ SELECT b, sum(sumc), a FROM (
 GROUP BY b, a
 ORDER BY a, b;
 
+
+SET hive.materializedview.rebuild.incremental.partition=false;
 EXPLAIN CBO
 ALTER MATERIALIZED VIEW mat1 REBUILD;
+
+SET hive.materializedview.rebuild.incremental.partition=true;
+EXPLAIN CBO
+ALTER MATERIALIZED VIEW mat1 REBUILD;
+
 EXPLAIN
 ALTER MATERIALIZED VIEW mat1 REBUILD;
 ALTER MATERIALIZED VIEW mat1 REBUILD;

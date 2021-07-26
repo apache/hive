@@ -126,6 +126,36 @@ POSTHOOK: Output: default@mat1
 CBO PLAN:
 HiveProject(b=[$0], sumc=[$2], a=[$1])
   HiveAggregate(group=[{0, 1}], agg#0=[sum($2)])
+    HiveProject($f0=[$0], $f1=[$1], $f2=[$2])
+      HiveUnion(all=[true])
+        HiveProject(b=[$1], a=[$0], $f2=[$2])
+          HiveAggregate(group=[{0, 1}], agg#0=[sum($2)])
+            HiveFilter(condition=[<(1, $5.writeid)])
+              HiveTableScan(table=[[default, t1]], table:alias=[t1])
+        HiveProject(b=[$0], a=[$2], sumc=[$1])
+          HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+
+PREHOOK: query: EXPLAIN CBO
+ALTER MATERIALIZED VIEW mat1 REBUILD
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@mat1
+PREHOOK: Input: default@mat1@a=1
+PREHOOK: Input: default@mat1@a=2
+PREHOOK: Input: default@mat1@a=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@mat1
+POSTHOOK: query: EXPLAIN CBO
+ALTER MATERIALIZED VIEW mat1 REBUILD
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@mat1
+POSTHOOK: Input: default@mat1@a=1
+POSTHOOK: Input: default@mat1@a=2
+POSTHOOK: Input: default@mat1@a=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@mat1
+CBO PLAN:
+HiveProject(b=[$0], sumc=[$2], a=[$1])
+  HiveAggregate(group=[{0, 1}], agg#0=[sum($2)])
     HiveProject(b=[$0], a=[$1], sumc=[$2])
       HiveUnion(all=[true])
         HiveProject(b=[$0], a=[$1], sumc=[$2])

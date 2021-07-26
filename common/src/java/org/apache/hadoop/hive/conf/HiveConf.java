@@ -1926,6 +1926,11 @@ public class HiveConf extends Configuration {
         "tries to modify the original materialization contents to reflect the latest changes to the\n" +
         "materialized view source tables, instead of rebuilding the contents fully. Incremental rebuild\n" +
         "is based on the materialized view algebraic incremental rewriting."),
+    HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_PARTITION("hive.materializedview.rebuild.incremental.partition", true,
+        "Whether to try to execute partition based incremental rebuild for the materialized views. " +
+        "Partition based incremental rebuild tries to rebuild the materialization partitions which are affected by latest changes of the\n" +
+        "materialized view source tables only, instead of rebuilding all partitions. " +
+        "hive.materializedview.rebuild.incremental must be enabled."),
     HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_FACTOR("hive.materializedview.rebuild.incremental.factor", 0.1f,
         "The estimated cost of the resulting plan for incremental maintenance of materialization\n" +
         "with aggregations will be multiplied by this value. Reducing the value can be useful to\n" +
