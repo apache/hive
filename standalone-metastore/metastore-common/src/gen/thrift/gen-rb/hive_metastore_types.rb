@@ -815,6 +815,8 @@ class ListPackageRequest; end
 
 class Package; end
 
+class GetAllWriteEventInfoRequest; end
+
 class MetaException < ::Thrift::Exception; end
 
 class UnknownTableException < ::Thrift::Exception; end
@@ -7558,6 +7560,27 @@ class Package
   def struct_fields; FIELDS; end
 
   def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetAllWriteEventInfoRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TXNID = 1
+  DBNAME = 2
+  TABLENAME = 3
+
+  FIELDS = {
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnId is unset!') unless @txnId
   end
 
   ::Thrift::Struct.generate_accessors self

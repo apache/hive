@@ -4982,4 +4982,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public void dropPackage(DropPackageRequest request) throws TException {
     client.drop_package(request);
   }
+
+  @Override
+  public List<WriteEventInfo> getAllWriteEventInfo(GetAllWriteEventInfoRequest request)
+      throws TException {
+    return client.get_all_write_event_info(request);
+  }
 }

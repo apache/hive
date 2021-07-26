@@ -1330,6 +1330,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_package\n");
   }
 
+  void get_all_write_event_info(std::vector<WriteEventInfo> & _return, const GetAllWriteEventInfoRequest& request) {
+    // Your implementation goes here
+    printf("get_all_write_event_info\n");
+  }
+
 };
 
 int main(int argc, char **argv) {
