@@ -34,6 +34,8 @@ import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.thrift.TException;
+
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,6 +45,7 @@ import org.junit.experimental.categories.Category;
 public class TestMarkPartition {
 
   protected Configuration conf;
+  private Table table;
 
   @Before
   public void setUp() throws Exception {
@@ -65,9 +68,9 @@ public class TestMarkPartition {
         .setName(dbName)
         .create(msc, conf);
 
-    final String tableName = "tmptbl";
+    final String tableName = "tmptbl_testMarkingPartitionSet";
     msc.dropTable(dbName, tableName, true, true);
-    Table table = new TableBuilder()
+    table = new TableBuilder()
         .setDbName(dbName)
         .setTableName(tableName)
         .addCol("a", "string")
@@ -112,6 +115,15 @@ public class TestMarkPartition {
       // All good
     } catch(Exception e){
       Assert.fail("Expected InvalidPartitionException, received " + e.getClass().getName());
+    }
+  }
+
+  @After
+  public void teardown() throws Exception {
+    if (table != null) {
+      try (HiveMetaStoreClient msc = new HiveMetaStoreClient(conf)) {
+        msc.dropTable(table.getDbName(), table.getTableName(), true, true);
+      }
     }
   }
 
