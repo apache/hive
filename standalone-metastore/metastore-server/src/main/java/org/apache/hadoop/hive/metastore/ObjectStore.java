@@ -2536,8 +2536,13 @@ public class ObjectStore implements RawStore, Configurable {
                 + dbName + "." + tblName + ": " + part);
       }
     }
+    boolean allowSql = false;
+    if (sqlGenerator.getDbProduct().isPOSTGRES()) {
+      // Currently this path is tested only for postgres.
+      allowSql = true;
+    }
     try {
-      return new GetHelper<Boolean>(catName, dbName, tblName, true, false) {
+      return new GetHelper<Boolean>(catName, dbName, tblName, allowSql, !allowSql) {
         @Override
         protected String describeResult() {
           return null;

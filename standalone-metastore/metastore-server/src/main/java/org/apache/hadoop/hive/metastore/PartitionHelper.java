@@ -507,18 +507,10 @@ class PartitionHelper {
     return numSkewedString;
   }
 
-  public static long addSkewedStringListId(Connection dbConn, long maxBatchSize, long numSkewedString)
-          throws SQLException {
-    long maxListId = 1;
-    ResultSet rs = null;
-    try (Statement statement = dbConn.createStatement()) {
-      rs = statement.executeQuery("SELECT MAX(\"STRING_LIST_ID\") FROM \"SKEWED_STRING_LIST\"");
-      if (rs.next()) {
-        maxListId = rs.getLong(1) + 1;
-      }
-    } finally {
-      close(rs);
-    }
+  public static long addSkewedStringListId(Connection dbConn, long maxBatchSize, long numSkewedString, DatabaseProduct dbType)
+          throws SQLException, MetaException {
+    final long maxListId = PartitionHelper.getNextValueFromSequenceTable(
+            dbConn, "org.apache.hadoop.hive.metastore.model.MStringList", numSkewedString, dbType);
 
     String insertSDParamInfo = "INSERT INTO \"SKEWED_STRING_LIST\" (\"STRING_LIST_ID\") VALUES (?)";
     try (PreparedStatement pst = dbConn.prepareStatement(insertSDParamInfo)) {

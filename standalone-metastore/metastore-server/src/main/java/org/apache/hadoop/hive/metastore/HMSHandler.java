@@ -362,6 +362,17 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public HMSHandler(String name, Configuration conf, boolean init) throws MetaException {
     super(name);
     this.conf = conf;
+
+    boolean usePostgres = this.conf.get("test.postgres") != null;
+    //if (usePostgres) {
+      this.conf.set("javax.jdo.option.ConnectionURL",
+              "jdbc:postgresql://localhost:5432/metastore?createDatabaseIfNotExist=true");
+      this.conf.set("javax.jdo.option.ConnectionPassword", "password");
+      this.conf.set("javax.jdo.option.ConnectionUserName", "hiveuser");
+      this.conf.set("hive.metastore.transactional.event.listeners",
+              "org.apache.hive.hcatalog.listener.DbNotificationListener");
+    //}
+
     isInTest = MetastoreConf.getBoolVar(this.conf, ConfVars.HIVE_IN_TEST);
     if (threadPool == null) {
       synchronized (HMSHandler.class) {
