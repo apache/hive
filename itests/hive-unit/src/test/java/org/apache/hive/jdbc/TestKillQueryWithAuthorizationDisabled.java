@@ -43,6 +43,7 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
+@org.junit.Ignore("HIVE-25389")
 public class TestKillQueryWithAuthorizationDisabled {
   private static final Logger LOG = LoggerFactory.getLogger(TestKillQueryWithAuthorizationDisabled.class);
 
@@ -246,7 +247,6 @@ public class TestKillQueryWithAuthorizationDisabled {
     assertTrue(tKillHolder.throwable.getMessage(), tKillHolder.throwable.getMessage().contains("No privilege"));
   }
 
-  @org.junit.Ignore("HIVE-25389")
   @Test public void testKillQueryByTagAdmin() throws Exception {
     ExceptionHolder tExecuteHolder = new ExceptionHolder();
     ExceptionHolder tKillHolder = new ExceptionHolder();
