@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.SingleRel;
+import org.apache.calcite.rel.convert.Converter;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdDistinctRowCount;
@@ -89,16 +89,22 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
            groupKey, predicate, true);
   }
 
-  public Double getDistinctRowCount(RelNode r, RelMetadataQuery mq, ImmutableBitSet groupKey,
+  /**
+   * Currently Calcite doesn't handle return row counts for Converters and JdbcHiveTableScan. These
+   * method checks for these objects and calls appropriate methods.
+   * https://issues.apache.org/jira/browse/HIVE-25364
+   *
+   */
+  public Double getDistinctRowCount(JdbcHiveTableScan rel, RelMetadataQuery mq, ImmutableBitSet groupKey,
                                     RexNode predicate) {
-    if (r instanceof SingleRel) {
-      return mq.getDistinctRowCount(r.getInput(0), groupKey, predicate);
-    } else if (r instanceof JdbcHiveTableScan) {
-      return getDistinctRowCount(((JdbcHiveTableScan) r).getHiveTableScan(), mq, groupKey, predicate);
-    }
-
-    return super.getDistinctRowCount(r, mq, groupKey, predicate);
+    return getDistinctRowCount(rel.getHiveTableScan(), mq, groupKey, predicate);
   }
+
+  public Double getDistinctRowCount(Converter r, RelMetadataQuery mq, ImmutableBitSet groupKey,
+                                    RexNode predicate) {
+    return mq.getDistinctRowCount(r.getInput(0), groupKey, predicate);
+  }
+
   /**
    * TODO: This method is a copy of {@link RelMdUtil#getJoinDistinctRowCount}.
    * We will remove it once we replace Math.max with a null-safe method in

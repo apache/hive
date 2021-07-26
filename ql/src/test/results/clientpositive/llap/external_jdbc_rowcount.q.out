@@ -4,194 +4,58 @@ PREHOOK: Output: dboutput
 POSTHOOK: query: CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: dboutput
-PREHOOK: query: FROM src
-
-SELECT
-
+PREHOOK: query: SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' ),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','-20','-20.0','-20.0'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','100','-15','65.0','-74.0'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','44','53','-455.454','330.76')
-
-limit 1
+'CREATE TABLE SIMPLE_DERBY_TABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' )
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: FROM src
-
-SELECT
-
+POSTHOOK: query: SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' ),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','-20','-20.0','-20.0'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','100','-15','65.0','-74.0'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','44','53','-455.454','330.76')
-
-limit 1
+'CREATE TABLE SIMPLE_DERBY_TABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' )
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-0	0	0	0	0
-PREHOOK: query: FROM src
-
-SELECT
-
+0
+PREHOOK: query: SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE, "datekey" DATE)' ),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey","datekey") VALUES (?,?,?,?,?)','20','20','20.0','20.0','1999-02-22'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey","datekey") VALUES (?,?,?,?,?)','-20','8','9.0','11.0','2000-03-15'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey","datekey") VALUES (?,?,?,?,?)','101','-16','66.0','-75.0','2010-04-01'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey","datekey") VALUES (?,?,?,?,?)','40','50','-455.4543','330.767','2010-04-02')
-
-limit 1
+'CREATE TABLE SIMPLE_DERBY_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE, "datekey" DATE)' )
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: FROM src
-
-SELECT
-
+POSTHOOK: query: SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE, "datekey" DATE)' ),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey","datekey") VALUES (?,?,?,?,?)','20','20','20.0','20.0','1999-02-22'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey","datekey") VALUES (?,?,?,?,?)','-20','8','9.0','11.0','2000-03-15'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey","datekey") VALUES (?,?,?,?,?)','101','-16','66.0','-75.0','2010-04-01'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey","datekey") VALUES (?,?,?,?,?)','40','50','-455.4543','330.767','2010-04-02')
-
-limit 1
+'CREATE TABLE SIMPLE_DERBY_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE, "datekey" DATE)' )
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-0	0	0	0	0
-PREHOOK: query: FROM src
-
-SELECT
-
+0
+PREHOOK: query: SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE3 ("ikey2" INTEGER, "bkey2" BIGINT, "fkey2" REAL, "dkey2" DOUBLE)' ),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE3 ("ikey2","bkey2","fkey2","dkey2") VALUES (?,?,?,?)','10','10','10.0','10.0'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE3 ("ikey2","bkey2","fkey2","dkey2") VALUES (?,?,?,?)','-10','-10','-10.0','-10.0'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE3 ("ikey2","bkey2","fkey2","dkey2") VALUES (?,?,?,?)','200','-25','55.0','-84.0'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE3 ("ikey2","bkey2","fkey2","dkey2") VALUES (?,?,?,?)','54','53','-455.454','330.76')
-
-limit 1
+'CREATE TABLE SIMPLE_DERBY_TABLE3 ("ikey2" INTEGER, "bkey2" BIGINT, "fkey2" REAL, "dkey2" DOUBLE)' )
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: FROM src
-
-SELECT
-
+POSTHOOK: query: SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE3 ("ikey2" INTEGER, "bkey2" BIGINT, "fkey2" REAL, "dkey2" DOUBLE)' ),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE3 ("ikey2","bkey2","fkey2","dkey2") VALUES (?,?,?,?)','10','10','10.0','10.0'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE3 ("ikey2","bkey2","fkey2","dkey2") VALUES (?,?,?,?)','-10','-10','-10.0','-10.0'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE3 ("ikey2","bkey2","fkey2","dkey2") VALUES (?,?,?,?)','200','-25','55.0','-84.0'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE3 ("ikey2","bkey2","fkey2","dkey2") VALUES (?,?,?,?)','54','53','-455.454','330.76')
-
-limit 1
+'CREATE TABLE SIMPLE_DERBY_TABLE3 ("ikey2" INTEGER, "bkey2" BIGINT, "fkey2" REAL, "dkey2" DOUBLE)' )
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-0	0	0	0	0
-PREHOOK: query: FROM src
-
-SELECT
-
+0
+PREHOOK: query: SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE4 ("ikey2" INTEGER, "bkey2" BIGINT, "fkey2" REAL, "dkey2" DOUBLE, "datekey2" DATE)' ),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE4 ("ikey2","bkey2","fkey2","dkey2","datekey2") VALUES (?,?,?,?,?)','10','10','10.0','10.0','1999-02-22'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE4 ("ikey2","bkey2","fkey2","dkey2","datekey2") VALUES (?,?,?,?,?)','-10','7','9.0','12.0','2000-03-15'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE4 ("ikey2","bkey2","fkey2","dkey2","datekey2") VALUES (?,?,?,?,?)','102','-16','66.0','-75.0','2010-04-01'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE4 ("ikey2","bkey2","fkey2","dkey2","datekey2") VALUES (?,?,?,?,?)','40','50','-455.4543','330.767','2010-04-02')
-
-limit 1
+'CREATE TABLE SIMPLE_DERBY_TABLE4 ("ikey2" INTEGER, "bkey2" BIGINT, "fkey2" REAL, "dkey2" DOUBLE, "datekey2" DATE)' )
 PREHOOK: type: QUERY
-PREHOOK: Input: default@src
+PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: FROM src
-
-SELECT
-
+POSTHOOK: query: SELECT
 #### A masked pattern was here ####
-'CREATE TABLE SIMPLE_DERBY_TABLE4 ("ikey2" INTEGER, "bkey2" BIGINT, "fkey2" REAL, "dkey2" DOUBLE, "datekey2" DATE)' ),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE4 ("ikey2","bkey2","fkey2","dkey2","datekey2") VALUES (?,?,?,?,?)','10','10','10.0','10.0','1999-02-22'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE4 ("ikey2","bkey2","fkey2","dkey2","datekey2") VALUES (?,?,?,?,?)','-10','7','9.0','12.0','2000-03-15'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE4 ("ikey2","bkey2","fkey2","dkey2","datekey2") VALUES (?,?,?,?,?)','102','-16','66.0','-75.0','2010-04-01'),
-
-#### A masked pattern was here ####
-'INSERT INTO SIMPLE_DERBY_TABLE4 ("ikey2","bkey2","fkey2","dkey2","datekey2") VALUES (?,?,?,?,?)','40','50','-455.4543','330.767','2010-04-02')
-
-limit 1
+'CREATE TABLE SIMPLE_DERBY_TABLE4 ("ikey2" INTEGER, "bkey2" BIGINT, "fkey2" REAL, "dkey2" DOUBLE, "datekey2" DATE)' )
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@src
+POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-0	0	0	0	0
+0
 PREHOOK: query: CREATE EXTERNAL TABLE ext_simple_derby_table1
 (
  ikey int,
@@ -425,48 +289,3 @@ HiveJdbcConverter(convention=[JDBC.DERBY])
                     JdbcFilter(condition=[IS NOT NULL($0)])
                       JdbcHiveTableScan(table=[[default, ext_simple_derby_table4]], table:alias=[ext_simple_derby_table4])
 
-PREHOOK: query: with t1 as (select fkey, ikey, sum(dkey) as dk_sum, sum(dkey2) as dk2_sum
-            from ext_simple_derby_table1 left join ext_simple_derby_table3
-            on ikey = ikey2
-            where fkey2 is null
-            group by fkey, ikey),
-t2 as (select datekey, fkey, ikey, sum(dkey) as dk_sum2, sum(dkey2) as dk2_sum2
-       from ext_simple_derby_table2 left join ext_simple_derby_table4
-       on ikey = ikey2
-       where fkey2 is null
-       group by datekey, fkey, ikey)
-select t1.fkey, t2.ikey, sum(t1.ikey)
-from t1 left join t2
-on t1.ikey = t2.ikey AND t1.fkey = t2.fkey
-where t2.fkey is null
-group by t2.datekey, t1.fkey, t2.ikey
-PREHOOK: type: QUERY
-PREHOOK: Input: default@ext_simple_derby_table1
-PREHOOK: Input: default@ext_simple_derby_table2
-PREHOOK: Input: default@ext_simple_derby_table3
-PREHOOK: Input: default@ext_simple_derby_table4
-#### A masked pattern was here ####
-POSTHOOK: query: with t1 as (select fkey, ikey, sum(dkey) as dk_sum, sum(dkey2) as dk2_sum
-            from ext_simple_derby_table1 left join ext_simple_derby_table3
-            on ikey = ikey2
-            where fkey2 is null
-            group by fkey, ikey),
-t2 as (select datekey, fkey, ikey, sum(dkey) as dk_sum2, sum(dkey2) as dk2_sum2
-       from ext_simple_derby_table2 left join ext_simple_derby_table4
-       on ikey = ikey2
-       where fkey2 is null
-       group by datekey, fkey, ikey)
-select t1.fkey, t2.ikey, sum(t1.ikey)
-from t1 left join t2
-on t1.ikey = t2.ikey AND t1.fkey = t2.fkey
-where t2.fkey is null
-group by t2.datekey, t1.fkey, t2.ikey
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ext_simple_derby_table1
-POSTHOOK: Input: default@ext_simple_derby_table2
-POSTHOOK: Input: default@ext_simple_derby_table3
-POSTHOOK: Input: default@ext_simple_derby_table4
-#### A masked pattern was here ####
--455.454	NULL	44
--20.0	NULL	-20
-65.0	NULL	100
