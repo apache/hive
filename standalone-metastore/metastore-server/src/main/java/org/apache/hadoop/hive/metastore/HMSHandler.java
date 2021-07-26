@@ -8961,6 +8961,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
       Table t = getTable(catName, dbName, tableName);
       Map<String, ColumnStatistics> statsMap =  new HashMap<>();
+      boolean useDirectSql = MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL);
       for (Map.Entry<String, ColumnStatistics> entry : newStatsMap.entrySet()) {
         ColumnStatistics csNew = entry.getValue();
         ColumnStatistics csOld = oldStatsMap.get(entry.getKey());
@@ -8981,7 +8982,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
         if (!csNew.getStatsObj().isEmpty()) {
           // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
-          if (MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL)) {
+          if (useDirectSql) {
             statsMap.put(csNew.getStatsDesc().getPartName(), csNew);
           } else {
             result = updatePartitonColStatsInternal(t, csNew,
