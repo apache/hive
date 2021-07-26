@@ -32,6 +32,8 @@ public class Metadata {
   private ReplicationType replicationType;
   private String stagingDir;
   private long lastReplId;
+  private String failoverMetadataLoc;
+  private long failoverEventId;
 
   public Metadata() {
 
@@ -42,6 +44,8 @@ public class Metadata {
     this.replicationType = metadata.replicationType;
     this.stagingDir = metadata.stagingDir;
     this.lastReplId = metadata.lastReplId;
+    this.failoverMetadataLoc = metadata.failoverMetadataLoc;
+    this.failoverEventId = metadata.failoverEventId;
   }
 
   public Metadata(String dbName, ReplicationType replicationType, String stagingDir) {
@@ -69,4 +73,21 @@ public class Metadata {
   public void setLastReplId(long lastReplId) {
     this.lastReplId = lastReplId;
   }
+
+  public String getFailoverMetadataLoc() {
+    return failoverMetadataLoc;
+  }
+
+  public void setFailoverMetadataLoc(String failoverMetadataLoc) {
+    this.failoverMetadataLoc = failoverMetadataLoc;
+  }
+
+  public long getFailoverEventId() {
+    return failoverEventId;
+  }
+
+  public void setFailoverEventId(long failoverEventId) {
+    this.failoverEventId = failoverEventId;
+  }
+
 }
