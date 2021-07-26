@@ -108,7 +108,7 @@ public class GenericUDFMonthsBetween extends GenericUDF {
     // time part of the timestamp should not be skipped
     Timestamp date1 = getTimestampValue(arguments, 0, tsConverters);
     if (date1 == null) {
-      Date date = getDateValue(arguments, 0, dtInputTypes, dtConverters);
+      Date date = getDateValue(arguments, 0, dtConverters);
       if (date == null) {
         return null;
       }
@@ -117,7 +117,7 @@ public class GenericUDFMonthsBetween extends GenericUDF {
 
     Timestamp date2 = getTimestampValue(arguments, 1, tsConverters);
     if (date2 == null) {
-      Date date = getDateValue(arguments, 1, dtInputTypes, dtConverters);
+      Date date = getDateValue(arguments, 1, dtConverters);
       if (date == null) {
         return null;
       }

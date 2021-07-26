@@ -113,7 +113,7 @@ public class UDFMonth extends GenericUDF {
       case TIMESTAMP:
       case TIMESTAMPLOCALTZ:
       case VOID:
-        Date date = getDateValue(arguments, 0, inputTypes, converters);
+        Date date = getDateValue(arguments, 0, converters);
         if (date == null) {
           return null;
         }

@@ -65,7 +65,7 @@ public class GenericUDFLastDay extends GenericUDF {
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    Date d = getDateValue(arguments, 0, inputTypes, converters);
+    Date d = getDateValue(arguments, 0, converters);
     if (d == null) {
       return null;
     }
