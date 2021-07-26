@@ -59,6 +59,9 @@ public class TestReplicationOnHDFSEncryptedZones {
 
   @BeforeClass
   public static void beforeClassSetup() throws Exception {
+    System.setProperty("jceks.key.serialFilter", "java.lang.Enum;java.security.KeyRep;" +
+            "java.security.KeyRep$Type;javax.crypto.spec.SecretKeySpec;" +
+            "org.apache.hadoop.crypto.key.JavaKeyStoreProvider$KeyMetadata;!*");
     conf = new Configuration();
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
@@ -173,8 +176,6 @@ public class TestReplicationOnHDFSEncryptedZones {
             .verifyResults(new String[] { "value1", "value2" });
   }
 
-  @Ignore("this is ignored as minidfs cluster as of writing this test looked like did not copy the "
-              + "files correctly")
   @Test
   public void targetAndSourceHaveSameEncryptionZoneKeys() throws Throwable {
     String replicaBaseDir = Files.createTempDirectory("replica2").toFile().getAbsolutePath();
