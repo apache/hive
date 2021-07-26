@@ -2260,6 +2260,12 @@ struct Package {
   6: string body
 }
 
+struct GetAllWriteEventInfoRequest {
+  1: required i64 txnId,
+  2: optional string dbName,
+  3: optional string tableName
+}
+
 // Exceptions.
 
 exception MetaException {
@@ -3021,6 +3027,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   void add_package(1: AddPackageRequest request) throws (1:MetaException o1)
   list<string> get_all_packages(1: ListPackageRequest request) throws (1:MetaException o1)
   void drop_package(1: DropPackageRequest request) throws (1:MetaException o1)
+  list<WriteEventInfo> get_all_write_event_info(1: GetAllWriteEventInfoRequest request) throws (1:MetaException o1)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

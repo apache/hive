@@ -997,6 +997,8 @@ class ListPackageRequest;
 
 class Package;
 
+class GetAllWriteEventInfoRequest;
+
 class MetaException;
 
 class UnknownTableException;
@@ -18192,6 +18194,63 @@ class Package : public virtual ::apache::thrift::TBase {
 void swap(Package &a, Package &b);
 
 std::ostream& operator<<(std::ostream& out, const Package& obj);
+
+typedef struct _GetAllWriteEventInfoRequest__isset {
+  _GetAllWriteEventInfoRequest__isset() : dbName(false), tableName(false) {}
+  bool dbName :1;
+  bool tableName :1;
+} _GetAllWriteEventInfoRequest__isset;
+
+class GetAllWriteEventInfoRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  GetAllWriteEventInfoRequest(const GetAllWriteEventInfoRequest&);
+  GetAllWriteEventInfoRequest& operator=(const GetAllWriteEventInfoRequest&);
+  GetAllWriteEventInfoRequest() : txnId(0), dbName(), tableName() {
+  }
+
+  virtual ~GetAllWriteEventInfoRequest() noexcept;
+  int64_t txnId;
+  std::string dbName;
+  std::string tableName;
+
+  _GetAllWriteEventInfoRequest__isset __isset;
+
+  void __set_txnId(const int64_t val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tableName(const std::string& val);
+
+  bool operator == (const GetAllWriteEventInfoRequest & rhs) const
+  {
+    if (!(txnId == rhs.txnId))
+      return false;
+    if (__isset.dbName != rhs.__isset.dbName)
+      return false;
+    else if (__isset.dbName && !(dbName == rhs.dbName))
+      return false;
+    if (__isset.tableName != rhs.__isset.tableName)
+      return false;
+    else if (__isset.tableName && !(tableName == rhs.tableName))
+      return false;
+    return true;
+  }
+  bool operator != (const GetAllWriteEventInfoRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetAllWriteEventInfoRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetAllWriteEventInfoRequest &a, GetAllWriteEventInfoRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const GetAllWriteEventInfoRequest& obj);
 
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}

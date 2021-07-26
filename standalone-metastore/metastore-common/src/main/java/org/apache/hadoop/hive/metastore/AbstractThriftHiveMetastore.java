@@ -1613,4 +1613,10 @@ public abstract class AbstractThriftHiveMetastore implements Iface {
     public void shutdown() throws TException {
         throw new UnsupportedOperationException("this method is not supported");
     }
+
+    @Override
+    public List<WriteEventInfo> get_all_write_event_info(GetAllWriteEventInfoRequest request)
+        throws MetaException, org.apache.thrift.TException {
+        throw new UnsupportedOperationException("this method is not supported");
+    }
 }
