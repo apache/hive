@@ -8853,14 +8853,14 @@ public class ObjectStore implements RawStore, Configurable {
       // DataNucleus objects get detached all over the place for no (real) reason.
       // So let's not use them anywhere unless absolutely necessary.
       String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
-      Table table = ensureGetTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
+      MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
+      Table table = convertToTable(mTable);
       List<String> colNames = new ArrayList<>();
       for (ColumnStatisticsObj statsObj : statsObjs) {
         colNames.add(statsObj.getColName());
       }
       Map<String, MTableColumnStatistics> oldStats = getPartitionColStats(table, colNames, colStats.getEngine());
 
-      MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
       for (ColumnStatisticsObj statsObj:statsObjs) {
         MTableColumnStatistics mStatsObj = StatObjectConverter.convertToMTableColumnStatistics(
             mTable, statsDesc,
