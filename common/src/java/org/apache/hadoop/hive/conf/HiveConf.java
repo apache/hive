@@ -2574,10 +2574,6 @@ public class HiveConf extends Configuration {
         "Remove extra shuffle/sorting operations after join algorithm selection has been executed. \n" +
         "Currently it only works with Apache Tez. This should always be set to true. \n" +
         "Since it is a new feature, it has been made configurable."),
-
-    @Deprecated
-    HIVEOPTSORTDYNAMICPARTITION("hive.optimize.sort.dynamic.partition", false,
-        "Deprecated. Use hive.optimize.sort.dynamic.partition.threshold instead."),
     HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD("hive.optimize.sort.dynamic.partition.threshold", 0,
                                 "When enabled dynamic partitioning column will be globally sorted.\n" +
                                     "This way we can keep only one record writer open for each partition value\n" +
