@@ -336,6 +336,16 @@ public class VectorPTFGroupBatches extends PTFPartition {
     return getValueFromBatch(bufferedBatches.get(rp.batchIndex), col, rp.rowIndexInBatch);
   }
 
+  public Object getValueAndEvaluateInputExpression(VectorPTFEvaluatorBase evaluator, int row,
+      int col) throws HiveException {
+    RowPositionInBatch rp = getPosition(row);
+    BufferedVectorizedRowBatch batch = bufferedBatches.get(rp.batchIndex);
+    if (!batch.isInputExpressionEvaluated) {
+      evaluator.evaluateInputExpr(batch);
+    }
+    return getValueFromBatch(batch, col, rp.rowIndexInBatch);
+  }
+
   public RowPositionInBatch getPosition(int i) throws HiveException {
     if (positionCache[i] != null) {
       RowPositionInBatch p = positionCache[i];
@@ -987,6 +997,7 @@ public class VectorPTFGroupBatches extends PTFPartition {
 
     partialBatch.size = size;
     partialBatch.isLastGroupBatch = bufferedBatch.isLastGroupBatch;
+    partialBatch.isInputExpressionEvaluated = bufferedBatch.isInputExpressionEvaluated;
     return partialBatch;
   }
 
@@ -1148,6 +1159,7 @@ public class VectorPTFGroupBatches extends PTFPartition {
         block.readSingleRowFromBytesContainer(bufferedBatch);
         bufferedBatch.size += 1;
         bufferedBatch.isLastGroupBatch = block.isLastGroupBatch[batchIndex];
+        bufferedBatch.isInputExpressionEvaluated = block.isInputExpressionEvaluated[batchIndex];
       }
       currentBufferedBatchCount = block.spillBatchCount;
       partitionMetrics.batchesReadFromSpill += currentBufferedBatchCount;
@@ -1175,6 +1187,7 @@ public class VectorPTFGroupBatches extends PTFPartition {
       BufferedVectorizedRowBatch bufferedBatch = bufferedBatches.get(i);
       block.spillBatch(bufferedBatch);
       block.isLastGroupBatch[i] = bufferedBatch.isLastGroupBatch;
+      block.isInputExpressionEvaluated[i] = bufferedBatch.isInputExpressionEvaluated;
       block.spillRowCount += bufferedBatch.size;
       block.spillBatchCount += 1;
       if (previousBatch != null) {
