@@ -75,6 +75,7 @@ import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.types.Type;
 import org.apache.iceberg.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -508,21 +509,27 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     List<FieldSchema> hmsCols = hmsTable.getSd().getCols();
     List<FieldSchema> icebergCols = HiveSchemaUtil.convert(icebergTable.schema());
     HiveSchemaUtil.SchemaDifference schemaDifference = HiveSchemaUtil.getSchemaDiff(hmsCols, icebergCols, true);
-    Pair<String, Optional<String>> outOfOrder =
-        HiveSchemaUtil.getFirstOutOfOrderColumn(hmsCols, icebergCols, ImmutableMap.of());
+
+    // if there are columns dropped, let's remove them from the iceberg schema as well so we can compare the order
+    if (!schemaDifference.getMissingFromFirst().isEmpty()) {
+      schemaDifference.getMissingFromFirst().forEach(icebergCols::remove);
+    }
+
+    Pair<String, Optional<String>> outOfOrder = HiveSchemaUtil.getFirstOutOfOrderColumn(
+        hmsCols, icebergCols, ImmutableMap.of());
 
     // limit the scope of this operation to only dropping columns
     if (!schemaDifference.getMissingFromSecond().isEmpty() || !schemaDifference.getTypeChanged().isEmpty() ||
-        !schemaDifference.getCommentChanged().isEmpty()) {
+        !schemaDifference.getCommentChanged().isEmpty() || outOfOrder != null) {
       throw new MetaException("Unsupported operation to use REPLACE COLUMNS for adding a column, changing a " +
-          "column type or comment. Only use REPLACE COLUMNS for dropping columns. " +
+          "column type, column comment or reordering columns. Only use REPLACE COLUMNS for dropping columns. " +
           "For the other operations, consider using the ADD COLUMNS or CHANGE COLUMN commands.");
     }
 
     // check if there were any column drops
     if (!schemaDifference.getMissingFromFirst().isEmpty()) {
       updateSchema = icebergTable.updateSchema();
-      LOG.info("Dropping the following columns for table {}, cols: {}",
+      LOG.info("handleReplaceColumns: Dropping the following columns for Iceberg table {}, cols: {}",
           hmsTable.getTableName(), schemaDifference.getMissingFromFirst());
       for (FieldSchema droppedCol : schemaDifference.getMissingFromFirst()) {
         updateSchema.deleteColumn(droppedCol.getName());
@@ -601,10 +608,6 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           field.getName(), newType));
     }
     return (Type.PrimitiveType) newType;
-  }
-
-  private boolean isOutOfOrder(HiveSchemaUtil.SchemaDifference diff, Pair<String, Optional<String>> outOfOrder) {
-    return diff.getMissingFromFirst().isEmpty() && diff.getMissingFromSecond().isEmpty() && outOfOrder != null;
   }
 
   private class PreAlterTableProperties {
