@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import it.unimi.dsi.fastutil.booleans.AbstractBooleanBidirectionalIterator;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -62,9 +61,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PATTERN;
 
 /**
  * Tests for the worker thread and its MR jobs.
@@ -625,8 +625,8 @@ public class TestWorker extends CompactorTest {
 
     // Find the new delta file and make sure it has the right contents
     List<String> matchesNotFound = new ArrayList<>(numFilesExpected);
-    matchesNotFound.add(makeDeleteDeltaDirNameCompacted(21,23) + "_v\\d+");
-    matchesNotFound.add(makeDeleteDeltaDirNameCompacted(25,33) + "_v\\d+");
+    matchesNotFound.add(makeDeleteDeltaDirNameCompacted(21,23) + VISIBILITY_PATTERN);
+    matchesNotFound.add(makeDeleteDeltaDirNameCompacted(25,33) + VISIBILITY_PATTERN);
     matchesNotFound.add(makeDeltaDirName(21,21));
     matchesNotFound.add(makeDeltaDirName(23, 23));
     matchesNotFound.add(makeDeltaDirNameCompacted(25, 29));//streaming ingest
@@ -634,14 +634,14 @@ public class TestWorker extends CompactorTest {
     //todo: this should have some _vXXXX suffix but addDeltaFile() doesn't support it
     matchesNotFound.add(makeDeltaDirNameCompacted(31, 33));
     matchesNotFound.add(makeDeltaDirName(35, 35));
-    matchesNotFound.add(makeDeltaDirNameCompacted(21,23) + "_v\\d+");
-    matchesNotFound.add(makeDeltaDirNameCompacted(25,33) + "_v\\d+");
+    matchesNotFound.add(makeDeltaDirNameCompacted(21,23) + VISIBILITY_PATTERN);
+    matchesNotFound.add(makeDeltaDirNameCompacted(25,33) + VISIBILITY_PATTERN);
     if(type == CompactionType.MINOR) {
-      matchesNotFound.add(makeDeltaDirNameCompacted(21,35) + "_v\\d+");
-      matchesNotFound.add(makeDeleteDeltaDirNameCompacted(21, 35) + "_v\\d+");
+      matchesNotFound.add(makeDeltaDirNameCompacted(21,35) + VISIBILITY_PATTERN);
+      matchesNotFound.add(makeDeleteDeltaDirNameCompacted(21, 35) + VISIBILITY_PATTERN);
     }
     if(type == CompactionType.MAJOR) {
-      matchesNotFound.add(AcidUtils.baseDir(35) + "_v\\d+");
+      matchesNotFound.add(AcidUtils.baseDir(35) + VISIBILITY_PATTERN);
     }
     for(FileStatus f : stat) {
       for(int j = 0; j < matchesNotFound.size(); j++) {
