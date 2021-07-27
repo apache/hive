@@ -1625,3 +1625,41 @@ STAGE PLANS:
             outputColumnNames: _col0
             ListSink
 
+PREHOOK: query: describe formatted a_n3 PARTITION (ds='2010-03-11', hr) key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@a_n3
+POSTHOOK: query: describe formatted a_n3 PARTITION (ds='2010-03-11', hr) key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@a_n3
+col_name            	ds                  
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	100.0               
+max_col_len         	100                 
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ds\":\"true\"}}
+PREHOOK: query: describe formatted a_n3 PARTITION (ds='2010-03-11', hr) value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@a_n3
+POSTHOOK: query: describe formatted a_n3 PARTITION (ds='2010-03-11', hr) value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@a_n3
+col_name            	ds                  
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	100.0               
+max_col_len         	100                 
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ds\":\"true\"}}
