@@ -2275,7 +2275,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   }
 
   @Test
-  public void testAsOfTimestamp() throws IOException, InterruptedException {
+  public void testSelectAsOfTimestamp() throws IOException, InterruptedException {
     Table table = prepareTableWithVersions(2);
 
     List<Object[]> rows = shell.executeStatement(
@@ -2295,7 +2295,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   }
 
   @Test
-  public void testAsOfVersion() throws IOException, InterruptedException {
+  public void testSelectAsOfVersion() throws IOException, InterruptedException {
     Table table = prepareTableWithVersions(2);
 
     HistoryEntry first = table.history().get(0);
@@ -2316,7 +2316,36 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   }
 
   @Test
-  public void testAsOfTimestampWithJoins() throws IOException, InterruptedException {
+  public void testCTASAsOfVersionAndTimestamp() throws IOException, InterruptedException {
+    Table table = prepareTableWithVersions(3);
+
+    shell.executeStatement("CREATE TABLE customers2 AS SELECT * FROM customers FOR SYSTEM_VERSION AS OF " +
+        table.history().get(0).snapshotId());
+
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM customers2");
+    Assert.assertEquals(3, rows.size());
+
+    shell.executeStatement("INSERT INTO customers2 SELECT * FROM customers FOR SYSTEM_VERSION AS OF " +
+        table.history().get(1).snapshotId());
+
+    rows = shell.executeStatement("SELECT * FROM customers2");
+    Assert.assertEquals(7, rows.size());
+
+    shell.executeStatement("CREATE TABLE customers3 AS SELECT * FROM customers FOR SYSTEM_TIME AS OF '" +
+        timestampAfterSnapshot(table, 1) + "'");
+
+    rows = shell.executeStatement("SELECT * FROM customers3");
+    Assert.assertEquals(4, rows.size());
+
+    shell.executeStatement("INSERT INTO customers3 SELECT * FROM customers FOR SYSTEM_TIME AS OF '" +
+        timestampAfterSnapshot(table, 0) + "'");
+
+    rows = shell.executeStatement("SELECT * FROM customers3");
+    Assert.assertEquals(7, rows.size());
+  }
+
+  @Test
+  public void testAsOfWithJoins() throws IOException, InterruptedException {
     Table table = prepareTableWithVersions(4);
 
     List<Object[]> rows = shell.executeStatement("SELECT * FROM " +
@@ -2339,6 +2368,13 @@ public class TestHiveIcebergStorageHandlerWithEngine {
         "WHERE sv.first_name=lv.first_name");
 
     Assert.assertEquals(14, rows.size());
+
+    rows = shell.executeStatement("SELECT * FROM " +
+        "customers FOR SYSTEM_TIME AS OF '" + timestampAfterSnapshot(table, 1) + "' sv, " +
+        "customers FOR SYSTEM_VERSION AS OF " + table.history().get(2).snapshotId() + " tv " +
+        "WHERE sv.first_name=tv.first_name");
+
+    Assert.assertEquals(8, rows.size());
   }
 
   /**
