@@ -356,27 +356,6 @@ class MetastoreDirectSqlUtils {
       PersistenceManager pm, TreeMap<Long, StorageDescriptor> sds, String sdIds)
       throws MetaException {
     String queryText;
-
-    queryText = "select \"PART_ID\" from \"PARTITIONS\"";
-    try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
-      Object result = query.execute();
-      if (result == null) {
-        ;
-      }
-    } catch (Exception e) {
-
-    }
-
-    queryText = "select * from \"SEQUENCE_TABLE\" where \"SEQUENCE_NAME\" = 'MPartition'";
-    try (Query query = pm.newQuery("javax.jdo.query.SQL", queryText)) {
-      Object result = query.execute();
-      if (result == null) {
-        ;
-      }
-    } catch (Exception e) {
-
-    }
-
     queryText =
           "select " + SKEWED_VALUES + ".\"SD_ID_OID\","
         + "  " + SKEWED_STRING_LIST_VALUES + ".\"STRING_LIST_ID\","
