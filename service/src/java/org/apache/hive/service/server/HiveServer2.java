@@ -40,6 +40,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.curator.framework.CuratorFramework;
@@ -167,6 +168,8 @@ public class HiveServer2 extends CompositeService {
   private SettableFuture<Boolean> notLeaderTestFuture = SettableFuture.create();
   private ZooKeeperHiveHelper zooKeeperHelper = null;
   private ScheduledQueryExecutionService scheduledQueryService;
+  static String UNCAUGHT_EXCEPTION_INVOKED = "Thread.UncaughtExceptionHandler invoked";
+  static String INITIATING_SHUTDOWN = "Initiating HiveServer2 shutdown";
 
   public HiveServer2() {
     super(HiveServer2.class.getSimpleName());
@@ -1173,6 +1176,7 @@ public class HiveServer2 extends CompositeService {
   }
 
   public static void main(String[] args) {
+    Thread.setDefaultUncaughtExceptionHandler(new HiveServer2UncaughtExceptionHandler());
     HiveConf.setLoadHiveServer2Config(true);
     try {
       ServerOptionsProcessor oproc = new ServerOptionsProcessor("hiveserver2");
@@ -1191,6 +1195,30 @@ public class HiveServer2 extends CompositeService {
       oprocResponse.getServerOptionsExecutor().execute();
     } catch (LogInitializationException e) {
       LOG.error("Error initializing log: " + e.getMessage(), e);
+      System.exit(-1);
+    }
+  }
+
+  /*
+   * We use this handler to make sure that when an Exception is not caught by a Thread, so that it gets handled
+   * uniformly, including making them logged and not just printed to stderr.
+   */
+  private static class HiveServer2UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+      System.err.println(UNCAUGHT_EXCEPTION_INVOKED);
+      String exceptionMsg = "Thread '" + t.toString() + "' died because it did not catch Exception: " +
+              ExceptionUtils.getStackTrace(e);
+      System.err.println(exceptionMsg);
+      System.err.println(INITIATING_SHUTDOWN);
+
+      try {
+        LOG.debug(UNCAUGHT_EXCEPTION_INVOKED);
+        LOG.error(exceptionMsg);
+        LOG.error(INITIATING_SHUTDOWN);
+      } catch (Throwable ignore) {
+      }
+
       System.exit(-1);
     }
   }

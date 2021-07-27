@@ -254,8 +254,7 @@ public class ThriftHttpServlet extends TServlet {
         LOG.info("Cookie added for clientUserName " + clientUserName);
       }
       super.doPost(request, response);
-    }
-    catch (HttpAuthenticationException e) {
+    } catch (HttpAuthenticationException e) {
       // Ignore HttpEmptyAuthenticationException, it is normal for knox
       // to send a request with empty header
       if (!(e instanceof HttpEmptyAuthenticationException)) {
@@ -282,8 +281,37 @@ public class ThriftHttpServlet extends TServlet {
         }
       }
       response.getWriter().println("Authentication Error: " + e.getMessage());
-    }
-    finally {
+    } catch (ServletException e) {
+      /*
+       * This exception could be the response was NOT successfully flushed -- could be the connection was closed by peer
+       * during the request. We issue an ERROR here because Jetty's ServletHandler will issue an obscure WARN message
+       * including stack trace and we want to call attention to this.
+       *
+       * NOTE: We catch this here so ServletException because the Throwable catch clause must be last.
+       */
+      Throwable cause = e.getCause();
+      if (cause != null && cause instanceof IOException) {
+        LOG.error("IOException exception cause may indicate HTTP connection was closed by peer");
+      }
+      throw e;
+    } catch (IOException e) {
+      // See comments in ServletException catch clause.
+      LOG.error("IOException may indicate HTTP connection was closed by peer");
+      throw e;
+    } catch (Throwable throwable) {
+      /*
+       * Do not leave the decision about handling an uncaught Thread Exception to the Jetty library.
+       */
+      Thread.UncaughtExceptionHandler uncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
+      if (uncaughtExceptionHandler != null) {
+        uncaughtExceptionHandler.uncaughtException(Thread.currentThread(), throwable);
+
+        // The Throwable exception has been handled now, so this is technically unnecessary.
+        throw new ServletException(throwable);
+      } else {
+        throw throwable;
+      }
+    } finally {
       // Clear the thread locals
       SessionManager.clearUserName();
       SessionManager.clearIpAddress();
