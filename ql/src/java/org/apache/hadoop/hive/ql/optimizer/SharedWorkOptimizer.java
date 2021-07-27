@@ -384,6 +384,10 @@ public class SharedWorkOptimizer extends Transform {
         continue;
       }
       for (TableScanOperator retainableTsOp : retainedScans) {
+        if (optimizerCache.getWorkGroup(discardableTsOp).contains(retainableTsOp)) {
+          LOG.trace("No need check further {} and {} is in the same group", discardableTsOp, retainableTsOp);
+          continue;
+        }
         if (removedOps.contains(retainableTsOp)) {
           LOG.debug("Skip {} as it has already been removed", retainableTsOp);
           continue;
@@ -2217,10 +2221,9 @@ public class SharedWorkOptimizer extends Transform {
   }
 
   /** Cache to accelerate optimization */
-  private static class SharedWorkOptimizerCache {
+  static class SharedWorkOptimizerCache {
     // Operators that belong to each work
-    final HashMultimap<Operator<?>, Operator<?>> operatorToWorkOperators =
-            HashMultimap.<Operator<?>, Operator<?>>create();
+    private final Map<Operator<?>, Set<Operator<?>>> operatorToWorkOperators = new IdentityHashMap<>();
     // Table scan operators to DPP sources
     final Multimap<TableScanOperator, Operator<?>> tableScanToDPPSource =
             HashMultimap.<TableScanOperator, Operator<?>>create();
@@ -2228,14 +2231,34 @@ public class SharedWorkOptimizer extends Transform {
 
     // Add new operator to cache work group of existing operator (if group exists)
     void putIfWorkExists(Operator<?> opToAdd, Operator<?> existingOp) {
-      List<Operator<?>> c = ImmutableList.copyOf(operatorToWorkOperators.get(existingOp));
-      if (!c.isEmpty()) {
-        for (Operator<?> op : c) {
-          operatorToWorkOperators.get(op).add(opToAdd);
-        }
-        operatorToWorkOperators.putAll(opToAdd, c);
-        operatorToWorkOperators.put(opToAdd, opToAdd);
+      Set<Operator<?>> group = operatorToWorkOperators.get(existingOp);
+      if (group == null) {
+        return;
       }
+      group.add(opToAdd);
+      operatorToWorkOperators.put(opToAdd, group);
+    }
+
+    public void addWorkGroup(Collection<Operator<?>> c) {
+      Set<Operator<?>> group = Sets.newIdentityHashSet();
+      group.addAll(c);
+      for (Operator<?> op : c) {
+        operatorToWorkOperators.put(op, group);
+      }
+    }
+
+    public Set<Operator<?>> getWorkGroup(Operator<?> start) {
+      Set<Operator<?>> set = operatorToWorkOperators.get(start);
+      if (set == null) {
+        return Collections.emptySet();
+      }
+      return set;
+    }
+
+    public Set<Set<Operator<?>>> getWorkGroups() {
+      Set<Set<Operator<?>>> ret = Sets.newIdentityHashSet();
+      ret.addAll(operatorToWorkOperators.values());
+      return ret;
     }
 
     public boolean isKnownFilteringOperator(Operator<? extends OperatorDesc> op) {
@@ -2248,32 +2271,32 @@ public class SharedWorkOptimizer extends Transform {
 
     // Remove operator
     void removeOp(Operator<?> opToRemove) {
-      Set<Operator<?>> s = operatorToWorkOperators.get(opToRemove);
-      s.remove(opToRemove);
-      List<Operator<?>> c1 = ImmutableList.copyOf(s);
-      if (!c1.isEmpty()) {
-        for (Operator<?> op1 : c1) {
-          operatorToWorkOperators.remove(op1, opToRemove); // Remove operator
-        }
-        operatorToWorkOperators.removeAll(opToRemove); // Remove entry for operator
+      Set<Operator<?>> group = operatorToWorkOperators.get(opToRemove);
+      if (group == null) {
+        return;
       }
+      group.remove(opToRemove);
+      operatorToWorkOperators.remove(opToRemove);
     }
 
     // Remove operator and combine
     void removeOpAndCombineWork(Operator<?> opToRemove, Operator<?> replacementOp) {
-      Set<Operator<?>> s = operatorToWorkOperators.get(opToRemove);
-      s.remove(opToRemove);
-      List<Operator<?>> c1 = ImmutableList.copyOf(s);
-      List<Operator<?>> c2 = ImmutableList.copyOf(operatorToWorkOperators.get(replacementOp));
-      if (!c1.isEmpty() && !c2.isEmpty()) {
-        for (Operator<?> op1 : c1) {
-          operatorToWorkOperators.remove(op1, opToRemove); // Remove operator
-          operatorToWorkOperators.putAll(op1, c2); // Add ops of new collection
-        }
-        operatorToWorkOperators.removeAll(opToRemove); // Remove entry for operator
-        for (Operator<?> op2 : c2) {
-          operatorToWorkOperators.putAll(op2, c1); // Add ops to existing collection
-        }
+      Set<Operator<?>> group1 = operatorToWorkOperators.get(opToRemove);
+      Set<Operator<?>> group2 = operatorToWorkOperators.get(replacementOp);
+
+      group1.remove(opToRemove);
+      operatorToWorkOperators.remove(opToRemove);
+
+      if (group1.size() > group2.size()) {
+        Set<Operator<?>> t = group2;
+        group2 = group1;
+        group1 = t;
+      }
+
+      group2.addAll(group1);
+
+      for (Operator<?> o : group1) {
+        operatorToWorkOperators.put(o, group2);
       }
     }
 
