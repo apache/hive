@@ -175,6 +175,7 @@ public abstract class HiveAggregateIncrementalRewritingRuleBase<
           SqlAggFunction aggCall, RexNode leftRef, RexNode rightRef, RexBuilder rexBuilder) {
     switch (aggCall.getKind()) {
       case SUM:
+      case SUM0:
       case COUNT:
         // SUM and COUNT are rolled up as SUM, hence SUM represents both here
         return rexBuilder.makeCall(SqlStdOperatorTable.PLUS,
