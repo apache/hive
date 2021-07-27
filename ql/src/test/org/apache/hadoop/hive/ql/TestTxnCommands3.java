@@ -263,7 +263,6 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
   private void testSdpoBucketed(boolean isVectorized, boolean isSdpo, int bucketing_version)
       throws Exception {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITION, isSdpo);
     runStatementOnDriver("drop table if exists acid_uap");
     runStatementOnDriver("create transactional table acid_uap(a int, b varchar(128)) " +
         "partitioned by (ds string) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES " +
