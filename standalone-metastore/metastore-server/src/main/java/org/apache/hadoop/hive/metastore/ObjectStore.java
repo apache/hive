@@ -8860,10 +8860,10 @@ public class ObjectStore implements RawStore, Configurable {
       }
       Map<String, MTableColumnStatistics> oldStats = getPartitionColStats(table, colNames, colStats.getEngine());
 
+      MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
       for (ColumnStatisticsObj statsObj:statsObjs) {
-        // We have to get mtable again because DataNucleus.
         MTableColumnStatistics mStatsObj = StatObjectConverter.convertToMTableColumnStatistics(
-            ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName()), statsDesc,
+            mTable, statsDesc,
             statsObj, colStats.getEngine());
         writeMTableColumnStatistics(table, mStatsObj, oldStats.get(statsObj.getColName()));
         // There is no need to add colname again, otherwise we will get duplicate colNames.
