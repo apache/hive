@@ -1,7 +1,7 @@
-create table country (name varchar(30) not null);
-create table state (name varchar(30) not null,
+create table country (name varchar(255) not null);
+create table state (name varchar(255) not null,
                     country_code int not null);
-create table city (name varchar(30) not null,
+create table city (name varchar(255) not null,
                    state_code int not null);
 
 insert into country (name) values ('India');

@@ -34,6 +34,6 @@ public class MySQLExternalDB extends AbstractExternalDB {
     }
 
     public void setJdbcDriver() {
-        this.driver = "com.mysql.jdbc.Driver";
+        this.driver = "org.mariadb.jdbc.Driver";
     }
 }

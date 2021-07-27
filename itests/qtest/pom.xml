@@ -478,6 +478,23 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>com.googlecode.maven-download-plugin</groupId>
+        <artifactId>download-maven-plugin</artifactId>
+        <version>1.3.0</version>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>wget</goal>
+            </goals>
+            <configuration>
+              <url>http://downloads.mariadb.com/Connectors/java/connector-java-2.2.0/mariadb-java-client-2.2.0.jar</url>
+              <outputFileName>mariadb-java-client-2.2.0.jar</outputFileName>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>properties-maven-plugin</artifactId>
         <version>1.0-alpha-2</version>
@@ -576,6 +593,7 @@
             <additionalClasspathElement>${test.conf.dir}</additionalClasspathElement>
             <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
             <additionalClasspathElement>${itest.jdbc.jars}</additionalClasspathElement>
+            <additionalClasspathElement>${project.build.directory}/mariadb-java-client-2.2.0.jar</additionalClasspathElement>
           </additionalClasspathElements>
         </configuration>
       </plugin>

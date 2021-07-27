@@ -22,7 +22,6 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.util.Set;
 import java.util.LinkedHashSet;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -555,7 +554,7 @@ public class QTestUtil {
     // connect to externalDB if size is not zero
     if (this.externalDBs != null && this.externalDBs.size() != 0) {
       for (QTestExternalDB externalDB : this.externalDBs) {
-        externalDBinitFromScript(externalDB.getExternalDBType(), externalDB.getExternalDBInitScript());
+        externalDBLoadFromScript(externalDB.getExternalDBType(), externalDB.getExternalDBInitScript());
       }
     }
 
@@ -568,9 +567,9 @@ public class QTestUtil {
     conf.setBoolean("hive.test.init.phase", false);
   }
 
-  private void externalDBinitFromScript(String externalDBType, String externalDBInitScript) throws IOException {
+  private void externalDBLoadFromScript(String externalDBType, String externalDBScript) throws IOException {
     // get externalDB initScript
-    File scriptFile = new File(externalDBInitScript);
+    File scriptFile = new File(externalDBScript);
     if (!scriptFile.isFile()) {
       Assert.fail("cannot getting externaldb scirpt file");
       LOG.info("No externalDB init script detected. Skipping");
@@ -579,7 +578,7 @@ public class QTestUtil {
 
     try {
       AbstractExternalDB abstractExternalDB = AbstractExternalDB.initalizeExternalDB(externalDBType);
-      abstractExternalDB.execute(externalDBInitScript);
+      abstractExternalDB.execute(externalDBScript);
       LOG.info("initialize external databases succeed!");
     } catch (Exception e) {
       Assert.fail("Failed during initialize external database");
