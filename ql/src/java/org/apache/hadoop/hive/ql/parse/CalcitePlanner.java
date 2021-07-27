@@ -5084,12 +5084,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
         List<ExprNodeDesc> col_list, RowResolver inputRR) {
       // Build a map of Hive column Names (ExprNodeColumnDesc Name)
       // to the positions of those projections in the input
-      Map<Integer, ExprNodeDesc> hashCodeTocolumnDescMap = new HashMap<Integer, ExprNodeDesc>();
+      Multimap<Integer, ExprNodeColumnDesc> hashCodeTocolumnDescMap = ArrayListMultimap.create();
       ExprNodeDescUtils.getExprNodeColumnDesc(col_list, hashCodeTocolumnDescMap);
       ImmutableMap.Builder<String, Integer> hiveColNameToInputPosMapBuilder = new ImmutableMap.Builder<String, Integer>();
       String exprNodecolName;
-      for (ExprNodeDesc exprDesc : hashCodeTocolumnDescMap.values()) {
-        exprNodecolName = ((ExprNodeColumnDesc) exprDesc).getColumn();
+      for (ExprNodeColumnDesc exprDesc : hashCodeTocolumnDescMap.values()) {
+        exprNodecolName = exprDesc.getColumn();
         hiveColNameToInputPosMapBuilder.put(exprNodecolName, inputRR.getPosition(exprNodecolName));
       }
 
