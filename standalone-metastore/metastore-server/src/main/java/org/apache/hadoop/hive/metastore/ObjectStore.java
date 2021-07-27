@@ -8874,7 +8874,7 @@ public class ObjectStore implements RawStore, Configurable {
       // No need to check again if it exists.
       String dbname = table.getDbName();
       String name = table.getTableName();
-      MTable oldt = getMTable(catName, dbname, name);
+      MTable oldt = mTable;
       Map<String, String> newParams = new HashMap<>(table.getParameters());
       StatsSetupConst.setColumnStatsState(newParams, colNames);
       boolean isTxn = TxnUtils.isTransactionalTable(oldt.getParameters());
