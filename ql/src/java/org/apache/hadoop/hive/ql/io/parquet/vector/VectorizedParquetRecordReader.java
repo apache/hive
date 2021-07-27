@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.parquet.ParquetRecordReaderBase;
 import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
@@ -87,6 +88,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
+import static org.apache.hadoop.hive.ql.io.IOContext.parseSplitPath;
 import static org.apache.parquet.filter2.compat.RowGroupFilter.filterRowGroups;
 import static org.apache.parquet.format.converter.ParquetMetadataConverter.NO_FILTER;
 import static org.apache.parquet.format.converter.ParquetMetadataConverter.range;
@@ -135,6 +137,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
    */
   protected long totalRowCount = 0;
   private ZoneId writerTimezone;
+  private final RecordIdentifier fileIdentifier;
 
   public VectorizedParquetRecordReader(
       org.apache.hadoop.mapred.InputSplit oldInputSplit, JobConf conf) {
@@ -164,6 +167,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       LOG.error("Failed to create the vectorized reader due to exception " + e);
       throw new RuntimeException(e);
     }
+    fileIdentifier = parseSplitPath(((FileSplit) oldInputSplit).getPath());
   }
 
   private void initPartitionValues(FileSplit fileSplit, JobConf conf) throws IOException {
@@ -370,7 +374,11 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   public boolean next(
     NullWritable nullWritable,
     VectorizedRowBatch vectorizedRowBatch) throws IOException {
-    return nextBatch(vectorizedRowBatch);
+    boolean hasMore = nextBatch(vectorizedRowBatch);
+    if (fileIdentifier != null) {
+      rbCtx.populateWriteId(vectorizedRowBatch, fileIdentifier.getWriteId(), fileIdentifier.getBucketProperty());
+    }
+    return hasMore;
   }
 
   @Override

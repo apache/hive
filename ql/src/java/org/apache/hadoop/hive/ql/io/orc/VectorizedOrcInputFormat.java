@@ -26,7 +26,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -34,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
+import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.NullWritable;
@@ -46,6 +46,8 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcUtils;
 import org.apache.orc.TypeDescription;
+
+import static org.apache.hadoop.hive.ql.io.IOContext.parseSplitPath;
 
 /**
  * A MapReduce/Hive input format for ORC files.
@@ -63,6 +65,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     private VectorizedRowBatchCtx rbCtx;
     private final Object[] partitionValues;
     private boolean addPartitionCols = true;
+    private final RecordIdentifier fileIdentifier;
 
     VectorizedOrcRecordReader(Reader file, Configuration conf,
         FileSplit fileSplit) throws IOException {
@@ -112,6 +115,8 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       } else {
         partitionValues = null;
       }
+
+      this.fileIdentifier = parseSplitPath(fileSplit.getPath());
     }
 
     @Override
@@ -136,6 +141,11 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
         throw new RuntimeException(e);
       }
       progress = reader.getProgress();
+
+      if (fileIdentifier != null) {
+        rbCtx.populateWriteId(value, fileIdentifier.getWriteId(), fileIdentifier.getBucketProperty());
+      }
+
       return true;
     }
 

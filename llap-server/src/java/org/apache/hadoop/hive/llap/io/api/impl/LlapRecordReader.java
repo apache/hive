@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
@@ -74,6 +75,8 @@ import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+
+import static org.apache.hadoop.hive.ql.io.IOContext.parseSplitPath;
 
 class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>, Consumer<ColumnVectorBatch> {
 
@@ -109,6 +112,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
   private final ExecutorService executor;
   private final boolean isAcidScan;
   private final boolean isAcidFormat;
+  private final RecordIdentifier fileIdentifier;
 
   /**
    * Creates the record reader and checks the input-specific compatibility.
@@ -210,6 +214,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
     feedback = rp = cvp.createReadPipeline(this, split, includes, sarg, counters, includes,
         sourceInputFormat, sourceSerDe, reporter, job, mapWork.getPathToPartitionInfo());
+    fileIdentifier = parseSplitPath(split.getPath());
   }
 
   private static int getQueueVar(ConfVars var, JobConf jobConf, Configuration daemonConf) {
@@ -429,6 +434,11 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     if (wasFirst) {
       firstReturnTime = counters.startTimeCounter();
     }
+
+    if (fileIdentifier != null && !isAcidScan) {
+      rbCtx.populateWriteId(vrb, fileIdentifier.getWriteId(), fileIdentifier.getBucketProperty());
+    }
+
     return true;
   }
 
