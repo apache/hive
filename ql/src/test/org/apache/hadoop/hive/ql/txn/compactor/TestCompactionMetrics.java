@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import org.apache.commons.lang3.tuple.Pair;
+import com.codahale.metrics.Counter;
 import com.google.common.collect.Maps;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
@@ -229,19 +229,15 @@ public class TestCompactionMetrics  extends CompactorTest {
   @Test
   public void  testInitiatorNoFailure() throws Exception {
     startInitiator();
-    Pair<AtomicInteger, AtomicInteger> ratio =
-        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_INITIATOR_RATIO);
-    Assert.assertEquals("numerator mismatch", 0, ratio.getLeft().get());
-    Assert.assertEquals("denominator mismatch", 1, ratio.getRight().get());
+    Counter counter = Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_INITIATOR_FAILURE_COUNTER);
+    Assert.assertEquals("Count incorrect", 0, counter.getCount());
   }
 
   @Test
   public void  testCleanerNoFailure() throws Exception {
     startCleaner();
-    Pair<AtomicInteger, AtomicInteger> ratio =
-        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_CLEANER_RATIO);
-    Assert.assertEquals("numerator mismatch", 0, ratio.getLeft().get());
-    Assert.assertEquals("denominator mismatch", 1, ratio.getRight().get());
+    Counter counter = Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER);
+    Assert.assertEquals("Count incorrect", 0, counter.getCount());
   }
 
   @Test
@@ -249,10 +245,8 @@ public class TestCompactionMetrics  extends CompactorTest {
     ThrowingTxnHandler.doThrow = true;
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_STORE_IMPL, "org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler");
     startInitiator();
-    Pair<AtomicInteger, AtomicInteger> ratio =
-        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_INITIATOR_RATIO);
-    Assert.assertEquals("numerator mismatch", 1, ratio.getLeft().get());
-    Assert.assertEquals("denominator mismatch", 1, ratio.getRight().get());
+    Counter counter = Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_INITIATOR_FAILURE_COUNTER);
+    Assert.assertEquals("Count incorrect", 1, counter.getCount());
   }
 
   @Test
@@ -260,10 +254,8 @@ public class TestCompactionMetrics  extends CompactorTest {
     ThrowingTxnHandler.doThrow = true;
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_STORE_IMPL, "org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler");
     startCleaner();
-    Pair<AtomicInteger, AtomicInteger> ratio =
-        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_CLEANER_RATIO);
-    Assert.assertEquals("numerator mismatch", 1, ratio.getLeft().get());
-    Assert.assertEquals("denominator mismatch", 1, ratio.getRight().get());
+    Counter counter = Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER);
+    Assert.assertEquals("Count incorrect", 1, counter.getCount());
   }
 
   @Test
@@ -280,11 +272,8 @@ public class TestCompactionMetrics  extends CompactorTest {
       }
     }
     // the lock timeout on AUX lock, should be ignored.
-    Pair<AtomicInteger, AtomicInteger> ratio =
-        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_INITIATOR_RATIO);
-    Assert.assertEquals(0, ratio.getLeft().get());
-    Assert.assertEquals("numerator mismatch", 0, ratio.getLeft().get());
-    Assert.assertEquals("denominator mismatch", 0, ratio.getRight().get());
+    Counter failureCounter = Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_INITIATOR_FAILURE_COUNTER);
+    Assert.assertEquals("count mismatch", 0, failureCounter.getCount());
   }
 
   @Test
@@ -301,10 +290,8 @@ public class TestCompactionMetrics  extends CompactorTest {
       }
     }
     // the lock timeout on AUX lock, should be ignored.
-    Pair<AtomicInteger, AtomicInteger> ratio =
-        Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_CLEANER_RATIO);
-    Assert.assertEquals("numerator mismatch", 0, ratio.getLeft().get());
-    Assert.assertEquals("denominator mismatch", 0, ratio.getRight().get());
+    Counter failureCounter = Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER);
+    Assert.assertEquals("count mismatch", 0, failureCounter.getCount());
   }
 
   @Test
