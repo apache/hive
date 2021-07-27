@@ -131,7 +131,7 @@ public class SharedWorkOptimizer extends Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
-    LOG.info("Before SharedWorkOptimizer!");
+    LOG.info("SharedWorkOptimizer start");
 
     final Map<String, TableScanOperator> topOps = pctx.getTopOps();
     if (topOps.size() < 2) {
@@ -283,7 +283,7 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
 
-    LOG.info("After SharedWorkOptimizer!");
+    LOG.info("SharedWorkOptimizer end");
     return pctx;
   }
 
