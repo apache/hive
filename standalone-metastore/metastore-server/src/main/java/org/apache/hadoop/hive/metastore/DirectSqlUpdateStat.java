@@ -209,7 +209,7 @@ class DirectSqlUpdateStat {
       try {
         pst = dbConn.prepareStatement(update);
         StatObjectConverter.initUpdatedColumnStatement(mPartitionColumnStatistics, pst);
-        LOG.info("Going to execute update " + update);
+        LOG.debug("Going to execute update " + update);
         int numUpdate = pst.executeUpdate();
         if (numUpdate != 1) {
           throw new MetaException("Invalid state of  PART_COL_STATS for PART_ID " + partId);
@@ -590,6 +590,8 @@ class DirectSqlUpdateStat {
       Map<PartColNameInfo, MPartitionColumnStatistics> insertMap = new HashMap<>();
       Map<PartColNameInfo, MPartitionColumnStatistics> updateMap = new HashMap<>();
       populateInsertUpdateMap(partitionInfoMap, updateMap, insertMap, dbConn);
+
+      LOG.info("Number of stats to insert  " + insertMap.size() + " update " + updateMap.size());
 
       if (insertMap.size() != 0) {
         insertIntoPartColStatTable(insertMap, csId, dbConn);
