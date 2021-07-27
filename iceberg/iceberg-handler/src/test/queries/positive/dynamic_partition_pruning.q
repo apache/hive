@@ -1,4 +1,5 @@
 --! qt:dataset:srcpart
+SET hive.vectorized.execution.enabled=false;
 set hive.compute.query.using.stats=false;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
@@ -14,7 +15,7 @@ select distinct ds from srcpart;
 select distinct hr from srcpart;
 
 CREATE TABLE srcpart_iceberg (key STRING, value STRING)
-PARTITIONED BY (ds STRING, hr STRING) STORED BY iceberg;
+PARTITIONED BY (ds STRING, hr STRING) STORED BY ICEBERG STORED AS ORC;
 INSERT INTO srcpart_iceberg select * from srcpart;
 
 EXPLAIN create table srcpart_date_n2 as select ds as ds, ds as `date`  from srcpart group by ds;
@@ -142,7 +143,7 @@ select distinct(ds) from srcpart_iceberg where srcpart_iceberg.ds in (select max
 -- Two iceberg tables
 
 create table srcpart_date_hour_n0_iceberg (ds string, `date` string, hr string, hour string)
-STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler';
+STORED BY ICEBERG STORED AS ORC;
 INSERT INTO srcpart_date_hour_n0_iceberg select ds as ds, ds as `date`, hr as hr, hr as hour from srcpart group by ds, hr;
 
 set hive.vectorized.execution.enabled=false;

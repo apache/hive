@@ -35,12 +35,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 11
 12
 PREHOOK: query: CREATE TABLE srcpart_iceberg (key STRING, value STRING)
-PARTITIONED BY (ds STRING, hr STRING) STORED BY iceberg
+PARTITIONED BY (ds STRING, hr STRING) STORED BY ICEBERG STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_iceberg
 POSTHOOK: query: CREATE TABLE srcpart_iceberg (key STRING, value STRING)
-PARTITIONED BY (ds STRING, hr STRING) STORED BY iceberg
+PARTITIONED BY (ds STRING, hr STRING) STORED BY ICEBERG STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_iceberg
@@ -4171,12 +4171,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2008-04-08
 2008-04-09
 PREHOOK: query: create table srcpart_date_hour_n0_iceberg (ds string, `date` string, hr string, hour string)
-STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler'
+STORED BY ICEBERG STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_date_hour_n0_iceberg
 POSTHOOK: query: create table srcpart_date_hour_n0_iceberg (ds string, `date` string, hr string, hour string)
-STORED BY 'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler'
+STORED BY ICEBERG STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_date_hour_n0_iceberg
