@@ -2380,7 +2380,7 @@ public class TestHiveIcebergStorageHandlerWithEngine {
   /**
    * Creates the 'customers' table with the default records and creates extra snapshots by inserting one more line
    * into the table.
-   * @param versions The number of snapshots we want to create
+   * @param versions The number of history elements we want to create
    * @return The table created
    * @throws IOException When there is a problem during table creation
    * @throws InterruptedException When there is a problem during adding new data to the table
