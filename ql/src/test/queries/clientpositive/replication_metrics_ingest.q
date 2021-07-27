@@ -1,4 +1,3 @@
---! qt:disabled:HIVE-25387
 --! qt:authorizer
 --! qt:scheduledqueryservice
 --! qt:sysdb
@@ -29,12 +28,16 @@ alter scheduled query repl1 execute;
 
 !sleep 50;
 
+alter scheduled query repl1 disabled;
+
 create scheduled query repl2 every 15 minutes as repl load src into destination
 with ('hive.repl.rootdir'= '${system:test.tmp.dir}/repl');
 
 alter scheduled query repl2 execute;
 
 !sleep 50;
+
+alter scheduled query repl2 disabled;
 
 show databases;
 
