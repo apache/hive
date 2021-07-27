@@ -6898,6 +6898,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       startFunction("updatePartitionColStatsInBatch", ":  db=" + dbName + " table=" + tableName);
 
+      long start = System.currentTimeMillis();
+
       Map<String, ColumnStatistics> newStatsMap = new HashMap<>();
       long numStats = 0;
       long numStatsMax = MetastoreConf.getIntVar(conf, ConfVars.JDBC_MAX_BATCH_SIZE);
@@ -6922,6 +6924,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       } finally {
         endFunction("updatePartitionColStatsInBatch", true, null, tableName);
+        long end = System.currentTimeMillis();
+        float sec = (end - start) / 1000F;
+        LOG.info("updatePartitionColStatsInBatch took " + sec + " seconds for " + statsMap.size() + " stats");
       }
       return true;
     }
@@ -8928,6 +8933,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
 
         Table t = getTable(catName, dbName, tableName);
+        Map<String, ColumnStatistics> statsMap =  new HashMap<>();
+        boolean useDirectSql = MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL);
         for (Entry<String, ColumnStatistics> entry : newStatsMap.entrySet()) {
           ColumnStatistics csNew = entry.getValue();
           ColumnStatistics csOld = oldStatsMap.get(entry.getKey());
@@ -8948,8 +8955,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
           if (!csNew.getStatsObj().isEmpty()) {
             // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
-            result = updatePartitonColStatsInternal(t, csNew,
-                request.getValidWriteIdList(), request.getWriteId()) && result;
+            if (useDirectSql) {
+              statsMap.put(csNew.getStatsDesc().getPartName(), csNew);
+            } else {
+              result = updatePartitonColStatsInternal(t, csNew,
+                      request.getValidWriteIdList(), request.getWriteId()) && result;
+            }
           } else if (isInvalidTxnStats) {
             // For now because the stats state is such as it is, we will invalidate everything.
             // Overall the sematics here are not clear - we could invalide only some columns, but does
@@ -8968,6 +8979,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
         ms.commitTransaction();
         isCommitted = true;
+        // updatePartitionColStatsInBatch starts/commit transaction internally. As there is no write or select for update
+        // operations is done in this transaction, it is safe to commit it before calling updatePartitionColStatsInBatch.
+        if (!statsMap.isEmpty()) {
+          updatePartitionColStatsInBatch(t, statsMap,  request.getValidWriteIdList(), request.getWriteId());
+        }
       } finally {
         if (!isCommitted) {
           ms.rollbackTransaction();
