@@ -385,7 +385,7 @@ public class SharedWorkOptimizer extends Transform {
       }
       for (TableScanOperator retainableTsOp : retainedScans) {
         if (optimizerCache.getWorkGroup(discardableTsOp).contains(retainableTsOp)) {
-          LOG.trace("No need check further {} and {} is in the same group", discardableTsOp, retainableTsOp);
+          LOG.trace("No need check further {} and {} are in the same group", discardableTsOp, retainableTsOp);
           continue;
         }
         if (removedOps.contains(retainableTsOp)) {
