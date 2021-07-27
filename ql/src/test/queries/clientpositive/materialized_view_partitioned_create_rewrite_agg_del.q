@@ -11,7 +11,8 @@ INSERT INTO t1(a, b, c) VALUES
 (2, 1, 2),
 (1, 2, 10),
 (2, 2, 11),
-(1, 3, 100); -- del
+(1, 3, 100), -- del
+(3, 3, 100); -- del
 
 CREATE MATERIALIZED VIEW mat1 PARTITIONED ON (a) STORED AS ORC TBLPROPERTIES ("transactional"="true", "transactional_properties"="insert_only") AS
 SELECT a, b, sum(c) sumc, count(*) countstar FROM t1 GROUP BY b, a;
