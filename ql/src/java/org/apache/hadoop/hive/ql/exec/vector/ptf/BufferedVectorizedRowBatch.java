@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  */
 public class BufferedVectorizedRowBatch extends VectorizedRowBatch {
   boolean isLastGroupBatch;
+  boolean isInputExpressionEvaluated;
 
   public BufferedVectorizedRowBatch(int numCols) {
     super(numCols);

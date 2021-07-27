@@ -539,7 +539,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: lead not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
+                notVectorizedReason: PTF operator: string data type not supported in argument expression of aggregation function lead
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -762,16 +762,28 @@ STAGE PLANS:
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: lag not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
-                vectorized: false
+                reduceColumnNullOrder: zzz
+                reduceColumnSortOrder: +++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:int, KEY.reducesinkkey1:string, KEY.reducesinkkey2:decimal(4,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [decimal(4,2)]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: decimal(4,2))
                 outputColumnNames: _col2, _col7, _col9
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1, 2]
                 Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                 PTF Operator
                   Function definitions:
@@ -793,16 +805,40 @@ STAGE PLANS:
                               window function: GenericUDAFLagEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorLag]
+                      functionInputExpressions: [col 2:decimal(4,2)]
+                      functionNames: [lag]
+                      keyInputColumns: [0, 1, 2]
+                      native: true
+                      nonKeyInputColumns: []
+                      orderExpressions: [col 1:string, col 0:int, col 2:decimal(4,2)]
+                      outputColumns: [3, 0, 1, 2]
+                      outputTypes: [decimal(4,2), int, string, decimal(4,2)]
+                      partitionExpressions: [col 0:int]
+                      streamingColumns: []
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Limit
                     Number of rows: 100
+                    Limit Vectorization:
+                        className: VectorLimitOperator
+                        native: true
                     Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col2 (type: int), lag_window_0 (type: decimal(4,2))
                       outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 3]
                       Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
                         Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
