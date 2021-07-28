@@ -127,9 +127,7 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
     ArrayList<RexCall> validJdbcNode = visitor.getValidJdbcNode();
     ArrayList<RexCall> invalidJdbcNode = visitor.getInvalidJdbcNode();
 
-    if( validJdbcNode.size() == 0 || invalidJdbcNode.size() == 0) {
-      return;
-    }
+    assert validJdbcNode.size() != 0 && invalidJdbcNode.size() != 0;
 
     final RexBuilder rexBuilder = filter.getCluster().getRexBuilder();
 
@@ -174,8 +172,9 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
       final HiveJdbcConverter conv = call.rel(2);
 
       RexNode joinCond = join.getCondition();
+      SqlDialect dialect = conv.getJdbcDialect();
 
-      return super.matches(call) && JDBCRexCallValidator.isValidJdbcOperation(joinCond, conv.getJdbcDialect());
+      return super.matches(call, dialect) && JDBCRexCallValidator.isValidJdbcOperation(joinCond, dialect);
     }
 
     @Override
