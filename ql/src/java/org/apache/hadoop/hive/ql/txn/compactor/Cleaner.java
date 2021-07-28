@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.TableName;
@@ -62,13 +61,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_CLEANER_THREAD_NAME_FORMAT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
 import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+
+import com.codahale.metrics.Counter;
 
 /**
  * A class to clean directories after compactions.  This will run in a separate thread.
@@ -98,8 +98,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     try {
       boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
           MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
-      Pair<AtomicInteger, AtomicInteger> ratio =
-          Metrics.getOrCreateRatio(MetricsConstants.COMPACTION_FAILED_CLEANER_RATIO);
+      Counter failuresCounter = Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER);
       do {
         TxnStore.MutexAPI.LockHandle handle = null;
         long startedAt = -1;
@@ -112,9 +111,6 @@ public class Cleaner extends MetaStoreCompactorThread {
         // so wrap it in a big catch Throwable statement.
         try {
           handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
-          if (metricsEnabled) {
-            ratio.getRight().incrementAndGet();
-          }
           startedAt = System.currentTimeMillis();
           long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
 
@@ -140,7 +136,7 @@ public class Cleaner extends MetaStoreCompactorThread {
         } catch (Throwable t) {
           // the lock timeout on AUX lock, should be ignored.
           if (metricsEnabled && handle != null) {
-            ratio.getLeft().incrementAndGet();
+            failuresCounter.inc();
           }
           LOG.error("Caught an exception in the main loop of compactor cleaner, " +
                   StringUtils.stringifyException(t));
