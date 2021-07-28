@@ -174,6 +174,43 @@ public class TestBytesColumnVector {
     }
   }
 
+  /**
+   * Make sure that ORC's redact mask won't get into trouble by increasing
+   * the size of the allocation before calling setValPreallocated.
+   */
+  @Test
+  public void testMultipleReallocations() {
+    BytesColumnVector vector = new BytesColumnVector();
+    vector.reset();
+
+    // add a value
+    vector.ensureValPreallocated(1000);
+    byte[] bytes = vector.getValPreallocatedBytes();
+    assertEquals(16 * 1024, bytes.length);
+    assertEquals(0, vector.getValPreallocatedStart());
+    // now ask for more memory
+    vector.ensureValPreallocated(5000);
+    // It shouldn't have needed to resize
+    assertSame(bytes, vector.getValPreallocatedBytes());
+    assertEquals(0, vector.getValPreallocatedStart());
+    // actually use 2000 of the bytes
+    vector.setValPreallocated(0, 2000);
+
+    // add another value
+    vector.ensureValPreallocated(10000);
+    assertSame(bytes, vector.getValPreallocatedBytes());
+    assertEquals(2000, vector.getValPreallocatedStart());
+    vector.setValPreallocated(1, 3000);
+
+    // check to make sure the values are allocated correctly
+    assertSame(bytes, vector.vector[0]);
+    assertEquals(0, vector.start[0]);
+    assertEquals(2000, vector.length[0]);
+    assertSame(bytes, vector.vector[1]);
+    assertEquals(2000, vector.start[1]);
+    assertEquals(3000, vector.length[1]);
+  }
+
   // Write a value to the column vector, and return back the byte buffer used.
   private static byte[] writeToBytesColumnVector(int rowIdx, BytesColumnVector col, int writeSize, int val) {
     col.ensureValPreallocated(writeSize);
