@@ -202,8 +202,19 @@ tableSample
 tableSource
 @init { gParent.pushMsg("table source", state); }
 @after { gParent.popMsg(state); }
-    : tabname=tableName props=tableProperties? ts=tableSample? (KW_AS? alias=identifier)?
-    -> ^(TOK_TABREF $tabname $props? $ts? $alias?)
+    : tabname=tableName props=tableProperties? ts=tableSample? (asOf=asOfClause)? (KW_AS? alias=identifier)?
+    -> ^(TOK_TABREF $tabname $props? $ts? $alias? $asOf?)
+    ;
+
+asOfClause
+@init { gParent.pushMsg("as of system_time / system_version clause for table", state); }
+@after { gParent.popMsg(state); }
+    :
+    (KW_FOR KW_SYSTEM_TIME KW_AS KW_OF asOfTime=StringLiteral)
+    -> ^(TOK_AS_OF_TIME $asOfTime)
+    |
+    (KW_FOR KW_SYSTEM_VERSION KW_AS KW_OF asOfVersion=Number)
+    -> ^(TOK_AS_OF_VERSION $asOfVersion)
     ;
 
 uniqueJoinTableSource

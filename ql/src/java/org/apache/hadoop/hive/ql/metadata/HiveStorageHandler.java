@@ -322,4 +322,12 @@ public interface HiveStorageHandler extends Configurable {
   default boolean supportsTruncateOnNonNativeTables() {
     return false;
   }
+
+  /**
+   * Should return true if the StorageHandler is able to handle time travel.
+   * @return True if time travel is allowed
+   */
+  default boolean isTimeTravelAllowed() {
+    return false;
+  }
 }
