@@ -6,4 +6,4 @@ POSTHOOK: query: create table tbl_orc (a int, b string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_orc
-FAILED: SemanticException [Error 10429]: Time travel is not allowed for tbl_orc. Please chose a storage format which supports the feature.
+FAILED: SemanticException [Error 10429]: Time travel is not allowed for tbl_orc. Please choose a storage format which supports the feature.
