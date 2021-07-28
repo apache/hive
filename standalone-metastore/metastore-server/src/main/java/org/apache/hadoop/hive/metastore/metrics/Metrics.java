@@ -32,7 +32,6 @@ import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.MetricSet;
-import com.codahale.metrics.RatioGauge;
 import com.codahale.metrics.Reporter;
 import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.Slf4jReporter;
@@ -160,35 +159,6 @@ public class Metrics {
       return ai;
     }
   }
-
-  /**
-   * Get the pair of AtomicIntegers behind an existing ratio gauge, or create a new gauge if it does not already
-   * exist.
-   * @param name Name of gauge.  This should come from MetricConstants
-   * @return Pair<AtomicInteger, AtomicInteger> as the numerator and denominator of the ratio.
-   */
-  public static Pair<AtomicInteger, AtomicInteger>  getOrCreateRatio(String name) {
-    // We return a garbage value if metrics haven't been initialized so that callers don't have
-    // to keep checking if the resulting value is null.
-    if (self == null) return dummyRatio;
-    Pair<AtomicInteger, AtomicInteger> ratio = self.gaugeRatio.get(name);
-    if (ratio != null) return ratio;
-    synchronized (Metrics.class) {
-      ratio = self.gaugeRatio.get(name);
-      if (ratio != null) return ratio;
-      ratio = Pair.of(new AtomicInteger(), new AtomicInteger());
-      final Pair<AtomicInteger, AtomicInteger> forGauge = ratio;
-      self.gaugeRatio.put(name, ratio);
-      self.registry.register(name, new RatioGauge() {
-        @Override
-        protected Ratio getRatio() {
-          return Ratio.of(forGauge.getLeft().get(), forGauge.getRight().get());
-        }
-      });
-      return ratio;
-    }
-  }
-
 
   public static Counter getOpenConnectionsCounter() {
     return getOrCreateCounter(MetricsConstants.OPEN_CONNECTIONS);
