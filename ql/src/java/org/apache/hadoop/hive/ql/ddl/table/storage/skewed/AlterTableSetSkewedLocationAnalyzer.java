@@ -101,8 +101,6 @@ public class AlterTableSetSkewedLocationAnalyzer extends AbstractAlterTableAnaly
     AbstractAlterTableDesc desc = new AlterTableSetSkewedLocationDesc(tableName, partitionSpec, locations);
     addInputsOutputsAlterTable(tableName, partitionSpec, desc, AlterTableType.SET_SKEWED_LOCATION, false);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
-
-    setAcidDdlDesc(getTable(tableName), desc);
   }
 
   private static final Set<Integer> CONSTANT_TYPES = Sets.newHashSet(HiveParser.Number, HiveParser.StringLiteral,

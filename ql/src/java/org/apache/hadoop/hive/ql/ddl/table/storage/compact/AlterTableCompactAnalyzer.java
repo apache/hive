@@ -68,6 +68,5 @@ public class AlterTableCompactAnalyzer extends AbstractAlterTableAnalyzer {
 
     AlterTableCompactDesc desc = new AlterTableCompactDesc(tableName, partitionSpec, type, isBlocking, mapProp);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
-    setAcidDdlDesc(getTable(tableName), desc);
   }
 }
