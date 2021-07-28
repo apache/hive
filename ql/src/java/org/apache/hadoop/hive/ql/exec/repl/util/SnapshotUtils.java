@@ -275,17 +275,17 @@ public class SnapshotUtils {
 
   /**
    *  Deletes the snapshots present in the list.
-   * @param dfs DistributedFileSystem.
    * @param diffList Elements to be deleted.
    * @param prefix Prefix used in snapshot names,
    * @param snapshotCount snapshot counter to track the number of snapshots deleted.
    * @param conf the Hive Configuration.
    * @throws IOException in case of any error.
    */
-  private static void cleanUpSnapshots(DistributedFileSystem dfs, ArrayList<String> diffList, String prefix,
+  private static void cleanUpSnapshots(ArrayList<String> diffList, String prefix,
       ReplSnapshotCount snapshotCount, HiveConf conf) throws IOException {
     for (String path : diffList) {
       Path snapshotPath = new Path(path);
+      DistributedFileSystem dfs = (DistributedFileSystem) snapshotPath.getFileSystem(conf);
       boolean isFirstDeleted = deleteSnapshotIfExists(dfs, snapshotPath, firstSnapshot(prefix), conf);
       boolean isSecondDeleted = deleteSnapshotIfExists(dfs, snapshotPath, secondSnapshot(prefix), conf);
       // Only attempt to disallowSnapshot, we have deleted the snapshots related to our replication policy, so if
@@ -313,7 +313,6 @@ public class SnapshotUtils {
         } else {
           diffList.add(oldPath);
         }
-        diffList.add(oldPath);
       }
     }
     return diffList;
@@ -332,25 +331,24 @@ public class SnapshotUtils {
    */
   public static void cleanupSnapshots(Path dumpRoot, String snapshotPrefix, HiveConf conf,
       ReplSnapshotCount snapshotCount, boolean isLoad) throws IOException, SemanticException {
-    DistributedFileSystem dfs = (DistributedFileSystem) dumpRoot.getFileSystem(conf);
-    if (dfs.exists(new Path(dumpRoot, EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_OLD))) {
+    DistributedFileSystem dumprootDfs = (DistributedFileSystem) dumpRoot.getFileSystem(conf);
+    if (dumprootDfs.exists(new Path(dumpRoot, EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_OLD))) {
       FileList snapOld = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_OLD, conf);
       FileList snapNew = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT, conf);
       ArrayList<String> oldPaths = SnapshotUtils.getListFromFileList(snapOld);
       ArrayList<String> newPaths = SnapshotUtils.getListFromFileList(snapNew);
       ArrayList<String> diffList = SnapshotUtils.getDiffList(newPaths, oldPaths, conf, isLoad);
-      dfs = isLoad ? (DistributedFileSystem) getExternalTableBaseDir(conf).getFileSystem(conf) : dfs;
-      SnapshotUtils.cleanUpSnapshots(dfs, diffList, snapshotPrefix, snapshotCount, conf);
+      SnapshotUtils.cleanUpSnapshots(diffList, snapshotPrefix, snapshotCount, conf);
     }
     if (isLoad) {
       try {
-        dfs.delete((new Path(dumpRoot, EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_OLD)), true);
+        dumprootDfs.delete((new Path(dumpRoot, EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_OLD)), true);
       } catch (FileNotFoundException fnf) {
         // ignore
         LOG.warn("Failed to clean up snapshot " + EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_OLD, fnf);
       }
       try {
-        dfs.rename(new Path(dumpRoot, EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT),
+        dumprootDfs.rename(new Path(dumpRoot, EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT),
             new Path(dumpRoot, EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_OLD), Options.Rename.OVERWRITE);
       } catch (FileNotFoundException fnf) {
         // ignore

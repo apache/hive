@@ -53,6 +53,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_OVERWRITE_TARGET_FOR_EXTERNAL_TABLE_COPY;
 import static org.apache.hadoop.hive.metastore.utils.HdfsUtils.constructDistCpOptions;
+import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.NEW_SNAPSHOT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.firstSnapshot;
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.secondSnapshot;
 
@@ -259,18 +260,25 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
 
     DistributedFileSystem targetFs = SnapshotUtils.getDFS(targetPath, clonedConf);
     boolean result = false;
+    boolean isSecondSnapshotAvl =
+            SnapshotUtils.isSnapshotAvailable(targetFs, targetPath, work.getSnapshotPrefix(), NEW_SNAPSHOT, clonedConf);
     if (getWork().getCopyMode().equals(SnapshotUtils.SnapshotCopyMode.DIFF_COPY)) {
+      if(isSecondSnapshotAvl) {
+        SnapshotUtils.deleteSnapshotIfExists(targetFs, targetPath, firstSnapshot(work.getSnapshotPrefix()), clonedConf);
+        SnapshotUtils.renameSnapshot(targetFs, targetPath,
+                secondSnapshot(work.getSnapshotPrefix()), firstSnapshot(work.getSnapshotPrefix()), clonedConf);
+      }
       LOG.info("Using snapshot diff copy for source: {} and target: {}", sourcePath, targetPath);
       boolean overwriteTarget = clonedConf.getBoolVar(REPL_SNAPSHOT_OVERWRITE_TARGET_FOR_EXTERNAL_TABLE_COPY);
       LOG.debug("Overwrite target in case the target location is modified is turned {}",
           overwriteTarget ? "on" : "off");
       result = FileUtils
-          .distCpWithSnapshot(firstSnapshot(work.getSnapshotPrefix()), secondSnapshot(work.getSnapshotPrefix()),
+              .distCpWithSnapshot(firstSnapshot(work.getSnapshotPrefix()), secondSnapshot(work.getSnapshotPrefix()),
               Collections.singletonList(sourcePath), targetPath, overwriteTarget, clonedConf,
               ShimLoader.getHadoopShims(), proxyUser);
        if(result) {
          // Delete the older snapshot from last iteration.
-         targetFs.deleteSnapshot(targetPath, firstSnapshot(work.getSnapshotPrefix()));
+         SnapshotUtils.deleteSnapshotIfExists(targetFs, targetPath, firstSnapshot(work.getSnapshotPrefix()), clonedConf);
        } else {
          throw new SnapshotException(
              "Can not successfully copy external table data using snapshot diff. source: " + sourcePath + " and "
@@ -286,8 +294,9 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
       // snapshots.
       SnapshotUtils.allowSnapshot(targetFs, work.getFullyQualifiedTargetPath(), clonedConf);
       // Attempt to delete the snapshot, in case this is a bootstrap post a failed incremental, Since in case of
-      // bootstrap we go from start, so delete any pre-existing snapshot.
+      // bootstrap we go from start, so delete any pre-existing snapshot, (both snapshots can exist in case of failback)
       SnapshotUtils.deleteSnapshotIfExists(targetFs, targetPath, firstSnapshot(work.getSnapshotPrefix()), clonedConf);
+      SnapshotUtils.deleteSnapshotIfExists(targetFs, targetPath, secondSnapshot(work.getSnapshotPrefix()), clonedConf);
 
       // Copy from the initial snapshot path.
       result = runFallbackDistCp(snapRelPath, targetPath, proxyUser, clonedConf);

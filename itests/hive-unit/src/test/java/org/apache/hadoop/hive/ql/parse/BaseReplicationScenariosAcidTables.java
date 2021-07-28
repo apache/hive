@@ -74,7 +74,7 @@ public class BaseReplicationScenariosAcidTables {
   protected static String fullyQualifiedReplicaExternalBase;
   static WarehouseInstance primary;
   static WarehouseInstance replica, replicaNonAcid;
-  static HiveConf conf;
+  static HiveConf conf, replicaConf;
   String primaryDbName, replicatedDbName;
   List<String> acidTableNames = new LinkedList<>();
   private List<String> nonAcidTableNames = new LinkedList<>();

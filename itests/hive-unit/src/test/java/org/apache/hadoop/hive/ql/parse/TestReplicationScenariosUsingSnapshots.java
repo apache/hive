@@ -52,6 +52,7 @@ import java.util.List;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPLDIR;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.externalTableDataPath;
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.NEW_SNAPSHOT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.OLD_SNAPSHOT;
@@ -79,11 +80,11 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     overrides.put(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname, "true");
     overrides.put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
         UserGroupInformation.getCurrentUser().getUserName());
-    overrides.put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
+    overrides.put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "true");
     overrides.put(HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK.varname, "true");
     overrides.put(REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY.varname, "true");
 
-    internalBeforeClassSetup(overrides, TestReplicationScenarios.class);
+    internalBeforeClassSetupExclusiveReplica(overrides, overrides, TestReplicationScenarios.class);
   }
 
   @Before
@@ -109,14 +110,30 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
             secondSnapshot(primaryDbName.toLowerCase()));
       }
     }
+    SnapshottableDirectoryStatus[] snapsTarget =
+            replica.miniDFSCluster.getFileSystem().getSnapshottableDirListing();
+
+    // In case of tests where in the end so directory stays snapshottable the listing will return null, so ignore,
+    // else clean up all snapshots to allow minidfs to delete the directories and teardown.
+    if (snapsTarget != null) {
+      for (SnapshottableDirectoryStatus sn : snapsTarget) {
+        Path path = sn.getFullPath();
+        SnapshotUtils.deleteSnapshotSafe(replica.miniDFSCluster.getFileSystem(), path,
+                firstSnapshot(primaryDbName.toLowerCase()));
+        SnapshotUtils.deleteSnapshotSafe(replica.miniDFSCluster.getFileSystem(), path,
+                secondSnapshot(primaryDbName.toLowerCase()));
+      }
+    }
     primary.miniDFSCluster.getFileSystem().delete(new Path("/"), true);
+    replica.miniDFSCluster.getFileSystem().delete(new Path("/"), true);
     super.tearDown();
   }
 
 
   @Test
   public void testBasicReplicationWithSnapshots() throws Throwable {
-
+    ArrayList<String> withClause = new ArrayList<>(3);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
     // Create a partitioned and non-partitioned table and call dump.
     WarehouseInstance.Tuple tuple = primary
         .run("use " + primaryDbName)
@@ -131,11 +148,11 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
             + "('austin')")
         .run("insert into table table2 partition(country='france') values "
             + "('paris')")
-        .dump(primaryDbName);
+        .dump(primaryDbName, withClause);
 
     // Call load, For the first time, only snapshots would be created and distCp would run from source snapshot to
     // target.
-    replica.load(replicatedDbName, primaryDbName)
+    replica.load(replicatedDbName, primaryDbName, withClause)
         .run("use " + replicatedDbName)
         .run("show tables like 'table1'")
         .verifyResult("table1")
@@ -166,11 +183,11 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
         .run("create external table table3 (id int)")
         .run("insert into table table3 values (10)")
         .run("create external table table4 as select id from table3")
-        .dump(primaryDbName);
+        .dump(primaryDbName, withClause);
 
     // Verify that the table info is written correctly for incremental
 
-    replica.load(replicatedDbName, primaryDbName)
+    replica.load(replicatedDbName, primaryDbName, withClause)
         .run("use " + replicatedDbName)
         .run("show tables like 'table3'")
         .verifyResult("table3")
@@ -186,10 +203,10 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     tuple = primary.run("use " + primaryDbName)
         .run("drop table table2")
         .run("insert into table1 values (3),(4) ")
-        .dump(primaryDbName);
+        .dump(primaryDbName, withClause);
 
     // Check if the dropped table isn't there and the new data is available.
-    replica.load(replicatedDbName, primaryDbName)
+    replica.load(replicatedDbName, primaryDbName, withClause)
         .run("use " + replicatedDbName)
         .run("select * from table1 order by id")
         .verifyResults(new String[]{"1","2","3","4"})
@@ -201,7 +218,10 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
   public void testBasicStartFromIncrementalReplication() throws Throwable {
 
     // Run a cycle of dump & load with snapshot disabled.
-    ArrayList<String> withClause = new ArrayList<>(1);
+    ArrayList<String> withClause = new ArrayList<>(3);
+    ArrayList<String> withClause2 = new ArrayList<>(3);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+    withClause2.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
     withClause.add("'"+ REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY + "' = 'false'");
     WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, withClause);
     replica.load(replicatedDbName, primaryDbName, withClause);
@@ -234,9 +254,9 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     // Add some data & then try a dump & load cycle.
     primary.run("use " + primaryDbName)
         .run("insert into t1 partition(country='india') values ('mumbai')")
-        .dump(primaryDbName);
+        .dump(primaryDbName, withClause2);
 
-    replica.load(replicatedDbName, primaryDbName)
+    replica.load(replicatedDbName, primaryDbName, withClause2)
         .run("use " + replicatedDbName)
         .run("select place from t1 order by place")
         .verifyResults(new String[] {"delhi", "mumbai"})
@@ -253,9 +273,9 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
         .run("create external table t2 (place string) partitioned by (country string) row format "
             + "delimited fields terminated by ',' ")
         .run("insert into t2 partition(country='usa') values ('new york')")
-        .dump(primaryDbName);
+        .dump(primaryDbName, withClause2);
 
-    replica.load(replicatedDbName, primaryDbName)
+    replica.load(replicatedDbName, primaryDbName, withClause2)
         .run("use " + replicatedDbName)
         .run("show tables like 't2'")
         .verifyResult("t2")
@@ -281,6 +301,9 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     fs.mkdirs(externalTableLocation, new FsPermission("777"));
 
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+    withClause.add("'hive.repl.external.warehouse.single.copy.task.paths'='" + externalTableLocation
+                    .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "'");
 
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
         .run("create external table t2 (place string) partitioned by (country string) row format "
@@ -288,7 +311,6 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
             + "'")
         .run("insert into t2 partition(country='india') values ('bangalore')")
         .dump(primaryDbName, withClause);
-
 
     replica.load(replicatedDbName, primaryDbName, withClause)
         .run("use " + replicatedDbName)
@@ -298,6 +320,9 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
         .verifyResults(new String[] { "bangalore" })
         .verifyReplTargetProperty(replicatedDbName);
 
+    // Check if the initial snapshots are created.
+    validateInitialSnapshotsCreated(externalTableLocation
+            .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString());
 
     // add new  data externally, to a partition, but under the table level top directory
     Path partitionDir = new Path(externalTableLocation, "country=india");
@@ -323,8 +348,15 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
         .verifyResults(new String[] {"country=australia", "country=india"})
         .verifyReplTargetProperty(replicatedDbName);
 
+    // Check if the diff snapshots are created.
+    validateDiffSnapshotsCreated(externalTableLocation
+            .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString());
+
     String tmpLocation2 = "/tmp1/" + System.nanoTime() + "_2";
     primary.miniDFSCluster.getFileSystem().mkdirs(new Path(tmpLocation2), new FsPermission("777"));
+    withClause.set(withClause.size() - 1, "'hive.repl.external.warehouse.single.copy.task.paths'='" + externalTableLocation
+            .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "," + new Path(tmpLocation2)
+            .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "'");
 
     // Try alter table location and then dump.
     primary.run("use " + primaryDbName)
@@ -336,10 +368,19 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
         .run("show partitions t2").verifyResults(
         new String[] {"country=australia", "country=india", "country=france"});
 
+    // Check if the initial snapshots are created.
+    validateInitialSnapshotsCreated(new Path(tmpLocation2)
+            .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString());
+
     // Test alter partition location.
     String tmpLocation3 = "/tmp1/" + System.nanoTime() + "_3";
     primary.miniDFSCluster.getFileSystem()
         .mkdirs(new Path(tmpLocation2), new FsPermission("777"));
+    withClause.set(withClause.size() - 1, "'hive.repl.external.warehouse.single.copy.task.paths'='"
+            + externalTableLocation
+            .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "," + new Path(tmpLocation2)
+            .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "," + new Path(tmpLocation3)
+            .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "'");
     primary.run("use " + primaryDbName).run(
         "alter table t2 partition (country='australia') set location '"
             + tmpLocation3 + "'").run(
@@ -349,12 +390,17 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     replica.load(replicatedDbName, primaryDbName, withClause)
         .run("select place from t2 where country='australia'")
         .verifyResult("sydney");
+
+    // Check if the initial snapshots are created.
+    validateInitialSnapshotsCreated(new Path(tmpLocation3)
+            .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString());
   }
 
   @Test
   public void testSnapshotCleanupsOnDatabaseLocationChange() throws Throwable {
     Path externalDatabaseLocation = new Path("/" + testName.getMethodName() + "/externalDatabase/");
     DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
+    DistributedFileSystem fsTarget = replica.miniDFSCluster.getFileSystem();
     fs.mkdirs(externalDatabaseLocation, new FsPermission("777"));
 
     Path externalDatabaseLocationAlter = new Path("/" + testName.getMethodName() + "/externalDatabaseAlter/");
@@ -367,6 +413,7 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
         new Path(REPLICA_EXTERNAL_BASE, testName.getMethodName() + "/externalDatabaseAlter/");
 
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
 
     // Create a normal and partitioned table in the database location.
 
@@ -399,10 +446,10 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
         new Path(externalDatabaseLocation, ".snapshot/" + secondSnapshot(primaryDbName.toLowerCase()))));
 
     // Check if the destination is snapshottable.
-    assertTrue(fs.getFileStatus(externalDatabaseLocationDest).isSnapshotEnabled());
+    assertTrue(fsTarget.getFileStatus(externalDatabaseLocationDest).isSnapshotEnabled());
 
     // Check if snapshot exist at destination.
-    assertNotNull(fs.getFileStatus(
+    assertNotNull(fsTarget.getFileStatus(
         new Path(externalDatabaseLocationDest, ".snapshot/" + firstSnapshot(primaryDbName.toLowerCase()))));
 
     // Alter database location and create another table inside it.
@@ -443,14 +490,14 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
         .getFileStatus(new Path(externalDatabaseLocation, ".snapshot/" + secondSnapshot(primaryDbName.toLowerCase()))));
 
     // Check if the new destination database location is snapshottable.
-    assertTrue(fs.getFileStatus(externalDatabaseLocationAlterDest).isSnapshotEnabled());
+    assertTrue(fsTarget.getFileStatus(externalDatabaseLocationAlterDest).isSnapshotEnabled());
 
     // Check if snapshot exist at destination.
-    assertNotNull(fs.getFileStatus(
+    assertNotNull(fsTarget.getFileStatus(
         new Path(externalDatabaseLocationAlterDest, ".snapshot/" + firstSnapshot(primaryDbName.toLowerCase()))));
 
     //Check if the destination old snapshot is deleted.
-    LambdaTestUtils.intercept(FileNotFoundException.class, () -> fs.getFileStatus(
+    LambdaTestUtils.intercept(FileNotFoundException.class, () -> fsTarget.getFileStatus(
         new Path(externalDatabaseLocationDest, ".snapshot/" + firstSnapshot(primaryDbName.toLowerCase()))));
   }
 
@@ -458,6 +505,7 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
   public void testFailureScenarios() throws Throwable {
     DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
 
     // Create a table which couldn't create snapshot during dump.
     Path externalTableLocationSource = new Path("/" + testName.getMethodName() + "source1/tablesource/");
@@ -510,11 +558,13 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     // Create a table for which target is non-snapshottable.
 
     // Allow snapshot on the parent of destination.
-    fs.mkdirs(externalTableLocationDestInDest.getParent());
-    fs.allowSnapshot(externalTableLocationDestInDest.getParent());
-    withClause.add("'hive.repl.external.warehouse.single.copy.task.paths'='" + externalTableLocationSource
+    replica.miniDFSCluster.getFileSystem().mkdirs(externalTableLocationDestInDest.getParent());
+    replica.miniDFSCluster.getFileSystem().allowSnapshot(externalTableLocationDestInDest.getParent());
+    withClause.set(withClause.size() - 1,
+        "'hive.repl.external.warehouse.single.copy.task.paths'='" + externalTableLocationSource
         .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "," + externalTableLocationDest
         .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='false'");
 
     WarehouseInstance.Tuple tuple;
     try {
@@ -533,20 +583,20 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     nonRecoverablePath =
         TestReplicationScenarios.getNonRecoverablePath(baseDumpDir, primaryDbName, primary.hiveConf);
     assertTrue(fs.exists(nonRecoverablePath));
-   fs.delete(nonRecoverablePath, true);
+    fs.delete(nonRecoverablePath, true);
 
-    fs.disallowSnapshot(externalTableLocationDestInDest.getParent());
+    replica.miniDFSCluster.getFileSystem().disallowSnapshot(externalTableLocationDestInDest.getParent());
 
     primary.dump(primaryDbName, withClause);
 
-        replica.load(replicatedDbName, primaryDbName, withClause)
-            .run("use " + replicatedDbName)
-            .run("select place from tabledest where country='usa'")
-            .verifyResults(new String[] {"New York"})
-            .run("select place from tabledest where country='india'")
-            .verifyResults(new String[] { "kanpur", "lucknow" })
-            .run("select place from tablesource")
-            .verifyResults(new String[] {"bangalore", "chennai"});
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName)
+        .run("select place from tabledest where country='usa'")
+        .verifyResults(new String[] {"New York"})
+        .run("select place from tabledest where country='india'")
+        .verifyResults(new String[] { "kanpur", "lucknow" })
+        .run("select place from tablesource")
+        .verifyResults(new String[] {"bangalore", "chennai"});
 
     // Add a new table which will fail to create snapshots, post snapshots for other tables have been created.
     Path externalTableLocationSource2 = new Path("/" + testName.getMethodName() + "source2/tablesource/");
@@ -554,8 +604,8 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     fs.mkdirs(externalTableLocationSource2, new FsPermission("777"));
     fs.allowSnapshot(externalTableLocationSource2.getParent());
 
-    withClause.add("'hive.repl.external.warehouse.single.copy.task.paths'='" + externalTableLocationSource
-        .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "," + externalTableLocationDestInDest
+    withClause.set(withClause.size() - 2, "'hive.repl.external.warehouse.single.copy.task.paths'='" + externalTableLocationSource
+        .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "," + externalTableLocationDest
         .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "," + externalTableLocationSource2
         .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "'");
     try {
@@ -609,6 +659,7 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     fs.mkdirs(externalTableLocation1, new FsPermission("777"));
 
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
     withClause.add("'hive.repl.external.warehouse.single.copy.task.paths'='" + externalTableLocation2
         .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "," + externalTablePart1
         .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "'");
@@ -701,6 +752,7 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
   public void testCustomPathTableSnapshotsCleanup() throws Throwable {
     Path externalTableLocation1 = new Path("/" + testName.getMethodName() + "/t1/");
     DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
+    DistributedFileSystem fsTarget = replica.miniDFSCluster.getFileSystem();
     fs.mkdirs(externalTableLocation1, new FsPermission("777"));
 
     Path externalTableLocation1Target = new Path("/replica_external_base/" + testName.getMethodName() + "/t1/");
@@ -715,6 +767,7 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
 
 
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
     withClause.add("'hive.repl.external.warehouse.single.copy.task.paths'='" + externalTableLocation2
         .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "," + externalTableLocation1
         .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "'");
@@ -744,13 +797,13 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     assertTrue(fs.getFileStatus(externalTableLocation1).isSnapshotEnabled());
     assertNotNull(
         fs.getFileStatus(new Path(externalTableLocation1, ".snapshot/" + secondSnapshot(primaryDbName.toLowerCase()))));
-    assertTrue(fs.getFileStatus(externalTableLocation1Target).isSnapshotEnabled());
+    assertTrue(fsTarget.getFileStatus(externalTableLocation1Target).isSnapshotEnabled());
 
     // Check if the t2 directory is snapshotoble and the snapshot is there.
     assertTrue(fs.getFileStatus(externalTableLocation2).isSnapshotEnabled());
     assertNotNull(
         fs.getFileStatus(new Path(externalTableLocation2, ".snapshot/" + secondSnapshot(primaryDbName.toLowerCase()))));
-    assertTrue(fs.getFileStatus(externalTableLocation2Target).isSnapshotEnabled());
+    assertTrue(fsTarget.getFileStatus(externalTableLocation2Target).isSnapshotEnabled());
 
     // Drop table t1 and alter the location of table t2
     tuple = primary.run("use " + primaryDbName)
@@ -776,24 +829,25 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
 
     // Verify the old location is not snapshottable now and the snapshot is cleaned up.
     assertFalse(fs.getFileStatus(externalTableLocation1).isSnapshotEnabled());
-    assertFalse(fs.getFileStatus(externalTableLocation1Target).isSnapshotEnabled());
+    assertFalse(fsTarget.getFileStatus(externalTableLocation1Target).isSnapshotEnabled());
     assertFalse(fs.getFileStatus(externalTableLocation2).isSnapshotEnabled());
-    assertFalse(fs.getFileStatus(externalTableLocation2Target).isSnapshotEnabled());
+    assertFalse(fsTarget.getFileStatus(externalTableLocation2Target).isSnapshotEnabled());
   }
 
   @Test
   public void testTargetModified() throws Throwable {
-
+    ArrayList<String> withClause = new ArrayList<>(1);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
     WarehouseInstance.Tuple tuple = primary
         .run("use " + primaryDbName)
         .run("create external table table1 (id int)")
         .run("insert into table table1 values (1)")
         .run("insert into table table1 values (2)")
-        .dump(primaryDbName);
+        .dump(primaryDbName, withClause);
 
     // Call load, For the first time, only snapshots would be created and distCp would run from source snapshot to
     // target.
-    replica.load(replicatedDbName, primaryDbName)
+    replica.load(replicatedDbName, primaryDbName, withClause)
         .run("use " + replicatedDbName)
         .run("show tables like 'table1'")
         .verifyResult("table1")
@@ -809,11 +863,11 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
         .run("create external table table3 (id int)")
         .run("insert into table table3 values (10)")
         .run("insert into table table1 values (3)")
-        .dump(primaryDbName);
+        .dump(primaryDbName, withClause);
 
     // Verify that the table info is written correctly for incremental
 
-    replica.load(replicatedDbName, primaryDbName)
+    replica.load(replicatedDbName, primaryDbName, withClause)
         .run("use " + replicatedDbName)
         .run("show tables like 'table3'")
         .verifyResult("table3")
@@ -827,20 +881,20 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
 
     // Now modify the target by deleting one table directory
 
-    Path targetWhPath = externalTableDataPath(conf, REPLICA_EXTERNAL_BASE,
+    Path targetWhPath = externalTableDataPath(replicaConf, REPLICA_EXTERNAL_BASE,
         new Path(primary.getDatabase(primaryDbName).getLocationUri()));
-    DistributedFileSystem replicaDfs = (DistributedFileSystem) targetWhPath.getFileSystem(conf);
+    DistributedFileSystem replicaDfs = (DistributedFileSystem) targetWhPath.getFileSystem(replicaConf);
     assertTrue(replicaDfs.delete(new Path(targetWhPath, "table1"), true));
 
     // Add some data to the table and do a Dump & Load
     tuple = primary.run("use " + primaryDbName)
         .run("insert into table table3 values (11)")
         .run("insert into table table1 values (4)")
-        .dump(primaryDbName);
+        .dump(primaryDbName, withClause);
 
     // Load and see the data is there.
 
-    replica.load(replicatedDbName, primaryDbName)
+    replica.load(replicatedDbName, primaryDbName, withClause)
         .run("use " + replicatedDbName)
         .run("select id from table3")
         .verifyResults(new String[]{"10","11"})
@@ -854,10 +908,10 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     // Add some more data to table1
     tuple = primary.run("use " + primaryDbName)
         .run("insert into table table1 values (5)")
-        .dump(primaryDbName);
+        .dump(primaryDbName, withClause);
 
     // Load and see the new data is there.
-    replica.load(replicatedDbName, primaryDbName)
+    replica.load(replicatedDbName, primaryDbName, withClause)
         .run("use " + replicatedDbName)
         .run("select id from table1")
         .verifyResults(new String[] {"1", "2", "3", "4", "5"});
@@ -868,6 +922,7 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
   public void testSnapshotMetrics() throws Throwable {
     conf.set(Constants.SCHEDULED_QUERY_SCHEDULENAME, "metrics_test");
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
     MetricCollector collector = MetricCollector.getInstance();
     Path externalDatabaseLocation = new Path("/" + testName.getMethodName() + "/externalDatabase/");
     DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
@@ -960,11 +1015,12 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
   @Test
   public void testPurgeAndReBootstrap() throws Throwable {
     DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
-
+    DistributedFileSystem fsTarget = replica.miniDFSCluster.getFileSystem();
     Path externalTableLocation1 = new Path("/" + testName.getMethodName() + "/table1/");
     fs.mkdirs(externalTableLocation1, new FsPermission("777"));
 
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
     withClause.add("'hive.repl.external.warehouse.single.copy.task.paths'='" + externalTableLocation1
         .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "'");
 
@@ -1034,14 +1090,14 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
 
     Path externalDbLocation = new Path(replica.getDatabase(replicatedDbName).getLocationUri());
 
-    assertTrue(fs.exists(externalDbLocation));
+    assertTrue(fsTarget.exists(externalDbLocation));
 
     replica.run("use " + replicatedDbName)
         .run("drop table table2")
         .run("drop table table3")
         .run("drop database "+ replicatedDbName + " cascade");
 
-    assertFalse(fs.exists(externalDbLocation));
+    assertFalse(fsTarget.exists(externalDbLocation));
 
     // Delete to force a bootstrap
     Path parent = new Path(tuple.dumpLocation).getParent().getParent();
@@ -1052,8 +1108,8 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     Path dbLocation = new Path(REPLICA_EXTERNAL_BASE,
         Path.getPathWithoutSchemeAndAuthority(new Path(primary.getDatabase(primaryDbName).getLocationUri())).toString()
             .replaceFirst("/", ""));
-    deleteReplRelatedSnapshots(fs, dbLocation, conf);
-    fs.delete(REPLICA_EXTERNAL_BASE, true);
+    deleteReplRelatedSnapshots(fsTarget, dbLocation, replicaConf);
+    fsTarget.delete(REPLICA_EXTERNAL_BASE, true);
 
     primary.run("use " + primaryDbName)
         .dump(primaryDbName, withClause);
@@ -1103,6 +1159,7 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     // Specify table3 and the customDb1 location as snapshottable and customDb1 & customDb2 as custom locations for
     // single copy task.
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
     withClause.add("'"
         + REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS.varname + "'='" + externalCustomDb1Path
         .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "," + externalTableLocation3
@@ -1219,6 +1276,7 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     // Add the other custom db path for creating snapshots and remove the already configured path as snapshottable.
     // The new db location should become snapshottable and the snapshots should be cleared for the other db location.
     withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
     withClause.add("'" + REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS.varname + "'='" + externalCustomDb2Path
         .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "," + externalTableLocation3
         .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "'");
@@ -1314,6 +1372,7 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
 
     // Specify the project directory as the snapshot root using the single copy task path config.
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
     withClause.add("'"
         + REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS.varname + "'='" + project
         .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "'");
@@ -1393,15 +1452,15 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     DistributedFileSystem dfs = (DistributedFileSystem) locationPath.getFileSystem(conf);
 
     // Check whether the source  location got snapshottable
-    assertTrue("Snapshot not enabled for the source  location", dfs.getFileStatus(locationPath).isSnapshotEnabled());
+    assertTrue("Snapshot enabled for the source  location", dfs.getFileStatus(locationPath).isSnapshotEnabled());
 
     // Check whether the initial snapshot got created in the source db location.
     assertNotNull(dfs.getFileStatus(new Path(locationPath, ".snapshot/" + secondSnapshot(primaryDbName.toLowerCase()))));
 
     // Verify Snapshots are created in target.
     Path locationPathTarget = new Path(REPLICA_EXTERNAL_BASE, locationPath.toUri().getPath().replaceFirst("/", ""));
-    DistributedFileSystem dfsTarget = (DistributedFileSystem) locationPathTarget.getFileSystem(conf);
-    assertTrue("Snapshot not enabled for the target location",
+    DistributedFileSystem dfsTarget = (DistributedFileSystem) locationPathTarget.getFileSystem(replicaConf);
+    assertTrue("Snapshot enabled for the target location",
         dfsTarget.getFileStatus(locationPathTarget).isSnapshotEnabled());
 
     // Check whether the snapshot got created in the target location.

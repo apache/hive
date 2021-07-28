@@ -22,6 +22,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.repl.ReplConst;
@@ -69,6 +71,7 @@ import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -80,6 +83,9 @@ import java.util.Map;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
+import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.firstSnapshot;
+import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.secondSnapshot;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -107,38 +113,49 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("metastore.warehouse.tenant.colocation", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
+    String primaryBaseDir = Files.createTempDirectory("primary").toFile().getAbsolutePath();
+    conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, primaryBaseDir);
+    replicaConf = new HiveConf(clazz);
+    replicaConf.set("dfs.client.use.datanode.hostname", "true");
+    replicaConf.set("metastore.warehouse.tenant.colocation", "true");
+    replicaConf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
+    String replicaBaseDir = Files.createTempDirectory("replica").toFile().getAbsolutePath();
+    replicaConf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, replicaBaseDir);
     MiniDFSCluster miniDFSCluster =
-        new MiniDFSCluster.Builder(conf).numDataNodes(2).format(true).build();
+            new MiniDFSCluster.Builder(conf).numDataNodes(2).format(true).build();
+    MiniDFSCluster miniDFSClusterReplica =
+            new MiniDFSCluster.Builder(replicaConf).numDataNodes(2).format(true).build();
     Map<String, String> acidEnableConf = new HashMap<String, String>() {{
-        put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
-        put("hive.support.concurrency", "true");
-        put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
-        put("hive.metastore.client.capability.check", "false");
-        put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
-        put("hive.strict.checks.bucketing", "false");
-        put("hive.mapred.mode", "nonstrict");
-        put("mapred.input.dir.recursive", "true");
-        put("hive.metastore.disallow.incompatible.col.type.changes", "false");
-        put("metastore.warehouse.tenant.colocation", "true");
-        put("hive.in.repl.test", "true");
-        put("hive.txn.readonly.enabled", "true");
-        //HIVE-25267
-        put(MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT.getVarname(), "2000");
-        put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
-        put(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET.varname, "false");
-      }};
+      put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
+      put("hive.support.concurrency", "true");
+      put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+      put("hive.metastore.client.capability.check", "false");
+      put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
+      put("hive.strict.checks.bucketing", "false");
+      put("hive.mapred.mode", "nonstrict");
+      put("mapred.input.dir.recursive", "true");
+      put("hive.metastore.disallow.incompatible.col.type.changes", "false");
+      put("metastore.warehouse.tenant.colocation", "true");
+      put("hive.in.repl.test", "true");
+      put("hive.txn.readonly.enabled", "true");
+      //HIVE-25267
+      put(MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT.getVarname(), "2000");
+      put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
+      put(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET.varname, "false");
+    }};
 
     acidEnableConf.putAll(overrides);
 
     primary = new WarehouseInstance(LOG, miniDFSCluster, acidEnableConf);
     acidEnableConf.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
-    replica = new WarehouseInstance(LOG, miniDFSCluster, acidEnableConf);
+    acidEnableConf.put("fs.defaultFS", miniDFSClusterReplica.getFileSystem().getUri().toString());
+    replica = new WarehouseInstance(LOG, miniDFSClusterReplica, acidEnableConf);
     Map<String, String> overridesForHiveConf1 = new HashMap<String, String>() {{
-          put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
-          put("hive.support.concurrency", "false");
-          put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
-          put("hive.metastore.client.capability.check", "false");
-      }};
+      put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
+      put("hive.support.concurrency", "false");
+      put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
+      put("hive.metastore.client.capability.check", "false");
+    }};
     overridesForHiveConf1.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replicaNonAcid = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
   }
@@ -214,13 +231,37 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   public void testCompleteFailoverWithReverseBootstrap() throws Throwable {
     HiveConf primaryConf = primary.getConf();
     TxnStore txnHandler = TxnUtils.getTxnStore(primary.getConf());
+    Path externalTableLocation = new Path("/external" + testName.getMethodName() + "/t3/");
+    DistributedFileSystem dfs = primary.miniDFSCluster.getFileSystem();
+    dfs.mkdirs(externalTableLocation, new FsPermission("777"));
+    DistributedFileSystem replicaDfs = replica.miniDFSCluster.getFileSystem();
+    Path externalBaseDir = new Path("/");
+    replicaDfs.mkdirs(externalBaseDir, new FsPermission("777"));
+
+    List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'hive.repl.external.warehouse.single.copy.task.paths'='" + externalTableLocation
+            .makeQualified(dfs.getUri(), dfs.getWorkingDirectory()).toString() + "'");
+    withClause.add("'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "' = '" +
+            UserGroupInformation.getCurrentUser().getUserName() + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK.varname + "' = 'true'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY.varname + "' = 'true'");
+    withClause.add("'hive.repl.replica.external.table.base.dir'='"
+            + externalBaseDir.makeQualified(replicaDfs.getUri(), replicaDfs.getWorkingDirectory()).toString() + "'");
+
     List<String> failoverConfigs = Arrays.asList("'" + HiveConf.ConfVars.HIVE_REPL_FAILOVER_START + "'='true'");
+    withClause.add(failoverConfigs.get(0));
     WarehouseInstance.Tuple dumpData = primary.run("use " + primaryDbName)
             .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
                     "tblproperties (\"transactional\"=\"true\")")
             .run("create table t2 (rank int) partitioned by (name string) tblproperties(\"transactional\"=\"true\", " +
                     "\"transactional_properties\"=\"insert_only\")")
-            .dump(primaryDbName, failoverConfigs);
+            .run("create external table t3 (place string) partitioned by (country string) row format "
+                    + "delimited fields terminated by ',' location '" + externalTableLocation.toString()
+                    + "'")
+            .run("insert into t3 partition(country='india') values ('bangalore')")
+            .dump(primaryDbName, withClause);
+    //validate initial snapshots
+    validateSnapshotsFailover(externalTableLocation.toString(), false, false);
 
     //This dump is not failover ready as target db can be used for replication only after first incremental load.
     FileSystem fs = new Path(dumpData.dumpLocation).getFileSystem(conf);
@@ -228,10 +269,10 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
     assertFalse(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(primaryDbName)));
 
-    replica.load(replicatedDbName, primaryDbName, failoverConfigs)
+    replica.load(replicatedDbName, primaryDbName, withClause)
             .run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(new String[]{"t1", "t2"})
+            .verifyResults(new String[]{"t1", "t2", "t3"})
             .run("repl status " + replicatedDbName)
             .verifyResult(dumpData.lastReplicationId);
 
@@ -242,7 +283,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     primary.run("use " + primaryDbName)
             .run("insert into t1 values(1)")
             .run("insert into t2 partition(name='Bob') values(11)")
-            .run("insert into t2 partition(name='Carl') values(10)");
+            .run("insert into t3 partition(country='india') values('kolkata')");
 
     /**Open transactions can be of two types:
      Case 1) Txns that have not acquired HIVE LOCKS or they belong to different db: These txns would be captured in
@@ -270,14 +311,14 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     // t1=5 and t2=5
     Map<String, Long> tablesInPrimaryDb = new HashMap<>();
     tablesInPrimaryDb.put("t1", (long) numTxnsForPrimaryDb + 1);
-    tablesInPrimaryDb.put("t2", (long) numTxnsForPrimaryDb + 2);
-    List<Long> lockIdsForPrimaryDb = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName,
+    tablesInPrimaryDb.put("t2", (long) numTxnsForPrimaryDb + 1);
+    List<Long> lockIdsForPrimaryDb = allocateWriteIdsForTablesAndAquireLocks(primaryDbName,
             tablesInPrimaryDb, txnHandler, txnsForPrimaryDb, primaryConf);
 
     //Open 1 txn with no hive locks acquired
     List<Long> txnsWithNoLocks = openTxns(1, txnHandler, primaryConf);
 
-    dumpData = primary.dump(primaryDbName, failoverConfigs);
+    dumpData = primary.dump(primaryDbName, withClause);
 
     dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
@@ -308,16 +349,21 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     verifyAllOpenTxnsAborted(txnsWithNoLocks, primaryConf);
     releaseLocks(txnHandler, lockIdsForSecDb);
 
-    replica.load(replicatedDbName, primaryDbName, failoverConfigs)
+    replica.load(replicatedDbName, primaryDbName, withClause)
             .run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(new String[]{"t1", "t2"})
+            .verifyResults(new String[]{"t1", "t2", "t3"})
             .run("repl status " + replicatedDbName)
             .verifyResult(dumpData.lastReplicationId)
             .run("select id from t1")
             .verifyResults(new String[]{"1"})
             .run("select rank from t2 order by rank")
-            .verifyResults(new String[]{"10", "11"});
+            .verifyResults(new String[]{"11"})
+            .run("select place from t3 order by place")
+            .verifyResults(new String[]{"bangalore", "kolkata"});
+
+    //validate diff snapshots
+    validateSnapshotsFailover(externalTableLocation.toString(), false, true);
 
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
@@ -326,7 +372,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     Path dbRootDir = new Path(dumpData.dumpLocation).getParent();
     long prevDumpDirModifTime = getLatestDumpDirModifTime(dbRootDir);
-    primary.run("REPL DUMP " + primaryDbName + " with ('" + HiveConf.ConfVars.HIVE_REPL_FAILOVER_START + "' = 'true')");
+    primary.runDump(primaryDbName, withClause);
     Assert.assertEquals(dumpData.dumpLocation, ReplUtils.getLatestDumpPath(dbRootDir, conf).toString());
     Assert.assertEquals(prevDumpDirModifTime, getLatestDumpDirModifTime(dbRootDir));
     dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
@@ -340,12 +386,20 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(primary.getDatabase(primaryDbName) == null);
 
     assertFalse(ReplChangeManager.isSourceOfReplication(replica.getDatabase(replicatedDbName)));
+    withClause.remove(withClause.size() - 1); //remove failover config
+    //base dir should be "/" so can use same location for external table path
+    withClause.set(withClause.size() - 1, "'hive.repl.replica.external.table.base.dir'='"
+            + externalBaseDir.makeQualified(dfs.getUri(), dfs.getWorkingDirectory()).toString() + "'");
+    withClause.set(withClause.size() - 5, "'hive.repl.external.warehouse.single.copy.task.paths'='" + externalTableLocation
+            .makeQualified(replicaDfs.getUri(), replicaDfs.getWorkingDirectory()).toString() + "'");
+    withClause.add("'hive.repl.reuse.snapshots'='true'");
 
-    WarehouseInstance.Tuple reverseDumpData = replica.run("create table t3 (id int)")
-                                                      .run("insert into t2 partition(name='Bob') values(20)")
-                                                      .run("insert into t3 values (2)")
-                                                      .dump(replicatedDbName);
-
+    WarehouseInstance.Tuple reverseDumpData = replica.run("use " + replicatedDbName)
+            .run("create table t4 (id int)")
+            .run("insert into t2 partition(name='Bob') values(20)")
+            .run("insert into t3 partition(country='india') values('patna')")
+            .run("insert into t4 values (2)")
+            .dump(replicatedDbName, withClause);
     assertNotEquals(reverseDumpData.dumpLocation, dumpData.dumpLocation);
     assertTrue(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
     dumpPath = new Path(reverseDumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
@@ -356,18 +410,23 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET));
     assertFalse(MetaStoreUtils.isTargetOfReplication(db));
 
-    primary.load(primaryDbName, replicatedDbName)
+    primary.load(primaryDbName, replicatedDbName, withClause)
             .run("use " + primaryDbName)
             .run("show tables")
-            .verifyResults(new String[]{"t1", "t2", "t3"})
+            .verifyResults(new String[]{"t1", "t2", "t3", "t4"})
             .run("repl status " + primaryDbName)
             .verifyResult(reverseDumpData.lastReplicationId)
             .run("select id from t1")
             .verifyResults(new String[]{"1"})
             .run("select rank from t2 order by rank")
-            .verifyResults(new String[]{"10", "11", "20"})
-            .run("select id from t3")
+            .verifyResults(new String[]{"11", "20"})
+            .run("select place from t3 order by place")
+            .verifyResults(new String[]{"kolkata", "bangalore", "patna"})
+            .run("select id from t4")
             .verifyResults(new String[]{"2"});
+
+    //validate diff snapshots for reverese replication
+    validateSnapshotsFailover(externalTableLocation.toString(), true, true);
 
     Database primaryDb = primary.getDatabase(primaryDbName);
     assertFalse(primaryDb == null);
@@ -378,19 +437,27 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertFalse(ReplChangeManager.isSourceOfReplication(primaryDb));
     assertTrue(ReplChangeManager.isSourceOfReplication(replica.getDatabase(replicatedDbName)));
 
-    reverseDumpData = replica.run("insert into t3 values (3)")
+    reverseDumpData = replica.run("use " + replicatedDbName)
+            .run("insert into t4 values (3)")
             .run("insert into t2 partition(name='Bob') values(30)")
-            .dump(replicatedDbName);
+            .run("insert into t3 partition(country='india') values('kashmir')")
+            .dump(replicatedDbName, withClause);
     assertFalse(MetaStoreUtils.isDbBeingFailedOver(replica.getDatabase(replicatedDbName)));
 
-    primary.load(primaryDbName, replicatedDbName)
+    primary.load(primaryDbName, replicatedDbName, withClause)
+            .run("use " + primaryDbName)
             .run("select rank from t2 order by rank")
-            .verifyResults(new String[]{"10", "11", "20", "30"})
-            .run("select id from t3")
+            .verifyResults(new String[]{"11", "20", "30"})
+            .run("select place from t3 order by place")
+            .verifyResults(new String[]{"bangalore", "kashmir", "kolkata", "patna"})
+            .run("select id from t4")
             .verifyResults(new String[]{"2", "3"})
             .run("repl status " + primaryDbName)
             .verifyResult(reverseDumpData.lastReplicationId);
     assertFalse(ReplUtils.isFirstIncPending(primary.getDatabase(primaryDbName).getParameters()));
+
+    //validate diff snapshots for reverse replication
+    validateSnapshotsFailover(externalTableLocation.toString(), true, true);
   }
 
   @Test
@@ -3360,5 +3427,39 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
       .run("select place from t2")
       .verifyResults(new String[] { "bangalore", "paris", "sydney" })
       .verifyReplTargetProperty(replicatedDbName);
+  }
+
+  private void validateSnapshotsFailover(String location, boolean isReverseReplication, boolean isDiff) throws Exception {
+    Path locationPath = new Path(location);
+    Path locationPathTarget = new Path("/", locationPath.toUri().getPath().replaceFirst("/", ""));
+    DistributedFileSystem dfs = (DistributedFileSystem) locationPath.getFileSystem(primary.getConf());
+    DistributedFileSystem dfsReplica = (DistributedFileSystem) locationPath.getFileSystem(replica.getConf());
+
+    if (isReverseReplication) {
+      validateSnapshots(location, dfsReplica, dfs, isDiff);
+    } else {
+      validateSnapshots(location, dfs, dfsReplica, isDiff);
+    }
+  }
+
+  private void validateSnapshots(String location, DistributedFileSystem primaryDfs,
+                                 DistributedFileSystem replicaDfs, boolean isDiff) throws Exception {
+    Path locationPath = new Path(location);
+    Path locationPathTarget = new Path("/", locationPath.toUri().getPath().replaceFirst("/", ""));
+
+    // Check whether the source  location got snapshottable
+    assertTrue("Snapshot enabled for the source  location", primaryDfs.getFileStatus(locationPath).isSnapshotEnabled());
+    // Check whether the initial snapshot got created in the source db location.
+    // Use primarydbname since reuse configuration would have reused existing snapshots
+    assertNotNull(primaryDfs.getFileStatus(new Path(locationPath, ".snapshot/" + secondSnapshot(primaryDbName.toLowerCase()))));
+    if(isDiff) {
+      assertNotNull(primaryDfs.getFileStatus(new Path(locationPath, ".snapshot/" + firstSnapshot(primaryDbName.toLowerCase()))));
+    }
+    // Verify Snapshots are created in target.
+    assertTrue("Snapshot enabled for the target location",
+            replicaDfs.getFileStatus(locationPathTarget).isSnapshotEnabled());
+    // Check whether the snapshot got created in the target location.
+    assertNotNull(replicaDfs
+            .getFileStatus(new Path(locationPathTarget, ".snapshot" + "/" + firstSnapshot(primaryDbName.toLowerCase()))));
   }
 }

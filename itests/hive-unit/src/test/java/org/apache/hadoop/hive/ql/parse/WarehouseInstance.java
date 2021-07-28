@@ -299,6 +299,17 @@ public class WarehouseInstance implements Closeable {
     return this;
   }
 
+  WarehouseInstance runDump(String dbName, List<String> withClauseOptions) throws Throwable {
+    String dumpCommand =
+            "REPL DUMP " + dbName;
+    if (withClauseOptions != null && !withClauseOptions.isEmpty()) {
+      dumpCommand += " with (" + StringUtils.join(withClauseOptions, ",") + ")";
+    }
+    advanceDumpDir();
+    run(dumpCommand);
+    return this;
+  }
+
   WarehouseInstance load(String replicatedDbName, String primaryDbName) throws Throwable {
     StringBuilder replCommand = new StringBuilder("REPL LOAD " + primaryDbName);
     if (!StringUtils.isEmpty(replicatedDbName)) {
