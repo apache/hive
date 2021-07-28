@@ -195,7 +195,11 @@ public class ColStatsProcessor implements IStatsProcessor {
     long maxNumStats = conf.getLongVar(HiveConf.ConfVars.HIVE_STATS_MAX_NUM_STATS);
     while (!done) {
       List<ColumnStatistics> colStats = new ArrayList<>();
+
+      long start = System. currentTimeMillis();
       done = constructColumnStatsFromPackedRows(tbl, colStats, maxNumStats);
+      long end = System.currentTimeMillis();
+      LOG.info("Time taken to build " + colStats.size() + " stats desc : " + ((end - start)/1000F) + " seconds.");
 
       // Persist the column statistics object to the metastore
       // Note, this function is shared for both table and partition column stats.
@@ -210,7 +214,11 @@ public class ColStatsProcessor implements IStatsProcessor {
           request.setValidWriteIdList(validWriteIdList.toString());
         }
       }
+
+      start = System. currentTimeMillis();
       db.setPartitionColumnStatistics(request);
+      end = System.currentTimeMillis();
+      LOG.info("Time taken to update " + colStats.size() + " stats : " + ((end - start)/1000F) + " seconds.");
     }
     return 0;
   }
