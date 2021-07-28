@@ -9268,7 +9268,8 @@ public class ObjectStore implements RawStore, Configurable {
       // DataNucleus objects get detached all over the place for no (real) reason.
       // So let's not use them anywhere unless absolutely necessary.
       String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
-      Table table = ensureGetTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
+      MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
+      Table table = convertToTable(mTable);
       List<String> colNames = new ArrayList<>();
       for (ColumnStatisticsObj statsObj : statsObjs) {
         colNames.add(statsObj.getColName());
@@ -9276,9 +9277,7 @@ public class ObjectStore implements RawStore, Configurable {
       Map<String, MTableColumnStatistics> oldStats = getPartitionColStats(table, colNames, colStats.getEngine());
 
       for (ColumnStatisticsObj statsObj:statsObjs) {
-        // We have to get mtable again because DataNucleus.
-        MTableColumnStatistics mStatsObj = StatObjectConverter.convertToMTableColumnStatistics(
-            ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName()), statsDesc,
+        MTableColumnStatistics mStatsObj = StatObjectConverter.convertToMTableColumnStatistics(mTable, statsDesc,
             statsObj, colStats.getEngine());
         writeMTableColumnStatistics(table, mStatsObj, oldStats.get(statsObj.getColName()));
         // There is no need to add colname again, otherwise we will get duplicate colNames.
@@ -9289,7 +9288,7 @@ public class ObjectStore implements RawStore, Configurable {
       // No need to check again if it exists.
       String dbname = table.getDbName();
       String name = table.getTableName();
-      MTable oldt = getMTable(catName, dbname, name);
+      MTable oldt = mTable;
       Map<String, String> newParams = new HashMap<>(table.getParameters());
       StatsSetupConst.setColumnStatsState(newParams, colNames);
       boolean isTxn = TxnUtils.isTransactionalTable(oldt.getParameters());
