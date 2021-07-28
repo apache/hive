@@ -1,0 +1,235 @@
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@c_ext
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@c_ext
+PREHOOK: query: desc formatted c_ext
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@c_ext
+POSTHOOK: query: desc formatted c_ext
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@c_ext
+# col_name            	data_type           	comment             
+c                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	external.table.purge	false               
+	numFiles            	1                   
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select count(*) from c_ext
+PREHOOK: type: QUERY
+PREHOOK: Input: default@c_ext
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from c_ext
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@c_ext
+#### A masked pattern was here ####
+500
+PREHOOK: query: drop table c_ext
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@c_ext
+PREHOOK: Output: default@c_ext
+POSTHOOK: query: drop table c_ext
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@c_ext
+POSTHOOK: Output: default@c_ext
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@c_ext
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@c_ext
+PREHOOK: query: desc formatted c_ext
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@c_ext
+POSTHOOK: query: desc formatted c_ext
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@c_ext
+# col_name            	data_type           	comment             
+c                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	external.table.purge	false               
+	numFiles            	1                   
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select count(*) from c_ext
+PREHOOK: type: QUERY
+PREHOOK: Input: default@c_ext
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from c_ext
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@c_ext
+#### A masked pattern was here ####
+500
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@c
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@c
+PREHOOK: query: insert into c values(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@c
+POSTHOOK: query: insert into c values(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@c
+POSTHOOK: Lineage: c.c SCRIPT []
+PREHOOK: query: desc formatted c
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@c
+POSTHOOK: query: desc formatted c
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@c
+# col_name            	data_type           	comment             
+c                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	TRANSLATED_TO_EXTERNAL	TRUE                
+	bucketing_version   	2                   
+	external.table.purge	false               
+	numFiles            	2                   
+	totalSize           	5814                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select count(*) from c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@c
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@c
+#### A masked pattern was here ####
+501
+PREHOOK: query: drop table c
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@c
+PREHOOK: Output: default@c
+POSTHOOK: query: drop table c
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@c
+POSTHOOK: Output: default@c
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@c
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@c
+PREHOOK: query: desc formatted c
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@c
+POSTHOOK: query: desc formatted c
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@c
+# col_name            	data_type           	comment             
+c                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	TRANSLATED_TO_EXTERNAL	TRUE                
+	bucketing_version   	2                   
+	external.table.purge	false               
+	numFiles            	2                   
+	totalSize           	5814                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select count(*) from c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@c
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@c
+#### A masked pattern was here ####
+501
