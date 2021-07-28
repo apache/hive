@@ -344,6 +344,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return true;
   }
 
+  @Override
+  public boolean isTimeTravelAllowed() {
+    return true;
+  }
+
   public boolean addDynamicSplitPruningEdge(org.apache.hadoop.hive.ql.metadata.Table table,
                                             ExprNodeDesc syntheticFilterPredicate) {
     try {

@@ -124,6 +124,16 @@ public class Table implements Serializable {
   private boolean isTableConstraintsFetched=false;
 
   /**
+   * The version of the table. For Iceberg tables this is the snapshotId.
+   */
+  private long asOfVersion = -1;
+
+  /**
+   * The version of the table at the given timestamp. This is the epoch millisecond.
+   */
+  private long asOfTimestamp = -1;
+
+  /**
    * Used only for serialization.
    */
   public Table() {
@@ -159,6 +169,10 @@ public class Table implements Serializable {
 
     // copy constraints
     newTab.copyConstraints(this);
+
+    newTab.setAsOfTimestamp(this.asOfTimestamp);
+    newTab.setAsOfVersion(this.asOfVersion);
+
     return newTab;
   }
 
@@ -1261,4 +1275,19 @@ public class Table implements Serializable {
     return result;
   }
 
+  public long getAsOfVersion() {
+    return asOfVersion;
+  }
+
+  public void setAsOfVersion(long asOfVersion) {
+    this.asOfVersion = asOfVersion;
+  }
+
+  public long getAsOfTimestamp() {
+    return asOfTimestamp;
+  }
+
+  public void setAsOfTimestamp(long asOfTimestamp) {
+    this.asOfTimestamp = asOfTimestamp;
+  }
 };

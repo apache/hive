@@ -474,6 +474,7 @@ public enum ErrorMsg {
   NULL_TREATMENT_NOT_SUPPORTED(10426, "Function {0} does not support null treatment.", true),
   DATACONNECTOR_ALREADY_EXISTS(10427, "Dataconnector {0} already exists", true),
   DATACONNECTOR_NOT_EXISTS(10428, "Dataconnector does not exist:"),
+  TIME_TRAVEL_NOT_ALLOWED(10429, "Time travel is not allowed for {0}. Please choose a storage format which supports the feature.", true),
 
 
   //========================== 20000 range starts here ========================//

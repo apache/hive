@@ -494,7 +494,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
       return rowSet;
     } catch (Exception e) {
-      throw new HiveSQLException("Unable to get the next row set", e);
+      throw new HiveSQLException("Unable to get the next row set with exception: " + e.getMessage(), e);
     } finally {
       convey.clear();
     }
