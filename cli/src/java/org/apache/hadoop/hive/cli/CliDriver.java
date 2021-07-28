@@ -499,7 +499,10 @@ public class CliDriver {
     while ((line = r.readLine()) != null) {
       // Skipping through comments
       if (! line.startsWith("--")) {
-        qsb.append(line + "\n");
+        if (line.contains("--") && line.endsWith(";")) {
+          line = line.substring(0, line.indexOf("--"));
+        }
+        qsb.append(line).append("\n");
       }
     }
 
@@ -862,6 +865,9 @@ public class CliDriver {
       }
       if (line.trim().startsWith("--")) {
         continue;
+      }
+      if (line.trim().contains("--") && line.trim().endsWith(";")) {
+        line = line.substring(0, line.indexOf("--"));
       }
       if (line.trim().endsWith(";") && !line.trim().endsWith("\\;")) {
         line = prefix + line;
