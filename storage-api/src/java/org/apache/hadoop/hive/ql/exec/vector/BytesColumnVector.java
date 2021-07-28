@@ -183,9 +183,7 @@ public class BytesColumnVector extends ColumnVector {
     if (length > 0) {
       System.arraycopy(sourceBuf, start, currentValue, currentOffset, length);
     }
-    vector[elementNum] = currentValue;
-    this.start[elementNum] = currentOffset;
-    this.length[elementNum] = length;
+    setValPreallocated(elementNum, length);
   }
 
   /**
@@ -209,18 +207,18 @@ public class BytesColumnVector extends ColumnVector {
    * Ensures that we have space allocated for the next value, which has size
    * length bytes.
    *
-   * Updates currentValue, currentOffset, and sharedBufferOffset for this value.
+   * Updates currentValue and currentOffset for this value.
    *
-   * Always use before getValPreallocatedBytes, getValPreallocatedStart,
-   * and setValPreallocated.
+   * Always use before getValPreallocatedBytes, getValPreallocatedStart.
+   * setValPreallocated must be called to actually reserve the bytes.
    */
   public void ensureValPreallocated(int length) {
     if ((sharedBufferOffset + length) > sharedBuffer.length) {
-      currentValue = allocateBuffer(length);
+      // sets currentValue and currentOffset
+      allocateBuffer(length);
     } else {
       currentValue = sharedBuffer;
       currentOffset = sharedBufferOffset;
-      sharedBufferOffset += length;
     }
   }
 
@@ -241,6 +239,10 @@ public class BytesColumnVector extends ColumnVector {
     vector[elementNum] = currentValue;
     this.start[elementNum] = currentOffset;
     this.length[elementNum] = length;
+    // If the current value is the shared buffer, move the next offset forward.
+    if (currentValue == sharedBuffer) {
+      sharedBufferOffset += length;
+    }
   }
 
   /**
@@ -259,9 +261,7 @@ public class BytesColumnVector extends ColumnVector {
       byte[] rightSourceBuf, int rightStart, int rightLen) {
     int newLen = leftLen + rightLen;
     ensureValPreallocated(newLen);
-    vector[elementNum] = currentValue;
-    this.start[elementNum] = currentOffset;
-    this.length[elementNum] = newLen;
+    setValPreallocated(elementNum, newLen);
 
     System.arraycopy(leftSourceBuf, leftStart, currentValue, currentOffset, leftLen);
     System.arraycopy(rightSourceBuf, rightStart, currentValue,
@@ -270,9 +270,7 @@ public class BytesColumnVector extends ColumnVector {
 
   /**
    * Allocate/reuse enough buffer space to accommodate next element.
-   * currentOffset is set to the first available byte in the returned array.
-   * If sharedBuffer is used, sharedBufferOffset is updated to point after the
-   * current record.
+   * Sets currentValue and currentOffset to the correct buffer and offset.
    *
    * This uses an exponential increase mechanism to rapidly
    * increase buffer size to enough to hold all data.
@@ -280,9 +278,8 @@ public class BytesColumnVector extends ColumnVector {
    * stabilize.
    *
    * @param nextElemLength size of next element to be added
-   * @return the buffer to use for the next element
    */
-  private byte[] allocateBuffer(int nextElemLength) {
+  private void allocateBuffer(int nextElemLength) {
     // If this is a large value or shared buffer is maxed out, allocate a
     // single use buffer. Assumes that sharedBuffer length and
     // MAX_SIZE_FOR_SHARED_BUFFER are powers of 2.
@@ -290,8 +287,8 @@ public class BytesColumnVector extends ColumnVector {
         sharedBufferOffset + nextElemLength >= MAX_SIZE_FOR_SHARED_BUFFER) {
       // allocate a value for the next value
       ++bufferAllocationCount;
+      currentValue = new byte[nextElemLength];
       currentOffset = 0;
-      return new byte[nextElemLength];
     } else {
 
       // sharedBuffer might still be out of space
@@ -304,9 +301,8 @@ public class BytesColumnVector extends ColumnVector {
         ++bufferAllocationCount;
         sharedBufferOffset = 0;
       }
+      currentValue = sharedBuffer;
       currentOffset = sharedBufferOffset;
-      sharedBufferOffset += nextElemLength;
-      return sharedBuffer;
     }
   }
 
