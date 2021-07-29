@@ -383,6 +383,25 @@ public class VectorizedRowBatchCtx {
     return result;
   }
 
+  public VectorizedRowBatch createVectorizedRowBatch(long defaultWriteId, int defaultBucketId) {
+    VectorizedRowBatch vectorizedRowBatch = createVectorizedRowBatch();
+
+    int virtualColumnNum = findVirtualColumnNum(VirtualColumn.ROWID);
+    if (virtualColumnNum == -1) {
+      return vectorizedRowBatch;
+    }
+
+    StructColumnVector rowIdColVector = (StructColumnVector) vectorizedRowBatch.cols[virtualColumnNum];
+    LongColumnVector writeIdColVector = (LongColumnVector) rowIdColVector.fields[0];
+    writeIdColVector.isRepeating = true;
+    writeIdColVector.vector[0] = defaultWriteId;
+    LongColumnVector bucketIdColVector = (LongColumnVector) rowIdColVector.fields[1];
+    bucketIdColVector.isRepeating = true;
+    bucketIdColVector.vector[0] = defaultBucketId;
+    return vectorizedRowBatch;
+
+  }
+
   /**
    * Add the partition values to the batch
    *

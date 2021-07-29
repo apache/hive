@@ -27,8 +27,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
@@ -37,7 +35,6 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
-import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -68,7 +65,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     private VectorizedRowBatchCtx rbCtx;
     private final Object[] partitionValues;
     private boolean addPartitionCols = true;
-    private final RecordIdentifier recordIdentifier;
+    private final RecordIdentifier splitIdentifier;
 
     VectorizedOrcRecordReader(Reader file, Configuration conf,
         FileSplit fileSplit) throws IOException {
@@ -119,7 +116,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
         partitionValues = null;
       }
 
-      this.recordIdentifier = parseSplitPath(fileSplit.getPath());
+      this.splitIdentifier = parseSplitPath(fileSplit.getPath());
     }
 
     @Override
@@ -154,24 +151,11 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
 
     @Override
     public VectorizedRowBatch createValue() {
-      VectorizedRowBatch vectorizedRowBatch = rbCtx.createVectorizedRowBatch();
-      if (recordIdentifier == null) {
-        return vectorizedRowBatch;
+      if (splitIdentifier == null) {
+        return rbCtx.createVectorizedRowBatch();
       }
 
-      int virtualColumnNum = rbCtx.findVirtualColumnNum(VirtualColumn.ROWID);
-      if (virtualColumnNum == -1) {
-        return vectorizedRowBatch;
-      }
-
-      StructColumnVector rowIdColVector = (StructColumnVector) vectorizedRowBatch.cols[virtualColumnNum];
-      LongColumnVector writeIdColVector = (LongColumnVector) rowIdColVector.fields[0];
-      writeIdColVector.isRepeating = true;
-      writeIdColVector.vector[0] = recordIdentifier.getWriteId();
-      LongColumnVector bucketIdColVector = (LongColumnVector) rowIdColVector.fields[1];
-      bucketIdColVector.isRepeating = true;
-      bucketIdColVector.vector[0] = recordIdentifier.getBucketProperty();
-      return vectorizedRowBatch;
+      return rbCtx.createVectorizedRowBatch(splitIdentifier.getWriteId(), splitIdentifier.getBucketProperty());
     }
 
     @Override
