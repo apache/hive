@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class PostgreSQLConnectorProvider extends AbstractJDBCConnectorProvider {
-  private static Logger LOG = LoggerFactory.getLogger(MySQLConnectorProvider.class);
+  private static Logger LOG = LoggerFactory.getLogger(PostgreSQLConnectorProvider.class);
   private static final String DRIVER_CLASS = "org.postgresql.Driver".intern();
 
   public PostgreSQLConnectorProvider(String dbName, DataConnector dataConn) {

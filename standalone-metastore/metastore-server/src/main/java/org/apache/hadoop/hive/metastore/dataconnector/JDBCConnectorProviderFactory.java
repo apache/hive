@@ -4,6 +4,7 @@ import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.dataconnector.jdbc.DerbySQLConnectorProvider;
 import org.apache.hadoop.hive.metastore.dataconnector.jdbc.MySQLConnectorProvider;
 import org.apache.hadoop.hive.metastore.dataconnector.jdbc.PostgreSQLConnectorProvider;
+import org.apache.hadoop.hive.metastore.dataconnector.jdbc.RedshiftConnectorProvider;
 
 import static org.apache.hadoop.hive.metastore.dataconnector.IDataConnectorProvider.*;
 
@@ -18,7 +19,9 @@ public class JDBCConnectorProviderFactory {
     case POSTGRES_TYPE:
       provider = new PostgreSQLConnectorProvider(dbName, connector);
       break;
-
+    case REDSHIFT_TYPE:
+      provider = new RedshiftConnectorProvider(dbName, connector);
+      break;
     case DERBY_TYPE:
       provider = new DerbySQLConnectorProvider(dbName, connector);
       break;

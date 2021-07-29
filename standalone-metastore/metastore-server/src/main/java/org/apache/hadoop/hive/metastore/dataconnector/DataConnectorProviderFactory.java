@@ -62,6 +62,7 @@ public class DataConnectorProviderFactory {
     case MYSQL_TYPE:
     case ORACLE_TYPE:
     case POSTGRES_TYPE:
+    case REDSHIFT_TYPE:
       try {
         provider = JDBCConnectorProviderFactory.get(scopedDb, connector);
       } catch (Exception e) {

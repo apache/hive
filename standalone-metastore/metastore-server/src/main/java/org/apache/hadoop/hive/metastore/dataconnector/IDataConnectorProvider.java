@@ -23,6 +23,7 @@ public interface IDataConnectorProvider {
   public static final String ORACLE_TYPE = "oracle";
   public static final String MSSQL_TYPE = "mssql";
   public static final String DERBY_TYPE = "derby";
+  public static final String REDSHIFT_TYPE = "redshift";
 
   DataConnector connector = null;
 
