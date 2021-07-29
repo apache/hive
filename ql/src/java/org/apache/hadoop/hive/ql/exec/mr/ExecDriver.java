@@ -354,6 +354,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
       Utilities.setMapRedWork(job, work, ctx.getMRTmpPath());
 
+      Utilities.setToken(job, ctx.getFsScratchDirs().values().toArray(new Path[0]));
+
       if (mWork.getSamplingType() > 0 && rWork != null && job.getNumReduceTasks() > 1) {
         try {
           handleSampling(ctx, mWork, job);

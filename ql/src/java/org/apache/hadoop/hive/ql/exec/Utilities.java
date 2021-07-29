@@ -197,6 +197,7 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.mapreduce.security.TokenCache;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
@@ -4989,5 +4990,20 @@ public final class Utilities {
   public static boolean arePathsEqualOrWithin(Path p1, Path p2) {
     return ((p1.toString().toLowerCase().indexOf(p2.toString().toLowerCase()) > -1) ||
         (p2.toString().toLowerCase().indexOf(p1.toString().toLowerCase()) > -1)) ? true : false;
+  }
+
+  /**
+   * Convenience method to obtain delegation tokens
+   * corresponding to the paths passed for mapReduce job.
+   * @param job jonconf
+   * @param ps array of paths
+   */
+  public static void setToken(JobConf job, Path[] ps) {
+    try {
+      TokenCache.obtainTokensForNamenodes(job.getCredentials(),
+          ps, job);
+    } catch (IOException ex) {
+      LOG.error("Error in setToken ", ex);
+    }
   }
 }
