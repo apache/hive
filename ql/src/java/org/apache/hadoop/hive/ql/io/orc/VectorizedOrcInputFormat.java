@@ -65,7 +65,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     private VectorizedRowBatchCtx rbCtx;
     private final Object[] partitionValues;
     private boolean addPartitionCols = true;
-    private final RecordIdentifier splitIdentifier;
+    private final RecordIdentifier fileIdentifier;
 
     VectorizedOrcRecordReader(Reader file, Configuration conf,
         FileSplit fileSplit) throws IOException {
@@ -116,7 +116,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
         partitionValues = null;
       }
 
-      this.splitIdentifier = parseSplitPath(fileSplit.getPath());
+      this.fileIdentifier = parseSplitPath(fileSplit.getPath());
     }
 
     @Override
@@ -142,8 +142,8 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       }
       progress = reader.getProgress();
 
-      if (splitIdentifier != null) {
-        rbCtx.populateWriteId(value, splitIdentifier.getWriteId(), splitIdentifier.getBucketProperty());
+      if (fileIdentifier != null) {
+        rbCtx.populateWriteId(value, fileIdentifier.getWriteId(), fileIdentifier.getBucketProperty());
       }
 
       return true;

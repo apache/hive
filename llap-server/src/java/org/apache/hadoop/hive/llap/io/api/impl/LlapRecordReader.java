@@ -112,7 +112,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
   private final ExecutorService executor;
   private final boolean isAcidScan;
   private final boolean isAcidFormat;
-  private final RecordIdentifier splitIdentifier;
+  private final RecordIdentifier fileIdentifier;
 
   /**
    * Creates the record reader and checks the input-specific compatibility.
@@ -214,7 +214,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
     feedback = rp = cvp.createReadPipeline(this, split, includes, sarg, counters, includes,
         sourceInputFormat, sourceSerDe, reporter, job, mapWork.getPathToPartitionInfo());
-    splitIdentifier = parseSplitPath(split.getPath());
+    fileIdentifier = parseSplitPath(split.getPath());
   }
 
   private static int getQueueVar(ConfVars var, JobConf jobConf, Configuration daemonConf) {
@@ -435,8 +435,8 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       firstReturnTime = counters.startTimeCounter();
     }
 
-    if (splitIdentifier != null && !isAcidScan) {
-      rbCtx.populateWriteId(vrb, splitIdentifier.getWriteId(), splitIdentifier.getBucketProperty());
+    if (fileIdentifier != null && !isAcidScan) {
+      rbCtx.populateWriteId(vrb, fileIdentifier.getWriteId(), fileIdentifier.getBucketProperty());
     }
 
     return true;

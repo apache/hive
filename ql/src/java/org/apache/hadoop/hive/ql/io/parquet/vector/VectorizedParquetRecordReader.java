@@ -137,7 +137,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
    */
   protected long totalRowCount = 0;
   private ZoneId writerTimezone;
-  private final RecordIdentifier splitIdentifier;
+  private final RecordIdentifier fileIdentifier;
 
   public VectorizedParquetRecordReader(
       org.apache.hadoop.mapred.InputSplit oldInputSplit, JobConf conf) {
@@ -167,7 +167,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       LOG.error("Failed to create the vectorized reader due to exception " + e);
       throw new RuntimeException(e);
     }
-    splitIdentifier = parseSplitPath(((FileSplit) oldInputSplit).getPath());
+    fileIdentifier = parseSplitPath(((FileSplit) oldInputSplit).getPath());
   }
 
   private void initPartitionValues(FileSplit fileSplit, JobConf conf) throws IOException {
@@ -375,8 +375,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     NullWritable nullWritable,
     VectorizedRowBatch vectorizedRowBatch) throws IOException {
     boolean hasMore = nextBatch(vectorizedRowBatch);
-    if (splitIdentifier != null) {
-      rbCtx.populateWriteId(vectorizedRowBatch, splitIdentifier.getWriteId(), splitIdentifier.getBucketProperty());
+    if (fileIdentifier != null) {
+      rbCtx.populateWriteId(vectorizedRowBatch, fileIdentifier.getWriteId(), fileIdentifier.getBucketProperty());
     }
     return hasMore;
   }
