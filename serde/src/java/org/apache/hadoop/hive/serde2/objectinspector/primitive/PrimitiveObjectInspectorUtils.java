@@ -28,6 +28,7 @@ import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.type.Date;
@@ -1252,21 +1253,13 @@ public final class PrimitiveObjectInspectorUtils {
     s = s.trim();
     s = trimNanoTimestamp(s);
 
+    if(StringUtils.isEmpty(s))
+      return null;
+
     try {
-      result = Timestamp.valueOf(s);
-    } catch (IllegalArgumentException e) {
-      // Let's try to parse it as timestamp with time zone and transform
-      try {
-        result = Timestamp.valueOf(TimestampTZUtil.parse(s).getZonedDateTime()
-            .toLocalDateTime().toString());
-      } catch (DateTimeException e2) {
-        // Last try: we try to parse it as date and transform
-        try {
-          result = Timestamp.ofEpochMilli(Date.valueOf(s).toEpochMilli());
-        } catch (IllegalArgumentException e3) {
-          result = null;
-        }
-      }
+      return TimestampUtils.stringToTimestamp(s);
+    } catch (IllegalArgumentException | DateTimeException e) {
+      return null;
     }
     return result;
   }
