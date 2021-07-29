@@ -169,8 +169,7 @@ public class TimestampParser {
    * @throws IllegalArgumentException if input text cannot be parsed into
    *           timestamp
    */
-  public Timestamp parseTimestamp(final String text)
-      throws IllegalArgumentException {
+  public Timestamp parseTimestamp(final String text) {
     if (supportMillisEpoch) {
       try {
         // support for milliseconds that include nanoseconds as well
@@ -191,7 +190,13 @@ public class TimestampParser {
         LOG.debug("Could not parse timestamp text: {}", text);
       }
     }
-    return Timestamp.valueOf(text);
+
+    try {
+      return Timestamp.valueOf(text);
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+
   }
 
   /**

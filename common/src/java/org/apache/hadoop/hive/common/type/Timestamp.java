@@ -17,15 +17,15 @@
  */
 package org.apache.hadoop.hive.common.type;
 
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.time.format.SignStyle;
 import java.time.temporal.ChronoField;
@@ -91,7 +91,7 @@ public class Timestamp implements Comparable<Timestamp> {
       .appendValue(MINUTE_OF_HOUR, 1, 2, SignStyle.NORMAL).appendLiteral(':')
       .appendValue(SECOND_OF_MINUTE, 1, 2, SignStyle.NORMAL).optionalStart()
       .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true).optionalEnd().optionalEnd().toFormatter()
-      .withResolverStyle(ResolverStyle.LENIENT);
+      .withResolverStyle(ResolverStyle.STRICT);
 
   private static final DateTimeFormatter PRINT_FORMATTER = new DateTimeFormatterBuilder()
       // Date and Time Parts
@@ -185,12 +185,12 @@ public class Timestamp implements Comparable<Timestamp> {
     LocalDateTime localDateTime;
     try {
       localDateTime = LocalDateTime.parse(s, PARSE_FORMATTER);
-    } catch (DateTimeParseException e) {
+    } catch (DateTimeException e) {
       // Try ISO-8601 format
       try {
         localDateTime = LocalDateTime.parse(s);
-      } catch (DateTimeParseException e2) {
-        throw new IllegalArgumentException("Cannot create timestamp, parsing error");
+      } catch (DateTimeException e2) {
+        throw new IllegalArgumentException("Cannot create timestamp, parsing error " + s);
       }
     }
     return new Timestamp(localDateTime);
@@ -208,6 +208,10 @@ public class Timestamp implements Comparable<Timestamp> {
   public static Timestamp ofEpochSecond(long epochSecond, int nanos) {
     return new Timestamp(
         LocalDateTime.ofEpochSecond(epochSecond, nanos, ZoneOffset.UTC));
+  }
+
+  public static Timestamp ofEpochSecond(long epochSecond, long nanos, ZoneId zone) {
+    return new Timestamp(LocalDateTime.ofInstant(Instant.ofEpochSecond(epochSecond, nanos), zone));
   }
 
   public static Timestamp ofEpochMilli(long epochMilli) {

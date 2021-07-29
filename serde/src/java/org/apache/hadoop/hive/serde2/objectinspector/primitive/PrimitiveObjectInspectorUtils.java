@@ -23,10 +23,12 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
+import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.type.Date;
@@ -1256,9 +1258,12 @@ public final class PrimitiveObjectInspectorUtils {
     s = s.trim();
     s = trimNanoTimestamp(s);
 
+    if(StringUtils.isEmpty(s))
+      return null;
+
     try {
       return TimestampUtils.stringToTimestamp(s);
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException | DateTimeException e) {
       return null;
     }
   }

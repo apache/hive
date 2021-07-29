@@ -45,7 +45,7 @@ STAGE PLANS:
               predicate: (UDFToDouble(key) = 86.0D) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: 14 (type: int), null (type: int), 0 (type: int)
+                expressions: 14 (type: int), 14 (type: int), 0 (type: int)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -73,4 +73,4 @@ FROM src WHERE key = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-14	NULL	0
+14	14	0

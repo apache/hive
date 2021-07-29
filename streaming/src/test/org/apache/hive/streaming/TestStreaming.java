@@ -2684,11 +2684,8 @@ public class TestStreaming {
 
     List<String> rs = queryTable(driver, "SELECT * FROM default.timest");
     Assert.assertEquals(rs.size(), 6);
-    for (int i = 0; i < 3; i++){
-      Assert.assertEquals(rs.get(i), "2018-10-19 10:35:00");
-    }
-    for (int i = 3; i < rs.size(); i++){
-      Assert.assertEquals(rs.get(i), "2018-10-19 10:35:00.123");
+    for (int i = 0; i < rs.size(); i++){
+      Assert.assertEquals(rs.get(i), "NULL");
     }
   }
 
