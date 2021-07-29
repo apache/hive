@@ -83,6 +83,42 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1_n14
 #### A masked pattern was here ####
 01/13/10 11:57:40	2010-01-13 11:57:40
+PREHOOK: query: SELECT from_unixtime(unix_timestamp(cast('2010-01-13' as date)))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT from_unixtime(unix_timestamp(cast('2010-01-13' as date)))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2010-01-13 00:00:00
+PREHOOK: query: SELECT from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+01/13/10 11:57:40
+PREHOOK: query: select from_unixtime(unix_timestamp('2010-01-13 11:57:40'), 'EEEE')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select from_unixtime(unix_timestamp('2010-01-13 11:57:40'), 'EEEE')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+Wednesday
+PREHOOK: query: select from_unixtime(unix_timestamp(cast('2010-01-13 11:57:40' || ' America/Los_Angeles' as timestamp with local time zone)) ,"yyyy-MM-dd'T'HH:mm:ssXXX")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select from_unixtime(unix_timestamp(cast('2010-01-13 11:57:40' || ' America/Los_Angeles' as timestamp with local time zone)) ,"yyyy-MM-dd'T'HH:mm:ssXXX")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2010-01-13T11:57:40-08:00
 PREHOOK: query: SELECT from_unixtime(1226446340), to_date(from_unixtime(1226446340)), day('2008-11-01'), month('2008-11-01'), year('2008-11-01'), day('2008-11-01 15:32:20'), month('2008-11-01 15:32:20'), year('2008-11-01 15:32:20') FROM dest1_n14
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1_n14
