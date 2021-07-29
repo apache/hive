@@ -910,12 +910,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   }
 
   private void createDpDirCheckSrc(final Path dpStagingPath, final Path dpFinalPath) throws IOException {
-    if (!fs.exists(dpStagingPath) && !fs.exists(dpFinalPath)) {
-      fs.mkdirs(dpStagingPath);
-      // move task will create dp final path
-      if (reporter != null) {
-        reporter.incrCounter(counterGroup, Operator.HIVE_COUNTER_CREATED_DYNAMIC_PARTITIONS, 1);
-      }
+    boolean dirCreated = fs.mkdirs(dpStagingPath);
+    if (!dirCreated && !fs.isDirectory(dpStagingPath)) {
+      throw new IOException("Failed to create dir " + dpStagingPath);
+    }
+    if (reporter != null && dirCreated) {
+      reporter.incrCounter(counterGroup, Operator.HIVE_COUNTER_CREATED_DYNAMIC_PARTITIONS, 1);
     }
   }
 
