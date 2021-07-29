@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
@@ -64,6 +66,11 @@ public class QueryState {
    * map of resources involved in the query.
    */
   private final Map<String, Object> resourceMap = new HashMap<>();
+
+  /**
+   * query level lock for ConditionalTask#resolveTask.
+   */
+  private final ReentrantLock resolveConditionalTaskLock = new ReentrantLock(true);
 
   /**
    * Private constructor, use QueryState.Builder instead.
@@ -153,6 +160,10 @@ public class QueryState {
 
   public Object getResource(String resourceIdentifier) {
     return resourceMap.get(resourceIdentifier);
+  }
+
+  public ReentrantLock getResolveConditionalTaskLock() {
+    return resolveConditionalTaskLock;
   }
 
   /**
