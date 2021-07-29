@@ -181,7 +181,7 @@ public class IOContext {
     this.ri = parseSplitPath(inputPath);
   }
 
-  static RecordIdentifier parseSplitPath(Path splitPath) {
+  public static RecordIdentifier parseSplitPath(Path splitPath) {
     RecordIdentifier recordIdentifier = new RecordIdentifier();
     Path parent = splitPath.getParent();
     if (parent == null) {
