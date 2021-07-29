@@ -168,13 +168,15 @@ public abstract class JDBCAbstractSplitFilterRule extends RelOptRule {
     public boolean matches(RelOptRuleCall call) {
       LOGGER.debug("MyUpperJoinFilterFilter.matches has been called");
 
+      final HiveFilter filter = call.rel(0);
       final HiveJoin join = call.rel(1);
       final HiveJdbcConverter conv = call.rel(2);
 
       RexNode joinCond = join.getCondition();
       SqlDialect dialect = conv.getJdbcDialect();
 
-      return super.matches(call, dialect) && JDBCRexCallValidator.isValidJdbcOperation(joinCond, dialect);
+      return canSplitFilter(filter.getCondition(), dialect)
+        && JDBCRexCallValidator.isValidJdbcOperation(joinCond, dialect);
     }
 
     @Override
