@@ -141,6 +141,11 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
         throw new RuntimeException(e);
       }
       progress = reader.getProgress();
+
+      if (splitIdentifier != null) {
+        rbCtx.populateWriteId(value, splitIdentifier.getWriteId(), splitIdentifier.getBucketProperty());
+      }
+
       return true;
     }
 
@@ -151,11 +156,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
 
     @Override
     public VectorizedRowBatch createValue() {
-      if (splitIdentifier == null) {
-        return rbCtx.createVectorizedRowBatch();
-      }
-
-      return rbCtx.createVectorizedRowBatch(splitIdentifier.getWriteId(), splitIdentifier.getBucketProperty());
+      return rbCtx.createVectorizedRowBatch();
     }
 
     @Override

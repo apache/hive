@@ -434,6 +434,11 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     if (wasFirst) {
       firstReturnTime = counters.startTimeCounter();
     }
+
+    if (splitIdentifier != null && !isAcidScan) {
+      rbCtx.populateWriteId(vrb, splitIdentifier.getWriteId(), splitIdentifier.getBucketProperty());
+    }
+
     return true;
   }
 
@@ -545,11 +550,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
   @Override
   public VectorizedRowBatch createValue() {
-    if (splitIdentifier == null) {
-      return rbCtx.createVectorizedRowBatch();
-    }
-
-    return rbCtx.createVectorizedRowBatch(splitIdentifier.getWriteId(), splitIdentifier.getBucketProperty());
+    return rbCtx.createVectorizedRowBatch();
   }
 
   @Override
