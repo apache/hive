@@ -20,11 +20,13 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolver;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * Conditional Task implementation.
@@ -78,11 +80,15 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
     resTasks = resolver.getTasks(conf, resolverCtx);
     resolved = true;
 
+    ReentrantLock resolveTaskLock = queryState.getResolveConditionalTaskLock();
     try {
+      resolveTaskLock.lock();
       resolveTask();
     } catch (Exception e) {
       setException(e);
       return 1;
+    } finally {
+      resolveTaskLock.unlock();
     }
     return 0;
   }
