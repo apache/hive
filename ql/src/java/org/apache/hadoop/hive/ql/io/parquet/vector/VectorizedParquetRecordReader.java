@@ -88,7 +88,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
-import static org.apache.hadoop.hive.ql.io.IOContext.parseSplitPath;
+import static org.apache.hadoop.hive.ql.io.AcidUtils.parseSplitPath;
 import static org.apache.parquet.filter2.compat.RowGroupFilter.filterRowGroups;
 import static org.apache.parquet.format.converter.ParquetMetadataConverter.NO_FILTER;
 import static org.apache.parquet.format.converter.ParquetMetadataConverter.range;

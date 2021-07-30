@@ -47,7 +47,7 @@ import org.apache.orc.OrcProto;
 import org.apache.orc.OrcUtils;
 import org.apache.orc.TypeDescription;
 
-import static org.apache.hadoop.hive.ql.io.IOContext.parseSplitPath;
+import static org.apache.hadoop.hive.ql.io.AcidUtils.parseSplitPath;
 
 /**
  * A MapReduce/Hive input format for ORC files.
