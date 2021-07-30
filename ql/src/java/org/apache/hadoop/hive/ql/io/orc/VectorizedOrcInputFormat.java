@@ -32,8 +32,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.BucketIdentifier;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
-import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.NullWritable;
@@ -46,8 +46,6 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcUtils;
 import org.apache.orc.TypeDescription;
-
-import static org.apache.hadoop.hive.ql.io.AcidUtils.parseSplitPath;
 
 /**
  * A MapReduce/Hive input format for ORC files.
@@ -65,7 +63,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     private VectorizedRowBatchCtx rbCtx;
     private final Object[] partitionValues;
     private boolean addPartitionCols = true;
-    private final RecordIdentifier fileIdentifier;
+    private final BucketIdentifier bucketIdentifier;
 
     VectorizedOrcRecordReader(Reader file, Configuration conf,
         FileSplit fileSplit) throws IOException {
@@ -116,7 +114,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
         partitionValues = null;
       }
 
-      this.fileIdentifier = parseSplitPath(fileSplit.getPath());
+      this.bucketIdentifier = BucketIdentifier.parsePath(fileSplit.getPath());
     }
 
     @Override
@@ -142,8 +140,8 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       }
       progress = reader.getProgress();
 
-      if (fileIdentifier != null) {
-        rbCtx.populateWriteId(value, fileIdentifier.getWriteId(), fileIdentifier.getBucketProperty());
+      if (bucketIdentifier != null) {
+        rbCtx.populateWriteId(value, bucketIdentifier.getWriteId(), bucketIdentifier.getBucketProperty());
       }
 
       return true;

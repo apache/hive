@@ -49,12 +49,12 @@ POSTHOOK: query: select *, ROW__ID from masking_test_n2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@masking_test_n2
 #### A masked pattern was here ####
-0	0_lav	12	NULL
-4	4_lav	12	NULL
-8	8_lav	12	NULL
-0	0_lav	12	NULL
-0	0_lav	12	NULL
-2	2_lav	12	NULL
+0	0_lav	12	{"writeid":0,"bucketid":0,"rowid":0}
+4	4_lav	12	{"writeid":0,"bucketid":0,"rowid":0}
+8	8_lav	12	{"writeid":0,"bucketid":0,"rowid":0}
+0	0_lav	12	{"writeid":0,"bucketid":0,"rowid":0}
+0	0_lav	12	{"writeid":0,"bucketid":0,"rowid":0}
+2	2_lav	12	{"writeid":0,"bucketid":0,"rowid":0}
 PREHOOK: query: explain select * from masking_test_n2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@masking_test_n2
@@ -196,12 +196,12 @@ POSTHOOK: query: select ROW__ID, * from masking_test_n2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@masking_test_n2
 #### A masked pattern was here ####
-NULL	0	1212	12	12	12	12	12	12	12	12	12
-NULL	4	1212	12	12	12	12	12	12	12	12	12
-NULL	8	1212	12	12	12	12	12	12	12	12	12
-NULL	0	1212	12	12	12	12	12	12	12	12	12
-NULL	0	1212	12	12	12	12	12	12	12	12	12
-NULL	2	1212	12	12	12	12	12	12	12	12	12
+{"writeid":0,"bucketid":0,"rowid":0}	0	1212	12	12	12	12	12	12	12	12	12
+{"writeid":0,"bucketid":0,"rowid":0}	4	1212	12	12	12	12	12	12	12	12	12
+{"writeid":0,"bucketid":0,"rowid":0}	8	1212	12	12	12	12	12	12	12	12	12
+{"writeid":0,"bucketid":0,"rowid":0}	0	1212	12	12	12	12	12	12	12	12	12
+{"writeid":0,"bucketid":0,"rowid":0}	0	1212	12	12	12	12	12	12	12	12	12
+{"writeid":0,"bucketid":0,"rowid":0}	2	1212	12	12	12	12	12	12	12	12	12
 PREHOOK: query: drop table masking_test_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@masking_test_n2

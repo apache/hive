@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.io;
 
 import org.apache.hadoop.fs.Path;
 
-import static org.apache.hadoop.hive.ql.io.AcidUtils.parseSplitPath;
-
 /**
  * IOContext basically contains the position information of the current
  * key/value. For blockCompressed files, isBlockPointer should return true,
@@ -180,7 +178,12 @@ public class IOContext {
   }
 
   public void parseRecordIdentifier() {
-    this.ri = parseSplitPath(inputPath);
+    BucketIdentifier bucketIdentifier = BucketIdentifier.parsePath(inputPath);
+    if (bucketIdentifier == null) {
+      this.ri = null;
+    } else {
+      this.ri = new RecordIdentifier(bucketIdentifier.getWriteId(), bucketIdentifier.getBucketProperty(), 0);
+    }
   }
 
   public boolean isDeletedRecord() {

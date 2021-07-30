@@ -3220,37 +3220,4 @@ public class AcidUtils {
       return dirInfo;
     }
   }
-
-  public static RecordIdentifier parseSplitPath(Path splitPath) {
-    try {
-      RecordIdentifier recordIdentifier = new RecordIdentifier();
-      Path parent = splitPath.getParent();
-      if (parent == null) {
-        return null;
-      }
-      boolean isBase = parent.getName().startsWith(AcidUtils.BASE_PREFIX);
-      boolean isDelta = parent.getName().startsWith(AcidUtils.DELTA_PREFIX)
-          || parent.getName().startsWith(AcidUtils.DELETE_DELTA_PREFIX);
-      if (isBase || isDelta) {
-        if (isBase) {
-          recordIdentifier.setValues(
-              AcidUtils.ParsedBaseLight.parseBase(parent).getWriteId(),
-              AcidUtils.parseBucketId(splitPath),
-              0);
-        } else {
-          AcidUtils.ParsedDeltaLight pd = AcidUtils.ParsedDeltaLight.parse(parent);
-          recordIdentifier.setValues(
-              pd.getMinWriteId(),
-              AcidUtils.parseBucketId(splitPath),
-              0);
-        }
-      }
-
-      return recordIdentifier;
-    } catch (NumberFormatException ex) {
-      LOG.warn("Error while parsing path " + splitPath, ex);
-    }
-
-    return null;
-  }
 }
