@@ -23,7 +23,7 @@ public class RedshiftConnectorProvider extends AbstractJDBCConnectorProvider {
     @Override protected ResultSet fetchTableMetadata(String tableName) throws MetaException {
         ResultSet rs = null;
         try {
-            rs = getConnection().getMetaData().getTables(scoped_db, null, null, new String[] { "TABLE" });
+            rs = getConnection().getMetaData().getTables(scoped_db, null, tableName, new String[] { "TABLE" });
         } catch (SQLException sqle) {
             LOG.warn("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
             throw new MetaException("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
@@ -32,19 +32,36 @@ public class RedshiftConnectorProvider extends AbstractJDBCConnectorProvider {
     }
 
     @Override protected ResultSet fetchTableNames() throws MetaException {
-        return null;
+        return fetchTableMetadata(null);
     }
 
     protected String getDataType(String dbDataType, int size) {
         String mappedType = super.getDataType(dbDataType, size);
+
+        // The VOID type points to the corresponding datatype not existing in hive. These datatypes are datastore
+        // specific. They need special handling. An example would be the Geometric type that is not supported in Hive.
+        // The other cases where a datatype in redshift is resolved to a VOID type are during the use of aliases like
+        // float8, int8 etc. These can be mapped to existing hive types and are done below.
         if (!mappedType.equalsIgnoreCase(ColumnType.VOID_TYPE_NAME)) {
             return mappedType;
         }
 
         // map any db specific types here.
-        //TODO: Geomentric, network, bit, array data types of postgresql needs to be supported.
+        //TODO: Geometric and other redshift specific types need to be supported.
         switch (dbDataType.toLowerCase())
         {
+            // The below mappings were tested by creating table definitions in redshift with the respective datatype
+            // and querying from the tables.
+            // e.g.
+            // create table test_int_8(i int8);
+            // insert into test_int_8 values(1);
+            // 0: jdbc:hive2://> select * from test_int_8;
+            //+---------------+
+            //| test_int_8.i  |
+            //+---------------+
+            //| 1             |
+            //+---------------+
+            //1 row selected (13.381 seconds)
             case "bpchar":
                 mappedType = ColumnType.CHAR_TYPE_NAME + wrapSize(size);
                 break;
@@ -68,6 +85,7 @@ public class RedshiftConnectorProvider extends AbstractJDBCConnectorProvider {
                 break;
             case "time":
             case "time without time zone":
+                // A table with a time column gets resolved to "time without time zone" in hive.
                 mappedType = ColumnType.TIMESTAMP_TYPE_NAME;
                 break;
             case "timez":
