@@ -17,6 +17,7 @@
  */
 node {
     sh 'set'
+    sh 'set'
 }
 
 properties([
