@@ -22,5 +22,5 @@ Synonyms: udftointeger
 Example:
    > SELECT int(true);
   1
-Function class:org.apache.hadoop.hive.ql.udf.UDFToInteger
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFToInteger
 Function type:BUILTIN

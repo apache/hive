@@ -683,7 +683,7 @@ public final class PrimitiveObjectInspectorUtils {
    * NumberFormatException will be thrown if o is not a valid number.
    */
   public static int getInt(Object o, PrimitiveObjectInspector oi) {
-    int result = 0;
+    int result;
     switch (oi.getPrimitiveCategory()) {
     case VOID: {
       result = 0;
@@ -737,6 +737,9 @@ public final class PrimitiveObjectInspectorUtils {
       result = (int) (((TimestampObjectInspector) oi)
           .getPrimitiveWritableObject(o).getSeconds());
       break;
+    case TIMESTAMPLOCALTZ:
+      result = (int) (((TimestampLocalTZObjectInspector) oi).getPrimitiveWritableObject(o).getSeconds());
+      break;
     case DECIMAL:
       {
         HiveDecimal dec = ((HiveDecimalObjectInspector) oi)
@@ -747,7 +750,8 @@ public final class PrimitiveObjectInspectorUtils {
         result = dec.intValue();
       }
       break;
-    case DATE:  // unsupported conversion
+    case DATE:
+      throw new NumberFormatException("DATE is not supported");
     default: {
       throw new RuntimeException("Hive 2 Internal error: unsupported conversion from type: "
           + oi.getTypeName());

@@ -19,7 +19,7 @@ STAGE PLANS:
           Limit
             Number of rows: 1
             Select Operator
-              expressions: (CAST( UDFToInteger(key) AS decimal(10,0)) / CAST( UDFToInteger(key) AS decimal(10,0))) (type: decimal(21,11))
+              expressions: (CAST( CAST( key AS INT) AS decimal(10,0)) / CAST( CAST( key AS INT) AS decimal(10,0))) (type: decimal(21,11))
               outputColumnNames: _col0
               ListSink
 
@@ -53,7 +53,7 @@ STAGE PLANS:
           Limit
             Number of rows: 1
             Select Operator
-              expressions: (UDFToDouble(UDFToInteger(key)) / UDFToDouble(UDFToInteger(key))) (type: double)
+              expressions: (UDFToDouble(CAST( key AS INT)) / UDFToDouble(CAST( key AS INT))) (type: double)
               outputColumnNames: _col0
               ListSink
 

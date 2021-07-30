@@ -77,7 +77,7 @@ STAGE PLANS:
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: UDFToInteger(_col0) (type: int)
+                    expressions: CAST( _col0 AS INT) (type: int)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator

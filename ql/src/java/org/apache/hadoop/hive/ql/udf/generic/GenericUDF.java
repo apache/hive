@@ -341,24 +341,33 @@ public abstract class GenericUDF implements Closeable {
     inputTypes[i] = inputType;
   }
 
-  protected void obtainIntConverter(ObjectInspector[] arguments, int i,
-      PrimitiveCategory[] inputTypes, Converter[] converters) throws UDFArgumentTypeException {
+  protected void obtainIntConverter(ObjectInspector[] arguments, int i, PrimitiveCategory[] inputTypes,
+      Converter[] converters) throws UDFArgumentTypeException {
     PrimitiveObjectInspector inOi = (PrimitiveObjectInspector) arguments[i];
     PrimitiveCategory inputType = inOi.getPrimitiveCategory();
     switch (inputType) {
+    case VOID:
+    case BOOLEAN:
     case BYTE:
     case SHORT:
     case INT:
-    case VOID:
+    case LONG:
+    case FLOAT:
+    case DOUBLE:
+    case STRING:
+    case CHAR:
+    case VARCHAR:
+    case TIMESTAMP:
+    case DECIMAL:
+    case DATE:
       break;
     default:
-      throw new UDFArgumentTypeException(i, getFuncName() + " only takes INT/SHORT/BYTE types as "
-          + getArgOrder(i) + " argument, got " + inputType);
+      throw new UDFArgumentTypeException(i,
+          getFuncName() + " only takes NUMERIC_GROUP, STRING_GROUP, BOOLEAN_GROUP, DATE_GROUP, BINARY_GROUP,\n"
+              + " VOID_GROUP types as " + getArgOrder(i) + " argument, got " + inputType);
     }
-
-    Converter converter = ObjectInspectorConverters.getConverter(
-        arguments[i],
-        PrimitiveObjectInspectorFactory.writableIntObjectInspector);
+    Converter converter = ObjectInspectorConverters
+        .getConverter(arguments[i], PrimitiveObjectInspectorFactory.writableIntObjectInspector);
     converters[i] = converter;
     inputTypes[i] = inputType;
   }

@@ -23,10 +23,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: ((cint = UDFToInteger(ctinyint)) or (UDFToLong(cint) = cbigint)) (type: boolean)
+                  filterExpr: ((cint = CAST( ctinyint AS INT)) or (UDFToLong(cint) = cbigint)) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2844090 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((cint = UDFToInteger(ctinyint)) or (UDFToLong(cint) = cbigint)) (type: boolean)
+                    predicate: ((cint = CAST( ctinyint AS INT)) or (UDFToLong(cint) = cbigint)) (type: boolean)
                     Statistics: Num rows: 12288 Data size: 2844090 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
@@ -48,7 +48,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: false
+                usesVectorUDFAdaptor: true
                 vectorized: true
 
   Stage: Stage-0

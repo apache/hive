@@ -81,7 +81,7 @@ STAGE PLANS:
                           GatherStats: true
                           MultiFileSpray: false
                         Select Operator
-                          expressions: _col0 (type: int), _col1 (type: string), UDFToInteger('1') (type: int)
+                          expressions: _col0 (type: int), _col1 (type: string), CAST( '1' AS INT) (type: int)
                           outputColumnNames: a, b, part
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
@@ -342,7 +342,7 @@ STAGE PLANS:
                           GatherStats: true
                           MultiFileSpray: false
                         Select Operator
-                          expressions: _col0 (type: int), _col1 (type: string), UDFToInteger('1') (type: int)
+                          expressions: _col0 (type: int), _col1 (type: string), CAST( '1' AS INT) (type: int)
                           outputColumnNames: a, b, part
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
@@ -539,7 +539,7 @@ STAGE PLANS:
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                               name: default.partitioned1
                         Select Operator
-                          expressions: _col0 (type: int), _col1 (type: string), UDFToInteger('1') (type: int)
+                          expressions: _col0 (type: int), _col1 (type: string), CAST( '1' AS INT) (type: int)
                           outputColumnNames: a, b, part
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator

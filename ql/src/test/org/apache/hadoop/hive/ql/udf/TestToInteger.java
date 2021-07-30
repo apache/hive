@@ -20,6 +20,13 @@ package org.apache.hadoop.hive.ql.udf;
 
 
 
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFDateFormat;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToInteger;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import static org.junit.Assert.assertEquals;
@@ -33,21 +40,31 @@ public class TestToInteger{
 
   @Test
   public void testTextToInteger() throws Exception{
-    UDFToInteger ti = new UDFToInteger();
-    Text t1 = new Text("-1");
-    IntWritable i1 = ti.evaluate(t1);
-    assertEquals(-1, i1.get());
+    GenericUDFToInteger udf = new GenericUDFToInteger();
+    ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector[] arguments = {valueOI0};
+    udf.initialize(arguments);
 
-    Text t2 = new Text("0");
-    IntWritable i2 = ti.evaluate(t2);
-    assertEquals(0, i2.get());
+    runAndVerifyStr("-1",-1,udf);
+    runAndVerifyStr("0",0,udf);
+    runAndVerifyStr("1.1",1,udf);
 
-    Text t3 = new Text("A");
-    IntWritable i3 = ti.evaluate(t3);
-    assertNull(i3);
+    runAndVerifyNull("A",udf);
+  }
 
-    Text t4 = new Text("1.1");
-    IntWritable i4 = ti.evaluate(t4);
-    assertEquals(1, i4.get());
+  private void runAndVerifyStr(String str, int expResult, GenericUDF udf)
+      throws HiveException {
+    GenericUDF.DeferredObject valueObj0 = new GenericUDF.DeferredJavaObject(str != null ? new Text(str) : null);
+    GenericUDF.DeferredObject[] args = { valueObj0 };
+    int output = (int) udf.evaluate(args);
+    assertEquals("Cast ( str as INT) ", expResult, output);
+  }
+
+  private void runAndVerifyNull(String str, GenericUDF udf)
+      throws HiveException {
+    GenericUDF.DeferredObject valueObj0 = new GenericUDF.DeferredJavaObject(str != null ? new Text(str) : null);
+    GenericUDF.DeferredObject[] args = { valueObj0 };
+    int output = (int) udf.evaluate(args);
+    assertNull("Cast ( str as INT) ", output);
   }
 }

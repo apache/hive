@@ -597,7 +597,7 @@ import com.google.common.annotations.VisibleForTesting;
     castExpressionUdfs.add(UDFToBoolean.class);
     castExpressionUdfs.add(UDFToDouble.class);
     castExpressionUdfs.add(UDFToFloat.class);
-    castExpressionUdfs.add(UDFToInteger.class);
+    castExpressionUdfs.add(GenericUDFToInteger.class);
     castExpressionUdfs.add(UDFToLong.class);
     castExpressionUdfs.add(UDFToShort.class);
   }
@@ -1358,7 +1358,7 @@ import com.google.common.annotations.VisibleForTesting;
         udfClass = new UDFToShort();
         break;
       case INT:
-        udfClass = new UDFToInteger();
+        genericUdf = new GenericUDFToInteger();
         break;
       case LONG:
         udfClass = new UDFToLong();
@@ -1473,7 +1473,7 @@ import com.google.common.annotations.VisibleForTesting;
   public static boolean isCastToIntFamily(Class<? extends UDF> udfClass) {
     return udfClass.equals(UDFToByte.class)
         || udfClass.equals(UDFToShort.class)
-        || udfClass.equals(UDFToInteger.class)
+        || udfClass.equals(GenericUDFToInteger.class)
         || udfClass.equals(UDFToLong.class);
 
     // Boolean is purposely excluded.
@@ -2975,7 +2975,7 @@ import com.google.common.annotations.VisibleForTesting;
       return PrimitiveCategory.BYTE;
     } else if (udfClass.equals(UDFToShort.class)) {
       return PrimitiveCategory.SHORT;
-    } else if (udfClass.equals(UDFToInteger.class)) {
+    } else if (udfClass.equals(GenericUDFToInteger.class)) {
       return PrimitiveCategory.INT;
     } else if (udfClass.equals(UDFToLong.class)) {
       return PrimitiveCategory.LONG;

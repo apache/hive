@@ -120,7 +120,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                    expressions: _col0 (type: string), CAST( _col1 AS INT) (type: int)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
@@ -178,7 +178,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                    expressions: _col0 (type: string), CAST( _col1 AS INT) (type: int)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
@@ -217,7 +217,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                    expressions: _col0 (type: string), CAST( _col1 AS INT) (type: int)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator

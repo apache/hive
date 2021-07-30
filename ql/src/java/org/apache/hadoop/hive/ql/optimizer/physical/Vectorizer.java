@@ -213,7 +213,7 @@ import org.apache.hadoop.hive.ql.udf.UDFToBoolean;
 import org.apache.hadoop.hive.ql.udf.UDFToByte;
 import org.apache.hadoop.hive.ql.udf.UDFToDouble;
 import org.apache.hadoop.hive.ql.udf.UDFToFloat;
-import org.apache.hadoop.hive.ql.udf.UDFToInteger;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToInteger;
 import org.apache.hadoop.hive.ql.udf.UDFToLong;
 import org.apache.hadoop.hive.ql.udf.UDFToShort;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
@@ -494,7 +494,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     // For type casts
     supportedGenericUDFs.add(UDFToLong.class);
-    supportedGenericUDFs.add(UDFToInteger.class);
+    supportedGenericUDFs.add(GenericUDFToInteger.class);
     supportedGenericUDFs.add(UDFToShort.class);
     supportedGenericUDFs.add(UDFToByte.class);
     supportedGenericUDFs.add(UDFToBoolean.class);

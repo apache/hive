@@ -1823,13 +1823,13 @@ STAGE PLANS:
                 reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
-                usesVectorUDFAdaptor: false
+                usesVectorUDFAdaptor: true
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 3
                     dataColumns: KEY.reducesinkkey0:timestamp, KEY.reducesinkkey1:int, VALUE._col6:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint]
+                    scratchColumnTypeNames: [bigint, bigint, bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: int), VALUE._col6 (type: string), KEY.reducesinkkey0 (type: timestamp)
@@ -1882,12 +1882,13 @@ STAGE PLANS:
                         projectedOutputColumnNums: [3, 2]
                     Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
+                      expressions: CAST( _col0 AS INT) (type: int), _col1 (type: string)
                       outputColumnNames: _col0, _col1
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [3, 2]
+                          projectedOutputColumnNums: [4, 2]
+                          selectExpressions: VectorUDFAdaptor(CAST( _col0 AS INT)) -> 4:int
                       Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -1901,12 +1902,13 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.t1_n23
                     Select Operator
-                      expressions: UDFToInteger(_col0) (type: int), _col1 (type: string)
+                      expressions: CAST( _col0 AS INT) (type: int), _col1 (type: string)
                       outputColumnNames: _col0, _col1
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [3, 2]
+                          projectedOutputColumnNums: [5, 2]
+                          selectExpressions: VectorUDFAdaptor(CAST( _col0 AS INT)) -> 5:int
                       Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
