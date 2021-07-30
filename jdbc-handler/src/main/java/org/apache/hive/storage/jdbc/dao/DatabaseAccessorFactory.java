@@ -41,6 +41,7 @@ public class DatabaseAccessorFactory {
       break;
 
     case POSTGRES:
+    case REDSHIFT:
       accessor = new PostgresDatabaseAccessor();
       break;
 

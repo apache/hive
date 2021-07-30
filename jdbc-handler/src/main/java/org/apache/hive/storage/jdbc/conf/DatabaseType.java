@@ -24,5 +24,6 @@ public enum DatabaseType {
   MSSQL,
   METASTORE,
   JETHRO_DATA,
-  HIVE
+  HIVE,
+  REDSHIFT
 }

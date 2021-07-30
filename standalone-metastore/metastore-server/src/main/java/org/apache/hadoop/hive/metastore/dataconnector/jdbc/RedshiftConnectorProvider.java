@@ -13,6 +13,7 @@ import java.sql.SQLException;
 
 public class RedshiftConnectorProvider extends AbstractJDBCConnectorProvider {
     private static Logger LOG = LoggerFactory.getLogger(RedshiftConnectorProvider.class);
+
     private static final String DRIVER_CLASS = "com.amazon.redshift.jdbc42.Driver".intern();
 
     public RedshiftConnectorProvider(String dbName, DataConnector dataConn) {
@@ -47,8 +48,31 @@ public class RedshiftConnectorProvider extends AbstractJDBCConnectorProvider {
             case "bpchar":
                 mappedType = ColumnType.CHAR_TYPE_NAME + wrapSize(size);
                 break;
+            case "int2":
+                mappedType = ColumnType.SMALLINT_TYPE_NAME;
+                break;
+            case "int4":
+                mappedType = ColumnType.INT_TYPE_NAME;
+                break;
             case "int8":
                 mappedType = ColumnType.BIGINT_TYPE_NAME;
+                break;
+            case "real":
+                mappedType = ColumnType.FLOAT_TYPE_NAME;
+                break;
+            case "float4":
+                mappedType = ColumnType.FLOAT_TYPE_NAME;
+                break;
+            case "float8":
+                mappedType = ColumnType.DOUBLE_TYPE_NAME;
+                break;
+            case "time":
+            case "time without time zone":
+                mappedType = ColumnType.TIMESTAMP_TYPE_NAME;
+                break;
+            case "timez":
+            case "time with time zone":
+                mappedType = ColumnType.TIMESTAMPTZ_TYPE_NAME;
                 break;
             default:
                 mappedType = ColumnType.VOID_TYPE_NAME;
