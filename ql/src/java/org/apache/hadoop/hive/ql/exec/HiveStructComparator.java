@@ -19,12 +19,15 @@ package org.apache.hadoop.hive.ql.exec;
 
 
 import org.apache.hadoop.hive.ql.util.NullOrdering;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
+import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A WritableComparator to compare STRUCT or ARRAY objects.
+ */
 final class HiveStructComparator extends HiveWritableComparator {
-    private WritableComparator[] comparator = null;
+    private final List<WritableComparator> comparators = new ArrayList<>();
 
     HiveStructComparator(boolean nullSafe, NullOrdering nullOrdering) {
         super(nullSafe, nullOrdering);
@@ -45,16 +48,14 @@ final class HiveStructComparator extends HiveWritableComparator {
         if (a1.size() == 0) {
             return 0;
         }
-        if (comparator == null) {
-            comparator = new WritableComparator[a1.size()];
-            // For struct all elements may not be of same type, so create comparator for each entry.
-            for (int i = 0; i < a1.size(); i++) {
-                comparator[i] = WritableComparatorFactory.get(a1.get(i), nullSafe, nullOrdering);
-            }
+        // For array, the length may not be fixed, so extend comparators on demand
+        for (int i = comparators.size(); i < a1.size(); i++) {
+            // For struct, all elements may not be of same type, so create comparator for each entry.
+            comparators.add(i, WritableComparatorFactory.get(a1.get(i), nullSafe, nullOrdering));
         }
         result = 0;
         for (int i = 0; i < a1.size(); i++) {
-            result = comparator[i].compare(a1.get(i), a2.get(i));
+            result = comparators.get(i).compare(a1.get(i), a2.get(i));
             if (result != 0) {
                 return result;
             }

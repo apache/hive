@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +26,7 @@ import java.util.Map;
 public final class WritableComparatorFactory {
     public static WritableComparator get(Object key, boolean nullSafe, NullOrdering nullOrdering) {
         if (key instanceof List) {
-            // For array type struct is used as we do not know if all elements of array are of same type.
+            // STRUCT or ARRAY are expressed as java.util.List
             return new HiveStructComparator(nullSafe, nullOrdering);
         } else if (key instanceof Map) {
             // TODO : https://issues.apache.org/jira/browse/HIVE-25042
