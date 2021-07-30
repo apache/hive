@@ -1326,6 +1326,10 @@ public class HiveConf extends Configuration {
         "A comma separated list of Java classes that implement the org.apache.hadoop.hive.metastore.MetaStoreEventListener" +
             " interface. The metastore event and corresponding listener method will be invoked in separate JDO transactions. " +
             "Alternatively, configure hive.metastore.transactional.event.listeners to ensure both are invoked in same JDO transaction."),
+
+    HIVE_WRITE_NOTIFICATION_MAX_BATCH_SIZE("hive.write.notification.max.batch.size", 1000,
+        "Max number of write notification logs sent in a batch "),
+
     /**
      * @deprecated Use MetastoreConf.TRANSACTIONAL_EVENT_LISTENERS
      */

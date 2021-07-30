@@ -29,6 +29,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_WRITE_NOTIFICATION_MAX_BATCH_SIZE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.ql.io.AcidUtils.getFullTableName;
@@ -219,6 +220,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.thrift.TException;
+import org.apache.thrift.TApplicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -3103,25 +3105,27 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // it should be done after partition is created.
 
       List<WriteNotificationLogRequest> requestList = new ArrayList<>();
+      int maxBatchSize = conf.getIntVar(HIVE_WRITE_NOTIFICATION_MAX_BATCH_SIZE);
       for (Entry<Path, PartitionDetails> entry : partitionDetailsMap.entrySet()) {
         PartitionDetails partitionDetails = entry.getValue();
         if (isTxnTable && partitionDetails.newFiles != null) {
           addWriteNotificationLog(tbl, partitionDetails.fullSpec, partitionDetails.newFiles,
                   writeId, requestList);
-        }
-      }
-      if (requestList.size() != 0) {
-        WriteNotificationLogBatchRequest rqst = new WriteNotificationLogBatchRequest(tbl.getCatName(), tbl.getDbName(),
-                tbl.getTableName(), requestList);
-        try {
-          get(conf).getSynchronizedMSC().addWriteNotificationLogInBatch(rqst);
-        } catch (TException e) {
-          // For older HMS, if the batch API is not supported, fall back to older API.
-          LOG.info("addWriteNotificationLogInBatch failed with ", e);
-          for (WriteNotificationLogRequest request : requestList) {
-            get(conf).getSynchronizedMSC().addWriteNotificationLog(request);
+          if (requestList != null && requestList.size() >= maxBatchSize) {
+            // If the first call returns that the HMS does not supports batching, avoid batching
+            // for later requests.
+            boolean batchSupported = addWriteNotificationLogInBatch(tbl, requestList);
+            if (batchSupported) {
+              requestList.clear();
+            } else {
+              requestList = null;
+            }
           }
         }
+      }
+
+      if (requestList != null && requestList.size() > 0) {
+        addWriteNotificationLogInBatch(tbl, requestList);
       }
 
       setStatsPropAndAlterPartitions(resetStatistics, tbl,
@@ -3177,6 +3181,30 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException("Exception updating metastore for acid table "
           + tbd.getTable().getTableName() + " with partitions " + result.values(), te);
     }
+  }
+
+  private boolean addWriteNotificationLogInBatch(Table tbl, List<WriteNotificationLogRequest> requestList)
+          throws HiveException,MetaException,TException {
+    long start = System. currentTimeMillis();
+    boolean supported = true;
+    WriteNotificationLogBatchRequest rqst = new WriteNotificationLogBatchRequest(tbl.getCatName(), tbl.getDbName(),
+            tbl.getTableName(), requestList);
+    try {
+      get(conf).getSynchronizedMSC().addWriteNotificationLogInBatch(rqst);
+    } catch (TApplicationException e) {
+      int type = e.getType();
+      if (type == TApplicationException.UNKNOWN_METHOD || type == TApplicationException.WRONG_METHOD_NAME) {
+        // For older HMS, if the batch API is not supported, fall back to older API.
+        LOG.info("addWriteNotificationLogInBatch failed with ", e);
+        for (WriteNotificationLogRequest request : requestList) {
+          get(conf).getSynchronizedMSC().addWriteNotificationLog(request);
+        }
+        supported = false;
+      }
+    }
+    long end = System.currentTimeMillis();
+    LOG.info("Time taken to add " + requestList.size() + " write notifications: " + ((end - start)/1000F) + " seconds");
+    return supported;
   }
 
   /**
