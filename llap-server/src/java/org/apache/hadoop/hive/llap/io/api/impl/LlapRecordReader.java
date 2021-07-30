@@ -112,6 +112,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
   private final ExecutorService executor;
   private final boolean isAcidScan;
   private final boolean isAcidFormat;
+  private final boolean isInsertOnlyScan;
   private final RecordIdentifier fileIdentifier;
 
   /**
@@ -162,6 +163,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     rbCtx = ctx != null ? ctx : LlapInputFormat.createFakeVrbCtx(mapWork);
 
     isAcidScan = AcidUtils.isFullAcidScan(jobConf);
+    isInsertOnlyScan = AcidUtils.isInsertOnlyScan(jobConf);
     TypeDescription schema = OrcInputFormat.getDesiredRowTypeDescr(
         job, isAcidScan, Integer.MAX_VALUE);
 
@@ -435,7 +437,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       firstReturnTime = counters.startTimeCounter();
     }
 
-    if (fileIdentifier != null && !isAcidScan) {
+    if (fileIdentifier != null && isInsertOnlyScan) {
       rbCtx.populateWriteId(vrb, fileIdentifier.getWriteId(), fileIdentifier.getBucketProperty());
     }
 

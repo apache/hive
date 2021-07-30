@@ -1951,6 +1951,18 @@ public class AcidUtils {
     return !props.isInsertOnly();
   }
 
+  public static boolean isInsertOnlyScan(Configuration conf) {
+    if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN)) {
+      return false;
+    }
+    int propInt = conf.getInt(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname, -1);
+    if (propInt == -1) {
+      return true;
+    }
+    AcidOperationalProperties props = AcidOperationalProperties.parseInt(propInt);
+    return props.isInsertOnly();
+  }
+
   public static void setAcidOperationalProperties(
       Configuration conf, boolean isTxnTable, AcidOperationalProperties properties) {
     setAcidOperationalProperties(conf, isTxnTable, properties, false);
