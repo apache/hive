@@ -36,4 +36,10 @@ public class DerbyExternalDB extends AbstractExternalDB {
     public void setJdbcDriver() {
         this.driver = "org.apache.derby.jdbc.EmbeddedDriver";
     }
+
+    public String getDockerImageName() { return null; }
+
+    public String[] getDockerAdditionalArgs() { return null; }
+
+    public boolean isContainerReady(ProcessResults pr) { return true; }
 }

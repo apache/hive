@@ -36,4 +36,26 @@ public class PostgresExternalDB extends AbstractExternalDB {
     public void setJdbcDriver() {
         this.driver = "org.postgresql.Driver";
     }
+
+    public String getDockerImageName() {
+        return "postgres:9.3";
+    }
+
+    public String[] getDockerAdditionalArgs() {
+        return buildArray("-p", "5432:5432", "-e", "POSTGRES_PASSWORD=its-a-secret", "-d");
+    }
+
+    public boolean isContainerReady(ProcessResults pr) {
+        if (pr.stdout.contains("PostgreSQL init process complete; ready for start up")) {
+            try (Socket socket = new Socket()) {
+                socket.connect(new InetSocketAddress(getContainerHostAddress(), 5432), 1000);
+                return true;
+            } catch (IOException e) {
+                LOG.info("cant connect to postgres; {}", e.getMessage());
+                return false;
+            }
+        }
+        return false;
+    }
+
 }

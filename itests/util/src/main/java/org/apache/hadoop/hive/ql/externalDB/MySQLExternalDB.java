@@ -36,4 +36,16 @@ public class MySQLExternalDB extends AbstractExternalDB {
     public void setJdbcDriver() {
         this.driver = "org.mariadb.jdbc.Driver";
     }
+
+    public String getDockerImageName() { return "mariadb:5.5"; }
+
+    public String[] getDockerAdditionalArgs() {
+        return buildArray("-p", "3306:3306", "-e", "MYSQL_ROOT_PASSWORD=its-a-secret", "-d");
+    }
+
+    public boolean isContainerReady(ProcessResults pr) {
+        Pattern pat = Pattern.compile("ready for connections");
+        Matcher m = pat.matcher(pr.stderr);
+        return m.find() && m.find();
+    }
 }

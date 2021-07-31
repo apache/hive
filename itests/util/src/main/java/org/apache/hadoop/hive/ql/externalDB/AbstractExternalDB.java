@@ -86,6 +86,16 @@ public abstract class AbstractExternalDB {
 
     public abstract void setJdbcDriver();
 
+    public abstract String getDockerImageName();
+
+    public abstract String[] getDockerAdditionalArgs();
+
+    public abstract boolean isContainerReady(ProcessResults pr);
+
+    protected String[] buildArray(String... strs) {
+        return strs;
+    }
+
     public Connection getConnectionToExternalDB() throws SQLException, ClassNotFoundException {
         try {
             LOG.info("external database connection URL:\t " + url);
