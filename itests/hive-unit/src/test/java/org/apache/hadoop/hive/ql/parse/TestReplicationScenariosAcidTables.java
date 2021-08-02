@@ -421,6 +421,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("insert into t2 partition(name='Carl') values(10)")
             .dump(primaryDbName, failoverConfigs);
 
+    primary.run("insert into t2 partition(name='Marie') values(40)");
+
     dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
     assertTrue(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
@@ -437,7 +439,9 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("select id from t1")
             .verifyResults(new String[]{"1"})
             .run("select rank from t2 order by rank")
-            .verifyResults(new String[]{"10", "11"});
+            .verifyResults(new String[]{"10", "11"})
+            .run("show partitions t2")
+            .verifyResults(new String[]{"name=Bob", "name=Carl"});
 
     assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
     db = replica.getDatabase(replicatedDbName);
@@ -457,6 +461,10 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .verifyResults(new String[]{"t1", "t2", "t3"})
             .run("select id from t3")
             .verifyResults(new String[]{"3"})
+            .run("select rank from t2 order by rank")
+            .verifyResults(new String[]{"10", "11", "40"})
+            .run("show partitions t2")
+            .verifyResults(new String[]{"name=Bob", "name=Carl", "name=Marie"})
             .run("repl status " + replicatedDbName)
             .verifyResult(dumpData.lastReplicationId);
 
@@ -505,7 +513,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(dumpAckFile));
     assertTrue(fs.exists(failoverMdFile));
     assertTrue(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(primaryDbName)));
+    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+            MetaStoreUtils.FailoverEndpoint.SOURCE));
     FailoverMetaData previousFmd = new FailoverMetaData(dumpPath, conf);
     Long failoverEventId = previousFmd.getFailoverEventId();
     assertTrue(failoverEventId >= Long.parseLong(dumpData.lastReplicationId));
@@ -523,9 +532,10 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     failoverMdFile = new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA);
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
     assertTrue(fs.exists(failoverMdFile));
-    assertTrue(failoverMdModifTime.equals(fs.getFileStatus(failoverMdFile).getModificationTime()));
+    Assert.assertEquals(failoverMdModifTime, (Long)fs.getFileStatus(failoverMdFile).getModificationTime());
     assertTrue(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
-    assertTrue(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(primaryDbName)));
+    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+            MetaStoreUtils.FailoverEndpoint.SOURCE));
     assertTrue(failoverEventId >= Long.parseLong(dumpData.lastReplicationId));
     FailoverMetaData currentFmd = new FailoverMetaData(dumpPath, conf);
     assertTrue(currentFmd.equals(previousFmd));
@@ -710,7 +720,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
             MetaStoreUtils.FailoverEndpoint.TARGET));
     assertFalse(fs.exists(dumpAckFile));
-    assertEquals(reverseDumpData.dumpLocation, replica.dump(replicatedDbName, retainPrevDumpDir).dumpLocation);
+    dumpData = replica.dump(replicatedDbName, retainPrevDumpDir);
+    assertEquals(reverseDumpData.dumpLocation, dumpData.dumpLocation);
     fs.exists(dumpAckFile);
     assertFalse(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(replica.getDatabase(replicatedDbName),
             MetaStoreUtils.FailoverEndpoint.TARGET));
@@ -720,6 +731,75 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .verifyResults(new String[]{"11", "20", "30"})
             .run("select id from t3")
             .verifyResults(new String[]{"10", "3"});;
+    assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
+  }
+
+  @Test
+  public void testFailoverFailoverAndRollback() throws Throwable {
+    List<String> failoverConfigs = Arrays.asList("'" + HiveConf.ConfVars.HIVE_REPL_FAILOVER_START + "'='true'",
+            "'" + HiveConf.ConfVars.REPL_RETAIN_PREV_DUMP_DIR + "'='true'",
+            "'" + HiveConf.ConfVars.REPL_RETAIN_PREV_DUMP_DIR_COUNT + "'='1'");
+    WarehouseInstance.Tuple dumpData = primary.run("use " + primaryDbName)
+            .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("create table t2 (rank int) partitioned by (name string) tblproperties(\"transactional\"=\"true\", " +
+                    "\"transactional_properties\"=\"insert_only\")")
+            .dump(primaryDbName, failoverConfigs);
+
+    //This dump is not failover ready as target db can be used for replication only after first incremental load.
+    FileSystem fs = new Path(dumpData.dumpLocation).getFileSystem(conf);
+    Path dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertFalse(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
+    assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
+    assertFalse(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(primaryDbName)));
+
+    replica.load(replicatedDbName, primaryDbName)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"t1", "t2"})
+            .run("repl status " + replicatedDbName)
+            .verifyResult(dumpData.lastReplicationId);
+
+    assertTrue(MetaStoreUtils.isTargetOfReplication(replica.getDatabase(replicatedDbName)));
+    dumpData = primary.run("use " + primaryDbName)
+            .run("insert into t1 values(1)")
+            .run("insert into t2 partition(name='Bob') values(11)")
+            .dump(primaryDbName, failoverConfigs);
+
+    dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path dumpAckFile = new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString());
+    assertTrue(fs.exists(dumpAckFile));
+    assertTrue(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
+    assertTrue(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
+    assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
+            MetaStoreUtils.FailoverEndpoint.SOURCE));
+
+    fs.delete(dumpAckFile, false);
+
+    dumpData = primary.run("use " + primaryDbName)
+            .run("insert into t2 partition(name='Carl') values(10)")
+            .run("create table t3 (id int)")
+            .run("insert into t3 values (2)")
+            .dump(primaryDbName);
+
+    dumpPath = new Path(dumpData.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, FailoverMetaData.FAILOVER_METADATA)));
+    assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    assertFalse(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(primaryDbName)));
+
+    replica.load(replicatedDbName, primaryDbName)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"t1", "t2", "t3"})
+            .run("repl status " + replicatedDbName)
+            .verifyResult(dumpData.lastReplicationId)
+            .run("select id from t1")
+            .verifyResults(new String[]{"1"})
+            .run("select rank from t2 order by rank")
+            .verifyResults(new String[]{"11", "10"})
+            .run("select id from t3")
+            .verifyResults(new String[]{"2"});
     assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
   }
 
@@ -798,7 +878,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(MetaStoreUtils.isDbBeingFailedOverAtEndpoint(primary.getDatabase(primaryDbName),
             MetaStoreUtils.FailoverEndpoint.SOURCE));
 
-    assertEquals(primary.dump(primaryDbName, retainPrevDumpDir).dumpLocation, dumpData.dumpLocation);
+    WarehouseInstance.Tuple newDumpData = primary.dump(primaryDbName, retainPrevDumpDir);
+    assertEquals(newDumpData.dumpLocation, dumpData.dumpLocation);
     assertFalse(fs.exists(new Path(dumpPath, ReplAck.FAILOVER_READY_MARKER.toString())));
     assertFalse(MetaStoreUtils.isDbBeingFailedOver(primary.getDatabase(primaryDbName)));
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
