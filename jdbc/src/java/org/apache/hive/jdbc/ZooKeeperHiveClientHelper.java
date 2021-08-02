@@ -132,7 +132,7 @@ class ZooKeeperHiveClientHelper {
    * @return A list of HiveServer2 hosts
    * @throws ZooKeeperHiveClientException Failed to communicate to ZooKeeper
    */
-  private static List<String> getServerHosts(final JdbcConnectionParams connParams,
+  static List<String> getServerHosts(final JdbcConnectionParams connParams,
       final CuratorFramework zooKeeperClient) throws ZooKeeperHiveClientException {
     final String zookeeperNamespace = getZooKeeperNamespace(connParams);
     final String zkPath = ZKPaths.makePath(null, zookeeperNamespace);
