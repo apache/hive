@@ -468,7 +468,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     Assert.assertEquals("default.alter_table:6:9223372036854775807::", validWriteIds);
 
     // We should not advance the Write ID during compaction, since it affects the performance of
-    // materialized views. So, we below assertion ensures that we do not advance the write during compaction.
+    // materialized views. So, below assertion ensures that we do not advance the write during compaction.
     runStatementOnDriver(String.format("ALTER TABLE %s PARTITION (ds='2013-04-05') COMPACT 'minor'", tableName));
     validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
     Assert.assertEquals("default.alter_table:6:9223372036854775807::", validWriteIds);
