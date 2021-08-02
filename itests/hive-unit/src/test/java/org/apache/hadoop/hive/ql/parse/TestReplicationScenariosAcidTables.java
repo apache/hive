@@ -735,7 +735,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   }
 
   @Test
-  public void testFailoverFailoverAndRollback() throws Throwable {
+  public void testFailoverFailedAndRollback() throws Throwable {
     List<String> failoverConfigs = Arrays.asList("'" + HiveConf.ConfVars.HIVE_REPL_FAILOVER_START + "'='true'",
             "'" + HiveConf.ConfVars.REPL_RETAIN_PREV_DUMP_DIR + "'='true'",
             "'" + HiveConf.ConfVars.REPL_RETAIN_PREV_DUMP_DIR_COUNT + "'='1'");
@@ -801,6 +801,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("select id from t3")
             .verifyResults(new String[]{"2"});
     assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
+    assertFalse(MetaStoreUtils.isDbBeingFailedOver(replica.getDatabase(replicatedDbName)));
   }
 
   @Test
