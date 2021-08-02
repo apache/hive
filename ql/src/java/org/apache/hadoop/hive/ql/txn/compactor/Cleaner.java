@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.slf4j.Logger;
@@ -256,13 +255,12 @@ public class Cleaner extends MetaStoreCompactorThread {
     assert rsp != null && rsp.getTblValidWriteIdsSize() == 1;
     ValidReaderWriteIdList validWriteIdList =
         TxnUtils.createValidReaderWriteIdList(rsp.getTblValidWriteIds().get(0));
-    boolean delayedCleanupEnabled = conf.getBoolVar(HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED);
-    if (delayedCleanupEnabled) {
-      /*
-       * If delayed cleanup enabled, we need to filter the obsoletes dir list, to only remove directories that were made obsolete by this compaction
-       * If we have a higher retentionTime it is possible for a second compaction to run on the same partition. Cleaning up the first compaction
-       * should not touch the newer obsolete directories to not to violate the retentionTime for those.
-       */
+    /*
+     * We need to filter the obsoletes dir list, to only remove directories that were made obsolete by this compaction
+     * If we have a higher retentionTime it is possible for a second compaction to run on the same partition. Cleaning up the first compaction
+     * should not touch the newer obsolete directories to not to violate the retentionTime for those.
+     */
+    if (ci.highestWriteId < validWriteIdList.getHighWatermark()) {
       validWriteIdList = validWriteIdList.updateHighWatermark(ci.highestWriteId);
     }
     return validWriteIdList;
