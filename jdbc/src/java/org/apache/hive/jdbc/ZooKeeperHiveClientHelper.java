@@ -148,6 +148,9 @@ class ZooKeeperHiveClientHelper {
       // Remove the znodes we've already tried from this list
       serverHosts.removeAll(connParams.getRejectedHostZnodePaths());
 
+      // Remove the znode used by PrivilegeSynchronizer (see HiveServer2#startPrivilegeSynchronizer)
+      serverHosts.remove("leader");
+
       LOG.debug("Servers in ZooKeeper after removing rejected: {}", serverHosts);
 
       return serverHosts;
