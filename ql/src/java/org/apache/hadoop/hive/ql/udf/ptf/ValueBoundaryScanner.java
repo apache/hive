@@ -418,13 +418,11 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
       }
     }
 
-    int r = rowIdx;
-
     // Use Case 4,5
     if (enableBinarySearch) {
-      return binarySearchBack(r, p, sortKey, amt, expressionDef.getOrder());
+      return binarySearchBack(rowIdx, p, sortKey, amt, expressionDef.getOrder());
     } else {
-      return linearSearchBack(r, p, sortKey, amt, expressionDef.getOrder());
+      return linearSearchBack(rowIdx, p, sortKey, amt, expressionDef.getOrder());
     }
   }
 
@@ -458,7 +456,6 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     Object sortKey = computeValueUseCache(rowIdx, p);
 
     Object rowVal = sortKey;
-    int r = rowIdx;
 
     if ( sortKey == null ) {
       // Use Case 9.
@@ -466,20 +463,20 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
         return p.size();
       }
       else { // Use Case 10.
-        while (r < p.size() && rowVal == null ) {
-          Pair<Integer, Object> stepResult = skipOrStepForward(r, p);
-          r = stepResult.getLeft();
+        while (rowIdx < p.size() && rowVal == null ) {
+          Pair<Integer, Object> stepResult = skipOrStepForward(rowIdx, p);
+          rowIdx = stepResult.getLeft();
           rowVal = stepResult.getRight();
         }
-        return r;
+        return rowIdx;
       }
     }
 
     // Use Case 11,12
     if (enableBinarySearch) {
-      return binarySearchForward(r, p, sortKey, amt, expressionDef.getOrder());
+      return binarySearchForward(rowIdx, p, sortKey, amt, expressionDef.getOrder());
     } else {
-      return linearSearchForward(r, p, sortKey, amt, expressionDef.getOrder());
+      return linearSearchForward(rowIdx, p, sortKey, amt, expressionDef.getOrder());
     }
   }
 
@@ -632,32 +629,26 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
    */
   public abstract boolean isEqual(Object v1, Object v2);
 
-  protected int binarySearchBack(int r, PTFPartition p, Object sortKey, int amt,
+  protected int binarySearchBack(int rowId, PTFPartition p, Object sortKey, int amt,
       Order order) throws HiveException {
     boolean isOrderDesc = order.equals(Order.DESC);
     Object rowVal = sortKey;
 
-    int rMin = -1;  // tracks lowest possible number fulfilling the range requirement
-    int rMax = r; // tracks highest possible number fulfilling the range requirement
+    int rMin = 0;  // tracks lowest possible number fulfilling the range requirement
+    int rMax = rowId; // tracks highest possible number fulfilling the range requirement
 
     boolean isDistanceGreater = true;
-    while (true) {
-      if (rMin == rMax) {
-        return rMin;
-      }
-      isDistanceGreater =
-          isDistanceGreater(isOrderDesc ? rowVal : sortKey, isOrderDesc ? sortKey : rowVal, amt);
-      if (!isDistanceGreater && r == 0) {
-        return 0;
-      }
+    while (rMin < rMax) {
+      isDistanceGreater = isDistanceGreater(isOrderDesc ? rowVal : sortKey, isOrderDesc ? sortKey : rowVal, amt);
       if (isDistanceGreater) {
-        rMin = r + 1;
+        rMin = rowId + 1;
       } else {
-        rMax = r;
+        rMax = rowId;
       }
-      r = rMin + (rMax - rMin) / 2;
-      rowVal = computeValueUseCache(r, p);
+      rowId = rMin + (rMax - rMin) / 2;
+      rowVal = computeValueUseCache(rowId, p);
     }
+    return rMin;
   }
 
   private int linearSearchBack(int r, PTFPartition p, Object sortKey, int amt,
@@ -673,31 +664,34 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     return r + 1;
   }
 
-  protected int binarySearchForward(int r, PTFPartition p, Object sortKey, int amt,
+  protected int binarySearchForward(int rowId, PTFPartition p, Object sortKey, int amt,
       Order order) throws HiveException {
     boolean isOrderDesc = order.equals(Order.DESC);
     Object rowVal = sortKey;
-    int rMin = r;  // tracks lowest possible number fulfilling the range requirement
+    int rMin = rowId;  // tracks lowest possible number fulfilling the range requirement
     int rMax = p.size(); // tracks highest possible number fulfilling the range requirement
 
     boolean isDistanceGreater = true;
-    while (true) {
-      if (rMin == rMax) {
-        return rMin;
-      }
+    while (rMin < rMax) {
       isDistanceGreater =
           isDistanceGreater(isOrderDesc ? sortKey : rowVal, isOrderDesc ? rowVal : sortKey, amt);
-      if (!isDistanceGreater && r == p.size() - 1) {
+      /*
+       * if the currently inspected row is the last (p.size() - 1) but we're not far enough to fulfill
+       * the range requirement (!isDistanceGreater), we cannot move forward, let's simply return p.size(),
+       * range end is exclusive
+       */
+      if (!isDistanceGreater && rowId == p.size() - 1) {
         return p.size();
       }
       if (isDistanceGreater) {
-        rMax = r;
+        rMax = rowId;
       } else {
-        rMin = r + 1;
+        rMin = rowId + 1;
       }
-      r = rMin + (rMax - rMin) / 2;
-      rowVal = computeValueUseCache(r, p);
+      rowId = rMin + (rMax - rMin) / 2;
+      rowVal = computeValueUseCache(rowId, p);
     }
+    return rMin;
   }
 
   private int linearSearchForward(int r, PTFPartition p, Object sortKey, int amt,
