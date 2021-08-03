@@ -2915,6 +2915,10 @@ public class HiveConf extends Configuration {
         "If ZooKeeper is configured for Kerberos authentication. This could be useful when cluster\n" +
         "is kerberized, but Zookeeper is not."),
 
+    HIVE_STATS_MAX_NUM_STATS("hive.stats.max.num.stats", (long) 10000,
+        "When the number of stats to be updated is huge, this value is used to control the number of \n" +
+        " stats to be sent to HMS for update."),
+
     HIVE_ZOOKEEPER_QUORUM("hive.zookeeper.quorum", "",
         "List of ZooKeeper servers to talk to. This is needed for: \n" +
         "1. Read/write locks - when hive.lock.manager is set to \n" +
