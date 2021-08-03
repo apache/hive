@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  * abstractExternalDB is incharge of connect to and populate externaal database for qtest
  */
 public abstract class AbstractExternalDB {
-    private static final Logger LOG = LoggerFactory.getLogger("AbstractExternalDB");
+    protected static final Logger LOG = LoggerFactory.getLogger("AbstractExternalDB");
 
     protected static final String userName = "qtestuser";
     protected static final String password = "qtestpassword";
@@ -50,6 +50,18 @@ public abstract class AbstractExternalDB {
     public String externalDBType = "derby"; // default: derby
     protected String url = String.format("jdbc:derby:memory:%s;create=true", dbName); // defualt: dervy
     protected String driver = "org.apache.derby.jdbc.EmbeddedDriver"; // default: derby
+
+    public static class ProcessResults {
+        final String stdout;
+        final String stderr;
+        final int rc;
+
+        public ProcessResults(String stdout, String stderr, int rc) {
+            this.stdout = stdout;
+            this.stderr = stderr;
+            this.rc = rc;
+        }
+    }
 
     public static AbstractExternalDB initalizeExternalDB(String externalDBType) throws IOException {
         AbstractExternalDB abstractExternalDB;

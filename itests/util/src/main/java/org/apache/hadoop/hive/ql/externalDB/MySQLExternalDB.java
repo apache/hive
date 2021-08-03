@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.externalDB;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * MySQLExternalDB is a extension of abstractExternalDB
  * Designed for MySQL external database connection
