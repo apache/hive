@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -177,8 +178,14 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       Database database = db.getDatabase(dbName);
       if (database != null) {
         if (MetaStoreUtils.isTargetOfReplication(database)) {
-          LOG.error("Cannot dump database " + dbNameOrPattern + " as it is a target of replication (repl.target.for)");
-          throw new SemanticException(ErrorMsg.REPL_DATABASE_IS_TARGET_OF_REPLICATION.getMsg());
+          if (MetaStoreUtils.isDbBeingFailedOverAtEndpoint(database, MetaStoreUtils.FailoverEndpoint.TARGET)) {
+            LOG.info("Proceeding with dump operation as database: {} is target of replication and" +
+                    "{} is set to TARGET.", dbName, ReplConst.REPL_FAILOVER_ENDPOINT);
+            ReplUtils.unsetDbPropIfSet(database, ReplConst.TARGET_OF_REPLICATION, db);
+          } else {
+            LOG.error("Cannot dump database " + dbNameOrPattern + " as it is a target of replication (repl.target.for)");
+            throw new SemanticException(ErrorMsg.REPL_DATABASE_IS_TARGET_OF_REPLICATION.getMsg());
+          }
         }
       } else {
         throw new SemanticException("Cannot dump database " + dbNameOrPattern + " as it does not exist");

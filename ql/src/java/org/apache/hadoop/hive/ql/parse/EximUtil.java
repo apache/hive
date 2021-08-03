@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -372,7 +373,8 @@ public class EximUtil {
                 .removeIf(e -> e.getKey().startsWith(Utils.BOOTSTRAP_DUMP_STATE_KEY_PREFIX)
                             || e.getKey().equals(ReplUtils.REPL_CHECKPOINT_KEY)
                             || e.getKey().equals(ReplChangeManager.SOURCE_OF_REPLICATION)
-                            || e.getKey().equals(ReplUtils.REPL_FIRST_INC_PENDING_FLAG));
+                            || e.getKey().equals(ReplUtils.REPL_FIRST_INC_PENDING_FLAG)
+                            || e.getKey().equals(ReplConst.REPL_FAILOVER_ENDPOINT));
       dbObj.setParameters(tmpParameters);
     }
     try (JsonWriter jsonWriter = new JsonWriter(fs, metadataPath)) {
