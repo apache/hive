@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -644,7 +645,8 @@ public class TestStatsUpdaterThread {
 
     assertTrue(su.runOneIteration());
     Assert.assertEquals(2, su.getQueueLength());
-    executeQuery("alter database " + dbName + " set dbproperties('" + ReplConst.REPL_FAILOVER_ENABLED + "'='true')");
+    executeQuery("alter database " + dbName + " set dbproperties('" + ReplConst.REPL_FAILOVER_ENDPOINT + "'='"
+            + MetaStoreUtils.FailoverEndpoint.SOURCE + "')");
     //StatsUpdaterThread would not run analyze commands for the tables which were inserted before
     //failover property was enabled for that database
     drainWorkQueue(su, 2);
@@ -660,7 +662,7 @@ public class TestStatsUpdaterThread {
     verifyStatsUpToDate(tblWOStats, Lists.newArrayList("i"), msClient, false);
     verifyPartStatsUpToDate(3, 1, msClient, ptnTblWOStats, false);
 
-    executeQuery("alter database " + dbName + " set dbproperties('" + ReplConst.REPL_FAILOVER_ENABLED + "'='')");
+    executeQuery("alter database " + dbName + " set dbproperties('" + ReplConst.REPL_FAILOVER_ENDPOINT + "'='')");
     assertTrue(su.runOneIteration());
     Assert.assertEquals(3, su.getQueueLength());
     drainWorkQueue(su, 3);
