@@ -526,18 +526,16 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           "For the other operations, consider using the ADD COLUMNS or CHANGE COLUMN commands.");
     }
 
-    // check if there were any column drops
-    if (!schemaDifference.getMissingFromFirst().isEmpty()) {
-      updateSchema = icebergTable.updateSchema();
-      LOG.info("handleReplaceColumns: Dropping the following columns for Iceberg table {}, cols: {}",
-          hmsTable.getTableName(), schemaDifference.getMissingFromFirst());
-      for (FieldSchema droppedCol : schemaDifference.getMissingFromFirst()) {
-        updateSchema.deleteColumn(droppedCol.getName());
-      }
-    } else {
-      // we should get here if the user restated the exactly the existing columns in the REPLACE COLUMNS command
-      LOG.info("Found no difference between new and old schema for ALTER TABLE REPLACE COLUMNS for" +
-              " table: {}. There will be no Iceberg commit.", hmsTable.getTableName());
+    if (schemaDifference.getMissingFromFirst().isEmpty()) {
+      throw new MetaException("No schema change detected from REPLACE COLUMNS operations. For rectifying any schema " +
+          "mismatches between HMS and Iceberg, please consider the UPDATE COLUMNS command.");
+    }
+
+    updateSchema = icebergTable.updateSchema();
+    LOG.info("handleReplaceColumns: Dropping the following columns for Iceberg table {}, cols: {}",
+        hmsTable.getTableName(), schemaDifference.getMissingFromFirst());
+    for (FieldSchema droppedCol : schemaDifference.getMissingFromFirst()) {
+      updateSchema.deleteColumn(droppedCol.getName());
     }
   }
 

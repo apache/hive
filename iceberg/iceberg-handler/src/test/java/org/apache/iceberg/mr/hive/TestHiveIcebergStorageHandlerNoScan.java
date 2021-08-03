@@ -996,6 +996,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     );
     testTables.createTable(shell, identifier.name(), schema, SPEC, FileFormat.PARQUET, ImmutableList.of());
 
+    // check unsupported operations
     String[] commands = {
         // type promotion
         "ALTER TABLE default.customers REPLACE COLUMNS (customer_id bigint, first_name string COMMENT 'This is " +
@@ -1022,6 +1023,12 @@ public class TestHiveIcebergStorageHandlerNoScan {
       AssertHelpers.assertThrows("", IllegalArgumentException.class,
           "Unsupported operation to use REPLACE COLUMNS", () -> shell.executeStatement(command));
     }
+
+    // check no-op case too
+    String command = "ALTER TABLE default.customers REPLACE COLUMNS (customer_id int, first_name string COMMENT 'This" +
+        " is first name', last_name string COMMENT 'This is last name', address struct<city:string,street:string>)";
+    AssertHelpers.assertThrows("", IllegalArgumentException.class,
+        "No schema change detected", () -> shell.executeStatement(command));
   }
 
   @Test
