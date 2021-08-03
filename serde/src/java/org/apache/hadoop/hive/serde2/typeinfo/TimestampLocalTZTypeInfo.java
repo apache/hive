@@ -45,7 +45,7 @@ public class TimestampLocalTZTypeInfo extends PrimitiveTypeInfo {
 
   @Override
   public void setTypeName(String typeName) {
-    // No need to set type name, it should always be timestamplocaltz
+    // No need to set type name, it should always be timestamplocal tz
     return;
   }
 
