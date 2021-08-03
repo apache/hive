@@ -281,11 +281,20 @@ public class MPartitionColumnStatistics {
   }
 
   public byte[] getBitVector() {
+    // workaround for DN bug in persisting nulls in pg bytea column
+    // instead set empty bit vector with header.
+    // https://issues.apache.org/jira/browse/HIVE-17836
+    if (bitVector != null && bitVector.length == 2 && bitVector[0] == 'H' && bitVector[1] == 'L') {
+      return null;
+    }
     return bitVector;
   }
 
   public void setBitVector(byte[] bitVector) {
-    this.bitVector = bitVector;
+    // workaround for DN bug in persisting nulls in pg bytea column
+    // instead set empty bit vector with header.
+    // https://issues.apache.org/jira/browse/HIVE-17836
+    this.bitVector = (bitVector == null ? new byte[] { 'H', 'L' } : bitVector);
   }
 
   public String getEngine() {
