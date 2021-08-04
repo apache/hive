@@ -66,7 +66,10 @@ public final class VectorizedRowBatchIterator implements CloseableIterator<Vecto
         if (partitionColIndices != null) {
           for (int i = 0; i < partitionColIndices.length; ++i) {
             int colIdx = partitionColIndices[i];
-            vrbCtx.addPartitionColsToBatch(batch.cols[colIdx], partitionValues[i], partitionColIndices[i]);
+            // The partition column might not be part of the current projection - in which case no CV is inited
+            if (batch.cols[colIdx] != null) {
+              vrbCtx.addPartitionColsToBatch(batch.cols[colIdx], partitionValues[i], partitionColIndices[i]);
+            }
           }
         }
       } catch (IOException ioe) {

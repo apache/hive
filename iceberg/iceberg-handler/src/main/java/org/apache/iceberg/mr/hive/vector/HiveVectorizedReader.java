@@ -45,6 +45,7 @@ import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
 import org.apache.iceberg.orc.VectorizedReadUtils;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.types.Types;
 
 /**
  * Utility class to create vectorized readers for Hive.
@@ -60,7 +61,8 @@ public class HiveVectorizedReader {
 
   public static <D> CloseableIterable<D> reader(InputFile inputFile, FileScanTask task, Map<Integer, ?> idToConstant,
       TaskAttemptContext context) {
-    JobConf job = (JobConf) context.getConfiguration();
+    // Tweaks on jobConf here are relevant for this task only, so we need to copy it first as context's conf is reused..
+    JobConf job = new JobConf((JobConf) context.getConfiguration());
     Path path = new Path(inputFile.location());
     FileFormat format = task.file().format();
     Reporter reporter = ((MapredIcebergInputFormat.CompatibilityTaskAttemptContextImpl) context).getLegacyReporter();
@@ -79,15 +81,22 @@ public class HiveVectorizedReader {
       List<Integer> partitionColIndicesList = Lists.newLinkedList();
       List<Object> partitionValuesList = Lists.newLinkedList();
 
-      for (PartitionField field : fields) {
-        if (field.transform().isIdentity()) {
-          // Skip reading identity partition columns from source file...
-          int hiveColIndex = field.sourceId() - 1;
-          readColumnIds.remove((Integer) hiveColIndex);
+      for (PartitionField partitionField : fields) {
+        if (partitionField.transform().isIdentity()) {
 
-          // ...and use the corresponding constant value instead
-          partitionColIndicesList.add(hiveColIndex);
-          partitionValuesList.add(idToConstant.get(field.sourceId()));
+          // Get columns in read schema order (which matches those of readColumnIds) to find partition column indices
+          List<Types.NestedField> columns = task.spec().schema().columns();
+          for (int colIdx = 0; colIdx < columns.size(); ++colIdx) {
+            if (columns.get(colIdx).fieldId() == partitionField.sourceId()) {
+              // Skip reading identity partition columns from source file...
+              readColumnIds.remove((Integer) colIdx);
+
+              // ...and use the corresponding constant value instead
+              partitionColIndicesList.add(colIdx);
+              partitionValuesList.add(idToConstant.get(partitionField.sourceId()));
+              break;
+            }
+          }
         }
       }
 

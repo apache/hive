@@ -8,8 +8,6 @@ analyze table tbl_ice_orc compute statistics for columns;
 explain select b, max(a) from tbl_ice_orc group by b;
 select b, max(a) from tbl_ice_orc group by b;
 
-
-
 create external table tbl_ice_orc_all_types (
     t_float FLOAT,
     t_double DOUBLE,
@@ -30,5 +28,42 @@ explain select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_s
 select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal from tbl_ice_orc_all_types
         group by t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal;
 
+create external table tbl_ice_orc_parted (
+    a int,
+    b string
+    ) partitioned by (p1 string, p2 string)
+    stored by iceberg stored as orc location 'file:/tmp/tbl_ice_orc_parted';
+
+insert into tbl_ice_orc_parted values
+                                      (1, 'aa', 'Europe', 'Hungary'),
+                                      (1, 'bb', 'Europe', 'Hungary'),
+                                      (2, 'aa', 'America', 'USA'),
+                                      (2, 'bb', 'America', 'Canada');
+-- query with projection of partition columns' subset
+select p1, a, min(b) from tbl_ice_orc_parted group by p1, a;
+
+-- required for reordering between differnt types
+set hive.metastore.disallow.incompatible.col.type.changes=false;
+
+-- move partition columns
+alter table tbl_ice_orc_parted change column p1 p1 string after a;
+
+-- should yield to the same result as previously
+select p1, a, min(b) from tbl_ice_orc_parted group by p1, a;
+
+-- move non-partition columns
+alter table tbl_ice_orc_parted change column a a int after b;
+
+describe tbl_ice_orc_parted;
+
+-- should yield to the same result as previously
+select p1, a, min(b) from tbl_ice_orc_parted group by p1, a;
+
+insert into tbl_ice_orc_parted values ('Europe', 3, 'cc', 'Austria');
+
+-- projecting all columns
+select p1, p2, a, min(b) from tbl_ice_orc_parted group by p1, p2, a;
+
 drop table tbl_ice_orc;
 drop table tbl_ice_orc_all_types;
+drop table tbl_ice_orc_parted;
