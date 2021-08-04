@@ -598,7 +598,7 @@ public class QTestUtil {
 
     try {
       AbstractExternalDB abstractExternalDB = AbstractExternalDB.initalizeExternalDB(externalDBType);
-      //abstractExternalDB.launchDockerContainer();
+      abstractExternalDB.launchDockerContainer();
       abstractExternalDB.execute(externalDBScript);
       LOG.info("initialize external databases succeed!");
     } catch (Exception e) {
