@@ -226,6 +226,7 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "spark.only.query.files");
         excludesFrom(testConfigProps, "localSpark.only.query.files");
         excludesFrom(testConfigProps, "miniSparkOnYarn.only.query.files");
+        excludesFrom(testConfigProps, "externalDB.llap.query.files");
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
