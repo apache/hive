@@ -632,13 +632,14 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
   protected int binarySearchBack(int rowId, PTFPartition p, Object sortKey, int amt,
       Order order) throws HiveException {
     boolean isOrderDesc = order.equals(Order.DESC);
-    Object rowVal = sortKey;
+    Object rowVal = null;
 
     int rMin = 0;  // tracks lowest possible number fulfilling the range requirement
     int rMax = rowId; // tracks highest possible number fulfilling the range requirement
 
     boolean isDistanceGreater = true;
     while (rMin < rMax) {
+      rowVal = computeValueUseCache(rowId, p);
       isDistanceGreater = isDistanceGreater(isOrderDesc ? rowVal : sortKey, isOrderDesc ? sortKey : rowVal, amt);
       if (isDistanceGreater) {
         rMin = rowId + 1;
@@ -646,7 +647,6 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
         rMax = rowId;
       }
       rowId = rMin + (rMax - rMin) / 2;
-      rowVal = computeValueUseCache(rowId, p);
     }
     return rMin;
   }
@@ -667,29 +667,22 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
   protected int binarySearchForward(int rowId, PTFPartition p, Object sortKey, int amt,
       Order order) throws HiveException {
     boolean isOrderDesc = order.equals(Order.DESC);
-    Object rowVal = sortKey;
+    Object rowVal = null;
+
     int rMin = rowId;  // tracks lowest possible number fulfilling the range requirement
     int rMax = p.size(); // tracks highest possible number fulfilling the range requirement
 
     boolean isDistanceGreater = true;
     while (rMin < rMax) {
+      rowVal = computeValueUseCache(rowId, p);
       isDistanceGreater =
           isDistanceGreater(isOrderDesc ? sortKey : rowVal, isOrderDesc ? rowVal : sortKey, amt);
-      /*
-       * if the currently inspected row is the last (p.size() - 1) but we're not far enough to fulfill
-       * the range requirement (!isDistanceGreater), we cannot move forward, let's simply return p.size(),
-       * range end is exclusive
-       */
-      if (!isDistanceGreater && rowId == p.size() - 1) {
-        return p.size();
-      }
       if (isDistanceGreater) {
         rMax = rowId;
       } else {
         rMin = rowId + 1;
       }
       rowId = rMin + (rMax - rMin) / 2;
-      rowVal = computeValueUseCache(rowId, p);
     }
     return rMin;
   }
