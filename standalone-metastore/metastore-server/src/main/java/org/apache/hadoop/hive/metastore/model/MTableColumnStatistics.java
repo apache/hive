@@ -48,7 +48,7 @@ public class MTableColumnStatistics {
   private String decimalHighValue;
   private Long numNulls;
   private Long numDVs;
-  private byte[] bitVector;
+  private byte[] bitVector = new byte[] { 'H', 'L' };
   private Double avgColLen;
   private Long maxColLen;
   private Long numTrues;
@@ -170,7 +170,7 @@ public class MTableColumnStatistics {
   public void setLongStats(Long numNulls, Long numNDVs, byte[] bitVector, Long lowValue, Long highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
-    this.bitVector = bitVector;
+    setBitVector(bitVector);
     this.longLowValue = lowValue;
     this.longHighValue = highValue;
   }
@@ -178,7 +178,7 @@ public class MTableColumnStatistics {
   public void setDoubleStats(Long numNulls, Long numNDVs, byte[] bitVector, Double lowValue, Double highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
-    this.bitVector = bitVector;
+    setBitVector(bitVector);
     this.doubleLowValue = lowValue;
     this.doubleHighValue = highValue;
   }
@@ -187,7 +187,7 @@ public class MTableColumnStatistics {
       Long numNulls, Long numNDVs, byte[] bitVector, String lowValue, String highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
-    this.bitVector = bitVector;
+    setBitVector(bitVector);
     this.decimalLowValue = lowValue;
     this.decimalHighValue = highValue;
   }
@@ -195,7 +195,7 @@ public class MTableColumnStatistics {
   public void setStringStats(Long numNulls, Long numNDVs, byte[] bitVector, Long maxColLen, Double avgColLen) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
-    this.bitVector = bitVector;
+    setBitVector(bitVector);
     this.maxColLen = maxColLen;
     this.avgColLen = avgColLen;
   }
@@ -209,7 +209,7 @@ public class MTableColumnStatistics {
   public void setDateStats(Long numNulls, Long numNDVs, byte[] bitVector, Long lowValue, Long highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
-    this.bitVector = bitVector;
+    setBitVector(bitVector);
     this.longLowValue = lowValue;
     this.longHighValue = highValue;
   }
@@ -217,7 +217,7 @@ public class MTableColumnStatistics {
   public void setTimestampStats(Long numNulls, Long numNDVs, byte[] bitVector, Long lowValue, Long highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
-    this.bitVector = bitVector;
+    setBitVector(bitVector);
     this.longLowValue = lowValue;
     this.longHighValue = highValue;
   }
