@@ -94,7 +94,7 @@ public abstract class AbstractExternalDB {
     }
 
     protected String getDockerContainerName() {
-        return String.format("qtestExternalDB-%", externalDBType);
+        return String.format("qtestExternalDB-%s", externalDBType);
     }
 
     private String[] buildRunCmd() {
@@ -178,6 +178,7 @@ public abstract class AbstractExternalDB {
     public void cleanupDockerContainer() { // stopAndRmDockerContainer
         try {
             if (runCmdAndPrintStreams(buildRmCmd(), 600) != 0) {
+                LOG.info("Unable to remove docker container");
                 throw new RuntimeException("Unable to remove docker container");
             }
         } catch (InterruptedException | IOException e) {

@@ -497,6 +497,14 @@ public class QTestUtil {
     }
     conf.setBoolean("hive.test.shutdown.phase", true);
 
+    // if has external database, clean up docker container
+    // connect to externalDB if size is not zero
+    if (this.externalDBs != null && this.externalDBs.size() != 0) {
+      for (QTestExternalDB externalDB : this.externalDBs) {
+        externalDBCleanupContainer(externalDB.getExternalDBType());
+      }
+    }
+
     clearKeysCreatedInTests();
 
     String metastoreDb = QTestSystemProperties.getMetaStoreDb();
@@ -531,6 +539,7 @@ public class QTestUtil {
       abstractExternalDB.cleanupDockerContainer();
       LOG.info("cleanup externalDB docker container succeeed!");
     } catch (Exception e) {
+      LOG.info("cleanup externalDB failed: " + e.getMessage());
       Assert.fail("Failed during cleanup externalDB docker container");
     }
   }
