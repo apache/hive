@@ -524,6 +524,17 @@ public class QTestUtil {
     FunctionRegistry.unregisterTemporaryUDF("test_error");
   }
 
+  private void externalDBCleanupContainer(String externalDBType) throws IOException {
+    // get externalDB initScript
+    try {
+      AbstractExternalDB abstractExternalDB = AbstractExternalDB.initalizeExternalDB(externalDBType);
+      abstractExternalDB.cleanupDockerContainer();
+      LOG.info("cleanup externalDB docker container succeeed!");
+    } catch (Exception e) {
+      Assert.fail("Failed during cleanup externalDB docker container");
+    }
+  }
+
   private void cleanupFromFile() throws IOException {
     File cleanupFile = new File(cleanupScript);
     if (cleanupFile.isFile()) {
@@ -578,6 +589,7 @@ public class QTestUtil {
 
     try {
       AbstractExternalDB abstractExternalDB = AbstractExternalDB.initalizeExternalDB(externalDBType);
+      //abstractExternalDB.launchDockerContainer();
       abstractExternalDB.execute(externalDBScript);
       LOG.info("initialize external databases succeed!");
     } catch (Exception e) {

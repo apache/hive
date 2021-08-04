@@ -21,18 +21,25 @@ import sqlline.SqlLine;
 
 import org.apache.commons.io.output.NullOutputStream;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.net.URI;
 import java.io.IOException;
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+
+import org.apache.commons.lang3.StringUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +57,7 @@ public abstract class AbstractExternalDB {
     public String externalDBType = "derby"; // default: derby
     protected String url = String.format("jdbc:derby:memory:%s;create=true", dbName); // defualt: dervy
     protected String driver = "org.apache.derby.jdbc.EmbeddedDriver"; // default: derby
+    private static final int MAX_STARTUP_WAIT = 5 * 60 * 1000;
 
     public static class ProcessResults {
         final String stdout;
@@ -84,6 +92,99 @@ public abstract class AbstractExternalDB {
     public AbstractExternalDB(String externalDBType) {
         this.externalDBType = externalDBType;
     }
+
+    protected String getDockerContainerName() {
+        return String.format("qtestExternalDB-%", externalDBType);
+    }
+
+    private String[] buildRunCmd() {
+        List<String> cmd = new ArrayList<>(4 + getDockerAdditionalArgs().length);
+        cmd.add("docker");
+        cmd.add("run");
+        cmd.add("--rm");
+        cmd.add("--name");
+        cmd.add(getDockerContainerName());
+        cmd.addAll(Arrays.asList(getDockerAdditionalArgs()));
+        cmd.add(getDockerImageName());
+        return cmd.toArray(new String[cmd.size()]);
+    }
+
+    private String[] buildRmCmd() {
+        return buildArray(
+                "docker",
+                "rm",
+                "-f",
+                "-v",
+                getDockerContainerName()
+        );
+    }
+
+    private String[] buildLogCmd() {
+        return buildArray(
+                "docker",
+                "logs",
+                getDockerContainerName()
+        );
+    }
+
+
+    private ProcessResults runCmd(String[] cmd, long secondsToWait)
+            throws IOException, InterruptedException {
+        LOG.info("Going to run: " + StringUtils.join(cmd, " "));
+        Process proc = Runtime.getRuntime().exec(cmd);
+        if (!proc.waitFor(secondsToWait, TimeUnit.SECONDS)) {
+            throw new RuntimeException(
+                    "Process " + cmd[0] + " failed to run in " + secondsToWait + " seconds");
+        }
+        BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+        final StringBuilder lines = new StringBuilder();
+        reader.lines().forEach(s -> lines.append(s).append('\n'));
+
+        reader = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+        final StringBuilder errLines = new StringBuilder();
+        reader.lines().forEach(s -> errLines.append(s).append('\n'));
+        return new ProcessResults(lines.toString(), errLines.toString(), proc.exitValue());
+    }
+
+    private int runCmdAndPrintStreams(String[] cmd, long secondsToWait)
+            throws InterruptedException, IOException {
+        ProcessResults results = runCmd(cmd, secondsToWait);
+        LOG.info("Stdout from proc: " + results.stdout);
+        LOG.info("Stderr from proc: " + results.stderr);
+        return results.rc;
+    }
+
+
+    public void launchDockerContainer() throws Exception { //runDockerContainer
+        runCmdAndPrintStreams(buildRmCmd(), 600);
+        if (runCmdAndPrintStreams(buildRunCmd(), 600) != 0) {
+            throw new RuntimeException("Unable to start docker container");
+        }
+        long startTime = System.currentTimeMillis();
+        ProcessResults pr;
+        do {
+            Thread.sleep(1000);
+            pr = runCmd(buildLogCmd(), 5);
+            if (pr.rc != 0) {
+                throw new RuntimeException("Failed to get docker logs");
+            }
+        } while (startTime + MAX_STARTUP_WAIT >= System.currentTimeMillis() && !isContainerReady(pr));
+        if (startTime + MAX_STARTUP_WAIT < System.currentTimeMillis()) {
+            throw new RuntimeException("Container failed to be ready in " + MAX_STARTUP_WAIT/1000 +
+                    " seconds");
+        }
+    }
+
+    public void cleanupDockerContainer() { // stopAndRmDockerContainer
+        try {
+            if (runCmdAndPrintStreams(buildRmCmd(), 600) != 0) {
+                throw new RuntimeException("Unable to remove docker container");
+            }
+        } catch (InterruptedException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public final String getContainerHostAddress() {
         String hostAddress = System.getenv("HIVE_TEST_DOCKER_HOST");

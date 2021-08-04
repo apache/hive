@@ -43,7 +43,12 @@ public class MySQLExternalDB extends AbstractExternalDB {
     public String getDockerImageName() { return "mariadb:5.5"; }
 
     public String[] getDockerAdditionalArgs() {
-        return buildArray("-p", "3306:3306", "-e", "MYSQL_ROOT_PASSWORD=its-a-secret", "-d");
+        return buildArray("-p", "3306:3306",
+                          "-e", "MYSQL_ROOT_PASSWORD=its-a-secret",
+                          "-e", "MYSQL_USER=" + userName,
+                          "-e", "MYSQL_PASSWORD=" + password,
+                          "-e", "MYSQL_DATABASE=" + dbName,
+                          "-d");
     }
 
     public boolean isContainerReady(ProcessResults pr) {
