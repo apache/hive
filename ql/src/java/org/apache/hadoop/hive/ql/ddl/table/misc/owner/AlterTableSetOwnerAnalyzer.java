@@ -56,5 +56,8 @@ public class AlterTableSetOwnerAnalyzer extends AbstractAlterTableAnalyzer {
 
     AlterTableSetOwnerDesc desc  = new AlterTableSetOwnerDesc(tableName, ownerPrincipal);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
+
+    setAcidDdlDesc(getTable(tableName), desc);
+
   }
 }

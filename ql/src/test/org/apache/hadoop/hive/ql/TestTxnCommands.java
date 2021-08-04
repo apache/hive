@@ -34,6 +34,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import groovy.transform.builder.InitializerStrategy.SET;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -484,6 +485,52 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     validWriteIds = msClient.getValidWriteIds(tableName).toString();
     LOG.info("ValidWriteIds after drop partition::"+ validWriteIds);
     Assert.assertEquals("db1.add_drop_partition:2:9223372036854775807::", validWriteIds);
+  }
+
+  @Test
+  public void testDDLsAdvancingWriteIds() throws Exception {
+
+    String tableName = "alter_table";
+    runStatementOnDriver("drop table if exists " + tableName);
+    runStatementOnDriver(String.format("create table %s (a int, b string, c BIGINT, d INT) " +
+        "PARTITIONED BY (ds STRING)" +
+        "TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')",
+        tableName));
+    runStatementOnDriver(String.format("insert into %s (a) values (0)", tableName));
+    IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
+    String validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:1:9223372036854775807::", validWriteIds);
+
+    runStatementOnDriver(String.format("alter table %s SET OWNER USER user_name", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:2:9223372036854775807::", validWriteIds);
+
+    runStatementOnDriver(String.format("alter table %s CLUSTERED BY(c) SORTED BY(d) INTO 32 BUCKETS", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:3:9223372036854775807::", validWriteIds);
+
+    runStatementOnDriver(String.format("ALTER TABLE %s ADD PARTITION (ds='2013-04-05')", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:4:9223372036854775807::", validWriteIds);
+
+    runStatementOnDriver(String.format("ALTER TABLE %s SET SERDEPROPERTIES ('field.delim'='\\u0001')", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:5:9223372036854775807::", validWriteIds);
+
+    runStatementOnDriver(String.format("ALTER TABLE %s PARTITION (ds='2013-04-05') SET FILEFORMAT PARQUET", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:6:9223372036854775807::", validWriteIds);
+
+    // We should not advance the Write ID during compaction, since it affects the performance of
+    // materialized views. So, below assertion ensures that we do not advance the write during compaction.
+    runStatementOnDriver(String.format("ALTER TABLE %s PARTITION (ds='2013-04-05') COMPACT 'minor'", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:6:9223372036854775807::", validWriteIds);
+
+    runStatementOnDriver(String.format("ALTER TABLE %s PARTITION (ds='2013-04-05') CONCATENATE", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:7:9223372036854775807::", validWriteIds);
+
   }
 
   @Test
