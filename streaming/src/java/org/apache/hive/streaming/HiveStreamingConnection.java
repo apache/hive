@@ -792,7 +792,7 @@ public class HiveStreamingConnection implements StreamingConnection {
 
         // Add write notification events into HMS table.
         Hive.addWriteNotificationLog(conf, tableObject, writeInfo.getPartitionVals(),
-                currentTxnId, currentWriteId, newFiles);
+                currentTxnId, currentWriteId, newFiles, null);
       }
     } catch (IOException | TException | HiveException e) {
       throw new StreamingException("Failed to log write notification events.", e);

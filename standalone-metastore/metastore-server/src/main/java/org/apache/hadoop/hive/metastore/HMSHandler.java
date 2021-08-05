@@ -8561,7 +8561,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         List<String> partitionValue = null;
         Partition ptnObj = null;
         String root;
-        Table tbl = getTblObject(writeEventInfo.getDatabase(), writeEventInfo.getTable());
+        Table tbl = getTblObject(writeEventInfo.getDatabase(), writeEventInfo.getTable(), null);
 
         if (writeEventInfo.getPartition() != null && !writeEventInfo.getPartition().isEmpty()) {
           partitionValue = Warehouse.getPartValuesFromPartName(writeEventInfo.getPartition());
@@ -8716,8 +8716,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-  private Table getTblObject(String db, String table) throws MetaException, NoSuchObjectException {
+  private Table getTblObject(String db, String table, String catalog) throws MetaException, NoSuchObjectException {
     GetTableRequest req = new GetTableRequest(db, table);
+    if (catalog != null) {
+      req.setCatName(catalog);
+    }
     req.setCapabilities(new ClientCapabilities(Lists.newArrayList(ClientCapability.TEST_CAPABILITY, ClientCapability.INSERT_ONLY_TABLES)));
     return get_table_req(req).getTable();
   }
@@ -8733,10 +8736,62 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public WriteNotificationLogResponse add_write_notification_log(WriteNotificationLogRequest rqst)
       throws TException {
-    Table tableObj = getTblObject(rqst.getDb(), rqst.getTable());
+    Table tableObj = getTblObject(rqst.getDb(), rqst.getTable(), null);
     Partition ptnObj = getPartitionObj(rqst.getDb(), rqst.getTable(), rqst.getPartitionVals(), tableObj);
     addTxnWriteNotificationLog(tableObj, ptnObj, rqst);
     return new WriteNotificationLogResponse();
+  }
+
+  @Override
+  public WriteNotificationLogBatchResponse add_write_notification_log_in_batch(
+          WriteNotificationLogBatchRequest batchRequest) throws TException {
+    if (batchRequest.getRequestList().size() == 0) {
+      return new WriteNotificationLogBatchResponse();
+    }
+
+    Table tableObj = getTblObject(batchRequest.getDb(), batchRequest.getTable(), batchRequest.getCatalog());
+    BatchAcidWriteEvent event = new BatchAcidWriteEvent();
+    List<String> partNameList = new ArrayList<>();
+    List<Partition> ptnObjList;
+
+    Map<String, WriteNotificationLogRequest> rqstMap = new HashMap<>();
+    if (tableObj.getPartitionKeys().size() != 0) {
+      // partitioned table
+      for (WriteNotificationLogRequest rqst : batchRequest.getRequestList()) {
+        String partition = Warehouse.makePartName(tableObj.getPartitionKeys(), rqst.getPartitionVals());
+        partNameList.add(partition);
+        // This is used to ignore those request for which the partition does not exists.
+        rqstMap.put(partition, rqst);
+      }
+      ptnObjList = getMS().getPartitionsByNames(tableObj.getCatName(), tableObj.getDbName(),
+              tableObj.getTableName(), partNameList);
+    } else {
+      ptnObjList = new ArrayList<>();
+      for (WriteNotificationLogRequest ignored : batchRequest.getRequestList()) {
+        ptnObjList.add(null);
+      }
+    }
+
+    int idx = 0;
+    for (Partition partObject : ptnObjList) {
+      String partition = ""; //Empty string is an invalid partition name. Can be used for non partitioned table.
+      WriteNotificationLogRequest request;
+      if (partObject != null) {
+        partition = Warehouse.makePartName(tableObj.getPartitionKeys(), partObject.getValues());
+        request = rqstMap.get(partition);
+      } else {
+        // for non partitioned table, we can get serially from the list.
+        request = batchRequest.getRequestList().get(idx++);
+      }
+      event.addNotification(partition, tableObj, partObject, request);
+      if (listeners != null && !listeners.isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.BATCH_ACID_WRITE,
+                new BatchAcidWriteEvent(partition, tableObj, partObject, request));
+      }
+    }
+
+    getTxnHandler().addWriteNotificationLog(event);
+    return new WriteNotificationLogBatchResponse();
   }
 
   @Override
