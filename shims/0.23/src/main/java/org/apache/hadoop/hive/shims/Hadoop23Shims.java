@@ -1203,8 +1203,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     List<String> params = constructDistCpParams(srcPaths, dst, conf);
     DistCp distcp = null;
     try {
-      conf.setBoolean("mapred.mapper.new-api", true);
       distcp = new DistCp(conf, options);
+      distcp.getConf().setBoolean("mapred.mapper.new-api", true);
 
       // HIVE-13704 states that we should use run() instead of execute() due to a hadoop known issue
       // added by HADOOP-10459
@@ -1223,7 +1223,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
           conf.set(CONF_LABEL_DISTCP_JOB_ID, jobId);
         }
       }
-      conf.setBoolean("mapred.mapper.new-api", false);
     }
   }
 
