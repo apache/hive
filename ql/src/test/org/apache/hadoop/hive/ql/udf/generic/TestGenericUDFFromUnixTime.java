@@ -97,17 +97,20 @@ public class TestGenericUDFFromUnixTime {
     ObjectInspector args[] = {valueLongOI};
     udf.initialize(args);
 
-    Timestamp ts = Timestamp.valueOf("2010-01-13 11:57:40");
+    Timestamp ts = Timestamp.valueOf("1969-12-31 15:59:46");
     TimestampTZ tstz1 = TimestampTZUtil.convert(ts, ZoneId.of("America/Los_Angeles"));
     TimestampTZ tstz2 = TimestampTZUtil.convert(ts, ZoneId.of("America/New_York"));
     TimestampTZ tstz3 = TimestampTZUtil.convert(ts, ZoneId.of("Europe/London"));
+    TimestampTZ tstz4 = TimestampTZUtil.convert(ts, ZoneId.of("Europe/Rome"));
 
     runAndVerify(udf,
-            new LongWritable(tstz1.getEpochSecond()), new Text("2010-01-13 11:57:40"));
+            new LongWritable(tstz1.getEpochSecond()), new Text("1969-12-31 15:59:46"));
     runAndVerify(udf,
-            new LongWritable(tstz2.getEpochSecond()), new Text("2010-01-13 08:57:40"));
+            new LongWritable(tstz2.getEpochSecond()), new Text("1969-12-31 12:59:46"));
     runAndVerify(udf,
-            new LongWritable(tstz3.getEpochSecond()), new Text("2010-01-13 03:57:40"));
+            new LongWritable(tstz3.getEpochSecond()), new Text("1969-12-31 06:59:46"));
+    runAndVerify(udf,
+            new LongWritable(tstz4.getEpochSecond()), new Text("1969-12-31 06:59:46"));
   }
 
   @Test
@@ -126,7 +129,7 @@ public class TestGenericUDFFromUnixTime {
     runAndVerify(udf,
             new LongWritable(tstz1.getEpochSecond()), "EEEE", new Text("Wednesday"));
     runAndVerify(udf,
-            new LongWritable(tstz1.getEpochSecond()), "yyyy-MM-dd'T'HH:mm:ssXXX", new Text("2010-01-13T11:57:40-08:00"));
+            new LongWritable(tstz1.getEpochSecond()), "uuuu-MM-dd'T'HH:mm:ssXXX", new Text("2010-01-13T11:57:40-08:00"));
   }
 }
 
