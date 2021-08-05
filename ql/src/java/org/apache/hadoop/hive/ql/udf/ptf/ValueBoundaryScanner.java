@@ -42,9 +42,23 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
+import com.google.common.annotations.VisibleForTesting;
+
+
 public abstract class ValueBoundaryScanner {
   BoundaryDef start, end;
   protected final boolean nullsLast;
+
+  /*
+   * The parameter enableBinarySearch can be configurable sometime later, because in edge cases
+   * (very small windows compared to ptf partition size) a linear search could lead to slightly
+   * better performance, but not significantly. Currently, propagating the option from PTF codepath
+   * would involve lots of function signature changes, so it isn't worth. This boolean still can be
+   * used for testing purposes (e.g. comparing the linear and binary search results to make sure
+   * about correctness).
+   */
+  @VisibleForTesting
+  boolean enableBinarySearch = true;
 
   public ValueBoundaryScanner(BoundaryDef start, BoundaryDef end, boolean nullsLast) {
     this.start = start;
@@ -238,6 +252,7 @@ public abstract class ValueBoundaryScanner {
         rowVal = computeValue(p.getAt(r));
       }
     }
+
     return new ImmutablePair<>(r, rowVal);
   }
 
@@ -403,26 +418,11 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
       }
     }
 
-    Object rowVal = sortKey;
-    int r = rowIdx;
-
-    // Use Case 4.
-    if ( expressionDef.getOrder() == Order.DESC ) {
-      while (r >= 0 && !isDistanceGreater(rowVal, sortKey, amt) ) {
-        Pair<Integer, Object> stepResult = skipOrStepBack(r, p);
-        r = stepResult.getLeft();
-        rowVal = stepResult.getRight();
-      }
-      return r + 1;
-    }
-    else { // Use Case 5.
-      while (r >= 0 && !isDistanceGreater(sortKey, rowVal, amt) ) {
-        Pair<Integer, Object> stepResult = skipOrStepBack(r, p);
-        r = stepResult.getLeft();
-        rowVal = stepResult.getRight();
-      }
-
-      return r + 1;
+    // Use Case 4,5
+    if (enableBinarySearch) {
+      return binarySearchBack(rowIdx, p, sortKey, amt, expressionDef.getOrder());
+    } else {
+      return linearSearchBack(rowIdx, p, sortKey, amt, expressionDef.getOrder());
     }
   }
 
@@ -456,7 +456,6 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     Object sortKey = computeValueUseCache(rowIdx, p);
 
     Object rowVal = sortKey;
-    int r = rowIdx;
 
     if ( sortKey == null ) {
       // Use Case 9.
@@ -464,31 +463,20 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
         return p.size();
       }
       else { // Use Case 10.
-        while (r < p.size() && rowVal == null ) {
-          Pair<Integer, Object> stepResult = skipOrStepForward(r, p);
-          r = stepResult.getLeft();
+        while (rowIdx < p.size() && rowVal == null ) {
+          Pair<Integer, Object> stepResult = skipOrStepForward(rowIdx, p);
+          rowIdx = stepResult.getLeft();
           rowVal = stepResult.getRight();
         }
-        return r;
+        return rowIdx;
       }
     }
 
-    // Use Case 11.
-    if ( expressionDef.getOrder() == Order.DESC) {
-      while (r < p.size() && !isDistanceGreater(sortKey, rowVal, amt) ) {
-        Pair<Integer, Object> stepResult = skipOrStepForward(r, p);
-        r = stepResult.getLeft();
-        rowVal = stepResult.getRight();
-      }
-      return r;
-    }
-    else { // Use Case 12.
-      while (r < p.size() && !isDistanceGreater(rowVal, sortKey, amt) ) {
-        Pair<Integer, Object> stepResult = skipOrStepForward(r, p);
-        r = stepResult.getLeft();
-        rowVal = stepResult.getRight();
-      }
-      return r;
+    // Use Case 11,12
+    if (enableBinarySearch) {
+      return binarySearchForward(rowIdx, p, sortKey, amt, expressionDef.getOrder());
+    } else {
+      return linearSearchForward(rowIdx, p, sortKey, amt, expressionDef.getOrder());
     }
   }
 
@@ -554,25 +542,13 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
       }
     }
 
-    Object rowVal = sortKey;
     int r = rowIdx;
 
-    // Use Case 4.
-    if ( expressionDef.getOrder() == Order.DESC ) {
-      while (r >= 0 && !isDistanceGreater(rowVal, sortKey, amt) ) {
-        Pair<Integer, Object> stepResult = skipOrStepBack(r, p);
-        r = stepResult.getLeft();
-        rowVal = stepResult.getRight();
-      }
-      return r + 1;
-    }
-    else { // Use Case 5.
-      while (r >= 0 && !isDistanceGreater(sortKey, rowVal, amt) ) {
-        Pair<Integer, Object> stepResult = skipOrStepBack(r, p);
-        r = stepResult.getLeft();
-        rowVal = stepResult.getRight();
-      }
-      return r + 1;
+    // Use Case 4,5
+    if (enableBinarySearch) {
+      return binarySearchBack(r, p, sortKey, amt, expressionDef.getOrder());
+    } else {
+      return linearSearchBack(r, p, sortKey, amt, expressionDef.getOrder());
     }
   }
 
@@ -628,22 +604,11 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
       }
     }
 
-    // Use Case 11.
-    if ( expressionDef.getOrder() == Order.DESC) {
-      while (r < p.size() && !isDistanceGreater(sortKey, rowVal, amt) ) {
-        Pair<Integer, Object> stepResult = skipOrStepForward(r, p);
-        r = stepResult.getLeft();
-        rowVal = stepResult.getRight();
-      }
-      return r;
-    }
-    else { // Use Case 12.
-      while (r < p.size() && !isDistanceGreater(rowVal, sortKey, amt) ) {
-        Pair<Integer, Object> stepResult = skipOrStepForward(r, p);
-        r = stepResult.getLeft();
-        rowVal = stepResult.getRight();
-      }
-      return r;
+    // Use Case 11,12
+    if (enableBinarySearch) {
+      return binarySearchForward(r, p, sortKey, amt, expressionDef.getOrder());
+    } else {
+      return linearSearchForward(r, p, sortKey, amt, expressionDef.getOrder());
     }
   }
 
@@ -663,6 +628,77 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
    * @return True if both values are the same or both are nulls.
    */
   public abstract boolean isEqual(Object v1, Object v2);
+
+  protected int binarySearchBack(int rowId, PTFPartition p, Object sortKey, int amt,
+      Order order) throws HiveException {
+    boolean isOrderDesc = order.equals(Order.DESC);
+    Object rowVal = null;
+
+    int rMin = 0;  // tracks lowest possible number fulfilling the range requirement
+    int rMax = rowId; // tracks highest possible number fulfilling the range requirement
+
+    boolean isDistanceGreater = true;
+    while (rMin < rMax) {
+      rowVal = computeValueUseCache(rowId, p);
+      isDistanceGreater = isDistanceGreater(isOrderDesc ? rowVal : sortKey, isOrderDesc ? sortKey : rowVal, amt);
+      if (isDistanceGreater) {
+        rMin = rowId + 1;
+      } else {
+        rMax = rowId;
+      }
+      rowId = rMin + (rMax - rMin) / 2;
+    }
+    return rMin;
+  }
+
+  private int linearSearchBack(int r, PTFPartition p, Object sortKey, int amt,
+      Order order) throws HiveException {
+    boolean isOrderDesc = order.equals(Order.DESC);
+    Object rowVal = sortKey;
+    while (r >= 0 && !isDistanceGreater(isOrderDesc ? rowVal : sortKey,
+        isOrderDesc ? sortKey : rowVal, amt)) {
+      Pair<Integer, Object> stepResult = skipOrStepBack(r, p);
+      r = stepResult.getLeft();
+      rowVal = stepResult.getRight();
+    }
+    return r + 1;
+  }
+
+  protected int binarySearchForward(int rowId, PTFPartition p, Object sortKey, int amt,
+      Order order) throws HiveException {
+    boolean isOrderDesc = order.equals(Order.DESC);
+    Object rowVal = null;
+
+    int rMin = rowId;  // tracks lowest possible number fulfilling the range requirement
+    int rMax = p.size(); // tracks highest possible number fulfilling the range requirement
+
+    boolean isDistanceGreater = true;
+    while (rMin < rMax) {
+      rowVal = computeValueUseCache(rowId, p);
+      isDistanceGreater =
+          isDistanceGreater(isOrderDesc ? sortKey : rowVal, isOrderDesc ? rowVal : sortKey, amt);
+      if (isDistanceGreater) {
+        rMax = rowId;
+      } else {
+        rMin = rowId + 1;
+      }
+      rowId = rMin + (rMax - rMin) / 2;
+    }
+    return rMin;
+  }
+
+  private int linearSearchForward(int r, PTFPartition p, Object sortKey, int amt,
+      Order order) throws HiveException {
+    boolean isOrderDesc = order.equals(Order.DESC);
+    Object rowVal = sortKey;
+    while (r < p.size() && !isDistanceGreater(isOrderDesc ? sortKey : rowVal,
+        isOrderDesc ? rowVal : sortKey, amt)) {
+      Pair<Integer, Object> stepResult = skipOrStepForward(r, p);
+      r = stepResult.getLeft();
+      rowVal = stepResult.getRight();
+    }
+    return r;
+  }
 
   public static SingleValueBoundaryScanner getScanner(BoundaryDef start, BoundaryDef end,
       OrderDef orderDef, boolean nullsLast) throws HiveException {
