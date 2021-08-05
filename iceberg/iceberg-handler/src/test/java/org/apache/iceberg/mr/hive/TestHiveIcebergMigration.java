@@ -38,8 +38,8 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 /**
- * Tests table migration from plain Avro/Parquet to Iceberg backed table (with same underlying fileformat).
- * Migration on the original tables is done by setting HiveIcebergStorageHandler on them, contents are later should be
+ * Tests table migration from native Hive tables to Iceberg backed tables (with the same underlying fileformat).
+ * Migration on the original tables is done by setting HiveIcebergStorageHandler on them, contents later should be
  * verified by a select query.
  */
 public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngineBase {
