@@ -582,9 +582,12 @@ public class ImpalaFunctionHelper implements FunctionHelper {
   public boolean isConsistentWithinQuery(FunctionInfo fi) {
     // TODO: This is taken from Impala FunctionCallExpr class.
     //       We should consolidate both methods.
+    // CDPD-28609: Don't reduce the sleep function since it's useful for testing
+    // scenarios in Impala.
     return !fi.getDisplayName().equals("rand") &&
         !fi.getDisplayName().equals("random") &&
-        !fi.getDisplayName().equals("uuid");
+        !fi.getDisplayName().equals("uuid") &&
+        !fi.getDisplayName().equals("sleep");
   }
 
   /**
