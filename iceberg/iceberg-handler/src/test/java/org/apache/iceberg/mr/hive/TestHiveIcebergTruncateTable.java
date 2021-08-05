@@ -33,7 +33,10 @@ import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestHiveIcebergTruncateTable extends TestHiveIcebergStorageHandlerWithEngine {
+/**
+ * Tests truncate table feature on Iceberg tables.
+ */
+public class TestHiveIcebergTruncateTable extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testTruncateTable() throws IOException, TException, InterruptedException {

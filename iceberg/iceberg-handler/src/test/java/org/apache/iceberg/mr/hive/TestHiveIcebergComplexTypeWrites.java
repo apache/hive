@@ -35,7 +35,10 @@ import org.junit.Test;
 
 import static org.apache.iceberg.types.Types.NestedField.required;
 
-public class TestHiveIcebergComplexTypeWrites extends TestHiveIcebergStorageHandlerWithEngine {
+/**
+ * Runs insert queries against Iceberg tables with complex type columns, such as arrays, structs and maps.
+ */
+public class TestHiveIcebergComplexTypeWrites extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testWriteArrayOfPrimitivesInTable() throws IOException {

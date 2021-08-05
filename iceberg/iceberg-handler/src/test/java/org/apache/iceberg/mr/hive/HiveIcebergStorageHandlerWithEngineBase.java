@@ -58,7 +58,7 @@ import static org.junit.runners.Parameterized.Parameter;
 import static org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public abstract class TestHiveIcebergStorageHandlerWithEngine {
+public abstract class HiveIcebergStorageHandlerWithEngineBase {
 
   protected static final String[] EXECUTION_ENGINES = new String[] {"tez"};
 

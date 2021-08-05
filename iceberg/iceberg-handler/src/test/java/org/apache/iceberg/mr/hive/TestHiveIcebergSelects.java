@@ -36,7 +36,12 @@ import org.junit.Test;
 
 import static org.apache.iceberg.types.Types.NestedField.required;
 
-public class TestHiveIcebergSelects extends TestHiveIcebergStorageHandlerWithEngine {
+/**
+ * Runs miscellaneous select statements on Iceberg tables, and verifies the result. Tests meant to verify simple
+ * reads, more complex selects, joins, various plan generation options, special table names, etc.. should be listed
+ * here.
+ */
+public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testScanTable() throws IOException {

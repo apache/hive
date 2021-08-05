@@ -40,7 +40,11 @@ import org.junit.Test;
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
 
-public class TestHiveIcebergInserts extends TestHiveIcebergStorageHandlerWithEngine {
+/**
+ * Runs insert queries against Iceberg tables. These should cover the various insertion methods of Hive including:
+ * inserting values, inserting from select subqueries, insert overwrite table, etc...
+ */
+public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testInsert() throws IOException {

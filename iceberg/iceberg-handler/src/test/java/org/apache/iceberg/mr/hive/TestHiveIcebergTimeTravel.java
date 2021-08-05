@@ -29,7 +29,10 @@ import org.apache.iceberg.Table;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestHiveIcebergTimeTravel extends TestHiveIcebergStorageHandlerWithEngine {
+/**
+ * Tests covering the time travel feature, aka reading from a table as of a certain snapshot.
+ */
+public class TestHiveIcebergTimeTravel extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testSelectAsOfTimestamp() throws IOException, InterruptedException {

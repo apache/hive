@@ -40,7 +40,11 @@ import org.junit.Test;
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
 
-public class TestHiveIcebergPartitions extends TestHiveIcebergStorageHandlerWithEngine {
+/**
+ * Verifies partitioning features in Iceberg tables. Covers both identity and transform partition types, verifies by
+ * writing content into partitioned tables and by reading it back.
+ */
+public class TestHiveIcebergPartitions extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testPartitionPruning() throws IOException {

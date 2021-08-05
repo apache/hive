@@ -31,7 +31,10 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 
-public class TestHiveIcebergCTAS extends TestHiveIcebergStorageHandlerWithEngine {
+/**
+ * Creates Iceberg tables using CTAS, and runs select queries against these new tables to verify table content.
+ */
+public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testCTASFromHiveTable() {

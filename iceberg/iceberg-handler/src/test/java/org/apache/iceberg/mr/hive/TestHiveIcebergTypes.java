@@ -33,7 +33,10 @@ import org.junit.Test;
 
 import static org.apache.iceberg.types.Types.NestedField.required;
 
-public class TestHiveIcebergTypes extends TestHiveIcebergStorageHandlerWithEngine {
+/**
+ * Creates tables with some more exotic data types and verifies proper table content read by select queries.
+ */
+public class TestHiveIcebergTypes extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testDecimalTableWithPredicateLiterals() throws IOException {

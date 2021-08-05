@@ -41,7 +41,13 @@ import org.junit.Test;
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
 
-public class TestHiveIcebergSchemaEvolution extends TestHiveIcebergStorageHandlerWithEngine {
+/**
+ * Tests that schema changes of Iceberg backed Hive tables are correctly reflected in subsequent select statements.
+ * Verification is done from both ends:
+ *  - when ALTER TABLE statements were initiated from Hive
+ *  - when schema changes were originally done on the Iceberg table
+ */
+public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testDescribeTable() throws IOException {

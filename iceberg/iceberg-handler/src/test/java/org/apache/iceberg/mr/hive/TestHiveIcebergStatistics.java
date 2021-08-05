@@ -34,7 +34,11 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 
-public class TestHiveIcebergStatistics extends TestHiveIcebergStorageHandlerWithEngine {
+/**
+ * Tests verifying correct statistics generation behaviour on Iceberg tables triggered by: ANALYZE queries, inserts,
+ * CTAS, etc...
+ */
+public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
   public void testAnalyzeTableComputeStatistics() throws IOException, TException, InterruptedException {
