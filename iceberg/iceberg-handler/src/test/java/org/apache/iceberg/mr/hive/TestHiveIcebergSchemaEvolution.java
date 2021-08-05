@@ -171,9 +171,11 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
         " FROM orders where fruit < 'o'and nick IS NOT NULL group by customer_first_name, nick");
     assertQueryResult(result, 1, "Natasha", "Black Widow", 250L, 7);
 
-    // Drop columns via REPLACE COLUMNS (as per query there's also a column re-order, but it should be handled as no-op)
+    // Drop columns via REPLACE COLUMNS
     shell.executeStatement("ALTER TABLE orders REPLACE COLUMNS (" +
-        "order_id int, customer_last_name string, nick string, quantity int, fruit string)");
+        "customer_last_name string COMMENT 'from deserializer', order_id int COMMENT 'from deserializer'," +
+        " quantity int, nick string COMMENT 'from deserializer'," +
+        " fruit string COMMENT 'from deserializer')");
 
     result = shell.executeStatement("DESCRIBE orders");
     assertQueryResult(result, 5,
