@@ -676,7 +676,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
     try {
       msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
-    } catch (TException e1) {
+    } catch (Exception e1) {
       LOG.error("Caught an exception while trying to mark compaction {} as failed: {}", ci, e);
     }
   }
