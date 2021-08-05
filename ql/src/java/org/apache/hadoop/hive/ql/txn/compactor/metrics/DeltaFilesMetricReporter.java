@@ -40,6 +40,8 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hive.common.util.Ref;
+import org.apache.tez.common.counters.CounterGroup;
+import org.apache.tez.common.counters.TezCounter;
 import org.apache.tez.common.counters.TezCounters;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -54,11 +56,11 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -103,11 +105,6 @@ public class DeltaFilesMetricReporter {
     }
   }
 
-  private int deltasThreshold;
-  private int obsoleteDeltasThreshold;
-
-  private int maxCacheSize;
-
   private Cache<String, Integer> deltaCache, smallDeltaCache;
   private Cache<String, Integer> obsoleteDeltaCache;
 
@@ -136,67 +133,77 @@ public class DeltaFilesMetricReporter {
 
   private void configure(HiveConf conf) throws Exception {
     acidMetricsExtEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
+    if (acidMetricsExtEnabled) {
 
-    deltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD);
-    obsoleteDeltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD);
+      initCachesForMetrics(conf);
+      initObjectsForMetrics();
 
-    initCachesForMetrics(conf);
-    initObjectsForMetrics();
+      long reportingInterval =
+          HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_REPORTING_INTERVAL, TimeUnit.SECONDS);
 
-    long reportingInterval = HiveConf.getTimeVar(conf,
-      HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_REPORTING_INTERVAL, TimeUnit.SECONDS);
+      ThreadFactory threadFactory =
+          new ThreadFactoryBuilder().setDaemon(true).setNameFormat("DeltaFilesMetricReporter %d").build();
+      executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
+      executorService.scheduleAtFixedRate(new ReportingTask(), 0, reportingInterval, TimeUnit.SECONDS);
 
-    ThreadFactory threadFactory =
-      new ThreadFactoryBuilder()
-        .setDaemon(true)
-        .setNameFormat("DeltaFilesMetricReporter %d")
-        .build();
-    executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
-    executorService.scheduleAtFixedRate(
-      new ReportingTask(), 0, reportingInterval, TimeUnit.SECONDS);
-
-    LOG.info("Started DeltaFilesMetricReporter thread");
+      LOG.info("Started DeltaFilesMetricReporter thread");
+    }
   }
 
   public void submit(TezCounters counters) {
     if (acidMetricsExtEnabled) {
-      updateMetrics(NUM_OBSOLETE_DELTAS,
-        obsoleteDeltaCache, obsoleteDeltaTopN, obsoleteDeltasThreshold,
-        counters);
-      updateMetrics(NUM_DELTAS,
-        deltaCache, deltaTopN, deltasThreshold,
-        counters);
-      updateMetrics(NUM_SMALL_DELTAS,
-        smallDeltaCache, smallDeltaTopN, deltasThreshold,
-        counters);
+      updateMetrics(NUM_OBSOLETE_DELTAS, obsoleteDeltaCache, obsoleteDeltaTopN, counters);
+      updateMetrics(NUM_DELTAS, deltaCache, deltaTopN, counters);
+      updateMetrics(NUM_SMALL_DELTAS, smallDeltaCache, smallDeltaTopN, counters);
     }
   }
 
+  /**
+   * Copy counters to caches.
+   */
   private void updateMetrics(DeltaFilesMetricType metric, Cache<String, Integer> cache, Queue<Pair<String, Integer>> topN,
-        int threshold, TezCounters counters) {
-    counters.getGroup(metric.value).forEach(counter -> {
-      Integer prev = cache.getIfPresent(counter.getName());
-      if (prev != null && prev != counter.getValue()) {
-        cache.invalidate(counter.getName());
+      TezCounters counters) {
+    try {
+      CounterGroup group = counters.getGroup(metric.value);
+      // if the group is empty, clear the cache
+      if (group.size() == 0) {
+        cache.invalidateAll();
+      } else {
+        // if there is no counter corresponding to a cache entry, remove from cache
+        ConcurrentMap<String, Integer> cacheMap = cache.asMap();
+        cacheMap.keySet().stream().filter(key -> counters.findCounter(group.getName(), key).getValue() == 0)
+            .forEach(cache::invalidate);
       }
-      if (counter.getValue() > threshold) {
-        if (topN.size() == maxCacheSize) {
-          Pair<String, Integer> lowest = topN.peek();
-          if (lowest != null && counter.getValue() > lowest.getValue()) {
-            cache.invalidate(lowest.getKey());
-          }
+      // update existing cache entries or add new entries
+      for (TezCounter counter : group) {
+        Integer prev = cache.getIfPresent(counter.getName());
+        if (prev != null && prev != counter.getValue()) {
+          cache.invalidate(counter.getName());
         }
-        if (topN.size() < maxCacheSize) {
-          topN.add(Pair.of(counter.getName(), (int) counter.getValue()));
-          cache.put(counter.getName(), (int) counter.getValue());
-        }
+        topN.add(Pair.of(counter.getName(), (int) counter.getValue()));
+        cache.put(counter.getName(), (int) counter.getValue());
       }
-    });
+    } catch (Exception e) {
+      LOG.warn("Caught exception while trying to update delta metrics cache. Invalidating cache", e);
+      try {
+        cache.invalidateAll();
+      } catch (Exception x) {
+        LOG.warn("Caught exception while trying to invalidate cache", x);
+      }
+    }
   }
 
-  public static void mergeDeltaFilesStats(AcidDirectory dir, long checkThresholdInSec,
-        float deltaPctThreshold, EnumMap<DeltaFilesMetricType, Map<String, Integer>> deltaFilesStats,
-      Configuration conf) throws IOException {
+  /**
+   * Update EnumMap<DeltaFilesMetricType, Queue<Pair<String, Integer>>> deltaFilesStats with {@link AcidDirectory}
+   * contents
+   */
+  public static void mergeDeltaFilesStats(AcidDirectory dir, long checkThresholdInSec, float deltaPctThreshold,
+      EnumMap<DeltaFilesMetricType, Queue<Pair<String, Integer>>> deltaFilesStats, Configuration conf) throws IOException {
+
+    int deltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD);
+    int obsoleteDeltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD);
+    int maxCacheSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE);
+
     long baseSize = getBaseSize(dir);
     int numObsoleteDeltas = getNumObsoleteDeltas(dir, checkThresholdInSec);
 
@@ -219,8 +226,33 @@ public class DeltaFilesMetricReporter {
     logDeltaDirMetrics(dir, conf, numObsoleteDeltas, numDeltas, numSmallDeltas);
 
     String path = getRelPath(dir);
-    newDeltaFilesStats(numObsoleteDeltas, numDeltas, numSmallDeltas)
-      .forEach((type, cnt) -> deltaFilesStats.computeIfAbsent(type, v -> new HashMap<>()).put(path, cnt));
+
+    filterAndAddToDeltaFilesStats(NUM_DELTAS, numDeltas, deltasThreshold, deltaFilesStats, path, maxCacheSize);
+    filterAndAddToDeltaFilesStats(NUM_OBSOLETE_DELTAS, numObsoleteDeltas, obsoleteDeltasThreshold, deltaFilesStats,
+        path, maxCacheSize);
+    filterAndAddToDeltaFilesStats(NUM_SMALL_DELTAS, numSmallDeltas, deltasThreshold, deltaFilesStats,
+        path, maxCacheSize);
+  }
+
+  /**
+   * Add partition and delta count to deltaFilesStats if the delta count is over the recording threshold and it is in
+   * the top {@link HiveConf.ConfVars#HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE} deltas.
+   */
+  private static void filterAndAddToDeltaFilesStats(DeltaFilesMetricType type, int deltaCount, int deltasThreshold,
+      EnumMap<DeltaFilesMetricType, Queue<Pair<String, Integer>>> deltaFilesStats, String path, int maxCacheSize) {
+    if (deltaCount > deltasThreshold) {
+      Queue<Pair<String,Integer>> pairQueue = deltaFilesStats.get(type);
+      if (pairQueue != null && pairQueue.size() == maxCacheSize) {
+        Pair<String, Integer> lowest = pairQueue.peek();
+        if (lowest != null && deltaCount > lowest.getValue()) {
+          pairQueue.poll();
+        }
+      }
+      if (pairQueue == null || pairQueue.size() < maxCacheSize) {
+        deltaFilesStats.computeIfAbsent(type,
+            v -> (new PriorityBlockingQueue<>(maxCacheSize, getComparator()))).add(Pair.of(path, deltaCount));
+      }
+    }
   }
 
   private static void logDeltaDirMetrics(AcidDirectory dir, Configuration conf, int numObsoleteDeltas, int numDeltas,
@@ -267,32 +299,26 @@ public class DeltaFilesMetricReporter {
       directory.getPath().getName();
   }
 
-  private static EnumMap<DeltaFilesMetricType, Integer> newDeltaFilesStats(int numObsoleteDeltas, int numDeltas, int numSmallDeltas) {
-    return new EnumMap<DeltaFilesMetricType, Integer>(DeltaFilesMetricType.class) {{
-      put(NUM_OBSOLETE_DELTAS, numObsoleteDeltas);
-      put(NUM_DELTAS, numDeltas);
-      put(NUM_SMALL_DELTAS, numSmallDeltas);
-    }};
-  }
-
   public static void createCountersForAcidMetrics(TezCounters tezCounters, JobConf jobConf) {
-    if (HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED) &&
-      MetastoreConf.getBoolVar(jobConf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+    try {
+      if (HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED) && MetastoreConf
+          .getBoolVar(jobConf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
 
-      Arrays.stream(DeltaFilesMetricType.values())
-        .filter(type -> jobConf.get(type.name()) != null)
-        .forEach(type ->
-            Splitter.on(',').withKeyValueSeparator("->").split(jobConf.get(type.name())).forEach(
-              (path, cnt) -> tezCounters.findCounter(type.value, path).setValue(Long.parseLong(cnt))
-            )
-        );
+        Arrays.stream(DeltaFilesMetricType.values()).filter(type -> jobConf.get(type.name()) != null).forEach(
+            type -> Splitter.on(',').withKeyValueSeparator("->").split(jobConf.get(type.name()))
+                .forEach((path, cnt) -> tezCounters.findCounter(type.value, path).setValue(Long.parseLong(cnt))));
+      }
+    } catch (Exception e) {
+      LOG.warn("Caught exception while trying to update Tez counters which keep track of number of delta metrics", e);
     }
   }
 
-  public static void addAcidMetricsToConfObj(EnumMap<DeltaFilesMetricType, Map<String, Integer>> deltaFilesStats, Configuration conf) {
-    deltaFilesStats.forEach((type, value) ->
-        conf.set(type.name(), Joiner.on(",").withKeyValueSeparator("->").join(value))
-    );
+  public static void addAcidMetricsToConfObj(EnumMap<DeltaFilesMetricType,
+      Queue<Pair<String, Integer>>> deltaFilesStats, Configuration conf) {
+    if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+      deltaFilesStats.forEach((type, value) ->
+          conf.set(type.name(), Joiner.on(",").withKeyValueSeparator("->").join(value)));
+    }
   }
 
   public static void backPropagateAcidMetrics(JobConf jobConf, Configuration conf) {
@@ -357,36 +383,35 @@ public class DeltaFilesMetricReporter {
   }
 
   private void initCachesForMetrics(HiveConf conf) {
-    maxCacheSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE);
+    int maxCacheSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE);
     long duration = HiveConf.getTimeVar(conf,
         HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_CACHE_DURATION, TimeUnit.SECONDS);
 
-    Comparator<Pair<String, Integer>> c = Comparator.comparing(Pair::getValue);
-
-    deltaTopN = new PriorityBlockingQueue<>(maxCacheSize, c);
-    smallDeltaTopN = new PriorityBlockingQueue<>(maxCacheSize, c);
-    obsoleteDeltaTopN = new PriorityBlockingQueue<>(maxCacheSize, c);
+    deltaTopN = new PriorityBlockingQueue<>(maxCacheSize, getComparator());
+    smallDeltaTopN = new PriorityBlockingQueue<>(maxCacheSize, getComparator());
+    obsoleteDeltaTopN = new PriorityBlockingQueue<>(maxCacheSize, getComparator());
 
     deltaCache = CacheBuilder.newBuilder()
       .expireAfterWrite(duration, TimeUnit.SECONDS)
-      .maximumSize(maxCacheSize)
       .removalListener(notification -> removalPredicate(deltaTopN, notification))
       .softValues()
       .build();
 
     smallDeltaCache = CacheBuilder.newBuilder()
       .expireAfterWrite(duration, TimeUnit.SECONDS)
-      .maximumSize(maxCacheSize)
       .removalListener(notification -> removalPredicate(smallDeltaTopN, notification))
       .softValues()
       .build();
 
     obsoleteDeltaCache = CacheBuilder.newBuilder()
       .expireAfterWrite(duration, TimeUnit.SECONDS)
-      .maximumSize(maxCacheSize)
       .removalListener(notification -> removalPredicate(obsoleteDeltaTopN, notification))
       .softValues()
       .build();
+  }
+
+  private static Comparator<Pair<String, Integer>> getComparator() {
+    return Comparator.comparing(Pair::getValue);
   }
 
   private void removalPredicate(BlockingQueue<Pair<String, Integer>> topN, RemovalNotification notification) {

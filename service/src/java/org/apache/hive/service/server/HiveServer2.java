@@ -214,9 +214,7 @@ public class HiveServer2 extends CompositeService {
     try {
       if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
         MetricsFactory.init(hiveConf);
-        if (MetastoreConf.getBoolVar(hiveConf, MetastoreConf.ConfVars.METRICS_ENABLED)) {
-          DeltaFilesMetricReporter.init(hiveConf);
-        }
+        DeltaFilesMetricReporter.init(hiveConf);
       }
     } catch (Throwable t) {
       LOG.warn("Could not initiate the HiveServer2 Metrics system.  Metrics may not be reported.", t);
