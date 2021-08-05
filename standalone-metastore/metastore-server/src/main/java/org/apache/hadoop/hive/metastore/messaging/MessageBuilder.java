@@ -132,6 +132,7 @@ public class MessageBuilder {
   public static final String ALLOC_WRITE_ID_EVENT = "ALLOC_WRITE_ID_EVENT";
   public static final String ALTER_CATALOG_EVENT = "ALTER_CATALOG";
   public static final String ACID_WRITE_EVENT = "ACID_WRITE_EVENT";
+  public static final String BATCH_ACID_WRITE_EVENT = "BATCH_ACID_WRITE_EVENT";
   public static final String UPDATE_TBL_COL_STAT_EVENT = "UPDATE_TBL_COL_STAT_EVENT";
   public static final String DELETE_TBL_COL_STAT_EVENT = "DELETE_TBL_COL_STAT_EVENT";
   public static final String UPDATE_PART_COL_STAT_EVENT = "UPDATE_PART_COL_STAT_EVENT";

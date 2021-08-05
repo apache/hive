@@ -175,13 +175,13 @@ class GetTablesExtRequest
                 case 6:
                     if ($ftype == TType::LST) {
                         $this->processorCapabilities = array();
-                        $_size956 = 0;
-                        $_etype959 = 0;
-                        $xfer += $input->readListBegin($_etype959, $_size956);
-                        for ($_i960 = 0; $_i960 < $_size956; ++$_i960) {
-                            $elem961 = null;
-                            $xfer += $input->readString($elem961);
-                            $this->processorCapabilities []= $elem961;
+                        $_size963 = 0;
+                        $_etype966 = 0;
+                        $xfer += $input->readListBegin($_etype966, $_size963);
+                        for ($_i967 = 0; $_i967 < $_size963; ++$_i967) {
+                            $elem968 = null;
+                            $xfer += $input->readString($elem968);
+                            $this->processorCapabilities []= $elem968;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -240,8 +240,8 @@ class GetTablesExtRequest
             }
             $xfer += $output->writeFieldBegin('processorCapabilities', TType::LST, 6);
             $output->writeListBegin(TType::STRING, count($this->processorCapabilities));
-            foreach ($this->processorCapabilities as $iter962) {
-                $xfer += $output->writeString($iter962);
+            foreach ($this->processorCapabilities as $iter969) {
+                $xfer += $output->writeString($iter969);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
