@@ -124,6 +124,8 @@ abstract class AbstractDropPartitionAnalyzer extends AbstractAlterTableAnalyzer 
     AlterTableDropPartitionDesc desc =
         new AlterTableDropPartitionDesc(tableName, partitionSpecs, mustPurge, replicationSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
+
+    postProcess(tableName, table, desc);
   }
 
   /**
@@ -239,6 +241,8 @@ abstract class AbstractDropPartitionAnalyzer extends AbstractAlterTableAnalyzer 
   }
 
   protected abstract boolean expectView();
+
+  protected abstract void postProcess(TableName tableName, Table table, AlterTableDropPartitionDesc desc);
 
   /**
    * Add the table partitions to be modified in the output, so that it is available for the
