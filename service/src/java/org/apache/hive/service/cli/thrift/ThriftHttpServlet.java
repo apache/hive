@@ -181,49 +181,54 @@ public class ThriftHttpServlet extends TServlet {
       // If the cookie based authentication is not enabled or the request does not have a valid
       // cookie, use authentication depending on the server setup.
       if (clientUserName == null) {
-        String trustedDomain = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TRUSTED_DOMAIN).trim();
-        final boolean useXff = HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_SERVER2_TRUSTED_DOMAIN_USE_XFF_HEADER);
-        if (useXff && !trustedDomain.isEmpty() &&
-          SessionManager.getForwardedAddresses() != null && !SessionManager.getForwardedAddresses().isEmpty()) {
-          // general format of XFF header is 'X-Forwarded-For: client, proxy1, proxy2' where left most being the client
-          clientIpAddress = SessionManager.getForwardedAddresses().get(0);
-          LOG.info("Trusted domain authN is enabled. clientIp from X-Forwarded-For header: {}", clientIpAddress);
-        }
-        // Skip authentication if the connection is from the trusted domain, if specified.
-        // getRemoteHost may or may not return the FQDN of the remote host depending upon the
-        // HTTP server configuration. So, force a reverse DNS lookup.
-        String remoteHostName =
-                InetAddress.getByName(clientIpAddress).getCanonicalHostName();
-        if (!trustedDomain.isEmpty() &&
-                PlainSaslHelper.isHostFromTrustedDomain(remoteHostName, trustedDomain)) {
-          LOG.info("No authentication performed because the connecting host " + remoteHostName +
-                  " is from the trusted domain " + trustedDomain);
-          // In order to skip authentication, we use auth type NOSASL to be consistent with the
-          // HiveAuthFactory defaults. In HTTP mode, it will also get us the user name from the
-          // HTTP request header.
-          clientUserName = doPasswdAuth(request, HiveAuthConstants.AuthTypes.NOSASL.getAuthName());
+        String proxyHeader = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TRUSTED_PROXY_TRUSTHEADER).trim();
+        if (!proxyHeader.equals("") && request.getHeader(proxyHeader) != null) { //Trusted header is present, which means the user is already authenticated.
+          clientUserName = getUsername(request, authType);
         } else {
-          // For a kerberos setup
-          if (isKerberosAuthMode(authType)) {
-            String delegationToken = request.getHeader(HIVE_DELEGATION_TOKEN_HEADER);
-            // Each http request must have an Authorization header
-            if ((delegationToken != null) && (!delegationToken.isEmpty())) {
-              clientUserName = doTokenAuth(request);
-            } else {
-              clientUserName = doKerberosAuth(request);
-            }
-          } else if (HiveSamlUtils.isSamlAuthMode(authType)) {
-            // check if this request needs a SAML redirect
-            if (needsRedirect(request, response)) {
-              doSamlRedirect(request, response);
-              return;
-            } else {
-              // redirect is not needed. Do SAML auth.
-              clientUserName = doSamlAuth(request, response);
-            }
+          String trustedDomain = HiveConf.getVar(hiveConf, ConfVars.HIVE_SERVER2_TRUSTED_DOMAIN).trim();
+          final boolean useXff = HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_SERVER2_TRUSTED_DOMAIN_USE_XFF_HEADER);
+          if (useXff && !trustedDomain.isEmpty() &&
+                  SessionManager.getForwardedAddresses() != null && !SessionManager.getForwardedAddresses().isEmpty()) {
+            // general format of XFF header is 'X-Forwarded-For: client, proxy1, proxy2' where left most being the client
+            clientIpAddress = SessionManager.getForwardedAddresses().get(0);
+            LOG.info("Trusted domain authN is enabled. clientIp from X-Forwarded-For header: {}", clientIpAddress);
+          }
+          // Skip authentication if the connection is from the trusted domain, if specified.
+          // getRemoteHost may or may not return the FQDN of the remote host depending upon the
+          // HTTP server configuration. So, force a reverse DNS lookup.
+          String remoteHostName =
+                  InetAddress.getByName(clientIpAddress).getCanonicalHostName();
+          if (!trustedDomain.isEmpty() &&
+                  PlainSaslHelper.isHostFromTrustedDomain(remoteHostName, trustedDomain)) {
+            LOG.info("No authentication performed because the connecting host " + remoteHostName +
+                    " is from the trusted domain " + trustedDomain);
+            // In order to skip authentication, we use auth type NOSASL to be consistent with the
+            // HiveAuthFactory defaults. In HTTP mode, it will also get us the user name from the
+            // HTTP request header.
+            clientUserName = doPasswdAuth(request, HiveAuthConstants.AuthTypes.NOSASL.getAuthName());
           } else {
-            // For password based authentication
-            clientUserName = doPasswdAuth(request, authType);
+            // For a kerberos setup
+            if (isKerberosAuthMode(authType)) {
+              String delegationToken = request.getHeader(HIVE_DELEGATION_TOKEN_HEADER);
+              // Each http request must have an Authorization header
+              if ((delegationToken != null) && (!delegationToken.isEmpty())) {
+                clientUserName = doTokenAuth(request);
+              } else {
+                clientUserName = doKerberosAuth(request);
+              }
+            } else if (HiveSamlUtils.isSamlAuthMode(authType)) {
+              // check if this request needs a SAML redirect
+              if (needsRedirect(request, response)) {
+                doSamlRedirect(request, response);
+                return;
+              } else {
+                // redirect is not needed. Do SAML auth.
+                clientUserName = doSamlAuth(request, response);
+              }
+            } else {
+              // For password based authentication
+              clientUserName = doPasswdAuth(request, authType);
+            }
           }
         }
       }

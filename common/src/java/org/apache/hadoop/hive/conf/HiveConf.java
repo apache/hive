@@ -3641,6 +3641,10 @@ public class HiveConf extends Configuration {
         "Zookeeper znode for HiveServer2 leader selection."),
     HIVE_SERVER2_UDF_CACHE_ENABLED("hive.server2.udf.cache.enabled", false,
             "Whether HiveServer2 UDF cache is enabled. Disabled by default."),
+    HIVE_SERVER2_TRUSTED_PROXY_TRUSTHEADER("hive.server2.proxy.trustheader", "", "This config " +
+            "indicates whether the connection is authenticated before the requests lands on HiveServer2, So that we can" +
+            "avoid the authentication is again in HS2. Default value is 'X-Trusted-Proxy-Auth-Header', we need to look for this header in the " +
+            "connection string, if present we directly extract the client name from header."),
 
     // HiveServer2 global init file location
     HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
