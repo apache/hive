@@ -809,7 +809,8 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
       Object thenVal = constThen.getValue();
       Object elseVal = constElse.getValue();
       if (thenVal instanceof Boolean && elseVal instanceof Boolean) {
-        return true;
+        //only convert to COALESCE when both branches are valid
+        return !thenVal.equals(elseVal);
       }
     }
     return false;
