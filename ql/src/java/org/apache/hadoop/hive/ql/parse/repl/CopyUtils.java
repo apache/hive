@@ -97,7 +97,7 @@ public class CopyUtils {
       if (failOnExceptions.stream().anyMatch(k -> e.getClass().equals(k))) {
         throw new IOException(e);
       }
-      throw new IOException(ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.format(e.getMessage()), e);
+      throw new IOException(ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.getMsg(), e);
     }
   }
 
@@ -248,7 +248,7 @@ public class CopyUtils {
         LOG.info("file operation failed", e);
 
         if (repeat >= (MAX_IO_RETRY - 1) || failOnExceptions.stream().anyMatch(k -> e.getClass().equals(k))
-                || e.getMessage().equals(ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.format(e.getCause().getMessage()))) {
+                || ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.getMsg().equals(e.getMessage())) {
           //Don't retry in the following cases:
           //1. This is last attempt of retry.
           //2. Execution already hit the exception which should not be retried.
