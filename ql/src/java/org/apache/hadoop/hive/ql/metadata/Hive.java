@@ -2236,8 +2236,7 @@ public class Hive {
             inheritLocation, isSkewedStoreAsSubdir, isSrcLocal, isAcidIUDoperation,
             resetStatistics, writeId, stmtId, isInsertOverwrite, isTxnTable, newFiles, isDirectInsert);
 
-    AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf,
-            newTPart.getTable(), true);
+    AcidUtils.TableSnapshot tableSnapshot = isTxnTable ? getTableSnapshot(tbl, writeId) : null;
     if (tableSnapshot != null) {
       newTPart.getTPartition().setWriteId(tableSnapshot.getWriteId());
     }
@@ -2475,9 +2474,7 @@ public class Hive {
   private void addPartitionToMetastore(Partition newTPart, boolean resetStatistics,
                                        Table tbl, TableSnapshot tableSnapshot) throws HiveException{
     try {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Adding new partition " + newTPart.getSpec());
-      }
+      LOG.debug("Adding new partition " + newTPart.getSpec());
       getSynchronizedMSC().add_partition(newTPart.getTPartition());
     } catch (AlreadyExistsException aee) {
       // With multiple users concurrently issuing insert statements on the same partition has
@@ -2517,12 +2514,15 @@ public class Hive {
                                         List<AcidUtils.TableSnapshot> tableSnapshots)
                                         throws HiveException {
     try {
+      if (partitions.isEmpty() || tableSnapshots.isEmpty()) {
+        return;
+      }
       if (LOG.isDebugEnabled()) {
         StringBuffer debugMsg = new StringBuffer("Adding new partitions ");
         partitions.forEach(partition -> debugMsg.append(partition.getSpec() + " "));
         LOG.debug(debugMsg.toString());
       }
-      getSynchronizedMSC().add_partitions(partitions.parallelStream().map(Partition::getTPartition)
+      getSynchronizedMSC().add_partitions(partitions.stream().map(Partition::getTPartition)
               .collect(Collectors.toList()));
     } catch(AlreadyExistsException aee) {
       // With multiple users concurrently issuing insert statements on the same partition has
@@ -2647,6 +2647,34 @@ public class Hive {
     getSynchronizedMSC().alter_partition(tbl.getCatName(),
         tbl.getDbName(), tbl.getTableName(), newTPart.getTPartition(), new EnvironmentContext(),
         tableSnapshot == null ? null : tableSnapshot.getValidWriteIdList());
+  }
+
+  private void setStatsPropAndAlterPartitions(boolean resetStatistics, Table tbl,
+                                             List<Partition> partitions,
+                                              AcidUtils.TableSnapshot tableSnapshot) throws TException {
+    if (partitions.isEmpty()) {
+      return;
+    }
+    EnvironmentContext ec = new EnvironmentContext();
+    if (!resetStatistics) {
+      ec.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+    }
+    if (LOG.isDebugEnabled()) {
+      StringBuilder sb = new StringBuilder("Altering existing partitions ");
+      partitions.forEach(p -> sb.append(p.getSpec()));
+      LOG.debug(sb.toString());
+    }
+
+    String validWriteIdList = null;
+    long writeId = 0L;
+    if (tableSnapshot != null) {
+      validWriteIdList = tableSnapshot.getValidWriteIdList();
+      writeId = tableSnapshot.getWriteId();
+    }
+
+    getSynchronizedMSC().alter_partitions(tbl.getCatName(), tbl.getDbName(), tbl.getTableName(),
+            partitions.stream().map(Partition::getTPartition).collect(Collectors.toList()),
+            ec, validWriteIdList, writeId);
   }
 
   /**
@@ -2889,7 +2917,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     // Match valid partition path to partitions
     while (iterator.hasNext()) {
       Partition partition = iterator.next();
-      partitionDetailsMap.entrySet().parallelStream()
+      partitionDetailsMap.entrySet().stream()
               .filter(entry -> entry.getValue().fullSpec.equals(partition.getSpec()))
               .findAny().ifPresent(entry -> {
                 entry.getValue().partition = partition;
@@ -2898,6 +2926,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
     boolean isTxnTable = AcidUtils.isTransactionalTable(tbl);
+    AcidUtils.TableSnapshot tableSnapshot = isTxnTable ? getTableSnapshot(tbl, writeId) : null;
 
     for (Entry<Path, PartitionDetails> entry : partitionDetailsMap.entrySet()) {
       tasks.add(() -> {
@@ -2917,8 +2946,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
           // if the partition already existed before the loading, no need to add it again to the
           // metastore
 
-          AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf,
-                  partition.getTable(), true);
           if (tableSnapshot != null) {
             partition.getTPartition().setWriteId(tableSnapshot.getWriteId());
           }
@@ -2972,14 +2999,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       addPartitionsToMetastore(
               partitionDetailsMap.entrySet()
-                      .parallelStream()
+                      .stream()
                       .filter(entry -> !entry.getValue().hasOldPartition)
                       .map(entry -> entry.getValue().partition)
                       .collect(Collectors.toList()),
           resetStatistics,
               tbl,
               partitionDetailsMap.entrySet()
-                      .parallelStream()
+                      .stream()
                       .filter(entry -> !entry.getValue().hasOldPartition)
                       .map(entry -> entry.getValue().tableSnapshot)
                       .collect(Collectors.toList()));
@@ -2991,11 +3018,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
         if (isTxnTable && partitionDetails.newFiles != null) {
           addWriteNotificationLog(tbl, partitionDetails.fullSpec, partitionDetails.newFiles, writeId);
         }
-        if (partitionDetails.hasOldPartition) {
-          setStatsPropAndAlterPartition(resetStatistics, tbl, partitionDetails.partition,
-                  partitionDetails.tableSnapshot);
-        }
       }
+
+      setStatsPropAndAlterPartitions(resetStatistics, tbl,
+              partitionDetailsMap.entrySet().stream()
+                      .filter(entry -> entry.getValue().hasOldPartition)
+                      .map(entry -> entry.getValue().partition)
+                      .collect(Collectors.toList()), tableSnapshot);
+
     } catch (InterruptedException | ExecutionException e) {
       throw new HiveException("Exception when loading " + validPartitions.size() + " partitions"
               + " in table " + tbl.getTableName()
@@ -3028,7 +3058,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       if (isTxnTable) {
         List<String> partNames =
-                result.values().parallelStream().map(Partition::getName).collect(Collectors.toList());
+                result.values().stream().map(Partition::getName).collect(Collectors.toList());
         getMSC().addDynamicPartitions(parentSession.getTxnMgr().getCurrentTxnId(), writeId,
                 tbl.getDbName(), tbl.getTableName(), partNames,
                 AcidUtils.toDataOperationType(operation));
