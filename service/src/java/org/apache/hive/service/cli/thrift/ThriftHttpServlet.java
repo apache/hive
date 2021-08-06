@@ -282,8 +282,25 @@ public class ThriftHttpServlet extends TServlet {
         }
       }
       response.getWriter().println("Authentication Error: " + e.getMessage());
-    }
-    finally {
+    } catch (ServletException e) {
+      // May indicate the Response was NOT successfully flushed due to a connection error.
+      // We wrap the exception to make visible this method is what issued the doPost call and
+      // to log an ERROR message (Jetty only issues a warning which often is ignored).
+      ServletException se = new ServletException("POST request error: ", e);
+      LOG.error("Error processing POST request: ", se);
+      throw se;
+    } catch (IOException e) {
+      // (ditto comments for ServletException).
+      IOException ioe = new IOException("POST request error: ", e);
+      LOG.error("Error processing POST request: ", ioe);
+      throw ioe;
+    } catch (Exception e) {
+      // E.g. NullPointerException, RuntimeException, etc.
+      // A java.lang.Error which is distinct from Exception is not caught by this catch clause. E.g. OOM, etc.
+      ServletException se = new ServletException("POST request failed: ", e);
+      LOG.error("Error processing POST request: ", se);
+      throw se;
+    } finally {
       // Clear the thread locals
       SessionManager.clearUserName();
       SessionManager.clearIpAddress();

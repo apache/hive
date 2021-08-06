@@ -221,7 +221,13 @@ public class RetryingMetaStoreClient implements InvocationHandler {
         }
         break;
       } catch (UndeclaredThrowableException e) {
-        throw e.getCause();
+        // Exception not declared in method's exception throws clause...
+        Throwable cause = e.getCause();
+        if (cause instanceof Error) {
+          // Rethrow OOM and other fatal errors.
+          throw cause;
+        }
+        throw ExceptUtils.wrapMetastoreClientException(new Exception(), method.getName(), cause);
       } catch (InvocationTargetException e) {
         Throwable t = e.getCause();
         if (t instanceof TApplicationException) {
@@ -248,7 +254,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
         if (isRecoverableMetaException(e)) {
           caughtException = e;
         } else {
-          throw e;
+          throw ExceptUtils.wrapMetastoreClientException(new Exception(), method.getName(), e);
         }
       }
 
@@ -259,7 +265,13 @@ public class RetryingMetaStoreClient implements InvocationHandler {
       retriesMade++;
       LOG.warn("MetaStoreClient lost connection. Attempting to reconnect (" + retriesMade + " of " +
           retryLimit + ") after " + retryDelaySeconds + "s. " + method.getName(), caughtException);
-      Thread.sleep(retryDelaySeconds * 1000);
+      try {
+        Thread.sleep(retryDelaySeconds * 1000);
+      } catch (InterruptedException e) {
+        MetaException me = ExceptUtils.wrapMetastoreClientException(new Exception(), method.getName(), e);
+        LOG.error("Error happened calling method " + method.getName() + ": ", me);
+        throw me;
+      }
     }
     return ret;
   }
