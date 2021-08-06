@@ -910,36 +910,26 @@ public class TestLlapTaskSchedulerService {
     String[] host = new String[]{HOST1};
 
     TestTaskSchedulerServiceWrapper tsWrapper =
-        new TestTaskSchedulerServiceWrapper(2000, new String[]{}, 0, 0, 1000l);
+        new TestTaskSchedulerServiceWrapper(2000, host, 1, 0, 1000l);
     try {
       TezTaskAttemptID task1 = TestTaskSchedulerServiceWrapper.generateTaskAttemptId();
       Object clientCookie1 = "cookie1";
+      TezTaskAttemptID task2 = TestTaskSchedulerServiceWrapper.generateTaskAttemptId();
+      Object clientCookie2 = "cookie2";
 
       tsWrapper.controlScheduler(true);
       tsWrapper.allocateTask(task1, host, priority1, clientCookie1);
-
-      tsWrapper.signalSchedulerRun();
-      tsWrapper.awaitSchedulerRun();
-
-      // No available hosts should return DELAYED_RESOURCES
-      assertEquals(0, tsWrapper.ts.delayedTaskQueue.size());
-
-      tsWrapper =
-          new TestTaskSchedulerServiceWrapper(2000, host, 0, 0, 1000l);
-      tsWrapper.controlScheduler(true);
-      tsWrapper.allocateTask(task1, host, priority1, clientCookie1);
-      assertFalse(tsWrapper.ts.getTaskInfo(task1).adjustedLocalityDelay);
-      long delayTimeout = tsWrapper.ts.getTaskInfo(task1).localityDelayTimeout;
-
-      tsWrapper.signalSchedulerRun();
-      tsWrapper.awaitSchedulerRun();
-
-      // Host is now available so task should be added on Delayed queue DELAYED_LOCALITY
-      assertEquals(1, tsWrapper.ts.delayedTaskQueue.size());
-      assertEquals(task1, tsWrapper.ts.delayedTaskQueue.peek().task);
-      // make sure the delay is reset!
-      assertTrue(tsWrapper.ts.getTaskInfo(task1).adjustedLocalityDelay);
-      assertTrue(tsWrapper.ts.delayedTaskQueue.peek().localityDelayTimeout >= delayTimeout);
+      tsWrapper.allocateTask(task2, host, priority1, clientCookie2);
+      // There are enough resources for 1 task, the second one should just adjustLocalityDelay
+      assertFalse(tsWrapper.ts.getTaskInfo(task2).adjustedLocalityDelay);
+      while (true) {
+        tsWrapper.signalSchedulerRun();
+        tsWrapper.awaitSchedulerRun();
+        if (tsWrapper.ts.dagStats.getNumTotalAllocations() == 1) {
+          break;
+        }
+      }
+      assertTrue(tsWrapper.ts.getTaskInfo(task2).adjustedLocalityDelay);
     } finally {
       tsWrapper.shutdown();
     }

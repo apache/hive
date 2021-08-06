@@ -1857,7 +1857,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
    */
   private boolean shouldCycle(Map<String, List<NodeInfo>> availableHostMap) {
     // short-circuit on resource availability
-    if (!availableHostMap.values().isEmpty()) return true;
+    if (availableHostMap.values().stream().mapToInt(List::size).sum() > 0) return true;
     // check if pending Pri is lower than existing tasks pri
     int specMax = speculativeTasks.isEmpty() ? Integer.MIN_VALUE : speculativeTasks.lastKey();
     int guarMax = guaranteedTasks.isEmpty() ? Integer.MIN_VALUE : guaranteedTasks.lastKey();
