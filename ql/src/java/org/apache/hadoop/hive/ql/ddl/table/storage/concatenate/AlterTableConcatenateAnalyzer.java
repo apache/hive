@@ -90,11 +90,12 @@ public class AlterTableConcatenateAnalyzer extends AbstractAlterTableAnalyzer {
     }
   }
 
-  private void compactAcidTable(TableName tableName, Map<String, String> partitionSpec) {
+  private void compactAcidTable(TableName tableName, Map<String, String> partitionSpec) throws SemanticException {
     boolean isBlocking = !HiveConf.getBoolVar(conf, ConfVars.TRANSACTIONAL_CONCATENATE_NOBLOCK, false);
 
     AlterTableCompactDesc desc = new AlterTableCompactDesc(tableName, partitionSpec, "MAJOR", isBlocking, null);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
+    setAcidDdlDesc(getTable(tableName), desc);
   }
 
   @SuppressWarnings("rawtypes")

@@ -152,10 +152,10 @@ public class TestTxnConcatenate extends TxnCommandsBaseForTests {
     Assert.assertEquals(1, rsp.getCompactsSize());
     Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
     String[][] expected2 = new String[][] {
-        {"1\t2", "t/base_0000002_v0000020/000000_0"},
-        {"4\t5", "t/base_0000002_v0000020/000000_0"},
-        {"5\t6", "t/base_0000002_v0000020/000000_0"},
-        {"8\t8", "t/base_0000002_v0000020/000000_0"}};
+        {"1\t2", "t/base_0000003_v0000020/000000_0"},
+        {"4\t5", "t/base_0000003_v0000020/000000_0"},
+        {"5\t6", "t/base_0000003_v0000020/000000_0"},
+        {"8\t8", "t/base_0000003_v0000020/000000_0"}};
     checkResult(expected2, testQuery, false, "check data after concatenate", LOG);
   }
 }
