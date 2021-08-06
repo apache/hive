@@ -1,4 +1,3 @@
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -25,6 +24,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.api.GetAllWriteEventInfoRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
@@ -110,9 +110,9 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
 
   private List<WriteEventInfo> getAllWriteEventInfo(Context withinContext) throws Exception {
     String contextDbName = StringUtils.normalizeIdentifier(withinContext.replScope.getDbName());
-    RawStore rawStore = HiveMetaStore.HMSHandler.getMSForConf(withinContext.hiveConf);
-    List<WriteEventInfo> writeEventInfoList
-            = rawStore.getAllWriteEventInfo(eventMessage.getTxnId(), contextDbName, null);
+    GetAllWriteEventInfoRequest request = new GetAllWriteEventInfoRequest(eventMessage.getTxnId());
+    request.setDbName(contextDbName);
+    List<WriteEventInfo> writeEventInfoList = withinContext.db.getMSC().getAllWriteEventInfo(request);
     return ((writeEventInfoList == null)
             ? null
             : new ArrayList<>(Collections2.filter(writeEventInfoList,

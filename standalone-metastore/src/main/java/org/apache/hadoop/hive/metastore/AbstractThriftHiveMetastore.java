@@ -1132,7 +1132,7 @@ public class AbstractThriftHiveMetastore implements Iface {
 
     @Override
     public GetLatestCommittedCompactionInfoResponse get_latest_committed_compaction_info(
-        GetLatestCommittedCompactionInfoRequest rqst) throws TException {
+            GetLatestCommittedCompactionInfoRequest rqst) throws TException {
         throw new UnsupportedOperationException("this method is not supported");
     }
 
@@ -1459,13 +1459,13 @@ public class AbstractThriftHiveMetastore implements Iface {
 
     @Override
     public void create_stored_procedure(StoredProcedure proc)
-        throws NoSuchObjectException, MetaException, TException {
+            throws NoSuchObjectException, MetaException, TException {
         throw new UnsupportedOperationException("this method is not supported");
     }
 
     @Override
     public StoredProcedure get_stored_procedure(StoredProcedureRequest request)
-        throws MetaException, NoSuchObjectException, TException {
+            throws MetaException, NoSuchObjectException, TException {
         throw new UnsupportedOperationException("this method is not supported");
     }
 
@@ -1476,13 +1476,13 @@ public class AbstractThriftHiveMetastore implements Iface {
 
     @Override
     public List<String> get_all_stored_procedures(ListStoredProcedureRequest request)
-        throws MetaException, TException {
+            throws MetaException, TException {
         throw new UnsupportedOperationException("this method is not supported");
     }
 
     @Override
     public Package find_package(GetPackageRequest request)
-        throws MetaException, NoSuchObjectException, TException {
+            throws MetaException, NoSuchObjectException, TException {
         throw new UnsupportedOperationException("this method is not supported");
     }
 
@@ -1563,6 +1563,12 @@ public class AbstractThriftHiveMetastore implements Iface {
 
     @Override
     public void shutdown() throws TException {
+        throw new UnsupportedOperationException("this method is not supported");
+    }
+
+    @Override
+    public List<WriteEventInfo> get_all_write_event_info(GetAllWriteEventInfoRequest request)
+            throws MetaException, org.apache.thrift.TException {
         throw new UnsupportedOperationException("this method is not supported");
     }
 }

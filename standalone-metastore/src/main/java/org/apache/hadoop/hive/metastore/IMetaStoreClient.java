@@ -4052,7 +4052,7 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   void setHadoopJobid(String jobId, long cqId) throws MetaException, TException;
- 
+
   /**
    * Gets the version string of the metastore server which this client is connected to
    *
@@ -4126,6 +4126,13 @@ public interface IMetaStoreClient {
   List<String> listPackages(ListPackageRequest request) throws TException;
 
   void dropPackage(DropPackageRequest request) throws TException;
+
+  /**
+   * Get acid write events of a specific transaction.
+   * @throws TException
+   */
+  List<WriteEventInfo> getAllWriteEventInfo(GetAllWriteEventInfoRequest request) throws TException;
+
   /**
    * Returns the thrift client to the remote HMS server.
    * @throws MetaException if this is not initialized or connected to a remote HMS

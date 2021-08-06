@@ -3864,6 +3864,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public List<WriteEventInfo> getAllWriteEventInfo(GetAllWriteEventInfoRequest request)
+      throws TException {
+    return client.get_all_write_event_info(request);
+  }
+
+  @Override
   public ThriftHiveMetastore.Client getThriftClient() throws MetaException {
     if (client == null) {
       throw new MetaException("Client is not initialized");

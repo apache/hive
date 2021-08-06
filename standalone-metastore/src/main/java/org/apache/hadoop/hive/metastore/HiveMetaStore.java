@@ -10433,6 +10433,24 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("drop_package", ex == null, ex);
       }
     }
+
+    @Override
+    public List<WriteEventInfo> get_all_write_event_info(GetAllWriteEventInfoRequest request)
+        throws MetaException {
+      startFunction("get_all_write_event_info");
+      Exception ex = null;
+      try {
+        List<WriteEventInfo> writeEventInfoList =
+            getMS().getAllWriteEventInfo(request.getTxnId(), request.getDbName(), request.getTableName());
+        return writeEventInfoList == null ? Collections.emptyList() : writeEventInfoList;
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_all_write_event_info", ex == null, ex);
+      }
+    }
   }
 
   private static IHMSHandler newRetryingHMSHandler(IHMSHandler baseHandler, Configuration conf)
