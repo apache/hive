@@ -9021,7 +9021,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     List<String> keyColNames = rsdesc.getOutputKeyColumnNames();
     for (int i = 0 ; i < keyColNames.size(); i++) {
-      colExprMap.put(Utilities.ReduceField.KEY + "." + keyColNames.get(i), sortCols.get(i));
+      colExprMap.put(Utilities.ReduceField.KEY + "." + keyColNames.get(i), newSortCols.get(i));
     }
     List<String> valueColNames = rsdesc.getOutputValueColumnNames();
     for (int i = 0 ; i < valueColNames.size(); i++) {
