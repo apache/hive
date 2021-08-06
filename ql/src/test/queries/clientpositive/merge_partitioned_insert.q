@@ -1,13 +1,19 @@
+--! qt:transactional
+
 drop table u;
 drop table t;
 
-create table t(id integer, value string default 'def');
 create table u(id integer);
-
-insert into t values(1,'xx');
-insert into t (id) values(2);
 insert into u values(3);
 
-merge into t using u on t.id=u.id when not matched then insert (id) values (u.id);
+create table t1(id integer, value string default 'def');
+insert into t1 values(1,'xx');
+insert into t1 (id) values(2);
 
+merge into t1 t using u on t.id=u.id when not matched then insert (id) values (u.id);
 
+create table t2(value string default 'def') partitioned by (id integer);
+insert into t2 values(1,'xx');
+insert into t2 (id) values(2);
+
+merge into t2 t using u on t.id=u.id when not matched then insert (id) values (u.id);
