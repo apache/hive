@@ -68,6 +68,8 @@ public class AlterTableAddPartitionAnalyzer extends AbstractAddPartitionAnalyzer
       return;
     }
 
+    setAcidDdlDesc(desc);
+
     Long writeId = null;
     int stmtId = 0;
 
