@@ -926,7 +926,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     // When replicating the statistics for a table will be obtained from the source. Do not
     // reset it on replica.
     if (replicationSpec == null || !replicationSpec.isInReplicationScope()) {
-      if (!this.isCTAS && (tbl.getPath() == null || (tbl.isEmpty() && !isExternal()))) {
+      if (!this.isCTAS && (tbl.getPath() == null || (!isExternal() && tbl.isEmpty()))) {
         if (!tbl.isPartitioned() && conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
           StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),
                   MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
