@@ -10962,7 +10962,6 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       long lastEvent = rqst.getLastEvent();
-      int maxEvents = rqst.getMaxEvents() > 0 ? rqst.getMaxEvents() : Integer.MAX_VALUE;
       List<Object> parameterVals = new ArrayList<>();
       parameterVals.add(lastEvent);
       StringBuilder filterBuilder = new StringBuilder("eventId > para" + parameterVals.size());
@@ -10977,6 +10976,9 @@ public class ObjectStore implements RawStore, Configurable {
       query = pm.newQuery(MNotificationLog.class, filterBuilder.toString());
       query.declareParameters(parameterBuilder.toString());
       query.setOrdering("eventId ascending");
+      int maxEventResponse = MetastoreConf.getIntVar(conf, ConfVars.METASTORE_MAX_EVENT_RESPONSE);
+      int maxEvents = (rqst.getMaxEvents() < maxEventResponse && rqst.getMaxEvents() > 0) ?
+        rqst.getMaxEvents() : maxEventResponse;
       query.setRange(0, maxEvents);
       Collection<MNotificationLog> events =
               (Collection) query.executeWithArray(parameterVals.toArray(new Object[parameterVals.size()]));

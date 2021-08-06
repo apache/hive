@@ -793,6 +793,8 @@ public class MetastoreConf {
         "Enable filtering the metadata read results at HMS server. Default is false."),
     HANDLER_CLASS_NAME("metastore.handler.class.name", "hive.metastore.handler.class.name", "",
         "Class name to use for HMSHandler. Main use is to inject a Handler for testing framework."),
+    METASTORE_MAX_EVENT_RESPONSE("metastore.max.event.response", "hive.metastore.max.event.response", 1000000,
+        "The parameter will decide the maximum number of events that HMS will respond."),
     MOVE_EXPORTED_METADATA_TO_TRASH("metastore.metadata.move.exported.metadata.to.trash",
         "hive.metadata.move.exported.metadata.to.trash", true,
         "When used in conjunction with the org.apache.hadoop.hive.ql.parse.MetaDataExportListener pre event listener, \n" +
