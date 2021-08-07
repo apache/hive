@@ -118,6 +118,33 @@ public class HiveSQLException extends SQLException {
     super(status.getErrorMessage(), status.getSqlState(), status.getErrorCode());
   }
 
+
+  /**
+   * Wrap an Exception caught by ThriftCLIService operation method.
+   *
+   * We even wrap a HiveSQLException with itself to indicate where the Response was built.
+   * @return a {@link HiveSQLException} object
+   */
+  public static org.apache.hive.service.cli.HiveSQLException wrapForResponse(Exception excForRightCallStack, Exception cause) {
+    Throwable rootCause = cause;
+    while (true) {
+      Throwable nextCause = rootCause.getCause();
+      if (nextCause == null) {
+        break;
+      }
+      rootCause = nextCause;
+    }
+    String rootMsg = rootCause.getMessage();
+
+    StackTraceElement[] rightCallStack = excForRightCallStack.getStackTrace();
+    String methodName = rightCallStack[0].getMethodName();
+    String msg = methodName + " error: " + rootCause.getClass().getName() + (rootMsg.isEmpty() ? "" : " " + rootMsg);
+    HiveSQLException hse = new HiveSQLException(msg, cause);
+    // Remove wrapForResponse method from the stack trace.
+    hse.setStackTrace(rightCallStack);
+    return hse;
+  }
+
   /**
    * Converts current object to a {@link TStatus} object.
    *
