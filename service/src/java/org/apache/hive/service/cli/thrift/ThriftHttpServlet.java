@@ -282,8 +282,49 @@ public class ThriftHttpServlet extends TServlet {
         }
       }
       response.getWriter().println("Authentication Error: " + e.getMessage());
-    }
-    finally {
+    } catch (ServletException e) {
+      /*
+       * This error may indicate the Response was NOT successfully sent back the client due to a connection error.
+       *
+       * We wrap the exception with another ServletException to make visible that this method is what issued the
+       * doPost call. And, to log an ERROR message (Jetty only issues a warning which often missed as significant).
+       */
+      ServletException se = new ServletException("POST request error: ", e);
+      LOG.error("Error processing POST request: ", se);
+      throw se;
+    } catch (IOException e) {
+      // (ditto comments for ServletException).
+      IOException ioe = new IOException("POST request error: ", e);
+      LOG.error("Error processing POST request: ", ioe);
+      throw ioe;
+    } catch (Exception e) {
+      /*
+       * Unchecked exceptions caught here like NullPointerException, etc. whose super class is RuntimeException.
+       * We wrap them with a ServletException so they will not be program fatal.
+       *
+       * A java.lang.Error is distinct from Exception and caught in the next catch clause.
+       */
+      ServletException se = new ServletException("POST request failed: ", e);
+      LOG.error("Error processing POST request: ", se);
+      throw se;
+    } catch (Error error) {
+      // Technically, we are not suppose to catch java.lang.Error so we will be careful (could be OOM)..
+      // Attempt to create wrapper Error to show we intercepted it here, log, and throw. Otherwise, rethrow.
+      boolean isRethrow = true;
+      Error wrappedError = null;
+      try {
+        wrappedError = new Error("POST request failed: ", error);
+        LOG.error("Fatal error processing POST request: ", error);
+        isRethrow = false;
+      } catch (Throwable t) {
+        // Suppress..
+      }
+      if (!isRethrow) {
+        throw wrappedError;
+      } else {
+        throw error;
+      }
+    } finally {
       // Clear the thread locals
       SessionManager.clearUserName();
       SessionManager.clearIpAddress();
