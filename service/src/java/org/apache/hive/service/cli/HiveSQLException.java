@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.hadoop.hive.metastore.ExceptUtils;
 import org.apache.hive.service.rpc.thrift.TStatus;
 import org.apache.hive.service.rpc.thrift.TStatusCode;
 
@@ -116,6 +117,31 @@ public class HiveSQLException extends SQLException {
 
   public HiveSQLException(TStatus status) {
     super(status.getErrorMessage(), status.getSqlState(), status.getErrorCode());
+  }
+
+
+  /**
+   * Wrap an Exception caught by ThriftCLIService operation method.
+   *
+   * We even wrap a HiveSQLException with itself to indicate where the Response was built.
+   * @return a {@link HiveSQLException} object
+   */
+  public static HiveSQLException wrapForResponse(String operationName, Exception cause) {
+    Throwable rootCause = cause;
+    while (true) {
+      Throwable nextCause = rootCause.getCause();
+      if (nextCause == null) {
+        break;
+      }
+      rootCause = nextCause;
+    }
+    String rootMsg = rootCause.getMessage();
+
+    String msg = operationName + " error: " + rootCause.getClass().getName() + (rootMsg.isEmpty() ? "" : " " + rootMsg);
+    HiveSQLException hse = new HiveSQLException(msg, cause);
+    // Get rid of the call to wrapForResponse.
+    ExceptUtils.removeFirstStackTraceEle(hse);
+    return hse;
   }
 
   /**
