@@ -129,6 +129,8 @@ public class TestGenericUDFFromUnixTime {
     runAndVerify(udf,
             new LongWritable(tstz1.getEpochSecond()), "EEEE", new Text("Wednesday"));
     runAndVerify(udf,
+            new LongWritable(tstz1.getEpochSecond()), "yyyy-MM-dd'T'HH:mm:ssXXX", new Text("2010-01-13T11:57:40-08:00"));
+    runAndVerify(udf,
             new LongWritable(tstz1.getEpochSecond()), "uuuu-MM-dd'T'HH:mm:ssXXX", new Text("2010-01-13T11:57:40-08:00"));
   }
 }

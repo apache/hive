@@ -22,14 +22,18 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
@@ -40,12 +44,13 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
  *
  */
 @Description(name = "from_unixtime",
-    value = "_FUNC_(unix_time_in_seconds, format) - returns unix_time in the specified format",
+    value = "_FUNC_(unix_time, format) - returns unix_time in the specified format",
     extended = "Example:\n"
-        + "  > SELECT _FUNC_(0, 'uuuu-MM-dd HH:mm:ss') FROM src LIMIT 1;\n"
+        + "  > SELECT _FUNC_(0, 'yyyy-MM-dd HH:mm:ss') FROM src LIMIT 1;\n"
         + "  '1970-01-01 00:00:00'")
 public class GenericUDFFromUnixTime extends GenericUDF {
 
+  private transient IntObjectInspector inputIntOI;
   private transient LongObjectInspector inputLongOI;
   private transient ZoneId timeZone;
   private transient final Text result = new Text();
@@ -63,11 +68,16 @@ public class GenericUDFFromUnixTime extends GenericUDF {
     }
 
     PrimitiveObjectInspector arg0OI = (PrimitiveObjectInspector) arguments[0];
-    if(arg0OI.getPrimitiveCategory() == PrimitiveObjectInspector.PrimitiveCategory.LONG) {
-      inputLongOI = (LongObjectInspector) arguments[0];
-    } else {
-      throw new UDFArgumentException("The function from_unixtime() takes only long types for first argument. Got Type:"
-         + arg0OI.getPrimitiveCategory().name());
+    switch (arg0OI.getPrimitiveCategory()) {
+      case INT:
+        inputIntOI = (IntObjectInspector) arguments[0];
+        break;
+      case LONG:
+        inputLongOI = (LongObjectInspector) arguments[0];
+        break;
+      default:
+        throw new UDFArgumentException("The function from_unixtime takes only int/long types for first argument. Got Type:"
+            + arg0OI.getPrimitiveCategory().name());
     }
 
     if (arguments.length == 2) {
@@ -75,11 +85,22 @@ public class GenericUDFFromUnixTime extends GenericUDF {
       obtainStringConverter(arguments, 1, inputTypes, converters);
     }
 
-    timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
-      .getLocalTimeZone();
-    FORMATTER.withZone(timeZone);
+    if (timeZone == null) {
+      timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
+              .getLocalTimeZone();
+      FORMATTER.withZone(timeZone);
+    }
 
     return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+  }
+
+  @Override
+  public void configure(MapredContext context) {
+    if (context != null) {
+      String timeZoneStr = HiveConf.getVar(context.getJobConf(), HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE);
+      timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
+      FORMATTER.withZone(timeZone);
+    }
   }
 
   @Override
@@ -99,14 +120,10 @@ public class GenericUDFFromUnixTime extends GenericUDF {
       }
     }
 
-    long unixtime;
-    Instant instant;
-    if (inputLongOI != null) {
-      unixtime = inputLongOI.get(arguments[0].get());
-      instant = Instant.ofEpochSecond(unixtime);
-      ZonedDateTime zonedDT = ZonedDateTime.ofInstant(instant, timeZone);
-      result.set(zonedDT.format(FORMATTER));
-    }
+    long unixTime = (inputIntOI != null) ? inputIntOI.get(arguments[0].get()) : inputLongOI.get(arguments[0].get());
+    Instant instant = Instant.ofEpochSecond(unixTime);
+    ZonedDateTime zonedDT = ZonedDateTime.ofInstant(instant, timeZone);
+    result.set(zonedDT.format(FORMATTER));
     return result;
   }
 
