@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.hadoop.hive.metastore.ExceptUtils;
 import org.apache.hive.service.rpc.thrift.TStatus;
 import org.apache.hive.service.rpc.thrift.TStatusCode;
 
@@ -116,6 +117,38 @@ public class HiveSQLException extends SQLException {
 
   public HiveSQLException(TStatus status) {
     super(status.getErrorMessage(), status.getSqlState(), status.getErrorCode());
+  }
+
+
+  /**
+   * Wrap an Exception caught by ThriftCLIService operation method such as GetTables, etc.
+   *
+   * We even wrap a HiveSQLException with itself because we want to show where in the code an
+   * Exception was caught, stuffed into the Thrift Response, and not rethrown.
+   * Otherwise, a stack trace can be difficult to interpret if it isn't clear how far it went up
+   * the call chain it went. Was it an uncaught Exception that killed the thread?
+   *
+   * @param operationName the name of the request. E.g. GetInfo.
+   * @param cause         the Exception that was caught and failed the request.
+   *
+   * @return a {@link HiveSQLException} object
+   */
+  public static HiveSQLException wrapForResponse(String operationName, Exception cause) {
+    Throwable rootCause = cause;
+    while (true) {
+      Throwable nextCause = rootCause.getCause();
+      if (nextCause == null) {
+        break;
+      }
+      rootCause = nextCause;
+    }
+    String rootMsg = rootCause.getMessage();
+
+    String msg = operationName + " error: " + rootCause.getClass().getName() + (rootMsg.isEmpty() ? "" : " " + rootMsg);
+    HiveSQLException hse = new HiveSQLException(msg, cause);
+    // Get rid of the call to wrapForResponse.
+    ExceptUtils.removeFirstStackTraceEle(hse);
+    return hse;
   }
 
   /**

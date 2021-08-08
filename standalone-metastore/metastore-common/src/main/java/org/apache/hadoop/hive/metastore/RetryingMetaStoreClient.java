@@ -158,8 +158,18 @@ public class RetryingMetaStoreClient implements InvocationHandler {
         RetryingMetaStoreClient.class.getClassLoader(), baseClass.getInterfaces(), handler);
   }
 
+  /*
+   * When we look at the (generated) IMetaStoreClient interface the method's throws clause has exceptions whose
+   * superclass is Thrift's TException.
+   *
+   * Very commonly MetaException is thrown. But also ones more specific to a particular method such as:
+   *
+   *     AlreadyExistsException, InvalidObjectException, NoSuchObjectException, UnknownDBException, and more.
+   *
+   *  And generic ones like TProtocolException, TTransportException, etc.
+   */
   @Override
-  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+  public Object invoke(Object proxy, Method method, Object[] args) throws TException {
     Object ret;
     int retriesMade = 0;
     TException caughtException;
@@ -176,40 +186,20 @@ public class RetryingMetaStoreClient implements InvocationHandler {
     }
 
     while (true) {
-      try {
-        SecurityUtils.reloginExpiringKeytabUser();
+      SecurityUtils.reloginExpiringKeytabUser();
 
-        if (allowReconnect) {
-          if (retriesMade > 0 || hasConnectionLifeTimeReached(method)) {
-            if (this.ugi != null) {
-              // Perform reconnect with the proper user context
-              try {
-                LOG.info("RetryingMetaStoreClient trying reconnect as " + this.ugi);
-
-                this.ugi.doAs(
-                  new PrivilegedExceptionAction<Object> () {
-                    @Override
-                    public Object run() throws MetaException {
-                      base.reconnect();
-                      return null;
-                    }
-                  });
-              } catch (UndeclaredThrowableException e) {
-                Throwable te = e.getCause();
-                if (te instanceof PrivilegedActionException) {
-                  throw te.getCause();
-                } else {
-                  throw te;
-                }
-              }
-              lastConnectionTime = System.currentTimeMillis();
-            } else {
-              LOG.warn("RetryingMetaStoreClient unable to reconnect. No UGI information.");
-              throw new MetaException("UGI information unavailable. Will not attempt a reconnect.");
-            }
+      if (allowReconnect) {
+        if (retriesMade > 0 || hasConnectionLifeTimeReached(method)) {
+          if (this.ugi != null) {
+            reconnect();
+          } else {
+            LOG.warn("RetryingMetaStoreClient unable to reconnect. No UGI information.");
+            throw new MetaException("UGI information unavailable. Will not attempt a reconnect.");
           }
         }
+      }
 
+      try {
         if (metaCallTimeMap == null) {
           ret = method.invoke(base, args);
         } else {
@@ -219,49 +209,136 @@ public class RetryingMetaStoreClient implements InvocationHandler {
           long timeTaken = System.currentTimeMillis() - startTime;
           addMethodTime(method, timeTaken);
         }
+        // Successful.
         break;
-      } catch (UndeclaredThrowableException e) {
-        throw e.getCause();
-      } catch (InvocationTargetException e) {
-        Throwable t = e.getCause();
-        if (t instanceof TApplicationException) {
-          TApplicationException tae = (TApplicationException)t;
-          switch (tae.getType()) {
-          case TApplicationException.UNSUPPORTED_CLIENT_TYPE:
-          case TApplicationException.UNKNOWN_METHOD:
-          case TApplicationException.WRONG_METHOD_NAME:
-          case TApplicationException.INVALID_PROTOCOL:
-            throw t;
-          default:
-            // TODO: most other options are probably unrecoverable... throw?
-            caughtException = tae;
-          }
-        } else if ((t instanceof TProtocolException) || (t instanceof TTransportException)) {
-          // TODO: most protocol exceptions are probably unrecoverable... throw?
-          caughtException = (TException)t;
-        } else if ((t instanceof MetaException) && isRecoverableMetaException((MetaException) t)) {
-          caughtException = (MetaException)t;
-        } else {
-          throw t;
-        }
-      } catch (MetaException e) {
-        if (isRecoverableMetaException(e)) {
-          caughtException = e;
-        } else {
-          throw e;
-        }
+      } catch (Throwable t) {
+        ExceptUtils.MethodInvokeResult methodInvokeResult =
+                ExceptUtils.evaluateMethodInvokeThrowable(method, t, TException.class);
+        // If the Throwable is not retryable, an TException or Error is thrown.
+        caughtException = getRetryableExceptionFromInvoke(method.getName(), methodInvokeResult);
       }
 
-
+      // Fall through to here with a retryable TException.
       if (retriesMade >= retryLimit || base.isLocalMetaStore() || !allowRetry) {
-        throw caughtException;
+        throw ExceptUtils.wrapCaughtException(caughtException);
       }
       retriesMade++;
       LOG.warn("MetaStoreClient lost connection. Attempting to reconnect (" + retriesMade + " of " +
           retryLimit + ") after " + retryDelaySeconds + "s. " + method.getName(), caughtException);
-      Thread.sleep(retryDelaySeconds * 1000);
+      try {
+        Thread.sleep(retryDelaySeconds * 1000);
+      } catch (InterruptedException e) {
+        MetaException me = ExceptUtils.wrapMetastoreClientException(method.getName(), e);
+        LOG.error("Error happened calling method " + method.getName() + ": ", me);
+        throw me;
+      }
     }
     return ret;
+  }
+
+  // UNDONE: Retryable?
+  private void reconnect() throws MetaException {
+    // Perform reconnect with the proper user context
+    try {
+      LOG.info("RetryingMetaStoreClient trying reconnect as " + this.ugi);
+
+      this.ugi.doAs(
+              new PrivilegedExceptionAction<Object>() {
+                @Override
+                public Object run() throws MetaException {
+                  base.reconnect();
+                  return null;
+                }
+              });
+    } catch (UndeclaredThrowableException e) {
+      Throwable cause = e.getCause();
+      if (cause instanceof Error) {
+        ExceptUtils.handleFatalError("reconnect", (Error) cause);
+      }
+      if (cause instanceof PrivilegedActionException) {
+        throw ExceptUtils.wrapMetastoreClientException("reconnect", cause.getCause());
+      } else {
+        throw ExceptUtils.wrapMetastoreClientException("reconnect", cause);
+      }
+    } catch (InterruptedException | IOException e) {
+      throw ExceptUtils.wrapMetastoreClientException("reconnect", e);
+    }
+    lastConnectionTime = System.currentTimeMillis();
+  }
+
+  private TException getRetryableExceptionFromInvoke(String methodName,
+                                                     ExceptUtils.MethodInvokeResult methodInvokeResult)
+          throws TException {
+    switch (methodInvokeResult.getResultKind()) {
+      case BASE_DECLARED_METHOD_EXCEPTION:
+        {
+          // // UNDONE: If not Retryable, throw.
+          return (TException) methodInvokeResult.getException();
+        }
+      case SUBCLASS_DECLARED_METHOD_EXCEPTION:
+        // Client wants this kind of Exception from method.
+        throw ExceptUtils.wrapCaughtException((TException) methodInvokeResult.getException());
+      case OTHER_DECLARED_METHOD_EXCEPTION:
+        {
+          // No match to method's throws clause Exception list on client side.
+          Exception e = methodInvokeResult.getException();
+          if (e instanceof TException) {
+            // Is is, however, a subclass of a base class.
+            TException tException = (TException) e;
+            if (!isRecoverableTException(tException)) {
+              throw ExceptUtils.wrapCaughtException(tException);
+            }
+          }
+          // Otherwise, it is unknown to this code -- assume it is not retryable..
+          MetaException me = new MetaException(methodName + " error: ");
+          me.initCause(e);
+          throw me;
+        }
+      case UNDECLARED_METHOD_EXCEPTION:
+        {
+          Exception e = methodInvokeResult.getException();
+          if (e instanceof TException) {
+            TException tException = (TException) e;
+            if (!isRecoverableTException(tException)) {
+              throw ExceptUtils.wrapCaughtException(tException);
+            }
+            return tException;
+          } else {
+            // Assume not retryable.
+            MetaException me = new MetaException(methodName + " error: ");
+            me.initCause(methodInvokeResult.getException());
+            throw me;
+          }
+        }
+      case INVOCATION_EXCEPTION:
+      case UNEXPECTED_EXCEPTION:
+        {
+          // Assume not retryable.
+          MetaException me = new MetaException(methodName + " error: ");
+          me.initCause(methodInvokeResult.getException());
+          throw me;
+        }
+      case ERROR:
+        {
+          ExceptUtils.handleFatalError(methodName + " error: ", methodInvokeResult.getError());
+          return null;   // Unreachable.
+        }
+      default:
+        throw new RuntimeException("Unexpected method invoke result: " + methodInvokeResult.getResultKind());
+    }
+  }
+
+  private MetaException throwUnexpectedBaseClass(Exception e) throws MetaException {
+    MetaException me = new MetaException("Internal error");
+    me.initCause(new RuntimeException("Only TException is currently a base class", e));
+    return me;
+  }
+
+  private static boolean isRecoverableTException(TException e) {
+    if (e instanceof MetaException) {
+      return isRecoverableMetaException((MetaException) e);
+    }
+    return (e instanceof TProtocolException) || (e instanceof TTransportException);
   }
 
   private static boolean isRecoverableMetaException(MetaException e) {

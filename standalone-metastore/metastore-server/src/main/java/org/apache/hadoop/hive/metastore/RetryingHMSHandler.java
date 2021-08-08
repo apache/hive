@@ -25,7 +25,6 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -79,10 +78,15 @@ public class RetryingHMSHandler implements InvocationHandler {
       //in case of transient failures in init method
       invoke(baseHandler, baseHandler.getClass().getDeclaredMethod("init", (Class<?>[]) null),
           null);
-    } catch (Throwable e) {
-      LOG.error("HMSHandler Fatal error: " + ExceptionUtils.getStackTrace(e));
-      MetaException me = new MetaException(e.getMessage());
-      me.initCause(e);
+    } catch (MetaException e) {
+      // Our RetryingHMSHandler.invoke method exception.
+      MetaException me = ExceptUtils.wrapMetastoreClientException("init", e);
+      LOG.error("HMSHandler fatal init error: ", me);
+      throw me;
+    } catch (NoSuchMethodException | SecurityException e) {
+      // Class.getDeclaredMethod exceptions.
+      MetaException me = ExceptUtils.wrapMetastoreClientException("init", e);
+      LOG.error("HMSHandler fatal error: ", me);
       throw me;
     }
   }
@@ -98,7 +102,7 @@ public class RetryingHMSHandler implements InvocationHandler {
   }
 
   @Override
-  public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+  public Object invoke(final Object proxy, final Method method, final Object[] args) throws MetaException {
     int retryCount = -1;
     int threadId = baseHandler.getThreadId();
     boolean error = true;
@@ -117,7 +121,7 @@ public class RetryingHMSHandler implements InvocationHandler {
     }
   }
 
-  public Result invokeInternal(final Object proxy, final Method method, final Object[] args) throws Throwable {
+  public Result invokeInternal(final Object proxy, final Method method, final Object[] args) throws MetaException {
 
     boolean gotNewConnectUrl = false;
     boolean reloadConf = MetastoreConf.getBoolVar(origConf, ConfVars.HMS_HANDLER_FORCE_RELOAD_CONF);
@@ -151,63 +155,69 @@ public class RetryingHMSHandler implements InvocationHandler {
           }
         }
         return new Result(object, retryCount);
-
       } catch (UndeclaredThrowableException e) {
-        if (e.getCause() != null) {
-          if (e.getCause() instanceof javax.jdo.JDOException) {
-            // Due to reflection, the jdo exception is wrapped in
-            // invocationTargetException
-            caughtException = e.getCause();
-          } else if (e.getCause() instanceof MetaException && e.getCause().getCause() != null
-              && e.getCause().getCause() instanceof javax.jdo.JDOException) {
-            // The JDOException may be wrapped further in a MetaException
-            caughtException = e.getCause().getCause();
-          } else {
-            LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
-            throw e.getCause();
-          }
-        } else {
-          LOG.error(ExceptionUtils.getStackTrace(e));
-          throw e;
+        // Exception not declared in method's exception throws clause...
+        Throwable cause = e.getCause();
+        if (cause instanceof Error) {
+          ExceptUtils.handleFatalError(method.getName(), (Error) cause);
         }
-      } catch (InvocationTargetException e) {
-        if (e.getCause() instanceof javax.jdo.JDOException) {
+        if (cause instanceof javax.jdo.JDOException) {
           // Due to reflection, the jdo exception is wrapped in
           // invocationTargetException
           caughtException = e.getCause();
-        } else if (e.getCause() instanceof NoSuchObjectException || e.getTargetException().getCause() instanceof NoSuchObjectException) {
+        } else if (cause instanceof MetaException && cause.getCause() != null
+            && cause.getCause() instanceof javax.jdo.JDOException) {
+          // The JDOException may be wrapped further in a MetaException
+          caughtException = cause.getCause();
+        } else {
+          MetaException me = ExceptUtils.wrapMetastoreClientException(method.getName(), cause);
+          LOG.error("Error happened calling method " + method.getName() + ": ", me);
+          throw me;
+        }
+      } catch (InvocationTargetException e) {
+        Throwable cause = e.getCause();
+        if (cause instanceof javax.jdo.JDOException) {
+          // Due to reflection, the jdo exception is wrapped in
+          // invocationTargetException
+          caughtException = cause;
+        } else if (cause instanceof NoSuchObjectException || e.getTargetException().getCause() instanceof NoSuchObjectException) {
+          MetaException me = ExceptUtils.wrapMetastoreClientException(method.getName(), cause);
           String methodName = method.getName();
           if (!methodName.startsWith("get_database") && !methodName.startsWith("get_table")
-              && !methodName.startsWith("get_partition") && !methodName.startsWith("get_function")
-              && !methodName.startsWith("get_stored_procedure") && !methodName.startsWith("find_package")) {
-            LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
+              && !methodName.startsWith("get_partition") && !methodName.startsWith("get_function")) {
+            LOG.error("Error happened calling method " + method.getName() + ": ", me);
           }
-          throw e.getCause();
-        } else if (e.getCause() instanceof MetaException && e.getCause().getCause() != null) {
-          if (e.getCause().getCause() instanceof javax.jdo.JDOException ||
-              e.getCause().getCause() instanceof NucleusException) {
+          throw me;
+        } else if (cause instanceof MetaException && cause.getCause() != null) {
+          Throwable actualCause = cause.getCause();
+          if (actualCause instanceof javax.jdo.JDOException ||
+                  actualCause instanceof NucleusException) {
             // The JDOException or the Nucleus Exception may be wrapped further in a MetaException
-            caughtException = e.getCause().getCause();
-          } else if (e.getCause().getCause() instanceof DeadlineException) {
+            caughtException = actualCause;
+          } else if (actualCause instanceof DeadlineException) {
             // The Deadline Exception needs no retry and be thrown immediately.
             Deadline.clear();
-            LOG.error("Error happens in method " + method.getName() + ": " +
-                ExceptionUtils.getStackTrace(e.getCause()));
-            throw e.getCause();
+            MetaException me = ExceptUtils.wrapMetastoreClientException(method.getName(), actualCause);
+            LOG.error("Error happened calling method " + method.getName() + ": ", me);
+            throw me;
           } else {
-            LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
-            throw e.getCause();
+            MetaException me = ExceptUtils.wrapMetastoreClientException(method.getName(), cause);
+            LOG.error("Error happened calling method " + method.getName() + ": ", me);
+            throw me;
           }
         } else {
-          LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
-          throw e.getCause();
+          MetaException me = ExceptUtils.wrapMetastoreClientException(method.getName(), cause);
+          LOG.error("Error happened calling method " + method.getName() + ": ", me);
+          throw me;
         }
+      } catch (IllegalAccessException e) {
+        MetaException me = ExceptUtils.wrapMetastoreClientException(method.getName(), e);
+        LOG.error("Error happened calling method " + method.getName() + ": ", me);
+        throw me;
       }
-
+      MetaException me = ExceptUtils.wrapMetastoreClientException(method.getName(), caughtException);
       if (retryCount >= retryLimit) {
-        LOG.error("HMSHandler Fatal error: " + ExceptionUtils.getStackTrace(caughtException));
-        MetaException me = new MetaException(caughtException.toString());
-        me.initCause(caughtException);
+        LOG.error("HMSHandler fatal error calling method " + method.getName() + ": ", me);
         throw me;
       }
 
@@ -216,9 +226,15 @@ public class RetryingHMSHandler implements InvocationHandler {
       LOG.error(
         String.format(
           "Retrying HMSHandler after %d ms (attempt %d of %d)", retryInterval, retryCount, retryLimit) +
-          " with error: " + ExceptionUtils.getStackTrace(caughtException));
+          " with error calling method " + method.getName() + ": ", me);
 
-      Thread.sleep(retryInterval);
+      try {
+        Thread.sleep(retryInterval);
+      } catch (InterruptedException e) {
+        MetaException interruptMe = ExceptUtils.wrapMetastoreClientException(method.getName(), e);
+        LOG.error("Error happened calling method " + method.getName() + ": ", interruptMe);
+        throw interruptMe;
+      }
       // If we have a connection error, the JDO connection URL hook might
       // provide us with a new URL to access the datastore.
       String lastUrl = MetaStoreInit.getConnectionURL(getActiveConf());
