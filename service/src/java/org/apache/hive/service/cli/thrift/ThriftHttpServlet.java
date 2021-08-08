@@ -251,7 +251,14 @@ public class ThriftHttpServlet extends TServlet {
       // If we reached here, we have match for HS2 generated cookie
       currValue = currCookie.getValue();
       // Validate the value.
-      currValue = signer.verifyAndExtract(currValue);
+      try {
+        currValue = signer.verifyAndExtract(currValue);
+      } catch (IllegalArgumentException e) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Invalid cookie", e);
+        }
+        currValue = null;
+      }
       // Retrieve the user name, do the final validation step.
       if (currValue != null) {
         String userName = HttpAuthUtils.getUserNameFromCookieToken(currValue);
