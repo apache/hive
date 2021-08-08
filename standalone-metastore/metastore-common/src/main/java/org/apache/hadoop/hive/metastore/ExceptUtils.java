@@ -224,7 +224,7 @@ public class ExceptUtils {
       wrapThrowable = (Throwable) constructor.newInstance(msg);
       wrapThrowable.initCause(caughtThrowable);
       ExceptUtils.removeFirstStackTraceEle(wrapThrowable);
-    } catch (Exception e) {
+    } catch (Throwable t) {
       return caughtExc;
     }
     return (T) wrapThrowable;
