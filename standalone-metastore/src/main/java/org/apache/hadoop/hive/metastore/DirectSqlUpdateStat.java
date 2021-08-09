@@ -54,6 +54,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.common.StatsSetupConst.COLUMN_STATS_ACCURATE;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
 import static org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler.getPartValsFromName;
 
 /**
@@ -582,6 +583,12 @@ class DirectSqlUpdateStat {
       jdoConn = pm.getDataStoreConnection();
       dbConn = (Connection) (jdoConn.getNativeConnection());
 
+      if (sqlGenerator.getDbProduct() == MYSQL) {
+        try (Statement stmt = dbConn.createStatement()) {
+          stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
+        }
+      }
+
       Map<PartitionInfo, ColumnStatistics> partitionInfoMap = getPartitionInfo(dbConn, tbl.getId(), partColStatsMap);
 
       Map<String, Map<String, String>> result =
@@ -646,6 +653,12 @@ class DirectSqlUpdateStat {
       lockInternal();
       jdoConn = pm.getDataStoreConnection();
       dbConn = (Connection) (jdoConn.getNativeConnection());
+
+      if (sqlGenerator.getDbProduct() == MYSQL) {
+        try (Statement stmt = dbConn.createStatement()) {
+          stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
+        }
+      }
 
       // This loop will be iterated at max twice. If there is no records, it will first insert and then do a select.
       // We are not using any upsert operations as select for update and then update is required to make sure that
