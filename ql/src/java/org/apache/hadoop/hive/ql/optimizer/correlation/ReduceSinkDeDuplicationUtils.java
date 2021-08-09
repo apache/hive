@@ -335,7 +335,8 @@ public class ReduceSinkDeDuplicationUtils {
       return null;
     }
     // if cRS is being used for distinct - the two reduce sinks are incompatible
-    if (cConf.getDistinctColumnIndices().size() >= 2) {
+    if (cConf.getDistinctColumnIndices().size() >= 2 ||
+        hiveConf.getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW) && pConf.getDistinctColumnIndices().size() >= 1) {
       return null;
     }
     if (cConf.getBucketingVersion() != pConf.getBucketingVersion()) {

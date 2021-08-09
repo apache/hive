@@ -356,7 +356,7 @@ STAGE PLANS:
                         key expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: string)
                         null sort order: zzz
                         sort order: +++
-                        Map-reduce partition columns: _col0 (type: string)
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint), _col2 (type: string)
                         Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: all inputs

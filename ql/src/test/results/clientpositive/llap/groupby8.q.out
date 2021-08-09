@@ -66,7 +66,7 @@ STAGE PLANS:
                       key expressions: key (type: string), substr(value, 5) (type: string)
                       null sort order: zz
                       sort order: ++
-                      Map-reduce partition columns: key (type: string)
+                      Map-reduce partition columns: key (type: string), substr(value, 5) (type: string)
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -76,7 +76,7 @@ STAGE PLANS:
                       key expressions: key (type: string), substr(value, 5) (type: string)
                       null sort order: zz
                       sort order: ++
-                      Map-reduce partition columns: key (type: string)
+                      Map-reduce partition columns: key (type: string), substr(value, 5) (type: string)
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -982,7 +982,7 @@ STAGE PLANS:
                       key expressions: key (type: string), substr(value, 5) (type: string)
                       null sort order: zz
                       sort order: ++
-                      Map-reduce partition columns: key (type: string)
+                      Map-reduce partition columns: key (type: string), substr(value, 5) (type: string)
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -992,7 +992,7 @@ STAGE PLANS:
                       key expressions: key (type: string), substr(value, 5) (type: string)
                       null sort order: zz
                       sort order: ++
-                      Map-reduce partition columns: key (type: string)
+                      Map-reduce partition columns: key (type: string), substr(value, 5) (type: string)
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs

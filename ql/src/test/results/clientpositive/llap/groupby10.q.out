@@ -82,7 +82,7 @@ STAGE PLANS:
                       key expressions: key (type: int), substr(value, 5) (type: string)
                       null sort order: zz
                       sort order: ++
-                      Map-reduce partition columns: key (type: int)
+                      Map-reduce partition columns: key (type: int), substr(value, 5) (type: string)
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: string)
@@ -92,7 +92,7 @@ STAGE PLANS:
                       key expressions: key (type: int), substr(value, 5) (type: string)
                       null sort order: zz
                       sort order: ++
-                      Map-reduce partition columns: key (type: int)
+                      Map-reduce partition columns: key (type: int), substr(value, 5) (type: string)
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -422,7 +422,7 @@ STAGE PLANS:
                       key expressions: key (type: int), substr(value, 5) (type: string)
                       null sort order: zz
                       sort order: ++
-                      Map-reduce partition columns: key (type: int)
+                      Map-reduce partition columns: key (type: int), substr(value, 5) (type: string)
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: int), value (type: string)
@@ -432,7 +432,7 @@ STAGE PLANS:
                       key expressions: key (type: int), substr(value, 5) (type: string)
                       null sort order: zz
                       sort order: ++
-                      Map-reduce partition columns: key (type: int)
+                      Map-reduce partition columns: key (type: int), substr(value, 5) (type: string)
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
