@@ -85,39 +85,56 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
     }
     LOG.info("Setting permission for path dest {} from source {} owner {} : {} : {}",
             destPath, sourcePath, status.getOwner(), status.getGroup(), status.getPermission());
-    destPath.getFileSystem(clonedConf).setOwner(destPath, status.getOwner(), status.getGroup());
-    destPath.getFileSystem(clonedConf).setPermission(destPath, status.getPermission());
-    setAclsToTarget(status, sourcePath, destPath, clonedConf);
+    preserveDistCpAttributes(destPath, sourcePath, clonedConf, status);
     return createdDir;
   }
 
-  private void setAclsToTarget(FileStatus sourceStatus, Path sourcePath, Path destPath, HiveConf clonedConf) throws IOException {
-    // Check if distCp options contains preserve ACL.
-    if (isPreserveAcl(clonedConf)) {
-      AclStatus sourceAcls =
-          sourcePath.getFileSystem(clonedConf).getAclStatus(sourcePath);
-      if (sourceAcls != null && sourceAcls.getEntries().size() > 0) {
-        destPath.getFileSystem(clonedConf).removeAcl(destPath);
-        List<AclEntry> effectiveAclEntries = AclUtil
-            .getAclFromPermAndEntries(sourceStatus.getPermission(),
-                sourceAcls.getEntries());
-        destPath.getFileSystem(clonedConf).setAcl(destPath, effectiveAclEntries);
-      }
+  private void preserveDistCpAttributes(Path destPath, Path sourcePath, HiveConf clonedConf, FileStatus status)
+      throws IOException {
+    String preserveString = getPreserveString(clonedConf);
+    LOG.info("Preserving DistCp Attributes: {}", preserveString);
+    FileSystem destFs = destPath.getFileSystem(clonedConf);
+    // If both preserve user and group are specified.
+    if (preserveString.contains("u") && preserveString.contains("g")) {
+      destFs.setOwner(destPath, status.getOwner(), status.getGroup());
+    } else if (preserveString.contains("u")) {
+      // If only preserve user is specified.
+      destFs.setOwner(destPath, status.getOwner(), null);
+    } else if (preserveString.contains("g")) {
+      // If only preserve group is specified.
+      destFs.setOwner(destPath, null, status.getGroup());
+    }
+    // Preserve permissions
+    if (preserveString.contains("p")) {
+      destFs.setPermission(destPath, status.getPermission());
+    }
+    // Preserve ACL
+    if (preserveString.contains("a")) {
+      setAclsToTarget(status, sourcePath, destPath, clonedConf);
     }
   }
 
-  private boolean isPreserveAcl(HiveConf clonedConf) {
+  private void setAclsToTarget(FileStatus sourceStatus, Path sourcePath, Path destPath, HiveConf clonedConf)
+      throws IOException {
+    // Check if distCp options contains preserve ACL.
+    AclStatus sourceAcls = sourcePath.getFileSystem(clonedConf).getAclStatus(sourcePath);
+    if (sourceAcls != null && sourceAcls.getEntries().size() > 0) {
+      destPath.getFileSystem(clonedConf).removeAcl(destPath);
+      List<AclEntry> effectiveAclEntries =
+          AclUtil.getAclFromPermAndEntries(sourceStatus.getPermission(), sourceAcls.getEntries());
+      destPath.getFileSystem(clonedConf).setAcl(destPath, effectiveAclEntries);
+    }
+  }
+
+  private String getPreserveString(HiveConf clonedConf) {
     List<String> distCpOptions = constructDistCpOptions(clonedConf);
     for (String option : distCpOptions) {
       if (option.startsWith("-p")) {
-        if (option.contains("a")) {
-          return true;
-        } else {
-          return false;
-        }
+
+        return option.replaceFirst("-p", "");
       }
     }
-    return false;
+    return "";
   }
 
   private boolean setTargetPathOwner(Path targetPath, Path sourcePath, UserGroupInformation proxyUser,
