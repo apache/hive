@@ -254,9 +254,7 @@ public class CliConfigs {
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
 
-        //addExternalDB(QTestExternalDB.createDefaultExtDB("derby"));
         addExternalDB(QTestExternalDB.createDefaultExtDB("mysql"));
-        //addExternalDB(QTestExternalDB.createDefaultExtDB("postgres"));
 
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.LLAP_LOCAL);

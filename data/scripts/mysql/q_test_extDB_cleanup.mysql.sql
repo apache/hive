@@ -1,3 +1,3 @@
-drop table country;
-drop table stats;
-drop table city;
+drop table if exists country;
+drop table if exists stats;
+drop table if exists city;
