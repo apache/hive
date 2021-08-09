@@ -388,6 +388,8 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     }
 
     streamingState.rollingPart.append(row);
+    //Get back converted row
+    row = streamingState.rollingPart.getAt(streamingState.rollingPart.size() -1);
 
     WindowTableFunctionDef tabDef = (WindowTableFunctionDef) tableDef;
 
