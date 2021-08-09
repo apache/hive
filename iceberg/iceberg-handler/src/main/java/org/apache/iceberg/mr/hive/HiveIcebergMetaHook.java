@@ -60,6 +60,8 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableMetadataParser;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.Transaction;
+import org.apache.iceberg.UpdatePartitionSpec;
 import org.apache.iceberg.UpdateProperties;
 import org.apache.iceberg.UpdateSchema;
 import org.apache.iceberg.catalog.TableIdentifier;
@@ -103,6 +105,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   private boolean canMigrateHiveTable;
   private PreAlterTableProperties preAlterTableProperties;
   private UpdateSchema updateSchema;
+  private UpdatePartitionSpec updatePartitionSpec;
+  private Transaction transaction;
   private AlterTableType currentAlterTableOp;
 
   public HiveIcebergMetaHook(Configuration conf) {
@@ -293,8 +297,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         case REPLACE_COLUMNS:
         case RENAME_COLUMN:
         case ADDCOLS:
-          if (updateSchema != null) {
-            updateSchema.commit();
+          if (transaction != null) {
+            transaction.commitTransaction();
           }
           break;
         case ADDPROPS:
@@ -497,12 +501,14 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         HiveSchemaUtil.getSchemaDiff(hmsTable.getSd().getCols(), HiveSchemaUtil.convert(icebergTable.schema()), false)
             .getMissingFromSecond();
     if (!addedCols.isEmpty()) {
-      updateSchema = icebergTable.updateSchema();
+      transaction = icebergTable.newTransaction();
+      updateSchema = transaction.updateSchema();
     }
     for (FieldSchema addedCol : addedCols) {
       updateSchema.addColumn(addedCol.getName(),
           HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType())), addedCol.getComment());
     }
+    updateSchema.commit();
   }
 
   private void handleReplaceColumns(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws MetaException {
@@ -531,12 +537,14 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           "mismatches between HMS and Iceberg, please consider the UPDATE COLUMNS command.");
     }
 
-    updateSchema = icebergTable.updateSchema();
+    transaction = icebergTable.newTransaction();
+    updateSchema = transaction.updateSchema();
     LOG.info("handleReplaceColumns: Dropping the following columns for Iceberg table {}, cols: {}",
         hmsTable.getTableName(), schemaDifference.getMissingFromFirst());
     for (FieldSchema droppedCol : schemaDifference.getMissingFromFirst()) {
       updateSchema.deleteColumn(droppedCol.getName());
     }
+    updateSchema.commit();
   }
 
   private void handleChangeColumn(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws MetaException {
@@ -555,7 +563,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         renameMapping);
 
     if (!schemaDifference.isEmpty() || outOfOrder != null) {
-      updateSchema = icebergTable.updateSchema();
+      transaction = icebergTable.newTransaction();
+      updateSchema = transaction.updateSchema();
     } else {
       // we should get here if the user didn't change anything about the column
       // i.e. no changes to the name, type, comment or order
@@ -595,6 +604,22 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         updateSchema.moveAfter(outOfOrder.first(), outOfOrder.second().get());
       } else {
         updateSchema.moveFirst(outOfOrder.first());
+      }
+    }
+    updateSchema.commit();
+
+    handlePartitionRename(schemaDifference);
+  }
+
+  private void handlePartitionRename(HiveSchemaUtil.SchemaDifference schemaDifference) {
+    // in case a partition column has been renamed, spec needs to be adjusted too
+    if (!schemaDifference.getMissingFromSecond().isEmpty()) {
+      FieldSchema oldField = schemaDifference.getMissingFromFirst().get(0);
+      FieldSchema updatedField = schemaDifference.getMissingFromSecond().get(0);
+      if (icebergTable.spec().fields().stream().anyMatch(pf -> pf.name().equals(oldField.getName()))) {
+        updatePartitionSpec = transaction.updateSpec();
+        updatePartitionSpec.renameField(oldField.getName(), updatedField.getName());
+        updatePartitionSpec.commit();
       }
     }
   }
