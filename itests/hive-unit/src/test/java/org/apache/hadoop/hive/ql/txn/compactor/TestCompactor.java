@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PATTERN;
 import static org.apache.hadoop.hive.ql.TestTxnCommands2.runCleaner;
 import static org.apache.hadoop.hive.ql.TestTxnCommands2.runInitiator;
 import static org.apache.hadoop.hive.ql.TestTxnCommands2.runWorker;
@@ -779,6 +780,67 @@ public class TestCompactor {
         connection2.close();
       }
     }
+  }
+
+  @Test
+  public void testNoDataLossWhenMaxNumDeltaIsUsed() throws Exception {
+    String dbName = "default";
+    String tblName = "cws";
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+      " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values (1, 'a')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values (3, 'b')", driver);
+
+    runMajorCompaction(dbName, tblName);
+    runCleaner(conf);
+
+    for (int i = 0; i < 3; i++) {
+      executeStatementOnDriver("MERGE INTO " + tblName + " AS T USING (" +
+        "select * from " + tblName + " union all select a+1, b from " + tblName + ") AS S " +
+        "ON T.a=s.a " +
+        "WHEN MATCHED THEN DELETE " +
+        "WHEN not MATCHED THEN INSERT values (s.a, s.b)", driver);
+    }
+
+    driver.run("select a from " + tblName);
+    List<String> res = new ArrayList<>();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals(res, Arrays.asList("4", "6"));
+
+    conf.setIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA, 5);
+    runMajorCompaction(dbName, tblName);
+
+    List<String> matchesNotFound = new ArrayList<>(5);
+    matchesNotFound.add(AcidUtils.deleteDeltaSubdir(3, 4) + VISIBILITY_PATTERN);
+    matchesNotFound.add(AcidUtils.deltaSubdir(3, 4) + VISIBILITY_PATTERN);
+    matchesNotFound.add(AcidUtils.deleteDeltaSubdir(5, 5, 0));
+    matchesNotFound.add(AcidUtils.deltaSubdir(5, 5, 1));
+    matchesNotFound.add(AcidUtils.baseDir(5) + VISIBILITY_PATTERN);
+
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    Table table = msClient.getTable(dbName, tblName);
+    msClient.close();
+
+    FileSystem fs = FileSystem.get(conf);
+    FileStatus[] stat = fs.listStatus(new Path(table.getSd().getLocation()));
+
+    for (FileStatus f : stat) {
+      for (int j = 0; j < matchesNotFound.size(); j++) {
+        if (f.getPath().getName().matches(matchesNotFound.get(j))) {
+          matchesNotFound.remove(j);
+          break;
+        }
+      }
+    }
+    Assert.assertEquals("Matches Not Found: " + matchesNotFound, 0, matchesNotFound.size());
+    runCleaner(conf);
+
+    driver.run("select a from " + tblName);
+    res = new ArrayList<>();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals(res, Arrays.asList("4", "6"));
   }
 
   @Test
