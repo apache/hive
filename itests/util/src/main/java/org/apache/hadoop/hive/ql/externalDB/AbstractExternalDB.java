@@ -81,7 +81,7 @@ public abstract class AbstractExternalDB {
                 abstractExternalDB = new PostgresExternalDB();
                 break;
             default:
-                throw new IOException("unsupported external database type: " + externalDBType);
+                throw new IOException("unsupported external database type " + externalDBType);
         }
         return abstractExternalDB;
     }
