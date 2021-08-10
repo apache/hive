@@ -55,7 +55,7 @@ public abstract class AbstractExternalDB {
     protected static final String dbName = "qtestDB";
 
     public String externalDBType = "mysql"; // default: mysql
-    protected String url = "jdbc:mysql://" + hostAddress + ":3306/" + dbName; // default: mysql
+    protected String url = "jdbc:mysql://localhost:3306/" + dbName; // default: mysql
     protected String driver = "org.mariadb.jdbc.Driver"; // default: mysql
     private static final int MAX_STARTUP_WAIT = 5 * 60 * 1000;
 
@@ -76,9 +76,6 @@ public abstract class AbstractExternalDB {
         switch (externalDBType) {
             case "mysql":
                 abstractExternalDB = new MySQLExternalDB();
-                break;
-            case "derby":
-                abstractExternalDB = new DerbyExternalDB();
                 break;
             case "postgres":
                 abstractExternalDB = new PostgresExternalDB();
