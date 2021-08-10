@@ -185,9 +185,18 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     return null;
   }
 
-  protected abstract ResultSet fetchTableMetadata(String tableName) throws MetaException;
+  protected ResultSet fetchTableMetadata(String tableName) throws MetaException {
+    try {
+      return fetchTablesViaDBMetaData(tableName);
+    }
+    catch (SQLException sqle) {
+      throw new MetaException("Error while trying to access the table names in the database" + sqle);
+    }
+  }
 
-  protected abstract ResultSet fetchTableNames() throws MetaException;
+  protected ResultSet fetchTableNames() throws MetaException {
+    return fetchTableMetadata(null);
+  }
 
   /**
    * Fetch a single table with the given name, returns a Hive Table object from the remote database

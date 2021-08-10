@@ -1,0 +1,191 @@
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS
+PREHOOK: query: CREATE CONNECTOR redshift_test
+TYPE 'redshift'
+URL 'jdbc:redshift://redshift-cluster-1.c1gffkxfot1v.us-east-2.redshift.amazonaws.com:5439/dev'
+COMMENT 'redshift test connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="user",
+"hive.sql.dbcp.password"="password")
+PREHOOK: type: CREATEDATACONNECTOR
+PREHOOK: Output: connector:redshift_test
+POSTHOOK: query: CREATE CONNECTOR redshift_test
+TYPE 'redshift'
+URL 'jdbc:redshift://redshift-cluster-1.c1gffkxfot1v.us-east-2.redshift.amazonaws.com:5439/dev'
+COMMENT 'redshift test connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="user",
+"hive.sql.dbcp.password"="password")
+POSTHOOK: type: CREATEDATACONNECTOR
+POSTHOOK: Output: connector:redshift_test
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS
+redshift_test
+PREHOOK: query: CREATE CONNECTOR IF NOT EXISTS redshift_test
+TYPE 'redshift'
+URL 'jdbc:redshift://redshift-cluster-1.c1gffkxfot1v.us-east-2.redshift.amazonaws.com:5439/dev'
+COMMENT 'redshift test connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="user",
+"hive.sql.dbcp.password"="password")
+PREHOOK: type: CREATEDATACONNECTOR
+PREHOOK: Output: connector:redshift_test
+POSTHOOK: query: CREATE CONNECTOR IF NOT EXISTS redshift_test
+TYPE 'redshift'
+URL 'jdbc:redshift://redshift-cluster-1.c1gffkxfot1v.us-east-2.redshift.amazonaws.com:5439/dev'
+COMMENT 'redshift test connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="user",
+"hive.sql.dbcp.password"="password")
+POSTHOOK: type: CREATEDATACONNECTOR
+POSTHOOK: Output: connector:redshift_test
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS
+redshift_test
+PREHOOK: query: DROP CONNECTOR redshift_test
+PREHOOK: type: DROPDATACONNECTOR
+PREHOOK: Input: connector:redshift_test
+PREHOOK: Output: connector:redshift_test
+POSTHOOK: query: DROP CONNECTOR redshift_test
+POSTHOOK: type: DROPDATACONNECTOR
+POSTHOOK: Input: connector:redshift_test
+POSTHOOK: Output: connector:redshift_test
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS
+PREHOOK: query: DROP CONNECTOR IF EXISTS redshift_test
+PREHOOK: type: DROPDATACONNECTOR
+POSTHOOK: query: DROP CONNECTOR IF EXISTS redshift_test
+POSTHOOK: type: DROPDATACONNECTOR
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS
+PREHOOK: query: CREATE CONNECTOR redshift_test
+TYPE 'redshift'
+URL 'jdbc:redshift://redshift-cluster-1.c1gffkxfot1v.us-east-2.redshift.amazonaws.com:5439/dev'
+COMMENT 'redshift test connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="user",
+"hive.sql.dbcp.password"="password")
+PREHOOK: type: CREATEDATACONNECTOR
+PREHOOK: Output: connector:redshift_test
+POSTHOOK: query: CREATE CONNECTOR redshift_test
+TYPE 'redshift'
+URL 'jdbc:redshift://redshift-cluster-1.c1gffkxfot1v.us-east-2.redshift.amazonaws.com:5439/dev'
+COMMENT 'redshift test connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="user",
+"hive.sql.dbcp.password"="password")
+POSTHOOK: type: CREATEDATACONNECTOR
+POSTHOOK: Output: connector:redshift_test
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS
+redshift_test
+PREHOOK: query: CREATE REMOTE DATABASE db_redshift USING redshift_test with DBPROPERTIES("connector.remoteDbName"="dev")
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Input: connector:redshift_test
+PREHOOK: Output: database:db_redshift
+POSTHOOK: query: CREATE REMOTE DATABASE db_redshift USING redshift_test with DBPROPERTIES("connector.remoteDbName"="dev")
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Input: connector:redshift_test
+POSTHOOK: Output: database:db_redshift
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+db_redshift
+default
+PREHOOK: query: USE db_redshift
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db_redshift
+POSTHOOK: query: USE db_redshift
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db_redshift
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:db_redshift
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:db_redshift
+PREHOOK: query: alter connector redshift_test set URL 'jdbc:redshift://redshift-cluster-1.c1gffkxfot1v.us-west-2.redshift.amazonaws.com:5439/dev2'
+PREHOOK: type: ALTERDATACONNECTOR_
+PREHOOK: Output: connector:redshift_test
+POSTHOOK: query: alter connector redshift_test set URL 'jdbc:redshift://redshift-cluster-1.c1gffkxfot1v.us-west-2.redshift.amazonaws.com:5439/dev2'
+POSTHOOK: type: ALTERDATACONNECTOR_
+POSTHOOK: Output: connector:redshift_test
+PREHOOK: query: DESCRIBE CONNECTOR extended redshift_test
+PREHOOK: type: DESCDATACONNECTOR
+PREHOOK: Input: connector:redshift_test
+POSTHOOK: query: DESCRIBE CONNECTOR extended redshift_test
+POSTHOOK: type: DESCDATACONNECTOR
+POSTHOOK: Input: connector:redshift_test
+redshift_test	redshift	jdbc:redshift://redshift-cluster-1.c1gffkxfot1v.us-west-2.redshift.amazonaws.com:5439/dev2	hive_test_user	USER	redshift test connector	{hive.sql.dbcp.password=password, hive.sql.dbcp.username=user}
+PREHOOK: query: alter connector redshift_test set DCPROPERTIES("hive.sql.dbcp.username"="user2","hive.sql.dbcp.password"="password2")
+PREHOOK: type: ALTERDATACONNECTOR
+PREHOOK: Output: connector:redshift_test
+POSTHOOK: query: alter connector redshift_test set DCPROPERTIES("hive.sql.dbcp.username"="user2","hive.sql.dbcp.password"="password2")
+POSTHOOK: type: ALTERDATACONNECTOR
+POSTHOOK: Output: connector:redshift_test
+PREHOOK: query: DESCRIBE CONNECTOR extended redshift_test
+PREHOOK: type: DESCDATACONNECTOR
+PREHOOK: Input: connector:redshift_test
+POSTHOOK: query: DESCRIBE CONNECTOR extended redshift_test
+POSTHOOK: type: DESCDATACONNECTOR
+POSTHOOK: Input: connector:redshift_test
+redshift_test	redshift	jdbc:redshift://redshift-cluster-1.c1gffkxfot1v.us-west-2.redshift.amazonaws.com:5439/dev2	hive_test_user	USER	redshift test connector	{hive.sql.dbcp.password=password2, hive.sql.dbcp.username=user2}
+PREHOOK: query: alter connector redshift_test set OWNER USER newuser
+PREHOOK: type: ALTERDATABASE_OWNER
+PREHOOK: Output: connector:redshift_test
+POSTHOOK: query: alter connector redshift_test set OWNER USER newuser
+POSTHOOK: type: ALTERDATABASE_OWNER
+POSTHOOK: Output: connector:redshift_test
+PREHOOK: query: DESCRIBE CONNECTOR extended redshift_test
+PREHOOK: type: DESCDATACONNECTOR
+PREHOOK: Input: connector:redshift_test
+POSTHOOK: query: DESCRIBE CONNECTOR extended redshift_test
+POSTHOOK: type: DESCDATACONNECTOR
+POSTHOOK: Input: connector:redshift_test
+redshift_test	redshift	jdbc:redshift://redshift-cluster-1.c1gffkxfot1v.us-west-2.redshift.amazonaws.com:5439/dev2	newuser	USER	redshift test connector	{hive.sql.dbcp.password=password2, hive.sql.dbcp.username=user2}
+PREHOOK: query: DROP DATABASE db_redshift
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:db_redshift
+PREHOOK: Output: database:db_redshift
+POSTHOOK: query: DROP DATABASE db_redshift
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:db_redshift
+POSTHOOK: Output: database:db_redshift
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: DROP CONNECTOR redshift_test
+PREHOOK: type: DROPDATACONNECTOR
+PREHOOK: Input: connector:redshift_test
+PREHOOK: Output: connector:redshift_test
+POSTHOOK: query: DROP CONNECTOR redshift_test
+POSTHOOK: type: DROPDATACONNECTOR
+POSTHOOK: Input: connector:redshift_test
+POSTHOOK: Output: connector:redshift_test
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS
+PREHOOK: query: DROP CONNECTOR IF EXISTS redshift_test
+PREHOOK: type: DROPDATACONNECTOR
+POSTHOOK: query: DROP CONNECTOR IF EXISTS redshift_test
+POSTHOOK: type: DROPDATACONNECTOR
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS

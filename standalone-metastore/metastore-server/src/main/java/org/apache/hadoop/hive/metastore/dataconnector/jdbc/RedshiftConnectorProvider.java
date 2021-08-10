@@ -20,21 +20,6 @@ public class RedshiftConnectorProvider extends AbstractJDBCConnectorProvider {
         super(dbName, dataConn, DRIVER_CLASS);
     }
 
-    @Override protected ResultSet fetchTableMetadata(String tableName) throws MetaException {
-        ResultSet rs = null;
-        try {
-            rs = getConnection().getMetaData().getTables(scoped_db, null, tableName, new String[] { "TABLE" });
-        } catch (SQLException sqle) {
-            LOG.warn("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
-            throw new MetaException("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
-        }
-        return rs;
-    }
-
-    @Override protected ResultSet fetchTableNames() throws MetaException {
-        return fetchTableMetadata(null);
-    }
-
     protected String getDataType(String dbDataType, int size) {
         String mappedType = super.getDataType(dbDataType, size);
 
