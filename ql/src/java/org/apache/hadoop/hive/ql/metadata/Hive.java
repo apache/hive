@@ -2500,6 +2500,7 @@ public class Hive {
         }
         if (newFiles != null) {
           if (!newFiles.isEmpty()) {
+            newFileStatuses = new ArrayList<>();
             newFileStatuses.addAll(newFiles);
           } else {
             newFileStatuses = listFilesCreatedByQuery(loadPath, writeId, stmtId);
