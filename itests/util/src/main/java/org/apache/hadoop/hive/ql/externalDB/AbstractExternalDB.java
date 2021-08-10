@@ -54,9 +54,9 @@ public abstract class AbstractExternalDB {
     protected static final String password = "qtestpassword";
     protected static final String dbName = "qtestDB";
 
-    public String externalDBType = "derby"; // default: derby
-    protected String url = String.format("jdbc:derby:memory:%s;create=true", dbName); // defualt: dervy
-    protected String driver = "org.apache.derby.jdbc.EmbeddedDriver"; // default: derby
+    public String externalDBType = "mysql"; // default: mysql
+    protected String url = "jdbc:mysql://" + hostAddress + ":3306/" + dbName; // default: mysql
+    protected String driver = "org.mariadb.jdbc.Driver"; // default: mysql
     private static final int MAX_STARTUP_WAIT = 5 * 60 * 1000;
 
     public static class ProcessResults {
