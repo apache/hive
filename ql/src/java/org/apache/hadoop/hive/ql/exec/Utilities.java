@@ -2855,7 +2855,7 @@ public final class Utilities {
   public static final class PartitionDetails {
     public Map<String, String> fullSpec;
     public Partition partition;
-    public List<Path> newFiles;
+    public List<FileStatus> newFiles;
     public boolean hasOldPartition = false;
     public AcidUtils.TableSnapshot tableSnapshot;
   }
@@ -2871,10 +2871,19 @@ public final class Utilities {
       Path loadPath = dpCtx.getRootPath();
       FileSystem fs = loadPath.getFileSystem(conf);
       int numDPCols = dpCtx.getNumDPCols();
-      Map<Path, Optional<List<Path>>> allPartition = new HashMap<>();
+      Map<Path, Optional<List<FileStatus>>> allPartition = new HashMap<>();
       if (dynamicPartitionSpecs != null) {
         for (Map.Entry<String, List<Path>> partSpec : dynamicPartitionSpecs.entrySet()) {
-          allPartition.put(new Path(loadPath, partSpec.getKey()), Optional.of(partSpec.getValue()));
+          if (Optional.of(partSpec.getValue()).isPresent()) {
+            List<Path> pathList = partSpec.getValue();
+            List<FileStatus> fileStatuses = new ArrayList<>();
+            for (Path filePath : pathList) {
+              fileStatuses.add(fs.getFileStatus(filePath));
+            }
+            allPartition.put(new Path(loadPath, partSpec.getKey()), Optional.of(fileStatuses));
+          } else {
+            allPartition.put(new Path(loadPath, partSpec.getKey()), null);
+          }
         }
       } else {
         List<FileStatus> status = HiveStatsUtils.getFileStatusRecurse(loadPath, numDPCols, fs);
