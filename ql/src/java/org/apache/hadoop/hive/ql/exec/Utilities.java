@@ -2871,19 +2871,10 @@ public final class Utilities {
       Path loadPath = dpCtx.getRootPath();
       FileSystem fs = loadPath.getFileSystem(conf);
       int numDPCols = dpCtx.getNumDPCols();
-      Map<Path, Optional<List<FileStatus>>> allPartition = new HashMap<>();
+      Map<Path, Optional<List<Path>>> allPartition = new HashMap<>();
       if (dynamicPartitionSpecs != null) {
         for (Map.Entry<String, List<Path>> partSpec : dynamicPartitionSpecs.entrySet()) {
-          if (Optional.of(partSpec.getValue()).isPresent()) {
-            List<Path> pathList = partSpec.getValue();
-            List<FileStatus> fileStatuses = new ArrayList<>();
-            for (Path filePath : pathList) {
-              fileStatuses.add(fs.getFileStatus(filePath));
-            }
-            allPartition.put(new Path(loadPath, partSpec.getKey()), Optional.of(fileStatuses));
-          } else {
-            allPartition.put(new Path(loadPath, partSpec.getKey()), null);
-          }
+          allPartition.put(new Path(loadPath, partSpec.getKey()), Optional.of(partSpec.getValue()));
         }
       } else {
         List<FileStatus> status = HiveStatsUtils.getFileStatusRecurse(loadPath, numDPCols, fs);
@@ -2906,7 +2897,7 @@ public final class Utilities {
           Collections.synchronizedMap(new LinkedHashMap<>());
 
       // calculate full path spec for each valid partition path
-      allPartition.entrySet().forEach(partEntry -> {
+      for (Map.Entry<Path, Optional<List<Path>>> partEntry : allPartition.entrySet()) {
         Path partPath = partEntry.getKey();
         Map<String, String> fullPartSpec = Maps.newLinkedHashMap(partSpec);
         String staticParts =  Warehouse.makeDynamicPartName(partSpec);
@@ -2920,11 +2911,14 @@ public final class Utilities {
           PartitionDetails details = new PartitionDetails();
           details.fullSpec = fullPartSpec;
           if (partEntry.getValue().isPresent()) {
-            details.newFiles = partEntry.getValue().get();
+            details.newFiles = new ArrayList<>();
+            for (Path filePath : partEntry.getValue().get()) {
+              details.newFiles.add(fs.getFileStatus(filePath));
+            }
           }
           partitionDetailsMap.put(partPath, details);
         }
-      });
+      }
       return partitionDetailsMap;
     } catch (IOException e) {
       throw new HiveException(e);
