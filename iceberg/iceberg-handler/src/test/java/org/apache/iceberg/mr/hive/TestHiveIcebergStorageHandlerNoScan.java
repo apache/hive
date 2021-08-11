@@ -40,6 +40,7 @@ import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
@@ -946,6 +947,35 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     // Same verification should be applied, as we expect newfloatcol NOT to be added to the schema
     verifyAlterTableAddColumnsTests();
+  }
+
+  @Test
+  public void testAlterTableRenamePartitionColumn() throws Exception {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, SPEC,
+        FileFormat.PARQUET, ImmutableList.of());
+    shell.executeStatement("ALTER TABLE default.customers SET PARTITION SPEC (last_name)");
+
+    // Renaming (and reordering) a partition column
+    shell.executeStatement("ALTER TABLE default.customers CHANGE last_name family_name string FIRST");
+    List<PartitionField> partitionFields = testTables.loadTable(identifier).spec().fields();
+    Assert.assertEquals(1, partitionFields.size());
+    Assert.assertEquals("family_name", partitionFields.get(0).name());
+
+    // Addign new columns, assigning them as partition columns then removing 1 partition column
+    shell.executeStatement("ALTER TABLE default.customers ADD COLUMNS (p1 string, p2 string)");
+    shell.executeStatement("ALTER TABLE default.customers SET PARTITION SPEC (family_name, p1, p2)");
+
+    shell.executeStatement("ALTER TABLE default.customers CHANGE p1 region string");
+    shell.executeStatement("ALTER TABLE default.customers CHANGE p2 city string");
+
+    shell.executeStatement("ALTER TABLE default.customers SET PARTITION SPEC (region, city)");
+
+    List<Object[]> result = shell.executeStatement("DESCRIBE default.customers");
+    Assert.assertArrayEquals(new String[] {"family_name", "VOID", null}, result.get(8));
+    Assert.assertArrayEquals(new String[] {"region", "IDENTITY", null}, result.get(9));
+    Assert.assertArrayEquals(new String[] {"city", "IDENTITY", null}, result.get(10));
   }
 
   @Test
