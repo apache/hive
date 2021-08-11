@@ -2861,30 +2861,6 @@ public class ObjectStore implements RawStore, Configurable {
     return ret;
   }
 
-  private List<MPartition> getMPartitionList(String catName, String dbName, String tableName,
-                                             List<String> partNames) throws MetaException {
-    catName = normalizeIdentifier(catName);
-    dbName = normalizeIdentifier(dbName);
-    tableName = normalizeIdentifier(tableName);
-    List<MPartition> mparts;
-    boolean committed = false;
-    Query query = null;
-    try {
-      openTransaction();
-      query = pm.newQuery(MPartition.class,
-                      "table.tableName == t1 && table.database.name == t2 && t3.contains(partitionName) " +
-                              " && table.database.catalogName == t4");
-      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, "
-              + "java.lang.String t4");
-      mparts = (List<MPartition>) query.executeWithArray(tableName, dbName, tableName, catName);
-      pm.retrieveAll(mparts);
-      committed = commitTransaction();
-    } finally {
-      rollbackAndCleanup(committed, query);
-    }
-    return mparts;
-  }
-
   /**
    * Convert a Partition object into an MPartition, which is an object backed by the db
    * If the Partition's set of columns is the same as the parent table's AND useTableCD
@@ -5121,7 +5097,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<Partition> alterPartitions(String catName, String dbname, String name,
+  public List<Partition> alterPartitions(String catName, String dbName, String tblName,
                               List<List<String>> part_vals, List<Partition> newParts,
                               long writeId, String queryWriteIdList)
                                   throws InvalidObjectException, MetaException {
@@ -5134,7 +5110,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
 
-      MTable table = this.getMTable(catName, dbname, name);
+      MTable table = this.getMTable(catName, dbName, tblName);
       List<String> partNames = new ArrayList<>();
       for (List<String> partVal : part_vals) {
         partNames.add(
@@ -5142,33 +5118,45 @@ public class ObjectStore implements RawStore, Configurable {
         );
       }
 
-      List<MPartition> mPartitions = getMPartitionList(catName, dbname, name, partNames);
-      if (mPartitions.size() > newParts.size()) {
-        throw new MetaException(
-                "Expecting only one partition but more than one partitions are found.");
-      }
+      catName = normalizeIdentifier(catName);
+      dbName = normalizeIdentifier(dbName);
+      tblName = normalizeIdentifier(tblName);
+      List<MPartition> mPartitionList;
 
-      Map<List<String>, MPartition> mPartsMap = new HashMap();
-      for (MPartition mPartition: mPartitions) {
-        mPartsMap.put(mPartition.getValues(), mPartition);
-      }
+      try (Query query = pm.newQuery(MPartition.class,
+              "table.tableName == t1 && table.database.name == t2 && t3.contains(partitionName) " +
+                      " && table.database.catalogName == t4")) {
+        query.declareParameters("java.lang.String t1, java.lang.String t2, java.util.Collection t3, "
+                + "java.lang.String t4");
+        mPartitionList = (List<MPartition>) query.executeWithArray(tblName, dbName, partNames, catName);
+        pm.retrieveAll(mPartitionList);
 
-      Set<MColumnDescriptor> oldCds = new HashSet<>();
-      Ref<MColumnDescriptor> oldCdRef = new Ref<>();
-      for (Partition tmpPart: newParts) {
-        if (writeId > 0) {
-          tmpPart.setWriteId(writeId);
+        if (mPartitionList.size() > newParts.size()) {
+          throw new MetaException("Expecting only one partition but more than one partitions are found.");
         }
-        oldCdRef.t = null;
-        Partition result = alterPartitionNoTxn(
-            catName, dbname, name, mPartsMap.get(tmpPart.getValues()), tmpPart, queryWriteIdList, oldCdRef, table);
-        results.add(result);
-        if (oldCdRef.t != null) {
-          oldCds.add(oldCdRef.t);
+
+        Map<List<String>, MPartition> mPartsMap = new HashMap();
+        for (MPartition mPartition : mPartitionList) {
+          mPartsMap.put(mPartition.getValues(), mPartition);
         }
-      }
-      for (MColumnDescriptor oldCd : oldCds) {
-        removeUnusedColumnDescriptor(oldCd);
+
+        Set<MColumnDescriptor> oldCds = new HashSet<>();
+        Ref<MColumnDescriptor> oldCdRef = new Ref<>();
+        for (Partition tmpPart : newParts) {
+          if (writeId > 0) {
+            tmpPart.setWriteId(writeId);
+          }
+          oldCdRef.t = null;
+          Partition result = alterPartitionNoTxn(catName, dbName, tblName, mPartsMap.get(tmpPart.getValues()),
+                  tmpPart, queryWriteIdList, oldCdRef, table);
+          results.add(result);
+          if (oldCdRef.t != null) {
+            oldCds.add(oldCdRef.t);
+          }
+        }
+        for (MColumnDescriptor oldCd : oldCds) {
+          removeUnusedColumnDescriptor(oldCd);
+        }
       }
       // commit the changes
       success = commitTransaction();
