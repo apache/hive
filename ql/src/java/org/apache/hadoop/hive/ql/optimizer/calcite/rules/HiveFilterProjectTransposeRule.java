@@ -325,8 +325,14 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
           Util.first(cluster.getPlanner().getExecutor(), RexUtil.EXECUTOR));
       final RexNode newCondition = simplify.simplify(filter2newConditionMap.get(filter));
 
+      // if the condition simplifies to a literal, bail out
+      if (RexUtil.isLiteral(newCondition, true)) {
+        return;
+      }
+
       // IS NOT NULL($i) is always safe, it is either needed, or existing already
-      if (((RexCall) newCondition).getOperands().get(0).isA(SqlKind.INPUT_REF)) {
+      if (newCondition instanceof RexCall
+          && ((RexCall) newCondition).getOperands().get(0).isA(SqlKind.INPUT_REF)) {
         return;
       }
 
