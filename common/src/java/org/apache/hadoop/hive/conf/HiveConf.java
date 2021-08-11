@@ -3538,6 +3538,10 @@ public class HiveConf extends Configuration {
     HIVE_AUTHORIZATION_TASK_FACTORY("hive.security.authorization.task.factory",
         "org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactoryImpl",
         "Authorization DDL task factory implementation"),
+    HIVE_AUTHORIZATION_TABLES_ON_STORAGEHANDLERS("hive.security.authorization.tables.on.storagehandlers", true,
+            "By default this config is true, if set to false, authorization on tables with storage handlers are disabled. " +
+                    "Making this configurable enables users having the HIVE-24705 patch but don't have ranger patch, still create/alter " +
+                    "tables based on storage handlers"),
 
     // if this is not set default value is set during config initialization
     // Default value can't be set in this constructor as it would refer names in other ConfVars
