@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
@@ -77,7 +78,6 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
-import com.google.common.collect.Maps;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -161,6 +161,7 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.secrets.URISecretSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
@@ -209,6 +210,7 @@ import org.slf4j.LoggerFactory;
 import com.esotericsoftware.kryo.Kryo;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -4949,6 +4951,37 @@ public final class Utilities {
   }
 
   /**
+   * Load password from the given uri.
+   * @param uriString The URI which is used to load the password.
+   * @return null if the uri is empty or null, else the password represented by the URI.
+   * @throws IOException
+   * @throws URISyntaxException
+   * @throws HiveException
+   */
+  public static String getPasswdFromUri(String uriString) throws IOException, URISyntaxException, HiveException {
+    if (uriString == null || uriString.isEmpty()) {
+      return null;
+    }
+    return URISecretSource.getInstance().getPasswordFromUri(new URI(uriString));
+  }
+
+  public static String encodeColumnNames(List<String> colNames) throws SemanticException {
+    try {
+      return JSON_MAPPER.writeValueAsString(colNames);
+    } catch (IOException e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  public static List<String> decodeColumnNames(String colNamesStr) throws SemanticException {
+    try {
+      return JSON_MAPPER.readValue(colNamesStr, List.class);
+    } catch (IOException e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  /**
    * Logs the class paths of the job class loader and the thread context class loader to the passed logger.
    * Checks both loaders if getURLs method is available; if not, prints a message about this (instead of the class path)
    *
@@ -4967,22 +5000,6 @@ public final class Utilities {
     } else {
       logger.debug("{} class path = unavailable for {}", prefix,
           loader == null ? "null" : loader.getClass().getSimpleName());
-    }
-  }
-
-  public static String encodeColumnNames(List<String> colNames) throws SemanticException {
-    try {
-      return JSON_MAPPER.writeValueAsString(colNames);
-    } catch (IOException e) {
-      throw new SemanticException(e);
-    }
-  }
-
-  public static List<String> decodeColumnNames(String colNamesStr) throws SemanticException {
-    try {
-      return JSON_MAPPER.readValue(colNamesStr, List.class);
-    } catch (IOException e) {
-      throw new SemanticException(e);
     }
   }
 

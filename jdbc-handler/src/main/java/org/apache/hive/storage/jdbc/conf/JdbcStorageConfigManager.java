@@ -27,6 +27,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URISyntaxException;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -42,6 +43,7 @@ public class JdbcStorageConfigManager {
   public static final String CONFIG_PWD = Constants.JDBC_PASSWORD;
   public static final String CONFIG_PWD_KEYSTORE = Constants.JDBC_KEYSTORE;
   public static final String CONFIG_PWD_KEY = Constants.JDBC_KEY;
+  public static final String CONFIG_PWD_URI = Constants.JDBC_PASSWORD_URI;
   private static final EnumSet<JdbcStorageConfig> DEFAULT_REQUIRED_PROPERTIES =
     EnumSet.of(JdbcStorageConfig.DATABASE_TYPE,
                JdbcStorageConfig.JDBC_URL,
@@ -59,9 +61,11 @@ public class JdbcStorageConfigManager {
     checkRequiredPropertiesAreDefined(props);
     resolveMetadata(props);
     for (Entry<Object, Object> entry : props.entrySet()) {
-      if (!String.valueOf(entry.getKey()).equals(CONFIG_PWD) &&
-          !String.valueOf(entry.getKey()).equals(CONFIG_PWD_KEYSTORE) &&
-          !String.valueOf(entry.getKey()).equals(CONFIG_PWD_KEY)) {
+      String key = String.valueOf(entry.getKey());
+      if (!key.equals(CONFIG_PWD) &&
+          !key.equals(CONFIG_PWD_KEYSTORE) &&
+          !key.equals(CONFIG_PWD_KEY) &&
+          !key.equals(CONFIG_PWD_URI)) {
         jobProps.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
       }
     }
@@ -76,6 +80,15 @@ public class JdbcStorageConfigManager {
       String keystore = props.getProperty(CONFIG_PWD_KEYSTORE);
       String key = props.getProperty(CONFIG_PWD_KEY);
       passwd = Utilities.getPasswdFromKeystore(keystore, key);
+    }
+    if (passwd == null) {
+      String uri = props.getProperty(CONFIG_PWD_URI);
+      try {
+        passwd = Utilities.getPasswdFromUri(uri);
+      } catch (URISyntaxException e) {
+        // Should I include the uri in the exception? Suppressing for now, since it may have sensitive info.
+        throw new HiveException("Invalid password uri specified", e);
+      }
     }
     if (passwd != null) {
       jobSecrets.put(CONFIG_PWD, passwd);

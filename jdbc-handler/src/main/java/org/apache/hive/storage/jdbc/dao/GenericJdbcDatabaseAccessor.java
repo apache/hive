@@ -21,6 +21,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -35,6 +36,7 @@ import org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
 import javax.sql.DataSource;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -362,6 +364,16 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
       String keystore = getFromProperties(dbProperties, JdbcStorageConfigManager.CONFIG_PWD_KEYSTORE);
       String key = getFromProperties(dbProperties, JdbcStorageConfigManager.CONFIG_PWD_KEY);
       passwd = Utilities.getPasswdFromKeystore(keystore, key);
+    }
+
+    if (passwd == null) {
+      String passwordUri = getFromProperties(dbProperties, JdbcStorageConfigManager.CONFIG_PWD_URI);
+      try {
+        passwd = Utilities.getPasswdFromUri(passwordUri);
+      } catch (URISyntaxException e) {
+        // Should I include the uri in the exception? Suppressing for now, since it may have sensitive info.
+        throw new HiveException("Invalid password uri specified", e);
+      }
     }
 
     if (passwd != null) {
