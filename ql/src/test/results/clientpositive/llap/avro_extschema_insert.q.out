@@ -1,0 +1,84 @@
+PREHOOK: query: create external table avro_extschema_insert1 (name string) partitioned by (p1 string)
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_extschema_insert1
+POSTHOOK: query: create external table avro_extschema_insert1 (name string) partitioned by (p1 string)
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_extschema_insert1
+PREHOOK: query: describe avro_extschema_insert1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@avro_extschema_insert1
+POSTHOOK: query: describe avro_extschema_insert1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@avro_extschema_insert1
+col1                	string              	                    
+col2                	bigint              	                    
+col3                	string              	                    
+p1                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+PREHOOK: query: create external table avro_extschema_insert2 like avro_extschema_insert1
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_extschema_insert2
+POSTHOOK: query: create external table avro_extschema_insert2 like avro_extschema_insert1
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_extschema_insert2
+PREHOOK: query: insert overwrite table avro_extschema_insert1 partition (p1='part1') values ('col1_value', 1, 'col3_value')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@avro_extschema_insert1@p1=part1
+POSTHOOK: query: insert overwrite table avro_extschema_insert1 partition (p1='part1') values ('col1_value', 1, 'col3_value')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@avro_extschema_insert1@p1=part1
+POSTHOOK: Lineage: avro_extschema_insert1 PARTITION(p1=part1).col1 SCRIPT []
+POSTHOOK: Lineage: avro_extschema_insert1 PARTITION(p1=part1).col2 SCRIPT []
+POSTHOOK: Lineage: avro_extschema_insert1 PARTITION(p1=part1).col3 SCRIPT []
+PREHOOK: query: insert overwrite table avro_extschema_insert2 partition (p1) select * from avro_extschema_insert1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@avro_extschema_insert1
+PREHOOK: Input: default@avro_extschema_insert1@p1=part1
+PREHOOK: Output: default@avro_extschema_insert2
+POSTHOOK: query: insert overwrite table avro_extschema_insert2 partition (p1) select * from avro_extschema_insert1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@avro_extschema_insert1
+POSTHOOK: Input: default@avro_extschema_insert1@p1=part1
+POSTHOOK: Output: default@avro_extschema_insert2@p1=part1
+POSTHOOK: Lineage: avro_extschema_insert2 PARTITION(p1=part1).col1 SIMPLE [(avro_extschema_insert1)avro_extschema_insert1.FieldSchema(name:col1, type:string, comment:), ]
+POSTHOOK: Lineage: avro_extschema_insert2 PARTITION(p1=part1).col2 SIMPLE [(avro_extschema_insert1)avro_extschema_insert1.FieldSchema(name:col2, type:bigint, comment:), ]
+POSTHOOK: Lineage: avro_extschema_insert2 PARTITION(p1=part1).col3 SIMPLE [(avro_extschema_insert1)avro_extschema_insert1.FieldSchema(name:col3, type:string, comment:), ]
+PREHOOK: query: select * from avro_extschema_insert2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@avro_extschema_insert2
+PREHOOK: Input: default@avro_extschema_insert2@p1=part1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from avro_extschema_insert2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@avro_extschema_insert2
+POSTHOOK: Input: default@avro_extschema_insert2@p1=part1
+#### A masked pattern was here ####
+col1_value	1	col3_value	part1
+#### A masked pattern was here ####
+PREHOOK: query: drop table avro_extschema_insert1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@avro_extschema_insert1
+PREHOOK: Output: default@avro_extschema_insert1
+POSTHOOK: query: drop table avro_extschema_insert1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@avro_extschema_insert1
+POSTHOOK: Output: default@avro_extschema_insert1
+PREHOOK: query: drop table avro_extschema_insert2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@avro_extschema_insert2
+PREHOOK: Output: default@avro_extschema_insert2
+POSTHOOK: query: drop table avro_extschema_insert2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@avro_extschema_insert2
+POSTHOOK: Output: default@avro_extschema_insert2
