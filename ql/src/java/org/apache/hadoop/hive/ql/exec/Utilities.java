@@ -2855,7 +2855,7 @@ public final class Utilities {
   public static final class PartitionDetails {
     public Map<String, String> fullSpec;
     public Partition partition;
-    public List<Path> newFiles;
+    public List<FileStatus> newFiles;
     public boolean hasOldPartition = false;
     public AcidUtils.TableSnapshot tableSnapshot;
   }
@@ -2897,7 +2897,7 @@ public final class Utilities {
           Collections.synchronizedMap(new LinkedHashMap<>());
 
       // calculate full path spec for each valid partition path
-      allPartition.entrySet().forEach(partEntry -> {
+      for (Map.Entry<Path, Optional<List<Path>>> partEntry : allPartition.entrySet()) {
         Path partPath = partEntry.getKey();
         Map<String, String> fullPartSpec = Maps.newLinkedHashMap(partSpec);
         String staticParts =  Warehouse.makeDynamicPartName(partSpec);
@@ -2911,11 +2911,14 @@ public final class Utilities {
           PartitionDetails details = new PartitionDetails();
           details.fullSpec = fullPartSpec;
           if (partEntry.getValue().isPresent()) {
-            details.newFiles = partEntry.getValue().get();
+            details.newFiles = new ArrayList<>();
+            for (Path filePath : partEntry.getValue().get()) {
+              details.newFiles.add(fs.getFileStatus(filePath));
+            }
           }
           partitionDetailsMap.put(partPath, details);
         }
-      });
+      }
       return partitionDetailsMap;
     } catch (IOException e) {
       throw new HiveException(e);
