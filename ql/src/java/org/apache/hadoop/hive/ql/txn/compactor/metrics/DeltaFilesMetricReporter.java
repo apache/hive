@@ -23,6 +23,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 import com.google.common.cache.RemovalNotification;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 
@@ -57,10 +59,10 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Queue;
 
-import java.util.concurrent.ConcurrentMap;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -87,6 +89,7 @@ public class DeltaFilesMetricReporter {
   public static final String OBJECT_NAME_PREFIX = "metrics:type=compaction,name=";
 
   private static long lastSuccessfulLoggingTime = 0;
+  private String hiveEntitySeparator;
 
   public enum DeltaFilesMetricType {
     NUM_OBSOLETE_DELTAS("HIVE_ACID_NUM_OBSOLETE_DELTAS"),
@@ -140,6 +143,7 @@ public class DeltaFilesMetricReporter {
 
       long reportingInterval =
           HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_REPORTING_INTERVAL, TimeUnit.SECONDS);
+      hiveEntitySeparator = conf.getVar(HiveConf.ConfVars.HIVE_ENTITY_SEPARATOR);
 
       ThreadFactory threadFactory =
           new ThreadFactoryBuilder().setDaemon(true).setNameFormat("DeltaFilesMetricReporter %d").build();
@@ -150,45 +154,69 @@ public class DeltaFilesMetricReporter {
     }
   }
 
-  public void submit(TezCounters counters) {
-    if (acidMetricsExtEnabled) {
-      updateMetrics(NUM_OBSOLETE_DELTAS, obsoleteDeltaCache, obsoleteDeltaTopN, counters);
-      updateMetrics(NUM_DELTAS, deltaCache, deltaTopN, counters);
-      updateMetrics(NUM_SMALL_DELTAS, smallDeltaCache, smallDeltaTopN, counters);
+  public void submit(TezCounters counters, Set<ReadEntity> inputs) {
+    try {
+      if (acidMetricsExtEnabled) {
+        updateMetrics(NUM_OBSOLETE_DELTAS, obsoleteDeltaCache, obsoleteDeltaTopN, counters, inputs);
+        updateMetrics(NUM_DELTAS, deltaCache, deltaTopN, counters, inputs);
+        updateMetrics(NUM_SMALL_DELTAS, smallDeltaCache, smallDeltaTopN, counters, inputs);
+      }
+    } catch (Exception e) {
+      LOG.warn("Caught exception while trying to update delta metrics cache. Invalidating cache", e);
+      try {
+        obsoleteDeltaCache.invalidateAll();
+        deltaCache.invalidateAll();
+        smallDeltaCache.invalidateAll();
+      } catch (Exception x) {
+        LOG.warn("Caught exception while trying to invalidate cache", x);
+      }
     }
   }
 
   /**
    * Copy counters to caches.
    */
-  private void updateMetrics(DeltaFilesMetricType metric, Cache<String, Integer> cache, Queue<Pair<String, Integer>> topN,
-      TezCounters counters) {
-    try {
-      CounterGroup group = counters.getGroup(metric.value);
-      // if the group is empty, clear the cache
-      if (group.size() == 0) {
-        cache.invalidateAll();
-      } else {
-        // if there is no counter corresponding to a cache entry, remove from cache
-        ConcurrentMap<String, Integer> cacheMap = cache.asMap();
-        cacheMap.keySet().stream().filter(key -> counters.findCounter(group.getName(), key).getValue() == 0)
-            .forEach(cache::invalidate);
-      }
-      // update existing cache entries or add new entries
-      for (TezCounter counter : group) {
-        Integer prev = cache.getIfPresent(counter.getName());
-        if (prev != null && prev != counter.getValue()) {
-          cache.invalidate(counter.getName());
+  private void updateMetrics(DeltaFilesMetricType metric, Cache<String, Integer> cache,
+      Queue<Pair<String, Integer>> topN, TezCounters counters, Set<ReadEntity> inputs) {
+    CounterGroup group = counters.getGroup(metric.value);
+
+    // Create list of paths affected by the query
+    List<String> inputPaths = Lists.newArrayList();
+    if (inputs != null) {
+      inputs.stream().map(readEntity -> readEntity.getName().split(hiveEntitySeparator)).forEach(inputNames -> {
+        String tableName = inputNames[1];
+        String partitionName = inputNames.length > 2 ? inputNames[2] : null;
+        inputPaths.add(tableName + Path.SEPARATOR + partitionName);
+      });
+    }
+
+
+    // Invalidate from cache if the counter value differs from the cache value, or if the query touched the partition
+    // in question but no counter was collected
+
+    // todo IGNORE THIS frogmethod may need for testing
+//    for (String key : inputPaths) {
+//      Integer prev = cache.getIfPresent(key);
+//      TezCounter counter = counters.findCounter(group.getName(), key);
+//      if (prev != null && counter != null && (counter.getValue() == 0 || counter.getValue() != prev)) {
+//        cache.invalidate(key);
+//      }
+//    }
+    for (String key : inputPaths) {
+      Integer prev = cache.getIfPresent(key);
+      if (prev != null) {
+        TezCounter counter = counters.findCounter(group.getName(), key);
+        if (counter != null && (counter.getValue() == 0 || counter.getValue() != prev)) {
+          cache.invalidate(key);
         }
+      }
+    }
+
+    // Add all counter values to the cache
+    for (TezCounter counter : group) {
+      if (counter.getValue() != 0) {
         topN.add(Pair.of(counter.getName(), (int) counter.getValue()));
         cache.put(counter.getName(), (int) counter.getValue());
-      }
-    } catch (Exception e) {
-      LOG.warn("Caught exception while trying to update delta metrics cache. Invalidating cache", e);
-      try {
-        cache.invalidateAll();
-      } catch (Exception x) {
-        LOG.warn("Caught exception while trying to invalidate cache", x);
       }
     }
   }
@@ -198,11 +226,9 @@ public class DeltaFilesMetricReporter {
    * contents
    */
   public static void mergeDeltaFilesStats(AcidDirectory dir, long checkThresholdInSec, float deltaPctThreshold,
-      EnumMap<DeltaFilesMetricType, Queue<Pair<String, Integer>>> deltaFilesStats, Configuration conf) throws IOException {
-
-    int deltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD);
-    int obsoleteDeltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD);
-    int maxCacheSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE);
+      int deltasThreshold, int obsoleteDeltasThreshold, int maxCacheSize,
+      EnumMap<DeltaFilesMetricType, Queue<Pair<String, Integer>>> deltaFilesStats, Configuration conf)
+      throws IOException {
 
     long baseSize = getBaseSize(dir);
     int numObsoleteDeltas = getNumObsoleteDeltas(dir, checkThresholdInSec);
@@ -250,7 +276,7 @@ public class DeltaFilesMetricReporter {
       }
       if (pairQueue == null || pairQueue.size() < maxCacheSize) {
         deltaFilesStats.computeIfAbsent(type,
-            v -> (new PriorityBlockingQueue<>(maxCacheSize, getComparator()))).add(Pair.of(path, deltaCount));
+            v -> (new PriorityQueue<>(maxCacheSize, getComparator()))).add(Pair.of(path, deltaCount));
       }
     }
   }
@@ -300,16 +326,16 @@ public class DeltaFilesMetricReporter {
   }
 
   public static void createCountersForAcidMetrics(TezCounters tezCounters, JobConf jobConf) {
-    try {
-      if (HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED) && MetastoreConf
-          .getBoolVar(jobConf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+    if (HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED) &&
+      MetastoreConf.getBoolVar(jobConf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
 
-        Arrays.stream(DeltaFilesMetricType.values()).filter(type -> jobConf.get(type.name()) != null).forEach(
-            type -> Splitter.on(',').withKeyValueSeparator("->").split(jobConf.get(type.name()))
-                .forEach((path, cnt) -> tezCounters.findCounter(type.value, path).setValue(Long.parseLong(cnt))));
-      }
-    } catch (Exception e) {
-      LOG.warn("Caught exception while trying to update Tez counters which keep track of number of delta metrics", e);
+      Arrays.stream(DeltaFilesMetricType.values())
+        .filter(type -> jobConf.get(type.name()) != null)
+        .forEach(type ->
+            Splitter.on(',').withKeyValueSeparator("->").split(jobConf.get(type.name())).forEach(
+              (path, cnt) -> tezCounters.findCounter(type.value, path).setValue(Long.parseLong(cnt))
+            )
+        );
     }
   }
 

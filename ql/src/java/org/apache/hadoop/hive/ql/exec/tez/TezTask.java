@@ -263,7 +263,7 @@ public class TezTask extends Task<TezWork> {
           TezCounters dagCounters = dagClient.getDAGStatus(statusGetOpts).getDAGCounters();
 
           if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
-            DeltaFilesMetricReporter.getInstance().submit(dagCounters);
+            DeltaFilesMetricReporter.getInstance().submit(dagCounters, queryPlan.getInputs());
           }
           // if initial counters exists, merge it with dag counters to get aggregated view
           TezCounters mergedCounters = counters == null ? dagCounters : Utils.mergeTezCounters(dagCounters, counters);

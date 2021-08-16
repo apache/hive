@@ -1791,6 +1791,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     long checkThresholdInSec = HiveConf.getTimeVar(conf,
         HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_CHECK_THRESHOLD, TimeUnit.SECONDS);
     float deltaPctThreshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_PCT_THRESHOLD);
+    int deltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD);
+    int obsoleteDeltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD);
+    int maxCacheSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE);
 
     EnumMap<DeltaFilesMetricType, Queue<Pair<String, Integer>>> deltaFilesStats =
         new EnumMap<>(DeltaFilesMetricType.class);
@@ -1822,7 +1825,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
         if (metricsEnabled && directory instanceof AcidDirectory) {
           DeltaFilesMetricReporter.mergeDeltaFilesStats((AcidDirectory) directory, checkThresholdInSec,
-              deltaPctThreshold, deltaFilesStats, conf);
+              deltaPctThreshold, deltasThreshold, obsoleteDeltasThreshold, maxCacheSize, deltaFilesStats, conf);
         }
         // We have received a new directory information, make split strategies.
         --resultsLeft;

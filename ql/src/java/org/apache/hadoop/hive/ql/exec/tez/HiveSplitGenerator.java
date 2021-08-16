@@ -295,7 +295,11 @@ public class HiveSplitGenerator extends InputInitializer {
           }
           counterName = Utilities.getVertexCounterName(HiveInputCounters.INPUT_FILES.name(), vertexName);
           tezCounters.findCounter(groupName, counterName).increment(files.size());
-          DeltaFilesMetricReporter.createCountersForAcidMetrics(tezCounters, jobConf);
+          try {
+            DeltaFilesMetricReporter.createCountersForAcidMetrics(tezCounters, jobConf);
+          } catch (Exception e) {
+            LOG.warn("Caught exception while trying to update number of deltas metrics Tez counters", e);
+          }
         }
 
         if (work.getIncludedBuckets() != null) {
