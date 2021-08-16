@@ -5143,6 +5143,14 @@ public class ObjectStore implements RawStore, Configurable {
         Set<MColumnDescriptor> oldCds = new HashSet<>();
         Ref<MColumnDescriptor> oldCdRef = new Ref<>();
         for (Partition tmpPart : newParts) {
+          if (!tmpPart.getDbName().equalsIgnoreCase(dbName)) {
+            throw new MetaException("Invalid DB name : " + tmpPart.getDbName());
+          }
+
+          if (!tmpPart.getTableName().equalsIgnoreCase(tblName)) {
+            throw new MetaException("Invalid table   name : " + tmpPart.getDbName());
+          }
+
           if (writeId > 0) {
             tmpPart.setWriteId(writeId);
           }
