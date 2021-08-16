@@ -383,7 +383,7 @@ public class VectorizedRowBatchCtx {
     return result;
   }
 
-  public void populateWriteId(VectorizedRowBatch vectorizedRowBatch, long writeId, int bucketId) {
+  public void setWriteIdOf(VectorizedRowBatch vectorizedRowBatch, long writeId, int bucketId) {
     int virtualColumnNum = findVirtualColumnNum(VirtualColumn.ROWID);
     if (virtualColumnNum == -1) {
       return;

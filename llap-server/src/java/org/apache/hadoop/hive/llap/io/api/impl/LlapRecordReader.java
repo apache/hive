@@ -437,7 +437,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     }
 
     if (bucketIdentifier != null && isInsertOnlyScan) {
-      rbCtx.populateWriteId(vrb, bucketIdentifier.getWriteId(), bucketIdentifier.getBucketProperty());
+      rbCtx.setWriteIdOf(vrb, bucketIdentifier.getWriteId(), bucketIdentifier.getBucketProperty());
     }
 
     return true;
