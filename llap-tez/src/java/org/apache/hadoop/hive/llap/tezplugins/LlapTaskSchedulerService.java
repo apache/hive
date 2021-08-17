@@ -1811,7 +1811,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       boolean foundSlot = false;
       for (LlapServiceInstance inst : instances) {
         NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
-        if (nodeInfo != null && !nodeInfo.getHost().isEmpty()) {
+        if (nodeInfo != null) {
           List<NodeInfo> hostList = availableHostMap.get(nodeInfo.getHost());
           if (hostList == null) {
             hostList = new ArrayList<>();
@@ -1857,7 +1857,11 @@ public class LlapTaskSchedulerService extends TaskScheduler {
    */
   private boolean shouldCycle(Map<String, List<NodeInfo>> availableHostMap) {
     // short-circuit on resource availability
-    if (availableHostMap.values().stream().mapToInt(List::size).sum() > 0) return true;
+    int nodeCnt = 0;
+    for (List<NodeInfo> nodes : availableHostMap.values()) {
+      nodeCnt += nodes.size();
+    }
+    if (nodeCnt > 0) return true;
     // check if pending Pri is lower than existing tasks pri
     int specMax = speculativeTasks.isEmpty() ? Integer.MIN_VALUE : speculativeTasks.lastKey();
     int guarMax = guaranteedTasks.isEmpty() ? Integer.MIN_VALUE : guaranteedTasks.lastKey();
