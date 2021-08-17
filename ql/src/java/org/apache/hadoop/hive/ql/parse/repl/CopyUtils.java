@@ -125,8 +125,7 @@ public class CopyUtils {
         doCopyRetry(sourceFs, srcFiles, destRoot, proxyUser, useRegularCopy, overwrite);
       }
     } catch (InterruptedException e) {
-      LOG.error("Failed to copy ", e);
-      throw new IOException(ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.getMsg());
+      throw new IOException(ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.format("Failed to copy"), e);
     } finally {
       if (executorService != null) {
         executorService.shutdown();
@@ -191,8 +190,8 @@ public class CopyUtils {
         LOG.info("file operation failed", e);
 
         if (repeat >= (MAX_IO_RETRY - 1)) {
-          //no need to wait in the last iteration
-          break;
+          throw new IOException(ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.format("Failed to" +
+                  " copy files: " + pathList), e);
         }
 
         if (!(e instanceof FileNotFoundException)) {
@@ -219,8 +218,7 @@ public class CopyUtils {
 
     // If still files remains to be copied due to failure/checksum mismatch after several attempts, then throw error
     if (!pathList.isEmpty()) {
-      LOG.error("File copy failed even after several attempts. Files list: " + pathList);
-      throw new IOException(ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.getMsg());
+      throw new IOException(ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.format("Failed to copy files: " + pathList));
     }
   }
 
