@@ -45,3 +45,10 @@ select from_unixtime(to_unix_timestamp(cast('0000-00-00' as date)));
 set time zone Europe/Rome;
 
 SELECT from_unixtime(1226446340), to_date(from_unixtime(1226446340)), day('2008-11-01'), month('2008-11-01'), year('2008-11-01'), day('2008-11-01 15:32:20'), month('2008-11-01 15:32:20'), year('2008-11-01 15:32:20') FROM dest1_n14;
+
+set hive.local.time.zone=Asia/Bangkok;
+
+select from_unixtime(unix_timestamp('1400-11-08 01:53:11'));
+select from_unixtime(unix_timestamp('1800-11-08 01:53:11'));
+select from_unixtime(unix_timestamp('1400-11-08 08:00:00 ICT', 'yyyy-MM-dd HH:mm:ss z'));
+select from_unixtime(unix_timestamp('1800-11-08 08:00:00 ICT', 'yyyy-MM-dd HH:mm:ss z'));

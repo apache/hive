@@ -20,10 +20,14 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.TimeZone;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -67,7 +71,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
   private transient ZoneId timeZone;
 
   private transient String lasPattern = "yyyy-MM-dd HH:mm:ss";
-  private transient final SimpleDateFormat formatter = new SimpleDateFormat(lasPattern);
+  private transient DateTimeFormatter formatter = DateTimeFormatter.ofPattern(lasPattern);
 
 
   @Override
@@ -122,11 +126,8 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
             .getPrimitiveCategory().name());
     }
 
-    if (timeZone == null) {
-      timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
-              .getLocalTimeZone();
-      formatter.setTimeZone(TimeZone.getTimeZone(timeZone));
-    }
+    timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
+        .getLocalTimeZone();
   }
 
   @Override
@@ -134,7 +135,6 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
     if (context != null) {
       String timeZoneStr = HiveConf.getVar(context.getJobConf(), HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE);
       timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
-      formatter.setTimeZone(TimeZone.getTimeZone(timeZone));
     }
   }
 
@@ -164,15 +164,13 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
           return null;
         }
         if (!patternVal.equals(lasPattern)) {
-          formatter.applyPattern(patternVal);
+          formatter = DateTimeFormatter.ofPattern(patternVal);
           lasPattern = patternVal;
         }
       }
-      try {
-        retValue.set(formatter.parse(textVal).getTime() / 1000);
-      } catch (ParseException e) {
-        return null;
-      }
+      Timestamp timestamp = new Timestamp(LocalDateTime.parse(textVal,formatter));
+      TimestampTZ timestampTZ = TimestampTZUtil.convert(timestamp,timeZone);
+      retValue.set(timestampTZ.getEpochSecond());
     } else if (inputDateOI != null) {
       TimestampTZ timestampTZ = TimestampTZUtil.convert(
           inputDateOI.getPrimitiveJavaObject(arguments[0].get()), timeZone);
