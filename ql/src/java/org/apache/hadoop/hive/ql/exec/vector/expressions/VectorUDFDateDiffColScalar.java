@@ -30,10 +30,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.Text;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
 public class VectorUDFDateDiffColScalar extends VectorExpression {
@@ -43,7 +42,6 @@ public class VectorUDFDateDiffColScalar extends VectorExpression {
   private Timestamp timestampValue;
   private byte[] bytesValue;
 
-  private transient final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private transient final Text text = new Text();
   private transient final Date date = new Date(0);
 
@@ -105,8 +103,9 @@ public class VectorUDFDateDiffColScalar extends VectorExpression {
       case CHAR:
       case VARCHAR:
         try {
-          date.setTime(formatter.parse(new String(bytesValue, "UTF-8")).getTime());
-          baseDate = DateWritableV2.dateToDays(date);
+          org.apache.hadoop.hive.common.type.Date hiveDate
+              = org.apache.hadoop.hive.common.type.Date.valueOf(new String(bytesValue, StandardCharsets.UTF_8));
+          baseDate = hiveDate.toEpochDay();
           break;
         } catch (Exception e) {
           outputColVector.noNulls = false;
@@ -350,9 +349,10 @@ public class VectorUDFDateDiffColScalar extends VectorExpression {
     BytesColumnVector bcv = (BytesColumnVector) columnVector;
     text.set(bcv.vector[i], bcv.start[i], bcv.length[i]);
     try {
-      date.setTime(formatter.parse(text.toString()).getTime());
-      output.vector[i] = DateWritableV2.dateToDays(date) - baseDate;
-    } catch (ParseException e) {
+      org.apache.hadoop.hive.common.type.Date hiveDate
+          = org.apache.hadoop.hive.common.type.Date.valueOf(text.toString());
+      output.vector[i] = hiveDate.toEpochDay() - baseDate;
+    } catch (IllegalArgumentException e) {
       output.vector[i] = 1;
       output.isNull[i] = true;
     }
