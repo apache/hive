@@ -76,11 +76,7 @@ public class TestGenericUDFToUnixTimestamp {
     GenericUDFToUnixTimeStamp udf = new GenericUDFToUnixTimeStamp();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
     ObjectInspector[] arguments = {valueOI};
-    MapredContext mockContext = Mockito.mock(MapredContext.class);
-    when(mockContext.getJobConf()).thenReturn(new JobConf(new HiveConf()));
-    udf.configure(mockContext);
     udf.initialize(arguments);
-
     Timestamp ts = Timestamp.valueOf("1970-01-01 00:00:00");
     TimestampTZ tstz = TimestampTZUtil.convert(ts, ZoneId.systemDefault());
     runAndVerify(udf,
@@ -102,9 +98,6 @@ public class TestGenericUDFToUnixTimestamp {
     GenericUDFToUnixTimeStamp udf = new GenericUDFToUnixTimeStamp();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
     ObjectInspector[] arguments = {valueOI};
-    MapredContext mockContext = Mockito.mock(MapredContext.class);
-    when(mockContext.getJobConf()).thenReturn(new JobConf(new HiveConf()));
-    udf.configure(mockContext);
     udf.initialize(arguments);
 
     Date date = Date.valueOf("1970-01-01");
@@ -122,9 +115,6 @@ public class TestGenericUDFToUnixTimestamp {
     GenericUDFToUnixTimeStamp udf1 = new GenericUDFToUnixTimeStamp();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
     ObjectInspector[] arguments = {valueOI};
-    MapredContext mockContext = Mockito.mock(MapredContext.class);
-    when(mockContext.getJobConf()).thenReturn(new JobConf(new HiveConf()));
-    udf1.configure(mockContext);
     udf1.initialize(arguments);
 
     String val = "2001-01-01 01:02:03";
@@ -134,15 +124,15 @@ public class TestGenericUDFToUnixTimestamp {
 
     // test null values
     runAndVerify(udf1, null, null);
+    runAndVerify(udf1, new Text("0000-00-00 00:00:00"), null);
 
     // Try 2-arg version
     GenericUDFToUnixTimeStamp udf2 = new GenericUDFToUnixTimeStamp();
     ObjectInspector[] args2 = {valueOI, valueOI};
-    udf2.configure(mockContext);
     udf2.initialize(args2);
 
     val = "2001-01-01";
-    String format = "yyyy-MM-dd";
+    String format = "uuuu-MM-dd";
     runAndVerify(udf2,
         new Text(val),
         new Text(format),
@@ -152,5 +142,6 @@ public class TestGenericUDFToUnixTimestamp {
     runAndVerify(udf2, null, null, null);
     runAndVerify(udf2, null, new Text(format), null);
     runAndVerify(udf2, new Text(val), null, null);
+    runAndVerify(udf1, new Text("0000-00-00"), new Text(format),null);
   }
 }
