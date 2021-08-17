@@ -159,18 +159,9 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     VectorizedRowBatchCtx ctx = mapWork.getVectorizedRowBatchCtx();
     rbCtx = ctx != null ? ctx : LlapInputFormat.createFakeVrbCtx(mapWork);
 
-    if (HiveConf.getBoolVar(jobConf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN)) {
-      AcidUtils.AcidOperationalProperties acidOperationalProperties = AcidUtils.getAcidOperationalProperties(jobConf);
-      isAcidScan = !acidOperationalProperties.isInsertOnly();
-      if (acidOperationalProperties.isFetchBucketId()) {
-        bucketIdentifier = BucketIdentifier.parsePath(split.getPath());
-      } else {
-        bucketIdentifier = null;
-      }
-    } else {
-      isAcidScan = false;
-      bucketIdentifier = null;
-    }
+    isAcidScan = AcidUtils.isFullAcidScan(jobConf);
+    this.bucketIdentifier = BucketIdentifier.configure(jobConf, split.getPath());
+
     TypeDescription schema = OrcInputFormat.getDesiredRowTypeDescr(
         job, isAcidScan, Integer.MAX_VALUE);
 

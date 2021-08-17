@@ -163,7 +163,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       }
       FileSplit fileSplit = (FileSplit) oldInputSplit;
       initPartitionValues(fileSplit, conf);
-      bucketIdentifier = BucketIdentifier.parsePath(fileSplit.getPath());
+      bucketIdentifier = BucketIdentifier.configure(conf, fileSplit.getPath());
     } catch (Throwable e) {
       LOG.error("Failed to create the vectorized reader due to exception " + e);
       throw new RuntimeException(e);

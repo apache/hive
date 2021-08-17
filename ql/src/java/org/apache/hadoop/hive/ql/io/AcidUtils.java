@@ -1966,16 +1966,19 @@ public class AcidUtils {
     return !props.isInsertOnly();
   }
 
-  public static boolean isInsertOnlyScan(Configuration conf) {
+  public static boolean isInsertOnlyFetchBucketId(Configuration conf) {
     if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN)) {
       return false;
     }
     int propInt = conf.getInt(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname, -1);
     if (propInt == -1) {
-      return true;
+      return false;
     }
     AcidOperationalProperties props = AcidOperationalProperties.parseInt(propInt);
-    return props.isInsertOnly();
+    if (!props.isInsertOnly()) {
+      return false;
+    }
+    return props.isFetchBucketId();
   }
 
   public static void setAcidOperationalProperties(

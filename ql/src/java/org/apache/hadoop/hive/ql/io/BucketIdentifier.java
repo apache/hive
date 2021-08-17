@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapred.JobConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +30,14 @@ import org.slf4j.LoggerFactory;
 public class BucketIdentifier {
 
   private static final Logger LOG = LoggerFactory.getLogger(BucketIdentifier.class);
+
+  public static BucketIdentifier configure(Configuration conf, Path path) {
+    if (!AcidUtils.isInsertOnlyFetchBucketId(conf)) {
+      return null;
+    }
+
+    return BucketIdentifier.parsePath(path);
+  }
 
   public static BucketIdentifier parsePath(Path path) {
     try {
