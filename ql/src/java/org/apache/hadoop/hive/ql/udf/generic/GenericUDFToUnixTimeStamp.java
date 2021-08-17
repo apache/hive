@@ -18,13 +18,10 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.TimeZone;
+
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -70,7 +67,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
   private transient Converter patternConverter;
   private transient ZoneId timeZone;
 
-  private transient String lasPattern = "yyyy-MM-dd HH:mm:ss";
+  private transient String lasPattern = "uuuu-MM-dd HH:mm:ss";
   private transient DateTimeFormatter formatter = DateTimeFormatter.ofPattern(lasPattern);
 
 
@@ -168,8 +165,8 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
           lasPattern = patternVal;
         }
       }
-      Timestamp timestamp = new Timestamp(LocalDateTime.parse(textVal,formatter));
-      TimestampTZ timestampTZ = TimestampTZUtil.convert(timestamp,timeZone);
+      Timestamp timestamp = new Timestamp(LocalDateTime.parse(textVal, formatter));
+      TimestampTZ timestampTZ = TimestampTZUtil.convert(timestamp, timeZone);
       retValue.set(timestampTZ.getEpochSecond());
     } else if (inputDateOI != null) {
       TimestampTZ timestampTZ = TimestampTZUtil.convert(
