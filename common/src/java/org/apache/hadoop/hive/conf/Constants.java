@@ -89,4 +89,5 @@ public class Constants {
   public static final String MODE = "mode";
 
   public static final String ACID_FETCH_DELETED_ROWS = "acid.fetch.deleted.rows";
+  public static final String INSERT_ONLY_FETCH_BUCKET_ID = "insert.only.fetch.bucketId";
 }

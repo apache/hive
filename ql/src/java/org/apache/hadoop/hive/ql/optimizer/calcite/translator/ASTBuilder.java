@@ -151,6 +151,13 @@ public class ASTBuilder {
               .add(HiveParser.StringLiteral, "\"TRUE\""));
     }
 
+    if (hts.isFetchBucketIds()) {
+      // We need to carry the fetchDeletedRows information from calcite into the ast.
+      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
+              .add(HiveParser.StringLiteral, String.format("\"%s\"", Constants.INSERT_ONLY_FETCH_BUCKET_ID))
+              .add(HiveParser.StringLiteral, "\"TRUE\""));
+    }
+
     b.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTIES, "TOK_TABLEPROPERTIES").add(propList));
 
     // NOTE: Calcite considers tbls to be equal if their names are the same. Hence

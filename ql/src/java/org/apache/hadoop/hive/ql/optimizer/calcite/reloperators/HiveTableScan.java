@@ -70,6 +70,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   // insiderView will tell this TableScan is inside a view or not.
   private final boolean insideView;
   private final boolean fetchDeletedRows;
+  private final boolean fetchBucketIds;
 
   public String getTableAlias() {
     return tblAlias;
@@ -93,18 +94,18 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    */
   public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
       String alias, String concatQbIDAlias, boolean useQBIdInDigest, boolean insideView) {
-    this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest, insideView, false);
+    this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest, insideView, false, false);
   }
 
   public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
-      String alias, String concatQbIDAlias, boolean useQBIdInDigest, boolean insideView, boolean fetchDeletedRows) {
+      String alias, String concatQbIDAlias, boolean useQBIdInDigest, boolean insideView, boolean fetchDeletedRows, boolean fetchBucketIds) {
     this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest, insideView,
-        fetchDeletedRows);
+        fetchDeletedRows, fetchBucketIds);
   }
 
   private HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
       String alias, String concatQbIDAlias, RelDataType newRowtype, boolean useQBIdInDigest, boolean insideView,
-      boolean fetchDeletedRows) {
+      boolean fetchDeletedRows, boolean fetchBucketIds) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), table);
     assert getConvention() == HiveRelNode.CONVENTION;
     this.tblAlias = alias;
@@ -118,6 +119,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     this.useQBIdInDigest = useQBIdInDigest;
     this.insideView = insideView;
     this.fetchDeletedRows = fetchDeletedRows;
+    this.fetchBucketIds = fetchBucketIds;
   }
 
   @Override
@@ -135,12 +137,17 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    */
   public HiveTableScan copy(RelDataType newRowtype) {
     return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias,
-        this.concatQbIDAlias, newRowtype, this.useQBIdInDigest, this.insideView, this.fetchDeletedRows);
+        this.concatQbIDAlias, newRowtype, this.useQBIdInDigest, this.insideView, this.fetchDeletedRows, this.fetchBucketIds);
   }
 
   public HiveTableScan enableFetchDeletedRows() {
     return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias,
-        this.concatQbIDAlias, this.rowType, this.useQBIdInDigest, this.insideView, true);
+        this.concatQbIDAlias, this.rowType, this.useQBIdInDigest, this.insideView, true, this.fetchBucketIds);
+  }
+
+  public HiveTableScan enableFetchBucketIds() {
+    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias,
+        this.concatQbIDAlias, this.rowType, this.useQBIdInDigest, this.insideView, this.fetchDeletedRows, true);
   }
 
   /**
@@ -150,7 +157,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    */
   public HiveTableScan copyIncludingTable(RelDataType newRowtype) {
     return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table).copy(newRowtype), this.tblAlias, this.concatQbIDAlias,
-        newRowtype, this.useQBIdInDigest, this.insideView, this.fetchDeletedRows);
+        newRowtype, this.useQBIdInDigest, this.insideView, this.fetchDeletedRows, this.fetchBucketIds);
   }
 
   // We need to include isInsideView inside digest to differentiate direct
@@ -287,6 +294,10 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
 
   public boolean isFetchDeletedRows() {
     return fetchDeletedRows;
+  }
+
+  public boolean isFetchBucketIds() {
+    return fetchBucketIds;
   }
 
   @Override

@@ -10,17 +10,17 @@ insert into t1(a, b) values (10, 15),(2, 32),(42, 42);
 
 set hive.vectorized.execution.enabled=false;
 
-SELECT t1.ROW__ID.writeId, a, b FROM t1;
+SELECT t1.ROW__ID.writeId, a, b FROM t1('insert.only.fetch.bucketId'='true');
 
-SELECT a, sum(b) FROM t1
+SELECT a, sum(b) FROM t1('insert.only.fetch.bucketId'='true')
 where t1.ROW__ID.writeId > 1
 group by a;
 
 
 set hive.vectorized.execution.enabled=true;
 
-SELECT t1.ROW__ID.writeId, a, b FROM t1;
+SELECT t1.ROW__ID.writeId, a, b FROM t1('insert.only.fetch.bucketId'='true');
 
-SELECT a, sum(b) FROM t1
+SELECT a, sum(b) FROM t1('insert.only.fetch.bucketId'='true')
 where t1.ROW__ID.writeId > 1
 group by a;

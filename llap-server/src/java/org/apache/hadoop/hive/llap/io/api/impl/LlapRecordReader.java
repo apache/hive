@@ -110,7 +110,6 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
   private final ExecutorService executor;
   private final boolean isAcidScan;
   private final boolean isAcidFormat;
-  private final boolean isInsertOnlyScan;
   private final BucketIdentifier bucketIdentifier;
 
   /**
@@ -160,8 +159,18 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     VectorizedRowBatchCtx ctx = mapWork.getVectorizedRowBatchCtx();
     rbCtx = ctx != null ? ctx : LlapInputFormat.createFakeVrbCtx(mapWork);
 
-    isAcidScan = AcidUtils.isFullAcidScan(jobConf);
-    isInsertOnlyScan = AcidUtils.isInsertOnlyScan(jobConf);
+    if (HiveConf.getBoolVar(jobConf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN)) {
+      AcidUtils.AcidOperationalProperties acidOperationalProperties = AcidUtils.getAcidOperationalProperties(jobConf);
+      isAcidScan = !acidOperationalProperties.isInsertOnly();
+      if (acidOperationalProperties.isFetchBucketId()) {
+        bucketIdentifier = BucketIdentifier.parsePath(split.getPath());
+      } else {
+        bucketIdentifier = null;
+      }
+    } else {
+      isAcidScan = false;
+      bucketIdentifier = null;
+    }
     TypeDescription schema = OrcInputFormat.getDesiredRowTypeDescr(
         job, isAcidScan, Integer.MAX_VALUE);
 
@@ -214,8 +223,6 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
     feedback = rp = cvp.createReadPipeline(this, split, includes, sarg, counters, includes,
         sourceInputFormat, sourceSerDe, reporter, job, mapWork.getPathToPartitionInfo());
-
-    bucketIdentifier = isInsertOnlyScan ? BucketIdentifier.parsePath(split.getPath()) : null;
   }
 
   private static int getQueueVar(ConfVars var, JobConf jobConf, Configuration daemonConf) {
@@ -436,7 +443,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       firstReturnTime = counters.startTimeCounter();
     }
 
-    if (bucketIdentifier != null && isInsertOnlyScan) {
+    if (bucketIdentifier != null) {
       rbCtx.setWriteIdOf(vrb, bucketIdentifier.getWriteId(), bucketIdentifier.getBucketProperty());
     }
 
