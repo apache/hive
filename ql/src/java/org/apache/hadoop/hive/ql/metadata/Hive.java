@@ -1443,8 +1443,15 @@ public class Hive {
    * table doesn't exist
    */
   public Table getTable(final String tableName, boolean throwException) throws HiveException {
-    String[] names = Utilities.getDbTableName(tableName);
-    return this.getTable(names[0], names[1], throwException);
+    String[] nameParts = tableName.split("\\.");
+    if (nameParts.length == 3) {
+      Table table = this.getTable(nameParts[0], nameParts[1], nameParts[2], throwException);
+      return table;
+    } else {
+      String[] names = Utilities.getDbTableName(tableName);
+      Table table = this.getTable(names[0], names[1], null, throwException);
+      return table;      
+    }
   }
 
   /**
@@ -1462,9 +1469,9 @@ public class Hive {
      // TODO: catalog... etc everywhere
     if (tableName.contains(".")) {
       String[] names = Utilities.getDbTableName(tableName);
-      return this.getTable(names[0], names[1], true);
+      return this.getTable(names[0], names[1], null, true);
     } else {
-      return this.getTable(dbName, tableName, true);
+      return this.getTable(dbName, tableName, null, true);
     }
   }
 
@@ -1479,7 +1486,7 @@ public class Hive {
    */
   public Table getTable(TableName tableName) throws HiveException {
     return this.getTable(ObjectUtils.firstNonNull(tableName.getDb(), SessionState.get().getCurrentDatabase()),
-        tableName.getTable(), true);
+        tableName.getTable(), null, true);
   }
 
   /**
@@ -1495,8 +1502,12 @@ public class Hive {
    * @throws HiveException
    */
   public Table getTable(final String dbName, final String tableName,
-                        boolean throwException) throws HiveException {
-    return this.getTable(dbName, tableName, throwException, false);
+                        final String metaTableName, boolean throwException) throws HiveException {
+    return this.getTable(dbName, tableName, metaTableName, throwException, false);
+  }
+  
+  public Table getTable(final String dbName, final String tableName, boolean throwException) throws HiveException {
+    return this.getTable(dbName, tableName, null, throwException);
   }
 
   /**
@@ -1514,9 +1525,14 @@ public class Hive {
    * @return the table or if throwException is false a null value.
    * @throws HiveException
    */
-  public Table getTable(final String dbName, final String tableName, boolean throwException,
+  public Table getTable(final String dbName, final String tableName, boolean throwException, boolean checkTransactional)
+      throws HiveException {
+    return getTable(dbName, tableName, null, throwException, checkTransactional, false);
+  }
+  
+  public Table getTable(final String dbName, final String tableName, String metaTableName, boolean throwException,
                         boolean checkTransactional) throws HiveException {
-    return getTable(dbName, tableName, throwException, checkTransactional, false);
+    return getTable(dbName, tableName, metaTableName, throwException, checkTransactional, false);
   }
 
   /**
@@ -1536,7 +1552,7 @@ public class Hive {
    * @return the table or if throwException is false a null value.
    * @throws HiveException
    */
-  public Table getTable(final String dbName, final String tableName, boolean throwException,
+  public Table getTable(final String dbName, final String tableName, String metaTableName, boolean throwException,
                         boolean checkTransactional, boolean getColumnStats) throws HiveException {
 
     if (tableName == null || tableName.equals("")) {
@@ -1598,7 +1614,9 @@ public class Hive {
       }
     }
 
-    return new Table(tTable);
+    Table t = new Table(tTable);
+    t.setMetaTable(metaTableName);
+    return t;
   }
 
   /**

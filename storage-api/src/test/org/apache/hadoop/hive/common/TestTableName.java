@@ -33,23 +33,23 @@ public class TestTableName {
 
   @Test
   public void fromString() {
-    TableName name = TableName.fromString("cat.db.tab", null, null);
+    TableName name = TableName.fromString("cat.db.tab", null, null, null);
     Assert.assertEquals("cat", name.getCat());
     Assert.assertEquals("db", name.getDb());
     Assert.assertEquals("tab", name.getTable());
 
-    name = TableName.fromString("db.tab", "cat", null);
+    name = TableName.fromString("db.tab", "cat", null, null);
     Assert.assertEquals("cat", name.getCat());
     Assert.assertEquals("db", name.getDb());
     Assert.assertEquals("tab", name.getTable());
 
-    name = TableName.fromString("tab", "cat", "db");
+    name = TableName.fromString("tab", "cat", "db", null);
     Assert.assertEquals("cat", name.getCat());
     Assert.assertEquals("db", name.getDb());
     Assert.assertEquals("tab", name.getTable());
 
     try {
-      TableName.fromString(null, null, null);
+      TableName.fromString(null, null, null, null);
       Assert.fail("Name can't be null");
     } catch (IllegalArgumentException e) {
       Assert.assertTrue(true);

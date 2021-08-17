@@ -37,6 +37,7 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.iceberg.CombinedScanTask;
 import org.apache.iceberg.DataFile;
+import org.apache.iceberg.DataTask;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionSpec;
@@ -259,6 +260,13 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     }
 
     private CloseableIterable<T> openTask(FileScanTask currentTask, Schema readSchema) {
+      if (currentTask.isDataTask()) {
+        IcebergInternalRecordWrapper wrapper =
+            new IcebergInternalRecordWrapper(tableSchema.asStruct(), readSchema.asStruct());
+        return (CloseableIterable) CloseableIterable.transform(((DataTask) currentTask).rows(),
+            row -> wrapper.wrap((StructLike) row));
+      }
+
       DataFile file = currentTask.file();
       InputFile inputFile = encryptionManager.decrypt(EncryptedFiles.encryptedInput(
           io.newInputFile(file.path().toString()),

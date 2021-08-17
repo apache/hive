@@ -250,7 +250,12 @@ public class PartitionDesc implements Serializable, Cloneable {
 
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
-    return getProperties().getProperty(hive_metastoreConstants.META_TABLE_NAME);
+    String tableName = getProperties().getProperty(hive_metastoreConstants.META_TABLE_NAME);
+    String metaTable = properties.getProperty("metaTable");
+    if (metaTable != null) {
+      tableName = tableName + "." + metaTable;
+    }
+    return tableName;
   }
 
   @Explain(displayName = "input format", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
