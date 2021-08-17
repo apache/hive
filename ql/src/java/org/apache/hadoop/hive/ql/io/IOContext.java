@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 
 /**
@@ -177,8 +178,8 @@ public class IOContext {
     this.ri = ri;
   }
 
-  public void parseRecordIdentifier() {
-    BucketIdentifier bucketIdentifier = BucketIdentifier.parsePath(inputPath);
+  public void parseRecordIdentifier(Configuration configuration) {
+    BucketIdentifier bucketIdentifier = BucketIdentifier.configure(configuration, inputPath);
     if (bucketIdentifier == null) {
       this.ri = null;
     } else {

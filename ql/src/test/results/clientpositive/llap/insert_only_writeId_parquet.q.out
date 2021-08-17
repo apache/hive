@@ -44,12 +44,12 @@ POSTHOOK: query: SELECT t1.ROW__ID.writeId, a, b FROM t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-1	10	10
-1	1	1
-2	2	20
-3	2	32
-3	10	15
-3	42	42
+NULL	10	10
+NULL	1	1
+NULL	2	20
+NULL	2	32
+NULL	10	15
+NULL	42	42
 PREHOOK: query: SELECT t1.ROW__ID.writeId, a, b FROM t1('insert.only.fetch.bucketId'='true')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
@@ -76,9 +76,6 @@ group by a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-10	15
-2	52
-42	42
 PREHOOK: query: SELECT a, sum(b) FROM t1('insert.only.fetch.bucketId'='true')
 where t1.ROW__ID.writeId > 1
 group by a
@@ -102,12 +99,12 @@ POSTHOOK: query: SELECT t1.ROW__ID.writeId, a, b FROM t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-1	10	10
-1	1	1
-2	2	20
-3	2	32
-3	10	15
-3	42	42
+NULL	10	10
+NULL	1	1
+NULL	2	20
+NULL	2	32
+NULL	10	15
+NULL	42	42
 PREHOOK: query: SELECT t1.ROW__ID.writeId, a, b FROM t1('insert.only.fetch.bucketId'='true')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
