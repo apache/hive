@@ -460,7 +460,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       Utilities.copyTablePropertiesToConf(table, conf);
       if (tableScan != null) {
         AcidUtils.setAcidOperationalProperties(conf, tableScan.getConf().isTranscationalTable(),
-            tableScan.getConf().getAcidOperationalProperties(), tableScan.getConf().isFetchDeletedRows());
+            tableScan.getConf().getAcidOperationalProperties());
 
         if (tableScan.getConf().isTranscationalTable() && (validWriteIdList == null)) {
           throw new IOException("Acid table: " + table.getTableName()
@@ -1016,7 +1016,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         pushFiltersAndAsOf(jobConf, ts, this.mrwork);
 
         AcidUtils.setAcidOperationalProperties(job, ts.getConf().isTranscationalTable(),
-            ts.getConf().getAcidOperationalProperties(), ts.getConf().isFetchDeletedRows());
+            ts.getConf().getAcidOperationalProperties());
         AcidUtils.setValidWriteIdList(job, ts.getConf());
       }
     }

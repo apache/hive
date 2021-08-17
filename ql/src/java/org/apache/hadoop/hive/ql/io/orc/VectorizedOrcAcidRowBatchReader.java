@@ -285,7 +285,7 @@ public class VectorizedOrcAcidRowBatchReader
     deleteEventReaderOptions.range(0, Long.MAX_VALUE);
     deleteEventReaderOptions.searchArgument(null, null);
     keyInterval = findMinMaxKeys(orcSplit, conf, deleteEventReaderOptions);
-    fetchDeletedRows = conf.getBoolean(Constants.ACID_FETCH_DELETED_ROWS, false);
+    fetchDeletedRows = acidOperationalProperties.isFetchDeletedRows();
     DeleteEventRegistry der;
     try {
       // See if we can load all the relevant delete events from all the
