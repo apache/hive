@@ -1618,6 +1618,16 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@view18
 #### A masked pattern was here ####
 2
+PREHOOK: query: create view if not exists view18 as select v+1 from (select 1 as v) t
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view18
+POSTHOOK: query: create view if not exists view18 as select v+1 from (select 1 as v) t
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view18
 PREHOOK: query: DROP VIEW view1
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@view1
