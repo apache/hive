@@ -474,7 +474,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
             , tableName));
 
     String validWriteIds = msClient.getValidWriteIds(tableName).toString();
-    LOG.info("ValidWriteIds before add partition::" + validWriteIds);
+    LOG.info("ValidWriteIds before truncate table::" + validWriteIds);
     Assert.assertEquals("trunc_db.trunc_table:0:9223372036854775807::", validWriteIds);
 
     runStatementOnDriver("TRUNCATE TABLE trunc_db.trunc_table");
