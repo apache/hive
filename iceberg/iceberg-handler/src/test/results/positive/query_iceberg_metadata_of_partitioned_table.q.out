@@ -157,20 +157,20 @@ POSTHOOK: query: select * from ice_meta_3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-6	three	Wednesday
-7	three	Wednesday
-8	three	Wednesday
-15	four	Sunday
 1	one	Monday
-2	one	Monday
-3	one	Monday
 10	two	Friday
 11	two	Friday
-4	two	Tuesday
-5	two	Tuesday
 12	four	Saturday
 13	four	Saturday
 14	four	Saturday
+15	four	Sunday
+2	one	Monday
+3	one	Monday
+4	two	Tuesday
+5	two	Tuesday
+6	three	Wednesday
+7	three	Wednesday
+8	three	Wednesday
 9	four	Thursday
 PREHOOK: query: select `partition` from default.ice_meta_2.files
 PREHOOK: type: QUERY
@@ -190,13 +190,13 @@ POSTHOOK: query: select `partition` from default.ice_meta_3.files
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"b":"three","c":"Wednesday"}
+{"b":"four","c":"Saturday"}
 {"b":"four","c":"Sunday"}
+{"b":"four","c":"Thursday"}
 {"b":"one","c":"Monday"}
+{"b":"three","c":"Wednesday"}
 {"b":"two","c":"Friday"}
 {"b":"two","c":"Tuesday"}
-{"b":"four","c":"Saturday"}
-{"b":"four","c":"Thursday"}
 PREHOOK: query: select `partition`.b from default.ice_meta_2.files
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_2
@@ -215,13 +215,13 @@ POSTHOOK: query: select data_file.`partition` from default.ice_meta_3.entries
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"b":"three","c":"Wednesday"}
+{"b":"four","c":"Saturday"}
 {"b":"four","c":"Sunday"}
+{"b":"four","c":"Thursday"}
 {"b":"one","c":"Monday"}
+{"b":"three","c":"Wednesday"}
 {"b":"two","c":"Friday"}
 {"b":"two","c":"Tuesday"}
-{"b":"four","c":"Saturday"}
-{"b":"four","c":"Thursday"}
 PREHOOK: query: select data_file.`partition` from default.ice_meta_2.entries
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_2
@@ -240,13 +240,13 @@ POSTHOOK: query: select data_file.`partition`.c from default.ice_meta_3.entries
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-Wednesday
-Sunday
-Monday
 Friday
-Tuesday
+Monday
 Saturday
+Sunday
 Thursday
+Tuesday
+Wednesday
 PREHOOK: query: select summary from default.ice_meta_3.snapshots
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_3
@@ -307,13 +307,13 @@ POSTHOOK: query: select * from default.ice_meta_3.partitions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"b":"three","c":"Wednesday"}	3	1
-{"b":"two","c":"Tuesday"}	2	1
 {"b":"four","c":"Saturday"}	3	1
-{"b":"two","c":"Friday"}	2	1
-{"b":"one","c":"Monday"}	3	1
-{"b":"four","c":"Thursday"}	1	1
 {"b":"four","c":"Sunday"}	1	1
+{"b":"four","c":"Thursday"}	1	1
+{"b":"one","c":"Monday"}	3	1
+{"b":"three","c":"Wednesday"}	3	1
+{"b":"two","c":"Friday"}	2	1
+{"b":"two","c":"Tuesday"}	2	1
 PREHOOK: query: select `partition` from default.ice_meta_2.partitions where `partition`.b='four'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_2
@@ -359,13 +359,13 @@ POSTHOOK: query: select `partition` from default.ice_meta_3.files
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"b":"three","c":"Wednesday"}
+{"b":"four","c":"Saturday"}
 {"b":"four","c":"Sunday"}
+{"b":"four","c":"Thursday"}
 {"b":"one","c":"Monday"}
+{"b":"three","c":"Wednesday"}
 {"b":"two","c":"Friday"}
 {"b":"two","c":"Tuesday"}
-{"b":"four","c":"Saturday"}
-{"b":"four","c":"Thursday"}
 PREHOOK: query: select `partition`.b from default.ice_meta_2.files
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_2
@@ -384,13 +384,13 @@ POSTHOOK: query: select data_file.`partition` from default.ice_meta_3.entries
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"b":"three","c":"Wednesday"}
+{"b":"four","c":"Saturday"}
 {"b":"four","c":"Sunday"}
+{"b":"four","c":"Thursday"}
 {"b":"one","c":"Monday"}
+{"b":"three","c":"Wednesday"}
 {"b":"two","c":"Friday"}
 {"b":"two","c":"Tuesday"}
-{"b":"four","c":"Saturday"}
-{"b":"four","c":"Thursday"}
 PREHOOK: query: select data_file.`partition` from default.ice_meta_2.entries
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_2
@@ -409,13 +409,13 @@ POSTHOOK: query: select data_file.`partition`.c from default.ice_meta_3.entries
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-Wednesday
-Sunday
-Monday
 Friday
-Tuesday
+Monday
 Saturday
+Sunday
 Thursday
+Tuesday
+Wednesday
 PREHOOK: query: select summary from default.ice_meta_3.snapshots
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_3
@@ -476,13 +476,13 @@ POSTHOOK: query: select * from default.ice_meta_3.partitions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"b":"three","c":"Wednesday"}	3	1
-{"b":"two","c":"Tuesday"}	2	1
 {"b":"four","c":"Saturday"}	3	1
-{"b":"two","c":"Friday"}	2	1
-{"b":"one","c":"Monday"}	3	1
-{"b":"four","c":"Thursday"}	1	1
 {"b":"four","c":"Sunday"}	1	1
+{"b":"four","c":"Thursday"}	1	1
+{"b":"one","c":"Monday"}	3	1
+{"b":"three","c":"Wednesday"}	3	1
+{"b":"two","c":"Friday"}	2	1
+{"b":"two","c":"Tuesday"}	2	1
 PREHOOK: query: select `partition` from default.ice_meta_2.partitions where `partition`.b='four'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_2

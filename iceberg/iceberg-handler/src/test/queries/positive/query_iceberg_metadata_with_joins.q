@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 set hive.vectorized.execution.enabled = false; 
 set tez.mrreader.config.update.properties=hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids;
 set hive.query.results.cache.enabled=false;
@@ -44,7 +46,39 @@ join default.ice_meta_2.entries e
 join default.ice_meta_2.manifests m
   on m.added_snapshot_id = h.snapshot_id
 where s.summary['added-records'] > 2
-order by s.operation, e.data_file.record_count;
+order by s.operation, record_count;
 
+
+set hive.cbo.enable=false;
+
+select
+    s.operation,
+    h.is_current_ancestor,
+    s.summary['added-records'] as added_records,
+    s.summary['deleted-records'] as deleted_records
+from default.ice_meta_2.history h
+join default.ice_meta_2.snapshots s
+  on h.snapshot_id = s.snapshot_id
+order by s.operation, added_records;
+
+
+select
+  s.operation,
+    h.is_current_ancestor,
+    s.summary['added-records'] as added_records,
+    m.added_data_files_count,
+    e.data_file.content,
+    e.data_file.file_format,
+    e.data_file.record_count,
+    e.status
+from default.ice_meta_2.history h
+join default.ice_meta_2.snapshots s
+  on h.snapshot_id = s.snapshot_id
+join default.ice_meta_2.entries e
+  on e.snapshot_id = h.snapshot_id
+join default.ice_meta_2.manifests m
+  on m.added_snapshot_id = h.snapshot_id
+where s.summary['added-records'] > 2
+order by s.operation, record_count;
 
 drop table ice_meta_2;
