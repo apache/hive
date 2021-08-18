@@ -199,7 +199,7 @@ public class HiveMetaStoreUtils {
     return str_fields;
   }
 
-  private static final String FROM_SERIALIZER = "from deserializer";
+  public static final String FROM_SERIALIZER = "from deserializer";
   private static String determineFieldComment(String comment) {
     return (comment == null) ? FROM_SERIALIZER : comment;
   }

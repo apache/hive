@@ -34,6 +34,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -271,10 +272,12 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     }
 
     if (AlterTableType.ADDCOLS.equals(currentAlterTableOp)) {
+      clearDeserCommentsFromHms(hmsTable);
       handleAddColumns(hmsTable);
     } else if (AlterTableType.REPLACE_COLUMNS.equals(currentAlterTableOp)) {
       handleReplaceColumns(hmsTable);
     } else if (AlterTableType.RENAME_COLUMN.equals(currentAlterTableOp)) {
+      clearDeserCommentsFromHms(hmsTable);
       handleChangeColumn(hmsTable);
     }
   }
@@ -631,6 +634,14 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           field.getName(), newType));
     }
     return (Type.PrimitiveType) newType;
+  }
+
+  private void clearDeserCommentsFromHms(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    for (FieldSchema col : hmsTable.getSd().getCols()) {
+      if (HiveMetaStoreUtils.FROM_SERIALIZER.equals(col.getComment())) {
+        col.setComment(null);
+      }
+    }
   }
 
   private class PreAlterTableProperties {

@@ -1085,9 +1085,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
         new FieldSchema("family_name", "string", "This is family name"));
 
     Assert.assertEquals(expectedSchema, icebergSchema);
-    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
-      expectedSchema.stream().filter(fs -> fs.getComment() == null).forEach(fs -> fs.setComment("from deserializer"));
-    }
     Assert.assertEquals(expectedSchema, hmsSchema);
   }
 
@@ -1115,9 +1112,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
         new FieldSchema("last_name", "string", "This is last name"));
 
     Assert.assertEquals(expectedSchema, icebergSchema);
-    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
-      expectedSchema.stream().filter(fs -> fs.getComment() == null).forEach(fs -> fs.setComment("from deserializer"));
-    }
     Assert.assertEquals(expectedSchema, hmsSchema);
   }
 
@@ -1184,11 +1178,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
         new FieldSchema("newstringcol", "string", "Column with description"));
 
     Assert.assertEquals(expectedSchema, icebergSchema);
-
-    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
-      expectedSchema.get(0).setComment("from deserializer");
-    }
-
     Assert.assertEquals(expectedSchema, hmsSchema);
   }
 
