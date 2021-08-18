@@ -39,6 +39,7 @@ import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -60,6 +61,35 @@ import com.google.common.collect.ImmutableSet;
  */
 public class HiveTableScan extends TableScan implements HiveRelNode {
 
+  public enum HiveTableScanTrait {
+    FetchDeletedRows(Constants.ACID_FETCH_DELETED_ROWS),
+    FetchInsertOnlyBucketIds(Constants.INSERT_ONLY_FETCH_BUCKET_ID);
+
+    private final String propertyKey;
+
+    HiveTableScanTrait(String propertyKey) {
+      this.propertyKey = propertyKey;
+    }
+
+    public String getPropertyKey() {
+      return propertyKey;
+    }
+
+    public static HiveTableScanTrait from(Map<String, String> properties) {
+      if (properties == null) {
+        return null;
+      }
+
+      for (HiveTableScanTrait trait : values()) {
+        if (Boolean.parseBoolean(properties.get(trait.propertyKey))) {
+          return trait;
+        }
+      }
+
+      return null;
+    }
+  }
+
   private final RelDataType hiveTableScanRowType;
   private final ImmutableList<Integer> neededColIndxsFrmReloptHT;
   private final String tblAlias;
@@ -69,8 +99,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   private final ImmutableSet<Integer> virtualColIndxsInTS;
   // insiderView will tell this TableScan is inside a view or not.
   private final boolean insideView;
-  private final boolean fetchDeletedRows;
-  private final boolean fetchBucketIds;
+  private final HiveTableScanTrait tableScanTrait;
 
   public String getTableAlias() {
     return tblAlias;
@@ -94,18 +123,19 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    */
   public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
       String alias, String concatQbIDAlias, boolean useQBIdInDigest, boolean insideView) {
-    this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest, insideView, false, false);
+    this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest, insideView, null);
   }
 
   public HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
-      String alias, String concatQbIDAlias, boolean useQBIdInDigest, boolean insideView, boolean fetchDeletedRows, boolean fetchBucketIds) {
+      String alias, String concatQbIDAlias, boolean useQBIdInDigest, boolean insideView,
+      HiveTableScanTrait tableScanTrait) {
     this(cluster, traitSet, table, alias, concatQbIDAlias, table.getRowType(), useQBIdInDigest, insideView,
-        fetchDeletedRows, fetchBucketIds);
+        tableScanTrait);
   }
 
   private HiveTableScan(RelOptCluster cluster, RelTraitSet traitSet, RelOptHiveTable table,
       String alias, String concatQbIDAlias, RelDataType newRowtype, boolean useQBIdInDigest, boolean insideView,
-      boolean fetchDeletedRows, boolean fetchBucketIds) {
+      HiveTableScanTrait tableScanTrait) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), table);
     assert getConvention() == HiveRelNode.CONVENTION;
     this.tblAlias = alias;
@@ -118,8 +148,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     this.virtualColIndxsInTS = colIndxPair.getRight();
     this.useQBIdInDigest = useQBIdInDigest;
     this.insideView = insideView;
-    this.fetchDeletedRows = fetchDeletedRows;
-    this.fetchBucketIds = fetchBucketIds;
+    this.tableScanTrait = tableScanTrait;
   }
 
   @Override
@@ -137,17 +166,12 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    */
   public HiveTableScan copy(RelDataType newRowtype) {
     return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias,
-        this.concatQbIDAlias, newRowtype, this.useQBIdInDigest, this.insideView, this.fetchDeletedRows, this.fetchBucketIds);
+        this.concatQbIDAlias, newRowtype, this.useQBIdInDigest, this.insideView, this.tableScanTrait);
   }
 
-  public HiveTableScan enableFetchDeletedRows() {
+  public HiveTableScan setTableScanTrait(HiveTableScanTrait tableScanTrait) {
     return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias,
-        this.concatQbIDAlias, this.rowType, this.useQBIdInDigest, this.insideView, true, this.fetchBucketIds);
-  }
-
-  public HiveTableScan enableFetchBucketIds() {
-    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias,
-        this.concatQbIDAlias, this.rowType, this.useQBIdInDigest, this.insideView, this.fetchDeletedRows, true);
+        this.concatQbIDAlias, this.rowType, this.useQBIdInDigest, this.insideView, tableScanTrait);
   }
 
   /**
@@ -157,7 +181,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    */
   public HiveTableScan copyIncludingTable(RelDataType newRowtype) {
     return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table).copy(newRowtype), this.tblAlias, this.concatQbIDAlias,
-        newRowtype, this.useQBIdInDigest, this.insideView, this.fetchDeletedRows, this.fetchBucketIds);
+        newRowtype, this.useQBIdInDigest, this.insideView, this.tableScanTrait);
   }
 
   // We need to include isInsideView inside digest to differentiate direct
@@ -171,7 +195,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
       .itemIf("insideView", this.isInsideView(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("plKey", ((RelOptHiveTable) table).getPartitionListKey(), pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES)
       .itemIf("table:alias", tblAlias, !this.useQBIdInDigest)
-      .itemIf("fetchDeleted", this.fetchDeletedRows,
+      .itemIf("tableScanTrait", this.tableScanTrait,
           pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES);
   }
 
@@ -292,12 +316,8 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     return insideView;
   }
 
-  public boolean isFetchDeletedRows() {
-    return fetchDeletedRows;
-  }
-
-  public boolean isFetchBucketIds() {
-    return fetchBucketIds;
+  public HiveTableScanTrait getTableScanTrait() {
+    return tableScanTrait;
   }
 
   @Override
