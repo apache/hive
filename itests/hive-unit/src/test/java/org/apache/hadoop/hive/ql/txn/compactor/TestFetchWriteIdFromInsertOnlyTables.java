@@ -72,7 +72,7 @@ public class TestFetchWriteIdFromInsertOnlyTables extends CompactorOnTezTest {
     executeStatementOnDriver("insert into " + TABLE1 + "(a,b) values (10, 15), (2, 32), (42, 42)", driver);
 
     List<String>  result = execSelectAndDumpData(
-        "SELECT t1.ROW__ID.writeId, a, b FROM " + TABLE1 + "('insert.only.fetch.bucketId'='true')" , driver, "");
+        "SELECT t1.ROW__ID.writeId, a, b FROM " + TABLE1 + "('insertonly.fetch.bucketid'='true')" , driver, "");
     assertResult(EXPECTED_RESULT, result);
   }
 
