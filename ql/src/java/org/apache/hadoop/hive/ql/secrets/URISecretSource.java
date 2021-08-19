@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.secrets;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.curator.utils.CloseableUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
@@ -62,7 +63,8 @@ public class URISecretSource {
     }
   }
 
-  public void removeForTest(SecretSource source) {
+  @VisibleForTesting
+  void removeForTest(SecretSource source) {
     sourcesMap.remove(source.getURIScheme(), source);
   }
 

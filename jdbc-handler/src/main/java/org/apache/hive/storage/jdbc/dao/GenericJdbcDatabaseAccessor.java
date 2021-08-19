@@ -342,8 +342,15 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     }
   }
 
+  private static String removeDbcpPrefix(String key) {
+    if (key.startsWith(DBCP_CONFIG_PREFIX + ".")) {
+      return key.substring(DBCP_CONFIG_PREFIX.length() + 1);
+    }
+    return key;
+  }
+
   private String getFromProperties(Properties dbProperties, String key) {
-    return dbProperties.getProperty(key.replaceFirst(DBCP_CONFIG_PREFIX + "\\.", ""));
+    return dbProperties.getProperty(removeDbcpPrefix(key));
   }
 
   protected Properties getConnectionPoolProperties(Configuration conf) throws Exception {
@@ -354,30 +361,14 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     Map<String, String> userProperties = conf.getValByRegex(DBCP_CONFIG_PREFIX + "\\.*");
     if ((userProperties != null) && (!userProperties.isEmpty())) {
       for (Entry<String, String> entry : userProperties.entrySet()) {
-        dbProperties.put(entry.getKey().replaceFirst(DBCP_CONFIG_PREFIX + "\\.", ""), entry.getValue());
+        dbProperties.put(removeDbcpPrefix(entry.getKey()), entry.getValue());
       }
     }
 
-    // handle password
-    String passwd = getFromProperties(dbProperties, JdbcStorageConfigManager.CONFIG_PWD);
-    if (passwd == null) {
-      String keystore = getFromProperties(dbProperties, JdbcStorageConfigManager.CONFIG_PWD_KEYSTORE);
-      String key = getFromProperties(dbProperties, JdbcStorageConfigManager.CONFIG_PWD_KEY);
-      passwd = Utilities.getPasswdFromKeystore(keystore, key);
-    }
-
-    if (passwd == null) {
-      String passwordUri = getFromProperties(dbProperties, JdbcStorageConfigManager.CONFIG_PWD_URI);
-      try {
-        passwd = Utilities.getPasswdFromUri(passwordUri);
-      } catch (URISyntaxException e) {
-        // Should I include the uri in the exception? Suppressing for now, since it may have sensitive info.
-        throw new HiveException("Invalid password uri specified", e);
-      }
-    }
-
+    String passwd = JdbcStorageConfigManager.getPasswordFromProperties(dbProperties,
+        GenericJdbcDatabaseAccessor::removeDbcpPrefix);
     if (passwd != null) {
-      dbProperties.put(JdbcStorageConfigManager.CONFIG_PWD.replaceFirst(DBCP_CONFIG_PREFIX + "\\.", ""), passwd);
+      dbProperties.put(removeDbcpPrefix(JdbcStorageConfigManager.CONFIG_PWD), passwd);
     }
 
     // essential properties that shouldn't be overridden by users

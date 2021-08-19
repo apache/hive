@@ -32,6 +32,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.function.Function;
 
 /**
  * Main configuration handler class
@@ -71,18 +72,30 @@ public class JdbcStorageConfigManager {
     }
   }
 
-  public static void copySecretsToJob(Properties props, Map<String, String> jobSecrets)
-    throws HiveException, IOException {
-    checkRequiredPropertiesAreDefined(props);
-    resolveMetadata(props);
-    String passwd = props.getProperty(CONFIG_PWD);
-    if (passwd == null) {
-      String keystore = props.getProperty(CONFIG_PWD_KEYSTORE);
-      String key = props.getProperty(CONFIG_PWD_KEY);
+  private static int countNonNull(String ... values) {
+    int count = 0;
+    for (String str : values) {
+      if (str != null) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  public static String getPasswordFromProperties(Properties properties, Function<String, String> keyTransform)
+      throws HiveException, IOException {
+    String passwd = properties.getProperty(keyTransform.apply(CONFIG_PWD));
+    String keystore = properties.getProperty(keyTransform.apply(CONFIG_PWD_KEYSTORE));
+    String uri = properties.getProperty(keyTransform.apply(CONFIG_PWD_URI));
+    if (countNonNull(passwd, keystore, uri) > 1) {
+      throw new HiveException(
+          "Only one of " + CONFIG_PWD + ", " + CONFIG_PWD_KEYSTORE + ", " + CONFIG_PWD_URI + " can be set");
+    }
+    if (passwd == null && keystore != null) {
+      String key = properties.getProperty(keyTransform.apply(CONFIG_PWD_KEY));
       passwd = Utilities.getPasswdFromKeystore(keystore, key);
     }
-    if (passwd == null) {
-      String uri = props.getProperty(CONFIG_PWD_URI);
+    if (passwd == null && uri != null) {
       try {
         passwd = Utilities.getPasswdFromUri(uri);
       } catch (URISyntaxException e) {
@@ -90,6 +103,14 @@ public class JdbcStorageConfigManager {
         throw new HiveException("Invalid password uri specified", e);
       }
     }
+    return passwd;
+  }
+
+  public static void copySecretsToJob(Properties props, Map<String, String> jobSecrets)
+      throws HiveException, IOException {
+    checkRequiredPropertiesAreDefined(props);
+    resolveMetadata(props);
+    String passwd = getPasswordFromProperties(props, Function.identity());
     if (passwd != null) {
       jobSecrets.put(CONFIG_PWD, passwd);
     }
