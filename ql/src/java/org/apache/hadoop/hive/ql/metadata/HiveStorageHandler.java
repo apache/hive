@@ -330,4 +330,13 @@ public interface HiveStorageHandler extends Configurable {
   default boolean isTimeTravelAllowed() {
     return false;
   }
+
+  default boolean isMetadataTableSupported() {
+    return false;
+  }
+
+  default boolean isValidMetadataTable(String metaTableName) {
+    return false;
+  }
+
 }

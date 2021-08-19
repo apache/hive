@@ -1,4 +1,4 @@
-set hive.vectorized.execution.enabled = false; 
+set hive.vectorized.execution.enabled = false;
 set tez.mrreader.config.update.properties=hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids;
 set hive.query.results.cache.enabled=false;
 set hive.fetch.task.conversion=none;
@@ -6,8 +6,8 @@ set hive.cbo.enable=true;
 
 drop table if exists ice_meta_desc;
 create external table ice_meta_desc (id int, value string) stored by iceberg stored as orc;
-insert into ice_meta_desc values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five'); 
-insert into ice_meta_desc values (3,'three'),(4,'four'),(5,'five'); 
+insert into ice_meta_desc values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five');
+insert into ice_meta_desc values (3,'three'),(4,'four'),(5,'five');
 
 describe default.ice_meta_desc;
 describe default.ice_meta_desc;

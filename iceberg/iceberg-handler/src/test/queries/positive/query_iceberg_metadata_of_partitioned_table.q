@@ -1,6 +1,6 @@
 -- SORT_QUERY_RESULTS
 
-set hive.vectorized.execution.enabled = false; 
+set hive.vectorized.execution.enabled = false;
 set tez.mrreader.config.update.properties=hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids;
 set hive.query.results.cache.enabled=false;
 set hive.fetch.task.conversion=none;

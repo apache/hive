@@ -1450,7 +1450,7 @@ public class Hive {
     } else {
       String[] names = Utilities.getDbTableName(tableName);
       Table table = this.getTable(names[0], names[1], null, throwException);
-      return table;      
+      return table;
     }
   }
 
@@ -1496,6 +1496,8 @@ public class Hive {
    *          the name of the database
    * @param tableName
    *          the name of the table
+   * @param metaTableName
+   *          the name of the metadata table
    * @param throwException
    *          controls whether an exception is thrown or a returns a null
    * @return the table or if throwException is false a null value.
@@ -1506,6 +1508,18 @@ public class Hive {
     return this.getTable(dbName, tableName, metaTableName, throwException, false);
   }
   
+  /**
+   * Returns metadata of the table
+   *
+   * @param dbName
+   *          the name of the database
+   * @param tableName
+   *          the name of the table
+   * @param throwException
+   *          controls whether an exception is thrown or a returns a null
+   * @return the table or if throwException is false a null value.
+   * @throws HiveException
+   */
   public Table getTable(final String dbName, final String tableName, boolean throwException) throws HiveException {
     return this.getTable(dbName, tableName, null, throwException);
   }
@@ -1529,7 +1543,24 @@ public class Hive {
       throws HiveException {
     return getTable(dbName, tableName, null, throwException, checkTransactional, false);
   }
-  
+
+  /**
+   * Returns metadata of the table.
+   *
+   * @param dbName
+   *          the name of the database
+   * @param tableName
+   *          the name of the table
+   * @param metaTableName
+   *          the name of the metadata table
+   * @param throwException
+   *          controls whether an exception is thrown or a returns a null
+   * @param checkTransactional
+   *          checks whether the metadata table stats are valid (or
+   *          compilant with the snapshot isolation of) for the current transaction.
+   * @return the table or if throwException is false a null value.
+   * @throws HiveException
+   */
   public Table getTable(final String dbName, final String tableName, String metaTableName, boolean throwException,
                         boolean checkTransactional) throws HiveException {
     return getTable(dbName, tableName, metaTableName, throwException, checkTransactional, false);
@@ -1542,6 +1573,8 @@ public class Hive {
    *          the name of the database
    * @param tableName
    *          the name of the table
+   * @param metaTableName
+   *          the name of the metadata table
    * @param throwException
    *          controls whether an exception is thrown or a returns a null
    * @param checkTransactional
@@ -1615,6 +1648,14 @@ public class Hive {
     }
 
     Table t = new Table(tTable);
+    if (metaTableName != null) {
+      if (t.getStorageHandler() == null || !t.getStorageHandler().isMetadataTableSupported()) {
+        throw new SemanticException(ErrorMsg.METADATA_TABLE_NOT_SUPPORTED, t.getTableName());
+      }
+      if (!t.getStorageHandler().isValidMetadataTable(metaTableName)) {
+        throw new SemanticException(ErrorMsg.INVALID_METADATA_TABLE_NAME, metaTableName);
+      }
+    }
     t.setMetaTable(metaTableName);
     return t;
   }

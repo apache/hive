@@ -154,7 +154,7 @@ public class UnparseTranslator {
     if (tableName.getChildCount() == 2 || tableName.getChildCount() == 3) {
       addIdentifierTranslation((ASTNode)tableName.getChild(0));
       addIdentifierTranslation((ASTNode)tableName.getChild(1));
-      if (tableName.getChildCount() == 3) {        
+      if (tableName.getChildCount() == 3) {
         addIdentifierTranslation((ASTNode)tableName.getChild(2));
       }
     }

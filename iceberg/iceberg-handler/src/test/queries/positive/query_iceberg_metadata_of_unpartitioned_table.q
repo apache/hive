@@ -1,6 +1,6 @@
 -- SORT_QUERY_RESULTS
 
-set hive.vectorized.execution.enabled = false; 
+set hive.vectorized.execution.enabled = false;
 set tez.mrreader.config.update.properties=hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids;
 set hive.query.results.cache.enabled=false;
 set hive.fetch.task.conversion=none;
@@ -8,11 +8,11 @@ set hive.cbo.enable=true;
 
 drop table if exists ice_meta_1;
 create external table ice_meta_1 (id int, value string) stored by iceberg stored as orc;
-insert into ice_meta_1 values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five'); 
+insert into ice_meta_1 values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five');
 truncate table ice_meta_1;
-insert into ice_meta_1 values (3,'three'),(4,'four'),(5,'five'); 
+insert into ice_meta_1 values (3,'three'),(4,'four'),(5,'five');
 truncate table ice_meta_1;
-insert into ice_meta_1 values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five'); 
+insert into ice_meta_1 values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five');
 insert into ice_meta_1 values (6, 'six'), (7, 'seven');
 insert into ice_meta_1 values (8, 'eight'), (9, 'nine'), (10, 'ten');
 insert into ice_meta_1 values (NULL, 'eleven'), (12, NULL), (13, NULL);

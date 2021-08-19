@@ -261,6 +261,8 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
     private CloseableIterable<T> openTask(FileScanTask currentTask, Schema readSchema) {
       if (currentTask.isDataTask()) {
+        // When querying metadata tables, the currentTask is a DataTask and the data has to
+        // be fetched from the task instead of reading it from files.
         IcebergInternalRecordWrapper wrapper =
             new IcebergInternalRecordWrapper(tableSchema.asStruct(), readSchema.asStruct());
         return (CloseableIterable) CloseableIterable.transform(((DataTask) currentTask).rows(),
