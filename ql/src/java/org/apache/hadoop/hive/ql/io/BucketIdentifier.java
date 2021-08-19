@@ -50,11 +50,20 @@ public class BucketIdentifier {
           || parent.getName().startsWith(AcidUtils.DELETE_DELTA_PREFIX);
       if (isBase || isDelta) {
         if (isBase) {
+          AcidUtils.ParsedBaseLight parsedBaseLight = AcidUtils.ParsedBaseLight.parseBase(parent);
+          if (parsedBaseLight.getVisibilityTxnId() > 0) {
+            // This file is a result of compaction. It may contain records from more than one write.
+            return null;
+          }
           return new BucketIdentifier(
-              AcidUtils.ParsedBaseLight.parseBase(parent).getWriteId(),
+              parsedBaseLight.getWriteId(),
               AcidUtils.parseBucketId(path));
         } else {
           AcidUtils.ParsedDeltaLight pd = AcidUtils.ParsedDeltaLight.parse(parent);
+          if (pd.getMinWriteId() != pd.getMaxWriteId()) {
+            // This file is a result of compaction. It contains records from more than one write.
+            return null;
+          }
           return new BucketIdentifier(
               pd.getMinWriteId(),
               AcidUtils.parseBucketId(path));
