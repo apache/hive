@@ -35,12 +35,12 @@ public class TestFetchWriteIdFromInsertOnlyTables extends CompactorOnTezTest {
   private static final String TABLE1 = "t1";
 
   private static final List<String> EXPECTED_RESULT = Arrays.asList(
-      "NULL\t10\t10",
-      "NULL\t1\t1",
-      "NULL\t2\t20",
-      "NULL\t2\t32",
-      "NULL\t10\t15",
-      "NULL\t42\t42"
+      "0\t10\t10",
+      "0\t1\t1",
+      "0\t2\t20",
+      "3\t2\t32",
+      "3\t10\t15",
+      "3\t42\t42"
   );
 
 
@@ -53,7 +53,6 @@ public class TestFetchWriteIdFromInsertOnlyTables extends CompactorOnTezTest {
             "stored as orc TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')", driver);
     executeStatementOnDriver("insert into " + TABLE1 + "(a,b) values (1, 1), (10, 10)", driver);
     executeStatementOnDriver("insert into " + TABLE1 + "(a,b) values (2, 20)", driver);
-    executeStatementOnDriver("insert into " + TABLE1 + "(a,b) values (10, 15), (2, 32), (42, 42)", driver);
   }
 
   @Override
@@ -70,8 +69,10 @@ public class TestFetchWriteIdFromInsertOnlyTables extends CompactorOnTezTest {
     CompactorTestUtil.runCleaner(conf);
     verifySuccessfulCompaction(1);
 
+    executeStatementOnDriver("insert into " + TABLE1 + "(a,b) values (10, 15), (2, 32), (42, 42)", driver);
+
     List<String>  result = execSelectAndDumpData(
-        "SELECT t1.ROW__ID, a, b FROM " + TABLE1 + "('insert.only.fetch.bucketId'='true')" , driver, "");
+        "SELECT t1.ROW__ID.writeId, a, b FROM " + TABLE1 + "('insert.only.fetch.bucketId'='true')" , driver, "");
     assertResult(EXPECTED_RESULT, result);
   }
 
