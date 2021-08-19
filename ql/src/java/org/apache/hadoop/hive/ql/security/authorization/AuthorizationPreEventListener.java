@@ -42,8 +42,10 @@ import org.apache.hadoop.hive.metastore.events.PreAlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.PreCreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.PreDropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
@@ -169,6 +171,12 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
         break;
     case DROP_DATABASE:
       authorizeDropDatabase((PreDropDatabaseEvent)context);
+      break;
+    case CREATE_FUNCTION:
+      authorizeCreateFunction((PreCreateFunctionEvent)context);
+      break;
+    case DROP_FUNCTION:
+      authorizeDropFunction((PreDropFunctionEvent)context);
       break;
     case LOAD_PARTITION_DONE:
       // noop for now
@@ -394,6 +402,36 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
             );
           }
         }
+      }
+    } catch (AuthorizationException e) {
+      throw invalidOperationException(e);
+    } catch (HiveException e) {
+      throw metaException(e);
+    }
+  }
+
+  private void authorizeCreateFunction(PreCreateFunctionEvent context)
+          throws InvalidOperationException, MetaException {
+    try {
+      for (HiveMetastoreAuthorizationProvider authorizer : tAuthorizers.get()) {
+        authorizer.authorize(
+                HiveOperation.CREATEFUNCTION.getInputRequiredPrivileges(),
+                HiveOperation.CREATEFUNCTION.getOutputRequiredPrivileges());
+      }
+    } catch (AuthorizationException e) {
+      throw invalidOperationException(e);
+    } catch (HiveException e) {
+      throw metaException(e);
+    }
+  }
+
+  private void authorizeDropFunction(PreDropFunctionEvent context)
+          throws InvalidOperationException, MetaException {
+    try {
+      for (HiveMetastoreAuthorizationProvider authorizer : tAuthorizers.get()) {
+        authorizer.authorize(
+                HiveOperation.DROPFUNCTION.getInputRequiredPrivileges(),
+                HiveOperation.DROPFUNCTION.getOutputRequiredPrivileges());
       }
     } catch (AuthorizationException e) {
       throw invalidOperationException(e);
