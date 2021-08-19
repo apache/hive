@@ -50,15 +50,16 @@ set hive.local.time.zone=Asia/Bangkok;
 
 select from_unixtime(unix_timestamp('1400-11-08 01:53:11'));
 select from_unixtime(unix_timestamp('1800-11-08 01:53:11'));
-select from_unixtime(unix_timestamp('1400-11-08 08:00:00 ICT', 'uuuu-MM-dd HH:mm:ss z'));
-select from_unixtime(unix_timestamp('1800-11-08 08:00:00 ICT', 'uuuu-MM-dd HH:mm:ss z'));
+select from_unixtime(unix_timestamp('1400-11-08 08:00:00 ICT', 'yyyy-MM-dd HH:mm:ss z'));
+select from_unixtime(unix_timestamp('1800-11-08 08:00:00 ICT', 'yyyy-MM-dd HH:mm:ss z'));
 select from_unixtime(unix_timestamp('0000-00-00', 'uuuu-MM-dd'));
+select from_unixtime(unix_timestamp("2001.07.04 AD at 12:08:56 ICT","yyyy.MM.dd G 'at' HH:mm:ss z"));
 
 set hive.local.time.zone=Europe/London;
 
 select from_unixtime(unix_timestamp('1400-11-08 01:53:11'));
-select from_unixtime(unix_timestamp('1400-11-08', 'uuuu-MM-dd'));
-select from_unixtime(unix_timestamp('1400-15-09 08:00:00 BST', 'uuuu-MM-dd HH:mm:ss z'));
+select from_unixtime(unix_timestamp('1400-11-08', 'yyyy-MM-dd'));
+select from_unixtime(unix_timestamp("Wed, Jul 4, '01", "EEE, MMM d, ''yy"));
 
 set hive.local.time.zone=US/Hawaii;
 

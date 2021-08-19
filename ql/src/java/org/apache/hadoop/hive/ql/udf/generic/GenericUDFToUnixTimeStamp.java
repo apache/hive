@@ -23,10 +23,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.format.ResolverStyle;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
@@ -71,7 +69,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
   private transient ZoneId timeZone;
 
   private transient String lasPattern = "uuuu-MM-dd HH:mm:ss";
-  private transient DateTimeFormatter formatter = DateTimeFormatter.ofPattern(lasPattern).withResolverStyle(ResolverStyle.STRICT);
+  private transient DateTimeFormatter formatter = DateTimeFormatter.ofPattern(lasPattern);
 
 
   @Override
@@ -151,10 +149,12 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
     }
 
     if (inputTextConverter != null) {
+      Timestamp timestamp;
       String textVal = (String) inputTextConverter.convert(arguments[0].get());
       if (textVal == null) {
         return null;
       }
+
       if (patternConverter != null) {
         if (arguments[1].get() == null) {
           return null;
@@ -164,22 +164,30 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
           return null;
         }
         if (!patternVal.equals(lasPattern)) {
-          formatter = DateTimeFormatter.ofPattern(patternVal).withResolverStyle(ResolverStyle.STRICT);
+          formatter = DateTimeFormatter.ofPattern(patternVal);
           lasPattern = patternVal;
         }
-      }
-      Timestamp timestamp;
-      try {
-        LocalDateTime localDateTime = LocalDateTime.parse(textVal, formatter);
-        timestamp = new Timestamp(localDateTime);
-      } catch (DateTimeException e) {
+
         try {
-          LocalDate localDate = LocalDate.parse(textVal, formatter);
-          timestamp = new Timestamp(localDate.atStartOfDay());
-        } catch (DateTimeException ex) {
+          LocalDateTime localDateTime = LocalDateTime.parse(textVal, formatter);
+          timestamp = new Timestamp(localDateTime);
+        } catch (DateTimeException e) {
+          try {
+            LocalDate localDate = LocalDate.parse(textVal, formatter);
+            timestamp = new Timestamp(localDate.atStartOfDay());
+          } catch (DateTimeException ex) {
+            return null;
+          }
+        }
+
+      } else {
+        try {
+          timestamp = Timestamp.valueOf(textVal);
+        } catch (IllegalArgumentException e) {
           return null;
         }
       }
+
       TimestampTZ timestampTZ = TimestampTZUtil.convert(timestamp, timeZone);
       retValue.set(timestampTZ.getEpochSecond());
     } else if (inputDateOI != null) {

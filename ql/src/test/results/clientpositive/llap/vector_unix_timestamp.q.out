@@ -6,11 +6,11 @@ POSTHOOK: query: create table t (d string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t
-PREHOOK: query: insert into t values('2020-11-16 22:18:40 UTC')
+PREHOOK: query: insert into t values('2020-11-16 22:18:40')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values('2020-11-16 22:18:40 UTC')
+POSTHOOK: query: insert into t values('2020-11-16 22:18:40')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
@@ -27,7 +27,7 @@ from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
->2020-11-16 22:18:40 UTC<	1605593920	2020-11-16 22:18:40	2020-11-16
+>2020-11-16 22:18:40<	1605593920	2020-11-16 22:18:40	2020-11-16
 PREHOOK: query: select 
   '>' || d || '<' , unix_timestamp(d), from_unixtime(unix_timestamp(d)), to_date(from_unixtime(unix_timestamp(d)))
 from t
@@ -40,7 +40,7 @@ from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
->2020-11-16 22:18:40 UTC<	1605593920	2020-11-16 22:18:40	2020-11-16
+>2020-11-16 22:18:40<	1605593920	2020-11-16 22:18:40	2020-11-16
 PREHOOK: query: select 
   '>' || d || '<' , assert_true(unix_timestamp(d) is not null)
 from t
@@ -53,4 +53,4 @@ from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
->2020-11-16 22:18:40 UTC<	NULL
+>2020-11-16 22:18:40<	NULL

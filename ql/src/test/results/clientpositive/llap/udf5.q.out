@@ -252,20 +252,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 1800-11-08 01:53:11
-PREHOOK: query: select from_unixtime(unix_timestamp('1400-11-08 08:00:00 ICT', 'uuuu-MM-dd HH:mm:ss z'))
+PREHOOK: query: select from_unixtime(unix_timestamp('1400-11-08 08:00:00 ICT', 'yyyy-MM-dd HH:mm:ss z'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: select from_unixtime(unix_timestamp('1400-11-08 08:00:00 ICT', 'uuuu-MM-dd HH:mm:ss z'))
+POSTHOOK: query: select from_unixtime(unix_timestamp('1400-11-08 08:00:00 ICT', 'yyyy-MM-dd HH:mm:ss z'))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 1400-11-08 08:00:00
-PREHOOK: query: select from_unixtime(unix_timestamp('1800-11-08 08:00:00 ICT', 'uuuu-MM-dd HH:mm:ss z'))
+PREHOOK: query: select from_unixtime(unix_timestamp('1800-11-08 08:00:00 ICT', 'yyyy-MM-dd HH:mm:ss z'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: select from_unixtime(unix_timestamp('1800-11-08 08:00:00 ICT', 'uuuu-MM-dd HH:mm:ss z'))
+POSTHOOK: query: select from_unixtime(unix_timestamp('1800-11-08 08:00:00 ICT', 'yyyy-MM-dd HH:mm:ss z'))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
@@ -279,6 +279,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 NULL
+PREHOOK: query: select from_unixtime(unix_timestamp("2001.07.04 AD at 12:08:56 ICT","yyyy.MM.dd G 'at' HH:mm:ss z"))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select from_unixtime(unix_timestamp("2001.07.04 AD at 12:08:56 ICT","yyyy.MM.dd G 'at' HH:mm:ss z"))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2001-07-04 12:08:56
 PREHOOK: query: select from_unixtime(unix_timestamp('1400-11-08 01:53:11'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -288,24 +297,24 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 1400-11-08 01:53:11
-PREHOOK: query: select from_unixtime(unix_timestamp('1400-11-08', 'uuuu-MM-dd'))
+PREHOOK: query: select from_unixtime(unix_timestamp('1400-11-08', 'yyyy-MM-dd'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: select from_unixtime(unix_timestamp('1400-11-08', 'uuuu-MM-dd'))
+POSTHOOK: query: select from_unixtime(unix_timestamp('1400-11-08', 'yyyy-MM-dd'))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 1400-11-08 00:00:00
-PREHOOK: query: select from_unixtime(unix_timestamp('1400-15-09 08:00:00 BST', 'uuuu-MM-dd HH:mm:ss z'))
+PREHOOK: query: select from_unixtime(unix_timestamp("Wed, Jul 4, '01", "EEE, MMM d, ''yy"))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: select from_unixtime(unix_timestamp('1400-15-09 08:00:00 BST', 'uuuu-MM-dd HH:mm:ss z'))
+POSTHOOK: query: select from_unixtime(unix_timestamp("Wed, Jul 4, '01", "EEE, MMM d, ''yy"))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-NULL
+2001-07-04 00:00:00
 PREHOOK: query: select from_unixtime(unix_timestamp('1400-11-08 01:53:11'))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

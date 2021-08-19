@@ -1,6 +1,6 @@
 
 create table t (d string);
-insert into t values('2020-11-16 22:18:40 UTC');
+insert into t values('2020-11-16 22:18:40');
 
 select 
   '>' || d || '<' , unix_timestamp(d), from_unixtime(unix_timestamp(d)), to_date(from_unixtime(unix_timestamp(d)))
