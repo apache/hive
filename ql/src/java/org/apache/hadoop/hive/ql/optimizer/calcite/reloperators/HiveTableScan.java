@@ -62,7 +62,16 @@ import com.google.common.collect.ImmutableSet;
 public class HiveTableScan extends TableScan implements HiveRelNode {
 
   public enum HiveTableScanTrait {
+    /**
+     * If this is a fully acid table scan fetch the deleted rows too.
+     * This can be done only with uncompacted delete deltas.
+     */
     FetchDeletedRows(Constants.ACID_FETCH_DELETED_ROWS),
+    /**
+     * Provide bucket and writeId for records coming from Insert only transactional tables.
+     * Can not be used for fully acid tables since those tables store this metadata
+     * in the RowId struct for each record.
+     */
     FetchInsertOnlyBucketIds(Constants.INSERT_ONLY_FETCH_BUCKET_ID);
 
     private final String propertyKey;
@@ -99,6 +108,8 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   private final ImmutableSet<Integer> virtualColIndxsInTS;
   // insiderView will tell this TableScan is inside a view or not.
   private final boolean insideView;
+  // This can be replaced with EnumSet<HiveTableScanTrait>
+  // if combination of multiple traits will be allowed in the future.
   private final HiveTableScanTrait tableScanTrait;
 
   public String getTableAlias() {
