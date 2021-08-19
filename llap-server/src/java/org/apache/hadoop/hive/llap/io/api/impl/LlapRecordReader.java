@@ -434,9 +434,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
       firstReturnTime = counters.startTimeCounter();
     }
 
-    if (bucketIdentifier != null) {
-      rbCtx.setBucketAndWriteIdOf(vrb, bucketIdentifier.getWriteId(), bucketIdentifier.getBucketProperty());
-    }
+    rbCtx.setBucketAndWriteIdOf(vrb, bucketIdentifier);
 
     return true;
   }

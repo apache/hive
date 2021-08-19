@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.BucketIdentifier;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -383,19 +384,27 @@ public class VectorizedRowBatchCtx {
     return result;
   }
 
-  public void setBucketAndWriteIdOf(VectorizedRowBatch vectorizedRowBatch, long writeId, int bucketId) {
+  public void setBucketAndWriteIdOf(VectorizedRowBatch vectorizedRowBatch, BucketIdentifier bucketIdentifier) {
     int virtualColumnNum = findVirtualColumnNum(VirtualColumn.ROWID);
     if (virtualColumnNum == -1) {
       return;
     }
 
-    StructColumnVector rowIdColVector = (StructColumnVector) vectorizedRowBatch.cols[virtualColumnNum];
-    LongColumnVector writeIdColVector = (LongColumnVector) rowIdColVector.fields[0];
+    StructColumnVector rowIdStructColVector = (StructColumnVector) vectorizedRowBatch.cols[virtualColumnNum];
+    if (bucketIdentifier == null) {
+      rowIdStructColVector.noNulls = false;
+      rowIdStructColVector.isNull[0] = true;
+      rowIdStructColVector.isRepeating = true;
+      return;
+    }
+
+    LongColumnVector writeIdColVector = (LongColumnVector) rowIdStructColVector.fields[0];
     writeIdColVector.isRepeating = true;
-    writeIdColVector.vector[0] = writeId;
-    LongColumnVector bucketIdColVector = (LongColumnVector) rowIdColVector.fields[1];
+    writeIdColVector.vector[0] = bucketIdentifier.getWriteId();
+    LongColumnVector bucketIdColVector = (LongColumnVector) rowIdStructColVector.fields[1];
     bucketIdColVector.isRepeating = true;
-    bucketIdColVector.vector[0] = bucketId;
+    bucketIdColVector.vector[0] = bucketIdentifier.getBucketProperty();
+    LongColumnVector rowIdColVector = (LongColumnVector) rowIdStructColVector.fields[2];
   }
 
   /**
