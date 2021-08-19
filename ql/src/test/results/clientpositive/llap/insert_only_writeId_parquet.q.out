@@ -36,34 +36,34 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t1
 POSTHOOK: Lineage: t1.a SCRIPT []
 POSTHOOK: Lineage: t1.b SCRIPT []
-PREHOOK: query: SELECT t1.ROW__ID.writeId, a, b FROM t1
+PREHOOK: query: SELECT t1.ROW__ID, t1.ROW__ID.writeId, a, b FROM t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT t1.ROW__ID.writeId, a, b FROM t1
+POSTHOOK: query: SELECT t1.ROW__ID, t1.ROW__ID.writeId, a, b FROM t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-NULL	10	10
-NULL	1	1
-NULL	2	20
-NULL	2	32
-NULL	10	15
-NULL	42	42
-PREHOOK: query: SELECT t1.ROW__ID.writeId, a, b FROM t1('insertonly.fetch.bucketid'='true')
+NULL	NULL	10	10
+NULL	NULL	1	1
+NULL	NULL	2	20
+NULL	NULL	2	32
+NULL	NULL	10	15
+NULL	NULL	42	42
+PREHOOK: query: SELECT t1.ROW__ID, t1.ROW__ID.writeId, a, b FROM t1('insertonly.fetch.bucketid'='true')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT t1.ROW__ID.writeId, a, b FROM t1('insertonly.fetch.bucketid'='true')
+POSTHOOK: query: SELECT t1.ROW__ID, t1.ROW__ID.writeId, a, b FROM t1('insertonly.fetch.bucketid'='true')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-1	10	10
-1	1	1
-2	2	20
-3	2	32
-3	10	15
-3	42	42
+{"writeid":### Masked writeid ###,"bucketid":0,"rowid":0}	1	10	10
+{"writeid":### Masked writeid ###,"bucketid":1,"rowid":0}	1	1	1
+{"writeid":### Masked writeid ###,"bucketid":0,"rowid":0}	2	2	20
+{"writeid":### Masked writeid ###,"bucketid":0,"rowid":0}	3	2	32
+{"writeid":### Masked writeid ###,"bucketid":0,"rowid":0}	3	10	15
+{"writeid":### Masked writeid ###,"bucketid":1,"rowid":0}	3	42	42
 PREHOOK: query: SELECT a, sum(b) FROM t1
 where t1.ROW__ID.writeId > 1
 group by a
@@ -91,34 +91,34 @@ POSTHOOK: Input: default@t1
 10	15
 2	52
 42	42
-PREHOOK: query: SELECT t1.ROW__ID.writeId, a, b FROM t1
+PREHOOK: query: SELECT t1.ROW__ID, t1.ROW__ID.writeId, a, b FROM t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT t1.ROW__ID.writeId, a, b FROM t1
+POSTHOOK: query: SELECT t1.ROW__ID, t1.ROW__ID.writeId, a, b FROM t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-NULL	10	10
-NULL	1	1
-NULL	2	20
-NULL	2	32
-NULL	10	15
-NULL	42	42
-PREHOOK: query: SELECT t1.ROW__ID.writeId, a, b FROM t1('insertonly.fetch.bucketid'='true')
+NULL	NULL	10	10
+NULL	NULL	1	1
+NULL	NULL	2	20
+NULL	NULL	2	32
+NULL	NULL	10	15
+NULL	NULL	42	42
+PREHOOK: query: SELECT t1.ROW__ID, t1.ROW__ID.writeId, a, b FROM t1('insertonly.fetch.bucketid'='true')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT t1.ROW__ID.writeId, a, b FROM t1('insertonly.fetch.bucketid'='true')
+POSTHOOK: query: SELECT t1.ROW__ID, t1.ROW__ID.writeId, a, b FROM t1('insertonly.fetch.bucketid'='true')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-1	10	10
-1	1	1
-2	2	20
-3	2	32
-3	10	15
-3	42	42
+{"writeid":### Masked writeid ###,"bucketid":0,"rowid":0}	1	10	10
+{"writeid":### Masked writeid ###,"bucketid":1,"rowid":0}	1	1	1
+{"writeid":### Masked writeid ###,"bucketid":0,"rowid":0}	2	2	20
+{"writeid":### Masked writeid ###,"bucketid":0,"rowid":0}	3	2	32
+{"writeid":### Masked writeid ###,"bucketid":0,"rowid":0}	3	10	15
+{"writeid":### Masked writeid ###,"bucketid":1,"rowid":0}	3	42	42
 PREHOOK: query: SELECT a, sum(b) FROM t1
 where t1.ROW__ID.writeId > 1
 group by a
