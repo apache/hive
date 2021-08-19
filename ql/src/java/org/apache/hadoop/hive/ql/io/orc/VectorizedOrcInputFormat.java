@@ -114,7 +114,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
         partitionValues = null;
       }
 
-      this.bucketIdentifier = BucketIdentifier.configure(conf, fileSplit.getPath());
+      this.bucketIdentifier = BucketIdentifier.from(conf, fileSplit.getPath());
     }
 
     @Override

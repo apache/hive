@@ -160,7 +160,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     rbCtx = ctx != null ? ctx : LlapInputFormat.createFakeVrbCtx(mapWork);
 
     isAcidScan = AcidUtils.isFullAcidScan(jobConf);
-    this.bucketIdentifier = BucketIdentifier.configure(jobConf, split.getPath());
+    this.bucketIdentifier = BucketIdentifier.from(jobConf, split.getPath());
 
     TypeDescription schema = OrcInputFormat.getDesiredRowTypeDescr(
         job, isAcidScan, Integer.MAX_VALUE);

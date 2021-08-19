@@ -179,7 +179,7 @@ public class IOContext {
   }
 
   public void parseRecordIdentifier(Configuration configuration) {
-    BucketIdentifier bucketIdentifier = BucketIdentifier.configure(configuration, inputPath);
+    BucketIdentifier bucketIdentifier = BucketIdentifier.from(configuration, inputPath);
     if (bucketIdentifier == null) {
       this.ri = null;
     } else {

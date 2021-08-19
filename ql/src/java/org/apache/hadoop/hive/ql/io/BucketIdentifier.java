@@ -31,7 +31,7 @@ public class BucketIdentifier {
 
   private static final Logger LOG = LoggerFactory.getLogger(BucketIdentifier.class);
 
-  public static BucketIdentifier configure(Configuration conf, Path path) {
+  public static BucketIdentifier from(Configuration conf, Path path) {
     if (!AcidUtils.isInsertOnlyFetchBucketId(conf)) {
       return null;
     }
