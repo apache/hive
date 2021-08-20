@@ -180,7 +180,7 @@ public class TestFunctions extends MetaStoreClientTest {
 
     Function createdFunction = client.getFunction(function.getDbName(),
         function.getFunctionName());
-    Assert.assertNull("Comparing OwnerName", createdFunction.getOwnerName());
+    Assert.assertEquals("Comparing OwnerName", createdFunction.getOwnerName(), createdFunction.getOwnerName());
     Assert.assertEquals("Comparing ResourceUris", 0, createdFunction.getResourceUris().size());
     // The create time is set
     Assert.assertNotEquals("Comparing CreateTime", 0, createdFunction.getCreateTime());
