@@ -58,20 +58,20 @@ POSTHOOK: Input: default@oneline_n0
 #### A masked pattern was here ####
 2009-03-20	1237532400
 PREHOOK: query: SELECT
-  '2009 Mar 20 11:30:01 AM',
-  to_unix_timestamp('2009 Mar 20 11:30:01 AM', 'yyyy MMM dd hh:mm:ss a')
+  '2009 Mar 20 11:30:01 am',
+  to_unix_timestamp('2009 Mar 20 11:30:01 am', 'yyyy MMM dd h:mm:ss a')
 FROM oneline_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@oneline_n0
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT
-  '2009 Mar 20 11:30:01 AM',
-  to_unix_timestamp('2009 Mar 20 11:30:01 AM', 'yyyy MMM dd hh:mm:ss a')
+  '2009 Mar 20 11:30:01 am',
+  to_unix_timestamp('2009 Mar 20 11:30:01 am', 'yyyy MMM dd h:mm:ss a')
 FROM oneline_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@oneline_n0
 #### A masked pattern was here ####
-2009 Mar 20 11:30:01 AM	1237573801
+2009 Mar 20 11:30:01 am	1237573801
 PREHOOK: query: SELECT
   'random_string',
   to_unix_timestamp('random_string')

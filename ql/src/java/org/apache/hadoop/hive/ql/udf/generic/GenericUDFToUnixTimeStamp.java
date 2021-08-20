@@ -23,6 +23,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.util.Locale;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -69,7 +71,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
   private transient ZoneId timeZone;
 
   private transient String lasPattern = "uuuu-MM-dd HH:mm:ss";
-  private transient DateTimeFormatter formatter = DateTimeFormatter.ofPattern(lasPattern);
+  private transient DateTimeFormatter formatter;
 
 
   @Override
@@ -126,6 +128,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
 
     timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
         .getLocalTimeZone();
+    formatter = getFormatter(lasPattern);
   }
 
   @Override
@@ -164,7 +167,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
           return null;
         }
         if (!patternVal.equals(lasPattern)) {
-          formatter = DateTimeFormatter.ofPattern(patternVal);
+          formatter = getFormatter(patternVal);
           lasPattern = patternVal;
         }
 
@@ -179,7 +182,6 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
             return null;
           }
         }
-
       } else {
         try {
           timestamp = Timestamp.valueOf(textVal);
@@ -215,5 +217,12 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
     sb.append(StringUtils.join(children, ','));
     sb.append(')');
     return sb.toString();
+  }
+
+  public DateTimeFormatter getFormatter(String pattern){
+    return new DateTimeFormatterBuilder()
+        .parseCaseInsensitive()
+        .appendPattern(pattern)
+        .toFormatter();
   }
 }
