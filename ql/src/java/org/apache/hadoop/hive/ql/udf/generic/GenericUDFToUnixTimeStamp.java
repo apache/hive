@@ -18,12 +18,16 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.TimeZone;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.util.Locale;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -66,8 +70,8 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
   private transient Converter patternConverter;
   private transient ZoneId timeZone;
 
-  private transient String lasPattern = "yyyy-MM-dd HH:mm:ss";
-  private transient final SimpleDateFormat formatter = new SimpleDateFormat(lasPattern);
+  private transient String lasPattern = "uuuu-MM-dd HH:mm:ss";
+  private transient DateTimeFormatter formatter;
 
 
   @Override
@@ -122,11 +126,9 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
             .getPrimitiveCategory().name());
     }
 
-    if (timeZone == null) {
-      timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
-              .getLocalTimeZone();
-      formatter.setTimeZone(TimeZone.getTimeZone(timeZone));
-    }
+    timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
+        .getLocalTimeZone();
+    formatter = getFormatter(lasPattern);
   }
 
   @Override
@@ -134,7 +136,6 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
     if (context != null) {
       String timeZoneStr = HiveConf.getVar(context.getJobConf(), HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE);
       timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
-      formatter.setTimeZone(TimeZone.getTimeZone(timeZone));
     }
   }
 
@@ -151,10 +152,12 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
     }
 
     if (inputTextConverter != null) {
+      Timestamp timestamp;
       String textVal = (String) inputTextConverter.convert(arguments[0].get());
       if (textVal == null) {
         return null;
       }
+
       if (patternConverter != null) {
         if (arguments[1].get() == null) {
           return null;
@@ -164,15 +167,31 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
           return null;
         }
         if (!patternVal.equals(lasPattern)) {
-          formatter.applyPattern(patternVal);
+          formatter = getFormatter(patternVal);
           lasPattern = patternVal;
         }
+
+        try {
+          LocalDateTime localDateTime = LocalDateTime.parse(textVal, formatter);
+          timestamp = new Timestamp(localDateTime);
+        } catch (DateTimeException e) {
+          try {
+            LocalDate localDate = LocalDate.parse(textVal, formatter);
+            timestamp = new Timestamp(localDate.atStartOfDay());
+          } catch (DateTimeException ex) {
+            return null;
+          }
+        }
+      } else {
+        try {
+          timestamp = Timestamp.valueOf(textVal);
+        } catch (IllegalArgumentException e) {
+          return null;
+        }
       }
-      try {
-        retValue.set(formatter.parse(textVal).getTime() / 1000);
-      } catch (ParseException e) {
-        return null;
-      }
+
+      TimestampTZ timestampTZ = TimestampTZUtil.convert(timestamp, timeZone);
+      retValue.set(timestampTZ.getEpochSecond());
     } else if (inputDateOI != null) {
       TimestampTZ timestampTZ = TimestampTZUtil.convert(
           inputDateOI.getPrimitiveJavaObject(arguments[0].get()), timeZone);
@@ -198,5 +217,12 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
     sb.append(StringUtils.join(children, ','));
     sb.append(')');
     return sb.toString();
+  }
+
+  public DateTimeFormatter getFormatter(String pattern){
+    return new DateTimeFormatterBuilder()
+        .parseCaseInsensitive()
+        .appendPattern(pattern)
+        .toFormatter();
   }
 }

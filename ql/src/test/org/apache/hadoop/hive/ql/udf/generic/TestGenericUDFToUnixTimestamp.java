@@ -76,11 +76,7 @@ public class TestGenericUDFToUnixTimestamp {
     GenericUDFToUnixTimeStamp udf = new GenericUDFToUnixTimeStamp();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
     ObjectInspector[] arguments = {valueOI};
-    MapredContext mockContext = Mockito.mock(MapredContext.class);
-    when(mockContext.getJobConf()).thenReturn(new JobConf(new HiveConf()));
-    udf.configure(mockContext);
     udf.initialize(arguments);
-
     Timestamp ts = Timestamp.valueOf("1970-01-01 00:00:00");
     TimestampTZ tstz = TimestampTZUtil.convert(ts, ZoneId.systemDefault());
     runAndVerify(udf,
@@ -102,9 +98,6 @@ public class TestGenericUDFToUnixTimestamp {
     GenericUDFToUnixTimeStamp udf = new GenericUDFToUnixTimeStamp();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableDateObjectInspector;
     ObjectInspector[] arguments = {valueOI};
-    MapredContext mockContext = Mockito.mock(MapredContext.class);
-    when(mockContext.getJobConf()).thenReturn(new JobConf(new HiveConf()));
-    udf.configure(mockContext);
     udf.initialize(arguments);
 
     Date date = Date.valueOf("1970-01-01");
@@ -118,39 +111,69 @@ public class TestGenericUDFToUnixTimestamp {
   }
 
   @Test
-  public void testString() throws HiveException {
+  public void testStringArg1() throws HiveException {
     GenericUDFToUnixTimeStamp udf1 = new GenericUDFToUnixTimeStamp();
     ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
     ObjectInspector[] arguments = {valueOI};
-    MapredContext mockContext = Mockito.mock(MapredContext.class);
-    when(mockContext.getJobConf()).thenReturn(new JobConf(new HiveConf()));
-    udf1.configure(mockContext);
     udf1.initialize(arguments);
 
-    String val = "2001-01-01 01:02:03";
     runAndVerify(udf1,
-        new Text(val),
-        new LongWritable(TimestampTZUtil.parse(val, ZoneId.systemDefault()).getEpochSecond()));
+        new Text("2001-01-01 01:02:03"),
+        new LongWritable(TimestampTZUtil.parse("2001-01-01 01:02:03", ZoneId.systemDefault()).getEpochSecond()));
+    runAndVerify(udf1,
+        new Text("1400-11-08 01:53:11"),
+        new LongWritable(TimestampTZUtil.parse("1400-11-08 01:53:11", ZoneId.systemDefault()).getEpochSecond()));
+    runAndVerify(udf1,
+        new Text("1800-11-08 01:53:11"),
+        new LongWritable(TimestampTZUtil.parse("1800-11-08 01:53:11", ZoneId.systemDefault()).getEpochSecond()));
 
-    // test null values
+
+    // test invalid values
     runAndVerify(udf1, null, null);
+    runAndVerify(udf1, new Text("0000-00-00 00:00:00"), null);
+    runAndVerify(udf1, new Text("1400-20-00 00:00:00"), null);
+    runAndVerify(udf1, new Text("1400-02-34 00:00:00"), null);
+    runAndVerify(udf1, new Text("1800-11-08 01:53:11 UTC"), null);
+  }
 
-    // Try 2-arg version
+  @Test
+  public void testStringArg2() throws HiveException {
+
     GenericUDFToUnixTimeStamp udf2 = new GenericUDFToUnixTimeStamp();
+    ObjectInspector valueOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
     ObjectInspector[] args2 = {valueOI, valueOI};
-    udf2.configure(mockContext);
     udf2.initialize(args2);
 
-    val = "2001-01-01";
-    String format = "yyyy-MM-dd";
     runAndVerify(udf2,
-        new Text(val),
-        new Text(format),
-        new LongWritable(TimestampTZUtil.parse(val, ZoneId.systemDefault()).getEpochSecond()));
+        new Text("2001.07.04 AD at 12:08:56 PDT"),
+        new Text("yyyy.MM.dd G 'at' HH:mm:ss z"),
+        new LongWritable(TimestampTZUtil.parse("2001-07-04 12:08:56", ZoneId.systemDefault()).getEpochSecond()));
+    runAndVerify(udf2,
+        new Text("Wed, Jul 4, '01"),
+        new Text("EEE, MMM d, ''yy"),
+        new LongWritable(TimestampTZUtil.parse("2001-07-04", ZoneId.systemDefault()).getEpochSecond()));
+    runAndVerify(udf2,
+        new Text("2009 Mar 20 11:30:01 AM"),
+        new Text("yyyy MMM dd h:mm:ss a"),
+        new LongWritable(TimestampTZUtil.parse("2009-03-20 11:30:01", ZoneId.systemDefault()).getEpochSecond()));
+    runAndVerify(udf2,
+        new Text("2009 Mar 20 11:30:01 pm"),
+        new Text("yyyy MMM dd h:mm:ss a"),
+        new LongWritable(TimestampTZUtil.parse("2009-03-20 23:30:01", ZoneId.systemDefault()).getEpochSecond()));
+    runAndVerify(udf2,
+        new Text("1800-02-03"),
+        new Text("yyyy-MM-dd"),
+        new LongWritable(TimestampTZUtil.parse("1800-02-03", ZoneId.systemDefault()).getEpochSecond()));
+    runAndVerify(udf2,
+        new Text("1400-02-01 00:00:00 ICT"),
+        new Text("yyyy-MM-dd HH:mm:ss z"),
+        new LongWritable(TimestampTZUtil.parse("1400-02-01 00:00:00", ZoneId.systemDefault()).getEpochSecond()));
 
-    // test null values
+    // test invalid values
     runAndVerify(udf2, null, null, null);
-    runAndVerify(udf2, null, new Text(format), null);
-    runAndVerify(udf2, new Text(val), null, null);
+    runAndVerify(udf2, null, new Text("yyyy-MM-dd"), null);
+    runAndVerify(udf2, new Text("2001-01-01"), null, null);
+    runAndVerify(udf2, new Text("1400-20-00 00:00:00 ICT"), new Text("yyyy-MM-dd HH:mm:ss z"),
+        null);
   }
 }
