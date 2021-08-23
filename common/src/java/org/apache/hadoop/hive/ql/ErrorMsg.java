@@ -475,6 +475,8 @@ public enum ErrorMsg {
   DATACONNECTOR_ALREADY_EXISTS(10427, "Dataconnector {0} already exists", true),
   DATACONNECTOR_NOT_EXISTS(10428, "Dataconnector does not exist:"),
   TIME_TRAVEL_NOT_ALLOWED(10429, "Time travel is not allowed for {0}. Please choose a storage format which supports the feature.", true),
+  INVALID_METADATA_TABLE_NAME(10430, "Invalid metadata table name {0}.", true),
+  METADATA_TABLE_NOT_SUPPORTED(10431, "Metadata tables are not supported for table {0}.", true),
 
 
   //========================== 20000 range starts here ========================//

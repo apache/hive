@@ -149,8 +149,15 @@ public class TestUtilities {
     assertEquals("db name", "dab1", dbtab[0]);
     assertEquals("table name", "tab1", dbtab[1]);
 
+    // test table name with metadata table name
+    tablename = "dab1.tab1.meta1";
+    dbtab = Utilities.getDbTableName(tablename);
+    assertEquals("db name", "dab1", dbtab[0]);
+    assertEquals("table name", "tab1", dbtab[1]);
+    assertEquals("metadata table name", "meta1", dbtab[2]);
+
     //test invalid table name
-    tablename = "dab1.tab1.x1";
+    tablename = "dab1.tab1.x1.y";
     try {
       dbtab = Utilities.getDbTableName(tablename);
       fail("exception was expected for invalid table name");

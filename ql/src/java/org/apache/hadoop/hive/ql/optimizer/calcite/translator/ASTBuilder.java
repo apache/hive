@@ -77,10 +77,14 @@ public class ASTBuilder {
 
     assert hts != null;
     RelOptHiveTable hTbl = (RelOptHiveTable) hts.getTable();
-    ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF").add(
-        ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME")
-            .add(HiveParser.Identifier, hTbl.getHiveTableMD().getDbName())
-            .add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName()));
+    ASTBuilder tableNameBuilder = ASTBuilder.construct(HiveParser.TOK_TABNAME, "TOK_TABNAME")
+        .add(HiveParser.Identifier, hTbl.getHiveTableMD().getDbName())
+        .add(HiveParser.Identifier, hTbl.getHiveTableMD().getTableName());
+    if (hTbl.getHiveTableMD().getMetaTable() != null) {
+      tableNameBuilder.add(HiveParser.Identifier, hTbl.getHiveTableMD().getMetaTable());
+    }
+
+    ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_TABREF, "TOK_TABREF").add(tableNameBuilder);
 
     ASTBuilder propList = ASTBuilder.construct(HiveParser.TOK_TABLEPROPLIST, "TOK_TABLEPROPLIST");
     if (scan instanceof DruidQuery) {

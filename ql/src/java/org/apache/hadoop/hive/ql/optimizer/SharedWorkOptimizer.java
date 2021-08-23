@@ -396,6 +396,14 @@ public class SharedWorkOptimizer extends Transform {
 
         SharedResult sr;
 
+        // If Iceberg metadata tables are in the query, disable this optimisation.
+        String metaTable1 = retainableTsOp.getConf().getTableMetadata().getMetaTable();
+        String metaTable2 = discardableTsOp.getConf().getTableMetadata().getMetaTable();
+        if (metaTable1 != null || metaTable2 != null) {
+          LOG.info("Skip the schema merging as the query contains Iceberg metadata table.");
+          continue;
+        }
+
         if (!schemaMerge && !compatibleSchema(retainableTsOp, discardableTsOp)) {
           LOG.debug("incompatible schemas: {} {} for {} (and merge disabled)", discardableTsOp, retainableTsOp,
               tableName1);
