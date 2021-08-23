@@ -375,7 +375,9 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     NullWritable nullWritable,
     VectorizedRowBatch vectorizedRowBatch) throws IOException {
     boolean hasMore = nextBatch(vectorizedRowBatch);
-    rbCtx.setBucketAndWriteIdOf(vectorizedRowBatch, bucketIdentifier);
+    if (bucketIdentifier != null) {
+      rbCtx.setBucketAndWriteIdOf(vectorizedRowBatch, bucketIdentifier);
+    }
     return hasMore;
   }
 

@@ -385,18 +385,16 @@ public class VectorizedRowBatchCtx {
   }
 
   public void setBucketAndWriteIdOf(VectorizedRowBatch vectorizedRowBatch, BucketIdentifier bucketIdentifier) {
+    if (bucketIdentifier == null) {
+      return;
+    }
+
     int virtualColumnNum = findVirtualColumnNum(VirtualColumn.ROWID);
     if (virtualColumnNum == -1) {
       return;
     }
 
     StructColumnVector rowIdStructColVector = (StructColumnVector) vectorizedRowBatch.cols[virtualColumnNum];
-    if (bucketIdentifier == null) {
-      rowIdStructColVector.noNulls = false;
-      rowIdStructColVector.isNull[0] = true;
-      rowIdStructColVector.isRepeating = true;
-      return;
-    }
 
     LongColumnVector writeIdColVector = (LongColumnVector) rowIdStructColVector.fields[0];
     writeIdColVector.isRepeating = true;

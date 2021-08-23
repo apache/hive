@@ -140,7 +140,9 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       }
       progress = reader.getProgress();
 
-      rbCtx.setBucketAndWriteIdOf(value, bucketIdentifier);
+      if (bucketIdentifier != null) {
+        rbCtx.setBucketAndWriteIdOf(value, bucketIdentifier);
+      }
 
       return true;
     }
