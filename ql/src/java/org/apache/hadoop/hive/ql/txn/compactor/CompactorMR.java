@@ -234,12 +234,25 @@ public class CompactorMR {
         "especially if this message repeats.  Check that compaction is running properly.  Check for any " +
         "runaway/mis-configured process writing to ACID tables, especially using Streaming Ingest API.");
       int numMinorCompactions = parsedDeltas.size() / maxDeltasToHandle;
+      parsedDeltas.sort(AcidUtils.ParsedDeltaLight::compareTo);
+
+      int start = 0;
+      int end = maxDeltasToHandle;
+
       for (int jobSubId = 0; jobSubId < numMinorCompactions; jobSubId++) {
+        while (end > 0 && end < parsedDeltas.size() &&
+          parsedDeltas.get(end).getMinWriteId() == parsedDeltas.get(end - 1).getMinWriteId() &&
+          parsedDeltas.get(end).getMaxWriteId() == parsedDeltas.get(end - 1).getMaxWriteId()) {
+          end--;
+        }
+        List<AcidUtils.ParsedDelta> split = parsedDeltas.subList(start, end);
+        start = end;
+        end = start + maxDeltasToHandle;
+
         JobConf jobMinorCompact = createBaseJobConf(conf, jobName + "_" + jobSubId, t, sd, writeIds, ci);
         launchCompactionJob(jobMinorCompact,
           null, CompactionType.MINOR, null,
-            parsedDeltas.subList(jobSubId * maxDeltasToHandle, (jobSubId + 1) * maxDeltasToHandle),
-            maxDeltasToHandle, -1, conf, msc, ci.id, jobName);
+            split, split.size(), -1, conf, msc, ci.id, jobName);
       }
       //now recompute state since we've done minor compactions and have different 'best' set of deltas
       dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf, writeIds, Ref.from(false), false);
