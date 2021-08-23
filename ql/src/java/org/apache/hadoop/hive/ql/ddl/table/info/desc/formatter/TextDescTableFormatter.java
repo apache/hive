@@ -84,7 +84,8 @@ class TextDescTableFormatter extends DescTableFormatter {
       addStatsData(out, columnPath, columns, isFormatted, columnStats, isOutputPadded);
       addPartitionData(out, conf, columnPath, table, isFormatted, isOutputPadded);
 
-      if (columnPath == null) {
+      boolean isIcebergMetaTable = table.getMetaTable() != null;
+      if (columnPath == null && !isIcebergMetaTable) {
         addPartitionTransformData(out, table, isOutputPadded);
         if (isFormatted) {
           addFormattedTableData(out, table, partition, isOutputPadded);

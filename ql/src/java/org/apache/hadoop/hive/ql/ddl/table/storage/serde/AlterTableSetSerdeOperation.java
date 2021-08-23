@@ -67,8 +67,8 @@ public class AlterTableSetSerdeOperation extends AbstractAlterTableOperation<Alt
         // the fields so that new SerDe could operate. Note that this may fail if some fields
         // from old SerDe are too long to be stored in metastore, but there's nothing we can do.
         try {
-          Deserializer oldSerde = HiveMetaStoreUtils.getDeserializer(context.getConf(), table.getTTable(), false,
-              oldSerdeName);
+          Deserializer oldSerde = HiveMetaStoreUtils.getDeserializer(context.getConf(), table.getTTable(), null,
+              false, oldSerdeName);
           table.setFields(Hive.getFieldsFromDeserializer(table.getTableName(), oldSerde));
         } catch (MetaException ex) {
           throw new HiveException(ex);

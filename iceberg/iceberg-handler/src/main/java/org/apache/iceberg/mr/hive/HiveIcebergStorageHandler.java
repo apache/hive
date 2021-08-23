@@ -349,6 +349,16 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return true;
   }
 
+  @Override
+  public boolean isMetadataTableSupported() {
+    return true;
+  }
+
+  @Override
+  public boolean isValidMetadataTable(String metaTableName) {
+    return IcebergMetadataTables.isValidMetaTable(metaTableName);
+  }
+
   public boolean addDynamicSplitPruningEdge(org.apache.hadoop.hive.ql.metadata.Table table,
                                             ExprNodeDesc syntheticFilterPredicate) {
     try {

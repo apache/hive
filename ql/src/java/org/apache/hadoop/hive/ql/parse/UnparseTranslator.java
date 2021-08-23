@@ -149,11 +149,14 @@ public class UnparseTranslator {
       return;
     }
     assert (tableName.getToken().getType() == HiveParser.TOK_TABNAME);
-    assert (tableName.getChildCount() <= 2);
+    assert (tableName.getChildCount() <= 3);
 
-    if (tableName.getChildCount() == 2) {
+    if (tableName.getChildCount() == 2 || tableName.getChildCount() == 3) {
       addIdentifierTranslation((ASTNode)tableName.getChild(0));
       addIdentifierTranslation((ASTNode)tableName.getChild(1));
+      if (tableName.getChildCount() == 3) {
+        addIdentifierTranslation((ASTNode)tableName.getChild(2));
+      }
     }
     else {
       // transform the table reference to an absolute reference (i.e., "db.table")

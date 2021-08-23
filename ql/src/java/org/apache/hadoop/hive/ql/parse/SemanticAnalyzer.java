@@ -2232,6 +2232,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         ASTNode src = qb.getParseInfo().getSrcForAlias(alias);
         if (null != src) {
+          if (src.getChildCount() == 3) {
+            throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg() + " '" + src.getChild(2).getText() + "'");
+          }
           throw new SemanticException(ASTErrorUtils.getMsg(ErrorMsg.INVALID_TABLE.getMsg(), src));
         } else {
           throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(alias));

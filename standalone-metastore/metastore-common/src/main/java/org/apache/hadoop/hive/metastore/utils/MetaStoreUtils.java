@@ -1081,7 +1081,7 @@ public class MetaStoreUtils {
   }
 
   public static TableName getTableNameFor(Table table) {
-    return TableName.fromString(table.getTableName(), table.getCatName(), table.getDbName());
+    return TableName.fromString(table.getTableName(), table.getCatName(), table.getDbName(), null);
   }
 
   /**
