@@ -532,18 +532,19 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     Assert.assertEquals("default.alter_table:7:9223372036854775807::", validWriteIds);
 
     runStatementOnDriver(String.format("ALTER TABLE %s SKEWED BY (a) ON (1,2)", tableName));
-    validWriteIds = msClient.getValidWriteIds(tableName).toString();
+    validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
     Assert.assertEquals("default.alter_table:8:9223372036854775807::", validWriteIds);
 
-    runStatementOnDriver(String.format("ALTER TABLE %s SET SKEWED LOCATION (1='hdfs://test:8020/abcd/1')", tableName));
+    runStatementOnDriver(String.format("ALTER TABLE %s SET SKEWED LOCATION (1='hdfs://127.0.0.1:8020/abcd/1')",
+      tableName));
     validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
     Assert.assertEquals("default.alter_table:9:9223372036854775807::", validWriteIds);
 
-    runStatementOnDriver(String.format("ALTER TABLE %s UNSET SERDEPROPERTIES ('field.delim')", tableName));
+    runStatementOnDriver(String.format("ALTER TABLE %s NOT SKEWED", tableName));
     validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
     Assert.assertEquals("default.alter_table:10:9223372036854775807::", validWriteIds);
 
-    runStatementOnDriver(String.format("ALTER TABLE %s SET PARTITION SPEC(years(ds))", tableName));
+    runStatementOnDriver(String.format("ALTER TABLE %s UNSET SERDEPROPERTIES ('field.delim')", tableName));
     validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
     Assert.assertEquals("default.alter_table:11:9223372036854775807::", validWriteIds);
 

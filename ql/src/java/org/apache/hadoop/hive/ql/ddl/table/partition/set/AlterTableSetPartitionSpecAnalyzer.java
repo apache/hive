@@ -63,7 +63,6 @@ public class AlterTableSetPartitionSpecAnalyzer extends AbstractAlterTableAnalyz
     }
 
     AlterTableSetPartitionSpecDesc desc = new AlterTableSetPartitionSpecDesc(tableName, partitionSpec);
-    setAcidDdlDesc(getTable(tableName), desc);
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
