@@ -1856,7 +1856,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           }
         }
       }
-      DeltaFilesMetricReporter.addAcidMetricsToConfObj(deltaFilesStats, conf);
+      if (metricsEnabled) {
+        DeltaFilesMetricReporter.addAcidMetricsToConfObj(deltaFilesStats, conf);
+      }
 
       // Run the last combined strategy, if any.
       if (combinedCtx != null && combinedCtx.combined != null) {

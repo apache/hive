@@ -80,11 +80,14 @@ import static org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricRe
 
 /**
  * Collects and publishes ACID compaction related metrics.
+ * Everything should be behind 2 feature flags: {@link HiveConf.ConfVars#HIVE_SERVER2_METRICS_ENABLED} and
+ * {@link MetastoreConf.ConfVars#METASTORE_ACIDMETRICS_EXT_ON}.
+ * First we store the information in the jobConf, then in Tez Counters, then in a cache stored here, then in a custom
+ * MBean.
  */
 public class DeltaFilesMetricReporter {
 
   private static final Logger LOG = LoggerFactory.getLogger(AcidUtils.class);
-  private boolean acidMetricsExtEnabled;
 
   public static final String OBJECT_NAME_PREFIX = "metrics:type=compaction,name=";
 
@@ -135,32 +138,26 @@ public class DeltaFilesMetricReporter {
   }
 
   private void configure(HiveConf conf) throws Exception {
-    acidMetricsExtEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
-    if (acidMetricsExtEnabled) {
+    long reportingInterval =
+        HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_REPORTING_INTERVAL, TimeUnit.SECONDS);
+    hiveEntitySeparator = conf.getVar(HiveConf.ConfVars.HIVE_ENTITY_SEPARATOR);
 
-      initCachesForMetrics(conf);
-      initObjectsForMetrics();
+    initCachesForMetrics(conf);
+    initObjectsForMetrics();
 
-      long reportingInterval =
-          HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_REPORTING_INTERVAL, TimeUnit.SECONDS);
-      hiveEntitySeparator = conf.getVar(HiveConf.ConfVars.HIVE_ENTITY_SEPARATOR);
+    ThreadFactory threadFactory =
+        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("DeltaFilesMetricReporter %d").build();
+    executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
+    executorService.scheduleAtFixedRate(new ReportingTask(), 0, reportingInterval, TimeUnit.SECONDS);
 
-      ThreadFactory threadFactory =
-          new ThreadFactoryBuilder().setDaemon(true).setNameFormat("DeltaFilesMetricReporter %d").build();
-      executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
-      executorService.scheduleAtFixedRate(new ReportingTask(), 0, reportingInterval, TimeUnit.SECONDS);
-
-      LOG.info("Started DeltaFilesMetricReporter thread");
-    }
+    LOG.info("Started DeltaFilesMetricReporter thread");
   }
 
   public void submit(TezCounters counters, Set<ReadEntity> inputs) {
     try {
-      if (acidMetricsExtEnabled) {
-        updateMetrics(NUM_OBSOLETE_DELTAS, obsoleteDeltaCache, obsoleteDeltaTopN, counters, inputs);
-        updateMetrics(NUM_DELTAS, deltaCache, deltaTopN, counters, inputs);
-        updateMetrics(NUM_SMALL_DELTAS, smallDeltaCache, smallDeltaTopN, counters, inputs);
-      }
+      updateMetrics(NUM_OBSOLETE_DELTAS, obsoleteDeltaCache, obsoleteDeltaTopN, counters, inputs);
+      updateMetrics(NUM_DELTAS, deltaCache, deltaTopN, counters, inputs);
+      updateMetrics(NUM_SMALL_DELTAS, smallDeltaCache, smallDeltaTopN, counters, inputs);
     } catch (Exception e) {
       LOG.warn("Caught exception while trying to update delta metrics cache. Invalidating cache", e);
       try {
@@ -190,18 +187,8 @@ public class DeltaFilesMetricReporter {
       });
     }
 
-
     // Invalidate from cache if the counter value differs from the cache value, or if the query touched the partition
     // in question but no counter was collected
-
-    // todo IGNORE THIS frogmethod may need for testing
-//    for (String key : inputPaths) {
-//      Integer prev = cache.getIfPresent(key);
-//      TezCounter counter = counters.findCounter(group.getName(), key);
-//      if (prev != null && counter != null && (counter.getValue() == 0 || counter.getValue() != prev)) {
-//        cache.invalidate(key);
-//      }
-//    }
     for (String key : inputPaths) {
       Integer prev = cache.getIfPresent(key);
       if (prev != null) {
@@ -290,6 +277,7 @@ public class DeltaFilesMetricReporter {
     }
     long currentTime = System.currentTimeMillis();
     if (lastSuccessfulLoggingTime == 0 || currentTime >= lastSuccessfulLoggingTime + loggerFrequency) {
+      lastSuccessfulLoggingTime = currentTime;
       if (numDeltas >= HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ACTIVE_DELTA_DIR_THRESHOLD)) {
         LOG.warn("Directory " + dir.getPath() + " contains " + numDeltas + " active delta directories. This can " +
             "cause performance degradation.");
@@ -341,10 +329,8 @@ public class DeltaFilesMetricReporter {
 
   public static void addAcidMetricsToConfObj(EnumMap<DeltaFilesMetricType,
       Queue<Pair<String, Integer>>> deltaFilesStats, Configuration conf) {
-    if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
-      deltaFilesStats.forEach((type, value) ->
-          conf.set(type.name(), Joiner.on(",").withKeyValueSeparator("->").join(value)));
-    }
+    deltaFilesStats.forEach((type, value) ->
+        conf.set(type.name(), Joiner.on(",").withKeyValueSeparator("->").join(value)));
   }
 
   public static void backPropagateAcidMetrics(JobConf jobConf, Configuration conf) {

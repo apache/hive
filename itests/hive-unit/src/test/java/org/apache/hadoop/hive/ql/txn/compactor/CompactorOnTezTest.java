@@ -74,6 +74,11 @@ public abstract class CompactorOnTezTest {
   @Before
   // Note: we create a new conf and driver object before every test
   public void setup() throws Exception {
+    HiveConf hiveConf = new HiveConf(this.getClass());
+    setupWithConf(hiveConf);
+  }
+
+  protected void setupWithConf(HiveConf hiveConf) throws Exception {
     File f = new File(TEST_WAREHOUSE_DIR);
     if (f.exists()) {
       FileUtil.fullyDelete(f);
@@ -81,7 +86,6 @@ public abstract class CompactorOnTezTest {
     if (!(new File(TEST_WAREHOUSE_DIR).mkdirs())) {
       throw new RuntimeException("Could not create " + TEST_WAREHOUSE_DIR);
     }
-    HiveConf hiveConf = new HiveConf(this.getClass());
     hiveConf.setVar(HiveConf.ConfVars.PREEXECHOOKS, "");
     hiveConf.setVar(HiveConf.ConfVars.POSTEXECHOOKS, "");
     hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, TEST_WAREHOUSE_DIR);
