@@ -643,6 +643,17 @@ public class TestVectorGenericDateExpressions {
     }
   }
 
+  @Test
+  public void testDateDiffColColWithTz() throws HiveException {
+    final TimeZone originalTz = TimeZone.getDefault();
+    try {
+      TimeZone.setDefault(TimeZone.getTimeZone("GMT+8"));
+      testDateDiffColCol();
+    } finally {
+      TimeZone.setDefault(originalTz);
+    }
+  }
+
   private void validateDateDiff(VectorizedRowBatch batch,
                                 LongColumnVector date1, LongColumnVector date2,
                                 PrimitiveCategory colType1, PrimitiveCategory colType2)
