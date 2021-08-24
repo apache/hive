@@ -160,29 +160,13 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
    * Queries should succeed if additional acid metrics are disabled.
    * @throws Exception
    */
-  @Test
+  @Test(expected = javax.management.InstanceNotFoundException.class)
   public void testDeltaFilesMetricWithMetricsDisabled() throws Exception {
     HiveConf conf = new HiveConf();
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, false);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON, true);
-    configureMetrics(conf);
-    super.setupWithConf(conf);
 
-    MetricsFactory.close();
-    MetricsFactory.init(conf);
-
-    String tableName = "test_metrics";
-    CompactorOnTezTest.TestDataProvider testDataProvider = new CompactorOnTezTest.TestDataProvider();
-    testDataProvider.createFullAcidTable(tableName, true, false);
-    testDataProvider.insertTestDataPartitioned(tableName);
-
-    executeStatementOnDriver("select avg(b) from " + tableName, driver);
-
-    try {
-      Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS).size());
-      Assert.fail();
-    } catch (javax.management.InstanceNotFoundException e) {
-    }
+    verifyQueryRuns();
   }
 
 
@@ -190,28 +174,29 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
    * Queries should succeed if extended metrics are disabled.
    * @throws Exception
    */
-  @Test
+  @Test(expected = javax.management.InstanceNotFoundException.class)
   public void testDeltaFilesMetricWithExtMetricsDisabled() throws Exception {
     HiveConf conf = new HiveConf();
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, true);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON, false);
+
+    verifyQueryRuns();
+  }
+
+  private void verifyQueryRuns() throws Exception {
     configureMetrics(conf);
     super.setupWithConf(conf);
 
+    // DeltaFilesMetricReporter is not instantiated because either metrics or extended metrics are disabled.
     MetricsFactory.close();
     MetricsFactory.init(conf);
 
     String tableName = "test_metrics";
-    CompactorOnTezTest.TestDataProvider testDataProvider = new CompactorOnTezTest.TestDataProvider();
+    TestDataProvider testDataProvider = new TestDataProvider();
     testDataProvider.createFullAcidTable(tableName, true, false);
     testDataProvider.insertTestDataPartitioned(tableName);
 
     executeStatementOnDriver("select avg(b) from " + tableName, driver);
-
-    try {
-      Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS).size());
-      Assert.fail();
-    } catch (javax.management.InstanceNotFoundException e) {
-    }
+    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS).size());
   }
 }
