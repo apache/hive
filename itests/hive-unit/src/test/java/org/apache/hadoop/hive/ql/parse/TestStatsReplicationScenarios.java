@@ -46,6 +46,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.junit.Ignore;
 import org.junit.Assert;
 
 import java.io.IOException;
@@ -683,6 +684,7 @@ public class TestStatsReplicationScenarios {
   }
 
   @Test
+  @Ignore("HIVE-25475")
   public void testForParallelBootstrapLoad() throws Throwable {
     LOG.info("Testing " + testName.getClass().getName() + "." + testName.getMethodName());
     testStatsReplicationCommon(true, false, false);
