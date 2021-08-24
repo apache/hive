@@ -179,7 +179,7 @@ public class HiveConnection implements java.sql.Connection {
   private Properties clientInfo;
   private Subject loggedInSubject;
   private int maxRetries = 1;
-  private final IJdbcBrowserClient browserClient;
+  private IJdbcBrowserClient browserClient;
 
   /**
    * Get all direct HiveServer2 URLs from a ZooKeeper based HiveServer2 URL
@@ -276,11 +276,15 @@ public class HiveConnection implements java.sql.Connection {
     sessConfMap = null;
     isEmbeddedMode = true;
     initFetchSize = 0;
-    browserClient = null;
   }
 
   public HiveConnection(String uri, Properties info) throws SQLException {
     this(uri, info, HiveJdbcBrowserClientFactory.get());
+  }
+
+  @VisibleForTesting
+  protected int getNumRetries() {
+    return maxRetries;
   }
 
   @VisibleForTesting
@@ -340,8 +344,6 @@ public class HiveConnection implements java.sql.Connection {
       } catch (HiveJdbcBrowserException e) {
         throw new SQLException("");
       }
-    } else {
-      browserClient = null;
     }
     if (isEmbeddedMode) {
       client = EmbeddedCLIServicePortal.get(connParams.getHiveConfs());
@@ -1068,32 +1070,54 @@ public class HiveConnection implements java.sql.Connection {
     // to get the redirect response from the server. Instead its probably cleaner to
     // explicitly do a HTTP post request and get the response.
     int numRetry = isBrowserAuthMode() ? 2 : 1;
-    for (int i=0; i<numRetry; i++) {
-      try {
-        openSession(openReq);
-      } catch (TException e) {
-        if (isSamlRedirect(e)) {
-          boolean success = doBrowserSSO();
-          if (!success) {
-            String msg = browserClient.getServerResponse() == null
-                || browserClient.getServerResponse().getMsg() == null ? ""
-                : browserClient.getServerResponse().getMsg();
+    try {
+      browserClient.startListening();
+      for (int i=0; i<numRetry; i++) {
+        try {
+          openSession(openReq);
+        } catch (TException e) {
+          if (isSamlRedirect(e)) {
+            boolean success = doBrowserSSO();
+            if (!success) {
+              String msg = browserClient.getServerResponse() == null
+                  || browserClient.getServerResponse().getMsg() == null ? ""
+                  : browserClient.getServerResponse().getMsg();
+              throw new SQLException(
+                  "Could not establish connection to " + jdbcUriString + ": "
+                      + msg, " 08S01", e);
+            }
+          } else {
             throw new SQLException(
-                "Could not establish connection to " + jdbcUriString + ": "
-                    + msg, " 08S01", e);
+                "Could not establish connection to " + jdbcUriString + ": " + e
+                    .getMessage(), " 08S01", e);
           }
-        } else {
-          throw new SQLException(
-              "Could not establish connection to " + jdbcUriString + ": " + e
-                  .getMessage(), " 08S01", e);
+        }
+      }
+    } catch (HiveJdbcBrowserException e) {
+      throw new SQLException(
+          "Could not establish connection to " + jdbcUriString + ": " + e
+              .getMessage(), " 08S01", e);
+    } finally {
+      if (browserClient != null) {
+        try {
+          browserClient.close();
+        } catch (IOException e) {
+          LOG.error("Unable to close the browser SSO client : " + e.getMessage(), e);
         }
       }
     }
     isClosed = false;
   }
 
-  private boolean doBrowserSSO() throws SQLException {
+  @VisibleForTesting
+  protected void injectBrowserSSOError() throws Exception {
+    //no-op
+  }
+
+  @VisibleForTesting
+  protected boolean doBrowserSSO() throws SQLException {
     try {
+      injectBrowserSSOError();
       Preconditions.checkNotNull(browserClient);
       try (IJdbcBrowserClient bc = browserClient) {
         browserClient.doBrowserSSO();
@@ -1105,8 +1129,7 @@ public class HiveConnection implements java.sql.Connection {
       }
     } catch (Exception ex) {
       throw new SQLException("Browser based SSO failed: " + ex.getMessage(),
-          " 08S01",
-          ex);
+          " 08S01", ex);
     }
   }
 

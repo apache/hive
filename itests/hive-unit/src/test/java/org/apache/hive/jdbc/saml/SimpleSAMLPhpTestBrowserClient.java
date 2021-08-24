@@ -36,6 +36,7 @@ public class SimpleSAMLPhpTestBrowserClient extends HiveJdbcBrowserClient {
   private final String username;
   private final String password;
   private final long tokenDelayMs;
+  private int injectFailureCount = 0;
   private static final Logger LOG = LoggerFactory
       .getLogger(SimpleSAMLPhpTestBrowserClient.class);
 
@@ -46,6 +47,10 @@ public class SimpleSAMLPhpTestBrowserClient extends HiveJdbcBrowserClient {
     this.username = username;
     this.password = password;
     this.tokenDelayMs = tokenDelayMs;
+  }
+
+  public void setInjectFailureCount(int injectFailureCount) {
+    this.injectFailureCount = injectFailureCount;
   }
 
   @Override
@@ -70,6 +75,16 @@ public class SimpleSAMLPhpTestBrowserClient extends HiveJdbcBrowserClient {
     } catch (IOException e) {
       throw new HiveJdbcBrowserException(e);
     }
+  }
+
+  @Override
+  public void doBrowserSSO() throws HiveJdbcBrowserException {
+    if (injectFailureCount > 0) {
+      injectFailureCount--;
+      throw new HiveJdbcBrowserException(
+          "This is a injected failure for testing purpose");
+    }
+    super.doBrowserSSO();
   }
 
   @Override
