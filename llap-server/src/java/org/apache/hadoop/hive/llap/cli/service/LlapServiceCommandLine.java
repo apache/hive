@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.llap.cli.service;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
-import jline.TerminalFactory;
-
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.Set;
@@ -39,6 +37,7 @@ import org.apache.hadoop.hive.llap.log.LogHelpers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.util.StringUtils.TraditionalBinaryPrefix;
+import org.jline.terminal.TerminalBuilder;
 
 @SuppressWarnings("static-access")
 class LlapServiceCommandLine {
@@ -401,7 +400,7 @@ class LlapServiceCommandLine {
     HelpFormatter hf = new HelpFormatter();
     try {
       int width = hf.getWidth();
-      int jlineWidth = TerminalFactory.get().getWidth();
+      int jlineWidth = TerminalBuilder.terminal().getWidth();
       width = Math.min(160, Math.max(jlineWidth, width));
       hf.setWidth(width);
     } catch (Throwable t) { // Ignore
