@@ -1069,9 +1069,12 @@ public class HiveConnection implements java.sql.Connection {
     //TODO This is a bit hacky. We piggy back on a dummy OpenSession call
     // to get the redirect response from the server. Instead its probably cleaner to
     // explicitly do a HTTP post request and get the response.
-    int numRetry = isBrowserAuthMode() ? 2 : 1;
     try {
-      browserClient.startListening();
+      int numRetry = 1;
+      if (isBrowserAuthMode()) {
+        numRetry = 2;
+        browserClient.startListening();
+      }
       for (int i=0; i<numRetry; i++) {
         try {
           openSession(openReq);
