@@ -43,6 +43,9 @@ import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
+import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.set.AlterTableSetPartitionSpecDesc;
+import org.apache.hadoop.hive.ql.ddl.table.storage.compact.AlterTableCompactDesc;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -302,14 +305,38 @@ class DriverTxnHandler {
 
   private boolean setWriteIdForAcidDdl() throws SemanticException, LockException {
     DDLDescWithWriteId acidDdlDesc = driverContext.getPlan().getAcidDdlDesc();
+
     boolean hasAcidDdl = acidDdlDesc != null && acidDdlDesc.mayNeedWriteId();
     if (hasAcidDdl) {
       String fqTableName = acidDdlDesc.getFullTableName();
       TableName tableName = HiveTableName.of(fqTableName);
       long writeId = driverContext.getTxnManager().getTableWriteId(tableName.getDb(), tableName.getTable());
       acidDdlDesc.setWriteId(writeId);
+    }else {
+      checkAdvancingWriteId(acidDdlDesc);
     }
     return hasAcidDdl;
+  }
+
+  /**
+   * This method ensures that we advance write ID for transactional tables for "ALTER TABLE" DDLs.
+   * Advancing the write id for Alter Table DDL is required to ensure that we can provide strong consistency
+   * while serving metadata from HMS cache.
+   * @param acidDdlDesc
+   */
+  private void checkAdvancingWriteId(DDLDescWithWriteId acidDdlDesc){
+    Table table = driverContext.getPlan().getAcidAnalyzeTable().getTable();
+    if(AcidUtils.isTransactionalTable(table)) {
+      if(acidDdlDesc == null) {
+        if(acidDdlDesc instanceof AlterTableCompactDesc
+            || acidDdlDesc instanceof AlterTableSetPartitionSpecDesc ) {
+          return;
+        }
+        if( acidDdlDesc instanceof AbstractAlterTableDesc) {
+          throw new RuntimeException("should advance write id for Alter table DDL for a transactional table");
+        }
+      }
+    }
   }
 
   private void acquireLocksInternal() throws CommandProcessorException, LockException {
