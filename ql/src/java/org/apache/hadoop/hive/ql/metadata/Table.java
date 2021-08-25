@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -37,7 +36,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -1062,16 +1060,7 @@ public class Table implements Serializable {
     Preconditions.checkNotNull(getPath());
     try {
       FileSystem fs = FileSystem.get(getPath().toUri(), SessionState.getSessionConf());
-      RemoteIterator<FileStatus> it = fs.listStatusIterator(getPath());   // Note: should be closed with cleanupRemoteIterator() in Hadoop 3.3.1+
-      while (it.hasNext()) {
-        FileStatus fstatus = it.next();
-        if (FileUtils.HIDDEN_FILES_PATH_FILTER.accept(fstatus.getPath())) {
-          return false;
-        }
-      }
-      return true;
-    } catch (FileNotFoundException e) {
-      return true;  // fs.exists(getPath()) would return false
+      return !fs.exists(getPath()) || fs.listStatus(getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER).length == 0;
     } catch (IOException e) {
       throw new HiveException(e);
     }
