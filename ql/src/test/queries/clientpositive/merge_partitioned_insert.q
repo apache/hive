@@ -1,8 +1,5 @@
 --! qt:transactional
 
-drop table u;
-drop table t;
-
 create table u(id integer);
 insert into u values(3);
 
