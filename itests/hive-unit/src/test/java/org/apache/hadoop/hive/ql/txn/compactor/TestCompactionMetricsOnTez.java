@@ -166,7 +166,7 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, false);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON, true);
 
-    verifyQueryRuns();
+    verifyQueryRuns(conf);
   }
 
 
@@ -180,10 +180,10 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, true);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON, false);
 
-    verifyQueryRuns();
+    verifyQueryRuns(conf);
   }
 
-  private void verifyQueryRuns() throws Exception {
+  private void verifyQueryRuns(HiveConf conf) throws Exception {
     configureMetrics(conf);
     super.setupWithConf(conf);
 
