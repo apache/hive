@@ -925,6 +925,19 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
+  public void testCreateTableWithFormatV2ThroughTableProperty() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    shell.executeStatement("CREATE EXTERNAL TABLE customers (id int, name string) STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) + " TBLPROPERTIES ('" +
+        InputFormatConfig.CATALOG_NAME + "'='" + Catalogs.ICEBERG_DEFAULT_CATALOG_NAME + "', " +
+        "'" + TableProperties.FORMAT_VERSION + "'='2')");
+
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    Assert.assertEquals("should create table using format v2",
+        2, ((BaseTable) icebergTable).operations().current().formatVersion());
+  }
+
+  @Test
   public void testAlterTableAddColumnsConcurrently() throws Exception {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
