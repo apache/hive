@@ -21,6 +21,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -35,6 +36,7 @@ import org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
 import javax.sql.DataSource;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -340,8 +342,15 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     }
   }
 
+  private static String removeDbcpPrefix(String key) {
+    if (key.startsWith(DBCP_CONFIG_PREFIX + ".")) {
+      return key.substring(DBCP_CONFIG_PREFIX.length() + 1);
+    }
+    return key;
+  }
+
   private String getFromProperties(Properties dbProperties, String key) {
-    return dbProperties.getProperty(key.replaceFirst(DBCP_CONFIG_PREFIX + "\\.", ""));
+    return dbProperties.getProperty(removeDbcpPrefix(key));
   }
 
   protected Properties getConnectionPoolProperties(Configuration conf) throws Exception {
@@ -352,20 +361,14 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     Map<String, String> userProperties = conf.getValByRegex(DBCP_CONFIG_PREFIX + "\\.*");
     if ((userProperties != null) && (!userProperties.isEmpty())) {
       for (Entry<String, String> entry : userProperties.entrySet()) {
-        dbProperties.put(entry.getKey().replaceFirst(DBCP_CONFIG_PREFIX + "\\.", ""), entry.getValue());
+        dbProperties.put(removeDbcpPrefix(entry.getKey()), entry.getValue());
       }
     }
 
-    // handle password
-    String passwd = getFromProperties(dbProperties, JdbcStorageConfigManager.CONFIG_PWD);
-    if (passwd == null) {
-      String keystore = getFromProperties(dbProperties, JdbcStorageConfigManager.CONFIG_PWD_KEYSTORE);
-      String key = getFromProperties(dbProperties, JdbcStorageConfigManager.CONFIG_PWD_KEY);
-      passwd = Utilities.getPasswdFromKeystore(keystore, key);
-    }
-
+    String passwd = JdbcStorageConfigManager.getPasswordFromProperties(dbProperties,
+        GenericJdbcDatabaseAccessor::removeDbcpPrefix);
     if (passwd != null) {
-      dbProperties.put(JdbcStorageConfigManager.CONFIG_PWD.replaceFirst(DBCP_CONFIG_PREFIX + "\\.", ""), passwd);
+      dbProperties.put(removeDbcpPrefix(JdbcStorageConfigManager.CONFIG_PWD), passwd);
     }
 
     // essential properties that shouldn't be overridden by users
