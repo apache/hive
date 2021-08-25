@@ -53,23 +53,28 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
     DeltaFilesMetricReporter.close();
   }
 
-  private void configureMetrics(HiveConf conf) {
-    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD, 0);
-    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD, 0);
-    HiveConf.setTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_REPORTING_INTERVAL, 1, TimeUnit.SECONDS);
-    HiveConf.setTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_CHECK_THRESHOLD, 0, TimeUnit.SECONDS);
-    HiveConf.setFloatVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_PCT_THRESHOLD, 0.7f);
+  /**
+   * Note: Does not initialize DeltaFilesMetricReporter.
+   * @param hiveConf
+   * @throws Exception
+   */
+  @Override
+  protected void setupWithConf(HiveConf hiveConf) throws Exception {
+    HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD, 0);
+    HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD, 0);
+    HiveConf.setTimeVar(hiveConf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_REPORTING_INTERVAL, 1, TimeUnit.SECONDS);
+    HiveConf.setTimeVar(hiveConf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_CHECK_THRESHOLD, 0, TimeUnit.SECONDS);
+    HiveConf.setFloatVar(hiveConf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_PCT_THRESHOLD, 0.7f);
+    super.setupWithConf(hiveConf);
+    MetricsFactory.close();
+    MetricsFactory.init(hiveConf);
   }
 
   @Test
   public void testDeltaFilesMetric() throws Exception {
     HiveConf conf = new HiveConf();
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, true);
-    configureMetrics(conf);
     setupWithConf(conf);
-
-    MetricsFactory.close();
-    MetricsFactory.init(conf);
     DeltaFilesMetricReporter.init(conf);
 
     String dbName = "default", tableName = "test_metrics";
@@ -132,11 +137,8 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
     HiveConf conf = new HiveConf();
     conf.setInt(TezConfiguration.TEZ_COUNTERS_MAX, 50);
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, true);
-    configureMetrics(conf);
     setupWithConf(conf);
 
-    MetricsFactory.close();
-    MetricsFactory.init(conf);
     DeltaFilesMetricReporter.init(conf);
 
     String tableName = "test_metrics";
@@ -184,12 +186,8 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
   }
 
   private void verifyQueryRuns(HiveConf conf) throws Exception {
-    configureMetrics(conf);
-    super.setupWithConf(conf);
-
+    setupWithConf(conf);
     // DeltaFilesMetricReporter is not instantiated because either metrics or extended metrics are disabled.
-    MetricsFactory.close();
-    MetricsFactory.init(conf);
 
     String tableName = "test_metrics";
     TestDataProvider testDataProvider = new TestDataProvider();
