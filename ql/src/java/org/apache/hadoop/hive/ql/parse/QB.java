@@ -237,6 +237,10 @@ public class QB {
     return aliasToTabs.keySet();
   }
 
+  public Set<String> getAsOfAliases() {
+    return aliasToAsOf.keySet();
+  }
+
   public List<String> getAliases() {
     return aliases;
   }
