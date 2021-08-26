@@ -312,7 +312,7 @@ public class StatsSetupConst {
   }
 
   public static void clearColumnStatsState(Map<String, String> params) {
-    if (params == null) {
+    if (params == null || params.get(COLUMN_STATS_ACCURATE) == null) {
       return;
     }
 

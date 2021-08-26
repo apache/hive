@@ -95,6 +95,8 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
       GC_ENABLED, "external.table.purge"
   );
 
+  // Should be in org.apache.iceberg.hadoop.ConfigProperties, but that is not ported to Hive codebase
+  public static final String KEEP_HIVE_STATS = "iceberg.hive.keep.stats";
 
   /**
    * Provides key translation where necessary between Iceberg and HMS props. This translation is needed because some
@@ -186,6 +188,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
   protected void doCommit(TableMetadata base, TableMetadata metadata) {
     String newMetadataLocation = writeNewMetadata(metadata, currentVersion() + 1);
     boolean hiveEngineEnabled = hiveEngineEnabled(metadata, conf);
+    boolean keepHiveStats = conf.getBoolean(KEEP_HIVE_STATS, false);
 
     CommitStatus commitStatus = CommitStatus.FAILURE;
     boolean updateHiveTable = false;
@@ -231,6 +234,11 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
           .map(Snapshot::summary)
           .orElseGet(ImmutableMap::of);
       setHmsTableParameters(newMetadataLocation, tbl, metadata.properties(), removedProps, hiveEngineEnabled, summary);
+
+      if (!keepHiveStats) {
+        StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
+        StatsSetupConst.clearColumnStatsState(tbl.getParameters());
+      }
 
       try {
         persistTable(tbl, updateHiveTable);
