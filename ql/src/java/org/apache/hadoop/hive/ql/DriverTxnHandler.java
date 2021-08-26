@@ -324,18 +324,21 @@ class DriverTxnHandler {
    * while serving metadata from HMS cache.
    * @param acidDdlDesc
    */
-  private void checkAdvancingWriteId(DDLDescWithWriteId acidDdlDesc){
-  Table table = driverContext.getPlan().getAcidAnalyzeTable().getTable();
-    if(table != null && AcidUtils.isTransactionalTable(table)) {
-      if(acidDdlDesc == null) {
-        // If we don't want to advance write ID for certain DDLs, even for transactional tables,
-        // they should be filtered here. 
-        if(acidDdlDesc instanceof AlterTableCompactDesc
-            || acidDdlDesc instanceof AlterTableSetPartitionSpecDesc ) {
-          return;
-        }
-        if( acidDdlDesc instanceof AbstractAlterTableDesc) {
-          throw new RuntimeException("should advance write id for Alter table DDL for a transactional table");
+  private void checkAdvancingWriteId(DDLDescWithWriteId acidDdlDesc) {
+    if (driverContext.getPlan()!=null
+            && driverContext.getPlan().getAcidAnalyzeTable()!=null) {
+      Table table = driverContext.getPlan().getAcidAnalyzeTable().getTable();
+      if (table!=null && AcidUtils.isTransactionalTable(table)) {
+        if (acidDdlDesc==null) {
+          // If we don't want to advance write ID for certain DDLs, even for transactional tables,
+          // they should be filtered here.
+          if (acidDdlDesc instanceof AlterTableCompactDesc
+                  || acidDdlDesc instanceof AlterTableSetPartitionSpecDesc) {
+            return;
+          }
+          if (acidDdlDesc instanceof AbstractAlterTableDesc) {
+            throw new RuntimeException("should advance write id for Alter table DDL for a transactional table");
+          }
         }
       }
     }
