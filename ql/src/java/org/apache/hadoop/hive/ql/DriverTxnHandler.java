@@ -325,9 +325,11 @@ class DriverTxnHandler {
    * @param acidDdlDesc
    */
   private void checkAdvancingWriteId(DDLDescWithWriteId acidDdlDesc){
-    Table table = driverContext.getPlan().getAcidAnalyzeTable().getTable();
-    if(AcidUtils.isTransactionalTable(table)) {
+  Table table = driverContext.getPlan().getAcidAnalyzeTable().getTable();
+    if(table != null && AcidUtils.isTransactionalTable(table)) {
       if(acidDdlDesc == null) {
+        // If we don't want to advance write ID for certain DDLs, even for transactional tables,
+        // they should be filtered here. 
         if(acidDdlDesc instanceof AlterTableCompactDesc
             || acidDdlDesc instanceof AlterTableSetPartitionSpecDesc ) {
           return;
