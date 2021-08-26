@@ -684,7 +684,6 @@ public class TestStatsReplicationScenarios {
   }
 
   @Test
-  @Ignore("HIVE-25475")
   public void testForParallelBootstrapLoad() throws Throwable {
     LOG.info("Testing " + testName.getClass().getName() + "." + testName.getMethodName());
     testStatsReplicationCommon(true, false, false);
