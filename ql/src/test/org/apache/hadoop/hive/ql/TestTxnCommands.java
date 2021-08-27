@@ -463,6 +463,28 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
   }
 
   @Test
+  public void truncateTableAdvancingWriteId() throws Exception {
+    runStatementOnDriver("create database IF NOT EXISTS trunc_db");
+
+    String tableName = "trunc_db.trunc_table";
+    IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
+
+    runStatementOnDriver(String.format("CREATE TABLE %s (f1 string) PARTITIONED BY (ds STRING) " +
+                    "TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')"
+            , tableName));
+
+    String validWriteIds = msClient.getValidWriteIds(tableName).toString();
+    LOG.info("ValidWriteIds before truncate table::" + validWriteIds);
+    Assert.assertEquals("trunc_db.trunc_table:0:9223372036854775807::", validWriteIds);
+
+    runStatementOnDriver("TRUNCATE TABLE trunc_db.trunc_table");
+    validWriteIds = msClient.getValidWriteIds(tableName).toString();
+    LOG.info("ValidWriteIds after truncate table::" + validWriteIds);
+    Assert.assertEquals("trunc_db.trunc_table:1:9223372036854775807::", validWriteIds);
+
+  }
+
+  @Test
   public void testAddAndDropPartitionAdvancingWriteIds() throws Exception {
     runStatementOnDriver("create database IF NOT EXISTS db1");
 
@@ -485,6 +507,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     validWriteIds = msClient.getValidWriteIds(tableName).toString();
     LOG.info("ValidWriteIds after drop partition::"+ validWriteIds);
     Assert.assertEquals("db1.add_drop_partition:2:9223372036854775807::", validWriteIds);
+
   }
 
   @Test
