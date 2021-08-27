@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
 
   protected HiveConf conf;
+  protected Map<String, Long> rowsAffected = new HashMap<>();
 
   void setHiveConf(HiveConf c) {
     setConf(c);
@@ -227,5 +229,10 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
     // This is default implementation. Locking only works for incremental maintenance
     // which only works for DB transactional manager, thus we cannot acquire a lock.
     return new LockResponse(0L, LockState.NOT_ACQUIRED);
+  }
+
+  @Override
+  public void setRowsAffected(String tableName, long numRows) {
+    rowsAffected.put(tableName, numRows);
   }
 }

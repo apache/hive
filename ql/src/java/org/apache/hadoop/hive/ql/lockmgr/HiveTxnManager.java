@@ -356,4 +356,6 @@ public interface HiveTxnManager {
   * @return
   */
  String getQueryid();
+
+ void setRowsAffected(String tableName, long numRows);
 }

@@ -67,7 +67,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     super.initialize(queryState, queryPlan, taskQueue, context);
 
     if (work.getBasicStatsWork() != null) {
-      BasicStatsTask task = new BasicStatsTask(conf, work.getBasicStatsWork());
+      BasicStatsTask task = new BasicStatsTask(conf, work.getBasicStatsWork(), getTxnMgr());
       task.followedColStats = work.hasColStats();
       processors.add(0, task);
     } else if (work.isFooterScan()) {

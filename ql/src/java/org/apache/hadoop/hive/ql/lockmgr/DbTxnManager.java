@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
+import org.apache.hadoop.hive.metastore.api.CommitTxnKeyValue;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
@@ -536,6 +537,9 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       if (replPolicy != null) {
         commitTxnRequest.setReplPolicy(replPolicy);
         commitTxnRequest.setTxn_type(TxnType.DEFAULT);
+      }
+      if (!rowsAffected.isEmpty()) {
+        commitTxnRequest.setRowsAffected(rowsAffected);
       }
       getMS().commitTxn(commitTxnRequest);
     } catch (NoSuchTxnException e) {
