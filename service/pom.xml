@@ -25,6 +25,7 @@
   <name>Hive Service</name>
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
+    <nimbus-jose-jwt.version>9.20</nimbus-jose-jwt.version>
   </properties>
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
@@ -77,6 +78,11 @@
       <version>${javax-servlet-jsp.version}</version>
     </dependency>
     <!-- inter-project -->
+    <dependency>
+      <groupId>com.nimbusds</groupId>
+      <artifactId>nimbus-jose-jwt</artifactId>
+      <version>${nimbus-jose-jwt.version}</version>
+    </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>

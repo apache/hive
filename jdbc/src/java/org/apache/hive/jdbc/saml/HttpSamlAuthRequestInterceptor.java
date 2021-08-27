@@ -21,6 +21,7 @@ package org.apache.hive.jdbc.saml;
 import com.google.common.base.Preconditions;
 import java.util.Map;
 import org.apache.hive.jdbc.HttpRequestInterceptorBase;
+import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.hive.service.auth.saml.HiveSamlUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
@@ -37,7 +38,6 @@ import org.slf4j.LoggerFactory;
 public class HttpSamlAuthRequestInterceptor extends HttpRequestInterceptorBase {
 
   private final IJdbcBrowserClient browserClient;
-  private static final String BEARER = "Bearer ";
   private static final Logger LOG = LoggerFactory
       .getLogger(HttpSamlAuthRequestInterceptor.class);
 
@@ -56,7 +56,7 @@ public class HttpSamlAuthRequestInterceptor extends HttpRequestInterceptorBase {
         : browserClient.getServerResponse().getToken();
     String clientIdentifier = browserClient.getClientIdentifier();
     if (token != null && !token.isEmpty()) {
-      httpRequest.addHeader(HttpHeaders.AUTHORIZATION, BEARER + token);
+      httpRequest.addHeader(HttpHeaders.AUTHORIZATION, HttpAuthUtils.BEARER + " " + token);
       httpRequest.addHeader(HiveSamlUtils.SSO_CLIENT_IDENTIFIER, clientIdentifier);
       httpRequest.removeHeaders(HiveSamlUtils.SSO_TOKEN_RESPONSE_PORT);
     } else {

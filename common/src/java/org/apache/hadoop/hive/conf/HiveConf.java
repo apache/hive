@@ -4122,7 +4122,7 @@ public class HiveConf extends Configuration {
 
     // HiveServer2 auth configuration
     HIVE_SERVER2_AUTHENTICATION("hive.server2.authentication", "NONE",
-      new StringSet("NOSASL", "NONE", "LDAP", "KERBEROS", "PAM", "CUSTOM", "SAML"),
+      new StringSet("NOSASL", "NONE", "LDAP", "KERBEROS", "PAM", "CUSTOM", "SAML", "JWT"),
         "Client authentication types.\n" +
         "  NONE: no authentication check\n" +
         "  LDAP: LDAP/AD based authentication\n" +
@@ -4131,7 +4131,9 @@ public class HiveConf extends Configuration {
         "          (Use with property hive.server2.custom.authentication.class)\n" +
         "  PAM: Pluggable authentication module\n" +
         "  NOSASL:  Raw transport\n" +
-        "  SAML: SAML 2.0 compliant authentication. This is only supported in http transport mode."),
+        "  SAML: SAML 2.0 compliant authentication. This is only supported in http transport mode.\n" +
+        "  JWT: JWT based authentication. HS2 expects JWT contains the user name as subject and was signed by an\n" +
+        "       asymmetric key. This is only supported in http transport mode."),
     HIVE_SERVER2_TRUSTED_DOMAIN("hive.server2.trusted.domain", "",
         "Specifies the host or a domain to trust connections from. Authentication is skipped " +
         "for any connection coming from a host whose hostname ends with the value of this" +
@@ -4236,6 +4238,10 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_PAM_SERVICES("hive.server2.authentication.pam.services", null,
       "List of the underlying pam services that should be used when auth type is PAM\n" +
       "A file with the same name must exist in /etc/pam.d"),
+    // JWT Auth configs
+    HIVE_SERVER2_AUTHENTICATION_JWT_JWKS_URL("hive.server2.authentication.jwt.jwks.url", "",
+        "URL of the file from where URLBasedJWKSProvider will try to load JWKS if JWT is enabled for the\n" +
+        "authentication mode."),
 
     // HS2 SAML2.0 configuration
     HIVE_SERVER2_SAML_KEYSTORE_PATH("hive.server2.saml2.keystore.path", "",
@@ -4301,6 +4307,7 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_SAML_GROUP_FILTER("hive.server2.saml2.group.filter", "",
         "Comma separated list of group names which will be allowed when SAML\n"
             + " authentication is enabled."),
+
     HIVE_SERVER2_ENABLE_DOAS("hive.server2.enable.doAs", true,
         "Setting this property to true will have HiveServer2 execute\n" +
         "Hive operations as the user making the calls to it."),
