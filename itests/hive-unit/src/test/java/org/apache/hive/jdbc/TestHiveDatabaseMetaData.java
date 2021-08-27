@@ -18,12 +18,7 @@
 
 package org.apache.hive.jdbc;
 
-import org.apache.hive.jdbc.HiveConnection;
-import org.apache.hive.jdbc.Utils;
-import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
-
 import java.util.LinkedHashMap;
-import java.util.Properties;
 import java.util.Map;
 import java.util.HashMap;
 import java.sql.SQLException;
@@ -53,7 +48,7 @@ public class TestHiveDatabaseMetaData {
 
   @Test
   public void testGetHiveDefaultNullsLastNullConfig() {
-    map.remove(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY);
+    map.remove(JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY);
     try {
       hiveDatabaseMetaData.nullsAreSortedLow();
       fail("SQLException is expected");
@@ -64,27 +59,27 @@ public class TestHiveDatabaseMetaData {
 
   @Test
   public void testGetHiveDefaultNullsLast() throws SQLException {
-    map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "true");
+    map.put(JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "true");
     assertTrue(hiveDatabaseMetaData.getHiveDefaultNullsLast(map));
 
-    map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "false");
+    map.put(JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "false");
     assertFalse(hiveDatabaseMetaData.getHiveDefaultNullsLast(map));
 
   }
 
   @Test
   public void testNullsAreSortedHigh() throws SQLException {
-    map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "false");
+    map.put(JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "false");
     assertFalse(hiveDatabaseMetaData.nullsAreSortedHigh());
-    map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "true");
+    map.put(JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "true");
     assertTrue(hiveDatabaseMetaData.nullsAreSortedHigh());
   }
 
   @Test
   public void testNullsAreSortedLow() throws SQLException {
-    map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "false");
+    map.put(JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "false");
     assertTrue(hiveDatabaseMetaData.nullsAreSortedLow());
-    map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "true");
+    map.put(JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "true");
     assertFalse(hiveDatabaseMetaData.nullsAreSortedLow());
   }
 
@@ -94,17 +89,17 @@ public class TestHiveDatabaseMetaData {
     serverHiveConf.put("hive.server2.thrift.resultset.default.fetch.size", Integer.toString(87));
     serverHiveConf.put("hive.default.nulls.last", "false");
 
-    jdbcConnectionParams.getHiveConfs().put(Utils.JdbcConnectionParams.HIVE_CONF_PREFIX
+    jdbcConnectionParams.getHiveConfs().put(JdbcConnectionParams.HIVE_CONF_PREFIX
         + "hive.server2.thrift.resultset.default.fetch.size", "1534");
     connection.updateServerHiveConf(serverHiveConf, jdbcConnectionParams);
 
     // Client configuration should not be overridden by the server configuration.
-    assertEquals("1534", jdbcConnectionParams.getHiveConfs().get(Utils.JdbcConnectionParams.HIVE_CONF_PREFIX
+    assertEquals("1534", jdbcConnectionParams.getHiveConfs().get(JdbcConnectionParams.HIVE_CONF_PREFIX
         + "hive.server2.thrift.resultset.default.fetch.size"));
 
     // Server configuration should be updated, since its not provided by the client.
     assertEquals("false", jdbcConnectionParams.getHiveConfs()
-        .get(Utils.JdbcConnectionParams.HIVE_CONF_PREFIX + "hive.default.nulls.last"));
+        .get(JdbcConnectionParams.HIVE_CONF_PREFIX + "hive.default.nulls.last"));
 
   }
 }

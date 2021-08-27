@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
-import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
+import org.apache.hive.jdbc.JdbcConnectionParams;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.operation.ClassicTableTypeMapping;
 import org.apache.hive.service.cli.operation.ClassicTableTypeMapping.ClassicTableTypes;

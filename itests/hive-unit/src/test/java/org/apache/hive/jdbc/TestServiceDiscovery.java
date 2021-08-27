@@ -87,9 +87,9 @@ public class TestServiceDiscovery {
     confs.put("hive.server2.authentication", "PLAIN");
     publishConfsToZk(confs, "uri3");
 
-    Utils.JdbcConnectionParams connParams = new Utils.JdbcConnectionParams();
+    JdbcConnectionParams connParams = new JdbcConnectionParams();
     connParams.setZooKeeperEnsemble(server.getConnectString());
-    connParams.getSessionVars().put(Utils.JdbcConnectionParams.ZOOKEEPER_NAMESPACE, "hiveserver2");
+    connParams.getSessionVars().put(JdbcConnectionParams.ZOOKEEPER_NAMESPACE, "hiveserver2");
 
     List<ConnParamInfo> allConnectParams = new ArrayList<>();
 

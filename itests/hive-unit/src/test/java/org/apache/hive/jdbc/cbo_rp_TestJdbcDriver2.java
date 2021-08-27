@@ -61,7 +61,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
 import org.apache.hive.common.util.HiveVersionInfo;
-import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
+import org.apache.hive.jdbc.JdbcConnectionParams;
 import org.apache.hive.service.cli.operation.ClassicTableTypeMapping;
 import org.apache.hive.service.cli.operation.ClassicTableTypeMapping.ClassicTableTypes;
 import org.apache.hive.service.cli.operation.HiveTableTypeMapping;

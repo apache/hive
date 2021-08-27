@@ -24,7 +24,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import java.io.IOException;
-import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
+import org.apache.hive.jdbc.JdbcConnectionParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

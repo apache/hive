@@ -48,7 +48,7 @@ import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.http.security.PamAuthenticator;
-import org.apache.hive.jdbc.Utils;
+import org.apache.hive.jdbc.JdbcConnectionParams;
 import org.apache.hive.service.Service;
 import org.apache.hive.service.cli.CLIServiceClient;
 import org.apache.hive.service.cli.SessionHandle;
@@ -567,10 +567,10 @@ public class MiniHS2 extends AbstractHiveService {
     String baseJdbcURL;
     if (isDynamicServiceDiscovery()) {
       String namespace = getServerConf().getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
-      String serviceDiscoveryMode = Utils.JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER;
+      String serviceDiscoveryMode = JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER;
       if (HiveConf.getBoolVar(getServerConf(), ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_ENABLE)) {
         namespace = getServerConf().getVar(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_REGISTRY_NAMESPACE);
-        serviceDiscoveryMode = Utils.JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER_HA;
+        serviceDiscoveryMode = JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER_HA;
       }
       sessionConfExt = "serviceDiscoveryMode=" + serviceDiscoveryMode + ";zooKeeperNamespace="
         + namespace + ";" + sessionConfExt;

@@ -18,8 +18,8 @@
 
 package org.apache.hive.service.auth.saml;
 
-import static org.apache.hive.jdbc.Utils.JdbcConnectionParams.AUTH_BROWSER_RESPONSE_PORT;
-import static org.apache.hive.jdbc.Utils.JdbcConnectionParams.AUTH_BROWSER_RESPONSE_TIMEOUT_SECS;
+import static org.apache.hive.jdbc.JdbcConnectionParams.AUTH_BROWSER_RESPONSE_PORT;
+import static org.apache.hive.jdbc.JdbcConnectionParams.AUTH_BROWSER_RESPONSE_TIMEOUT_SECS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -49,7 +49,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hive.jdbc.HiveConnection;
-import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
+import org.apache.hive.jdbc.JdbcConnectionParams;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.saml.HiveJdbcBrowserClient;
 import org.apache.hive.jdbc.saml.IJdbcBrowserClient;
