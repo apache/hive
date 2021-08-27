@@ -272,30 +272,34 @@ public class HiveSplitGenerator extends InputInitializer {
         String groupName = null;
         String vertexName = null;
         if (inputInitializerContext != null) {
-          tezCounters = new TezCounters();
-          groupName = HiveInputCounters.class.getName();
-          vertexName = jobConf.get(Operator.CONTEXT_NAME_KEY, "");
-          counterName = Utilities.getVertexCounterName(HiveInputCounters.RAW_INPUT_SPLITS.name(), vertexName);
-          tezCounters.findCounter(groupName, counterName).increment(splits.length);
-          final List<Path> paths = Utilities.getInputPathsTez(jobConf, work);
-          counterName = Utilities.getVertexCounterName(HiveInputCounters.INPUT_DIRECTORIES.name(), vertexName);
-          tezCounters.findCounter(groupName, counterName).increment(paths.size());
-          final Set<String> files = new HashSet<>();
-          for (InputSplit inputSplit : splits) {
-            if (inputSplit instanceof FileSplit) {
-              final FileSplit fileSplit = (FileSplit) inputSplit;
-              final Path path = fileSplit.getPath();
-              // The assumption here is the path is a file. Only case this is different is ACID deltas.
-              // The isFile check is avoided here for performance reasons.
-              final String fileStr = path.toString();
-              if (!files.contains(fileStr)) {
-                files.add(fileStr);
+          try {
+            tezCounters = new TezCounters();
+            groupName = HiveInputCounters.class.getName();
+            vertexName = jobConf.get(Operator.CONTEXT_NAME_KEY, "");
+            counterName = Utilities.getVertexCounterName(HiveInputCounters.RAW_INPUT_SPLITS.name(), vertexName);
+            tezCounters.findCounter(groupName, counterName).increment(splits.length);
+            final List<Path> paths = Utilities.getInputPathsTez(jobConf, work);
+            counterName = Utilities.getVertexCounterName(HiveInputCounters.INPUT_DIRECTORIES.name(), vertexName);
+            tezCounters.findCounter(groupName, counterName).increment(paths.size());
+            final Set<String> files = new HashSet<>();
+            for (InputSplit inputSplit : splits) {
+              if (inputSplit instanceof FileSplit) {
+                final FileSplit fileSplit = (FileSplit) inputSplit;
+                final Path path = fileSplit.getPath();
+                // The assumption here is the path is a file. Only case this is different is ACID deltas.
+                // The isFile check is avoided here for performance reasons.
+                final String fileStr = path.toString();
+                if (!files.contains(fileStr)) {
+                  files.add(fileStr);
+                }
               }
             }
+            counterName = Utilities.getVertexCounterName(HiveInputCounters.INPUT_FILES.name(), vertexName);
+            tezCounters.findCounter(groupName, counterName).increment(files.size());
+            DeltaFilesMetricReporter.createCountersForAcidMetrics(tezCounters, jobConf);
+          } catch (Exception e) {
+            LOG.warn("Caught exception while trying to update Tez counters", e);
           }
-          counterName = Utilities.getVertexCounterName(HiveInputCounters.INPUT_FILES.name(), vertexName);
-          tezCounters.findCounter(groupName, counterName).increment(files.size());
-          DeltaFilesMetricReporter.createCountersForAcidMetrics(tezCounters, jobConf);
         }
 
         if (work.getIncludedBuckets() != null) {
@@ -308,12 +312,16 @@ public class HiveSplitGenerator extends InputInitializer {
         InputSplit[] flatSplits = groupedSplits.values().toArray(new InputSplit[0]);
         LOG.info("Number of split groups: " + flatSplits.length);
         if (inputInitializerContext != null) {
-          counterName = Utilities.getVertexCounterName(HiveInputCounters.GROUPED_INPUT_SPLITS.name(), vertexName);
-          tezCounters.findCounter(groupName, counterName).setValue(flatSplits.length);
+          try {
+            counterName = Utilities.getVertexCounterName(HiveInputCounters.GROUPED_INPUT_SPLITS.name(), vertexName);
+            tezCounters.findCounter(groupName, counterName).setValue(flatSplits.length);
 
-          LOG.debug("Published tez counters: {}", tezCounters);
+            LOG.debug("Published tez counters: {}", tezCounters);
 
-          inputInitializerContext.addCounters(tezCounters);
+            inputInitializerContext.addCounters(tezCounters);
+          } catch (Exception e) {
+            LOG.warn("Caught exception while trying to update Tez counters");
+          }
         }
 
         List<TaskLocationHint> locationHints = splitGrouper.createTaskLocationHints(flatSplits, generateConsistentSplits);
