@@ -278,8 +278,8 @@ POSTHOOK: query: select partition_spec_id, partition_summaries from default.ice_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0	[{"contains_null":false,"lower_bound":"four","upper_bound":"four"}]
-0	[{"contains_null":false,"lower_bound":"three","upper_bound":"three"}]
+0	[{"contains_null":false,"contains_nan":false,"lower_bound":"four","upper_bound":"four"}]
+0	[{"contains_null":false,"contains_nan":false,"lower_bound":"three","upper_bound":"three"}]
 PREHOOK: query: select partition_spec_id, partition_summaries[1].upper_bound from default.ice_meta_3.manifests
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_3
@@ -340,7 +340,7 @@ POSTHOOK: query: select partition_summaries from default.ice_meta_3.manifests wh
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-[{"contains_null":false,"lower_bound":"four","upper_bound":"two"},{"contains_null":false,"lower_bound":"Friday","upper_bound":"Wednesday"}]
+[{"contains_null":false,"contains_nan":false,"lower_bound":"four","upper_bound":"two"},{"contains_null":false,"contains_nan":false,"lower_bound":"Friday","upper_bound":"Wednesday"}]
 PREHOOK: query: select `partition` from default.ice_meta_2.files
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_2
@@ -447,8 +447,8 @@ POSTHOOK: query: select partition_spec_id, partition_summaries from default.ice_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0	[{"contains_null":false,"lower_bound":"four","upper_bound":"four"}]
-0	[{"contains_null":false,"lower_bound":"three","upper_bound":"three"}]
+0	[{"contains_null":false,"contains_nan":false,"lower_bound":"four","upper_bound":"four"}]
+0	[{"contains_null":false,"contains_nan":false,"lower_bound":"three","upper_bound":"three"}]
 PREHOOK: query: select partition_spec_id, partition_summaries[1].upper_bound from default.ice_meta_3.manifests
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_3
@@ -509,7 +509,7 @@ POSTHOOK: query: select partition_summaries from default.ice_meta_3.manifests wh
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-[{"contains_null":false,"lower_bound":"four","upper_bound":"two"},{"contains_null":false,"lower_bound":"Friday","upper_bound":"Wednesday"}]
+[{"contains_null":false,"contains_nan":false,"lower_bound":"four","upper_bound":"two"},{"contains_null":false,"contains_nan":false,"lower_bound":"Friday","upper_bound":"Wednesday"}]
 PREHOOK: query: drop table ice_meta_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ice_meta_2
