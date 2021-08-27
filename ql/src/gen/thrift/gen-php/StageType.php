@@ -50,18 +50,6 @@ final class StageType
 
     const REPL_INCREMENTAL_LOAD = 16;
 
-    const SCHEDULED_QUERY_MAINT = 17;
-
-    const ACK = 18;
-
-    const RANGER_DUMP = 19;
-
-    const RANGER_LOAD = 20;
-
-    const ATLAS_DUMP = 21;
-
-    const ATLAS_LOAD = 22;
-
     static public $__names = array(
         0 => 'CONDITIONAL',
         1 => 'COPY',
@@ -80,12 +68,6 @@ final class StageType
         14 => 'REPL_STATE_LOG',
         15 => 'REPL_TXN',
         16 => 'REPL_INCREMENTAL_LOAD',
-        17 => 'SCHEDULED_QUERY_MAINT',
-        18 => 'ACK',
-        19 => 'RANGER_DUMP',
-        20 => 'RANGER_LOAD',
-        21 => 'ATLAS_DUMP',
-        22 => 'ATLAS_LOAD',
     );
 }
 
