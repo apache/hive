@@ -11883,8 +11883,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opParseCtx.get(operator).setRowResolver(newRR);
   }
 
+  Path dummyPath;
   protected Table getDummyTable() throws SemanticException {
-    Path dummyPath = createDummyFile();
+    if (dummyPath == null) {
+      dummyPath = createDummyFile();
+    }
+
     Table desc = new Table(DUMMY_DATABASE, DUMMY_TABLE);
     desc.getTTable().getSd().setLocation(dummyPath.toString());
     desc.getTTable().getSd().getSerdeInfo().setSerializationLib(NullStructSerDe.class.getName());

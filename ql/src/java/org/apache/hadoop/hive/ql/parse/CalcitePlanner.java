@@ -252,6 +252,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortPullUpConstants
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortRemoveRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortUnionReduceRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSubQueryRemoveRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveTransformSimpleSelectsToInlineTableInUnion;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionPullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
@@ -1607,6 +1608,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     LinkedHashMap<RelNode, RowResolver>                   relToHiveRR                   = new LinkedHashMap<RelNode, RowResolver>();
     LinkedHashMap<RelNode, ImmutableMap<String, Integer>> relToHiveColNameCalcitePosMap = new LinkedHashMap<RelNode, ImmutableMap<String, Integer>>();
     private final StatsSource statsSource;
+    private RelNode dummyTableScan;
 
     protected CalcitePlannerAction(
             Map<String, PrunedPartitionList> partitionCache,
@@ -1765,7 +1767,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       //0. SetOp rewrite
       generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
           HiveProjectOverIntersectRemoveRule.INSTANCE, HiveIntersectMergeRule.INSTANCE,
-          HiveUnionMergeRule.INSTANCE);
+          HiveUnionMergeRule.INSTANCE, new HiveTransformSimpleSelectsToInlineTableInUnion(dummyTableScan));
       generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
           HiveIntersectRewriteRule.INSTANCE);
       generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
@@ -5067,6 +5069,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         qb.addAlias(DUMMY_TABLE);
         qb.setTabAlias(DUMMY_TABLE, DUMMY_TABLE);
         RelNode op = genTableLogicalPlan(DUMMY_TABLE, qb);
+        dummyTableScan = op;
         aliasToRel.put(DUMMY_TABLE, op);
 
       }
