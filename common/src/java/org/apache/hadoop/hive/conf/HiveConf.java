@@ -4048,6 +4048,12 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_THRIFT_HTTP_COMPRESSION_ENABLED("hive.server2.thrift.http.compression.enabled", true,
         "Enable thrift http compression via Jetty compression support"),
 
+    // JWT Auth configs
+    HIVE_SERVER2_THRIFT_HTTP_JWT_JWKS_URL("hive.server2.thrift.http.jwt.jwks.url", "",
+        "URL of the file from where FileBasedJWKSProvider will try to load JWKS\n" +
+        "when JWT auth is used. Alternatively, FileBasedJWKSProvider will also try to look for file path\n" +
+        "in env var HIVE_SERVER2_AUTH_JWT_JWKS_FILE_PATH if this conf is not set"),
+
     // Cookie based authentication when using HTTP Transport
     HIVE_SERVER2_THRIFT_HTTP_COOKIE_AUTH_ENABLED("hive.server2.thrift.http.cookie.auth.enabled", true,
         "When true, HiveServer2 in HTTP transport mode, will use cookie based authentication mechanism."),
@@ -4118,7 +4124,7 @@ public class HiveConf extends Configuration {
 
     // HiveServer2 auth configuration
     HIVE_SERVER2_AUTHENTICATION("hive.server2.authentication", "NONE",
-      new StringSet("NOSASL", "NONE", "LDAP", "KERBEROS", "PAM", "CUSTOM", "SAML"),
+      new StringSet("NOSASL", "NONE", "LDAP", "KERBEROS", "PAM", "CUSTOM", "SAML", "JWT"),
         "Client authentication types.\n" +
         "  NONE: no authentication check\n" +
         "  LDAP: LDAP/AD based authentication\n" +
@@ -4127,7 +4133,8 @@ public class HiveConf extends Configuration {
         "          (Use with property hive.server2.custom.authentication.class)\n" +
         "  PAM: Pluggable authentication module\n" +
         "  NOSASL:  Raw transport\n" +
-        "  SAML: SAML 2.0 compliant authentication. This is only supported in http transport mode."),
+        "  SAML: SAML 2.0 compliant authentication. This is only supported in http transport mode\n" +
+        "  JWT: JWT based authentication, JWT needs to contain the user as subject"),
     HIVE_SERVER2_TRUSTED_DOMAIN("hive.server2.trusted.domain", "",
         "Specifies the host or a domain to trust connections from. Authentication is skipped " +
         "for any connection coming from a host whose hostname ends with the value of this" +
@@ -4297,6 +4304,7 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_SAML_GROUP_FILTER("hive.server2.saml2.group.filter", "",
         "Comma separated list of group names which will be allowed when SAML\n"
             + " authentication is enabled."),
+
     HIVE_SERVER2_ENABLE_DOAS("hive.server2.enable.doAs", true,
         "Setting this property to true will have HiveServer2 execute\n" +
         "Hive operations as the user making the calls to it."),

@@ -24,6 +24,7 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedExceptionAction;
 import java.security.SecureRandom;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
@@ -41,6 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.NewCookie;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -59,6 +61,8 @@ import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.hive.service.auth.HttpAuthenticationException;
 import org.apache.hive.service.auth.PasswdAuthenticationProvider;
 import org.apache.hive.service.auth.PlainSaslHelper;
+import org.apache.hive.service.auth.jwt.HttpJwtAuthenticationException;
+import org.apache.hive.service.auth.jwt.JWTValidator;
 import org.apache.hive.service.auth.ldap.HttpEmptyAuthenticationException;
 import org.apache.hive.service.auth.saml.HiveSaml2Client;
 import org.apache.hive.service.auth.saml.HiveSamlRelayStateStore;
@@ -110,6 +114,8 @@ public class ThriftHttpServlet extends TServlet {
   private static final String HIVE_DELEGATION_TOKEN_HEADER =  "X-Hive-Delegation-Token";
   private static final String X_FORWARDED_FOR = "X-Forwarded-For";
 
+  private JWTValidator jwtValidator;
+
   public ThriftHttpServlet(TProcessor processor, TProtocolFactory protocolFactory,
       String authType, UserGroupInformation serviceUGI, UserGroupInformation httpUGI,
       HiveAuthFactory hiveAuthFactory, HiveConf hiveConf) throws Exception {
@@ -135,6 +141,9 @@ public class ThriftHttpServlet extends TServlet {
       this.isCookieSecure = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_USE_SSL);
       this.isHttpOnlyCookie = hiveConf.getBoolVar(
         ConfVars.HIVE_SERVER2_THRIFT_HTTP_COOKIE_IS_HTTPONLY);
+    }
+    if (isJWTAuthMode(authType)) {
+      this.jwtValidator = new JWTValidator(hiveConf);
     }
   }
 
@@ -204,6 +213,9 @@ public class ThriftHttpServlet extends TServlet {
           // HTTP request header.
           clientUserName = doPasswdAuth(request, HiveAuthConstants.AuthTypes.NOSASL.getAuthName());
         } else {
+          if (isJWTAuthMode(authType)) {
+            clientUserName = validateJWT(request, response);
+          }
           // For a kerberos setup
           if (isKerberosAuthMode(authType)) {
             String delegationToken = request.getHeader(HIVE_DELEGATION_TOKEN_HEADER);
@@ -264,8 +276,7 @@ public class ThriftHttpServlet extends TServlet {
         LOG.info("Cookie added for clientUserName " + clientUserName);
       }
       super.doPost(request, response);
-    }
-    catch (HttpAuthenticationException e) {
+    } catch (HttpAuthenticationException e) {
       // Ignore HttpEmptyAuthenticationException, it is normal for knox
       // to send a request with empty header
       if (!(e instanceof HttpEmptyAuthenticationException)) {
@@ -292,14 +303,38 @@ public class ThriftHttpServlet extends TServlet {
         }
       }
       response.getWriter().println("Authentication Error: " + e.getMessage());
-    }
-    finally {
+    } finally {
       // Clear the thread locals
       SessionManager.clearUserName();
       SessionManager.clearIpAddress();
       SessionManager.clearProxyUserName();
       SessionManager.clearForwardedAddresses();
     }
+  }
+
+  private String validateJWT(HttpServletRequest request, HttpServletResponse response) {
+    Preconditions.checkState(jwtValidator != null, "JWT validator should have been set");
+    String signedJwt = extractBearerToken(request, response);
+    if (signedJwt == null) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("No token found with the request " + request);
+      }
+      return null;
+    }
+    String user = null;
+    try {
+      user = jwtValidator.validateJWTAndExtractUser(signedJwt);
+      LOG.info("JWT verification successful for user - " + user);
+    } catch (ParseException e) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Not a JWT: " + signedJwt);
+      }
+    } catch (Exception e) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("JWT verification failed " + e.getMessage());
+      }
+    }
+    return user;
   }
 
   /**
@@ -730,6 +765,10 @@ public class ThriftHttpServlet extends TServlet {
 
   private boolean isKerberosAuthMode(AuthType authType) {
     return authType.isEnabled(HiveAuthConstants.AuthTypes.KERBEROS);
+  }
+
+  private boolean isJWTAuthMode(String authType) {
+    return authType.toLowerCase().contains(HiveAuthConstants.AuthTypes.JWT.toString().toLowerCase());
   }
 
   private static String getDoAsQueryParam(String queryString) {

@@ -16,30 +16,24 @@
  * limitations under the License.
  */
 
-package org.apache.hive.service.auth;
+package org.apache.hive.service.auth.jwt;
 
-public class HiveAuthConstants {
-  public enum AuthTypes {
-    NOSASL("NOSASL"),
-    NONE("NONE"),
-    LDAP("LDAP"),
-    KERBEROS("KERBEROS"),
-    CUSTOM("CUSTOM"),
-    PAM("PAM"),
-    SAML("SAML"),
-    JWT("JWT");
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.jwk.JWK;
 
-    private final String authType;
+import java.util.List;
 
-    AuthTypes(String authType) {
-      this.authType = authType;
-    }
+/**
+ * Provides a way to get JWKS json. Hive will use this to verify the incoming JWTs.
+ */
+public interface JWKSProvider {
 
-    public String getAuthName() {
-      return authType;
-    }
-  }
-
-  public static final String HS2_PROXY_USER = "hive.server2.proxy.user";
-  public static final String HS2_CLIENT_TOKEN = "hiveserver2ClientToken";
+  /**
+   * Fetches the JWKS, the JWKS are expected to be in the standard form as defined here -
+   * https://datatracker.ietf.org/doc/html/rfc7517#appendix-A
+   *
+   * @return JWKS Json.
+   * @param header
+   */
+  List<JWK> getJWKs(JWSHeader header);
 }

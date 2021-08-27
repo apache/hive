@@ -16,30 +16,24 @@
  * limitations under the License.
  */
 
-package org.apache.hive.service.auth;
+package org.apache.hive.service.auth.jwt;
 
-public class HiveAuthConstants {
-  public enum AuthTypes {
-    NOSASL("NOSASL"),
-    NONE("NONE"),
-    LDAP("LDAP"),
-    KERBEROS("KERBEROS"),
-    CUSTOM("CUSTOM"),
-    PAM("PAM"),
-    SAML("SAML"),
-    JWT("JWT");
+import org.apache.hive.service.auth.HttpAuthenticationException;
 
-    private final String authType;
+/**
+ * Exception classes to be used to throw errors in the JWT authentication flow.
+ */
+public class HttpJwtAuthenticationException extends HttpAuthenticationException {
 
-    AuthTypes(String authType) {
-      this.authType = authType;
-    }
-
-    public String getAuthName() {
-      return authType;
-    }
+  public HttpJwtAuthenticationException(Throwable cause) {
+    super(cause);
   }
 
-  public static final String HS2_PROXY_USER = "hive.server2.proxy.user";
-  public static final String HS2_CLIENT_TOKEN = "hiveserver2ClientToken";
+  public HttpJwtAuthenticationException(String msg) {
+    super(msg);
+  }
+
+  public HttpJwtAuthenticationException(String msg, Throwable cause) {
+    super(msg, cause);
+  }
 }
