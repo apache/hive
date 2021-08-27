@@ -532,12 +532,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // Use the hints later in top level QB.
       getHintsFromQB(getQB(), oldHints);
 
-      // Cache the asOf information
-      Map<String, org.apache.commons.lang3.tuple.Pair> oldAliasToAsOf = new HashMap<>();
-      for (String alias : getQB().getAsOfAliases()) {
-        oldAliasToAsOf.put(alias, getQB().getAsOfForAlias(alias));
-      }
-
       // Note: for now, we don't actually pass the queryForCbo to CBO, because
       // it accepts qb, not AST, and can also access all the private stuff in
       // SA. We rely on the fact that CBO ignores the unknown tokens (create
@@ -617,11 +611,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
             Phase1Ctx ctx_1 = initPhase1Ctx();
             if (!doPhase1(newAST, getQB(), ctx_1, null)) {
               throw new RuntimeException("Couldn't do phase1 on CBO optimized query plan");
-            }
-
-            // Reset the old asOf values
-            for (String alias : oldAliasToAsOf.keySet()) {
-              getQB().setAsOf(alias, oldAliasToAsOf.get(alias));
             }
 
             // unfortunately making prunedPartitions immutable is not possible

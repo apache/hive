@@ -28,6 +28,8 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
@@ -46,6 +48,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -75,6 +78,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -936,12 +940,16 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
   protected static void pushAsOf(Configuration jobConf, TableScanOperator ts) {
     TableScanDesc scanDesc = ts.getConf();
-    if (scanDesc.getAsOfTimestamp() != -1) {
-      jobConf.set(TableScanDesc.AS_OF_TIMESTAMP, Long.toString(scanDesc.getAsOfTimestamp()));
+    if (scanDesc.getAsOfTimestamp() != null) {
+      ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() :
+          SessionState.get().getConf().getLocalTimeZone();
+      TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(scanDesc.getAsOfTimestamp()), timeZone);
+
+      jobConf.set(TableScanDesc.AS_OF_TIMESTAMP, Long.toString(time.toEpochMilli()));
     }
 
-    if (scanDesc.getAsOfVersion() != -1) {
-      jobConf.set(TableScanDesc.AS_OF_VERSION, Long.toString(scanDesc.getAsOfVersion()));
+    if (scanDesc.getAsOfVersion() != null) {
+      jobConf.set(TableScanDesc.AS_OF_VERSION, scanDesc.getAsOfVersion());
     }
   }
 
