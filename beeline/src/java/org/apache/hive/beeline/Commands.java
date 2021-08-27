@@ -65,7 +65,7 @@ import org.apache.hive.beeline.logs.BeelineInPlaceUpdateStream;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.jdbc.HiveStatement;
 import org.apache.hive.jdbc.Utils;
-import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
+import org.apache.hive.jdbc.JdbcConnectionParams;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
 
 public class Commands {

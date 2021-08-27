@@ -31,8 +31,6 @@ import java.util.jar.Manifest;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
-
 
 /**
  * HiveDriver.

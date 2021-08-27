@@ -98,7 +98,7 @@ public class TestHiveStatement {
    * JDBC connection string whereby every created {@code Statement} will start
    * with the fetch size specified if no explicit calls are made.
    *
-   * @see Utils.JdbcConnectionParams#FETCH_SIZE
+   * @see JdbcConnectionParams#FETCH_SIZE
    */
   @Test
   public void testSetFetchSizeJdbcProperty() throws SQLException {
