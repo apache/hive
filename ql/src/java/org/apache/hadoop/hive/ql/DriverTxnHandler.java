@@ -305,14 +305,16 @@ class DriverTxnHandler {
 
   private boolean setWriteIdForAcidDdl() throws SemanticException, LockException {
     DDLDescWithWriteId acidDdlDesc = driverContext.getPlan().getAcidDdlDesc();
-
+    LOG.debug("inside setWriteIdForAcidDdl");
     boolean hasAcidDdl = acidDdlDesc != null && acidDdlDesc.mayNeedWriteId();
     if (hasAcidDdl) {
+      LOG.debug("inside hasAcidDdl");
       String fqTableName = acidDdlDesc.getFullTableName();
       TableName tableName = HiveTableName.of(fqTableName);
       long writeId = driverContext.getTxnManager().getTableWriteId(tableName.getDb(), tableName.getTable());
       acidDdlDesc.setWriteId(writeId);
     }else {
+      LOG.debug("inside checkAdvancingWriteId");
       checkAdvancingWriteId(acidDdlDesc);
     }
     return hasAcidDdl;
@@ -321,14 +323,10 @@ class DriverTxnHandler {
   /**
    * This method ensures that we advance write ID for transactional tables for "ALTER TABLE" DDLs.
    * Advancing the write id for Alter Table DDL is required to ensure that we can provide strong consistency
-   * while serving metadata from HMS cache.
+   * while serving metadata from HMS remote cache.
    * @param acidDdlDesc
    */
   private void checkAdvancingWriteId(DDLDescWithWriteId acidDdlDesc) {
-    if (driverContext.getPlan()!=null
-            && driverContext.getPlan().getAcidAnalyzeTable()!=null) {
-      Table table = driverContext.getPlan().getAcidAnalyzeTable().getTable();
-      if (table!=null && AcidUtils.isTransactionalTable(table)) {
         if (acidDdlDesc==null) {
           // If we don't want to advance write ID for certain DDLs, even for transactional tables,
           // they should be filtered here.
@@ -336,12 +334,8 @@ class DriverTxnHandler {
                   || acidDdlDesc instanceof AlterTableSetPartitionSpecDesc) {
             return;
           }
-          if (acidDdlDesc instanceof AbstractAlterTableDesc) {
-            throw new RuntimeException("should advance write id for Alter table DDL for a transactional table");
-          }
+          throw new IllegalStateException("should advance write id for a transactional table");
         }
-      }
-    }
   }
 
   private void acquireLocksInternal() throws CommandProcessorException, LockException {
