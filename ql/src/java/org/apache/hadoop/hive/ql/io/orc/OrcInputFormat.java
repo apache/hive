@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.NoDynamicValuesException;
@@ -35,13 +36,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Queue;
 import java.util.TreeMap;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1787,8 +1791,12 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     long checkThresholdInSec = HiveConf.getTimeVar(conf,
         HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_CHECK_THRESHOLD, TimeUnit.SECONDS);
     float deltaPctThreshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_PCT_THRESHOLD);
+    int deltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD);
+    int obsoleteDeltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD);
+    int maxCacheSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE);
 
-    EnumMap<DeltaFilesMetricType, Map<String, Integer>> deltaFilesStats = new EnumMap<>(DeltaFilesMetricType.class);
+    EnumMap<DeltaFilesMetricType, Queue<Pair<String, Integer>>> deltaFilesStats =
+        new EnumMap<>(DeltaFilesMetricType.class);
 
     // complete path futures and schedule split generation
     try {
@@ -1817,7 +1825,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
         if (metricsEnabled && directory instanceof AcidDirectory) {
           DeltaFilesMetricReporter.mergeDeltaFilesStats((AcidDirectory) directory, checkThresholdInSec,
-              deltaPctThreshold, deltaFilesStats, conf);
+              deltaPctThreshold, deltasThreshold, obsoleteDeltasThreshold, maxCacheSize, deltaFilesStats, conf);
         }
         // We have received a new directory information, make split strategies.
         --resultsLeft;
@@ -1848,7 +1856,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           }
         }
       }
-      DeltaFilesMetricReporter.addAcidMetricsToConfObj(deltaFilesStats, conf);
+      if (metricsEnabled) {
+        DeltaFilesMetricReporter.addAcidMetricsToConfObj(deltaFilesStats, conf);
+      }
 
       // Run the last combined strategy, if any.
       if (combinedCtx != null && combinedCtx.combined != null) {

@@ -3062,7 +3062,10 @@ public class HiveConf extends Configuration {
     // Configs having to do with DeltaFilesMetricReporter, which collects lists of most recently active tables
     // with the most number of active/obsolete deltas.
     HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE("hive.txn.acid.metrics.max.cache.size", 100,
-        "Size of the ACID metrics cache. Only topN metrics would remain in the cache if exceeded."),
+        new RangeValidator(0, 500),
+        "Size of the ACID metrics cache, i.e. max number of partitions and unpartitioned tables with the "
+            + "most deltas that will be included in the lists of active, obsolete and small deltas. "
+            + "Allowed range is 0 to 500."),
     HIVE_TXN_ACID_METRICS_CACHE_DURATION("hive.txn.acid.metrics.cache.duration", "7200s",
         new TimeValidator(TimeUnit.SECONDS),
         "Maximum lifetime in seconds for an entry in the ACID metrics cache."),
