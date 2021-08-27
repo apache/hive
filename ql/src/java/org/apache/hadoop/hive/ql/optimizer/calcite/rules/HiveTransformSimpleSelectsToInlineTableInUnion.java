@@ -84,7 +84,6 @@ public class HiveTransformSimpleSelectsToInlineTableInUnion extends RelOptRule {
     if (!union.all) {
       return;
     }
-
     List<RelNode> inputs = new ArrayList<RelNode>();
     List<Project> projects = new ArrayList<>();
     List<HiveTableFunctionScan> inlineTables = new ArrayList<>();
@@ -131,6 +130,11 @@ public class HiveTransformSimpleSelectsToInlineTableInUnion extends RelOptRule {
 
     if (newRows.keySet().size() + inputs.size() == union.getInputs().size()) {
       // nothing to do
+      return;
+    }
+
+    if (dummyTable == null) {
+      LOG.warn("Unexpected; rule would match - but dummyTable is not available");
       return;
     }
 
@@ -203,9 +207,6 @@ public class HiveTransformSimpleSelectsToInlineTableInUnion extends RelOptRule {
   private RelNode buildTableFunctionScan(RexNode expr, RelOptCluster cluster)
       throws CalciteSemanticException {
 
-    if (dummyTable == null) {
-      throw new RuntimeException();
-    }
     return HiveTableFunctionScan.create(cluster, TraitsUtil.getDefaultTraitSet(cluster),
         ImmutableList.of(dummyTable), expr, null, expr.getType(), null);
 
