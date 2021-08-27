@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.partition.set.AlterTableSetPartitionSpecDesc;
 import org.apache.hadoop.hive.ql.ddl.table.storage.compact.AlterTableCompactDesc;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
@@ -331,7 +332,8 @@ class DriverTxnHandler {
           // If we don't want to advance write ID for certain DDLs, even for transactional tables,
           // they should be filtered here.
           if (acidDdlDesc instanceof AlterTableCompactDesc
-                  || acidDdlDesc instanceof AlterTableSetPartitionSpecDesc) {
+                  || acidDdlDesc instanceof AlterTableSetPartitionSpecDesc
+                    || acidDdlDesc instanceof CreateTableDesc) {
             return;
           }
           throw new IllegalStateException("should advance write id for a transactional table");
