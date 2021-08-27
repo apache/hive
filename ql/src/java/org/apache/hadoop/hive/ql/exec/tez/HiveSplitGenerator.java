@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,8 +37,10 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
@@ -223,6 +227,24 @@ public class HiveSplitGenerator extends InputInitializer {
                   TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES_DEFAULT);
 
         }
+
+        HashMap<Path, DeltaFilesMetricReporter.DeltaFilesMetadata> deltaFilesMetadata = new HashMap();
+
+        work.getPathToPartitionInfo().entrySet().forEach(e -> {
+          DeltaFilesMetricReporter.DeltaFilesMetadata metadata = new DeltaFilesMetricReporter.DeltaFilesMetadata();
+          TableDesc tableDesc = e.getValue().getTableDesc();
+          metadata.dbName = tableDesc.getDbName();
+          metadata.tableName = tableDesc.getTableName();
+          LinkedHashMap<String, String> partSpec = e.getValue().getPartSpec();
+          if (partSpec != null && !partSpec.isEmpty()) {
+            metadata.partitionName = String.valueOf(partSpec);
+          }
+          deltaFilesMetadata.put(e.getKey(), metadata);
+        });
+
+        String serializedMetadata = SerializationUtilities.serializeObject(deltaFilesMetadata);
+        jobConf.set(DeltaFilesMetricReporter.JOB_CONF_DELTA_FILES_METRICS_METADATA, serializedMetadata);
+
 
         InputSplit[] splits;
         if (generateSingleSplit &&
