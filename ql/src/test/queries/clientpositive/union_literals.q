@@ -1,3 +1,4 @@
+
 explain
 SELECT * FROM (
    VALUES(1, '1'),

@@ -105,14 +105,14 @@ public class HiveTransformSimpleSelectsToInlineTableInUnion extends RelOptRule {
     }
 
     for (Project proj : projects) {
-      RexNode row = rexBuilder.makeCall(SqlStdOperatorTable.ROW, proj.getChildExps());
+      RexNode row = rexBuilder.makeCall(SqlStdOperatorTable.ROW, proj.getProjects());
       if (!(row.getType() instanceof RelRecordType)) {
         return;
       }
       newRows.put((RelRecordType) row.getType(), row);
     }
 
-    if (newRows.size() + inputs.size() == union.getInputs().size()) {
+    if (newRows.keySet().size() + inputs.size() == union.getInputs().size()) {
       // nothing to do
       return;
     }

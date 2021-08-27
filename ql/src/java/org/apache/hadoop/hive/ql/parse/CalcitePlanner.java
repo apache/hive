@@ -1767,7 +1767,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       //0. SetOp rewrite
       generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
           HiveProjectOverIntersectRemoveRule.INSTANCE, HiveIntersectMergeRule.INSTANCE,
-          HiveUnionMergeRule.INSTANCE, new HiveTransformSimpleSelectsToInlineTableInUnion(dummyTableScan));
+          HiveUnionMergeRule.INSTANCE);
       generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
           HiveIntersectRewriteRule.INSTANCE);
       generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
@@ -2211,6 +2211,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 1. Run other optimizations that do not need stats
       generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
           ProjectRemoveRule.Config.DEFAULT.toRule(), HiveUnionMergeRule.INSTANCE,
+          new HiveTransformSimpleSelectsToInlineTableInUnion(dummyTableScan),
           HiveAggregateProjectMergeRule.INSTANCE, HiveProjectMergeRule.INSTANCE_NO_FORCE,
           HiveJoinCommuteRule.INSTANCE);
 
