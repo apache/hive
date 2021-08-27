@@ -20,11 +20,11 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.type.RelDataType;
@@ -34,15 +34,18 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -59,6 +62,21 @@ public class HiveTransformSimpleSelectsToInlineTableInUnion extends RelOptRule {
     this.dummyTable = dummyTable;
   }
 
+  static class RowStorage extends HashMap<RelRecordType, List<RexNode>> {
+
+    private static final long serialVersionUID = 1L;
+
+    public void addRow(RexNode row) {
+      RelRecordType type = (RelRecordType) row.getType();
+
+      List<RexNode> e = get(type);
+      if (e == null) {
+        put(type, e = new ArrayList<RexNode>());
+      }
+      e.add(row);
+    }
+  }
+
   @Override
   public void onMatch(RelOptRuleCall call) {
     RexBuilder rexBuilder = call.builder().getRexBuilder();
@@ -70,17 +88,16 @@ public class HiveTransformSimpleSelectsToInlineTableInUnion extends RelOptRule {
     List<RelNode> inputs = new ArrayList<RelNode>();
     List<Project> projects = new ArrayList<>();
     List<HiveTableFunctionScan> inlineTables = new ArrayList<>();
-    RelOptRuleOperand plainProjectOperand = operand(Project.class, none());
-    RelOptRuleOperand inlineTableOperand = operand(HiveTableFunctionScan.class, none());
 
     for (RelNode input : union.getInputs()) {
       input = HiveRelDecorrelator.stripHep(input);
 
-      if (plainProjectOperand.matches(input)) {
+      if (isPlainProject(input)) {
         projects.add((Project) input);
         continue;
       }
-      if (inlineTableOperand.matches(input)) {
+
+      if (isInlineTableOperand(input)) {
         inlineTables.add((HiveTableFunctionScan) input);
         continue;
       }
@@ -92,7 +109,7 @@ public class HiveTransformSimpleSelectsToInlineTableInUnion extends RelOptRule {
       return;
     }
 
-    ArrayListMultimap<RelRecordType, RexNode> newRows = ArrayListMultimap.create();
+    RowStorage newRows = new RowStorage();
     for (HiveTableFunctionScan rel : inlineTables) {
       // inline(array(row1,row2,...))
       RexCall rex = (RexCall) ((RexCall) rel.getCall()).operands.get(0);
@@ -100,7 +117,7 @@ public class HiveTransformSimpleSelectsToInlineTableInUnion extends RelOptRule {
         if (!(row.getType() instanceof RelRecordType)) {
           return;
         }
-        newRows.put((RelRecordType) row.getType(), row);
+        newRows.addRow(row);
       }
     }
 
@@ -109,7 +126,7 @@ public class HiveTransformSimpleSelectsToInlineTableInUnion extends RelOptRule {
       if (!(row.getType() instanceof RelRecordType)) {
         return;
       }
-      newRows.put((RelRecordType) row.getType(), row);
+      newRows.addRow(row);
     }
 
     if (newRows.keySet().size() + inputs.size() == union.getInputs().size()) {
@@ -148,9 +165,47 @@ public class HiveTransformSimpleSelectsToInlineTableInUnion extends RelOptRule {
     }
   }
 
+  private boolean isPlainProject(RelNode input) {
+    input = HiveRelDecorrelator.stripHep(input);
+    if (!(input instanceof Project)) {
+      return false;
+    }
+    if (input.getInputs().size() == 0) {
+      return true;
+    }
+    return isDummyTableScan(input.getInput(0));
+  }
+
+  private boolean isInlineTableOperand(RelNode input) {
+    input = HiveRelDecorrelator.stripHep(input);
+    if (!(input instanceof HiveTableFunctionScan)) {
+      return false;
+    }
+    if (input.getInputs().size() == 0) {
+      return true;
+    }
+    return isDummyTableScan(input.getInput(0));
+  }
+
+  private boolean isDummyTableScan(RelNode input) {
+    input = HiveRelDecorrelator.stripHep(input);
+    if (!(input instanceof HiveTableScan)) {
+      return false;
+    }
+    HiveTableScan ts = (HiveTableScan) input;
+    Table table = ((RelOptHiveTable) ts.getTable()).getHiveTableMD();
+    if (!table.getDbName().equals(SemanticAnalyzer.DUMMY_DATABASE)) {
+      return false;
+    }
+    return true;
+  }
+
   private RelNode buildTableFunctionScan(RexNode expr, RelOptCluster cluster)
       throws CalciteSemanticException {
 
+    if (dummyTable == null) {
+      throw new RuntimeException();
+    }
     return HiveTableFunctionScan.create(cluster, TraitsUtil.getDefaultTraitSet(cluster),
         ImmutableList.of(dummyTable), expr, null, expr.getType(), null);
 
