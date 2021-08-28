@@ -46,30 +46,65 @@
       <artifactId>hadoop-common</artifactId>
       <version>${hadoop.version}</version>
       <optional>true</optional>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-core</artifactId>
       <version>${hadoop.version}</version>
       <optional>true</optional>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-yarn-api</artifactId>
       <version>${hadoop.version}</version>
       <optional>true</optional>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
    </dependency>
    <dependency>
      <groupId>org.apache.hadoop</groupId>
      <artifactId>hadoop-yarn-common</artifactId>
      <version>${hadoop.version}</version>
      <optional>true</optional>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
    </dependency>
    <dependency>
      <groupId>org.apache.hadoop</groupId>
      <artifactId>hadoop-yarn-client</artifactId>
      <version>${hadoop.version}</version>
      <optional>true</optional>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
    </dependency>
    <dependency>
      <groupId>org.apache.hadoop</groupId>
@@ -81,6 +116,11 @@
          <groupId>org.slf4j</groupId>
          <artifactId>slf4j-log4j12</artifactId>
        </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
      </exclusions>
    </dependency>
    <dependency>
@@ -94,6 +134,11 @@
          <groupId>com.codahale.metrics</groupId>
          <artifactId>metrics-core</artifactId>
        </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
      </exclusions>
    </dependency>
   </dependencies>

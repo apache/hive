@@ -197,10 +197,8 @@ public class TestRpc {
     try {
       autoClose(new RpcServer(config));
       assertTrue("Invalid port range should throw an exception", false); // Should not reach here
-    } catch(IllegalArgumentException e) {
-      assertEquals(
-              "Malformed configuration value for " + HiveConf.ConfVars.SPARK_RPC_SERVER_PORT.varname,
-              e.getMessage());
+    } catch(IOException e) {
+      assertEquals("Incorrect RPC server port configuration for HiveServer2", e.getMessage());
     }
 
     // Retry logic

@@ -65,6 +65,11 @@
           <groupId>commmons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -72,12 +77,26 @@
       <artifactId>hadoop-mapreduce-client-core</artifactId>
       <version>${hadoop.version}</version>
       <optional>true</optional>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-yarn-registry</artifactId>
       <version>${hadoop.version}</version>
       <optional>true</optional>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.tez</groupId>
@@ -146,6 +165,11 @@
           <groupId>commmons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
       </exclusions>
     </dependency>
   </dependencies>

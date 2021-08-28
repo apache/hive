@@ -34,8 +34,8 @@
 
     <!-- Build properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
     <maven.repo.local>${settings.localRepository}</maven.repo.local>
     <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
@@ -56,17 +56,17 @@
     <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
     <checkstyle.conf.dir>${basedir}/checkstyle/</checkstyle.conf.dir>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
-    <maven.surefire.version>2.20.1</maven.surefire.version>
+    <maven.surefire.version>2.21.0</maven.surefire.version>
 
     <!-- Dependency versions -->
     <antlr.version>3.5.2</antlr.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
-    <commons-lang3.version>3.2</commons-lang3.version>
-    <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
-    <datanucleus-core.version>4.1.17</datanucleus-core.version>
-    <datanucleus-jdo.version>3.2.0-m3</datanucleus-jdo.version>
-    <datanucleus-rdbms.version>4.1.19</datanucleus-rdbms.version>
+    <commons-lang3.version>3.9</commons-lang3.version>
+    <datanucleus-api-jdo.version>5.2.2</datanucleus-api-jdo.version>
+    <datanucleus-core.version>5.2.2</datanucleus-core.version>
+    <datanucleus-jdo.version>3.2.0-m13</datanucleus-jdo.version>
+    <datanucleus-rdbms.version>5.2.2</datanucleus-rdbms.version>
     <derby.version>10.10.2.0</derby.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
@@ -93,6 +93,12 @@
   </properties>
 
   <dependencies>
+      <dependency>
+    <groupId>javax.annotation</groupId>
+    <artifactId>javax.annotation-api</artifactId>
+    <version>1.3.2</version>
+    <scope>provided</scope>
+</dependency>
     <dependency>
       <groupId>org.apache.orc</groupId>
       <artifactId>orc-core</artifactId>
@@ -192,6 +198,11 @@
           <groupId>commmons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -199,6 +210,13 @@
       <artifactId>hadoop-distcp</artifactId>
       <version>${hadoop.version}</version>
       <scope>provided</scope>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -214,6 +232,11 @@
           <groupId>commmons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -230,6 +253,11 @@
          <groupId>commmons-logging</groupId>
          <artifactId>commons-logging</artifactId>
        </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
      </exclusions>
     </dependency>
     <dependency>
@@ -246,6 +274,11 @@
           <groupId>commmons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
       </exclusions>
     </dependency>
     <!-- This is our one and only Hive dependency.-->
@@ -771,7 +804,7 @@
       <plugin>
         <groupId>org.datanucleus</groupId>
         <artifactId>datanucleus-maven-plugin</artifactId>
-        <version>4.0.5</version>
+        <version>5.2.1</version>
         <configuration>
           <api>JDO</api>
           <verbose>false</verbose>

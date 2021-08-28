@@ -13,22 +13,17 @@
  */
 package org.apache.hadoop.hive.llap.daemon.impl;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Set;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge.UdfWhitelistChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.jdi.InvocationException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.IdentityHashMap;
 
 public class StaticPermanentFunctionChecker implements UdfWhitelistChecker {
   private static final Logger LOG = LoggerFactory.getLogger(StaticPermanentFunctionChecker.class);

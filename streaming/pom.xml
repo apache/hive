@@ -60,6 +60,13 @@
       <artifactId>hadoop-common</artifactId>
       <optional>true</optional>
       <version>${hadoop.version}</version>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -75,6 +82,11 @@
             <groupId>commmons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
         </exclusions>
     </dependency>
 

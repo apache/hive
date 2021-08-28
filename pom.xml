@@ -69,8 +69,8 @@
 
     <!-- Build Properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
     <maven.repo.local>${settings.localRepository}</maven.repo.local>
     <hive.path.to.root>.</hive.path.to.root>
@@ -95,7 +95,7 @@
 
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
-    <datanucleus.maven.plugin.version>3.3.0-release</datanucleus.maven.plugin.version>
+    <datanucleus.maven.plugin.version>5.2.1</datanucleus.maven.plugin.version>
     <maven.test.jvm.args>-Xmx2048m</maven.test.jvm.args>
     <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
     <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
@@ -104,8 +104,8 @@
     <maven.enforcer.plugin.version>1.3.1</maven.enforcer.plugin.version>
     <maven.install.plugin.version>2.4</maven.install.plugin.version>
     <maven.jar.plugin.version>2.4</maven.jar.plugin.version>
-    <maven.javadoc.plugin.version>2.4</maven.javadoc.plugin.version>
-    <maven.shade.plugin.version>3.1.0</maven.shade.plugin.version>
+    <maven.javadoc.plugin.version>3.1.1</maven.javadoc.plugin.version>
+    <maven.shade.plugin.version>3.2.1</maven.shade.plugin.version>
     <maven.surefire.plugin.version>2.21.0</maven.surefire.plugin.version>
     <maven.war.plugin.version>2.4</maven.war.plugin.version>
     <maven.dependency.plugin.version>2.8</maven.dependency.plugin.version>
@@ -117,17 +117,17 @@
     <activemq.version>5.5.0</activemq.version>
     <ant.version>1.9.1</ant.version>
     <antlr.version>3.5.2</antlr.version>
-    <apache-directory-server.version>1.5.6</apache-directory-server.version>
-    <apache-directory-clientapi.version>0.1</apache-directory-clientapi.version>
+    <apache-directory-server.version>2.0.0-M24</apache-directory-server.version>
+    <!--apache-directory-clientapi.version>0.1</apache-directory-clientapi.version-->
     <!-- Include arrow for LlapOutputFormatService -->
     <arrow.version>0.8.0</arrow.version>
     <avatica.version>1.11.0</avatica.version>
     <avro.version>1.7.7</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <calcite.version>1.16.0</calcite.version>
-    <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
-    <datanucleus-core.version>4.1.17</datanucleus-core.version>
-    <datanucleus-rdbms.version>4.1.19</datanucleus-rdbms.version>
+    <datanucleus-api-jdo.version>5.2.3</datanucleus-api-jdo.version>
+    <datanucleus-core.version>5.2.2</datanucleus-core.version>
+    <datanucleus-rdbms.version>5.2.2</datanucleus-rdbms.version>
     <datanucleus-jdo.version>3.2.0-m3</datanucleus-jdo.version>
     <commons-cli.version>1.2</commons-cli.version>
     <commons-codec.version>1.7</commons-codec.version>
@@ -136,7 +136,7 @@
     <commons-exec.version>1.1</commons-exec.version>
     <commons-io.version>2.4</commons-io.version>
     <commons-lang.version>2.6</commons-lang.version>
-    <commons-lang3.version>3.2</commons-lang3.version>
+    <commons-lang3.version>3.9</commons-lang3.version>
     <commons-pool.version>1.5.4</commons-pool.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
     <derby.version>10.14.1.0</derby.version>
@@ -145,9 +145,9 @@
     <druid.version>0.12.0</druid.version>
     <flatbuffers.version>1.2.0-3f79e055</flatbuffers.version>
     <guava.version>19.0</guava.version>
-    <groovy.version>2.4.11</groovy.version>
+    <groovy.version>3.0.8</groovy.version>
     <h2database.version>1.3.166</h2database.version>
-    <hadoop.version>3.1.0</hadoop.version>
+    <hadoop.version>3.2.0</hadoop.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
     <hamcrest.version>1.3</hamcrest.version>
     <hbase.version>2.0.0-alpha4</hbase.version>
@@ -196,11 +196,11 @@
     <slf4j.version>1.7.10</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
     <storage-api.version>2.7.0</storage-api.version>
-    <tez.version>0.9.1</tez.version>
+    <tez.version>0.10.0</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
-    <spark.version>2.3.0</spark.version>
-    <scala.binary.version>2.11</scala.binary.version>
-    <scala.version>2.11.8</scala.version>
+    <spark.version>3.0.1</spark.version>
+    <scala.binary.version>2.12</scala.binary.version>
+    <scala.version>2.12.13</scala.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
     <snappy.version>1.1.4</snappy.version>
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
@@ -231,6 +231,12 @@
   <dependencyManagement>
     <dependencies>
       <!-- dependencies are always listed in sorted order by groupId, artifectId -->
+      <dependency>
+    <groupId>javax.annotation</groupId>
+    <artifactId>javax.annotation-api</artifactId>
+    <version>1.3.2</version>
+    <scope>provided</scope>
+</dependency>
       <dependency>
         <groupId>com.esotericsoftware</groupId>
         <artifactId>kryo-shaded</artifactId>
@@ -576,6 +582,7 @@
         <groupId>org.codehaus.groovy</groupId>
         <artifactId>groovy-all</artifactId>
         <version>${groovy.version}</version>
+        <type>pom</type>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
@@ -697,6 +704,11 @@
             <groupId>commmons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
          </exclusions>
       </dependency>
       <dependency>
@@ -708,6 +720,11 @@
             <groupId>commmons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
          </exclusions>
       </dependency>
       <dependency>
@@ -735,12 +752,24 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
           </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
         </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-hdfs</artifactId>
         <version>${hadoop.version}</version>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
@@ -759,6 +788,11 @@
             <groupId>com.codahale.metrics</groupId>
             <artifactId>metrics-core</artifactId>
           </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
         </exclusions>
      </dependency>
       <dependency>
@@ -774,6 +808,11 @@
             <groupId>commmons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
         </exclusions>
      </dependency>
       <dependency>
@@ -789,52 +828,120 @@
             <groupId>commmons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
         </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-minikdc</artifactId>
         <version>${hadoop.version}</version>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-yarn-api</artifactId>
         <version>${hadoop.version}</version>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-yarn-client</artifactId>
         <version>${hadoop.version}</version>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-yarn-common</artifactId>
         <version>${hadoop.version}</version>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-yarn-registry</artifactId>
         <version>${hadoop.version}</version>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-yarn-server-web-common</artifactId>
         <version>${hadoop.version}</version>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-yarn-server-web-proxy</artifactId>
         <version>${hadoop.version}</version>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hbase</groupId>
         <artifactId>hbase-common</artifactId>
         <version>${hbase.version}</version>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hbase</groupId>
         <artifactId>hbase-hadoop-compat</artifactId>
         <version>${hbase.version}</version>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hbase</groupId>
@@ -901,6 +1008,11 @@
             <groupId>com.codahale.metrics</groupId>
             <artifactId>metrics-core</artifactId>
           </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -912,17 +1024,36 @@
         	<groupId>org.glassfish</groupId>
 		<artifactId>javax.el</artifactId>
             </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
         </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hbase</groupId>
         <artifactId>hbase-mapreduce</artifactId>
         <version>${hbase.version}</version>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-minicluster</artifactId>
         <version>${hadoop.version}</version>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
       </dependency>
       <dependency>
         <groupId>org.scala-lang</groupId>
@@ -931,7 +1062,7 @@
       </dependency>
       <dependency>
         <groupId>org.apache.spark</groupId>
-        <artifactId>spark-core_${scala.binary.version}</artifactId>
+	<artifactId>spark-core_${scala.binary.version}</artifactId>
         <version>${spark.version}</version>
         <exclusions>
           <exclusion>
@@ -1059,22 +1190,22 @@
             </archive>
           </configuration>
         </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-war-plugin</artifactId>
-          <version>${maven.war.plugin.version}</version>
-        </plugin>
-        <plugin>
+	<plugin>
           <groupId>org.datanucleus</groupId>
-          <artifactId>datanucleus-maven-plugin</artifactId>
+          <artifactId>datanucleusmavenplugin</artifactId>
           <version>${datanucleus.maven.plugin.version}</version>
           <dependencies>
             <dependency>
               <groupId>org.datanucleus</groupId>
-              <artifactId>datanucleus-core</artifactId>
-              <version>${datanucleus-core.version}</version>
+              <artifactId>datanucleuscore</artifactId>
+              <version>${datanucleuscore.version}</version>
             </dependency>
           </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>${maven.war.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.felix</groupId>

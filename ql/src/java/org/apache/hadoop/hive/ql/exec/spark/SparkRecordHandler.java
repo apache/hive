@@ -30,9 +30,9 @@ import org.apache.hadoop.mapred.Reporter;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
-import java.net.URLClassLoader;
-import java.util.Arrays;
 import java.util.Iterator;
+
+import org.apache.hadoop.hive.ql.exec.Utilities;
 
 public abstract class SparkRecordHandler {
   protected static final String CLASS_NAME = SparkRecordHandler.class.getName();
@@ -60,16 +60,7 @@ public abstract class SparkRecordHandler {
     rp = reporter;
 
     LOG.info("maximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
-
-    try {
-      LOG.info("conf classpath = "
-        + Arrays.asList(((URLClassLoader) job.getClassLoader()).getURLs()));
-      LOG.info("thread classpath = "
-        + Arrays.asList(((URLClassLoader) Thread.currentThread()
-        .getContextClassLoader()).getURLs()));
-    } catch (Exception e) {
-      LOG.info("cannot get classpath: " + e.getMessage());
-    }
+    Utilities.tryLoggingClassPaths(job, LOG);
   }
 
   /**

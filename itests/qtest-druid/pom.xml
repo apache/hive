@@ -189,6 +189,13 @@
           <artifactId>hadoop-annotations</artifactId>
           <scope>compile</scope>
           <version>${hadoop.version}</version>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
         </dependency>
         <dependency>
           <groupId>com.google.inject</groupId>

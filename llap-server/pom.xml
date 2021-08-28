@@ -118,6 +118,11 @@
           <groupId>commmons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -134,6 +139,11 @@
           <groupId>commmons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -159,11 +169,21 @@
           <groupId>io.netty</groupId>
           <artifactId>netty</artifactId>
         </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
       </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.orc</groupId>
       <artifactId>orc-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-api</artifactId>
+      <version>${tez.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.tez</groupId>
@@ -263,6 +283,11 @@
           <groupId>commmons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -275,6 +300,11 @@
           <groupId>io.netty</groupId>
           <artifactId>netty-all</artifactId>
         </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -294,6 +324,11 @@
           <groupId>io.netty</groupId>
           <artifactId>netty-all</artifactId>
         </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -319,11 +354,25 @@
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-hadoop2-compat</artifactId>
       <version>${hbase.version}</version>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-client</artifactId>
       <version>${hbase.version}</version>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
@@ -338,6 +387,11 @@
           <groupId>commmons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -353,17 +407,36 @@
           <groupId>commmons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
+<!-- CUSTOM_EXCLUSION_ENTRY -->
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
       </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-common</artifactId>
       <version>${hbase.version}</version>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
       <artifactId>hbase-hadoop-compat</artifactId>
       <version>${hbase.version}</version>
+<!-- CUSTOM_EXCLUSION_BLOCK -->
+<exclusions>
+<exclusion>
+<groupId>jdk.tools</groupId>
+<artifactId>jdk.tools</artifactId>
+</exclusion>
+</exclusions>
     </dependency>
   </dependencies>
 

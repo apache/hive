@@ -370,7 +370,6 @@ public class SerializationUtilities {
    * This is from kryo-serializers package.
    */
   private static class ArrayListSubListSerializer extends com.esotericsoftware.kryo.Serializer<List<?>> {
-
       private Field _parentField;
       private Field _parentOffsetField;
       private Field _sizeField;
@@ -378,14 +377,33 @@ public class SerializationUtilities {
       public ArrayListSubListSerializer() {
           try {
               final Class<?> clazz = Class.forName("java.util.ArrayList$SubList");
-              _parentField = clazz.getDeclaredField("parent");
-              _parentOffsetField = clazz.getDeclaredField( "parentOffset" );
+              _parentField = getParentField(clazz);
+              _parentOffsetField = getOffsetField(clazz);
               _sizeField = clazz.getDeclaredField( "size" );
               _parentField.setAccessible( true );
               _parentOffsetField.setAccessible( true );
               _sizeField.setAccessible( true );
           } catch (final Exception e) {
               throw new RuntimeException(e);
+          }
+      }
+
+      private static Field getParentField(Class clazz) throws NoSuchFieldException {
+          try {
+              // java 9
+              return clazz.getDeclaredField("root");
+          } catch(NoSuchFieldException e) {
+              return clazz.getDeclaredField("parent");
+          }
+      }
+
+      private static Field getOffsetField(Class<?> clazz) throws NoSuchFieldException {
+          try {
+              // up to jdk8 (which also has an "offset" field (we don't need) - therefore we check "parentOffset" first
+              return clazz.getDeclaredField( "parentOffset" );
+          } catch (NoSuchFieldException e) {
+              // jdk9 only has "offset" which is the parent offset
+              return clazz.getDeclaredField( "offset" );
           }
       }
 
@@ -408,7 +426,7 @@ public class SerializationUtilities {
             final int toIndex = fromIndex + _sizeField.getInt( obj );
             output.writeInt(toIndex, true);
         } catch (final Exception e) {
-                throw new RuntimeException(e);
+            throw new RuntimeException(e);
         }
       }
 

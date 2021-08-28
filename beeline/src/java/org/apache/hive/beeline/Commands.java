@@ -169,7 +169,7 @@ public class Commands {
       return false;
     }
 
-    URLClassLoader classLoader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     try {
       beeLine.debug(jarPath + " is added to the local beeline.");
       URLClassLoader newClassLoader = new URLClassLoader(new URL[]{p.toURL()}, classLoader);

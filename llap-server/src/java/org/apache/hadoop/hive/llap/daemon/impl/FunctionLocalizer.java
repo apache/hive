@@ -18,8 +18,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLClassLoader;
+import java.security.AccessController;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,16 +35,17 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.ql.exec.AddToClassPathAction;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionTask;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.UDFClassLoader;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.util.ResourceDownloader;
+import org.apache.tez.common.TezClassLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +63,7 @@ public class FunctionLocalizer implements GenericUDFBridge.UdfWhitelistChecker {
   private final Thread workThread;
   private final File localDir;
   private final Configuration conf;
-  private final URLClassLoader executorClassloader;
+  private final UDFClassLoader executorClassloader;
 
 
   private final IdentityHashMap<Class<?>, Boolean> allowedUdfClasses = new IdentityHashMap<>();
@@ -70,8 +73,9 @@ public class FunctionLocalizer implements GenericUDFBridge.UdfWhitelistChecker {
   public FunctionLocalizer(Configuration conf, String localDir) {
     this.conf = conf;
     this.localDir = new File(localDir, DIR_NAME);
-    this.executorClassloader = (URLClassLoader)Utilities.createUDFClassLoader(
-        (URLClassLoader)Thread.currentThread().getContextClassLoader(), new String[]{});
+    AddToClassPathAction addAction = new AddToClassPathAction(
+        TezClassLoader.getInstance(), Collections.emptyList(), true);
+    this.executorClassloader = AccessController.doPrivileged(addAction);
     this.workThread = new Thread(new Runnable() {
       @Override
       public void run() {
@@ -223,7 +227,8 @@ public class FunctionLocalizer implements GenericUDFBridge.UdfWhitelistChecker {
     recentlyLocalizedJars.clear();
     ClassLoader updatedCl = null;
     try {
-      updatedCl = Utilities.addToClassPath(executorClassloader, jars);
+      AddToClassPathAction addAction = new AddToClassPathAction(executorClassloader, Arrays.asList(jars));
+      updatedCl = AccessController.doPrivileged(addAction);
       if (LOG.isInfoEnabled()) {
         LOG.info("Added " + jars.length + " jars to classpath");
       }

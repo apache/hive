@@ -293,7 +293,7 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
         } else {
           sawBase = true;
           baseDirs[h] = dirName;
-          Assert.assertTrue(baseDirs[i].matches("base_.*"));
+          Assert.assertTrue(baseDirs[h].matches("base_.*"));
         }
       }
       Assert.assertEquals(1, deltaCount);
