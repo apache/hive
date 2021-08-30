@@ -67,6 +67,7 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     config.setJdbcUrl(driverUrl);
     config.setUsername(user);
     config.setPassword(passwd);
+    config.setLeakDetectionThreshold(3600*1000);
 
     //https://github.com/brettwooldridge/HikariCP
     config.setConnectionTimeout(connectionTimeout);
