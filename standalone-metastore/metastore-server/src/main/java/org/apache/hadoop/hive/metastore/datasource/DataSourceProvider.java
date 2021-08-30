@@ -69,4 +69,8 @@ public interface DataSourceProvider {
     return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
   }
 
+  static int getMetastoreLeakDetectionThreshold(Configuration conf) throws SQLException {
+    return MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.CONNECTION_LEAK_DETECTION_THRESHOLD);
+  }
+
 }

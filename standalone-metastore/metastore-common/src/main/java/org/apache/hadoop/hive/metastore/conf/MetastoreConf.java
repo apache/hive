@@ -602,6 +602,13 @@ public class MetastoreConf {
     CONNECTION_USER_NAME("javax.jdo.option.ConnectionUserName",
         "javax.jdo.option.ConnectionUserName", "APP",
         "Username to use against metastore database"),
+    CONNECTION_LEAK_DETECTION_THRESHOLD("javax.jdo.option.ConnectionLeakDetectionThreshold",
+            "javax.jdo.option.ConnectionLeakDetectionThreshold",
+            3600000,
+            "This property controls the amount of time that a connection can be out of the pool\n" +
+                    "before a message is logged indicating a possible connection leak.\n" +
+                    "A value of 0 means leak detection is disabled.\n" +
+                    "Lowest acceptable value for enabling leak detection is 2000 (2 seconds). Default: 3600000"),
     CREATE_TABLES_AS_ACID("metastore.create.as.acid", "hive.create.as.acid", false,
         "Whether the eligible tables should be created as full ACID by default. Does \n" +
             "not apply to external tables, the ones using storage handlers, etc."),

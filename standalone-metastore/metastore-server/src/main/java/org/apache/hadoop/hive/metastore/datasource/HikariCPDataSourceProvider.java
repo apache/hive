@@ -49,6 +49,7 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(hdpConfig);
     String user = DataSourceProvider.getMetastoreJdbcUser(hdpConfig);
     String passwd = DataSourceProvider.getMetastoreJdbcPasswd(hdpConfig);
+    int leakDetectionThreshold = DataSourceProvider.getMetastoreLeakDetectionThreshold(hdpConfig);
 
     int maxPoolSize = MetastoreConf.getIntVar(hdpConfig,
         MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
@@ -67,7 +68,7 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     config.setJdbcUrl(driverUrl);
     config.setUsername(user);
     config.setPassword(passwd);
-    config.setLeakDetectionThreshold(3600*1000);
+    config.setLeakDetectionThreshold(leakDetectionThreshold);
 
     //https://github.com/brettwooldridge/HikariCP
     config.setConnectionTimeout(connectionTimeout);
