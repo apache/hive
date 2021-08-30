@@ -41,6 +41,7 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
 
   static final String HIKARI = "hikaricp";
   private static final String CONNECTION_TIMEOUT_PROPERTY = HIKARI + ".connectionTimeout";
+  private static final String LEAK_DETECTION_THRESHOLD = HIKARI + ".leakDetectionThreshold";
 
   @Override
   public DataSource create(Configuration hdpConfig) throws SQLException {
@@ -49,7 +50,6 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(hdpConfig);
     String user = DataSourceProvider.getMetastoreJdbcUser(hdpConfig);
     String passwd = DataSourceProvider.getMetastoreJdbcPasswd(hdpConfig);
-    int leakDetectionThreshold = DataSourceProvider.getMetastoreLeakDetectionThreshold(hdpConfig);
 
     int maxPoolSize = MetastoreConf.getIntVar(hdpConfig,
         MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
@@ -57,6 +57,7 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     Properties properties = replacePrefix(
         DataSourceProvider.getPrefixedProperties(hdpConfig, HIKARI));
     long connectionTimeout = hdpConfig.getLong(CONNECTION_TIMEOUT_PROPERTY, 30000L);
+    long leakDetectionThreshold = hdpConfig.getLong(LEAK_DETECTION_THRESHOLD, 3600000);
 
     HikariConfig config;
     try {
