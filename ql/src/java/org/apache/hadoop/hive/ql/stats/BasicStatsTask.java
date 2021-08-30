@@ -310,12 +310,14 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
         final List<Future<Void>> futures = Lists.newLinkedList();
         List<BasicStatsProcessor> processors = Lists.newLinkedList();
+        List<TransactionalStatsProcessor> transactionalStatsProcessors = Lists.newLinkedList();
 
         try {
           for(final Partition partn : partitions) {
             Partish p;
             BasicStatsProcessor bsp = new BasicStatsProcessor(p = new Partish.PPart(table, partn), work, conf, followedColStats);
             processors.add(bsp);
+            transactionalStatsProcessors.add(new TransactionalStatsProcessor(txnManager, p));
 
             futures.add(pool.submit(new Callable<Void>() {
               @Override
@@ -357,6 +359,10 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
             console.printInfo("Partition " + basicStatsProcessor.partish.getPartition().getSpec() + " stats: [" + toString(basicStatsProcessor.partish.getPartParameters()) + ']');
           }
           LOG.info("Partition " + basicStatsProcessor.partish.getPartition().getSpec() + " stats: [" + toString(basicStatsProcessor.partish.getPartParameters()) + ']');
+        }
+
+        for (TransactionalStatsProcessor transactionalStatsProcessor : transactionalStatsProcessors) {
+          transactionalStatsProcessor.process(statsAggregator);
         }
 
         if (!updates.isEmpty()) {
