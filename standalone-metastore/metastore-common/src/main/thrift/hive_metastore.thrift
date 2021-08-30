@@ -1090,6 +1090,13 @@ struct ReplLastIdInfo {
     5: optional list<string> partitionList,
 }
 
+struct AffectedRowsRequest {
+    1: required string dbName,
+    2: required string tableName,
+    3: optional string partName,
+    4: required i64 rowsAffected,
+}
+
 struct CommitTxnRequest {
     1: required i64 txnid,
     2: optional string replPolicy,
@@ -1101,7 +1108,7 @@ struct CommitTxnRequest {
     5: optional CommitTxnKeyValue keyValue,
     6: optional bool exclWriteEnabled = true,
     7: optional TxnType txn_type,
-    8: optional map<string, i64> rowsAffected,
+    8: optional set<AffectedRowsRequest> rowsAffected,
 }
 
 struct ReplTblWriteIdStateRequest {

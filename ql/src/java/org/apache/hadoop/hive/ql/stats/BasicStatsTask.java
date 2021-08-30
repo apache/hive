@@ -239,7 +239,11 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         String value = statsAggregator.aggregateStats(prefix, ROW_COUNT);
         if (value != null && !value.isEmpty()) {
           long longValue = Long.parseLong(value);
-          txnManager.setRowsAffected(partish.getTable().getFullyQualifiedName(), longValue);
+          txnManager.setRowsAffected(
+              partish.getTable().getDbName(),
+              partish.getTable().getTableName(),
+              partish.getPartition().getName(),
+              longValue);
         }
       }
     }

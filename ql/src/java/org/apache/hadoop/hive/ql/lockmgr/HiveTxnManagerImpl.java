@@ -18,13 +18,16 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.AffectedRowsRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.ql.Context;
@@ -42,6 +45,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 /**
  * An implementation HiveTxnManager that includes internal methods that all
  * transaction managers need to implement but that we don't want to expose to
@@ -50,7 +55,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
 
   protected HiveConf conf;
-  protected Map<String, Long> rowsAffected = new HashMap<>();
+  protected Set<AffectedRowsRequest> rowsAffected = new HashSet<>();
 
   void setHiveConf(HiveConf c) {
     setConf(c);
@@ -232,7 +237,13 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
   }
 
   @Override
-  public void setRowsAffected(String tableName, long numRows) {
-    rowsAffected.put(tableName, numRows);
+  public void setRowsAffected(String dbName, String tableName, String partitionName, long numRows) {
+    AffectedRowsRequest affectedRowsRequest = new AffectedRowsRequest();
+    affectedRowsRequest.setDbName(dbName);
+    affectedRowsRequest.setTableName(tableName);
+    if (isNotBlank(partitionName)) {
+      affectedRowsRequest.setPartName(partitionName);
+    }
+    rowsAffected.add(affectedRowsRequest);
   }
 }
