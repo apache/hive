@@ -63,20 +63,20 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     DeltaFilesMetricReporter.init(conf);
 
     TezCounters tezCounters = new TezCounters();
-    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "acid/p=1").setValue(200);
-    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "acid/p=2").setValue(100);
-    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "acid/p=3").setValue(150);
-    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "acid_v2").setValue(250);
+    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "default.acid/{p=1}").setValue(200);
+    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "default.acid/{p=2}").setValue(100);
+    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "default.acid/{p=3}").setValue(150);
+    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "default.acid_v2").setValue(250);
 
-    tezCounters.findCounter(NUM_DELTAS + "", "acid/p=1").setValue(150);
-    tezCounters.findCounter(NUM_DELTAS + "", "acid/p=2").setValue(100);
-    tezCounters.findCounter(NUM_DELTAS + "", "acid/p=3").setValue(250);
-    tezCounters.findCounter(NUM_DELTAS + "", "acid_v2").setValue(200);
+    tezCounters.findCounter(NUM_DELTAS + "", "default.acid/{p=1}").setValue(150);
+    tezCounters.findCounter(NUM_DELTAS + "", "default.acid/{p=2}").setValue(100);
+    tezCounters.findCounter(NUM_DELTAS + "", "default.acid/{p=3}").setValue(250);
+    tezCounters.findCounter(NUM_DELTAS + "", "default.acid_v2").setValue(200);
 
-    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "acid/p=1").setValue(250);
-    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "acid/p=2").setValue(200);
-    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "acid/p=3").setValue(150);
-    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "acid_v2").setValue(100);
+    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "default.acid/{p=1}").setValue(250);
+    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "default.acid/{p=2}").setValue(200);
+    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "default.acid/{p=3}").setValue(150);
+    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "default.acid_v2").setValue(100);
 
     DeltaFilesMetricReporter.getInstance().submit(tezCounters, null);
     Thread.sleep(1000);
@@ -93,24 +93,24 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     initAndCollectFirstMetrics();
 
     verifyMetricsMatch(new HashMap<String, String>() {{
-      put("acid/p=1", "200");
-      put("acid/p=2", "100");
-      put("acid/p=3", "150");
-      put("acid_v2", "250");
+      put("default.acid/{p=1}", "200");
+      put("default.acid/{p=2}", "100");
+      put("default.acid/{p=3}", "150");
+      put("default.acid_v2", "250");
     }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS));
 
     verifyMetricsMatch(new HashMap<String, String>() {{
-      put("acid/p=1", "150");
-      put("acid/p=2", "100");
-      put("acid/p=3", "250");
-      put("acid_v2", "200");
+      put("default.acid/{p=1}", "150");
+      put("default.acid/{p=2}", "100");
+      put("default.acid/{p=3}", "250");
+      put("default.acid_v2", "200");
     }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS));
 
     verifyMetricsMatch(new HashMap<String, String>() {{
-      put("acid/p=1", "250");
-      put("acid/p=2", "200");
-      put("acid/p=3", "150");
-      put("acid_v2", "100");
+      put("default.acid/{p=1}", "250");
+      put("default.acid/{p=2}", "200");
+      put("default.acid/{p=3}", "150");
+      put("default.acid_v2", "100");
     }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS));
   }
 
@@ -120,14 +120,14 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     initAndCollectFirstMetrics();
 
     TezCounters tezCounters = new TezCounters();
-    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "acid/p=1").setValue(50);
-    tezCounters.findCounter(NUM_DELTAS + "", "acid/p=1").setValue(50);
-    tezCounters.findCounter(NUM_DELTAS + "", "acid/p=3").setValue(0);
-    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "acid/p=1").setValue(50);
-    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "acid/p=2").setValue(0);
-    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "acid/p=3").setValue(50);
+    tezCounters.findCounter(NUM_OBSOLETE_DELTAS + "", "default.acid/{p=1}").setValue(50);
+    tezCounters.findCounter(NUM_DELTAS + "", "default.acid/{p=1}").setValue(50);
+    tezCounters.findCounter(NUM_DELTAS + "", "default.acid/{p=3}").setValue(0);
+    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "default.acid/{p=1}").setValue(50);
+    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "default.acid/{p=2}").setValue(0);
+    tezCounters.findCounter(NUM_SMALL_DELTAS + "", "default.acid/{p=3}").setValue(50);
 
-    // the next pass will be from a query that touches only acid/p=1 and acid/p=3
+    // the next pass will be from a query that touches only acid/{p=1} and acid/{p=3}
     ReadEntity p1 = getReadEntity("default@acid@p=1");
     // don't update p2
     ReadEntity p3 = getReadEntity("default@acid@p=3");
@@ -136,24 +136,24 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     Thread.sleep(1000);
 
     verifyMetricsMatch(new HashMap<String, String>() {{
-      put("acid/p=1", "50"); // updated
-      put("acid/p=2", "100");
+      put("default.acid/{p=1}", "50"); // updated
+      put("default.acid/{p=2}", "100");
       // p=3 was removed since the query touched it and it didn't have enough deltas to be included in counters
-      put("acid_v2", "250");
+      put("default.acid_v2", "250");
     }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS));
 
     verifyMetricsMatch(new HashMap<String, String>() {{
-      put("acid/p=1", "50"); // updated
-      put("acid/p=2", "100");
+      put("default.acid/{p=1}", "50"); // updated
+      put("default.acid/{p=2}", "100");
       // p=3 was removed since the query touched it and it didn't have enough deltas (0) to be included in counters
-      put("acid_v2", "200");
+      put("default.acid_v2", "200");
     }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS));
 
     verifyMetricsMatch(new HashMap<String, String>() {{
-      put("acid/p=1", "50");  // updated
-      put("acid/p=2", "200"); // not updated since the query didn't touch p=2
-      put("acid/p=3", "50");  // updated
-      put("acid_v2", "100");
+      put("default.acid/{p=1}", "50");  // updated
+      put("default.acid/{p=2}", "200"); // not updated since the query didn't touch p=2
+      put("default.acid/{p=3}", "50");  // updated
+      put("default.acid_v2", "100");
     }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS));
   }
 
@@ -165,12 +165,12 @@ public class TestDeltaFilesMetrics extends CompactorTest  {
     Thread.sleep(5000);
 
     TezCounters tezCounters = new TezCounters();
-    tezCounters.findCounter(NUM_DELTAS + "", "acid/p=2").setValue(150);
+    tezCounters.findCounter(NUM_DELTAS + "", "default.acid/{p=2}").setValue(150);
     DeltaFilesMetricReporter.getInstance().submit(tezCounters, null);
     Thread.sleep(1000);
 
     verifyMetricsMatch(new HashMap<String, String>() {{
-      put("acid/p=2", "150");
+      put("default.acid/{p=2}", "150");
     }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS));
   }
 
