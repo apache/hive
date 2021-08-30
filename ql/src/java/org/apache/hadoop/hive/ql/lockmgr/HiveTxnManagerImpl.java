@@ -244,6 +244,7 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
     if (isNotBlank(partitionName)) {
       affectedRowsRequest.setPartName(partitionName);
     }
+    affectedRowsRequest.setRowsAffected(numRows);
     rowsAffected.add(affectedRowsRequest);
   }
 }

@@ -1541,6 +1541,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         if (txnType.get() != TxnType.READ_ONLY && !isReplayedReplTxn) {
           moveTxnComponentsToCompleted(stmt, txnid, isUpdateDelete);
+          if (rqst.isSetRowsAffected() && rqst.getRowsAffectedSize() > 0) {
+            
+          }
         } else if (isReplayedReplTxn) {
           if (rqst.isSetWriteEventInfos()) {
             String sql = String.format(COMPL_TXN_COMPONENTS_INSERT_QUERY, txnid, quoteChar(isUpdateDelete));

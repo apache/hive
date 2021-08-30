@@ -242,7 +242,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
           txnManager.setRowsAffected(
               partish.getTable().getDbName(),
               partish.getTable().getTableName(),
-              partish.getPartition().getName(),
+              partish.getPartition() == null ? null : partish.getPartition().getName(),
               longValue);
         }
       }

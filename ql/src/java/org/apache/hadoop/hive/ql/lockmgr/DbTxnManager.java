@@ -539,6 +539,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         commitTxnRequest.setTxn_type(TxnType.DEFAULT);
       }
       if (!rowsAffected.isEmpty()) {
+        commitTxnRequest.setRowsAffectedIsSet(true);
         commitTxnRequest.setRowsAffected(rowsAffected);
       }
       getMS().commitTxn(commitTxnRequest);
