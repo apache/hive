@@ -88,9 +88,9 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
     Thread.sleep(1000);
 
     verifyMetricsMatch(new HashMap<String, String>() {{
-          put(tableName + Path.SEPARATOR + partitionTomorrow, "3");
-          put(tableName + Path.SEPARATOR + partitionYesterday, "4");
-          put(tableName + Path.SEPARATOR + partitionToday, "5");
+      put("default." + tableName + Path.SEPARATOR + "{" + partitionTomorrow + "}", "3");
+      put("default." + tableName + Path.SEPARATOR + "{" + partitionYesterday + "}", "4");
+      put("default." + tableName + Path.SEPARATOR + "{" + partitionToday + "}", "5");
         }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS));
 
     Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS).size());
@@ -103,9 +103,9 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
     Thread.sleep(1000);
 
     verifyMetricsMatch(new HashMap<String, String>() {{
-          put(tableName + Path.SEPARATOR + partitionTomorrow, "3");
-          put(tableName + Path.SEPARATOR + partitionYesterday, "4");
-          put(tableName + Path.SEPARATOR + partitionToday, "5");
+      put("default." + tableName + Path.SEPARATOR + "{" + partitionTomorrow + "}", "3");
+      put("default." + tableName + Path.SEPARATOR + "{" + partitionYesterday + "}", "4");
+      put("default." + tableName + Path.SEPARATOR + "{" + partitionToday + "}", "5");
         }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS));
 
     Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS).size());
@@ -124,7 +124,7 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
     Thread.sleep(1000);
 
     verifyMetricsMatch(new HashMap<String, String>() {{
-          put(tableName + Path.SEPARATOR + partitionToday, "1");
+          put("default." + tableName + Path.SEPARATOR + "{" + partitionToday + "}", "1");
         }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS));
   }
 
