@@ -1101,6 +1101,7 @@ struct CommitTxnRequest {
     5: optional CommitTxnKeyValue keyValue,
     6: optional bool exclWriteEnabled = true,
     7: optional TxnType txn_type,
+    8: optional map<string, i64> rowsAffected,
 }
 
 struct ReplTblWriteIdStateRequest {
