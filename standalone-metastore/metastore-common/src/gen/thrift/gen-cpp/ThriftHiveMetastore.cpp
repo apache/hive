@@ -9657,11 +9657,11 @@ uint32_t ThriftHiveMetastore_add_check_constraint_presult::read(::apache::thrift
 }
 
 
-ThriftHiveMetastore_ctas_query_dryrun_args::~ThriftHiveMetastore_ctas_query_dryrun_args() noexcept {
+ThriftHiveMetastore_translate_table_dryrun_args::~ThriftHiveMetastore_translate_table_dryrun_args() noexcept {
 }
 
 
-uint32_t ThriftHiveMetastore_ctas_query_dryrun_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_translate_table_dryrun_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -9702,10 +9702,10 @@ uint32_t ThriftHiveMetastore_ctas_query_dryrun_args::read(::apache::thrift::prot
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_ctas_query_dryrun_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_translate_table_dryrun_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_ctas_query_dryrun_args");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_translate_table_dryrun_args");
 
   xfer += oprot->writeFieldBegin("tbl", ::apache::thrift::protocol::T_STRUCT, 1);
   xfer += this->tbl.write(oprot);
@@ -9717,14 +9717,14 @@ uint32_t ThriftHiveMetastore_ctas_query_dryrun_args::write(::apache::thrift::pro
 }
 
 
-ThriftHiveMetastore_ctas_query_dryrun_pargs::~ThriftHiveMetastore_ctas_query_dryrun_pargs() noexcept {
+ThriftHiveMetastore_translate_table_dryrun_pargs::~ThriftHiveMetastore_translate_table_dryrun_pargs() noexcept {
 }
 
 
-uint32_t ThriftHiveMetastore_ctas_query_dryrun_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_translate_table_dryrun_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_ctas_query_dryrun_pargs");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_translate_table_dryrun_pargs");
 
   xfer += oprot->writeFieldBegin("tbl", ::apache::thrift::protocol::T_STRUCT, 1);
   xfer += (*(this->tbl)).write(oprot);
@@ -9736,11 +9736,11 @@ uint32_t ThriftHiveMetastore_ctas_query_dryrun_pargs::write(::apache::thrift::pr
 }
 
 
-ThriftHiveMetastore_ctas_query_dryrun_result::~ThriftHiveMetastore_ctas_query_dryrun_result() noexcept {
+ThriftHiveMetastore_translate_table_dryrun_result::~ThriftHiveMetastore_translate_table_dryrun_result() noexcept {
 }
 
 
-uint32_t ThriftHiveMetastore_ctas_query_dryrun_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_translate_table_dryrun_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -9813,11 +9813,11 @@ uint32_t ThriftHiveMetastore_ctas_query_dryrun_result::read(::apache::thrift::pr
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_ctas_query_dryrun_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_translate_table_dryrun_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_ctas_query_dryrun_result");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_translate_table_dryrun_result");
 
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
@@ -9846,11 +9846,11 @@ uint32_t ThriftHiveMetastore_ctas_query_dryrun_result::write(::apache::thrift::p
 }
 
 
-ThriftHiveMetastore_ctas_query_dryrun_presult::~ThriftHiveMetastore_ctas_query_dryrun_presult() noexcept {
+ThriftHiveMetastore_translate_table_dryrun_presult::~ThriftHiveMetastore_translate_table_dryrun_presult() noexcept {
 }
 
 
-uint32_t ThriftHiveMetastore_ctas_query_dryrun_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_translate_table_dryrun_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -65352,18 +65352,18 @@ void ThriftHiveMetastoreClient::recv_add_check_constraint()
   return;
 }
 
-void ThriftHiveMetastoreClient::ctas_query_dryrun(Table& _return, const Table& tbl)
+void ThriftHiveMetastoreClient::translate_table_dryrun(Table& _return, const Table& tbl)
 {
-  send_ctas_query_dryrun(tbl);
-  recv_ctas_query_dryrun(_return);
+  send_translate_table_dryrun(tbl);
+  recv_translate_table_dryrun(_return);
 }
 
-void ThriftHiveMetastoreClient::send_ctas_query_dryrun(const Table& tbl)
+void ThriftHiveMetastoreClient::send_translate_table_dryrun(const Table& tbl)
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("ctas_query_dryrun", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("translate_table_dryrun", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  ThriftHiveMetastore_ctas_query_dryrun_pargs args;
+  ThriftHiveMetastore_translate_table_dryrun_pargs args;
   args.tbl = &tbl;
   args.write(oprot_);
 
@@ -65372,7 +65372,7 @@ void ThriftHiveMetastoreClient::send_ctas_query_dryrun(const Table& tbl)
   oprot_->getTransport()->flush();
 }
 
-void ThriftHiveMetastoreClient::recv_ctas_query_dryrun(Table& _return)
+void ThriftHiveMetastoreClient::recv_translate_table_dryrun(Table& _return)
 {
 
   int32_t rseqid = 0;
@@ -65392,12 +65392,12 @@ void ThriftHiveMetastoreClient::recv_ctas_query_dryrun(Table& _return)
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("ctas_query_dryrun") != 0) {
+  if (fname.compare("translate_table_dryrun") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  ThriftHiveMetastore_ctas_query_dryrun_presult result;
+  ThriftHiveMetastore_translate_table_dryrun_presult result;
   result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
@@ -65419,7 +65419,7 @@ void ThriftHiveMetastoreClient::recv_ctas_query_dryrun(Table& _return)
   if (result.__isset.o4) {
     throw result.o4;
   }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "ctas_query_dryrun failed: unknown result");
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "translate_table_dryrun failed: unknown result");
 }
 
 void ThriftHiveMetastoreClient::drop_table(const std::string& dbname, const std::string& name, const bool deleteData)
@@ -81908,30 +81908,30 @@ void ThriftHiveMetastoreProcessor::process_add_check_constraint(int32_t seqid, :
   }
 }
 
-void ThriftHiveMetastoreProcessor::process_ctas_query_dryrun(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void ThriftHiveMetastoreProcessor::process_translate_table_dryrun(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = nullptr;
   if (this->eventHandler_.get() != nullptr) {
-    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.ctas_query_dryrun", callContext);
+    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.translate_table_dryrun", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.ctas_query_dryrun");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.translate_table_dryrun");
 
   if (this->eventHandler_.get() != nullptr) {
-    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.ctas_query_dryrun");
+    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.translate_table_dryrun");
   }
 
-  ThriftHiveMetastore_ctas_query_dryrun_args args;
+  ThriftHiveMetastore_translate_table_dryrun_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != nullptr) {
-    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.ctas_query_dryrun", bytes);
+    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.translate_table_dryrun", bytes);
   }
 
-  ThriftHiveMetastore_ctas_query_dryrun_result result;
+  ThriftHiveMetastore_translate_table_dryrun_result result;
   try {
-    iface_->ctas_query_dryrun(result.success, args.tbl);
+    iface_->translate_table_dryrun(result.success, args.tbl);
     result.__isset.success = true;
   } catch (AlreadyExistsException &o1) {
     result.o1 = o1;
@@ -81947,11 +81947,11 @@ void ThriftHiveMetastoreProcessor::process_ctas_query_dryrun(int32_t seqid, ::ap
     result.__isset.o4 = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != nullptr) {
-      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.ctas_query_dryrun");
+      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.translate_table_dryrun");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("ctas_query_dryrun", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("translate_table_dryrun", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -81960,17 +81960,17 @@ void ThriftHiveMetastoreProcessor::process_ctas_query_dryrun(int32_t seqid, ::ap
   }
 
   if (this->eventHandler_.get() != nullptr) {
-    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.ctas_query_dryrun");
+    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.translate_table_dryrun");
   }
 
-  oprot->writeMessageBegin("ctas_query_dryrun", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("translate_table_dryrun", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != nullptr) {
-    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.ctas_query_dryrun", bytes);
+    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.translate_table_dryrun", bytes);
   }
 }
 
@@ -98816,19 +98816,19 @@ void ThriftHiveMetastoreConcurrentClient::recv_add_check_constraint(const int32_
   } // end while(true)
 }
 
-void ThriftHiveMetastoreConcurrentClient::ctas_query_dryrun(Table& _return, const Table& tbl)
+void ThriftHiveMetastoreConcurrentClient::translate_table_dryrun(Table& _return, const Table& tbl)
 {
-  int32_t seqid = send_ctas_query_dryrun(tbl);
-  recv_ctas_query_dryrun(_return, seqid);
+  int32_t seqid = send_translate_table_dryrun(tbl);
+  recv_translate_table_dryrun(_return, seqid);
 }
 
-int32_t ThriftHiveMetastoreConcurrentClient::send_ctas_query_dryrun(const Table& tbl)
+int32_t ThriftHiveMetastoreConcurrentClient::send_translate_table_dryrun(const Table& tbl)
 {
   int32_t cseqid = this->sync_->generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(this->sync_.get());
-  oprot_->writeMessageBegin("ctas_query_dryrun", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("translate_table_dryrun", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  ThriftHiveMetastore_ctas_query_dryrun_pargs args;
+  ThriftHiveMetastore_translate_table_dryrun_pargs args;
   args.tbl = &tbl;
   args.write(oprot_);
 
@@ -98840,7 +98840,7 @@ int32_t ThriftHiveMetastoreConcurrentClient::send_ctas_query_dryrun(const Table&
   return cseqid;
 }
 
-void ThriftHiveMetastoreConcurrentClient::recv_ctas_query_dryrun(Table& _return, const int32_t seqid)
+void ThriftHiveMetastoreConcurrentClient::recv_translate_table_dryrun(Table& _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -98869,7 +98869,7 @@ void ThriftHiveMetastoreConcurrentClient::recv_ctas_query_dryrun(Table& _return,
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
       }
-      if (fname.compare("ctas_query_dryrun") != 0) {
+      if (fname.compare("translate_table_dryrun") != 0) {
         iprot_->skip(::apache::thrift::protocol::T_STRUCT);
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
@@ -98878,7 +98878,7 @@ void ThriftHiveMetastoreConcurrentClient::recv_ctas_query_dryrun(Table& _return,
         using ::apache::thrift::protocol::TProtocolException;
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
-      ThriftHiveMetastore_ctas_query_dryrun_presult result;
+      ThriftHiveMetastore_translate_table_dryrun_presult result;
       result.success = &_return;
       result.read(iprot_);
       iprot_->readMessageEnd();
@@ -98906,7 +98906,7 @@ void ThriftHiveMetastoreConcurrentClient::recv_ctas_query_dryrun(Table& _return,
         throw result.o4;
       }
       // in a bad state, don't commit
-      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "ctas_query_dryrun failed: unknown result");
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "translate_table_dryrun failed: unknown result");
     }
     // seqid != rseqid
     this->sync_->updatePending(fname, mtype, rseqid);

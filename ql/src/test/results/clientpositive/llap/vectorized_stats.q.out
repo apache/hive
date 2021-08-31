@@ -162,6 +162,9 @@ STAGE PLANS:
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      table properties:
+        bucketing_version 2
+        transactional false
 
   Stage: Stage-3
     Stats Work
@@ -472,6 +475,9 @@ STAGE PLANS:
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      table properties:
+        bucketing_version 2
+        transactional false
 
   Stage: Stage-3
     Stats Work
@@ -782,6 +788,9 @@ STAGE PLANS:
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      table properties:
+        bucketing_version 2
+        transactional false
 
   Stage: Stage-3
     Stats Work
@@ -1092,6 +1101,9 @@ STAGE PLANS:
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      table properties:
+        bucketing_version 2
+        transactional false
 
   Stage: Stage-3
     Stats Work
@@ -1403,6 +1415,9 @@ STAGE PLANS:
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      table properties:
+        bucketing_version 2
+        transactional false
 
   Stage: Stage-3
     Stats Work
@@ -1714,6 +1729,9 @@ STAGE PLANS:
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      table properties:
+        bucketing_version 2
+        transactional false
 
   Stage: Stage-3
     Stats Work

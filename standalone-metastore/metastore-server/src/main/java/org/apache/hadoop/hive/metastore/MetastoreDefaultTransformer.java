@@ -647,14 +647,17 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
         newTable.setParameters(params);
         LOG.info("Modified table params are:" + params.toString());
 
-        if (!table.isSetSd() || table.getSd().getLocation() == null) {
+        if (getLocation(table) == null) {
           try {
-            Path newPath = hmsHandler.getWh().getDefaultTablePath(db, table.getTableName(), true);
-            newTable.getSd().setLocation(newPath.toString());
-            LOG.info("Modified location from null to " + newPath);
+            Path location = getTranslatedToExternalTableDefaultLocation(db, newTable);
+            newTable.getSd().setLocation(location.toString());
           } catch (Exception e) {
-            LOG.warn("Exception determining external table location:" + e.getMessage());
+            throw new MetaException("Exception determining external table location:" + e.getMessage());
           }
+        } else {
+          // table with explicitly set location
+          // has "translated" properties and will be removed on drop
+          // should we check tbl directory existence?
         }
       } else { // ACID table
         if (processorCapabilities == null || processorCapabilities.isEmpty()) {

@@ -666,16 +666,16 @@ public class Hive {
 
 
   /**
-   * Dry run that translates table for ctas query
+   * Dry run that translates table
    *
    * @param tbl
    *          a table object
    * @throws HiveException
    */
-  public Table getCTASQueryDryrun(org.apache.hadoop.hive.metastore.api.Table tbl) throws HiveException {
+  public Table getTranslateTableDryrun(org.apache.hadoop.hive.metastore.api.Table tbl) throws HiveException {
     org.apache.hadoop.hive.metastore.api.Table tTable = null;
     try {
-      tTable  = getMSC().getCTASQueryDryrun(tbl);
+      tTable  = getMSC().getTranslateTableDryrun(tbl);
     } catch (AlreadyExistsException e) {
       throw new HiveException(e);
     } catch (Exception e) {

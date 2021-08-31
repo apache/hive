@@ -474,31 +474,25 @@ public abstract class TaskCompiler {
       loc = cmv.getLocation();
     }
     Path location = (loc == null) ? getDefaultCtasLocation(pCtx) : new Path(loc);
-    boolean isExternal = false;
-    boolean isAcid = false;
-    if (pCtx.getQueryProperties().isCTAS()) {
-      isExternal = pCtx.getCreateTable().isExternal();
-      isAcid = pCtx.getCreateTable().getTblProps().getOrDefault(
-              hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false").equalsIgnoreCase("true") ||
-              pCtx.getCreateTable().getTblProps().containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-      if ((HiveConf.getBoolVar(conf, HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL) || (isExternal || !isAcid))) {
-        CreateTableDesc ctd = pCtx.getCreateTable();
-        ctd.getTblProps().put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false"); // create as external table
-        try {
-          Table table = ctd.toTable(conf);
-          table = db.getCTASQueryDryrun(table.getTTable());
-          org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
-          if (tTable.getSd() != null  && tTable.getSd().getLocation() != null) {
-            location = new Path(tTable.getSd().getLocation());
-            ctd.setLocation(location.toString());
-          }
-          ctd.setExternal(TableType.EXTERNAL_TABLE.toString().equals(tTable.getTableType()));
-          ctd.setTblProps(tTable.getParameters());
-        } catch (HiveException ex) {
-          throw new SemanticException(ex);
+    boolean isExternal = pCtx.getCreateTable().isExternal();
+    boolean isAcid = pCtx.getCreateTable().getTblProps().getOrDefault(
+            hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false").equalsIgnoreCase("true") ||
+            pCtx.getCreateTable().getTblProps().containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    if ((HiveConf.getBoolVar(conf, HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL) || isExternal) && !isAcid) {
+      CreateTableDesc ctd = pCtx.getCreateTable();
+      ctd.getTblProps().put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false"); // create as external table
+      try {
+        Table table = ctd.toTable(conf);
+        table = db.getTranslateTableDryrun(table.getTTable());
+        org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
+        if (tTable.getSd() != null  && tTable.getSd().getLocation() != null) {
+          location = new Path(tTable.getSd().getLocation());
         }
-        pCtx.setCreateTable(ctd);
+        ctd.fromTable(tTable);
+      } catch (HiveException ex) {
+        throw new SemanticException(ex);
       }
+      pCtx.setCreateTable(ctd);
     }
     if (txnId != null) {
       dataSink.setDirName(location);

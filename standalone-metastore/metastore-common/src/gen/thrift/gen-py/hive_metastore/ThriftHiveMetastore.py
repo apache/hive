@@ -349,7 +349,7 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
-    def ctas_query_dryrun(self, tbl):
+    def translate_table_dryrun(self, tbl):
         """
         Parameters:
          - tbl
@@ -3720,24 +3720,24 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o2
         return
 
-    def ctas_query_dryrun(self, tbl):
+    def translate_table_dryrun(self, tbl):
         """
         Parameters:
          - tbl
 
         """
-        self.send_ctas_query_dryrun(tbl)
-        return self.recv_ctas_query_dryrun()
+        self.send_translate_table_dryrun(tbl)
+        return self.recv_translate_table_dryrun()
 
-    def send_ctas_query_dryrun(self, tbl):
-        self._oprot.writeMessageBegin('ctas_query_dryrun', TMessageType.CALL, self._seqid)
-        args = ctas_query_dryrun_args()
+    def send_translate_table_dryrun(self, tbl):
+        self._oprot.writeMessageBegin('translate_table_dryrun', TMessageType.CALL, self._seqid)
+        args = translate_table_dryrun_args()
         args.tbl = tbl
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_ctas_query_dryrun(self):
+    def recv_translate_table_dryrun(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -3745,7 +3745,7 @@ class Client(fb303.FacebookService.Client, Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = ctas_query_dryrun_result()
+        result = translate_table_dryrun_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
@@ -3758,7 +3758,7 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o3
         if result.o4 is not None:
             raise result.o4
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "ctas_query_dryrun failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "translate_table_dryrun failed: unknown result")
 
     def drop_table(self, dbname, name, deleteData):
         """
@@ -11908,7 +11908,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         self._processMap["add_not_null_constraint"] = Processor.process_add_not_null_constraint
         self._processMap["add_default_constraint"] = Processor.process_add_default_constraint
         self._processMap["add_check_constraint"] = Processor.process_add_check_constraint
-        self._processMap["ctas_query_dryrun"] = Processor.process_ctas_query_dryrun
+        self._processMap["translate_table_dryrun"] = Processor.process_translate_table_dryrun
         self._processMap["drop_table"] = Processor.process_drop_table
         self._processMap["drop_table_with_environment_context"] = Processor.process_drop_table_with_environment_context
         self._processMap["truncate_table"] = Processor.process_truncate_table
@@ -13360,13 +13360,13 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         oprot.writeMessageEnd()
         oprot.trans.flush()
 
-    def process_ctas_query_dryrun(self, seqid, iprot, oprot):
-        args = ctas_query_dryrun_args()
+    def process_translate_table_dryrun(self, seqid, iprot, oprot):
+        args = translate_table_dryrun_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = ctas_query_dryrun_result()
+        result = translate_table_dryrun_result()
         try:
-            result.success = self._handler.ctas_query_dryrun(args.tbl)
+            result.success = self._handler.translate_table_dryrun(args.tbl)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -13390,7 +13390,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             logging.exception('Unexpected exception in handler')
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("ctas_query_dryrun", msg_type, seqid)
+        oprot.writeMessageBegin("translate_table_dryrun", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -25875,7 +25875,7 @@ add_check_constraint_result.thrift_spec = (
 )
 
 
-class ctas_query_dryrun_args(object):
+class translate_table_dryrun_args(object):
     """
     Attributes:
      - tbl
@@ -25910,7 +25910,7 @@ class ctas_query_dryrun_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('ctas_query_dryrun_args')
+        oprot.writeStructBegin('translate_table_dryrun_args')
         if self.tbl is not None:
             oprot.writeFieldBegin('tbl', TType.STRUCT, 1)
             self.tbl.write(oprot)
@@ -25931,14 +25931,14 @@ class ctas_query_dryrun_args(object):
 
     def __ne__(self, other):
         return not (self == other)
-all_structs.append(ctas_query_dryrun_args)
-ctas_query_dryrun_args.thrift_spec = (
+all_structs.append(translate_table_dryrun_args)
+translate_table_dryrun_args.thrift_spec = (
     None,  # 0
     (1, TType.STRUCT, 'tbl', [Table, None], None, ),  # 1
 )
 
 
-class ctas_query_dryrun_result(object):
+class translate_table_dryrun_result(object):
     """
     Attributes:
      - success
@@ -26001,7 +26001,7 @@ class ctas_query_dryrun_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('ctas_query_dryrun_result')
+        oprot.writeStructBegin('translate_table_dryrun_result')
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.STRUCT, 0)
             self.success.write(oprot)
@@ -26038,8 +26038,8 @@ class ctas_query_dryrun_result(object):
 
     def __ne__(self, other):
         return not (self == other)
-all_structs.append(ctas_query_dryrun_result)
-ctas_query_dryrun_result.thrift_spec = (
+all_structs.append(translate_table_dryrun_result)
+translate_table_dryrun_result.thrift_spec = (
     (0, TType.STRUCT, 'success', [Table, None], None, ),  # 0
     (1, TType.STRUCT, 'o1', [AlreadyExistsException, None], None, ),  # 1
     (2, TType.STRUCT, 'o2', [InvalidObjectException, None], None, ),  # 2

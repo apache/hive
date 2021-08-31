@@ -686,23 +686,23 @@ module ThriftHiveMetastore
       return
     end
 
-    def ctas_query_dryrun(tbl)
-      send_ctas_query_dryrun(tbl)
-      return recv_ctas_query_dryrun()
+    def translate_table_dryrun(tbl)
+      send_translate_table_dryrun(tbl)
+      return recv_translate_table_dryrun()
     end
 
-    def send_ctas_query_dryrun(tbl)
-      send_message('ctas_query_dryrun', Ctas_query_dryrun_args, :tbl => tbl)
+    def send_translate_table_dryrun(tbl)
+      send_message('translate_table_dryrun', Translate_table_dryrun_args, :tbl => tbl)
     end
 
-    def recv_ctas_query_dryrun()
-      result = receive_message(Ctas_query_dryrun_result)
+    def recv_translate_table_dryrun()
+      result = receive_message(Translate_table_dryrun_result)
       return result.success unless result.success.nil?
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
       raise result.o3 unless result.o3.nil?
       raise result.o4 unless result.o4.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'ctas_query_dryrun failed: unknown result')
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'translate_table_dryrun failed: unknown result')
     end
 
     def drop_table(dbname, name, deleteData)
@@ -4956,11 +4956,11 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'add_check_constraint', seqid)
     end
 
-    def process_ctas_query_dryrun(seqid, iprot, oprot)
-      args = read_args(iprot, Ctas_query_dryrun_args)
-      result = Ctas_query_dryrun_result.new()
+    def process_translate_table_dryrun(seqid, iprot, oprot)
+      args = read_args(iprot, Translate_table_dryrun_args)
+      result = Translate_table_dryrun_result.new()
       begin
-        result.success = @handler.ctas_query_dryrun(args.tbl)
+        result.success = @handler.translate_table_dryrun(args.tbl)
       rescue ::AlreadyExistsException => o1
         result.o1 = o1
       rescue ::InvalidObjectException => o2
@@ -4970,7 +4970,7 @@ module ThriftHiveMetastore
       rescue ::NoSuchObjectException => o4
         result.o4 = o4
       end
-      write_result(result, oprot, 'ctas_query_dryrun', seqid)
+      write_result(result, oprot, 'translate_table_dryrun', seqid)
     end
 
     def process_drop_table(seqid, iprot, oprot)
@@ -9160,7 +9160,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Ctas_query_dryrun_args
+  class Translate_table_dryrun_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     TBL = 1
 
@@ -9176,7 +9176,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Ctas_query_dryrun_result
+  class Translate_table_dryrun_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
     O1 = 1

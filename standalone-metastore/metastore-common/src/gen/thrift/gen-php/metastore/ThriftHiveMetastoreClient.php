@@ -2623,41 +2623,41 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         return;
     }
 
-    public function ctas_query_dryrun(\metastore\Table $tbl)
+    public function translate_table_dryrun(\metastore\Table $tbl)
     {
-        $this->send_ctas_query_dryrun($tbl);
-        return $this->recv_ctas_query_dryrun();
+        $this->send_translate_table_dryrun($tbl);
+        return $this->recv_translate_table_dryrun();
     }
 
-    public function send_ctas_query_dryrun(\metastore\Table $tbl)
+    public function send_translate_table_dryrun(\metastore\Table $tbl)
     {
-        $args = new \metastore\ThriftHiveMetastore_ctas_query_dryrun_args();
+        $args = new \metastore\ThriftHiveMetastore_translate_table_dryrun_args();
         $args->tbl = $tbl;
         $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
         if ($bin_accel) {
             thrift_protocol_write_binary(
                 $this->output_,
-                'ctas_query_dryrun',
+                'translate_table_dryrun',
                 TMessageType::CALL,
                 $args,
                 $this->seqid_,
                 $this->output_->isStrictWrite()
             );
         } else {
-            $this->output_->writeMessageBegin('ctas_query_dryrun', TMessageType::CALL, $this->seqid_);
+            $this->output_->writeMessageBegin('translate_table_dryrun', TMessageType::CALL, $this->seqid_);
             $args->write($this->output_);
             $this->output_->writeMessageEnd();
             $this->output_->getTransport()->flush();
         }
     }
 
-    public function recv_ctas_query_dryrun()
+    public function recv_translate_table_dryrun()
     {
         $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
         if ($bin_accel) {
             $result = thrift_protocol_read_binary(
                 $this->input_,
-                '\metastore\ThriftHiveMetastore_ctas_query_dryrun_result',
+                '\metastore\ThriftHiveMetastore_translate_table_dryrun_result',
                 $this->input_->isStrictRead()
             );
         } else {
@@ -2672,7 +2672,7 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
                 $this->input_->readMessageEnd();
                 throw $x;
             }
-            $result = new \metastore\ThriftHiveMetastore_ctas_query_dryrun_result();
+            $result = new \metastore\ThriftHiveMetastore_translate_table_dryrun_result();
             $result->read($this->input_);
             $this->input_->readMessageEnd();
         }
@@ -2691,7 +2691,7 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         if ($result->o4 !== null) {
             throw $result->o4;
         }
-        throw new \Exception("ctas_query_dryrun failed: unknown result");
+        throw new \Exception("translate_table_dryrun failed: unknown result");
     }
 
     public function drop_table($dbname, $name, $deleteData)

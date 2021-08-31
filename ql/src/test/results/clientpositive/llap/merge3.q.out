@@ -220,6 +220,9 @@ STAGE PLANS:
       input format: org.apache.hadoop.mapred.TextInputFormat
       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      table properties:
+        bucketing_version 2
+        transactional false
 
   Stage: Stage-3
     Stats Work
@@ -2278,7 +2281,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	bucketing_version   	2                   
-	numFiles            	1                   
+	numFiles            	4                   
 	numRows             	2000                
 	rawDataSize         	21248               
 	totalSize           	23248               

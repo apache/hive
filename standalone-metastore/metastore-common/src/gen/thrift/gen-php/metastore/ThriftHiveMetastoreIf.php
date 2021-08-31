@@ -320,7 +320,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\MetaException
      * @throws \metastore\NoSuchObjectException
      */
-    public function ctas_query_dryrun(\metastore\Table $tbl);
+    public function translate_table_dryrun(\metastore\Table $tbl);
     /**
      * @param string $dbname
      * @param string $name

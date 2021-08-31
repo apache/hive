@@ -967,4 +967,12 @@ public class CreateTableDesc implements DDLDesc, Serializable {
   public void setOwnerName(String ownerName) {
     this.ownerName = ownerName;
   }
+
+  public void fromTable(org.apache.hadoop.hive.metastore.api.Table tTable) {
+    if (tTable.getSd() != null  && tTable.getSd().getLocation() != null) {
+      setLocation(tTable.getSd().getLocation());
+    }
+    setExternal(TableType.EXTERNAL_TABLE.toString().equals(tTable.getTableType()));
+    setTblProps(tTable.getParameters());
+  }
 }

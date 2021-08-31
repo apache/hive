@@ -2240,7 +2240,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public Table ctas_query_dryrun(final Table tbl) throws AlreadyExistsException,
+  public Table translate_table_dryrun(final Table tbl) throws AlreadyExistsException,
           MetaException, InvalidObjectException, InvalidInputException {
     Table transformedTbl = null;
     if (!tbl.isSetCatName()) {
