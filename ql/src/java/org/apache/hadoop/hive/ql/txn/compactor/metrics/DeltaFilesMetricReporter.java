@@ -62,6 +62,7 @@ import java.util.Date;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -94,6 +95,8 @@ public class DeltaFilesMetricReporter {
 
   public static final String OBJECT_NAME_PREFIX = "metrics:type=compaction,name=";
   public static final String JOB_CONF_DELTA_FILES_METRICS_METADATA = "delta.files.metrics.metadata";
+  public static final char ENTRY_SEPARATOR = ';';
+  public static final String KEY_VALUE_SEPARATOR = "->";
 
   private static long lastSuccessfulLoggingTime = 0;
   private String hiveEntitySeparator;
@@ -179,7 +182,6 @@ public class DeltaFilesMetricReporter {
    */
   private void updateMetrics(DeltaFilesMetricType metric, Cache<String, Integer> cache,
       Queue<Pair<String, Integer>> topN, TezCounters counters, Set<ReadEntity> inputs) {
-    CounterGroup group = counters.getGroup(metric.value);
 
     // Create list of paths affected by the query
     List<String> inputPaths = Lists.newArrayList();
@@ -194,6 +196,7 @@ public class DeltaFilesMetricReporter {
 
     // Invalidate from cache if the counter value differs from the cache value, or if the query touched the partition
     // in question but no counter was collected
+    CounterGroup group = counters.getGroup(metric.value);
     for (String key : inputPaths) {
       Integer prev = cache.getIfPresent(key);
       if (prev != null) {
@@ -290,11 +293,10 @@ public class DeltaFilesMetricReporter {
     if (partitionName != null && !partitionName.isEmpty()) {
       key.append(Path.SEPARATOR);
       if (partitionName.startsWith("{") && partitionName.endsWith("}")) {
-        key.append(partitionName);
+        key.append(partitionName, 1, partitionName.length() - 1);
       } else {
-        key.append("{").append(partitionName).append("}");
+        key.append(partitionName);
       }
-
     }
     return key.toString();
   }
@@ -351,7 +353,7 @@ public class DeltaFilesMetricReporter {
       Arrays.stream(DeltaFilesMetricType.values())
         .filter(type -> jobConf.get(type.name()) != null)
         .forEach(type ->
-            Splitter.on(',').withKeyValueSeparator("->").split(jobConf.get(type.name())).forEach(
+            Splitter.on(ENTRY_SEPARATOR).withKeyValueSeparator(KEY_VALUE_SEPARATOR).split(jobConf.get(type.name())).forEach(
               (path, cnt) -> tezCounters.findCounter(type.value, path).setValue(Long.parseLong(cnt))
             )
         );
@@ -361,7 +363,7 @@ public class DeltaFilesMetricReporter {
   public static void addAcidMetricsToConfObj(EnumMap<DeltaFilesMetricType,
       Queue<Pair<String, Integer>>> deltaFilesStats, Configuration conf) {
     deltaFilesStats.forEach((type, value) ->
-        conf.set(type.name(), Joiner.on(",").withKeyValueSeparator("->").join(value)));
+        conf.set(type.name(), Joiner.on(ENTRY_SEPARATOR).withKeyValueSeparator(KEY_VALUE_SEPARATOR).join(value)));
   }
 
   public static void backPropagateAcidMetrics(JobConf jobConf, Configuration conf) {

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 
 import org.apache.hadoop.fs.BlockLocation;
@@ -237,7 +238,7 @@ public class HiveSplitGenerator extends InputInitializer {
           metadata.tableName = tableDesc.getTableName();
           LinkedHashMap<String, String> partSpec = e.getValue().getPartSpec();
           if (partSpec != null && !partSpec.isEmpty()) {
-            metadata.partitionName = String.valueOf(partSpec);
+            metadata.partitionName = Joiner.on("/").join(partSpec.entrySet());
           }
           deltaFilesMetadata.put(e.getKey(), metadata);
         });
@@ -342,7 +343,7 @@ public class HiveSplitGenerator extends InputInitializer {
 
             inputInitializerContext.addCounters(tezCounters);
           } catch (Exception e) {
-            LOG.warn("Caught exception while trying to update Tez counters");
+            LOG.warn("Caught exception while trying to update Tez counters", e);
           }
         }
 
