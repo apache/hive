@@ -130,6 +130,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
   }
 
   @Test
+  @org.junit.Ignore("HIVE-25491")
   public void testAcidTableIncrementalReplication() throws Throwable {
     WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName)
