@@ -2246,15 +2246,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (!Optional.ofNullable(tab.getStorageHandler()).map(HiveStorageHandler::isTimeTravelAllowed).orElse(false)) {
           throw new SemanticException(ErrorMsg.TIME_TRAVEL_NOT_ALLOWED, alias);
         }
-        if (asOf.getLeft() != null) {
-          tab.setAsOfVersion(Long.parseLong(asOf.getLeft()));
-        }
-        if (asOf.getRight() != null) {
-          ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() :
-                                 SessionState.get().getConf().getLocalTimeZone();
-          TimestampTZ ts = TimestampTZUtil.parse(stripQuotes(asOf.getRight()), timeZone);
-          tab.setAsOfTimestamp(ts.toEpochMilli());
-        }
+        tab.setAsOfVersion(asOf.getLeft());
+        tab.setAsOfTimestamp(asOf.getRight());
       }
 
       if (tab.isView()) {

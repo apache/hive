@@ -141,9 +141,9 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   private int numBuckets = -1;
 
-  private long asOfVersion = -1;
+  private String asOfVersion = null;
 
-  private long asOfTimestamp = -1;
+  private String asOfTimestamp = null;
 
   public TableScanDesc() {
     this(null, null);
@@ -536,30 +536,13 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
             : storageHandler.getOperatorDescProperties(this, opProps);
   }
 
-  @Explain(displayName = "As of version", explainLevels = { Level.EXTENDED })
-  public String getAsOfVersionText() {
-    if (asOfVersion != -1) {
-      return String.valueOf(asOfVersion);
-    } else {
-      return null;
-    }
-  }
-
-  public long getAsOfVersion() {
+  @Explain(displayName = "As of version")
+  public String getAsOfVersion() {
     return asOfVersion;
   }
 
-  @Explain(displayName = "As of timestamp", explainLevels = { Level.EXTENDED })
-  public String getAsOfTimestampText() {
-    if (asOfTimestamp != -1) {
-      DateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-      return format.format(new Date(asOfTimestamp));
-    } else {
-      return null;
-    }
-  }
-
-  public long getAsOfTimestamp() {
+  @Explain(displayName = "As of timestamp")
+  public String getAsOfTimestamp() {
     return asOfTimestamp;
   }
 
