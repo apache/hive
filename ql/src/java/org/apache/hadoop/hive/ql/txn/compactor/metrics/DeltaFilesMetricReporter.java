@@ -246,11 +246,13 @@ public class DeltaFilesMetricReporter {
 
     logDeltaDirMetrics(dir, conf, numObsoleteDeltas, numDeltas, numSmallDeltas);
 
-    String path = getRelPath(dir);
-
     String serializedMetadata = conf.get(JOB_CONF_DELTA_FILES_METRICS_METADATA);
     HashMap<Path, DeltaFilesMetadata> pathToMetadata = new HashMap<>();
     pathToMetadata = SerializationUtilities.deserializeObject(serializedMetadata, pathToMetadata.getClass());
+    if (pathToMetadata == null) {
+      LOG.warn("Delta metrics can't be updated since the metadata is null.");
+      return;
+    }
     DeltaFilesMetadata metadata = pathToMetadata.get(dir.getPath());
     filterAndAddToDeltaFilesStats(NUM_DELTAS, numDeltas, deltasThreshold, deltaFilesStats, metadata, maxCacheSize);
     filterAndAddToDeltaFilesStats(NUM_OBSOLETE_DELTAS, numObsoleteDeltas, obsoleteDeltasThreshold, deltaFilesStats,

@@ -238,7 +238,7 @@ public class HiveSplitGenerator extends InputInitializer {
           metadata.tableName = tableDesc.getTableName();
           LinkedHashMap<String, String> partSpec = e.getValue().getPartSpec();
           if (partSpec != null && !partSpec.isEmpty()) {
-            metadata.partitionName = Joiner.on("/").join(partSpec.entrySet());
+            metadata.partitionName = Joiner.on(Path.SEPARATOR).join(partSpec.entrySet());
           }
           deltaFilesMetadata.put(e.getKey(), metadata);
         });
