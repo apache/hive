@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -128,12 +129,13 @@ public class Table implements Serializable {
   /**
    * The version of the table. For Iceberg tables this is the snapshotId.
    */
-  private long asOfVersion = -1;
+  private String asOfVersion = null;
 
   /**
-   * The version of the table at the given timestamp. This is the epoch millisecond.
+   * The version of the table at the given timestamp. The format will be parsed with
+   * TimestampTZUtil.parse.
    */
-  private long asOfTimestamp = -1;
+  private String asOfTimestamp = null;
 
   /**
    * Used only for serialization.
@@ -565,6 +567,12 @@ public class Table implements Serializable {
         return false;
       }
     } else if (!tTable.equals(other.tTable)) {
+      return false;
+    }
+    if (!Objects.equals(asOfTimestamp, other.asOfTimestamp)) {
+      return false;
+    }
+    if (!Objects.equals(asOfVersion, other.asOfVersion)) {
       return false;
     }
     return true;
@@ -1282,19 +1290,19 @@ public class Table implements Serializable {
     return result;
   }
 
-  public long getAsOfVersion() {
+  public String getAsOfVersion() {
     return asOfVersion;
   }
 
-  public void setAsOfVersion(long asOfVersion) {
+  public void setAsOfVersion(String asOfVersion) {
     this.asOfVersion = asOfVersion;
   }
 
-  public long getAsOfTimestamp() {
+  public String getAsOfTimestamp() {
     return asOfTimestamp;
   }
 
-  public void setAsOfTimestamp(long asOfTimestamp) {
+  public void setAsOfTimestamp(String asOfTimestamp) {
     this.asOfTimestamp = asOfTimestamp;
   }
 
