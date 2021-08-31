@@ -93,6 +93,7 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
+
         // Check for completed transactions
         final String s = "SELECT DISTINCT \"TC\".\"CTC_DATABASE\", \"TC\".\"CTC_TABLE\", \"TC\".\"CTC_PARTITION\" " +
           "FROM \"COMPLETED_TXN_COMPONENTS\" \"TC\" " + (checkInterval > 0 ?
@@ -554,7 +555,7 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
-        LOG.error("Unable to delete from txns table " + e.getMessage());
+        LOG.error("Unable to delete from TXN_TO_WRITE_ID table " + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "cleanTxnToWriteIdTable");
@@ -565,6 +566,40 @@ class CompactionTxnHandler extends TxnHandler {
       }
     } catch (RetryException e) {
       cleanTxnToWriteIdTable();
+    }
+  }
+
+  @Override
+  @RetrySemantics.SafeToRetry
+  public void dedupCompletedTxnComponents() throws MetaException {
+    try {
+      Connection dbConn = null;
+      Statement stmt = null;
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+
+        String s = "DELETE FROM \"COMPLETED_TXN_COMPONENTS\" WHERE CTC_WRITEID\" NOT IN ("+
+          "SELECT MAX(\"CTC_WRITEID\") FROM \"COMPLETED_TXN_COMPONENTS\" " +
+          "GROUP BY \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\")";
+        LOG.debug("Going to execute delete <" + s + ">");
+        int rc = stmt.executeUpdate(s);
+        LOG.info("Removed " + rc + " rows from COMPLETED_TXN_COMPONENTS");
+
+        LOG.debug("Going to commit");
+        dbConn.commit();
+      } catch (SQLException e) {
+        LOG.error("Unable to delete from COMPLETED_TXN_COMPONENTS table " + e.getMessage());
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "dedupCompletedTxnComponents");
+        throw new MetaException("Unable to connect to transaction database " +
+          StringUtils.stringifyException(e));
+      } finally {
+        close(null, stmt, dbConn);
+      }
+    } catch (RetryException e) {
+      dedupCompletedTxnComponents();
     }
   }
 
