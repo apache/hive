@@ -314,7 +314,6 @@ public class ObjectStore implements RawStore, Configurable {
     USER = org.apache.commons.lang3.StringUtils.defaultString(user, "UNKNOWN");
   }
 
-
   private boolean isInitialized = false;
   private PersistenceManager pm = null;
   private SQLGenerator sqlGenerator = null;
@@ -8117,8 +8116,8 @@ public class ObjectStore implements RawStore, Configurable {
       args = new String[] { dbName, catName };
     }
 
-    try (Query q = query) {
-      final List<MDBPrivilege> mSecurityDBList = (List<MDBPrivilege>) query.executeWithArray(args);
+    try (QueryWrapper wrapper = new QueryWrapper(query)) {
+      final List<MDBPrivilege> mSecurityDBList = (List<MDBPrivilege>) wrapper.executeWithArray(args);
       pm.retrieveAll(mSecurityDBList);
       LOG.debug("Done retrieving all objects for listDatabaseGrants: {}", mSecurityDBList);
       return Collections.unmodifiableList(new ArrayList<>(mSecurityDBList));
@@ -8133,23 +8132,26 @@ public class ObjectStore implements RawStore, Configurable {
     dcName = normalizeIdentifier(dcName);
 
     final Query query;
-    final String[] args;
+    String[] args = null;
     final List<MDCPrivilege> mSecurityDCList;
 
     if (authorizer != null) {
       query = pm.newQuery(MDCPrivilege.class, "dataConnector.name == t1 && authorizer == t2");
       query.declareParameters("java.lang.String t1, java.lang.String t2");
       args = new String[] { dcName, authorizer };
-      mSecurityDCList = (List<MDCPrivilege>) query.executeWithArray(args);
     } else {
       query = pm.newQuery(MDCPrivilege.class, "dataConnector.name == t1");
       query.declareParameters("java.lang.String t1");
-      mSecurityDCList = (List<MDCPrivilege>) query.execute(dcName);
     }
-    try (Query q = query) {
-    pm.retrieveAll(mSecurityDCList);
-    LOG.debug("Done retrieving all objects for listDataConnectorGrants: {}", mSecurityDCList);
-    return Collections.unmodifiableList(new ArrayList<>(mSecurityDCList));
+    try (QueryWrapper wrapper = new QueryWrapper(query)) {
+      if (args != null) {
+        mSecurityDCList = (List<MDCPrivilege>) wrapper.executeWithArray(args);
+      } else {
+        mSecurityDCList = (List<MDCPrivilege>) wrapper.execute(dcName);
+      }
+      pm.retrieveAll(mSecurityDCList);
+      LOG.debug("Done retrieving all objects for listDataConnectorGrants: {}", mSecurityDCList);
+      return Collections.unmodifiableList(new ArrayList<>(mSecurityDCList));
     }
   }
 
@@ -14473,18 +14475,18 @@ public class ObjectStore implements RawStore, Configurable {
     if (StringUtils.isEmpty(policy)) {
       return ret;
     }
-    Query<MReplicationMetrics> query = pm.newQuery(MReplicationMetrics.class, "policy == policyParam");
-    query.declareParameters("java.lang.String policyParam");
-    query.setOrdering("scheduledExecutionId descending");
-    List<MReplicationMetrics> list = (List<MReplicationMetrics>) query.execute(policy);
-    List<ReplicationMetrics> returnList = new ArrayList<>();
-    for (MReplicationMetrics mReplicationMetric : list) {
-      pm.retrieve(mReplicationMetric);
-      returnList.add(MReplicationMetrics.toThrift(mReplicationMetric));
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery(MReplicationMetrics.class, "policy == policyParam"))) {
+      query.declareParameters("java.lang.String policyParam");
+      query.setOrdering("scheduledExecutionId descending");
+      List<MReplicationMetrics> list = (List<MReplicationMetrics>) query.execute(policy);
+      List<ReplicationMetrics> returnList = new ArrayList<>();
+      for (MReplicationMetrics mReplicationMetric : list) {
+        pm.retrieve(mReplicationMetric);
+        returnList.add(MReplicationMetrics.toThrift(mReplicationMetric));
+      }
+      ret.setReplicationMetricList(returnList);
+      return ret;
     }
-    ret.setReplicationMetricList(returnList);
-    query.closeAll();
-    return ret;
   }
 
   private ReplicationMetricList getMReplicationMetrics(long scheduledExecutionId) {
@@ -14492,18 +14494,19 @@ public class ObjectStore implements RawStore, Configurable {
     if (scheduledExecutionId < 0) {
       return ret;
     }
-    Query<MReplicationMetrics> query = pm.newQuery(MReplicationMetrics.class,
-        "scheduledExecutionId == scheduledExecutionIdParam");
-    query.declareParameters("java.lang.Long scheduledExecutionIdParam");
-    query.setOrdering("scheduledExecutionId descending");
-    List<MReplicationMetrics> list = (List<MReplicationMetrics>) query.execute(scheduledExecutionId);
-    List<ReplicationMetrics> returnList = new ArrayList<>();
-    for (MReplicationMetrics mReplicationMetric : list) {
-      pm.retrieve(mReplicationMetric);
-      returnList.add(MReplicationMetrics.toThrift(mReplicationMetric));
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery(MReplicationMetrics.class,
+        "scheduledExecutionId == scheduledExecutionIdParam"))) {
+      query.declareParameters("java.lang.Long scheduledExecutionIdParam");
+      query.setOrdering("scheduledExecutionId descending");
+      List<MReplicationMetrics> list = (List<MReplicationMetrics>) query.execute(scheduledExecutionId);
+      List<ReplicationMetrics> returnList = new ArrayList<>();
+      for (MReplicationMetrics mReplicationMetric : list) {
+        pm.retrieve(mReplicationMetric);
+        returnList.add(MReplicationMetrics.toThrift(mReplicationMetric));
+      }
+      ret.setReplicationMetricList(returnList);
+      return ret;
     }
-    ret.setReplicationMetricList(returnList);
-    return ret;
   }
 
   private void ensureScheduledQueriesEnabled() throws MetaException {

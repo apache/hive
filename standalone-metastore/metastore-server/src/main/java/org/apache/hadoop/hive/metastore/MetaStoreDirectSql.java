@@ -911,21 +911,21 @@ class MetaStoreDirectSql {
     }
 
     long start = doTrace ? System.nanoTime() : 0;
-    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    List<Object> sqlResult = executeWithArray(query, params, queryText, ((max == null)  ? -1 : max.intValue()));
-    long queryTime = doTrace ? System.nanoTime() : 0;
-    MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
-    final List<Long> result;
-    if (sqlResult.isEmpty()) {
-      result = Collections.emptyList(); // no partitions, bail early.
-    } else {
-      result = new ArrayList<>(sqlResult.size());
-      for (Object fields : sqlResult) {
-        result.add(MetastoreDirectSqlUtils.extractSqlLong(fields));
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      List<Object> sqlResult = executeWithArray(query, params, queryText, ((max == null) ? -1 : max.intValue()));
+      long queryTime = doTrace ? System.nanoTime() : 0;
+      MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
+      final List<Long> result;
+      if (sqlResult.isEmpty()) {
+        result = Collections.emptyList(); // no partitions, bail early.
+      } else {
+        result = new ArrayList<>(sqlResult.size());
+        for (Object fields : sqlResult) {
+          result.add(MetastoreDirectSqlUtils.extractSqlLong(fields));
+        }
       }
+      return result;
     }
-    query.closeAll();
-    return result;
   }
 
   /** Should be called with the list short enough to not trip up Oracle/etc. */
@@ -1454,16 +1454,22 @@ class MetaStoreDirectSql {
         return MetastoreDirectSqlUtils.ensureList(qResult);
       }
     };
-    List<Object[]> list = Batchable.runBatched(batchSize, colNames, b);
-    final ColumnStatistics result;
-    if (list.isEmpty()) {
-      result = null;
-    } else {
-      ColumnStatisticsDesc csd = new ColumnStatisticsDesc(true, dbName, tableName);
-      csd.setCatName(catName);
-      result = makeColumnStats(list, csd, 0, engine);
+    List<Object[]> list;
+    try {
+      list = Batchable.runBatched(batchSize, colNames, b);
+      if (list != null) {
+        list = new ArrayList<>(list);
+      }
+    } finally {
+      b.closeAllQueries();
     }
-    b.closeAllQueries();
+
+    if (list == null || list.isEmpty()) {
+      return null;
+    }
+    ColumnStatisticsDesc csd = new ColumnStatisticsDesc(true, dbName, tableName);
+    csd.setCatName(catName);
+    ColumnStatistics result = makeColumnStats(list, csd, 0, engine);
     return result;
   }
 
