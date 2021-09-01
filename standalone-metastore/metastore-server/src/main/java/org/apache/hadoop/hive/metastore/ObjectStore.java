@@ -14324,13 +14324,14 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     boolean commited = false;
+    Query query = null;
     try {
       openTransaction();
 
       MScheduledExecution lastExecution = pm.getObjectById(MScheduledExecution.class, info.getScheduledExecutionId());
       MScheduledQuery schq = lastExecution.getScheduledQuery();
 
-      Query query = pm.newQuery(MScheduledExecution.class);
+      query = pm.newQuery(MScheduledExecution.class);
       query.setFilter("scheduledQuery == currentSchedule");
       query.setOrdering("scheduledExecutionId descending");
       query.declareParameters("MScheduledQuery currentSchedule");
@@ -14374,9 +14375,7 @@ public class ObjectStore implements RawStore, Configurable {
     } catch (InvalidInputException e) {
       throw new MetaException("Unexpected InvalidInputException: " + e.getMessage());
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, query);
     }
   }
 

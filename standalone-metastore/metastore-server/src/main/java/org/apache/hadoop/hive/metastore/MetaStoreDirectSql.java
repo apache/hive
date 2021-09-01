@@ -2134,13 +2134,12 @@ class MetaStoreDirectSql {
         }
       }
     };
-    List<Object[]> list = Batchable.runBatched(batchSize, colNames, b);
 
-    List<ColumnStatistics> result = new ArrayList<ColumnStatistics>(
-        Math.min(list.size(), partNames.size()));
+    List<ColumnStatistics> result = new ArrayList<ColumnStatistics>();
     String lastPartName = null;
     int from = 0;
     try {
+      List<Object[]> list = Batchable.runBatched(batchSize, colNames, b);
       for (int i = 0; i <= list.size(); ++i) {
         boolean isLast = i == list.size();
         String partName = isLast ? null : (String) list.get(i)[0];
