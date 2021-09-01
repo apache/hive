@@ -103,6 +103,7 @@ import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.join;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.newMetaException;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.rethrowException;
@@ -2336,6 +2337,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     if (transformer != null) {
       tbl = transformer.transformCreateTable(tbl, processorCapabilities, processorId);
+    }
+
+    if (tbl.getParameters() != null) {
+      tbl.getParameters().remove(TABLE_IS_CTAS);
     }
 
     // If the given table has column statistics, save it here. We will update it later.
