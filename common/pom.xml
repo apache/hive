@@ -76,7 +76,7 @@
       <artifactId>orc-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jline</groupId>
+      <groupId>jline</groupId>
       <artifactId>jline</artifactId>
     </dependency>
     <dependency>
