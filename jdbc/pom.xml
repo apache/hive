@@ -263,6 +263,7 @@
                       <exclude>javax.transaction:*</exclude>
                       <exclude>javax.xml.*:*</exclude>
                       <exclude>jline:*</exclude>
+                      <exclude>org.jline:*</exclude>
                       <exclude>joda-time:*</exclude>
                       <exclude>junit:*</exclude>
                       <exclude>log4j:*</exclude>

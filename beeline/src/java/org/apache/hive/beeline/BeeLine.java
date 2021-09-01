@@ -28,6 +28,7 @@ import java.io.Closeable;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -106,14 +107,17 @@ import org.apache.hive.jdbc.JdbcUriParseException;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.thrift.transport.TTransportException;
+import org.jline.reader.Completer;
+import org.jline.reader.History;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.impl.LineReaderImpl;
+import org.jline.reader.impl.completer.FileNameCompleter;
+import org.jline.reader.impl.completer.StringsCompleter;
+import org.jline.reader.impl.history.DefaultHistory;
+import org.jline.terminal.TerminalBuilder;
 
 import com.google.common.annotations.VisibleForTesting;
-
-import jline.console.ConsoleReader;
-import jline.console.completer.Completer;
-import jline.console.completer.FileNameCompleter;
-import jline.console.completer.StringsCompleter;
-import jline.console.history.FileHistory;
 
 /**
  * A console SQL shell with command completion.
@@ -151,13 +155,13 @@ public class BeeLine implements Closeable {
   private PrintStream outputStream = new PrintStream(System.out, true);
   private PrintStream errorStream = new PrintStream(System.err, true);
   private InputStream inputStream = System.in;
-  private ConsoleReader consoleReader;
+  private LineReader consoleReader;
   private List<String> batch = null;
   private final Reflector reflector = new Reflector(this);
   private String dbName = null;
   private String currentDatabase = null;
 
-  private FileHistory history;
+  private History history;
   // Indicates if this instance of beeline is running in compatibility mode, or beeline mode
   private boolean isBeeLine = true;
 
@@ -573,8 +577,7 @@ public class BeeLine implements Closeable {
       public void run() {
         try {
           if (history != null) {
-            history.setMaxSize(getOpts().getMaxHistoryRows());
-            history.flush();
+            history.save();
           }
         } catch (IOException e) {
           error(e);
@@ -936,8 +939,8 @@ public class BeeLine implements Closeable {
     String propertyFile = cl.getOptionValue("property-file");
     if (propertyFile != null) {
       try {
-        this.consoleReader = new ConsoleReader();
-      } catch (IOException e) {
+        this.consoleReader = LineReaderBuilder.builder().build();
+      } catch (IOError e) {
         handleException(e);
       }
       if (!dispatch("!properties " + propertyFile)) {
@@ -1117,7 +1120,7 @@ public class BeeLine implements Closeable {
 
     //this method also initializes the consoleReader which is
     //needed by initArgs for certain execution paths
-    ConsoleReader reader = initializeConsoleReader(inputStream);
+    LineReader reader = initializeConsoleReader(inputStream);
     if (isBeeLine) {
       int code = initArgs(args);
       if (code != 0) {
@@ -1358,10 +1361,10 @@ public class BeeLine implements Closeable {
     }
   }
 
-  private int execute(ConsoleReader reader, boolean exitOnError) {
+  private int execute(LineReader reader, boolean exitOnError) {
     int lastExecutionResult = ERRNO_OK;
     Character mask = (System.getProperty("jline.terminal", "").equals("jline.UnsupportedTerminal")) ? null
-                       : ConsoleReader.NULL_MASK;
+                       : LineReaderImpl.NULL_MASK;
 
     while (!exit) {
       try {
@@ -1401,8 +1404,7 @@ public class BeeLine implements Closeable {
     if (this.history != null) {
        return;
     }
-
-    this.history = new FileHistory(new File(getOpts().getHistoryFile()));
+    this.history = new DefaultHistory(); //(getOpts().getHistoryFile()));
   }
 
   private void addBeelineShutdownHook() throws IOException {
@@ -1410,40 +1412,36 @@ public class BeeLine implements Closeable {
     ShutdownHookManager.addShutdownHook(getShutdownHook());
   }
 
-  public ConsoleReader initializeConsoleReader(InputStream inputStream) throws IOException {
+  public LineReader initializeConsoleReader(InputStream inputStream) throws IOException {
+    LineReaderBuilder builder = LineReaderBuilder.builder();
     if (inputStream != null) {
       // ### NOTE: fix for sf.net bug 879425.
       // Working around an issue in jline-2.1.2, see https://github.com/jline/jline/issues/10
       // by appending a newline to the end of inputstream
       InputStream inputStreamAppendedNewline = new SequenceInputStream(inputStream,
           new ByteArrayInputStream((new String("\n")).getBytes()));
-      consoleReader = new ConsoleReader(inputStreamAppendedNewline, getErrorStream());
-      consoleReader.setCopyPasteDetection(true); // jline will detect if <tab> is regular character
+
+      builder.terminal(TerminalBuilder.builder().streams(inputStreamAppendedNewline, getErrorStream()).build());
     } else {
-      consoleReader = new ConsoleReader(getInputStream(), getErrorStream());
-    }
-
-    //disable the expandEvents for the purpose of backward compatibility
-    consoleReader.setExpandEvents(false);
-
-    try {
-      // now set the output for the history
-      if (this.history != null) {
-        consoleReader.setHistory(this.history);
-      } else {
-        consoleReader.setHistoryEnabled(false);
-      }
-    } catch (Exception e) {
-      handleException(e);
+      builder.terminal(TerminalBuilder.builder().streams(getInputStream(), getErrorStream()).build());
     }
 
     if (inputStream instanceof FileInputStream || inputStream instanceof FSDataInputStream) {
       // from script.. no need to load history and no need of completer, either
-      return consoleReader;
+      return builder.build();
     }
 
-    consoleReader.addCompleter(new BeeLineCompleter(this));
-    return consoleReader;
+    try {
+      // now set the output for the history
+      if (this.history != null) {
+        builder.history(this.history);
+        builder.variable(LineReader.HISTORY_FILE, new File(getOpts().getHistoryFile()));
+      }
+    } catch (Exception e) {
+      handleException(e);
+    }
+    builder.completer(new BeeLineCompleter(this));
+    return builder.build();
   }
 
   void usage() {
@@ -2496,11 +2494,11 @@ public class BeeLine implements Closeable {
     return inputStream;
   }
 
-  ConsoleReader getConsoleReader() {
+  LineReader getConsoleReader() {
     return consoleReader;
   }
 
-  void setConsoleReader(ConsoleReader reader) {
+  void setConsoleReader(LineReader reader) {
     this.consoleReader = reader;
   }
 

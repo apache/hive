@@ -22,7 +22,7 @@
  */
 package org.apache.hive.beeline;
 
-import jline.console.completer.Completer;
+import org.jline.reader.Completer;
 
 /**
  * A generic command to be executed. Execution of the command

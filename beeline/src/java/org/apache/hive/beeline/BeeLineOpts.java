@@ -41,12 +41,15 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import jline.Terminal;
-import jline.TerminalFactory;
-import jline.console.completer.Completer;
-import jline.console.completer.StringsCompleter;
-import jline.console.history.MemoryHistory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.jline.reader.Candidate;
+import org.jline.reader.Completer;
+import org.jline.reader.LineReader;
+import org.jline.reader.ParsedLine;
+import org.jline.reader.impl.completer.StringsCompleter;
+import org.jline.reader.impl.history.DefaultHistory;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 
 public class BeeLineOpts implements Completer {
   public static final int DEFAULT_MAX_WIDTH = 80;
@@ -86,7 +89,7 @@ public class BeeLineOpts implements Completer {
   private boolean showElapsedTime = true;
   private boolean entireLineAsCommand = false;
   private String numberFormat = "default";
-  private final Terminal terminal = TerminalFactory.get();
+  private Terminal terminal;
   private int maxWidth = DEFAULT_MAX_WIDTH;
   private int maxHeight = DEFAULT_MAX_HEIGHT;
   private int maxColumnWidth = DEFAULT_MAX_COLUMN_WIDTH;
@@ -106,7 +109,7 @@ public class BeeLineOpts implements Completer {
 
   private final File rcFile = new File(saveDir(), "beeline.properties");
   private String historyFile = new File(saveDir(), "history").getAbsolutePath();
-  private int maxHistoryRows = MemoryHistory.DEFAULT_MAX_SIZE;
+  private int maxHistoryRows = DefaultHistory.DEFAULT_HISTORY_SIZE;
 
   private String scriptFile = null;
   private String[] initFiles = null;
@@ -152,6 +155,11 @@ public class BeeLineOpts implements Completer {
 
   public BeeLineOpts(BeeLine beeLine, Properties props) {
     this.beeLine = beeLine;
+    try {
+      this.terminal = TerminalBuilder.terminal();
+    } catch (IOException e) {
+      this.terminal = null;
+    }
     if (terminal.getWidth() > 0) {
       maxWidth = terminal.getWidth();
     }
@@ -193,17 +201,14 @@ public class BeeLineOpts implements Completer {
     return f;
   }
 
-
   @Override
-  public int complete(String buf, int pos, List cand) {
+  public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
     try {
-      return new StringsCompleter(propertyNames()).complete(buf, pos, cand);
+      new StringsCompleter(propertyNames()).complete(reader, line, candidates);
     } catch (Exception e) {
       beeLine.handleException(e);
-      return -1;
     }
   }
-
 
   public void save() throws IOException {
     try (OutputStream out = new FileOutputStream(rcFile)) {

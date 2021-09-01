@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -67,6 +68,8 @@ import org.apache.hive.jdbc.HiveStatement;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
+import org.jline.reader.History.Entry;
+import org.jline.reader.impl.LineReaderImpl;
 
 public class Commands {
 
@@ -186,10 +189,10 @@ public class Commands {
   }
 
   public boolean history(String line) {
-    Iterator hist = beeLine.getConsoleReader().getHistory().entries();
+    ListIterator<Entry> hist = beeLine.getConsoleReader().getHistory().iterator();
     String[] tmp;
     while(hist.hasNext()){
-      tmp = hist.next().toString().split(":", 2);
+      tmp = hist.next().line().split(":", 2);
       tmp[0] = Integer.toString(Integer.parseInt(tmp[0]) + 1);
       beeLine.output(beeLine.getColorBuffer().pad(tmp[0], 6)
           .append(":" + tmp[1]));
@@ -1090,7 +1093,7 @@ public class Commands {
   public String handleMultiLineCmd(String line) throws IOException {
     line = HiveStringUtils.removeComments(line);
     Character mask = (System.getProperty("jline.terminal", "").equals("jline.UnsupportedTerminal")) ? null
-                       : jline.console.ConsoleReader.NULL_MASK;
+                       : LineReaderImpl.NULL_MASK;
 
     while (isMultiLine(line) && beeLine.getOpts().isAllowMultiLineCommand()) {
       StringBuilder prompt = new StringBuilder(beeLine.getPrompt());

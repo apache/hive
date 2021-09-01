@@ -21,10 +21,10 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import jline.console.completer.AggregateCompleter;
-import jline.console.completer.Completer;
-import jline.console.completer.NullCompleter;
-import jline.console.completer.StringsCompleter;
+import org.jline.reader.Completer;
+import org.jline.reader.impl.completer.AggregateCompleter;
+import org.jline.reader.impl.completer.NullCompleter;
+import org.jline.reader.impl.completer.StringsCompleter;
 
 class BeeLineCommandCompleter extends AggregateCompleter {
   public BeeLineCommandCompleter(Iterable<CommandHandler> handlers) {

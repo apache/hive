@@ -30,7 +30,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import jline.console.completer.StringsCompleter;
+import org.jline.reader.impl.completer.StringsCompleter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

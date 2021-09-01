@@ -17,7 +17,7 @@
  */
 package org.apache.hive.beeline;
 
-import jline.console.completer.StringsCompleter;
+import org.jline.reader.impl.completer.StringsCompleter;
 
 /**
  * JLine completor boolean value (true/false)

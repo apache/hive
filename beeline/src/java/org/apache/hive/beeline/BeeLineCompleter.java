@@ -24,7 +24,11 @@ package org.apache.hive.beeline;
 
 import java.util.List;
 
-import jline.console.completer.Completer;
+import org.jline.reader.Candidate;
+import org.jline.reader.Completer;
+import org.jline.reader.LineReader;
+import org.jline.reader.ParsedLine;
+import org.jline.reader.impl.completer.NullCompleter;
 
 /**
  * Completor for BeeLine. It dispatches to sub-completors based on the
@@ -41,17 +45,18 @@ class BeeLineCompleter implements Completer {
     this.beeLine = beeLine;
   }
 
+
   @Override
-  public int complete(String buf, int pos, List cand) {
-    if (buf != null && buf.startsWith(BeeLine.COMMAND_PREFIX)
-        && !buf.startsWith(BeeLine.COMMAND_PREFIX + "all")
-        && !buf.startsWith(BeeLine.COMMAND_PREFIX + "sql")) {
-      return beeLine.getCommandCompletor().complete(buf, pos, cand);
+  public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
+    if (line != null && line.line().startsWith(BeeLine.COMMAND_PREFIX)
+        && !line.line().startsWith(BeeLine.COMMAND_PREFIX + "all")
+        && !line.line().startsWith(BeeLine.COMMAND_PREFIX + "sql")) {
+      beeLine.getCommandCompletor().complete(reader, line, candidates);
     } else {
       if (beeLine.getDatabaseConnection() != null && beeLine.getDatabaseConnection().getSQLCompleter() != null) {
-        return beeLine.getDatabaseConnection().getSQLCompleter().complete(buf, pos, cand);
+        beeLine.getDatabaseConnection().getSQLCompleter().complete(reader, line, candidates);
       } else {
-        return -1;
+        NullCompleter.INSTANCE.complete(reader, line, candidates);
       }
     }
   }

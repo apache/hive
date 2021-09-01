@@ -49,7 +49,7 @@
                 <include>commons-cli:commons-cli:jar</include>
                 <include>commons-io:commons-io:jar</include>
                 <include>commons-logging:commons-logging:jar</include>
-                <include>jline:jline:jar</include>
+                <include>org.jline:jline:jar</include>
                 <include>org.apache.thrift:libthrift:jar</include>
                 <include>org.slf4j:slf4j-api:jar</include>
                 <include>net.sf.supercsv:super-csv:jar</include>
