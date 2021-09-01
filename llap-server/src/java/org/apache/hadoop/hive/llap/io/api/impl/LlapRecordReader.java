@@ -760,6 +760,11 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           .include(readerIncludes).includeAcidColumns(includeAcidColumns);
       evolution = new SchemaEvolution(fileSchema, readerSchema, options);
 
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Generated ORC schema evolution. Reader schema: {}, Reader included: {}, File schema: {}, File " +
+            "included: {}", evolution.getReaderSchema(), evolution.getReaderIncluded(), evolution.getFileSchema(),
+            evolution.getFileIncluded());
+      }
       generateLogicalOrderedColumnIds();
       return evolution;
     }
@@ -772,12 +777,15 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     private void generateLogicalOrderedColumnIds() {
       if (acidStructColumnId != null) {
         // ACID case - no op
+        LOG.debug("Not generating logical ordered column IDs for an ACID file read.");
         return;
       }
       adjustPhysicalColumnIds(evolution);
       // Logical ordered column ids rely on schema names, thus force positional evolution must be off
       if (jobConf.getBoolean(OrcConf.FORCE_POSITIONAL_EVOLUTION.getHiveConfName(), true)) {
         logicalOrderedColumnIds = filePhysicalColumnIds;
+        LOG.debug("Not generating logical ordered column IDs by column name matching, as it is not possible with " +
+            "orc.force.positional.evolution turned on.");
         return;
       }
       logicalOrderedColumnIds = new LinkedList<>();
@@ -797,6 +805,8 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
           logicalOrderedColumnIds.add(id);
         }
       }
+      LOG.debug("Logical ordered column IDs generated. Result: {}, fileSchemaMap: {}, readSchemaMap: {}",
+          logicalOrderedColumnIds, fileSchemaMap, readSchemaMap);
     }
 
     @Override
@@ -868,13 +878,16 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
      * @param evolution - provided by ORC libs as per file schema and read schema
      */
     private void adjustPhysicalColumnIds(SchemaEvolution evolution) {
-      filePhysicalColumnIds = new LinkedList<>();
+      LinkedList<Integer> newFilePhysicalColumnIds = new LinkedList<>();
       boolean[] firstLevelPhysicalIncludes = OrcInputFormat.firstLevelFileIncludes(evolution);
       for (int i = 1; i < firstLevelPhysicalIncludes.length; ++i) {
         if (firstLevelPhysicalIncludes[i]) {
-          filePhysicalColumnIds.add(i - 1);
+          newFilePhysicalColumnIds.add(i - 1);
         }
       }
+      LOG.debug("Adjusting file physical included columnd IDs based on ORC SchemaEvolution. Original: {}, Adjusted: {}",
+          this.filePhysicalColumnIds, newFilePhysicalColumnIds);
+      this.filePhysicalColumnIds = newFilePhysicalColumnIds;
     }
 
     @Override

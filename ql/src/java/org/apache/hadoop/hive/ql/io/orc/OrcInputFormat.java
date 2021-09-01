@@ -2748,7 +2748,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   /**
    * Recursively builds 2 maps:
    *  ID to type description
-   *  child to parent type description
+   *  child to parent type description ID
    * @param typeDescription - the considered type description, root on first invocation
    * @param idMap
    * @param parentIdMap

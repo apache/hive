@@ -48,9 +48,7 @@ public interface ColumnVectorProducer {
     boolean[] generateFileIncludes(TypeDescription fileSchema);
     List<Integer> getPhysicalColumnIds();
     List<Integer> getReaderLogicalColumnIds();
-
     TypeDescription[] getBatchReaderTypes(TypeDescription fileSchema);
-
     String[] getOriginalColumnNames(TypeDescription fileSchema);
     String getQueryId();
     boolean isProbeDecodeEnabled();
