@@ -73,6 +73,7 @@ date_add
 date_format
 date_sub
 datediff
+datetime_legacy_hybrid_calendar
 day
 dayofmonth
 dayofweek
@@ -391,6 +392,7 @@ date_add
 date_format
 date_sub
 datediff
+datetime_legacy_hybrid_calendar
 to_date
 PREHOOK: query: SHOW FUNCTIONS '***'
 PREHOOK: type: SHOWFUNCTIONS

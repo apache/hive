@@ -31,7 +31,7 @@ limitations under the License.
     <jclouds.version>2.0.0</jclouds.version>
     <checkstyle.conf.dir>${basedir}/../../checkstyle/</checkstyle.conf.dir>
     <maven.checkstyle.plugin.version>2.12.1</maven.checkstyle.plugin.version>
-    <jackson.version>2.9.4</jackson.version>
+    <jackson.version>2.10.0</jackson.version>
   </properties>
 
   <repositories>

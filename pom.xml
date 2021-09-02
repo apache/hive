@@ -21,7 +21,7 @@
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>3.1.2</version>
+  <version>3.1.3</version>
   <packaging>pom</packaging>
 
   <name>Hive</name>
@@ -122,7 +122,7 @@
     <!-- Include arrow for LlapOutputFormatService -->
     <arrow.version>0.8.0</arrow.version>
     <avatica.version>1.11.0</avatica.version>
-    <avro.version>1.7.7</avro.version>
+    <avro.version>1.8.2</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <calcite.version>1.16.0</calcite.version>
     <datanucleus-api-jdo.version>5.2.3</datanucleus-api-jdo.version>
@@ -159,7 +159,7 @@
     <httpcomponents.client.version>4.5.2</httpcomponents.client.version>
     <httpcomponents.core.version>4.4.4</httpcomponents.core.version>
     <ivy.version>2.4.0</ivy.version>
-    <jackson.version>2.9.5</jackson.version>
+    <jackson.version>2.10.0</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
     <jamon-runtime.version>2.3.1</jamon-runtime.version>
     <javaewah.version>0.3.2</javaewah.version>
@@ -183,7 +183,7 @@
     <libthrift.version>0.9.3</libthrift.version>
     <log4j2.version>2.10.0</log4j2.version>
     <opencsv.version>2.3</opencsv.version>
-    <orc.version>1.5.6</orc.version>
+    <orc.version>1.5.8</orc.version>
     <mockito-all.version>1.10.19</mockito-all.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.1.17.Final</netty.version>

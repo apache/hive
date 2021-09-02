@@ -961,7 +961,7 @@ public class SessionState {
     authorizerV2.applyAuthorizationConfigPolicy(sessionConf);
     // update config in Hive thread local as well and init the metastore client
     try {
-      Hive.get(sessionConf).getMSC();
+      Hive.getWithoutRegisterFns(sessionConf).getMSC();
     } catch (Exception e) {
       // catch-all due to some exec time dependencies on session state
       // that would cause ClassNoFoundException otherwise

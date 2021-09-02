@@ -87,20 +87,36 @@ public class AvroGenericRecordReader implements
     }
 
     if (split.getLength() == 0) {
-      this.isEmptyInput = true;
-      this.start = 0;
       this.reader = null;
-    }
-    else {
-      this.isEmptyInput = false;
+      this.isEmptyInput = true;
+    } else {
       this.reader = new DataFileReader<GenericRecord>(new FsInput(split.getPath(), job), gdr);
-      this.reader.sync(split.getStart());
-      this.start = reader.tell();
+      this.isEmptyInput = false;
     }
-    this.stop = split.getStart() + split.getLength();
-    this.recordReaderID = new UID();
 
-    this.writerTimezone = extractWriterTimezoneFromMetadata(job, split, gdr);
+    try {
+      if (this.isEmptyInput) {
+        this.start = 0;
+      } else {
+        this.reader.sync(split.getStart());
+        this.start = reader.tell();
+      }
+      this.stop = split.getStart() + split.getLength();
+      this.recordReaderID = new UID();
+
+      this.writerTimezone = extractWriterTimezoneFromMetadata(job, split, gdr);
+    } catch (Exception e) {
+      if (this.reader != null) {
+        try {
+          this.reader.close();
+        } catch (Exception closeException) {
+          if (closeException != e) {
+            e.addSuppressed(closeException);
+          }
+        }
+      }
+      throw e;
+    }
   }
 
   /**
@@ -152,13 +168,12 @@ public class AvroGenericRecordReader implements
   }
 
   private ZoneId extractWriterTimezoneFromMetadata(JobConf job, FileSplit split,
-      GenericDatumReader<GenericRecord> gdr) throws IOException {
+      GenericDatumReader<GenericRecord> gdr) {
     if (job == null || gdr == null || split == null || split.getPath() == null) {
       return null;
     }
-    try {
-      DataFileReader<GenericRecord> dataFileReader =
-          new DataFileReader<GenericRecord>(new FsInput(split.getPath(), job), gdr);
+    try (DataFileReader<GenericRecord> dataFileReader = new DataFileReader<GenericRecord>(
+        new FsInput(split.getPath(), job), gdr)) {
       if (dataFileReader.getMeta(AvroSerDe.WRITER_TIME_ZONE) != null) {
         try {
           return ZoneId.of(new String(dataFileReader.getMeta(AvroSerDe.WRITER_TIME_ZONE),
@@ -169,6 +184,7 @@ public class AvroGenericRecordReader implements
       }
     } catch (IOException e) {
       // Can't access metadata, carry on.
+      LOG.debug(e.getMessage(), e);
     }
     return null;
   }

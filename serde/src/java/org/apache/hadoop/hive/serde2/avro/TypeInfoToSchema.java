@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
+import org.apache.avro.JsonProperties;
 import org.apache.avro.Schema;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
@@ -73,7 +74,7 @@ public class TypeInfoToSchema {
   }
 
   private Schema.Field createAvroField(String name, TypeInfo typeInfo, String comment) {
-    return new Schema.Field(name, createAvroSchema(typeInfo), comment, null);
+    return new Schema.Field(name, createAvroSchema(typeInfo), comment, JsonProperties.NULL_VALUE);
   }
 
   private Schema createAvroSchema(TypeInfo typeInfo) {
@@ -235,7 +236,7 @@ public class TypeInfoToSchema {
   private List<Schema.Field> getFields(Schema.Field schemaField) {
     List<Schema.Field> fields = new ArrayList<Schema.Field>();
 
-    JsonNode nullDefault = JsonNodeFactory.instance.nullNode();
+    JsonProperties.Null nullDefault = JsonProperties.NULL_VALUE;
     if (schemaField.schema().getType() == Schema.Type.RECORD) {
       for (Schema.Field field : schemaField.schema().getFields()) {
         fields.add(new Schema.Field(field.name(), field.schema(), field.doc(), nullDefault));

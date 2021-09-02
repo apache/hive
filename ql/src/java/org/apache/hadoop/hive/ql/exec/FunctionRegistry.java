@@ -508,6 +508,8 @@ public final class FunctionRegistry {
     system.registerGenericUDF("unix_timestamp", GenericUDFUnixTimeStamp.class);
     system.registerGenericUDF("to_unix_timestamp", GenericUDFToUnixTimeStamp.class);
 
+    system.registerGenericUDF("datetime_legacy_hybrid_calendar", GenericUDFDatetimeLegacyHybridCalendar.class);
+
     system.registerGenericUDF("internal_interval", GenericUDFInternalInterval.class);
 
     system.registerGenericUDF("to_epoch_milli", GenericUDFEpochMilli.class);

@@ -24,6 +24,8 @@ import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.List;
 
+
+import org.apache.commons.logging.LogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,6 +98,7 @@ public final class JavaUtils {
       LOG.warn("Ignoring attempt to close class loader ({}) -- not instance of UDFClassLoader.",
           loader == null ? "mull" : loader.getClass().getSimpleName());
     }
+  LogFactory.release(loader);
   }
 
   /**
