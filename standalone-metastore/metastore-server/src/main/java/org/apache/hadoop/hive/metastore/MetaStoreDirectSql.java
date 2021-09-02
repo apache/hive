@@ -955,27 +955,28 @@ class MetaStoreDirectSql {
             + SERDES + ".\"SERDE_ID\" " + "where \"PART_ID\" in (" + partIds
             + ") order by \"PART_NAME\" asc";
 
-    long start = doTrace ? System.nanoTime() : 0;
+    // Read all the fields and create partitions, SDs and serdes.
+    TreeMap<Long, Partition> partitions = new TreeMap<Long, Partition>();
+    TreeMap<Long, StorageDescriptor> sds = new TreeMap<Long, StorageDescriptor>();
+    TreeMap<Long, SerDeInfo> serdes = new TreeMap<Long, SerDeInfo>();
+    TreeMap<Long, List<FieldSchema>> colss = new TreeMap<Long, List<FieldSchema>>();
+    // Keep order by name, consistent with JDO.
+    ArrayList<Partition> orderedResult = new ArrayList<Partition>(partIdList.size());
+
+    // Prepare StringBuilder-s for "in (...)" lists to use in one-to-many queries.
+    StringBuilder sdSb = new StringBuilder(sbCapacity), serdeSb = new StringBuilder(sbCapacity);
+    StringBuilder colsSb = new StringBuilder(7); // We expect that there's only one field schema.
+    tblName = tblName.toLowerCase();
+    dbName = dbName.toLowerCase();
+    catName = normalizeSpace(catName).toLowerCase();
+    partitions.navigableKeySet();
+
     try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      long start = doTrace ? System.nanoTime() : 0;
       List<Object[]> sqlResult = executeWithArray(query, null, queryText);
       long queryTime = doTrace ? System.nanoTime() : 0;
       Deadline.checkTimeout();
 
-      // Read all the fields and create partitions, SDs and serdes.
-      TreeMap<Long, Partition> partitions = new TreeMap<Long, Partition>();
-      TreeMap<Long, StorageDescriptor> sds = new TreeMap<Long, StorageDescriptor>();
-      TreeMap<Long, SerDeInfo> serdes = new TreeMap<Long, SerDeInfo>();
-      TreeMap<Long, List<FieldSchema>> colss = new TreeMap<Long, List<FieldSchema>>();
-      // Keep order by name, consistent with JDO.
-      ArrayList<Partition> orderedResult = new ArrayList<Partition>(partIdList.size());
-
-      // Prepare StringBuilder-s for "in (...)" lists to use in one-to-many queries.
-      StringBuilder sdSb = new StringBuilder(sbCapacity), serdeSb = new StringBuilder(sbCapacity);
-      StringBuilder colsSb = new StringBuilder(7); // We expect that there's only one field schema.
-      tblName = tblName.toLowerCase();
-      dbName = dbName.toLowerCase();
-      catName = normalizeSpace(catName).toLowerCase();
-      partitions.navigableKeySet();
       for (Object[] fields : sqlResult) {
         // Here comes the ugly part...
         long partitionId = MetastoreDirectSqlUtils.extractSqlLong(fields[0]);
@@ -1066,64 +1067,63 @@ class MetaStoreDirectSql {
         Deadline.checkTimeout();
       }
       MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
-
-      // Now get all the one-to-many things. Start with partitions.
-      MetastoreDirectSqlUtils
-          .setPartitionParameters(PARTITION_PARAMS, convertMapNullsToEmptyStrings, pm, partIds, partitions);
-
-      MetastoreDirectSqlUtils.setPartitionValues(PARTITION_KEY_VALS, pm, partIds, partitions);
-
-      // Prepare IN (blah) lists for the following queries. Cut off the final ','s.
-      if (sdSb.length() == 0) {
-        assert serdeSb.length() == 0 && colsSb.length() == 0;
-        return orderedResult; // No SDs, probably a view.
-      }
-
-      String sdIds = trimCommaList(sdSb);
-      String serdeIds = trimCommaList(serdeSb);
-      String colIds = trimCommaList(colsSb);
-
-      if (!isAcidTable) {
-        // Get all the stuff for SD. Don't do empty-list check - we expect partitions do have SDs.
-        MetastoreDirectSqlUtils.setSDParameters(SD_PARAMS, convertMapNullsToEmptyStrings, pm, sds, sdIds);
-      }
-
-      boolean hasSkewedColumns = false;
-      if (!isAcidTable) {
-        MetastoreDirectSqlUtils.setSDSortCols(SORT_COLS, pm, sds, sdIds);
-      }
-
-      MetastoreDirectSqlUtils.setSDBucketCols(BUCKETING_COLS, pm, sds, sdIds);
-
-      if (!isAcidTable) {
-        // Skewed columns stuff.
-        hasSkewedColumns = MetastoreDirectSqlUtils.setSkewedColNames(SKEWED_COL_NAMES, pm, sds, sdIds);
-      }
-
-      // Assume we don't need to fetch the rest of the skewed column data if we have no columns.
-      if (hasSkewedColumns) {
-        // We are skipping the SKEWED_STRING_LIST table here, as it seems to be totally useless.
-        MetastoreDirectSqlUtils
-            .setSkewedColValues(SKEWED_STRING_LIST_VALUES, SKEWED_VALUES, pm, sds, sdIds);
-
-        // We are skipping the SKEWED_STRING_LIST table here, as it seems to be totally useless.
-        MetastoreDirectSqlUtils
-            .setSkewedColLocationMaps(SKEWED_COL_VALUE_LOC_MAP, SKEWED_STRING_LIST_VALUES, pm, sds, sdIds);
-      } // if (hasSkewedColumns)
-
-      // Get FieldSchema stuff if any.
-      if (!colss.isEmpty()) {
-        // We are skipping the CDS table here, as it seems to be totally useless.
-        MetastoreDirectSqlUtils.setSDCols(COLUMNS_V2, pm, colss, colIds);
-      }
-
-      // Finally, get all the stuff for serdes - just the params.
-      if (!isAcidTable) {
-        MetastoreDirectSqlUtils.setSerdeParams(SERDE_PARAMS, convertMapNullsToEmptyStrings, pm, serdes, serdeIds);
-      }
-
-      return orderedResult;
     }
+    // Now get all the one-to-many things. Start with partitions.
+    MetastoreDirectSqlUtils
+        .setPartitionParameters(PARTITION_PARAMS, convertMapNullsToEmptyStrings, pm, partIds, partitions);
+
+    MetastoreDirectSqlUtils.setPartitionValues(PARTITION_KEY_VALS, pm, partIds, partitions);
+
+    // Prepare IN (blah) lists for the following queries. Cut off the final ','s.
+    if (sdSb.length() == 0) {
+      assert serdeSb.length() == 0 && colsSb.length() == 0;
+      return orderedResult; // No SDs, probably a view.
+    }
+
+    String sdIds = trimCommaList(sdSb);
+    String serdeIds = trimCommaList(serdeSb);
+    String colIds = trimCommaList(colsSb);
+
+    if (!isAcidTable) {
+      // Get all the stuff for SD. Don't do empty-list check - we expect partitions do have SDs.
+      MetastoreDirectSqlUtils.setSDParameters(SD_PARAMS, convertMapNullsToEmptyStrings, pm, sds, sdIds);
+    }
+
+    boolean hasSkewedColumns = false;
+    if (!isAcidTable) {
+      MetastoreDirectSqlUtils.setSDSortCols(SORT_COLS, pm, sds, sdIds);
+    }
+
+    MetastoreDirectSqlUtils.setSDBucketCols(BUCKETING_COLS, pm, sds, sdIds);
+
+    if (!isAcidTable) {
+      // Skewed columns stuff.
+      hasSkewedColumns = MetastoreDirectSqlUtils.setSkewedColNames(SKEWED_COL_NAMES, pm, sds, sdIds);
+    }
+
+    // Assume we don't need to fetch the rest of the skewed column data if we have no columns.
+    if (hasSkewedColumns) {
+      // We are skipping the SKEWED_STRING_LIST table here, as it seems to be totally useless.
+      MetastoreDirectSqlUtils
+          .setSkewedColValues(SKEWED_STRING_LIST_VALUES, SKEWED_VALUES, pm, sds, sdIds);
+
+      // We are skipping the SKEWED_STRING_LIST table here, as it seems to be totally useless.
+      MetastoreDirectSqlUtils
+          .setSkewedColLocationMaps(SKEWED_COL_VALUE_LOC_MAP, SKEWED_STRING_LIST_VALUES, pm, sds, sdIds);
+    } // if (hasSkewedColumns)
+
+    // Get FieldSchema stuff if any.
+    if (!colss.isEmpty()) {
+      // We are skipping the CDS table here, as it seems to be totally useless.
+      MetastoreDirectSqlUtils.setSDCols(COLUMNS_V2, pm, colss, colIds);
+    }
+
+    // Finally, get all the stuff for serdes - just the params.
+    if (!isAcidTable) {
+      MetastoreDirectSqlUtils.setSerdeParams(SERDE_PARAMS, convertMapNullsToEmptyStrings, pm, serdes, serdeIds);
+    }
+
+    return orderedResult;
   }
 
   public int getNumPartitionsViaSqlFilter(SqlFilterForPushdown filter) throws MetaException {

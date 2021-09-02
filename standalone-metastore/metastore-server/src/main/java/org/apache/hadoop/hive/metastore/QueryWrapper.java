@@ -29,6 +29,10 @@ import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * A wrapper around the Query object to the caller and let the caller release
+ * the resources with no superfluous exception handing when using try-with-resources.
+ */
 public class QueryWrapper implements Query {
 
   private final Query delegate;
@@ -45,11 +49,6 @@ public class QueryWrapper implements Query {
   @Override
   public void close() {
     delegate.closeAll();
-  }
-
-  @Override
-  protected void finalize() {
-    this.close();
   }
 
   // ======================= Interfaces of Query ===========================

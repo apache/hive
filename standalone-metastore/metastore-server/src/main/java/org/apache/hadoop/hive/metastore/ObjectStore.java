@@ -249,7 +249,6 @@ import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.yarn.webapp.hamlet2.Hamlet;
 import org.apache.thrift.TException;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
 import org.slf4j.Logger;
@@ -8107,8 +8106,8 @@ public class ObjectStore implements RawStore, Configurable {
       args = new String[] { dbName, catName };
     }
 
-    try (QueryWrapper wrapper = new QueryWrapper(query)) {
-      final List<MDBPrivilege> mSecurityDBList = (List<MDBPrivilege>) wrapper.executeWithArray(args);
+    try (QueryWrapper q = new QueryWrapper(query)) {
+      final List<MDBPrivilege> mSecurityDBList = (List<MDBPrivilege>) q.executeWithArray(args);
       pm.retrieveAll(mSecurityDBList);
       LOG.debug("Done retrieving all objects for listDatabaseGrants: {}", mSecurityDBList);
       return Collections.unmodifiableList(new ArrayList<>(mSecurityDBList));
