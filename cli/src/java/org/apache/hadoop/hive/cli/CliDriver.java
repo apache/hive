@@ -74,23 +74,24 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
+import org.jline.reader.Candidate;
+import org.jline.reader.Completer;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.ParsedLine;
+import org.jline.reader.impl.DefaultParser;
+import org.jline.reader.impl.completer.ArgumentCompleter;
+import org.jline.reader.impl.completer.NullCompleter;
+import org.jline.reader.impl.completer.StringsCompleter;
+import org.jline.reader.impl.history.DefaultHistory;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.Terminal.Signal;
+import org.jline.terminal.Terminal.SignalHandler;
+import org.jline.terminal.TerminalBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Splitter;
-
-import jline.console.ConsoleReader;
-import jline.console.completer.ArgumentCompleter;
-import jline.console.completer.ArgumentCompleter.AbstractArgumentDelimiter;
-import jline.console.completer.ArgumentCompleter.ArgumentDelimiter;
-import jline.console.completer.Completer;
-import jline.console.completer.StringsCompleter;
-import jline.console.history.FileHistory;
-import jline.console.history.History;
-import jline.console.history.PersistentHistory;
-import sun.misc.Signal;
-import sun.misc.SignalHandler;
-
 
 /**
  * CliDriver.
@@ -106,7 +107,7 @@ public class CliDriver {
   public static final String HIVERCFILE = ".hiverc";
 
   private final LogHelper console;
-  protected ConsoleReader reader;
+  protected LineReader reader;
   private Configuration conf;
 
   public CliDriver() {
@@ -370,8 +371,8 @@ public class CliDriver {
     if (allowInterrupting) {
       // Remember all threads that were running at the time we started line processing.
       // Hook up the custom Ctrl+C handler while processing this line
-      interruptSignal = new Signal("INT");
-      oldSignal = Signal.handle(interruptSignal, new SignalHandler() {
+      interruptSignal = Terminal.Signal.INT;
+      oldSignal = this.reader.getTerminal().handle(interruptSignal, new SignalHandler() {
         private boolean interruptRequested;
 
         @Override
@@ -434,7 +435,7 @@ public class CliDriver {
     } finally {
       // Once we are done processing the line, restore the old handler
       if (oldSignal != null && interruptSignal != null) {
-        Signal.handle(interruptSignal, oldSignal);
+        this.reader.getTerminal().handle(interruptSignal, oldSignal);
       }
     }
   }
@@ -607,21 +608,9 @@ public class CliDriver {
 
     StringsCompleter strCompleter = new StringsCompleter(candidateStrings);
 
-    // Because we use parentheses in addition to whitespace
-    // as a keyword delimiter, we need to define a new ArgumentDelimiter
-    // that recognizes parenthesis as a delimiter.
-    ArgumentDelimiter delim = new AbstractArgumentDelimiter() {
-      @Override
-      public boolean isDelimiterChar(CharSequence buffer, int pos) {
-        char c = buffer.charAt(pos);
-        return (Character.isWhitespace(c) || c == '(' || c == ')' ||
-            c == '[' || c == ']');
-      }
-    };
-
     // The ArgumentCompletor allows us to match multiple tokens
     // in the same line.
-    final ArgumentCompleter argCompleter = new ArgumentCompleter(delim, strCompleter);
+    final ArgumentCompleter argCompleter = new ArgumentCompleter(strCompleter);
     // By default ArgumentCompletor is in "strict" mode meaning
     // a token is only auto-completed if all prior tokens
     // match. We don't want that since there are valid tokens
@@ -635,17 +624,16 @@ public class CliDriver {
     // to reverse this.
     Completer customCompletor = new Completer () {
       @Override
-      public int complete (String buffer, int offset, List completions) {
-        List<String> comp = completions;
-        int ret = argCompleter.complete(buffer, offset, completions);
+      public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
+        argCompleter.complete(reader, line, candidates);
         // ConsoleReader will do the substitution if and only if there
         // is exactly one valid completion, so we ignore other cases.
-        if (completions.size() == 1) {
-          if (comp.get(0).endsWith("( ")) {
-            comp.set(0, comp.get(0).trim());
+        if (candidates.size() == 1) {
+          Candidate c = candidates.get(0);
+          if (c.value().endsWith("( ")) {
+            candidates.set(0, new Candidate(c.value().trim()));
           }
         }
-        return ret;
       }
     };
 
@@ -656,59 +644,64 @@ public class CliDriver {
 
     StringsCompleter confCompleter = new StringsCompleter(vars) {
       @Override
-      public int complete(final String buffer, final int cursor, final List<CharSequence> clist) {
-        int result = super.complete(buffer, cursor, clist);
-        if (clist.isEmpty() && cursor > 1 && buffer.charAt(cursor - 1) == '=') {
-          HiveConf.ConfVars var = HiveConf.getConfVars(buffer.substring(0, cursor - 1));
+      public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
+        super.complete(reader, commandLine, candidates);
+        int cursor = commandLine.cursor();
+        if (candidates.isEmpty() && commandLine.cursor() > 1 && commandLine.word().charAt(cursor - 1) == '=') {
+          HiveConf.ConfVars var = HiveConf.getConfVars(commandLine.word().substring(0, cursor - 1));
           if (var == null) {
-            return result;
+            return;
           }
           if (var.getValidator() instanceof Validator.StringSet) {
             Validator.StringSet validator = (Validator.StringSet)var.getValidator();
-            clist.addAll(validator.getExpected());
+            for (String expected : validator.getExpected()) {
+              candidates.add(new Candidate(expected));
+            }
           } else if (var.getValidator() != null) {
-            clist.addAll(Arrays.asList(var.getValidator().toDescription(), ""));
+            candidates.add(new Candidate(var.getValidator().toDescription()));
           } else {
-            clist.addAll(Arrays.asList("Expects " + var.typeString() + " type value", ""));
+            candidates.add(new Candidate("Expects " + var.typeString() + " type value"));
           }
-          return cursor;
+          return;
         }
-        if (clist.size() > DELIMITED_CANDIDATE_THRESHOLD) {
-          Set<CharSequence> delimited = new LinkedHashSet<CharSequence>();
-          for (CharSequence candidate : clist) {
+        if (candidates.size() > DELIMITED_CANDIDATE_THRESHOLD) {
+          Set<Candidate> delimited = new LinkedHashSet<>();
+          for (Candidate candidate : candidates) {
             Iterator<String> it = Splitter.on(".").split(
-                candidate.subSequence(cursor, candidate.length())).iterator();
+                candidate.value().subSequence(cursor, candidate.value().length())).iterator();
             if (it.hasNext()) {
               String next = it.next();
               if (next.isEmpty()) {
                 next = ".";
               }
-              candidate = buffer != null ? buffer.substring(0, cursor) + next : next;
+              candidate = new Candidate(commandLine.word() != null ? commandLine.word().substring(0, cursor) + next : next);
             }
             delimited.add(candidate);
           }
-          clist.clear();
-          clist.addAll(delimited);
+          candidates.clear();
+          candidates.addAll(delimited);
         }
-        return result;
       }
     };
 
     StringsCompleter setCompleter = new StringsCompleter("set") {
       @Override
-      public int complete(String buffer, int cursor, List<CharSequence> clist) {
-        return buffer != null && buffer.equals("set") ? super.complete(buffer, cursor, clist) : -1;
+      public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
+        if (commandLine != null && commandLine.line().equals("set")) {
+          super.complete(reader, commandLine, candidates);
+        } else {
+          NullCompleter.INSTANCE.complete(reader, commandLine, candidates);
+        }
       }
     };
 
     ArgumentCompleter propCompleter = new ArgumentCompleter(setCompleter, confCompleter) {
       @Override
-      public int complete(String buffer, int offset, List<CharSequence> completions) {
-        int ret = super.complete(buffer, offset, completions);
-        if (completions.size() == 1) {
-          completions.set(0, ((String)completions.get(0)).trim());
+      public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
+        super.complete(reader, line, candidates);
+        if (candidates.size() == 1) {
+          candidates.set(0, new Candidate(candidates.get(0).value().trim()));
         }
-        return ret;
       }
     };
     return new Completer[] {propCompleter, customCompletor};
@@ -880,15 +873,13 @@ public class CliDriver {
     return response;
   }
 
-  private void setupCmdHistory() {
+  private String setupCmdHistory() {
     final String HISTORYFILE = ".hivehistory";
     String historyDirectory = System.getProperty("user.home");
-    PersistentHistory history = null;
     try {
       if ((new File(historyDirectory)).exists()) {
         String historyFile = historyDirectory + File.separator + HISTORYFILE;
-        history = new FileHistory(new File(historyFile));
-        reader.setHistory(history);
+        return historyFile;
       } else {
         System.err.println("WARNING: Directory for Hive history file: " + historyDirectory +
                            " does not exist.   History will not be available during this session.");
@@ -898,31 +889,35 @@ public class CliDriver {
                          "history file.  History will not be available during this session.");
       System.err.println(e.getMessage());
     }
-
-    // add shutdown hook to flush the history to history file
-    ShutdownHookManager.addShutdownHook(new Runnable() {
-      @Override
-      public void run() {
-        History h = reader.getHistory();
-        if (h instanceof FileHistory) {
-          try {
-            ((FileHistory) h).flush();
-          } catch (IOException e) {
-            System.err.println("WARNING: Failed to write command history file: " + e.getMessage());
-          }
-        }
-      }
-    });
+    return null;
   }
 
   protected void setupConsoleReader() throws IOException {
-    reader = new ConsoleReader();
-    reader.setExpandEvents(false);
-    reader.setBellEnabled(false);
+    LineReaderBuilder builder = LineReaderBuilder.builder();
+    builder.variable(LineReader.BELL_STYLE, "audible");
     for (Completer completer : getCommandCompleter()) {
-      reader.addCompleter(completer);
+      builder.completer(completer);
     }
-    setupCmdHistory();
+    builder.parser(new DefaultParser() {
+      @Override
+      public boolean isDelimiterChar(CharSequence buffer, int pos) {
+        // Because we use parentheses in addition to whitespace
+        // as a keyword delimiter, we need to define a new ArgumentDelimiter
+        // that recognizes parenthesis as a delimiter.
+        char c = buffer.charAt(pos);
+        return (Character.isWhitespace(c) || c == '(' || c == ')' ||
+            c == '[' || c == ']');
+      }
+    });
+
+    builder.terminal(TerminalBuilder.terminal());
+
+    String historyFilePath = setupCmdHistory();
+    builder.history(new DefaultHistory());
+    if (historyFilePath != null) {
+      builder.variable(LineReader.HISTORY_FILE, historyFilePath);
+    }
+    reader = builder.build();
   }
 
   /**
