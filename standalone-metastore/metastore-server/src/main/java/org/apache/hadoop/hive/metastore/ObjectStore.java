@@ -3363,7 +3363,7 @@ public class ObjectStore implements RawStore, Configurable {
       return null;
     }
 
-    try(QueryWrapper query = new QueryWrapper(pm.newQuery(
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery(
         "select partitionName from org.apache.hadoop.hive.metastore.model.MPartition"))) {
       query.setFilter(jdoFilter);
       List<Object[]> orderSpecs = MetaStoreUtils.makeOrderSpecs(order);
@@ -4086,7 +4086,7 @@ public class ObjectStore implements RawStore, Configurable {
         Pair<Query, Map<String, String>> queryWithParams =
             getPartQueryWithParams(catName, dbName, tblName, input);
 
-        try(QueryWrapper query = new QueryWrapper(queryWithParams.getLeft())) {
+        try (QueryWrapper query = new QueryWrapper(queryWithParams.getLeft())) {
           query.setResultClass(MPartition.class);
           query.setClass(MPartition.class);
           query.setOrdering("partitionName ascending");
@@ -4103,7 +4103,7 @@ public class ObjectStore implements RawStore, Configurable {
   private void dropPartitionsNoTxn(String catName, String dbName, String tblName, List<String> partNames) {
     Pair<Query, Map<String, String>> queryWithParams =
         getPartQueryWithParams(catName, dbName, tblName, partNames);
-    try(QueryWrapper query = new QueryWrapper(queryWithParams.getLeft())) {
+    try (QueryWrapper query = new QueryWrapper(queryWithParams.getLeft())) {
       query.setClass(MPartition.class);
       long deleted = query.deletePersistentAll(queryWithParams.getRight());
       LOG.debug("Deleted {} partition from store", deleted);
@@ -4120,7 +4120,7 @@ public class ObjectStore implements RawStore, Configurable {
       String catName, String dbName, String tblName, List<String> partNames) {
     Pair<Query, Map<String, String>> queryWithParams =
         getPartQueryWithParams(catName, dbName, tblName, partNames);
-    try(QueryWrapper query = new QueryWrapper(queryWithParams.getLeft())) {
+    try (QueryWrapper query = new QueryWrapper(queryWithParams.getLeft())) {
       query.setClass(MPartition.class);
       query.setResult("sd");
       List<MStorageDescriptor> sds = (List<MStorageDescriptor>) query.executeWithMap(
