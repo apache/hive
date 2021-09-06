@@ -87,7 +87,7 @@ public class HiveRowIsDeletedPropagator extends HiveRelShuttleImpl {
     // Note: as a nature of Calcite if row schema of TS and the new Project would be exactly the same no
     // Project is created.
     return relBuilder
-        .push(scan.enableFetchDeletedRows())
+        .push(scan.setTableScanTrait(HiveTableScan.HiveTableScanTrait.FetchDeletedRows))
         .project(projects, projectNames)
         .build();
   }

@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.BucketIdentifier;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
@@ -109,6 +110,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
   private final ExecutorService executor;
   private final boolean isAcidScan;
   private final boolean isAcidFormat;
+  private final BucketIdentifier bucketIdentifier;
 
   /**
    * Creates the record reader and checks the input-specific compatibility.
@@ -158,6 +160,8 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     rbCtx = ctx != null ? ctx : LlapInputFormat.createFakeVrbCtx(mapWork);
 
     isAcidScan = AcidUtils.isFullAcidScan(jobConf);
+    this.bucketIdentifier = BucketIdentifier.from(jobConf, split.getPath());
+
     TypeDescription schema = OrcInputFormat.getDesiredRowTypeDescr(
         job, isAcidScan, Integer.MAX_VALUE);
 
@@ -429,6 +433,11 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     if (wasFirst) {
       firstReturnTime = counters.startTimeCounter();
     }
+
+    if (bucketIdentifier != null) {
+      rbCtx.setBucketAndWriteIdOf(vrb, bucketIdentifier);
+    }
+
     return true;
   }
 
