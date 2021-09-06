@@ -1553,16 +1553,15 @@ public class ObjectStore implements RawStore, Configurable {
     constraintname = constraintname!=null?normalizeIdentifier(constraintname):null;
     List<MConstraint> mConstraints = null;
     List<String> constraintNames = new ArrayList<>();
-    Query queryForConstraintName = null;
-    Query queryForMConstraint = null;
 
-    try {
-      queryForConstraintName = pm.newQuery("select constraintName from org.apache.hadoop.hive.metastore.model.MConstraint  where "
+    try (QueryWrapper queryForConstraintName = new QueryWrapper(pm.newQuery("select constraintName from org.apache.hadoop.hive.metastore.model.MConstraint  where "
         + "((parentTable.tableName == ptblname && parentTable.database.name == pdbname && " +
-              "parentTable.database.catalogName == pcatname) || "
+        "parentTable.database.catalogName == pcatname) || "
         + "(childTable != null && childTable.tableName == ctblname &&" +
-              "childTable.database.name == cdbname && childTable.database.catalogName == ccatname)) " +
-          (constraintname != null ? " && constraintName == constraintname" : ""));
+        "childTable.database.name == cdbname && childTable.database.catalogName == ccatname)) " +
+        (constraintname != null ? " && constraintName == constraintname" : "")));
+        QueryWrapper queryForMConstraint = new QueryWrapper(pm.newQuery(MConstraint.class))) {
+
       queryForConstraintName.declareParameters("java.lang.String ptblname, java.lang.String pdbname,"
           + "java.lang.String pcatname, java.lang.String ctblname, java.lang.String cdbname," +
           "java.lang.String ccatname" +
@@ -1577,7 +1576,7 @@ public class ObjectStore implements RawStore, Configurable {
         String currName = (String) i.next();
         constraintNames.add(currName);
       }
-      queryForMConstraint = pm.newQuery(MConstraint.class);
+
       queryForMConstraint.setFilter("param.contains(constraintName)");
       queryForMConstraint.declareParameters("java.util.Collection param");
       Collection<?> constraints = (Collection<?>)queryForMConstraint.execute(constraintNames);
@@ -1585,13 +1584,6 @@ public class ObjectStore implements RawStore, Configurable {
       for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
         MConstraint currConstraint = (MConstraint) i.next();
         mConstraints.add(currConstraint);
-      }
-    } finally {
-      if (queryForConstraintName != null) {
-        queryForConstraintName.closeAll();
-      }
-      if (queryForMConstraint != null) {
-        queryForMConstraint.closeAll();
       }
     }
     return mConstraints;
@@ -11506,13 +11498,10 @@ public class ObjectStore implements RawStore, Configurable {
       String lockingQuery = sqlGenerator.addForUpdateClause(selectQuery);
       new RetryingExecutor(conf, () -> {
         prepareQuotes();
-        Query query = pm.newQuery("javax.jdo.query.SQL", lockingQuery);
-        try {
+        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", lockingQuery))) {
           query.setUnique(true);
           // only need to execute it to get db Lock
           query.execute();
-        } finally {
-          query.closeAll();
         }
       }).run();
     }

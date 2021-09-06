@@ -31,7 +31,7 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * A wrapper around the Query object to the caller and let the caller release
- * the resources with no superfluous exception handing when using try-with-resources.
+ * the resources with no superfluous exception handing when using with try-with-resources.
  */
 public class QueryWrapper implements Query {
 
