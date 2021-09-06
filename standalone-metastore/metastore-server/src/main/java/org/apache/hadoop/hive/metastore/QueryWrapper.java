@@ -30,8 +30,9 @@ import java.util.Map;
 import static java.util.Objects.requireNonNull;
 
 /**
- * A wrapper around the Query object to the caller and let the caller release
- * the resources with no superfluous exception handing when using with try-with-resources.
+ * A wrapper around Query objects where the {@link AutoCloseable#close()} method
+ * is delegated to the wrapped object's {@link Query#closeAll()} method.
+ * This way the users of the wrapper can use try-with-resources without exception handling.
  */
 public class QueryWrapper implements Query {
 
@@ -42,10 +43,9 @@ public class QueryWrapper implements Query {
     this.delegate = query;
   }
 
-  public Query getQuery() {
-    return delegate;
-  }
-
+  /**
+   * Delegates the method to {@link Query#closeAll()}, so no exception is thrown.
+   */
   @Override
   public void close() {
     delegate.closeAll();
