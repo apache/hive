@@ -59,7 +59,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public boolean hasOldAbort = false;
   /**
    * The highest write id that the compaction job will pay attention to.
-   * {@code 0} means it wasn't set (e.g. in case of upgrades, since ResultSet.getLong() will return 0 if field is NULL) 
+   * {@code 0} means it wasn't set (e.g. in case of upgrades, since ResultSet.getLong() will return 0 if field is NULL)
    * See also {@link TxnUtils#createValidCompactWriteIdList(TableValidWriteIds)} and
    * {@link ValidCompactorWriteIdList#highWatermark}.
    */
@@ -86,7 +86,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     this.state = state;
   }
   CompactionInfo() {}
-  
+
   public String getFullPartitionName() {
     if (fullPartitionName == null) {
       StringBuilder buf = new StringBuilder(dbname);
@@ -277,6 +277,6 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
 
   public void setWriteIds(Set<Long> writeIds) {
     this.writeIds = writeIds;
-    isSetWriteIds = true;
+    isSetWriteIds = !writeIds.isEmpty();
   }
 }

@@ -321,6 +321,9 @@ public class Cleaner extends MetaStoreCompactorThread {
       ci.setWriteIds(dir.getAbortedWriteIds());
     }
     obsoleteDirs.addAll(dir.getAbortedDirectories());
+    if (isDynPartAbort(table, ci)) {
+      obsoleteDirs = dir.getAbortedDirectories();
+    }
     List<Path> filesToDelete = new ArrayList<>(obsoleteDirs.size());
 
     StringBuilder extraDebugInfo = new StringBuilder("[");
@@ -334,7 +337,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     extraDebugInfo.setCharAt(extraDebugInfo.length() - 1, ']');
     LOG.info(idWatermark(ci) + " About to remove " + filesToDelete.size() +
          " obsolete directories from " + location + ". " + extraDebugInfo.toString());
-    if (filesToDelete.size() < 1) {
+    if (filesToDelete.size() < 1 && !isDynPartAbort(table, ci)) {
       LOG.warn("Hmm, nothing to delete in the cleaner for directory " + location +
           ", that hardly seems right.");
       return false;

@@ -1152,6 +1152,58 @@ public class TestCompactor {
     Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 0, count);
   }
 
+
+
+  @Test
+  public void testCleanDynPartAbortNoDataLoss() throws Exception {
+    String dbName = "default";
+    String tblName = "cws";
+
+    HiveStreamingConnection connection = prepareTableAndConnection(dbName, tblName, 1);
+
+    executeStatementOnDriver("insert into " + tblName + " partition (a) values (1, '1')", driver);
+    executeStatementOnDriver("update " + tblName + " set b='2' where a=1", driver);
+
+    executeStatementOnDriver("insert into " + tblName + " partition (a) values (2, '2')", driver);
+    executeStatementOnDriver("update " + tblName + " set b='3' where a=2", driver);
+
+    connection.beginTransaction();
+    connection.write("1,1".getBytes());
+    connection.write("2,2".getBytes());
+    connection.abortTransaction();
+
+    executeStatementOnDriver("insert into " + tblName + " partition (a) values (3, '3')", driver);
+    executeStatementOnDriver("update " + tblName + " set b='4' where a=3", driver);
+
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 0);
+    runInitiator(conf);
+
+    int count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 4, count);
+
+    runWorker(conf);
+    runWorker(conf);
+    runWorker(conf);
+    runWorker(conf);
+
+    // Cleaning should happen in threads concurrently for the minor compaction and the clean abort one.
+    runCleaner(conf);
+
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    Partition p1 = msClient.getPartition(dbName, tblName, "a=1"),
+      p2 = msClient.getPartition(dbName, tblName, "a=2"),
+      p3 = msClient.getPartition(dbName, tblName, "a=3");
+    msClient.close();
+
+    FileSystem fs = FileSystem.get(conf);
+    verifyDeltaCount(p1.getSd(), fs, 0);
+    verifyHasBase(p1.getSd(), fs, "base_0000002_v0000010");
+    verifyDeltaCount(p2.getSd(), fs, 0);
+    verifyHasBase(p2.getSd(), fs, "base_0000004_v0000011");
+    verifyDeltaCount(p3.getSd(), fs, 0);
+    verifyHasBase(p3.getSd(), fs, "base_0000007_v0000012");
+  }
+
   @Test
   public void testCleanAbortAndMinorCompact() throws Exception {
     String dbName = "default";
