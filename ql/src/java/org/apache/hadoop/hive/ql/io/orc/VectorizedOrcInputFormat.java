@@ -26,13 +26,13 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.BucketIdentifier;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -63,6 +63,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     private VectorizedRowBatchCtx rbCtx;
     private final Object[] partitionValues;
     private boolean addPartitionCols = true;
+    private final BucketIdentifier bucketIdentifier;
 
     VectorizedOrcRecordReader(Reader file, Configuration conf,
         FileSplit fileSplit) throws IOException {
@@ -112,6 +113,8 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       } else {
         partitionValues = null;
       }
+
+      this.bucketIdentifier = BucketIdentifier.from(conf, fileSplit.getPath());
     }
 
     @Override
@@ -136,6 +139,11 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
         throw new RuntimeException(e);
       }
       progress = reader.getProgress();
+
+      if (bucketIdentifier != null) {
+        rbCtx.setBucketAndWriteIdOf(value, bucketIdentifier);
+      }
+
       return true;
     }
 

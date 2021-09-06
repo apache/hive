@@ -161,10 +161,10 @@ public class ASTBuilder {
               .add(HiveParser.StringLiteral, "\"TRUE\""));
     }
 
-    if (hts.isFetchDeletedRows()) {
+    if (hts.getTableScanTrait() != null) {
       // We need to carry the fetchDeletedRows information from calcite into the ast.
       propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
-              .add(HiveParser.StringLiteral, String.format("\"%s\"", Constants.ACID_FETCH_DELETED_ROWS))
+              .add(HiveParser.StringLiteral, String.format("\"%s\"", hts.getTableScanTrait().getPropertyKey()))
               .add(HiveParser.StringLiteral, "\"TRUE\""));
     }
 
