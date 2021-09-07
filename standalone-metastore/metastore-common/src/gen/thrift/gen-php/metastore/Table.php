@@ -454,14 +454,14 @@ class Table
                 case 8:
                     if ($ftype == TType::LST) {
                         $this->partitionKeys = array();
-                        $_size262 = 0;
-                        $_etype265 = 0;
-                        $xfer += $input->readListBegin($_etype265, $_size262);
-                        for ($_i266 = 0; $_i266 < $_size262; ++$_i266) {
-                            $elem267 = null;
-                            $elem267 = new \metastore\FieldSchema();
-                            $xfer += $elem267->read($input);
-                            $this->partitionKeys []= $elem267;
+                        $_size271 = 0;
+                        $_etype274 = 0;
+                        $xfer += $input->readListBegin($_etype274, $_size271);
+                        for ($_i275 = 0; $_i275 < $_size271; ++$_i275) {
+                            $elem276 = null;
+                            $elem276 = new \metastore\FieldSchema();
+                            $xfer += $elem276->read($input);
+                            $this->partitionKeys []= $elem276;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -471,16 +471,16 @@ class Table
                 case 9:
                     if ($ftype == TType::MAP) {
                         $this->parameters = array();
-                        $_size268 = 0;
-                        $_ktype269 = 0;
-                        $_vtype270 = 0;
-                        $xfer += $input->readMapBegin($_ktype269, $_vtype270, $_size268);
-                        for ($_i272 = 0; $_i272 < $_size268; ++$_i272) {
-                            $key273 = '';
-                            $val274 = '';
-                            $xfer += $input->readString($key273);
-                            $xfer += $input->readString($val274);
-                            $this->parameters[$key273] = $val274;
+                        $_size277 = 0;
+                        $_ktype278 = 0;
+                        $_vtype279 = 0;
+                        $xfer += $input->readMapBegin($_ktype278, $_vtype279, $_size277);
+                        for ($_i281 = 0; $_i281 < $_size277; ++$_i281) {
+                            $key282 = '';
+                            $val283 = '';
+                            $xfer += $input->readString($key282);
+                            $xfer += $input->readString($val283);
+                            $this->parameters[$key282] = $val283;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -584,13 +584,13 @@ class Table
                 case 23:
                     if ($ftype == TType::LST) {
                         $this->requiredReadCapabilities = array();
-                        $_size275 = 0;
-                        $_etype278 = 0;
-                        $xfer += $input->readListBegin($_etype278, $_size275);
-                        for ($_i279 = 0; $_i279 < $_size275; ++$_i279) {
-                            $elem280 = null;
-                            $xfer += $input->readString($elem280);
-                            $this->requiredReadCapabilities []= $elem280;
+                        $_size284 = 0;
+                        $_etype287 = 0;
+                        $xfer += $input->readListBegin($_etype287, $_size284);
+                        for ($_i288 = 0; $_i288 < $_size284; ++$_i288) {
+                            $elem289 = null;
+                            $xfer += $input->readString($elem289);
+                            $this->requiredReadCapabilities []= $elem289;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -600,13 +600,13 @@ class Table
                 case 24:
                     if ($ftype == TType::LST) {
                         $this->requiredWriteCapabilities = array();
-                        $_size281 = 0;
-                        $_etype284 = 0;
-                        $xfer += $input->readListBegin($_etype284, $_size281);
-                        for ($_i285 = 0; $_i285 < $_size281; ++$_i285) {
-                            $elem286 = null;
-                            $xfer += $input->readString($elem286);
-                            $this->requiredWriteCapabilities []= $elem286;
+                        $_size290 = 0;
+                        $_etype293 = 0;
+                        $xfer += $input->readListBegin($_etype293, $_size290);
+                        for ($_i294 = 0; $_i294 < $_size290; ++$_i294) {
+                            $elem295 = null;
+                            $xfer += $input->readString($elem295);
+                            $this->requiredWriteCapabilities []= $elem295;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -694,8 +694,8 @@ class Table
             }
             $xfer += $output->writeFieldBegin('partitionKeys', TType::LST, 8);
             $output->writeListBegin(TType::STRUCT, count($this->partitionKeys));
-            foreach ($this->partitionKeys as $iter287) {
-                $xfer += $iter287->write($output);
+            foreach ($this->partitionKeys as $iter296) {
+                $xfer += $iter296->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -706,9 +706,9 @@ class Table
             }
             $xfer += $output->writeFieldBegin('parameters', TType::MAP, 9);
             $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
-            foreach ($this->parameters as $kiter288 => $viter289) {
-                $xfer += $output->writeString($kiter288);
-                $xfer += $output->writeString($viter289);
+            foreach ($this->parameters as $kiter297 => $viter298) {
+                $xfer += $output->writeString($kiter297);
+                $xfer += $output->writeString($viter298);
             }
             $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();
@@ -793,8 +793,8 @@ class Table
             }
             $xfer += $output->writeFieldBegin('requiredReadCapabilities', TType::LST, 23);
             $output->writeListBegin(TType::STRING, count($this->requiredReadCapabilities));
-            foreach ($this->requiredReadCapabilities as $iter290) {
-                $xfer += $output->writeString($iter290);
+            foreach ($this->requiredReadCapabilities as $iter299) {
+                $xfer += $output->writeString($iter299);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -805,8 +805,8 @@ class Table
             }
             $xfer += $output->writeFieldBegin('requiredWriteCapabilities', TType::LST, 24);
             $output->writeListBegin(TType::STRING, count($this->requiredWriteCapabilities));
-            foreach ($this->requiredWriteCapabilities as $iter291) {
-                $xfer += $output->writeString($iter291);
+            foreach ($this->requiredWriteCapabilities as $iter300) {
+                $xfer += $output->writeString($iter300);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
