@@ -69,7 +69,7 @@ public class VectorizedReadUtils {
         readOrcSchema = ORCSchemaUtil.buildOrcProjection(currentSchema, typeWithIds);
       }
 
-      job.set(ColumnProjectionUtils.ICEBERG_ORC_SCHEMA_STRING, readOrcSchema.toString());
+      job.set(ColumnProjectionUtils.ORC_SCHEMA_STRING, readOrcSchema.toString());
 
       // Predicate pushdowns needs to be adjusted too in case of column renames, we let Iceberg generate this into job
       if (task.residual() != null) {

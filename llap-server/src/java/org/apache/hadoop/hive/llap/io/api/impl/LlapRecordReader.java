@@ -171,10 +171,10 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     isAcidScan = AcidUtils.isFullAcidScan(jobConf);
     this.bucketIdentifier = BucketIdentifier.from(jobConf, split.getPath());
 
-    String icebergOrcSchema = job.get(ColumnProjectionUtils.ICEBERG_ORC_SCHEMA_STRING);
-    TypeDescription schema = icebergOrcSchema == null ?
+    String orcSchemaOverrideString = job.get(ColumnProjectionUtils.ORC_SCHEMA_STRING);
+    TypeDescription schema = orcSchemaOverrideString == null ?
         OrcInputFormat.getDesiredRowTypeDescr(job, isAcidScan, Integer.MAX_VALUE) :
-        TypeDescription.fromString(icebergOrcSchema);
+        TypeDescription.fromString(orcSchemaOverrideString);
 
     int queueLimitBase = getQueueVar(ConfVars.LLAP_IO_VRB_QUEUE_LIMIT_MAX, job, daemonConf);
     int queueLimitMin = getQueueVar(ConfVars.LLAP_IO_VRB_QUEUE_LIMIT_MIN, job, daemonConf);

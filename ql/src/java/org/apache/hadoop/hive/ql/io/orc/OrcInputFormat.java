@@ -592,11 +592,12 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   }
 
   static String getNeededColumnNamesString(Configuration conf) {
-    String icebergOrcSchema = conf.get(ColumnProjectionUtils.ICEBERG_ORC_SCHEMA_STRING);
+    String orcSchemaOverrideString = conf.get(ColumnProjectionUtils.ORC_SCHEMA_STRING);
 
-    if (icebergOrcSchema != null) {
-      final String columnNameDelimiter = conf.get(serdeConstants.COLUMN_NAME_DELIMITER, String.valueOf(SerDeUtils.COMMA));
-      return String.join(columnNameDelimiter, TypeDescription.fromString(icebergOrcSchema).getFieldNames());
+    if (orcSchemaOverrideString != null) {
+      final String columnNameDelimiter = conf.get(serdeConstants.COLUMN_NAME_DELIMITER,
+          String.valueOf(SerDeUtils.COMMA));
+      return String.join(columnNameDelimiter, TypeDescription.fromString(orcSchemaOverrideString).getFieldNames());
     } else {
       return conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
     }

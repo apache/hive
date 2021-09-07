@@ -78,10 +78,10 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
        * Do we have schema on read in the configuration variables?
        */
       int dataColumns = rbCtx.getDataColumnCount();
-      String icebergOrcSchema = conf.get(ColumnProjectionUtils.ICEBERG_ORC_SCHEMA_STRING);
-      TypeDescription schema = icebergOrcSchema == null ?
+      String orcSchemaOverrideString = conf.get(ColumnProjectionUtils.ORC_SCHEMA_STRING);
+      TypeDescription schema = orcSchemaOverrideString == null ?
           OrcInputFormat.getDesiredRowTypeDescr(conf, false, dataColumns) :
-          TypeDescription.fromString(icebergOrcSchema);
+          TypeDescription.fromString(orcSchemaOverrideString);
       if (schema == null) {
         schema = file.getSchema();
         // Even if the user isn't doing schema evolution, cut the schema
