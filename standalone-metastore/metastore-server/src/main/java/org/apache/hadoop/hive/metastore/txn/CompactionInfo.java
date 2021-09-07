@@ -65,7 +65,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
    */
   public long highestWriteId;
   public Set<Long> writeIds;
-  public boolean isSetWriteIds;
+  public boolean hasUncompactedAborts;
 
   byte[] metaInfo;
   String hadoopJobId;
@@ -275,8 +275,8 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     return null;
   }
 
-  public void setWriteIds(Set<Long> writeIds) {
+  public void setWriteIds(boolean hasUncompactedAborts, Set<Long> writeIds) {
+    this.hasUncompactedAborts = hasUncompactedAborts;
     this.writeIds = writeIds;
-    isSetWriteIds = !writeIds.isEmpty();
   }
 }

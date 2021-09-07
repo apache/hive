@@ -1189,6 +1189,9 @@ public class TestCompactor {
     // Cleaning should happen in threads concurrently for the minor compaction and the clean abort one.
     runCleaner(conf);
 
+    count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS");
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 0, count);
+
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
     Partition p1 = msClient.getPartition(dbName, tblName, "a=1"),
       p2 = msClient.getPartition(dbName, tblName, "a=2"),

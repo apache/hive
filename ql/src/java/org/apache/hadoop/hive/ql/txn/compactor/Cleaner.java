@@ -318,10 +318,12 @@ public class Cleaner extends MetaStoreCompactorThread {
      */
     Table table = getMSForConf(conf).getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
     if (isDynPartAbort(table, ci) || dir.hasUncompactedAborts()) {
-      ci.setWriteIds(dir.getAbortedWriteIds());
+      ci.setWriteIds(dir.hasUncompactedAborts(), dir.getAbortedWriteIds());
     }
     obsoleteDirs.addAll(dir.getAbortedDirectories());
     if (isDynPartAbort(table, ci)) {
+      // In the event of an aborted DP operation, we should only consider the aborted directories for cleanup.
+      // Including obsolete directories for partitioned tables can result in data loss.
       obsoleteDirs = dir.getAbortedDirectories();
     }
     List<Path> filesToDelete = new ArrayList<>(obsoleteDirs.size());
@@ -337,7 +339,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     extraDebugInfo.setCharAt(extraDebugInfo.length() - 1, ']');
     LOG.info(idWatermark(ci) + " About to remove " + filesToDelete.size() +
          " obsolete directories from " + location + ". " + extraDebugInfo.toString());
-    if (filesToDelete.size() < 1 && !isDynPartAbort(table, ci)) {
+    if (filesToDelete.size() < 1) {
       LOG.warn("Hmm, nothing to delete in the cleaner for directory " + location +
           ", that hardly seems right.");
       return false;
