@@ -241,6 +241,8 @@ class Version; end
 
 class FieldSchema; end
 
+class EnvironmentContext; end
+
 class SQLPrimaryKey; end
 
 class SQLForeignKey; end
@@ -370,8 +372,6 @@ class SetPartitionsStatsRequest; end
 class SetPartitionsStatsResponse; end
 
 class Schema; end
-
-class EnvironmentContext; end
 
 class PrimaryKeysRequest; end
 
@@ -879,6 +879,22 @@ class FieldSchema
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
     TYPE => {:type => ::Thrift::Types::STRING, :name => 'type'},
     COMMENT => {:type => ::Thrift::Types::STRING, :name => 'comment'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class EnvironmentContext
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PROPERTIES = 1
+
+  FIELDS = {
+    PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
   }
 
   def struct_fields; FIELDS; end
@@ -2537,22 +2553,6 @@ class Schema
 
   FIELDS = {
     FIELDSCHEMAS => {:type => ::Thrift::Types::LIST, :name => 'fieldSchemas', :element => {:type => ::Thrift::Types::STRUCT, :class => ::FieldSchema}},
-    PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class EnvironmentContext
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  PROPERTIES = 1
-
-  FIELDS = {
     PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
   }
 
