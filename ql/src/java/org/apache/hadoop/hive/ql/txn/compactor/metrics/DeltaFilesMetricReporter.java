@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -52,13 +53,16 @@ import org.slf4j.LoggerFactory;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -90,6 +94,9 @@ public class DeltaFilesMetricReporter {
   private static final Logger LOG = LoggerFactory.getLogger(AcidUtils.class);
 
   public static final String OBJECT_NAME_PREFIX = "metrics:type=compaction,name=";
+  public static final String JOB_CONF_DELTA_FILES_METRICS_METADATA = "delta.files.metrics.metadata";
+  public static final char ENTRY_SEPARATOR = ';';
+  public static final String KEY_VALUE_SEPARATOR = "->";
 
   private static long lastSuccessfulLoggingTime = 0;
   private String hiveEntitySeparator;
@@ -175,20 +182,21 @@ public class DeltaFilesMetricReporter {
    */
   private void updateMetrics(DeltaFilesMetricType metric, Cache<String, Integer> cache,
       Queue<Pair<String, Integer>> topN, TezCounters counters, Set<ReadEntity> inputs) {
-    CounterGroup group = counters.getGroup(metric.value);
 
     // Create list of paths affected by the query
     List<String> inputPaths = Lists.newArrayList();
     if (inputs != null) {
       inputs.stream().map(readEntity -> readEntity.getName().split(hiveEntitySeparator)).forEach(inputNames -> {
+        String dbName = inputNames[0];
         String tableName = inputNames[1];
         String partitionName = inputNames.length > 2 ? inputNames[2] : null;
-        inputPaths.add(tableName + Path.SEPARATOR + partitionName);
+        inputPaths.add(getDeltaCountKey(dbName, tableName, partitionName));
       });
     }
 
     // Invalidate from cache if the counter value differs from the cache value, or if the query touched the partition
     // in question but no counter was collected
+    CounterGroup group = counters.getGroup(metric.value);
     for (String key : inputPaths) {
       Integer prev = cache.getIfPresent(key);
       if (prev != null) {
@@ -238,13 +246,19 @@ public class DeltaFilesMetricReporter {
 
     logDeltaDirMetrics(dir, conf, numObsoleteDeltas, numDeltas, numSmallDeltas);
 
-    String path = getRelPath(dir);
-
-    filterAndAddToDeltaFilesStats(NUM_DELTAS, numDeltas, deltasThreshold, deltaFilesStats, path, maxCacheSize);
+    String serializedMetadata = conf.get(JOB_CONF_DELTA_FILES_METRICS_METADATA);
+    HashMap<Path, DeltaFilesMetadata> pathToMetadata = new HashMap<>();
+    pathToMetadata = SerializationUtilities.deserializeObject(serializedMetadata, pathToMetadata.getClass());
+    if (pathToMetadata == null) {
+      LOG.warn("Delta metrics can't be updated since the metadata is null.");
+      return;
+    }
+    DeltaFilesMetadata metadata = pathToMetadata.get(dir.getPath());
+    filterAndAddToDeltaFilesStats(NUM_DELTAS, numDeltas, deltasThreshold, deltaFilesStats, metadata, maxCacheSize);
     filterAndAddToDeltaFilesStats(NUM_OBSOLETE_DELTAS, numObsoleteDeltas, obsoleteDeltasThreshold, deltaFilesStats,
-        path, maxCacheSize);
+        metadata, maxCacheSize);
     filterAndAddToDeltaFilesStats(NUM_SMALL_DELTAS, numSmallDeltas, deltasThreshold, deltaFilesStats,
-        path, maxCacheSize);
+        metadata, maxCacheSize);
   }
 
   /**
@@ -252,7 +266,8 @@ public class DeltaFilesMetricReporter {
    * the top {@link HiveConf.ConfVars#HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE} deltas.
    */
   private static void filterAndAddToDeltaFilesStats(DeltaFilesMetricType type, int deltaCount, int deltasThreshold,
-      EnumMap<DeltaFilesMetricType, Queue<Pair<String, Integer>>> deltaFilesStats, String path, int maxCacheSize) {
+      EnumMap<DeltaFilesMetricType, Queue<Pair<String, Integer>>> deltaFilesStats, DeltaFilesMetadata metadata,
+      int maxCacheSize) {
     if (deltaCount > deltasThreshold) {
       Queue<Pair<String,Integer>> pairQueue = deltaFilesStats.get(type);
       if (pairQueue != null && pairQueue.size() == maxCacheSize) {
@@ -262,10 +277,30 @@ public class DeltaFilesMetricReporter {
         }
       }
       if (pairQueue == null || pairQueue.size() < maxCacheSize) {
+        String deltaCountKey = getDeltaCountKey(metadata.dbName, metadata.tableName, metadata.partitionName);
         deltaFilesStats.computeIfAbsent(type,
-            v -> (new PriorityQueue<>(maxCacheSize, getComparator()))).add(Pair.of(path, deltaCount));
+            v -> (new PriorityQueue<>(maxCacheSize, getComparator()))).add(Pair.of(deltaCountKey, deltaCount));
       }
     }
+  }
+
+  private static String getDeltaCountKey(String dbName, String tableName, String partitionName) {
+    StringBuilder key = new StringBuilder();
+    if (dbName == null || dbName.isEmpty()) {
+      key.append(tableName);
+    } else {
+      key.append(dbName).append(".").append(tableName);
+    }
+
+    if (partitionName != null && !partitionName.isEmpty()) {
+      key.append(Path.SEPARATOR);
+      if (partitionName.startsWith("{") && partitionName.endsWith("}")) {
+        key.append(partitionName, 1, partitionName.length() - 1);
+      } else {
+        key.append(partitionName);
+      }
+    }
+    return key.toString();
   }
 
   private static void logDeltaDirMetrics(AcidDirectory dir, Configuration conf, int numObsoleteDeltas, int numDeltas,
@@ -320,7 +355,7 @@ public class DeltaFilesMetricReporter {
       Arrays.stream(DeltaFilesMetricType.values())
         .filter(type -> jobConf.get(type.name()) != null)
         .forEach(type ->
-            Splitter.on(',').withKeyValueSeparator("->").split(jobConf.get(type.name())).forEach(
+            Splitter.on(ENTRY_SEPARATOR).withKeyValueSeparator(KEY_VALUE_SEPARATOR).split(jobConf.get(type.name())).forEach(
               (path, cnt) -> tezCounters.findCounter(type.value, path).setValue(Long.parseLong(cnt))
             )
         );
@@ -330,7 +365,7 @@ public class DeltaFilesMetricReporter {
   public static void addAcidMetricsToConfObj(EnumMap<DeltaFilesMetricType,
       Queue<Pair<String, Integer>>> deltaFilesStats, Configuration conf) {
     deltaFilesStats.forEach((type, value) ->
-        conf.set(type.name(), Joiner.on(",").withKeyValueSeparator("->").join(value)));
+        conf.set(type.name(), Joiner.on(ENTRY_SEPARATOR).withKeyValueSeparator(KEY_VALUE_SEPARATOR).join(value)));
   }
 
   public static void backPropagateAcidMetrics(JobConf jobConf, Configuration conf) {
@@ -469,5 +504,9 @@ public class DeltaFilesMetricReporter {
         }
       }
     }
+  }
+
+  public static class DeltaFilesMetadata implements Serializable {
+    public String dbName, tableName, partitionName;
   }
 }
