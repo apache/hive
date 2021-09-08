@@ -1800,8 +1800,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public void alter_partition(String catName, String dbName, String tblName, Partition newPart,
                               EnvironmentContext environmentContext) throws TException {
-    client.alter_partition_with_environment_context(prependCatalogToDbName(catName, dbName, conf), tblName,
-        newPart, environmentContext);
+    if (environmentContext == null) {
+      client.alter_partition(dbName, tblName, newPart);
+    } else {
+      client.alter_partition_with_environment_context(prependCatalogToDbName(catName, dbName, conf), tblName,
+              newPart, environmentContext);
+    }
   }
 
   @Override
@@ -1820,8 +1824,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public void alter_partitions(String catName, String dbName, String tblName,
                                List<Partition> newParts,
                                EnvironmentContext environmentContext) throws TException {
-    client.alter_partitions_with_environment_context(prependCatalogToDbName(catName, dbName, conf),
-        tblName, newParts, environmentContext);
+    if (environmentContext == null) {
+      client.alter_partitions(dbName, tblName, newParts);
+    } else {
+      client.alter_partitions_with_environment_context(prependCatalogToDbName(catName, dbName, conf),
+              tblName, newParts, environmentContext);
+    }
   }
 
   @Override
