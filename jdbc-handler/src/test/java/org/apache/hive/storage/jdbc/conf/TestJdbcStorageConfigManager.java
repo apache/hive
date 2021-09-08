@@ -12,11 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.config;
+package org.apache.hive.storage.jdbc.conf;
 
-import org.apache.hive.storage.jdbc.conf.DatabaseType;
-import org.apache.hive.storage.jdbc.conf.JdbcStorageConfig;
-import org.apache.hive.storage.jdbc.conf.JdbcStorageConfigManager;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -24,10 +21,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
 
 public class TestJdbcStorageConfigManager {
 
@@ -39,7 +36,7 @@ public class TestJdbcStorageConfigManager {
     props.put(JdbcStorageConfig.QUERY.getPropertyName(), "SELECT col1,col2,col3 FROM sometable");
     props.put(JdbcStorageConfig.JDBC_DRIVER_CLASS.getPropertyName(), "com.mysql.jdbc.Driver");
 
-    Map<String, String> jobMap = new HashMap<String, String>();
+    Map<String, String> jobMap = new HashMap<>();
     JdbcStorageConfigManager.copyConfigurationToJob(props, jobMap);
 
     assertThat(jobMap, is(notNullValue()));
@@ -58,7 +55,7 @@ public class TestJdbcStorageConfigManager {
     props.put(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), DatabaseType.MYSQL.toString());
     props.put(JdbcStorageConfig.QUERY.getPropertyName(), "SELECT col1,col2,col3 FROM sometable");
 
-    Map<String, String> jobMap = new HashMap<String, String>();
+    Map<String, String> jobMap = new HashMap<>();
     JdbcStorageConfigManager.copyConfigurationToJob(props, jobMap);
   }
 
@@ -69,7 +66,7 @@ public class TestJdbcStorageConfigManager {
     props.put(JdbcStorageConfig.JDBC_URL.getPropertyName(), "jdbc://localhost:3306/hive");
     props.put(JdbcStorageConfig.QUERY.getPropertyName(), "SELECT col1,col2,col3 FROM sometable");
 
-    Map<String, String> jobMap = new HashMap<String, String>();
+    Map<String, String> jobMap = new HashMap<>();
     JdbcStorageConfigManager.copyConfigurationToJob(props, jobMap);
   }
 
@@ -81,8 +78,19 @@ public class TestJdbcStorageConfigManager {
     props.put(JdbcStorageConfig.JDBC_URL.getPropertyName(), "jdbc://localhost:3306/hive");
     props.put(JdbcStorageConfig.QUERY.getPropertyName(), "SELECT col1,col2,col3 FROM sometable");
 
-    Map<String, String> jobMap = new HashMap<String, String>();
+    Map<String, String> jobMap = new HashMap<>();
     JdbcStorageConfigManager.copyConfigurationToJob(props, jobMap);
   }
 
+  @Test
+  public void testExtractPassword() throws Exception {
+    String prefix = "test.";
+    String password = "my-super-secret";
+    Properties props = new Properties();
+    props.put(prefix + JdbcStorageConfigManager.CONFIG_PWD, password);
+    props.put(prefix + JdbcStorageConfigManager.CONFIG_PWD_URI, "test:///random-stuff");
+
+    String passwd = JdbcStorageConfigManager.getPasswordFromProperties(props, s -> prefix + s);
+    assertThat(passwd, is(equalTo(password)));
+  }
 }
