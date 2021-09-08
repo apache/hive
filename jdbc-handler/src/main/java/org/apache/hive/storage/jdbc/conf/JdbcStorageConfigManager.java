@@ -88,8 +88,12 @@ public class JdbcStorageConfigManager {
     String keystore = properties.getProperty(keyTransform.apply(CONFIG_PWD_KEYSTORE));
     String uri = properties.getProperty(keyTransform.apply(CONFIG_PWD_URI));
     if (countNonNull(passwd, keystore, uri) > 1) {
-      throw new HiveException(
-          "Only one of " + CONFIG_PWD + ", " + CONFIG_PWD_KEYSTORE + ", " + CONFIG_PWD_URI + " can be set");
+      // In tez, when the job conf is copied there is a code path in HiveInputFormat where all the table properties
+      // are copied and the password is copied from the job credentials, so its possible to have 2 of them set.
+      // For now ignore this and print a warning message, we should fix so that the above code is used instead.
+      LOGGER.warn("Only one of " + CONFIG_PWD + ", " + CONFIG_PWD_KEYSTORE + ", " + CONFIG_PWD_URI + " can be set");
+      // throw new HiveException(
+      //    "Only one of " + CONFIG_PWD + ", " + CONFIG_PWD_KEYSTORE + ", " + CONFIG_PWD_URI + " can be set");
     }
     if (passwd == null && keystore != null) {
       String key = properties.getProperty(keyTransform.apply(CONFIG_PWD_KEY));
