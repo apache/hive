@@ -67,14 +67,14 @@ public class CopyUtils {
   private FileSystem destinationFs;
   private final int maxParallelCopyTask;
 
-  private List<Class<? extends Exception>> failOnExceptions = Arrays.asList(org.apache.hadoop.fs.PathIOException.class,
+  private List<Class<? extends Exception>> failOnParentExceptionList = Arrays.asList(org.apache.hadoop.fs.PathIOException.class,
           org.apache.hadoop.fs.UnsupportedFileSystemException.class,
           org.apache.hadoop.fs.InvalidPathException.class,
           org.apache.hadoop.fs.InvalidRequestException.class,
           org.apache.hadoop.fs.FileAlreadyExistsException.class,
           org.apache.hadoop.fs.ChecksumException.class,
           org.apache.hadoop.fs.ParentNotDirectoryException.class,
-          org.apache.hadoop.hdfs.protocol.NSQuotaExceededException.class,
+          org.apache.hadoop.hdfs.protocol.QuotaExceededException.class,
           FileNotFoundException.class);
 
   public CopyUtils(String distCpDoAsUser, HiveConf hiveConf, FileSystem destinationFs) {
@@ -90,11 +90,11 @@ public class CopyUtils {
   private <T> T retryableFxn(Callable<T> callable) throws IOException {
     Retryable retryable = Retryable.builder()
             .withHiveConf(hiveConf)
-            .withRetryOnException(IOException.class).withFailOnExceptionList(failOnExceptions).build();
+            .withRetryOnException(IOException.class).withFailOnParentExceptionList(failOnParentExceptionList).build();
     try {
       return retryable.executeCallable(() -> callable.call());
     } catch (Exception e) {
-      if (failOnExceptions.stream().anyMatch(k -> e.getClass().equals(k))) {
+      if (failOnParentExceptionList.stream().anyMatch(k -> k.isAssignableFrom(e.getClass()))) {
         throw new IOException(e);
       }
       throw new IOException(ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.getMsg(), e);
@@ -247,12 +247,12 @@ public class CopyUtils {
         // If copy fails, fall through the retry logic
         LOG.info("file operation failed", e);
 
-        if (repeat >= (MAX_IO_RETRY - 1) || failOnExceptions.stream().anyMatch(k -> e.getClass().equals(k))
+        //Don't retry in the following cases:
+        //1. This is last attempt of retry.
+        //2. Execution already hit the exception which should not be retried.
+        //3. Retry is already exhausted by FS operations.
+        if (repeat >= (MAX_IO_RETRY - 1) || failOnParentExceptionList.stream().anyMatch(k -> k.isAssignableFrom(e.getClass()))
                 || ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.getMsg().equals(e.getMessage())) {
-          //Don't retry in the following cases:
-          //1. This is last attempt of retry.
-          //2. Execution already hit the exception which should not be retried.
-          //3. Retry is already exhausted by FS operations.
           break;
         }
         if (!(e instanceof FileNotFoundException)) {

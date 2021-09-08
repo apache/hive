@@ -38,6 +38,7 @@ public class Retryable {
   private long totalDurationInSeconds;
   private List<Class<? extends Exception>> retryOn;
   private List<Class<? extends Exception>> failOn;
+  private List<Class<? extends Exception>> failOnParentExceptions;
   private long initialDelayInSeconds;
   private long maxRetryDelayInSeconds;
   private double backOff;
@@ -46,6 +47,7 @@ public class Retryable {
   private Retryable() {
     this.retryOn = new ArrayList<>();
     this.failOn = new ArrayList<>();
+    this.failOnParentExceptions = new ArrayList<>();
     this.initialDelayInSeconds = HiveConf.toTime(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY.defaultStrVal,
       HiveConf.getDefaultTimeUnit(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY), TimeUnit.SECONDS);
     this.maxRetryDelayInSeconds = HiveConf.toTime(HiveConf.ConfVars.REPL_RETRY_MAX_DELAY_BETWEEN_RETRIES.defaultStrVal,
@@ -74,7 +76,8 @@ public class Retryable {
           return callable.call();
         }
       } catch (Exception e) {
-        if (this.failOn.stream().noneMatch(k -> e.getClass().equals(k))
+        if (this.failOnParentExceptions.stream().noneMatch(k -> k.isAssignableFrom(e.getClass()))
+          && this.failOn.stream().noneMatch(k -> e.getClass().equals(k))
           && this.retryOn.stream().anyMatch(k -> e.getClass().isAssignableFrom(k))) {
           if (elapsedTimeInSeconds(startTime) + delay > this.totalDurationInSeconds) {
             // case where waiting would go beyond max duration. So throw exception and return
@@ -161,6 +164,25 @@ public class Retryable {
         if (exceptionClass != null &&
           runnable.retryOn.stream().noneMatch(k -> exceptionClass.equals(k))) {
           runnable.retryOn.add(exceptionClass);
+        }
+      }
+      return this;
+    }
+
+    public synchronized Builder withFailOnParentException(final Class<? extends Exception> exceptionClass) {
+      if (exceptionClass != null &&
+              runnable.failOnParentExceptions.stream().noneMatch(k -> exceptionClass.equals(k))) {
+        runnable.failOnParentExceptions.add(exceptionClass);
+      }
+      return this;
+    }
+
+    public synchronized Builder withFailOnParentExceptionList(final List<Class<?
+            extends Exception>> exceptionClassList) {
+      for (final Class<? extends Exception> exceptionClass : exceptionClassList) {
+        if (exceptionClass != null &&
+                runnable.failOnParentExceptions.stream().noneMatch(k -> exceptionClass.equals(k))) {
+          runnable.failOnParentExceptions.add(exceptionClass);
         }
       }
       return this;

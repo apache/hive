@@ -113,6 +113,66 @@ public class TestCopyUtils {
   }
 
   @Test
+  public void testFSCallsFailOnParentExceptions() throws Exception {
+    mockStatic(UserGroupInformation.class);
+    mockStatic(ReplChangeManager.class);
+    when(UserGroupInformation.getCurrentUser()).thenReturn(mock(UserGroupInformation.class));
+    HiveConf conf = mock(HiveConf.class);
+    conf.set(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY.varname, "1s");
+    FileSystem fs = mock(FileSystem.class);
+    Path source = mock(Path.class);
+    Path destination = mock(Path.class);
+    ContentSummary cs = mock(ContentSummary.class);
+
+    Exception exception = new org.apache.hadoop.fs.PathPermissionException("Failed");
+    when(ReplChangeManager.checksumFor(source, fs)).thenThrow(exception).thenReturn("dummy");
+    when(fs.exists(same(source))).thenThrow(exception).thenReturn(true);
+    when(fs.delete(same(source), anyBoolean())).thenThrow(exception).thenReturn(true);
+    when(fs.mkdirs(same(source))).thenThrow(exception).thenReturn(true);
+    when(fs.rename(same(source), same(destination))).thenThrow(exception).thenReturn(true);
+    when(fs.getContentSummary(same(source))).thenThrow(exception).thenReturn(cs);
+
+    CopyUtils copyUtils = new CopyUtils(UserGroupInformation.getCurrentUser().getUserName(), conf, fs);
+    CopyUtils copyUtilsSpy = Mockito.spy(copyUtils);
+    try {
+      copyUtilsSpy.exists(fs, source);
+    } catch (Exception e) {
+      assertEquals(exception.getClass(), e.getCause().getClass());
+    }
+    Mockito.verify(fs, Mockito.times(1)).exists(source);
+    try {
+      copyUtils.delete(fs, source, true);
+    } catch (Exception e) {
+      assertEquals(exception.getClass(), e.getCause().getClass());
+    }
+    Mockito.verify(fs, Mockito.times(1)).delete(source, true);
+    try {
+      copyUtils.mkdirs(fs, source);
+    } catch (Exception e) {
+      assertEquals(exception.getClass(), e.getCause().getClass());
+    }
+    Mockito.verify(fs, Mockito.times(1)).mkdirs(source);
+    try {
+      copyUtils.rename(fs, source, destination);
+    } catch (Exception e) {
+      assertEquals(exception.getClass(), e.getCause().getClass());
+    }
+    Mockito.verify(fs, Mockito.times(1)).rename(source, destination);
+    try {
+      copyUtilsSpy.getContentSummary(fs, source);
+    } catch (Exception e) {
+      assertEquals(exception.getClass(), e.getCause().getClass());;
+    }
+    Mockito.verify(fs, Mockito.times(1)).getContentSummary(source);
+    try {
+      copyUtilsSpy.checkSumFor(source, fs);
+    } catch (Exception e) {
+      assertEquals(exception.getClass(), e.getCause().getClass());
+    }
+    Mockito.verify(copyUtilsSpy, Mockito.times(1)).checkSumFor(source, fs);
+  }
+
+  @Test
   public void testRetryableFSCalls() throws Exception {
     mockStatic(UserGroupInformation.class);
     mockStatic(ReplChangeManager.class);
@@ -133,17 +193,17 @@ public class TestCopyUtils {
 
     CopyUtils copyUtils = new CopyUtils(UserGroupInformation.getCurrentUser().getUserName(), conf, fs);
     CopyUtils copyUtilsSpy = Mockito.spy(copyUtils);
-    assertEquals (copyUtilsSpy.exists(fs, source), true);
+    assertEquals (true, copyUtilsSpy.exists(fs, source));
     Mockito.verify(fs, Mockito.times(2)).exists(source);
-    assertEquals (copyUtils.delete(fs, source, true), true);
+    assertEquals (true, copyUtils.delete(fs, source, true));
     Mockito.verify(fs, Mockito.times(2)).delete(source, true);
-    assertEquals (copyUtils.mkdirs(fs, source), true);
+    assertEquals (true, copyUtils.mkdirs(fs, source));
     Mockito.verify(fs, Mockito.times(2)).mkdirs(source);
-    assertEquals (copyUtils.rename(fs, source, destination), true);
+    assertEquals (true, copyUtils.rename(fs, source, destination));
     Mockito.verify(fs, Mockito.times(2)).rename(source, destination);
-    assertEquals (copyUtilsSpy.getContentSummary(fs, source), cs);
+    assertEquals (cs, copyUtilsSpy.getContentSummary(fs, source));
     Mockito.verify(fs, Mockito.times(2)).getContentSummary(source);
-    assertEquals (copyUtilsSpy.checkSumFor(source, fs), "dummy");
+    assertEquals ("dummy", copyUtilsSpy.checkSumFor(source, fs));
   }
 
   @Test
