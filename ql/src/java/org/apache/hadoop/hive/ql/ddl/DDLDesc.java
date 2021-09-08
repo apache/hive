@@ -30,7 +30,7 @@ public interface DDLDesc {
     String getFullTableName();
     // We have to advance the Write Id during DDL for transactional tables, so that
     // we can provide strong consistency when serving the metadata from the cache.
-    // Override this method, only if you are sure that advancing the write Id is not relevant for your DDL.
+    // Override this method, only if you are sure that advancing the write Id is not required for your DDL.
     default boolean mayNeedWriteId() {
       return true;
     }
