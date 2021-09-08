@@ -28,6 +28,8 @@ public interface DDLDesc {
   interface DDLDescWithWriteId extends DDLDesc {
     void setWriteId(long writeId);
     String getFullTableName();
-    boolean mayNeedWriteId();
+    default boolean mayNeedWriteId() {
+      return true;
+    }
   }
 }
