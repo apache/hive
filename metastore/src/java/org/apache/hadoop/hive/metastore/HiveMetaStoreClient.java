@@ -1503,25 +1503,33 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public void alter_partition(String dbName, String tblName, Partition newPart)
       throws InvalidOperationException, MetaException, TException {
-    client.alter_partition_with_environment_context(dbName, tblName, newPart, null);
+    client.alter_partition(dbName, tblName, newPart);
   }
 
   @Override
   public void alter_partition(String dbName, String tblName, Partition newPart, EnvironmentContext environmentContext)
       throws InvalidOperationException, MetaException, TException {
-    client.alter_partition_with_environment_context(dbName, tblName, newPart, environmentContext);
+    if (environmentContext == null) {
+      client.alter_partition(dbName, tblName, newPart);
+    } else {
+      client.alter_partition_with_environment_context(dbName, tblName, newPart, environmentContext);
+    }
   }
 
   @Override
   public void alter_partitions(String dbName, String tblName, List<Partition> newParts)
       throws InvalidOperationException, MetaException, TException {
-    client.alter_partitions_with_environment_context(dbName, tblName, newParts, null);
+    client.alter_partitions(dbName, tblName, newParts);
   }
 
   @Override
   public void alter_partitions(String dbName, String tblName, List<Partition> newParts, EnvironmentContext environmentContext)
   throws InvalidOperationException, MetaException, TException {
-    client.alter_partitions_with_environment_context(dbName, tblName, newParts, environmentContext);
+    if (environmentContext == null) {
+      client.alter_partitions(dbName, tblName, newParts);
+    } else {
+      client.alter_partitions_with_environment_context(dbName, tblName, newParts, environmentContext);
+    }
 }
 
   @Override
