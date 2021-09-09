@@ -787,11 +787,13 @@ public class CliConfigs {
       super(CoreCliDriver.class);
       try {
         setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
+        excludesFrom(testConfigProps, "iceberg.llap.only.query.files");
+
         setResultsDir("iceberg/iceberg-handler/src/test/results/positive");
         setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
         setInitScript("q_test_init_tez.sql");
         setCleanupScript("q_test_cleanup_tez.sql");
-        setHiveConfDir("data/conf/iceberg");
+        setHiveConfDir("data/conf/iceberg/tez");
         setClusterType(MiniClusterType.TEZ);
       } catch (Exception e) {
         throw new RuntimeException("can't contruct cliconfig", e);
@@ -809,10 +811,32 @@ public class CliConfigs {
         setLogDir("itests/qtest/target/qfile-results/iceberg-handler/negative");
         setInitScript("q_test_init_tez.sql");
         setCleanupScript("q_test_cleanup_tez.sql");
-        setHiveConfDir("data/conf/iceberg");
+        setHiveConfDir("data/conf/iceberg/tez");
         setClusterType(MiniClusterType.TEZ);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
+  public static class IcebergLlapLocalCliConfig extends AbstractCliConfig {
+
+    public IcebergLlapLocalCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
+        includesFrom(testConfigProps, "iceberg.llap.query.files");
+
+        setResultsDir("iceberg/iceberg-handler/src/test/results/positive/llap");
+        setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
+
+        setInitScript("q_test_init_tez.sql");
+        setCleanupScript("q_test_cleanup_tez.sql");
+
+        setHiveConfDir("data/conf/iceberg/llap");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
+      } catch (Exception e) {
+        throw new RuntimeException("can't contruct cliconfig", e);
       }
     }
   }
