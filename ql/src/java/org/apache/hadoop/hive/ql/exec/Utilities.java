@@ -2041,7 +2041,6 @@ public final class Utilities {
     if (!parsedFileName.matches()) {
       LOG.warn("Unable to verify if file name {} has _copy_ suffix.", filepath);
     }
-    LOG.debug("ParsedFilename: {}", parsedFileName);
     return parsedFileName.isCopyFile();
   }
 

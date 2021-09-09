@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,6 +36,9 @@ import java.util.regex.Pattern;
  * <p>
  * All the components are here:
  * tmp_(taskPrefix)00001_02_copy_1.zlib.gz
+ *
+ * Spark output file:
+ * part-00026-23003837-facb-49ec-b1c4-eeda902cacf3.c000.zlib.orc
  */
 public class ParsedOutputFileName {
   private static final Pattern COPY_FILE_NAME_TO_TASK_ID_REGEX = Pattern.compile(
@@ -44,16 +49,51 @@ public class ParsedOutputFileName {
       "(?:_copy_([0-9]{1,6}))?" + // copy file index
       "(\\..*)?$"); // any suffix/file extension
 
+  private static final Pattern SPARK_FILE_NAME =
+      Pattern.compile("^part-(\\d+)-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\.[a-f0-9]+(.*)$");
+
   public static ParsedOutputFileName parse(String fileName) {
     return new ParsedOutputFileName(fileName);
   }
 
-  private final Matcher m;
   private final boolean matches;
+  private final String taskIdPrefix;
+  private final String taskId;
+  private final String attemptId;
+  private final String copyIndex;
+  private final String suffix;
+  private final CharSequence filePrefixForCopy;
 
   private ParsedOutputFileName(CharSequence fileName) {
-    m = COPY_FILE_NAME_TO_TASK_ID_REGEX.matcher(fileName);
-    matches = m.matches();
+    Matcher m = SPARK_FILE_NAME.matcher(fileName);
+    if (m.matches()) {
+      matches = true;
+      taskIdPrefix = null;
+      taskId = m.group(1);
+      attemptId = "1";
+      copyIndex = null;
+      String s = m.group(2);
+      suffix = (s == null || s.isEmpty() ? null : s);
+      filePrefixForCopy = null;
+    } else {
+      m = COPY_FILE_NAME_TO_TASK_ID_REGEX.matcher(fileName);
+      matches = m.matches();
+      if (matches) {
+        taskIdPrefix = m.group(2);
+        taskId = m.group(3);
+        attemptId = m.group(4);
+        copyIndex = m.group(5);
+        suffix = m.group(6);
+        filePrefixForCopy = m.end(4) >= 0 ? fileName.subSequence(0, m.end(4)) : null;
+      } else {
+        taskIdPrefix = null;
+        taskId = null;
+        attemptId = null;
+        copyIndex = null;
+        suffix = null;
+        filePrefixForCopy = null;
+      }
+    }
   }
 
   public boolean matches() {
@@ -61,11 +101,11 @@ public class ParsedOutputFileName {
   }
 
   public String getTaskIdPrefix() {
-    return m.group(2);
+    return taskIdPrefix;
   }
 
   public String getTaskId() {
-    return m.group(3);
+    return taskId;
   }
 
   public String getPrefixedTaskId() {
@@ -79,19 +119,19 @@ public class ParsedOutputFileName {
   }
 
   public String getAttemptId() {
-    return m.group(4);
+    return attemptId;
   }
 
   public boolean isCopyFile() {
-    return m.group(5) != null;
+    return copyIndex != null;
   }
 
   public String getCopyIndex() {
-    return m.group(5);
+    return copyIndex;
   }
 
   public String getSuffix() {
-    return m.group(6);
+    return suffix;
   }
 
   /**
@@ -102,12 +142,15 @@ public class ParsedOutputFileName {
    * @param idx The index required.
    * @return
    */
-  public String makeFilenameWithCopyIndex(int idx) {
-    String orig = m.group(0);
-    return orig.substring(0, m.end(4)) + "_copy_" + idx;
+  public String makeFilenameWithCopyIndex(int idx) throws HiveException {
+    if (filePrefixForCopy == null) {
+      throw new HiveException("Not expected to make copy files of spark output files.");
+    }
+    return filePrefixForCopy + "_copy_" + idx;
   }
 
   public String toString() {
-    return "[taskId: " + getPrefixedTaskId() + ", taskAttemptId: " + getAttemptId() + ", copyIndex: " + getCopyIndex() + "]";
+    return "[taskId: " + getPrefixedTaskId() + ", taskAttemptId: " + getAttemptId() +
+        ", copyIndex: " + getCopyIndex() + "]";
   }
 }
