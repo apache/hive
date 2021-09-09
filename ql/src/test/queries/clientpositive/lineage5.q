@@ -2,10 +2,3 @@
 create table tbl1(col1 string, col2 string);
 create table tbl2 as (select * from tbl1);
 create table tbl3 partitioned by (col2) as (select * from tbl1);
-create table tbl4 partitioned by (col2) as (select * from tbl1);
-create table tbl5 partitioned by (col2) as (select * from tbl1);
-create table tbl6 partitioned by (col2) as (select * from tbl1);
-create table tbl7 partitioned by (col2) as (select * from tbl1);
-create table tbl8 partitioned by (col2) as (select * from tbl1);
-create table tbl9 partitioned by (col2) as (select * from tbl1);
-create table tbl10 partitioned by (col2) as (select * from tbl1);
