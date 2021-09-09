@@ -71,7 +71,7 @@ public class DropFunctionEvent extends HiveMetaStoreAuthorizableEvent {
             }
         }
 
-        COMMAND_STR = buildCommandString(COMMAND_STR, function);
+        COMMAND_STR = buildCommandString(function);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("<== DropFunctionEvent.getInputHObjs(): ret=" + ret);
@@ -84,8 +84,8 @@ public class DropFunctionEvent extends HiveMetaStoreAuthorizableEvent {
         return Collections.emptyList();
     }
 
-    private String buildCommandString(String cmdStr, Function function) {
-        String ret = cmdStr;
+    private String buildCommandString(Function function) {
+        String ret = COMMAND_STR;
         if (function != null) {
             String functionName = function.getFunctionName();
             ret = ret + (StringUtils.isNotEmpty(functionName)? " " + functionName : "");

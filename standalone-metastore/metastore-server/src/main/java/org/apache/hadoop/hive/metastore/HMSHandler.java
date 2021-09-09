@@ -8283,7 +8283,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         try {
           func.setOwnerName(SecurityUtils.getUGI().getShortUserName());
         } catch (Exception ex) {
-          LOG.error("Cannot obtain username", ex);
+          LOG.error("Cannot obtain username from the session to create a function", ex);
           throw new TException(ex);
         }
       }

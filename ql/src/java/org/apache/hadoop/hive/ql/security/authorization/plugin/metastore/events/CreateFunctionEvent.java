@@ -76,7 +76,7 @@ public class CreateFunctionEvent extends HiveMetaStoreAuthorizableEvent {
             }
         }
 
-        COMMAND_STR = buildCommandString(COMMAND_STR, function);
+        COMMAND_STR = buildCommandString(function);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("<== CreateFunctionEvent.getOutputHObjs(): ret=" + ret);
@@ -85,8 +85,8 @@ public class CreateFunctionEvent extends HiveMetaStoreAuthorizableEvent {
         return ret;
     }
 
-    private String buildCommandString(String cmdStr, Function function) {
-        String ret = cmdStr;
+    private String buildCommandString(Function function) {
+        String ret = COMMAND_STR;
         if (function != null) {
             String functionName = function.getFunctionName();
             ret = ret + (StringUtils.isNotEmpty(functionName)? " " + functionName : "");
