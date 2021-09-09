@@ -298,7 +298,6 @@ STAGE PLANS:
                                   bucketing_version -1
                                   columns contact_event_id,ce_create_dt,ce_end_dt,contact_type,cnctevs_cd,contact_mode,cntvnst_stts_cd,total_transfers,ce_notes,svcrqst_id,svcrqct_cds,svcrtyp_cd,cmpltyp_cd,src,cnctmd_cd,notes
                                   columns.types string:string:string:string:string:string:string:int:array<string>:string:array<string>:string:string:string:string:array<string>
-                                  created_with_ctas true
                                   name default.ct_events1_test
                                   serialization.format 1
                                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1281,7 +1280,6 @@ STAGE PLANS:
                                   bucketing_version -1
                                   columns contact_event_id,ce_create_dt,ce_end_dt,contact_type,cnctevs_cd,contact_mode,cntvnst_stts_cd,total_transfers,ce_notes,svcrqst_id,svcrqct_cds,svcrtyp_cd,cmpltyp_cd,src,cnctmd_cd,notes
                                   columns.types string:string:string:string:string:string:string:int:array<string>:string:array<string>:string:string:string:string:array<string>
-                                  created_with_ctas true
                                   name default.ct_events1_test
                                   serialization.format 1
                                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
