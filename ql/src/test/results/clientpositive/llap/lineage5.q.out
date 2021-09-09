@@ -29,6 +29,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl3
+POSTHOOK: Output: default@tbl3
 POSTHOOK: Lineage: tbl3.col1 SIMPLE [(tbl1)tbl1.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: create table tbl4 partitioned by (col2) as (select * from tbl1)
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -40,6 +41,7 @@ POSTHOOK: query: create table tbl4 partitioned by (col2) as (select * from tbl1)
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl4
 POSTHOOK: Output: default@tbl4
 POSTHOOK: Lineage: tbl4.col1 SIMPLE [(tbl1)tbl1.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: create table tbl5 partitioned by (col2) as (select * from tbl1)
@@ -53,6 +55,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl5
+POSTHOOK: Output: default@tbl5
 POSTHOOK: Lineage: tbl5.col1 SIMPLE [(tbl1)tbl1.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: create table tbl6 partitioned by (col2) as (select * from tbl1)
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -64,6 +67,7 @@ POSTHOOK: query: create table tbl6 partitioned by (col2) as (select * from tbl1)
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl6
 POSTHOOK: Output: default@tbl6
 POSTHOOK: Lineage: tbl6.col1 SIMPLE [(tbl1)tbl1.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: create table tbl7 partitioned by (col2) as (select * from tbl1)
@@ -77,6 +81,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl7
+POSTHOOK: Output: default@tbl7
 POSTHOOK: Lineage: tbl7.col1 SIMPLE [(tbl1)tbl1.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: create table tbl8 partitioned by (col2) as (select * from tbl1)
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -88,6 +93,7 @@ POSTHOOK: query: create table tbl8 partitioned by (col2) as (select * from tbl1)
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl8
 POSTHOOK: Output: default@tbl8
 POSTHOOK: Lineage: tbl8.col1 SIMPLE [(tbl1)tbl1.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: create table tbl9 partitioned by (col2) as (select * from tbl1)
@@ -101,6 +107,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl9
+POSTHOOK: Output: default@tbl9
 POSTHOOK: Lineage: tbl9.col1 SIMPLE [(tbl1)tbl1.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: create table tbl10 partitioned by (col2) as (select * from tbl1)
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -112,5 +119,6 @@ POSTHOOK: query: create table tbl10 partitioned by (col2) as (select * from tbl1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl10
 POSTHOOK: Output: default@tbl10
 POSTHOOK: Lineage: tbl10.col1 SIMPLE [(tbl1)tbl1.FieldSchema(name:col1, type:string, comment:null), ]
