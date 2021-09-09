@@ -2081,7 +2081,7 @@ class MetaStoreDirectSql {
       }
     };
 
-    List<ColumnStatistics> result = new ArrayList<ColumnStatistics>();
+    List<ColumnStatistics> result = new ArrayList<ColumnStatistics>(partNames.size());
     String lastPartName = null;
     int from = 0;
     try {
