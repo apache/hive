@@ -311,14 +311,6 @@ public class BeeLine implements Closeable {
       }));
 
   static {
-    try {
-      Class.forName("jline.console.ConsoleReader");
-    } catch (Throwable t) {
-      throw new ExceptionInInitializerError("jline-missing");
-    }
-  }
-
-  static {
     // -d <driver class>
     options.addOption(OptionBuilder
         .hasArg()
