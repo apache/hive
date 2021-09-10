@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
@@ -579,9 +580,65 @@ class CompactionTxnHandler extends TxnHandler {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
 
-        String s = "DELETE FROM \"COMPLETED_TXN_COMPONENTS\" WHERE CTC_WRITEID\" NOT IN ("+
-          "SELECT MAX(\"CTC_WRITEID\") FROM \"COMPLETED_TXN_COMPONENTS\" " +
-          "GROUP BY \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\")";
+        String s;
+        switch (dbProduct.dbType) {
+          case MYSQL:
+          case SQLSERVER:
+            s = "DELETE \"tc\" " +
+              "FROM \"COMPLETED_TXN_COMPONENTS\" \"tc\" " +
+              "INNER JOIN (" +
+              "  SELECT \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", max(\"CTC_WRITEID\") \"highestWriteId\"" +
+              "  FROM \"COMPLETED_TXN_COMPONENTS\"" +
+              "  GROUP BY \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\") \"c\" " +
+              "ON \"tc\".\"CTC_DATABASE\" = \"c\".\"CTC_DATABASE\" AND \"tc\".\"CTC_TABLE\" = \"c\".\"CTC_TABLE\"" +
+              "  AND (\"tc\".\"CTC_PARTITION\" = \"c\".\"CTC_PARTITION\" OR (\"tc\".\"CTC_PARTITION\" IS NULL AND \"c\".\"CTC_PARTITION\" IS NULL)) " +
+              "LEFT JOIN (" +
+              "  SELECT \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", max(\"CTC_WRITEID\") \"highestWriteId\"" +
+              "  FROM \"COMPLETED_TXN_COMPONENTS\"" +
+              "  WHERE \"CTC_UPDATE_DELETE\" = 'Y'" +
+              "  GROUP BY \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\") \"c2\" " +
+              "ON \"tc\".\"CTC_DATABASE\" = \"c2\".\"CTC_DATABASE\" AND \"tc\".\"CTC_TABLE\" = \"c2\".\"CTC_TABLE\"" +
+              "  AND (\"tc\".\"CTC_PARTITION\" = \"c2\".\"CTC_PARTITION\" OR (\"tc\".\"CTC_PARTITION\" IS NULL AND \"c2\".\"CTC_PARTITION\" IS NULL)) " +
+              "WHERE \"tc\".\"CTC_WRITEID\" < \"c\".\"highestWriteId\" AND \"tc\".\"CTC_WRITEID\" != \"c2\".\"highestWriteId\"";
+            break;
+          case DERBY:
+          case ORACLE:
+          case CUSTOM:
+            s = "DELETE from \"COMPLETED_TXN_COMPONENTS\" \"tc\"" +
+              "WHERE EXISTS (" +
+              "  SELECT 1" +
+              "  FROM \"COMPLETED_TXN_COMPONENTS\"" +
+              "  WHERE \"CTC_DATABASE\" = \"tc\".\"CTC_DATABASE\"" +
+              "    AND \"CTC_TABLE\" = \"tc\".\"CTC_TABLE\"" +
+              "    AND (\"CTC_PARTITION\" = \"tc\".\"CTC_PARTITION\" OR (\"CTC_PARTITION\" IS NULL AND \"tc\".\"CTC_PARTITION\" IS NULL))" +
+              "    AND (\"tc\".\"CTC_UPDATE_DELETE\"='N' OR \"tc\".\"CTC_UPDATE_DELETE\"='Y' AND \"CTC_UPDATE_DELETE\"='Y')" +
+              "    AND \"tc\".\"CTC_WRITEID\" < \"CTC_WRITEID\")";
+            break;
+          case POSTGRES:
+            s = "DELETE " +
+              "FROM \"COMPLETED_TXN_COMPONENTS\" \"tc\" " +
+              "USING (" +
+              "  SELECT \"c1\".*, \"c2\".\"updateWriteId\" FROM" +
+              "    (SELECT \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", max(\"CTC_WRITEID\") \"highestWriteId\"" +
+              "      FROM \"COMPLETED_TXN_COMPONENTS\"" +
+              "      GROUP BY \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\") \"c1\"" +
+              "  LEFT JOIN" +
+              "    (SELECT \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", max(\"CTC_WRITEID\") \"updateWriteId\"" +
+              "      FROM \"COMPLETED_TXN_COMPONENTS\"" +
+              "      WHERE \"CTC_UPDATE_DELETE\" = 'Y'" +
+              "      GROUP BY \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\") \"c2\"" +
+              "  ON \"c1\".\"CTC_DATABASE\" = \"c2\".\"CTC_DATABASE\" AND \"c1\".\"CTC_TABLE\" = \"c2\".\"CTC_TABLE\"" +
+              "    AND (\"c1\".\"CTC_PARTITION\" = \"c2\".\"CTC_PARTITION\" OR (\"c1\".\"CTC_PARTITION\" IS NULL AND \"c2\".\"CTC_PARTITION\" IS NULL))" +
+              ") \"c\" " +
+              "WHERE \"tc\".\"CTC_DATABASE\" = \"c\".\"CTC_DATABASE\" AND \"tc\".\"CTC_TABLE\" = \"c\".\"CTC_TABLE\"" +
+              "  AND (\"tc\".\"CTC_PARTITION\" = \"c\".\"CTC_PARTITION\" OR (\"tc\".\"CTC_PARTITION\" IS NULL AND \"c\".\"CTC_PARTITION\" IS NULL))" +
+              "  AND \"tc\".\"CTC_WRITEID\" < \"c\".\"highestWriteId\" AND \"tc\".\"ctc_writeid\" != \"c\".\"updateWriteId\"";
+            break;
+          default:
+            String msg = "Unknown database product: " + dbProduct.dbType;
+            LOG.error(msg);
+            throw new MetaException(msg);
+        }
         LOG.debug("Going to execute delete <" + s + ">");
         int rc = stmt.executeUpdate(s);
         LOG.info("Removed " + rc + " rows from COMPLETED_TXN_COMPONENTS");
