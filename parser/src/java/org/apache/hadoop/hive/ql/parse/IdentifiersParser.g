@@ -180,7 +180,7 @@ expressionPart[CommonTree firstExprTree, boolean isStruct]
 firstExpressionsWithAlias
 @after { resetAliasCounter(); }
     :
-    first=expression colAlias=identifier? (COMMA expressionWithAlias)* { incAliasCounter(); }
+    first=expression KW_AS? colAlias=identifier? (COMMA expressionWithAlias)* { incAliasCounter(); }
     -> {colAlias != null}? ^(TOK_FUNCTION Identifier["struct"] {$first.tree} ^(TOK_ALIAS identifier?) expressionWithAlias*)
     -> ^(TOK_FUNCTION Identifier["struct"] {$first.tree} ^(TOK_ALIAS { adaptor.create(Identifier, generateColumnAlias(1)) }) expressionWithAlias*)
     ;
@@ -189,7 +189,7 @@ firstExpressionsWithAlias
 // If alias is not specified generate one.
 expressionWithAlias
     :
-    expression alias=identifier? { incAliasCounter(); }
+    expression KW_AS? alias=identifier? { incAliasCounter(); }
     -> { alias != null }? expression ^(TOK_ALIAS identifier?)
     -> expression ^(TOK_ALIAS { adaptor.create(Identifier, generateColumnAlias()) })
     ;
