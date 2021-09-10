@@ -450,14 +450,14 @@ class CompactionTxnHandler extends TxnHandler {
         Iterator<Long> writeIdsIter = null;
         List<Integer> counts = null;
 
-        if (info.isSetWriteIds && !info.writeIds.isEmpty()) {
+        if (info.writeIds != null && !info.writeIds.isEmpty()) {
           StringBuilder prefix = new StringBuilder(s).append(" AND ");
           List<String> questions = Collections.nCopies(info.writeIds.size(), "?");
 
           counts = TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix,
             new StringBuilder(), questions, "\"TC_WRITEID\"", false, false);
           writeIdsIter = info.writeIds.iterator();
-        } else if (!info.isSetWriteIds){
+        } else if (!info.hasUncompactedAborts){
           if (info.highestWriteId != 0) {
             s += " AND \"TC_WRITEID\" <= ?";
           }
