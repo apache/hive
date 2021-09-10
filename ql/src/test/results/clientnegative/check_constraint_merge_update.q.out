@@ -1,0 +1,88 @@
+PREHOOK: query: CREATE TABLE table_check_merge (
+    name string,
+    age int,
+    gpa double CHECK (gpa BETWEEN 0.0 AND 4.0)
+) stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_check_merge
+POSTHOOK: query: CREATE TABLE table_check_merge (
+    name string,
+    age int,
+    gpa double CHECK (gpa BETWEEN 0.0 AND 4.0)
+) stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_check_merge
+PREHOOK: query: CREATE TABLE table_source(
+    name string,
+    age int,
+    gpa double
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_source
+POSTHOOK: query: CREATE TABLE table_source(
+    name string,
+    age int,
+    gpa double
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_source
+PREHOOK: query: insert into table_source(name, age, gpa) values
+('student1', 16, null),
+(null, 20, 4.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_source
+POSTHOOK: query: insert into table_source(name, age, gpa) values
+('student1', 16, null),
+(null, 20, 4.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_source
+POSTHOOK: Lineage: table_source.age SCRIPT []
+POSTHOOK: Lineage: table_source.gpa SCRIPT []
+POSTHOOK: Lineage: table_source.name SCRIPT []
+PREHOOK: query: insert into table_check_merge(name, age, gpa) values
+('student1', 16, 2.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_check_merge
+POSTHOOK: query: insert into table_check_merge(name, age, gpa) values
+('student1', 16, 2.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_check_merge
+POSTHOOK: Lineage: table_check_merge.age SCRIPT []
+POSTHOOK: Lineage: table_check_merge.gpa SCRIPT []
+POSTHOOK: Lineage: table_check_merge.name SCRIPT []
+PREHOOK: query: merge into table_check_merge using (select age from table_source)source
+on source.age=table_check_merge.age
+when matched then update set gpa=6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_check_merge
+PREHOOK: Input: default@table_source
+PREHOOK: Output: default@merge_tmp_table
+PREHOOK: Output: default@table_check_merge
+Status: Failed
+Vertex failed, vertexName=Reducer 4, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
+#### A masked pattern was here ####
+, errorMessage=Cannot recover from this error:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 4] killed/failed due to:OWN_TASK_FAILURE]
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 4, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
+#### A masked pattern was here ####
+, errorMessage=Cannot recover from this error:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 4] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0

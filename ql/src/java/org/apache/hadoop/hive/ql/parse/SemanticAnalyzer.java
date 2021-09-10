@@ -7166,7 +7166,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return input;
     }
 
-    if (updating(dest) && isCBOExecuted()) {
+      if (updating(dest) && isCBOExecuted() && this.ctx.getOperation() != Context.Operation.MERGE) {
       // for UPDATE statements CBO already added and pushed down the constraints
       return input;
     }
