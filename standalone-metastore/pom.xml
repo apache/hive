@@ -97,7 +97,7 @@
     <protobuf.version>2.6.1</protobuf.version>
     <protobuf-exc.version>2.6.1</protobuf-exc.version>
     <sqlline.version>1.11.0</sqlline.version>
-    <jline.version>3.9.0</jline.version>
+    <jline.version>3.18.0</jline.version>
     <ST4.version>4.0.4</ST4.version>
     <storage-api.version>2.7.3-SNAPSHOT</storage-api.version>
     <beanutils.version>1.9.4</beanutils.version>
