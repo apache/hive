@@ -1039,6 +1039,11 @@ public class HiveConnection implements java.sql.Connection {
       openConf.put(HiveAuthConstants.HS2_PROXY_USER,
           sessConfMap.get(HiveAuthConstants.HS2_PROXY_USER));
     }
+    
+     if (sessConfMap.containsKey(ImpalaAuthConstants.IMPALA_DOAS_USER)) {
+      openConf.put(ImpalaAuthConstants.IMPALA_DOAS_USER,
+          sessConfMap.get(ImpalaAuthConstants.IMPALA_DOAS_USER));
+    }
 
     // set create external purge table by default
     if (sessConfMap.containsKey(JdbcConnectionParams.CREATE_TABLE_AS_EXTERNAL)) {
