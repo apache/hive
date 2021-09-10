@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import com.codahale.metrics.Counter;
 import com.facebook.fb303.FacebookBase;
 import com.facebook.fb303.fb_status;
@@ -5431,7 +5433,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Partition ret = null;
     Exception ex = null;
     try {
-      authorizeTableForPartitionMetadata(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
       fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
       ret = getMS().getPartition(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name, part_vals);
       ret = FilterUtils.filterPartitionIfEnabled(isServerFilterEnabled, filterHook, ret);
@@ -5461,6 +5462,37 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    */
   private void fireReadTablePreEvent(String catName, String dbName, String tblName)
       throws MetaException, NoSuchObjectException {
+    if (catName == null) {
+      throw new NullPointerException("catName is null");
+    }
+
+    if (isBlank(catName)) {
+      throw new NoSuchObjectException("catName is not valid");
+    }
+
+    if (dbName == null) {
+      throw new NullPointerException("dbName is null");
+    }
+
+    if (isBlank(dbName)) {
+      throw new NoSuchObjectException("dbName is not valid");
+    }
+
+    List<String> filteredDb = FilterUtils.filterDbNamesIfEnabled(isServerFilterEnabled, filterHook,
+            Collections.singletonList(dbName));
+
+    if (filteredDb.isEmpty()) {
+      throw new NoSuchObjectException("Database " + dbName + " does not exist");
+    }
+
+    if (tblName == null) {
+      throw new NullPointerException("tblName is null");
+    }
+
+    if (isBlank(tblName)) {
+      throw new NoSuchObjectException("tblName is not valid");
+    }
+
     if(preListeners.size() > 0) {
       Supplier<Table> tableSupplier = Suppliers.memoize(new Supplier<Table>() {
         @Override public Table get() {
@@ -5489,12 +5521,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String[] parsedDbName = parseDbName(db_name, conf);
     startPartitionFunction("get_partition_with_auth", parsedDbName[CAT_NAME],
         parsedDbName[DB_NAME], tbl_name, part_vals);
-    fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
     Partition ret = null;
     Exception ex = null;
     try {
-      authorizeTableForPartitionMetadata(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
-
+      fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
       ret = getMS().getPartitionWithAuth(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
           tbl_name, part_vals, user_name, group_names);
       ret = FilterUtils.filterPartitionIfEnabled(isServerFilterEnabled, filterHook, ret);
@@ -5518,14 +5548,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                         final short max_parts) throws NoSuchObjectException, MetaException {
     String[] parsedDbName = parseDbName(db_name, conf);
     startTableFunction("get_partitions", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
-    fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
     List<Partition> ret = null;
     Exception ex = null;
     try {
+      fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
       checkLimitNumberOfPartitionsByFilter(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
           tbl_name, NO_FILTER_STRING, max_parts);
-
-      authorizeTableForPartitionMetadata(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
 
       ret = getMS().getPartitions(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name,
           max_parts);
@@ -5557,14 +5585,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                                   final List<String> groupNames) throws TException {
     String[] parsedDbName = parseDbName(dbName, conf);
     startTableFunction("get_partitions_with_auth", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName);
-
     List<Partition> ret = null;
     Exception ex = null;
     try {
+      fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName);
       checkLimitNumberOfPartitionsByFilter(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
           tblName, NO_FILTER_STRING, maxParts);
-
-      authorizeTableForPartitionMetadata(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName);
 
       ret = getMS().getPartitionsWithAuth(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName,
           maxParts, userName, groupNames);
@@ -5626,7 +5652,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     startTableFunction("get_partitions_pspec", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
 
     List<PartitionSpec> partitionSpecs = null;
+    Exception ex = null;
     try {
+      fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
       Table table = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
       // get_partitions will parse out the catalog and db names itself
       List<Partition> partitions = get_partitions(db_name, tableName, (short) max_parts);
@@ -5646,9 +5674,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
 
       return partitionSpecs;
-    }
-    finally {
-      endFunction("get_partitions_pspec", partitionSpecs != null && !partitionSpecs.isEmpty(), null, tbl_name);
+    } catch (NoSuchObjectException e) {
+      ex = e;
+      throw new NoSuchObjectException(e.getMessage());
+    } catch (MetaException | NullPointerException e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_partitions_pspec", partitionSpecs != null && !partitionSpecs.isEmpty(), ex, tbl_name);
     }
   }
 
@@ -5710,11 +5743,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                                           final short max_parts) throws NoSuchObjectException, MetaException {
     String[] parsedDbName = parseDbName(db_name, conf);
     startTableFunction("get_partition_names", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
-    fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
+
     List<String> ret = null;
     Exception ex = null;
     try {
-      authorizeTableForPartitionMetadata(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
+      fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
       ret = getMS().listPartitionNames(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name,
           max_parts);
       ret = FilterUtils.filterPartitionNamesIfEnabled(isServerFilterEnabled,
@@ -5736,7 +5769,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String tblName = request.getTblName();
 
     try {
-      authorizeTableForPartitionMetadata(catName, dbName, tblName);
+      fireReadTablePreEvent(catName, dbName, tblName);
 
       // This is serious black magic, as the following 2 lines do nothing AFAICT but without them
       // the subsequent call to listPartitionValues fails.
@@ -6445,9 +6478,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private Partition get_partition_by_name_core(final RawStore ms, final String catName,
                                                final String db_name, final String tbl_name,
                                                final String part_name) throws TException {
-    fireReadTablePreEvent(catName, db_name, tbl_name);
     List<String> partVals;
     try {
+      fireReadTablePreEvent(catName, db_name, tbl_name);
       partVals = getPartValsFromName(ms, catName, db_name, tbl_name, part_name);
     } catch (InvalidObjectException e) {
       throw new NoSuchObjectException(e.getMessage());
@@ -6573,11 +6606,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String[] parsedDbName = parseDbName(db_name, conf);
     startPartitionFunction("get_partitions_ps", parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
         tbl_name, part_vals);
-
     List<Partition> ret = null;
     Exception ex = null;
     try {
-      authorizeTableForPartitionMetadata(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
+      fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
       // Don't send the parsedDbName, as this method will parse itself.
       ret = get_partitions_ps_with_auth(db_name, tbl_name, part_vals,
           max_parts, null, null);
@@ -6605,11 +6637,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String[] parsedDbName = parseDbName(db_name, conf);
     startPartitionFunction("get_partitions_ps_with_auth", parsedDbName[CAT_NAME],
         parsedDbName[DB_NAME], tbl_name, part_vals);
-    fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
     List<Partition> ret = null;
     Exception ex = null;
     try {
-      authorizeTableForPartitionMetadata(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
+      fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
       ret = getMS().listPartitionsPsWithAuth(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
           tbl_name, part_vals, max_parts, userName, groupNames);
       ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
@@ -6652,15 +6683,17 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String[] parsedDbName = parseDbName(db_name, conf);
     startPartitionFunction("get_partitions_names_ps", parsedDbName[CAT_NAME],
         parsedDbName[DB_NAME], tbl_name, part_vals);
-    fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
     List<String> ret = null;
     Exception ex = null;
     try {
-      authorizeTableForPartitionMetadata(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
+      fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
       ret = getMS().listPartitionNamesPs(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name,
           part_vals, max_parts);
       ret = FilterUtils.filterPartitionNamesIfEnabled(isServerFilterEnabled,
           filterHook, parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name, ret);
+    } catch (NullPointerException e) {
+      ex = e;
+      throw newMetaException(e);
     } catch (Exception e) {
       ex = e;
       rethrowException(e);
@@ -6688,11 +6721,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String dbName = req.getDbName(), tblName = req.getTblName();
     startTableFunction("get_partition_names_req", catName,
         dbName, tblName);
-    fireReadTablePreEvent(catName, dbName, tblName);
     List<String> ret = null;
     Exception ex = null;
     try {
-      authorizeTableForPartitionMetadata(catName, dbName, tblName);
+      fireReadTablePreEvent(catName, dbName, tblName);
       ret = getMS().listPartitionNames(catName, dbName, tblName,
           req.getDefaultPartitionName(), req.getExpr(), req.getOrder(), req.getMaxParts());
       ret = FilterUtils.filterPartitionNamesIfEnabled(isServerFilterEnabled,
@@ -7212,14 +7244,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String[] parsedDbName = parseDbName(dbName, conf);
     startTableFunction("get_partitions_by_filter", parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
         tblName);
-    fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName);
     List<Partition> ret = null;
     Exception ex = null;
     try {
+      fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName);
       checkLimitNumberOfPartitionsByFilter(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
           tblName, filter, maxParts);
-
-      authorizeTableForPartitionMetadata(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName);
 
       ret = getMS().getPartitionsByFilter(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblName,
           filter, maxParts);
@@ -7275,10 +7305,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String dbName = req.getDbName(), tblName = req.getTblName();
     String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
     startTableFunction("get_partitions_spec_by_expr", catName, dbName, tblName);
-    fireReadTablePreEvent(catName, dbName, tblName);
     PartitionsSpecByExprResult ret = null;
     Exception ex = null;
     try {
+      fireReadTablePreEvent(catName, dbName, tblName);
       checkLimitNumberOfPartitionsByExpr(catName, dbName, tblName, req.getExpr(), UNLIMITED_MAX_PARTITIONS);
       List<Partition> partitions = new LinkedList<>();
       boolean hasUnknownPartitions = getMS().getPartitionsByExpr(catName, dbName, tblName,
@@ -7302,10 +7332,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String dbName = req.getDbName(), tblName = req.getTblName();
     String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
     startTableFunction("get_partitions_by_expr", catName, dbName, tblName);
-    fireReadTablePreEvent(catName, dbName, tblName);
     PartitionsByExprResult ret = null;
     Exception ex = null;
     try {
+      fireReadTablePreEvent(catName, dbName, tblName);
       checkLimitNumberOfPartitionsByExpr(catName, dbName, tblName, req.getExpr(), UNLIMITED_MAX_PARTITIONS);
       List<Partition> partitions = new LinkedList<>();
       boolean hasUnknownPartitions = getMS().getPartitionsByExpr(catName, dbName, tblName,
@@ -7402,7 +7432,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         tblName);
     try {
       getMS().openTransaction();
-      authorizeTableForPartitionMetadata(parsedCatName, parsedDbName, tblName);
 
       fireReadTablePreEvent(parsedCatName, parsedDbName, tblName);
 

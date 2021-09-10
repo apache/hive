@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -56,6 +57,7 @@ public class TestHiveMetaStoreAuthorizer {
   private static final String unAuthorizedUser = "bob";
   private static final String authorizedUser   = "sam";
   private static final String superUser        = "hive";
+  private static final String default_db       = "default";
 
   private static final String metaConfVal = "";
 
@@ -165,7 +167,7 @@ public class TestHiveMetaStoreAuthorizer {
               .addCol("dep", ColumnType.STRING_TYPE_NAME)
               .setOwner(authorizedUser)
               .build(conf);
-      hmsHandler.alter_table("default", viewName, viewObj);
+      hmsHandler.alter_table(default_db, viewName, viewObj);
       Map<String, String> params = viewObj.getParameters();
       assertTrue(params.containsKey("Authorized"));
       assertTrue("false".equalsIgnoreCase(params.get("Authorized")));
@@ -278,7 +280,7 @@ public class TestHiveMetaStoreAuthorizer {
       Table alteredTable = new TableBuilder()
               .addCol("dep", ColumnType.STRING_TYPE_NAME)
               .build(conf);
-      hmsHandler.alter_table("default",tblName,alteredTable);
+      hmsHandler.alter_table(default_db,tblName,alteredTable);
     } catch (Exception e) {
       // No Exception for create table for authorized user
     }
@@ -341,7 +343,7 @@ public class TestHiveMetaStoreAuthorizer {
   public void testPShowTablesAuthorizedUser() throws Exception {
     UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
     try {
-      hmsHandler.get_all_tables("default");
+      hmsHandler.get_all_tables(default_db);
     } catch (Exception e) {
       // no Exceptions for show tables as authorized user.
     }
@@ -351,12 +353,82 @@ public class TestHiveMetaStoreAuthorizer {
   public void testQShowTablesUnauthorizedUser() throws Exception {
     UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(unAuthorizedUser));
     try {
-      hmsHandler.get_all_tables("default");
+      hmsHandler.get_all_tables(default_db);
     } catch (Exception e) {
       String err = e.getMessage();
       if (StringUtils.isNotEmpty(err)) {
         assert(true);
       }
+    }
+  }
+
+  @Test
+  public void testShowPartitionsUnAuthorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    String new_tblName = "tbl_show_part";
+    try {
+      Table tblObj = new TableBuilder()
+              .setTableName(new_tblName)
+              .addCol("name", ColumnType.STRING_TYPE_NAME)
+              .addPartCol("eid", ColumnType.INT_TYPE_NAME)
+              .setOwner(authorizedUser)
+              .build(conf);
+      hmsHandler.create_table(tblObj);
+      UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(unAuthorizedUser));
+      hmsHandler.get_partition_names(default_db, new_tblName, (short)-1);
+      System.out.println("execution over");
+    } catch (Exception e) {
+      String err = e.getMessage();
+      String expected = "Operation type " + HiveOperationType.QUERY + " not allowed for user:" + unAuthorizedUser;
+      assertEquals(expected, err);
+      UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+      hmsHandler.drop_table(default_db,new_tblName,true);
+    }
+  }
+
+  @Test
+  public void testSelectPartitionsUnAuthorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    String new_tblName = "tbl_select_part";
+    try {
+      Table tblObj = new TableBuilder()
+              .setTableName(new_tblName)
+              .addCol("name", ColumnType.STRING_TYPE_NAME)
+              .addPartCol("eid", ColumnType.INT_TYPE_NAME)
+              .setOwner(authorizedUser)
+              .build(conf);
+      hmsHandler.create_table(tblObj);
+      UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(unAuthorizedUser));
+      hmsHandler.get_partitions_ps_with_auth(default_db, new_tblName, Lists.newArrayList("1999"), (short)-1, unAuthorizedUser, null);
+    } catch (Exception e) {
+      String err = e.getMessage();
+      String expected = "Operation type " + HiveOperationType.QUERY + " not allowed for user:" + unAuthorizedUser;
+      assertEquals(expected, err);
+      UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+      hmsHandler.drop_table(default_db,new_tblName,true);
+    }
+  }
+
+  @Test
+  public void testAlterPartitionRenameUnAuthorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    String new_tblName = "tbl_alter_part";
+    try {
+      Table tblObj = new TableBuilder()
+              .setTableName(new_tblName)
+              .addCol("name", ColumnType.STRING_TYPE_NAME)
+              .addPartCol("eid", ColumnType.INT_TYPE_NAME)
+              .setOwner(authorizedUser)
+              .build(conf);
+      hmsHandler.create_table(tblObj);
+      UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(unAuthorizedUser));
+      hmsHandler.get_partition_with_auth(default_db, new_tblName, Lists.newArrayList("1999"), unAuthorizedUser, null);
+    } catch (Exception e) {
+      String err = e.getMessage();
+      String expected = "Operation type " + HiveOperationType.QUERY + " not allowed for user:" + unAuthorizedUser;
+      assertEquals(expected, err);
+      UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+      hmsHandler.drop_table(default_db,new_tblName,true);
     }
   }
 }
