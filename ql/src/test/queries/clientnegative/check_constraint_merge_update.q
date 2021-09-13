@@ -1,3 +1,6 @@
+-- Mask number of failed and killed vertices.
+--! qt:replace:/(DAG did not succeed due to VERTEX_FAILURE. failedVertices\:)[0-9]*(\s+killedVertices\:)[0-9]*/$1#Masked#$2#Masked#/
+
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
