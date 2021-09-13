@@ -62,7 +62,6 @@ import java.util.Date;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -225,40 +224,48 @@ public class DeltaFilesMetricReporter {
       EnumMap<DeltaFilesMetricType, Queue<Pair<String, Integer>>> deltaFilesStats, Configuration conf)
       throws IOException {
 
-    long baseSize = getBaseSize(dir);
-    int numObsoleteDeltas = getNumObsoleteDeltas(dir, checkThresholdInSec);
+    try {
+      long baseSize = getBaseSize(dir);
+      int numObsoleteDeltas = getNumObsoleteDeltas(dir, checkThresholdInSec);
 
-    int numDeltas = 0;
-    int numSmallDeltas = 0;
+      int numDeltas = 0;
+      int numSmallDeltas = 0;
 
-    long now = new Date().getTime();
+      long now = new Date().getTime();
 
-    for (AcidUtils.ParsedDelta delta : dir.getCurrentDirectories()) {
-      if (now - getModificationTime(delta, dir.getFs()) >= checkThresholdInSec * 1000) {
-        numDeltas++;
+      for (AcidUtils.ParsedDelta delta : dir.getCurrentDirectories()) {
+        if (now - getModificationTime(delta, dir.getFs()) >= checkThresholdInSec * 1000) {
+          numDeltas++;
 
-        long deltaSize = getDirSize(delta, dir.getFs());
-        if (baseSize != 0 && deltaSize / (float) baseSize < deltaPctThreshold) {
-          numSmallDeltas++;
+          long deltaSize = getDirSize(delta, dir.getFs());
+          if (baseSize != 0 && deltaSize / (float) baseSize < deltaPctThreshold) {
+            numSmallDeltas++;
+          }
         }
       }
-    }
 
-    logDeltaDirMetrics(dir, conf, numObsoleteDeltas, numDeltas, numSmallDeltas);
+      logDeltaDirMetrics(dir, conf, numObsoleteDeltas, numDeltas, numSmallDeltas);
 
-    String serializedMetadata = conf.get(JOB_CONF_DELTA_FILES_METRICS_METADATA);
-    HashMap<Path, DeltaFilesMetadata> pathToMetadata = new HashMap<>();
-    pathToMetadata = SerializationUtilities.deserializeObject(serializedMetadata, pathToMetadata.getClass());
-    if (pathToMetadata == null) {
-      LOG.warn("Delta metrics can't be updated since the metadata is null.");
-      return;
+      String serializedMetadata = conf.get(JOB_CONF_DELTA_FILES_METRICS_METADATA);
+      if (serializedMetadata == null) {
+        LOG.warn("delta.files.metrics.metadata is missing from config. Delta metrics can't be updated.");
+        return;
+      }
+      HashMap<Path, DeltaFilesMetadata> pathToMetadata = new HashMap<>();
+      pathToMetadata = SerializationUtilities.deserializeObject(serializedMetadata, pathToMetadata.getClass());
+      if (pathToMetadata == null) {
+        LOG.warn("Delta metrics can't be updated since the metadata is null.");
+        return;
+      }
+      DeltaFilesMetadata metadata = pathToMetadata.get(dir.getPath());
+      filterAndAddToDeltaFilesStats(NUM_DELTAS, numDeltas, deltasThreshold, deltaFilesStats, metadata, maxCacheSize);
+      filterAndAddToDeltaFilesStats(NUM_OBSOLETE_DELTAS, numObsoleteDeltas, obsoleteDeltasThreshold, deltaFilesStats,
+          metadata, maxCacheSize);
+      filterAndAddToDeltaFilesStats(NUM_SMALL_DELTAS, numSmallDeltas, deltasThreshold, deltaFilesStats, metadata,
+          maxCacheSize);
+    } catch (Throwable t) {
+      LOG.warn("Unknown throwable caught while updating delta metrics. Metrics will not be updated.", t);
     }
-    DeltaFilesMetadata metadata = pathToMetadata.get(dir.getPath());
-    filterAndAddToDeltaFilesStats(NUM_DELTAS, numDeltas, deltasThreshold, deltaFilesStats, metadata, maxCacheSize);
-    filterAndAddToDeltaFilesStats(NUM_OBSOLETE_DELTAS, numObsoleteDeltas, obsoleteDeltasThreshold, deltaFilesStats,
-        metadata, maxCacheSize);
-    filterAndAddToDeltaFilesStats(NUM_SMALL_DELTAS, numSmallDeltas, deltasThreshold, deltaFilesStats,
-        metadata, maxCacheSize);
   }
 
   /**
@@ -342,12 +349,6 @@ public class DeltaFilesMetricReporter {
     return numObsoleteDeltas;
   }
 
-  private static String getRelPath(AcidUtils.Directory directory) {
-    return directory.getPath().getName().contains("=") ?
-      directory.getPath().getParent().getName() + Path.SEPARATOR + directory.getPath().getName() :
-      directory.getPath().getName();
-  }
-
   public static void createCountersForAcidMetrics(TezCounters tezCounters, JobConf jobConf) {
     if (HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED) &&
       MetastoreConf.getBoolVar(jobConf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
@@ -364,19 +365,24 @@ public class DeltaFilesMetricReporter {
 
   public static void addAcidMetricsToConfObj(EnumMap<DeltaFilesMetricType,
       Queue<Pair<String, Integer>>> deltaFilesStats, Configuration conf) {
-    deltaFilesStats.forEach((type, value) ->
-        conf.set(type.name(), Joiner.on(ENTRY_SEPARATOR).withKeyValueSeparator(KEY_VALUE_SEPARATOR).join(value)));
+    try {
+      deltaFilesStats.forEach((type, value) -> conf
+          .set(type.name(), Joiner.on(ENTRY_SEPARATOR).withKeyValueSeparator(KEY_VALUE_SEPARATOR).join(value)));
+
+    } catch (Exception e) {
+      LOG.warn("Couldn't add Delta metrics to conf object", e);
+    }
   }
 
   public static void backPropagateAcidMetrics(JobConf jobConf, Configuration conf) {
     if (HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED) &&
       MetastoreConf.getBoolVar(jobConf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
-
-      Arrays.stream(DeltaFilesMetricType.values())
-        .filter(type -> conf.get(type.name()) != null)
-        .forEach(type ->
-            jobConf.set(type.name(), conf.get(type.name()))
-        );
+      try {
+        Arrays.stream(DeltaFilesMetricType.values()).filter(type -> conf.get(type.name()) != null)
+            .forEach(type -> jobConf.set(type.name(), conf.get(type.name())));
+      } catch (Exception e) {
+        LOG.warn("Couldn't back propagate Delta metrics to jobConf object", e);
+      }
     }
   }
 
