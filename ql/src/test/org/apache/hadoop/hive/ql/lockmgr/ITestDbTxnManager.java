@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Derby;
@@ -56,7 +57,7 @@ public class ITestDbTxnManager extends TestDbTxnManager2 {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.PWD, rule.getHivePassword());
     // In this case we disable auto_create which is enabled by default for every test
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.AUTO_CREATE_ALL, false);
-
+    DatabaseProduct.reset();
 
     LOG.info("Set metastore connection to url: {}",
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY));

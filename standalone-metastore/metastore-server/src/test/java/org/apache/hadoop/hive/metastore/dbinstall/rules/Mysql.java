@@ -27,7 +27,7 @@ public class Mysql extends DatabaseRule {
 
   @Override
   public String getDockerImageName() {
-    return "mariadb:5.5";
+    return "mariadb:10.2";
   }
 
   @Override
@@ -57,7 +57,7 @@ public class Mysql extends DatabaseRule {
 
   @Override
   public String getJdbcUrl(String hostAddress) {
-    return "jdbc:mysql://" + hostAddress + ":3306/" + HIVE_DB;
+    return "jdbc:mariadb://" + hostAddress + ":3306/" + HIVE_DB;
   }
 
   @Override
