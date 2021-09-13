@@ -6971,7 +6971,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         tbl = getTable(catName, dbName, tableName);
       }
       partVals = getPartValsFromName(tbl, csd.getPartName());
-      parameters = getMS().updatePartitionColumnStatistics(colStats, partVals, validWriteIds, writeId);
+      parameters = getMS().updatePartitionColumnStatistics(tbl, null, colStats, partVals, validWriteIds, writeId);
       if (parameters != null) {
         if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
           MetaStoreListenerNotifier.notifyEvent(transactionalListeners,

@@ -358,7 +358,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
       String pName = FileUtils.makePartName(Collections.singletonList(soldDateCol.getName()), partitionValue);
       partNames.add(pName);
       ColumnStatistics stats = createColStats(pStat.getValue(), salesTable, soldDateCol, pName);
-      objectStore.updatePartitionColumnStatistics(stats, partitionValue, null, -1);
+      objectStore.updatePartitionColumnStatistics(salesTable, p, stats, partitionValue, null, -1);
     }
 
     List<ColumnStatistics> rawStats = objectStore
@@ -1008,8 +1008,8 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     stats.setStatsObj(colStatObjs);
     stats.setEngine(CacheUtils.HIVE_ENGINE);
 
-    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals1, null, -1);
-    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals2, null, -1);
+    cachedStore.updatePartitionColumnStatistics(tbl, null,stats.deepCopy(), partVals1, null, -1);
+    cachedStore.updatePartitionColumnStatistics(tbl, null, stats.deepCopy(), partVals2, null, -1);
 
     List<String> colNames = new ArrayList<>();
     colNames.add(colName);
@@ -1092,10 +1092,10 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     stats.setStatsObj(colStatObjs);
     stats.setEngine(CacheUtils.HIVE_ENGINE);
 
-    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals1, null, -1);
+    cachedStore.updatePartitionColumnStatistics(tbl, null, stats.deepCopy(), partVals1, null, -1);
 
     longStats.setNumDVs(40);
-    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals2, null, -1);
+    cachedStore.updatePartitionColumnStatistics(tbl, null, stats.deepCopy(), partVals2, null, -1);
 
     List<String> colNames = new ArrayList<>();
     colNames.add(colName);
@@ -1179,7 +1179,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     stats.setStatsObj(colStatObjs);
     stats.setEngine(CacheUtils.HIVE_ENGINE);
 
-    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals1, null, -1);
+    cachedStore.updatePartitionColumnStatistics(tbl, null, stats.deepCopy(), partVals1, null, -1);
 
     longStats.setNumDVs(40);
     hll = HyperLogLog.builder().build();
@@ -1189,7 +1189,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     hll.addLong(5);
     longStats.setBitVectors(hll.serialize());
 
-    cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals2, null, -1);
+    cachedStore.updatePartitionColumnStatistics(tbl, null, stats.deepCopy(), partVals2, null, -1);
 
     List<String> colNames = new ArrayList<>();
     colNames.add(colName);

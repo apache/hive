@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.Warehouse.makePartNameUtil;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -9677,7 +9678,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics colStats,
+  public Map<String, String> updatePartitionColumnStatistics(Table table, Partition partition, ColumnStatistics colStats,
       List<String> partVals, String validWriteIds, long writeId)
           throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean committed = false;
@@ -9687,10 +9688,13 @@ public class ObjectStore implements RawStore, Configurable {
       List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
       ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
       String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
-      MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
-      Table table = convertToTable(mTable);
-      Partition partition = convertToPart(getMPartition(
-          catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable), false);
+      //MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
+      //Table table = convertToTable(mTable);
+      MTable mTable = convertToMTable(table);
+      if(partition == null) {
+        partition = convertToPart(getMPartition(catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable),
+                false);
+      }
       List<String> colNames = new ArrayList<>();
 
       for(ColumnStatisticsObj statsObj : statsObjs) {
@@ -9700,8 +9704,9 @@ public class ObjectStore implements RawStore, Configurable {
       Map<String, MPartitionColumnStatistics> oldStats = getPartitionColStats(table, statsDesc
           .getPartName(), colNames, colStats.getEngine());
 
-      MPartition mPartition = getMPartition(
-          catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable);
+      //MPartition mPartition = getMPartition(
+          //catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable);
+      MPartition mPartition = convertToMPart(partition,mTable,false);
       if (partition == null) {
         throw new NoSuchObjectException("Partition for which stats is gathered doesn't exist.");
       }

@@ -885,8 +885,8 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj,List<String> partVals,
-      String  validWriteIds, long writeId)
+  public Map<String, String> updatePartitionColumnStatistics(Table table, Partition partition, ColumnStatistics statsObj
+      ,List<String> partVals, String  validWriteIds, long writeId)
     throws NoSuchObjectException, MetaException, InvalidObjectException {
     return null;
   }

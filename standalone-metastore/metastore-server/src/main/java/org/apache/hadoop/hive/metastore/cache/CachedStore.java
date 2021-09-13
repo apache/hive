@@ -75,6 +75,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import javax.servlet.http.Part;
+
 import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -2197,11 +2199,13 @@ public class CachedStore implements RawStore, Configurable {
     sharedCache.updatePartitionColStatsInCache(catName, dbName, tblName, partVals, colStats.getStatsObj());
   }
 
-  @Override public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics colStats, List<String> partVals,
+  @Override
+  public Map<String, String> updatePartitionColumnStatistics(Table table, Partition partition,
+      ColumnStatistics colStats, List<String> partVals,
       String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     Map<String, String> newParams =
-        rawStore.updatePartitionColumnStatistics(colStats, partVals, validWriteIds, writeId);
+        rawStore.updatePartitionColumnStatistics(table, partition, colStats, partVals, validWriteIds, writeId);
     // in case of event based cache update, cache is updated during commit txn
     if (newParams != null && !canUseEvents) {
       updatePartitionColumnStatisticsInCache(colStats, newParams, partVals);

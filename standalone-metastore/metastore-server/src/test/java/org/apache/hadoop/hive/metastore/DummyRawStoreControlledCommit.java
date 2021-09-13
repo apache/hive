@@ -815,11 +815,11 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj,
+  public Map<String, String> updatePartitionColumnStatistics(Table table, Partition partition,ColumnStatistics statsObj,
       List<String> partVals, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException,
       InvalidInputException {
-    return objectStore.updatePartitionColumnStatistics(statsObj, partVals, validWriteIds, writeId);
+    return objectStore.updatePartitionColumnStatistics(table, partition, statsObj, partVals, validWriteIds, writeId);
   }
 
   @Override

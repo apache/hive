@@ -693,7 +693,7 @@ public class TestObjectStore {
         statsObjList.add(partStats);
 
         try (AutoCloseable c = deadline()) {
-          objectStore.updatePartitionColumnStatistics(stats, part.getValues(), null, -1);
+          objectStore.updatePartitionColumnStatistics(tbl1, null, stats, part.getValues(), null, -1);
         }
       }
     }
