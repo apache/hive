@@ -823,6 +823,14 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj,
+      List<String> partVals, String validWriteIds, long writeId)
+      throws NoSuchObjectException, MetaException, InvalidObjectException,
+      InvalidInputException {
+    return objectStore.updatePartitionColumnStatistics(statsObj, partVals, validWriteIds, writeId);
+  }
+
+  @Override
   public boolean addToken(String tokenIdentifier, String delegationToken) {
     return false;
   }

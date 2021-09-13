@@ -9688,8 +9688,10 @@ public class ObjectStore implements RawStore, Configurable {
       List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
       ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
       String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
-      //MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
-      //Table table = convertToTable(mTable);
+      if(table == null) {
+        MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
+        table = convertToTable(mTable);
+      }
       MTable mTable = convertToMTable(table);
       if(partition == null) {
         partition = convertToPart(getMPartition(catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable),
@@ -9750,6 +9752,13 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
+  }
+
+  @Override
+  public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics colStats,
+      List<String> partVals, String validWriteIds, long writeId)
+      throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    return updatePartitionColumnStatistics(null, null, colStats, partVals, validWriteIds, writeId);
   }
 
   @Override

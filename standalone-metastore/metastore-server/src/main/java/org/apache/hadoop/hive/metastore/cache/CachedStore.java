@@ -2213,6 +2213,12 @@ public class CachedStore implements RawStore, Configurable {
     return newParams;
   }
 
+  @Override public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj, List<String> partVals,
+      String validWriteIds, long writeId)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return updatePartitionColumnStatistics(null, null, statsObj, partVals, validWriteIds, writeId);
+  }
+
   @Override public Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
           Map<String, ColumnStatistics> partColStatsMap,
           Table tbl, List<TransactionalMetaStoreEventListener> listeners,

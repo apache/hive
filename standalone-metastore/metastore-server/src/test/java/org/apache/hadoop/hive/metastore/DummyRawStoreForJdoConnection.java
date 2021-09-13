@@ -891,6 +891,12 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     return null;
   }
 
+  @Override public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj, List<String> partVals,
+      String validWriteIds, long writeId)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return null;
+  }
+
   @Override
   public void verifySchema() throws MetaException {
   }
