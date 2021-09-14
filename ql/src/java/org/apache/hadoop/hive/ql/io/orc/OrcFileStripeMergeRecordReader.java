@@ -40,14 +40,14 @@ public class OrcFileStripeMergeRecordReader implements
   protected Iterator<StripeInformation> iter;
   protected List<OrcProto.StripeStatistics> stripeStatistics;
   private int stripeIdx;
-  private long start;
-  private long end;
   private boolean skipFile;
 
   public OrcFileStripeMergeRecordReader(Configuration conf, FileSplit split) throws IOException {
     path = split.getPath();
-    start = split.getStart();
-    end = start + split.getLength();
+    long start = split.getStart();
+    // if the combined split has only part of the file split, the entire file will be handled by the mapper that
+    // owns the start of file split.
+    skipFile = start > 0; // skip the file if start is not 0
     FileSystem fs = path.getFileSystem(conf);
     this.reader = OrcFile.createReader(path, OrcFile.readerOptions(conf).filesystem(fs));
     this.iter = reader.getStripes().iterator();
@@ -80,7 +80,7 @@ public class OrcFileStripeMergeRecordReader implements
   }
 
   protected boolean nextStripe(OrcFileKeyWrapper keyWrapper, OrcFileValueWrapper valueWrapper)
-      throws IOException {
+        throws IOException {
     // missing stripe stats (old format). If numRows is 0 then its an empty file and no statistics
     // is present. We have to differentiate no stats (empty file) vs missing stats (old format).
     if ((stripeStatistics == null || stripeStatistics.isEmpty()) && reader.getNumberOfRows() > 0) {
@@ -90,33 +90,27 @@ public class OrcFileStripeMergeRecordReader implements
       return true;
     }
 
-    while (iter.hasNext()) {
+    // file split starts with 0 and hence this mapper owns concatenate of all stripes in the file.
+    if (iter.hasNext()) {
       StripeInformation si = iter.next();
-
-      // if stripe offset is outside the split boundary then ignore the current
-      // stripe as it will be handled by some other mapper.
-      if (si.getOffset() >= start && si.getOffset() < end) {
-        valueWrapper.setStripeStatistics(stripeStatistics.get(stripeIdx++));
-        valueWrapper.setStripeInformation(si);
-        if (!iter.hasNext()) {
-          valueWrapper.setLastStripeInFile(true);
-          Map<String, ByteBuffer> userMeta = new HashMap<>();
-          for(String key: reader.getMetadataKeys()) {
-            userMeta.put(key, reader.getMetadataValue(key));
-          }
-          valueWrapper.setUserMetadata(userMeta);
+      valueWrapper.setStripeStatistics(stripeStatistics.get(stripeIdx));
+      valueWrapper.setStripeInformation(si);
+      if (!iter.hasNext()) {
+        valueWrapper.setLastStripeInFile(true);
+        Map<String, ByteBuffer> userMeta = new HashMap<>();
+        for(String key: reader.getMetadataKeys()) {
+          userMeta.put(key, reader.getMetadataValue(key));
         }
-        keyWrapper.setInputPath(path);
-        keyWrapper.setCompression(reader.getCompressionKind());
-        keyWrapper.setCompressBufferSize(reader.getCompressionSize());
-        keyWrapper.setFileVersion(reader.getFileVersion());
-        keyWrapper.setWriterVersion(reader.getWriterVersion());
-        keyWrapper.setRowIndexStride(reader.getRowIndexStride());
-        keyWrapper.setFileSchema(reader.getSchema());
-      } else {
-        stripeIdx++;
-        continue;
+        valueWrapper.setUserMetadata(userMeta);
       }
+      keyWrapper.setInputPath(path);
+      keyWrapper.setCompression(reader.getCompressionKind());
+      keyWrapper.setCompressBufferSize(reader.getCompressionSize());
+      keyWrapper.setFileVersion(reader.getFileVersion());
+      keyWrapper.setWriterVersion(reader.getWriterVersion());
+      keyWrapper.setRowIndexStride(reader.getRowIndexStride());
+      keyWrapper.setFileSchema(reader.getSchema());
+      stripeIdx++;
       return true;
     }
 

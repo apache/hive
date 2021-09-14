@@ -63,8 +63,20 @@ public class TestOrcFileStripeMergeRecordReader {
     FileSplit split = new FileSplit(tmpPath, offset, length, (String[])null);
     OrcFileStripeMergeRecordReader reader = new OrcFileStripeMergeRecordReader(conf, split);
     reader.next(key, value);
+    // since offset is non-zero this file will not be processed.
+    Assert.assertNull(key.getInputPath());
+    split = new FileSplit(tmpPath, 0, length, (String[]) null);
+    reader = new OrcFileStripeMergeRecordReader(conf, split);
+    // both stripes will be processed, first stripe has 5000 rows and second stripe has 1 row
+    reader.next(key, value);
+    Assert.assertEquals("InputPath", tmpPath, key.getInputPath());
+    Assert.assertEquals("NumberOfValues", DEFAULT_STRIPE_SIZE,
+        value.getStripeStatistics().getColStats(0).getNumberOfValues());
+    reader.next(key, value);
     Assert.assertEquals("InputPath", tmpPath, key.getInputPath());
     Assert.assertEquals("NumberOfValues", 1L, value.getStripeStatistics().getColStats(0).getNumberOfValues());
+    // we are done with the file, so expect null path
+    Assert.assertEquals(false, reader.next(key, value));
     reader.close();
   }
 
