@@ -691,9 +691,9 @@ public class TestObjectStore {
 
         ColumnStatisticsObj partStats = new ColumnStatisticsObj("test_part_col", "int", data);
         statsObjList.add(partStats);
-
+        //Table tbl = objectStore.getTable(tbl1.getCatName(),tbl1.getDbName(),tbl1.getTableName());
         try (AutoCloseable c = deadline()) {
-          objectStore.updatePartitionColumnStatistics(tbl1, null, stats, part.getValues(), null, -1);
+          objectStore.updatePartitionColumnStatistics(tbl1, stats, part.getValues(), null, -1);
         }
       }
     }

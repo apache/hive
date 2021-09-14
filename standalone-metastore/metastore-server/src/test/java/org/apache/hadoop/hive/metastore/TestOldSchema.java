@@ -178,7 +178,7 @@ public class TestOldSchema {
       obj.setStatsData(data);
       cs.addToStatsObj(obj);
       cs.setEngine(ENGINE);
-      store.updatePartitionColumnStatistics(table, part, cs, partVal, null, -1);
+      store.updatePartitionColumnStatistics(table, cs, partVal, null, -1);
 
     }
 

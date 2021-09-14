@@ -9678,7 +9678,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public Map<String, String> updatePartitionColumnStatistics(Table table, Partition partition, ColumnStatistics colStats,
+  public Map<String, String> updatePartitionColumnStatistics(Table table, ColumnStatistics colStats,
       List<String> partVals, String validWriteIds, long writeId)
           throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean committed = false;
@@ -9692,11 +9692,10 @@ public class ObjectStore implements RawStore, Configurable {
         MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
         table = convertToTable(mTable);
       }
+      //MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
       MTable mTable = convertToMTable(table);
-      if(partition == null) {
-        partition = convertToPart(getMPartition(catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable),
-                false);
-      }
+      MPartition mPartition = getMPartition(catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable);
+      Partition partition = convertToPart(mPartition, false);
       List<String> colNames = new ArrayList<>();
 
       for(ColumnStatisticsObj statsObj : statsObjs) {
@@ -9706,9 +9705,7 @@ public class ObjectStore implements RawStore, Configurable {
       Map<String, MPartitionColumnStatistics> oldStats = getPartitionColStats(table, statsDesc
           .getPartName(), colNames, colStats.getEngine());
 
-      //MPartition mPartition = getMPartition(
-          //catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable);
-      MPartition mPartition = convertToMPart(partition,mTable,false);
+      //MPartition mPartition = convertToMPart(partition,mTable,false);
       if (partition == null) {
         throw new NoSuchObjectException("Partition for which stats is gathered doesn't exist.");
       }
@@ -9758,7 +9755,7 @@ public class ObjectStore implements RawStore, Configurable {
   public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics colStats,
       List<String> partVals, String validWriteIds, long writeId)
       throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
-    return updatePartitionColumnStatistics(null, null, colStats, partVals, validWriteIds, writeId);
+    return updatePartitionColumnStatistics(null, colStats, partVals, validWriteIds, writeId);
   }
 
   @Override

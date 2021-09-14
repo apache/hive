@@ -1111,7 +1111,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the stats object is invalid
    * @throws InvalidInputException unable to record the stats for the table
    */
-  Map<String, String> updatePartitionColumnStatistics(Table table, Partition partition, ColumnStatistics statsObj,
+  Map<String, String> updatePartitionColumnStatistics(Table table, ColumnStatistics statsObj,
      List<String> partVals, String validWriteIds, long writeId)
      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
 
