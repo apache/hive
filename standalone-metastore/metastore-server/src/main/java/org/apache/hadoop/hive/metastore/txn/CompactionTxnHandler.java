@@ -1104,59 +1104,73 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.CannotRetry
   public void markFailed(CompactionInfo ci) throws MetaException {//todo: this should not throw
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Marking as failed: CompactionInfo: " + ci.toString());
+      LOG.debug("Marking as failed: CompactionInfo: " + ((ci != null) ? ci.toString() : " is missing"));
     }
     try {
       Connection dbConn = null;
-      Statement stmt = null;
       PreparedStatement pStmt = null;
       ResultSet rs = null;
-      // the error message related to the failure is wrapped inside CompactionInfo
-      // fetch this info, since ci will be reused in subsequent queries
-      String errorMessage = ci.errorMessage;
+
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        stmt = dbConn.createStatement();
-        pStmt = dbConn.prepareStatement("SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
-            + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
-            + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
-            + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\" "
-            + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?");
-        pStmt.setLong(1, ci.id);
-        rs = pStmt.executeQuery();
-        if (rs.next()) {
-          ci = CompactionInfo.loadFullFromCompactionQueue(rs);
-          String s = "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
-          pStmt = dbConn.prepareStatement(s);
-          pStmt.setLong(1, ci.id);
-          LOG.debug("Going to execute update <" + s + ">");
-          int updCnt = pStmt.executeUpdate();
-        }
-        else {
-          if(ci.id > 0) {
-            //the record with valid CQ_ID has disappeared - this is a sign of something wrong
-            throw new IllegalStateException("No record with CQ_ID=" + ci.id + " found in COMPACTION_QUEUE");
-          }
-        }
-        if(ci.id == 0) {
-          //The failure occurred before we even made an entry in COMPACTION_QUEUE
-          //generate ID so that we can make an entry in COMPLETED_COMPACTIONS
-          ci.id = generateCompactionQueueId(stmt);
-          //mostly this indicates that the Initiator is paying attention to some table even though
-          //compactions are not happening.
+        if(ci == null) {
+          LOG.debug("CompactionInfo was null, creating a new one");
+          ci  = new CompactionInfo();
+          ci.id = generateCompactionQueueId(dbConn);
+          ci.dbname = "unspecified db";
+          ci.tableName= "unspecified table";
           ci.state = DID_NOT_INITIATE;
-          //this is not strictly accurate, but 'type' cannot be null.
-          if(ci.type == null) {
-            ci.type = CompactionType.MINOR;
-          }
+          ci.type = CompactionType.MINOR;
           ci.start = getDbTime(dbConn);
-          LOG.debug("The failure occurred before we even made an entry in COMPACTION_QUEUE. Generated ID so that we "
-              + "can make an entry in COMPLETED_COMPACTIONS. New Id: " + ci.id);
+          ci.errorMessage = "Compaction Queue Information was missing";
         } else {
-          ci.state = FAILED_STATE;
+          LOG.debug("CompactionInfo present");
+          String errorMessage = ci.errorMessage;
+          pStmt = dbConn.prepareStatement("SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
+                  + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
+                  + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
+                  + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\" "
+                  + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?");
+          pStmt.setLong(1, ci.id);
+          rs = pStmt.executeQuery();
+          if (rs.next()) {
+            ci = CompactionInfo.loadFullFromCompactionQueue(rs);
+            String s = "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
+            pStmt = dbConn.prepareStatement(s);
+            pStmt.setLong(1, ci.id);
+            LOG.debug("Going to execute update <" + s + ">");
+            int updCnt = pStmt.executeUpdate();
+          } else {
+            if (ci.id > 0) {
+              //the record with valid CQ_ID has disappeared - this is a sign of something wrong
+              throw new IllegalStateException("No record with CQ_ID=" + ci.id + " found in COMPACTION_QUEUE");
+            }
+          }
+
+          if (ci.id == 0) {
+            //The failure occurred before we even made an entry in COMPACTION_QUEUE
+            //generate ID so that we can make an entry in COMPLETED_COMPACTIONS
+            ci.id = generateCompactionQueueId(dbConn);
+            //mostly this indicates that the Initiator is paying attention to some table even though
+            //compactions are not happening.
+            ci.state = DID_NOT_INITIATE;
+            //this is not strictly accurate, but 'type' cannot be null.
+            if (ci.type == null) {
+              ci.type = CompactionType.MINOR;
+            }
+            ci.start = getDbTime(dbConn);
+            LOG.debug("The failure occurred before we even made an entry in COMPACTION_QUEUE. Generated ID so that we "
+                    + "can make an entry in COMPLETED_COMPACTIONS. New Id: " + ci.id);
+          } else {
+            ci.state = FAILED_STATE;
+          }
+
+          if(errorMessage != null) {
+            ci.errorMessage = errorMessage;
+          }
+
+          close(rs, pStmt, null);
         }
-        close(rs, stmt, null);
-        closeStmt(pStmt);
 
         pStmt = dbConn.prepareStatement("INSERT INTO \"COMPLETED_COMPACTIONS\" "
             + "(\"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", "
@@ -1164,9 +1178,7 @@ class CompactionTxnHandler extends TxnHandler {
             + "\"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", \"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", "
             + "\"CC_ENQUEUE_TIME\", \"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\") "
             + "VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?,?,?,?)");
-        if (errorMessage != null) {
-          ci.errorMessage = errorMessage;
-        }
+
         CompactionInfo.insertIntoCompletedCompactions(pStmt, ci, getDbTime(dbConn));
         int updCount = pStmt.executeUpdate();
         LOG.debug("Inserted " + updCount + " entries into COMPLETED_COMPACTIONS");
@@ -1174,19 +1186,19 @@ class CompactionTxnHandler extends TxnHandler {
         closeStmt(pStmt);
         dbConn.commit();
       } catch (SQLException e) {
-        LOG.warn("markFailed(" + ci.id + "):" + e.getMessage());
+        LOG.warn("markFailed(" + ((ci != null) ? ci.id : "missing id") + "):" + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "markFailed(" + ci + ")");
         LOG.error("markFailed(" + ci + ") failed: " + e.getMessage(), e);
       } finally {
-        close(rs, stmt, null);
-        close(null, pStmt, dbConn);
+        close(rs, pStmt, dbConn);
       }
     } catch (RetryException e) {
       markFailed(ci);
     }
   }
+
   @Override
   @RetrySemantics.Idempotent
   public void setHadoopJobId(String hadoopJobId, long id) {
@@ -1348,5 +1360,3 @@ class CompactionTxnHandler extends TxnHandler {
     }
   }
 }
-
-

@@ -3487,6 +3487,16 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
+  long generateCompactionQueueId(Connection dbConn) throws SQLException, MetaException {
+    Statement stmt = null;
+    try {
+      stmt = dbConn.createStatement();
+      return generateCompactionQueueId(stmt);
+    } finally {
+      closeStmt(stmt);
+    }
+  }
+
   long generateCompactionQueueId(Statement stmt) throws SQLException, MetaException {
     // Get the id for the next entry in the queue
     String s = sqlGenerator.addForUpdateClause("SELECT \"NCQ_NEXT\" FROM \"NEXT_COMPACTION_QUEUE_ID\"");
@@ -3578,7 +3588,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         pst = sqlGenerator.prepareStmtWithParameters(dbConn, sb.toString(), params);
-        LOG.debug("Going to execute query <" + sb.toString() + ">");
+        LOG.debug("Going to execute query <" + sb + ">");
         ResultSet rs = pst.executeQuery();
         if(rs.next()) {
           long enqueuedId = rs.getLong(1);
