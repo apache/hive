@@ -169,15 +169,38 @@ public class TestHiveMetastoreTransformer {
       Map<String, Object> tProps = new HashMap<>();
       int buckets = 32;
 
-      String tblName = basetblName;
+      // create external table with uppercase
+      String tblNameUpper = "TAB_EXT1";
       tProps.put("DBNAME", dbName);
-      tProps.put("TBLNAME", tblName);
+      tProps.put("TBLNAME", tblNameUpper);
       tProps.put("TBLTYPE", TableType.EXTERNAL_TABLE);
       tProps.put("BUCKETS", buckets);
       StringBuilder properties = new StringBuilder();
       properties.append("EXTERNAL").append("=").append("TRUE");
       tProps.put("PROPERTIES", properties.toString());
       Table tbl = createTableWithCapabilities(tProps);
+
+      Table hiveTbl = client.getTable(dbName, tblNameUpper.toLowerCase(Locale.ROOT));
+      Path actualPath = new Path(hiveTbl.getSd().getLocation());
+      Database db = client.getDatabase(dbName);
+      LOG.info("Table=" + tblNameUpper + ",Table Details=" + hiveTbl);
+      assertEquals("Created and retrieved tables do not match:" + hiveTbl.getTableName() + ":" +
+              tblNameUpper.toLowerCase(Locale.ROOT), hiveTbl.getTableName(),
+          tblNameUpper.toLowerCase(Locale.ROOT));
+      Path expectedTablePath = new Path(db.getLocationUri(), tblNameUpper.toLowerCase(Locale.ROOT));
+      assertEquals(String.format("Table location %s is not a subset of the database location %s",
+          actualPath.toString(), db.getLocationUri()), expectedTablePath.toString(), actualPath.toString());
+
+      String tblName = basetblName;
+      tProps = new HashMap<>();
+      tProps.put("DBNAME", dbName);
+      tProps.put("TBLNAME", tblName);
+      tProps.put("TBLTYPE", TableType.EXTERNAL_TABLE);
+      tProps.put("BUCKETS", buckets);
+      properties = new StringBuilder();
+      properties.append("EXTERNAL").append("=").append("TRUE");
+      tProps.put("PROPERTIES", properties.toString());
+      tbl = createTableWithCapabilities(tProps);
 
       // retrieve the table
       Table tbl2 = client.getTable(dbName, tblName);
