@@ -153,6 +153,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
+POSTHOOK: Lineage: mv1_part_n0.empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=20).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select empid from emps_n00
@@ -238,6 +239,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
+POSTHOOK: Lineage: mv1_part_n0.empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=20).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select empid from emps_n00
@@ -323,6 +325,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
+POSTHOOK: Lineage: mv1_part_n0.empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=20).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select empid from emps_n00
@@ -409,6 +412,7 @@ POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno=10
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
+POSTHOOK: Lineage: mv1_part_n0.empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=10).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=20).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
@@ -506,6 +510,7 @@ POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno=10
 POSTHOOK: Output: default@mv1_part_n0@deptno=20
+POSTHOOK: Lineage: mv1_part_n0.empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=10).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno=20).empid SIMPLE [(emps_n00)emps_n00.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
@@ -685,6 +690,10 @@ POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0
 POSTHOOK: Output: default@mv1_part_n0@deptno2=20
 POSTHOOK: Output: default@mv1_part_n0@deptno2=30
+POSTHOOK: Lineage: mv1_part_n0.deptno SIMPLE [(emps_n00)emps_n00.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_part_n0.empid SIMPLE [(dependents_n00)dependents_n00.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_part_n0.name SIMPLE [(depts_n00)depts_n00.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_part_n0.name2 SIMPLE [(dependents_n00)dependents_n00.FieldSchema(name:name, type:varchar(256), comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno2=20).deptno SIMPLE [(emps_n00)emps_n00.FieldSchema(name:deptno, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno2=20).empid SIMPLE [(dependents_n00)dependents_n00.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n0 PARTITION(deptno2=20).name SIMPLE [(depts_n00)depts_n00.FieldSchema(name:name, type:varchar(256), comment:null), ]

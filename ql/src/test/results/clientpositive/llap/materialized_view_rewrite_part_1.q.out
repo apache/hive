@@ -147,6 +147,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2@deptno=10
+POSTHOOK: Lineage: mv1_part_n2.commission SIMPLE [(emps_n30)emps_n30.FieldSchema(name:commission, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_part_n2.empid SIMPLE [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_part_n2.name SIMPLE [(emps_n30)emps_n30.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_part_n2.salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).commission SIMPLE [(emps_n30)emps_n30.FieldSchema(name:commission, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).empid SIMPLE [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).name SIMPLE [(emps_n30)emps_n30.FieldSchema(name:name, type:varchar(256), comment:null), ]
@@ -314,6 +318,9 @@ POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2@deptno=10
 POSTHOOK: Output: default@mv1_part_n2@deptno=20
+POSTHOOK: Lineage: mv1_part_n2.commission SIMPLE [(emps_n30)emps_n30.FieldSchema(name:commission, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_part_n2.name SIMPLE [(emps_n30)emps_n30.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_part_n2.salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).commission SIMPLE [(emps_n30)emps_n30.FieldSchema(name:commission, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).name SIMPLE [(emps_n30)emps_n30.FieldSchema(name:name, type:varchar(256), comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
@@ -406,6 +413,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2@deptno=10
+POSTHOOK: Lineage: mv1_part_n2.commission SIMPLE [(emps_n30)emps_n30.FieldSchema(name:commission, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_part_n2.empid SIMPLE [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_part_n2.name SIMPLE [(emps_n30)emps_n30.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_part_n2.salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).commission SIMPLE [(emps_n30)emps_n30.FieldSchema(name:commission, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).empid SIMPLE [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(deptno=10).name SIMPLE [(emps_n30)emps_n30.FieldSchema(name:name, type:varchar(256), comment:null), ]
@@ -537,6 +548,7 @@ POSTHOOK: Output: default@mv1_part_n2@name=Bill
 POSTHOOK: Output: default@mv1_part_n2@name=Eric
 POSTHOOK: Output: default@mv1_part_n2@name=Sebastian
 POSTHOOK: Output: default@mv1_part_n2@name=Theodore
+POSTHOOK: Lineage: mv1_part_n2.salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Bill).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Eric).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Sebastian).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
@@ -624,6 +636,7 @@ POSTHOOK: Output: default@mv1_part_n2@name=Bill
 POSTHOOK: Output: default@mv1_part_n2@name=Eric
 POSTHOOK: Output: default@mv1_part_n2@name=Sebastian
 POSTHOOK: Output: default@mv1_part_n2@name=Theodore
+POSTHOOK: Lineage: mv1_part_n2.salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Bill).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Eric).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Sebastian).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
@@ -752,6 +765,7 @@ POSTHOOK: Output: default@mv1_part_n2
 POSTHOOK: Output: default@mv1_part_n2@name=Bill
 POSTHOOK: Output: default@mv1_part_n2@name=Sebastian
 POSTHOOK: Output: default@mv1_part_n2@name=Theodore
+POSTHOOK: Lineage: mv1_part_n2.salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Bill).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Sebastian).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Theodore).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
@@ -877,6 +891,9 @@ POSTHOOK: Output: default@mv1_part_n2@name=Bill
 POSTHOOK: Output: default@mv1_part_n2@name=Eric
 POSTHOOK: Output: default@mv1_part_n2@name=Sebastian
 POSTHOOK: Output: default@mv1_part_n2@name=Theodore
+POSTHOOK: Lineage: mv1_part_n2.c EXPRESSION [(emps_n30)emps_n30.null, ]
+POSTHOOK: Lineage: mv1_part_n2.s EXPRESSION [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_part_n2.salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Bill).c EXPRESSION [(emps_n30)emps_n30.null, ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Bill).s EXPRESSION [(emps_n30)emps_n30.FieldSchema(name:empid, type:int, comment:null), ]
 POSTHOOK: Lineage: mv1_part_n2 PARTITION(name=Bill).salary SIMPLE [(emps_n30)emps_n30.FieldSchema(name:salary, type:float, comment:null), ]
