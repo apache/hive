@@ -3254,6 +3254,8 @@ public class HiveConf extends Configuration {
 
     TRANSACTIONAL_CONCATENATE_NOBLOCK("hive.transactional.concatenate.noblock", false,
         "Will cause 'alter table T concatenate' to be non-blocking"),
+    ENABLE_CONCATENATE_FOR_EXTERNAL_TABLES("hive.concatenate.enable-external-tables", false,
+        "Enable concatenate for external tables"),
 
     HIVE_COMPACTOR_COMPACT_MM("hive.compactor.compact.insert.only", true,
         "Whether the compactor should compact insert-only tables. A safety switch."),

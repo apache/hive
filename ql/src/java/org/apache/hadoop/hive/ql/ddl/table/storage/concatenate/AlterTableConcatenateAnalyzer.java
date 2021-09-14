@@ -73,13 +73,19 @@ public class AlterTableConcatenateAnalyzer extends AbstractAlterTableAnalyzer {
     if (AcidUtils.isTransactionalTable(table)) {
       compactAcidTable(tableName, partitionSpec);
     } else {
+
       // non-native and non-managed tables are not supported as MoveTask requires filenames to be in specific format,
       // violating which can cause data loss
       if (table.isNonNative()) {
         throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_NON_NATIVE.getMsg());
       }
+
       if (table.getTableType() != TableType.MANAGED_TABLE) {
-        throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_NOT_MANAGED.getMsg());
+        // Enable concatenate for external tables if config is set.
+        if (!conf.getBoolVar(ConfVars.ENABLE_CONCATENATE_FOR_EXTERNAL_TABLES)
+            || table.getTableType() != TableType.EXTERNAL_TABLE) {
+          throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_NOT_MANAGED.getMsg());
+        }
       }
 
       if (table.isPartitioned()) {
