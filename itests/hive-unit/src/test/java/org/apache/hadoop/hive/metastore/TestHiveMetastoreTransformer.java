@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 
 import org.apache.hadoop.hive.metastore.client.builder.GetTablesRequestBuilder;
 import org.apache.hadoop.hive.metastore.api.Catalog;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_NONE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READONLY;
@@ -155,11 +157,12 @@ public class TestHiveMetastoreTransformer {
 
   /**
    * EXTERNAL_TABLE
-   *   1) Old table with no capabilities
-   *   2a) New table with capabilities with no client requirements
-   *   2b) New table with capabilities with no matching client requirements
-   *   2c) New table with capabilities with partial match requirements
-   *   2d) New table with capabilities with full match requirements
+   *   1) Old table (name in upper case) with no capabilities
+   *   2) Old table with no capabilities
+   *   3a) New table with capabilities with no client requirements
+   *   3b) New table with capabilities with no matching client requirements
+   *   3c) New table with capabilities with partial match requirements
+   *   3d) New table with capabilities with full match requirements
    */
   @Test
   public void testTransformerExternalTable() throws Exception {
