@@ -402,6 +402,14 @@ public final class TestTxnDbUtil {
     prop.setProperty("password", passwd);
     Connection conn = driver.connect(driverUrl, prop);
     conn.setAutoCommit(true);
+
+    DatabaseProduct dbProduct = determineDatabaseProduct(conn.getMetaData().getDatabaseProductName(), conf);
+    String initSql = dbProduct.getPrepareTxnStmt();
+    if (initSql != null) {
+      try (Statement stmt = conn.createStatement()) {
+        stmt.execute(initSql);
+      }
+    }
     return conn;
   }
 

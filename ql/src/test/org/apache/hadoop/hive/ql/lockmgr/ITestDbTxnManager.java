@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Derby;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.Mariadb;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Mssql;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Mysql;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Oracle;
@@ -73,16 +74,18 @@ public class ITestDbTxnManager extends TestDbTxnManager2 {
 
   private static DatabaseRule getDatabaseRule(String metastoreType) {
     switch (metastoreType) {
-    case "postgres":
-      return new Postgres();
-    case "oracle":
-      return new Oracle();
-    case "mysql":
-      return new Mysql();
-    case "mssql":
-      return new Mssql();
-    default:
-      return new Derby();
+      case "postgres":
+        return new Postgres();
+      case "oracle":
+        return new Oracle();
+      case "mysql":
+        return new Mysql();
+      case "mariadb":
+        return new Mariadb();
+      case "mssql":
+        return new Mssql();
+      default:
+        return new Derby();
     }
   }
 }
