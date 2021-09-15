@@ -388,8 +388,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           return false;
         }
       }
-      ci = CompactionInfo.optionalCompactionInfoStructToInfo(
-              msc.findNextCompact(new FindNextCompactRequest(workerName, runtimeVersion)));
+      ci = nextCompactForWorkerAndRuntime();
       LOG.debug("Processing compaction request " + ci);
 
       if (ci == null) {
@@ -583,6 +582,12 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
     }
     return true;
+  }
+
+  @VisibleForTesting
+  public CompactionInfo nextCompactForWorkerAndRuntime() throws TException {
+    return CompactionInfo.optionalCompactionInfoStructToInfo(
+            msc.findNextCompact(new FindNextCompactRequest(workerName, runtimeVersion)));
   }
 
   private LockRequest createLockRequest(CompactionInfo ci, long txnId) {

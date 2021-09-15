@@ -439,6 +439,23 @@ public class TestCompactionTxnHandler {
     txnHandler.purgeCompactionHistory();
   }
 
+  @Test
+  public void testMarkFailedCreatesACompactionCompletedIfNoCompactionInfoProvided() throws Exception {
+    txnHandler.markFailed(null);
+    ShowCompactResponse response = txnHandler.showCompact(new ShowCompactRequest());
+
+    List<ShowCompactResponseElement> compacts = response.getCompacts();
+    assertEquals(compacts.size(), 1);
+
+    ShowCompactResponseElement firstCompact = compacts.get(0);
+    assertEquals(firstCompact.getTablename(), "unspecified table");
+    assertEquals(firstCompact.getDbname(), "unspecified db");
+    assertEquals(firstCompact.getState(), "did not initiate");
+    assertEquals(firstCompact.getType(), CompactionType.MINOR);
+    assertEquals(firstCompact.getTablename(), "unspecified table");
+    assertEquals(firstCompact.getErrorMessage(), "Compaction Queue Information was missing");
+  }
+
   private void checkShowCompaction(String dbName, String tableName, String partition,
       String status, String errorMessage) throws MetaException {
     ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());

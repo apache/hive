@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -67,7 +68,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PATTERN;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 
 /**
  * Tests for the worker thread and its MR jobs.
@@ -1006,7 +1009,32 @@ public class TestWorker extends CompactorTest {
     Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
     Assert.assertEquals(initiatorVersion, compacts.get(0).getInitiatorVersion());
     Assert.assertEquals(workerVersion, compacts.get(0).getWorkerVersion());
+  }
 
+  @Test
+  public void testWorkerCallsMarkFailedUponACommunicationException() throws Exception {
+    LOG.debug("Starting test - markFailed called without a Compaction Info if a communication exception happens");
+
+    Worker worker = Mockito.spy(new Worker());
+    worker.setThreadId(1);
+    worker.setConf(conf);
+    worker.init(new AtomicBoolean(true));
+
+    doThrow(new TException("This is done by purpose")).when(worker)
+            .nextCompactForWorkerAndRuntime();
+    worker.run();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+
+    ShowCompactResponseElement firstCompact = compacts.get(0);
+    assertEquals(firstCompact.getTablename(), "unspecified table");
+    assertEquals(firstCompact.getDbname(), "unspecified db");
+    assertEquals(firstCompact.getState(), "did not initiate");
+    assertEquals(firstCompact.getType(), CompactionType.MINOR);
+    assertEquals(firstCompact.getTablename(), "unspecified table");
+    assertEquals(firstCompact.getErrorMessage(), "Compaction Queue Information was missing");
   }
 
   @Test
