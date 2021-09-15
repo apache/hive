@@ -83,6 +83,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspec
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DoubleWritable;
@@ -1425,7 +1427,18 @@ public final class ObjectInspectorUtils {
     throw new RuntimeException("Unknown category encountered: " + c1);
   }
 
+/*
   public static ConstantObjectInspector getConstantObjectInspector(ObjectInspector oi, Object value) {
+    // The last parameter, useValueTypeInfo is set to false here. The only time the boolean flag will
+    // affect the typeInfo is on primitve decimal values. In this case, while it probably makes more
+    // sense to use the decimal precision and scale of the "value" passed in, the default is to use
+    // the decimal precision and scale off of the object inspector for legacy purposes.
+    return getConstantObjectInspector(oi, value, true);
+  }
+  */
+
+  public static ConstantObjectInspector getConstantObjectInspector(ObjectInspector oi, Object value,
+      boolean useValueTypeInfo) {
     if (oi instanceof ConstantObjectInspector) {
       return (ConstantObjectInspector) oi;
     }
@@ -1435,8 +1448,16 @@ public final class ObjectInspectorUtils {
     switch (writableOI.getCategory()) {
       case PRIMITIVE:
         PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
+        PrimitiveTypeInfo typeInfo = poi.getTypeInfo();
+        // special case for decimals, use the precision/scale from the value if flag is true.
+        /*
+        if (useValueTypeInfo && (value instanceof HiveDecimalWritable)) {
+          HiveDecimalWritable dec = (HiveDecimalWritable) value;
+          typeInfo = new DecimalTypeInfo(dec.precision(), dec.scale());
+        }
+        */
         return PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
-            poi.getTypeInfo(), writableValue);
+            typeInfo, writableValue);
       case LIST:
         ListObjectInspector loi = (ListObjectInspector) oi;
         return ObjectInspectorFactory.getStandardConstantListObjectInspector(
@@ -1639,9 +1660,5 @@ public final class ObjectInspectorUtils {
           + oi.getTypeName() + " not supported yet.");
     }
     return setOISettablePropertiesMap(oi, oiSettableProperties, returnValue);
-  }
-
-  private ObjectInspectorUtils() {
-    // prevent instantiation
   }
 }

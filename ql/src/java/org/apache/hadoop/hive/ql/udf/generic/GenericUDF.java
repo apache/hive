@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -52,6 +53,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -72,7 +74,6 @@ import org.apache.hadoop.io.LongWritable;
 @InterfaceStability.Stable
 @UDFType(deterministic = true)
 public abstract class GenericUDF implements Closeable {
-
   private static final String[] ORDINAL_SUFFIXES = new String[] { "th", "st", "nd", "rd", "th",
       "th", "th", "th", "th", "th" };
 
@@ -113,6 +114,7 @@ public abstract class GenericUDF implements Closeable {
    */
   public GenericUDF() {
   }
+
 
   /**
    * Initialize this GenericUDF. This will be called once and only once per
@@ -175,7 +177,7 @@ public abstract class GenericUDF implements Closeable {
       }
       try {
         Object constantValue = evaluate(argumentValues);
-        oi = ObjectInspectorUtils.getConstantObjectInspector(oi, constantValue);
+        oi = ObjectInspectorUtils.getConstantObjectInspector(oi, constantValue, true);
       } catch (HiveException e) {
         throw new UDFArgumentException(e);
       }
@@ -632,5 +634,9 @@ public abstract class GenericUDF implements Closeable {
       return Optional.of((T) this);
     }
     return Optional.empty();
+  }
+
+  protected boolean usePrecisionScaleFromValue() {
+    return false;
   }
 }
