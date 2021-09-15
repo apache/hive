@@ -1447,8 +1447,14 @@ public class LlapTaskSchedulerService extends TaskScheduler {
                 if (request.shouldForceLocality()) {
                   requestedHostsWillBecomeAvailable = true;
                 } else {
-                  LlapServiceInstance inst = activeInstances.getByHost(host).stream().findFirst().get();
-                  NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
+                  Set<LlapServiceInstance> instanceTypes = activeInstances.getByHost(host);
+                  NodeInfo nodeInfo = null;
+                  if (instanceTypes != null && !instanceTypes.isEmpty()) {
+                    LlapServiceInstance inst = instanceTypes.stream().findFirst().get();
+                    nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
+                  } else {
+                    LOG.warn("Null or empty instanceTypes when attempting to get activeInstances for host {}", host);
+                  }
                   if (nodeInfo != null && nodeInfo.getEnableTime() > request.getLocalityDelayTimeout()
                       && nodeInfo.isDisabled() && nodeInfo.hadCommFailure()) {
                     LOG.debug("Host={} will not become available within requested timeout", nodeInfo);
