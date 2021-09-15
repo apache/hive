@@ -593,13 +593,13 @@ class CompactionTxnHandler extends TxnHandler {
               "ON \"tc\".\"CTC_DATABASE\" = \"c\".\"CTC_DATABASE\" AND \"tc\".\"CTC_TABLE\" = \"c\".\"CTC_TABLE\"" +
               "  AND (\"tc\".\"CTC_PARTITION\" = \"c\".\"CTC_PARTITION\" OR (\"tc\".\"CTC_PARTITION\" IS NULL AND \"c\".\"CTC_PARTITION\" IS NULL)) " +
               "LEFT JOIN (" +
-              "  SELECT \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", max(\"CTC_WRITEID\") \"highestWriteId\"" +
+              "  SELECT \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", max(\"CTC_WRITEID\") \"updateWriteId\"" +
               "  FROM \"COMPLETED_TXN_COMPONENTS\"" +
               "  WHERE \"CTC_UPDATE_DELETE\" = 'Y'" +
               "  GROUP BY \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\") \"c2\" " +
               "ON \"tc\".\"CTC_DATABASE\" = \"c2\".\"CTC_DATABASE\" AND \"tc\".\"CTC_TABLE\" = \"c2\".\"CTC_TABLE\"" +
               "  AND (\"tc\".\"CTC_PARTITION\" = \"c2\".\"CTC_PARTITION\" OR (\"tc\".\"CTC_PARTITION\" IS NULL AND \"c2\".\"CTC_PARTITION\" IS NULL)) " +
-              "WHERE \"tc\".\"CTC_WRITEID\" < \"c\".\"highestWriteId\" AND \"tc\".\"CTC_WRITEID\" != \"c2\".\"highestWriteId\"";
+              "WHERE \"tc\".\"CTC_WRITEID\" < \"c\".\"highestWriteId\" AND \"tc\".\"CTC_WRITEID\" != \"c2\".\"updateWriteId\"";
             break;
           case DERBY:
           case ORACLE:
@@ -632,7 +632,7 @@ class CompactionTxnHandler extends TxnHandler {
               ") \"c\" " +
               "WHERE \"tc\".\"CTC_DATABASE\" = \"c\".\"CTC_DATABASE\" AND \"tc\".\"CTC_TABLE\" = \"c\".\"CTC_TABLE\"" +
               "  AND (\"tc\".\"CTC_PARTITION\" = \"c\".\"CTC_PARTITION\" OR (\"tc\".\"CTC_PARTITION\" IS NULL AND \"c\".\"CTC_PARTITION\" IS NULL))" +
-              "  AND \"tc\".\"CTC_WRITEID\" < \"c\".\"highestWriteId\" AND \"tc\".\"ctc_writeid\" != \"c\".\"updateWriteId\"";
+              "  AND \"tc\".\"CTC_WRITEID\" < \"c\".\"highestWriteId\" AND \"tc\".\"CTC_WRITEID\" != \"c\".\"updateWriteId\"";
             break;
           default:
             String msg = "Unknown database product: " + dbProduct.dbType;
