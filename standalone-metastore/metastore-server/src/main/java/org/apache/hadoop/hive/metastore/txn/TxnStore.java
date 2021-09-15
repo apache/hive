@@ -450,7 +450,7 @@ public interface TxnStore extends Configurable {
    * De-duplicate entries from COMPLETED_TXN_COMPONENTS table.
    */
   @RetrySemantics.SafeToRetry
-  void dedupCompletedTxnComponents() throws MetaException;
+  void removeDuplicateCompletedTxnComponents() throws MetaException;
 
   /**
    * Clean up aborted or committed transactions from txns that have no components in txn_components.  The reason such

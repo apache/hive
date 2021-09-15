@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
-import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
@@ -47,8 +46,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
-
-import com.codahale.metrics.Counter;
 
 /**
  * Extends the transaction handler with methods needed only by the compactor threads.  These
@@ -572,7 +569,7 @@ class CompactionTxnHandler extends TxnHandler {
 
   @Override
   @RetrySemantics.SafeToRetry
-  public void dedupCompletedTxnComponents() throws MetaException {
+  public void removeDuplicateCompletedTxnComponents() throws MetaException {
     try {
       Connection dbConn = null;
       Statement stmt = null;
@@ -649,14 +646,14 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.error("Unable to delete from COMPLETED_TXN_COMPONENTS table " + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "dedupCompletedTxnComponents");
+        checkRetryable(dbConn, e, "removeDuplicateCompletedTxnComponents");
         throw new MetaException("Unable to connect to transaction database " +
           StringUtils.stringifyException(e));
       } finally {
         close(null, stmt, dbConn);
       }
     } catch (RetryException e) {
-      dedupCompletedTxnComponents();
+      removeDuplicateCompletedTxnComponents();
     }
   }
 
