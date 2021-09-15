@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -114,6 +115,7 @@ public abstract class GenericUDF implements Closeable {
   public GenericUDF() {
   }
 
+
   /**
    * Initialize this GenericUDF. This will be called once and only once per
    * GenericUDF instance.
@@ -175,7 +177,8 @@ public abstract class GenericUDF implements Closeable {
       }
       try {
         Object constantValue = evaluate(argumentValues);
-        oi = ObjectInspectorUtils.getConstantObjectInspector(oi, constantValue);
+        oi = ObjectInspectorUtils.getConstantObjectInspector(oi, constantValue,
+             usePrecisionScaleFromValue());
       } catch (HiveException e) {
         throw new UDFArgumentException(e);
       }
@@ -632,5 +635,9 @@ public abstract class GenericUDF implements Closeable {
       return Optional.of((T) this);
     }
     return Optional.empty();
+  }
+
+  protected boolean usePrecisionScaleFromValue() {
+    return false;
   }
 }
