@@ -300,7 +300,7 @@ public abstract class ExprFactory<T> {
    * Creates function call expression.
    */
   protected abstract T createFuncCallExpr(TypeInfo typeInfo, FunctionInfo fi, String funcText,
-      List<T> inputs) throws SemanticException;
+      List<T> inputs, TypeInfo typeInfo2) throws SemanticException;
 
   /**
    * Returns whether the input expression is an OR function call.
