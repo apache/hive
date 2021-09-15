@@ -102,7 +102,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
     // delete one of the rows
     DataFile dataFile = StreamSupport.stream(tbl.currentSnapshot().addedFiles().spliterator(), false)
         .findFirst()
-        .orElseThrow(() -> new RuntimeException("Did not find data file with partition value customer_id=0"));
+        .orElseThrow(() -> new RuntimeException("Did not find any data files for test table"));
     List<PositionDelete<Record>> deletes = ImmutableList.of(new PositionDelete<Record>().set(
         dataFile.path(), 2L, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.get(2))
     );
@@ -138,7 +138,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
         .filter(file -> file.partition().get(0, Long.class) == 0L)
         .filter(file -> file.recordCount() == 3)
         .findAny()
-        .orElseThrow(() -> new RuntimeException("Did not find data file with partition value customer_id=0"));
+        .orElseThrow(() -> new RuntimeException("Did not find the desired data file in the test table"));
     List<Record> rowsToDel = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .add(0L, "Laura", "Yellow").add(0L, "Blake", "Blue").build();
     List<PositionDelete<Record>> deletes = ImmutableList.of(
