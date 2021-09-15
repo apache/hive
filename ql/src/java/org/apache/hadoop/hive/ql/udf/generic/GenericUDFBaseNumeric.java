@@ -208,6 +208,9 @@ public abstract class GenericUDFBaseNumeric extends GenericUDFBaseBinary {
    * @throws UDFArgumentException
    */
   private PrimitiveTypeInfo deriveResultTypeInfo() throws UDFArgumentException {
+    if (predefinedTypeInfo instanceof PrimitiveTypeInfo && predefinedTypeInfo != null) {
+      return (PrimitiveTypeInfo) predefinedTypeInfo;
+    }
     PrimitiveTypeInfo left = (PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromObjectInspector(leftOI);
     PrimitiveTypeInfo right = (PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromObjectInspector(rightOI);
     if (!FunctionRegistry.isNumericType(left) || !FunctionRegistry.isNumericType(right)) {

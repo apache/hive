@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -72,6 +73,8 @@ import org.apache.hadoop.io.LongWritable;
 @InterfaceStability.Stable
 @UDFType(deterministic = true)
 public abstract class GenericUDF implements Closeable {
+
+  protected transient TypeInfo predefinedTypeInfo;
 
   private static final String[] ORDINAL_SUFFIXES = new String[] { "th", "st", "nd", "rd", "th",
       "th", "th", "th", "th", "th" };
@@ -113,6 +116,11 @@ public abstract class GenericUDF implements Closeable {
    */
   public GenericUDF() {
   }
+
+  public void setNewTypeInfo(TypeInfo typeInfo) {
+    this.predefinedTypeInfo = typeInfo;
+  }
+
 
   /**
    * Initialize this GenericUDF. This will be called once and only once per

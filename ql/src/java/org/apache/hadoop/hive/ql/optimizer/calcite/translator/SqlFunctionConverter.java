@@ -35,6 +35,7 @@ import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.sql.type.SqlOperandTypeChecker;
 import org.apache.calcite.sql.type.SqlOperandTypeInference;
 import org.apache.calcite.sql.type.SqlReturnTypeInference;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.calcite.util.Util;
 import org.apache.commons.lang3.StringUtils;
@@ -236,7 +237,7 @@ public class SqlFunctionConverter {
 
   // TODO: 1) handle Agg Func Name translation 2) is it correct to add func
   // args as child of func?
-  public static ASTNode buildAST(SqlOperator op, List<ASTNode> children) {
+  public static ASTNode buildAST(SqlOperator op, List<ASTNode> children, RelDataType type) {
     HiveToken hToken = calciteToHiveToken.get(op);
     ASTNode node;
     if (hToken != null) {
@@ -291,6 +292,12 @@ public class SqlFunctionConverter {
           node.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, op.getName()));
         }
       }
+    }
+
+    if (type.getSqlTypeName().equals(SqlTypeName.DECIMAL)) {
+      node.setType(new DecimalTypeInfo(type.getPrecision(), type.getScale())); 
+    } else {
+      node.setType(TypeConverter.convert(type));
     }
 
     for (ASTNode c : children) {

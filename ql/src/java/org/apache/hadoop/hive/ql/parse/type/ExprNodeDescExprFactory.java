@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.ql.plan.SubqueryType;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseNumeric;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
@@ -575,11 +576,13 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    */
   @Override
   protected ExprNodeGenericFuncDesc createFuncCallExpr(TypeInfo typeInfo, FunctionInfo fi,
-      String funcText, List<ExprNodeDesc> inputs) throws UDFArgumentException {
+      String funcText, List<ExprNodeDesc> inputs, TypeInfo typeInfo2) throws UDFArgumentException {
     GenericUDF genericUDF = fi.getGenericUDF();
     if (genericUDF instanceof SettableUDF) {
       ((SettableUDF) genericUDF).setTypeInfo(typeInfo);
     }
+
+    genericUDF.setNewTypeInfo(typeInfo2);
 
     return ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText, inputs);
   }

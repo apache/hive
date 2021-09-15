@@ -759,7 +759,7 @@ public class TypeCheckProcFactory<T> {
       List<T> childrenList = new ArrayList<>(children.length);
 
       childrenList.addAll(Arrays.asList(children));
-      return exprFactory.createFuncCallExpr(typeInfo, fi, udfName, childrenList);
+      return exprFactory.createFuncCallExpr(typeInfo, fi, udfName, childrenList, null);
     }
 
     public T getFuncExprNodeDesc(String udfName, T... children) throws SemanticException {
@@ -855,7 +855,7 @@ public class TypeCheckProcFactory<T> {
             } else {
               // For complex types like map/list/struct, create a isnotnull function on the child expression.
               child = exprFactory.createFuncCallExpr(TypeInfoFactory.booleanTypeInfo,
-                  exprFactory.getFunctionInfo("isnotnull"),"isnotnull", Arrays.asList(child));
+                  exprFactory.getFunctionInfo("isnotnull"),"isnotnull", Arrays.asList(child), null);
               children.set(i, child);
             }
           }
@@ -924,7 +924,7 @@ public class TypeCheckProcFactory<T> {
 
           // Calculate TypeInfo
           TypeInfo t = ((ListTypeInfo) myt).getListElementTypeInfo();
-          expr = exprFactory.createFuncCallExpr(t, fi, funcText, children);
+          expr = exprFactory.createFuncCallExpr(t, fi, funcText, children, node.getTypeInfo());
         } else if (myt.getCategory() == Category.MAP) {
           if (!TypeInfoUtils.implicitConvertible(exprFactory.getTypeInfo(children.get(1)),
               ((MapTypeInfo) myt).getMapKeyTypeInfo())) {
@@ -933,7 +933,7 @@ public class TypeCheckProcFactory<T> {
           }
           // Calculate TypeInfo
           TypeInfo t = ((MapTypeInfo) myt).getMapValueTypeInfo();
-          expr = exprFactory.createFuncCallExpr(t, fi, funcText, children);
+          expr = exprFactory.createFuncCallExpr(t, fi, funcText, children, node.getTypeInfo());
         } else {
           throw new SemanticException(ASTErrorUtils.getMsg(
               ErrorMsg.NON_COLLECTION_TYPE.getMsg(), node, myt.getTypeName()));
@@ -1027,7 +1027,7 @@ public class TypeCheckProcFactory<T> {
             FunctionInfo inFunctionInfo  = exprFactory.getFunctionInfo("in");
             for (Collection<T> c : expressions.asMap().values()) {
               newExprs.add(exprFactory.createFuncCallExpr(null, inFunctionInfo,
-                  "in", (List<T>) c));
+                  "in", (List<T>) c, node.getTypeInfo()));
             }
             children.addAll(newExprs);
             funcText = "or";
@@ -1048,7 +1048,7 @@ public class TypeCheckProcFactory<T> {
               childrenList.add(child);
             }
           }
-          expr = exprFactory.createFuncCallExpr(null, fi, funcText, childrenList);
+          expr = exprFactory.createFuncCallExpr(null, fi, funcText, childrenList, node.getTypeInfo());
         } else if (exprFactory.isAndFunction(fi)) {
           // flatten AND
           List<T> childrenList = new ArrayList<>(children.size());
@@ -1062,18 +1062,18 @@ public class TypeCheckProcFactory<T> {
               childrenList.add(child);
             }
           }
-          expr = exprFactory.createFuncCallExpr(null, fi, funcText, childrenList);
+          expr = exprFactory.createFuncCallExpr(null, fi, funcText, childrenList, node.getTypeInfo());
         } else if (ctx.isFoldExpr() && exprFactory.convertCASEIntoCOALESCEFuncCallExpr(fi, children)) {
           // Rewrite CASE into COALESCE
           fi = exprFactory.getFunctionInfo("coalesce");
           expr = exprFactory.createFuncCallExpr(null, fi, "coalesce",
-              Lists.newArrayList(children.get(0), exprFactory.createBooleanConstantExpr(Boolean.FALSE.toString())));
+              Lists.newArrayList(children.get(0), exprFactory.createBooleanConstantExpr(Boolean.FALSE.toString())), node.getTypeInfo());
           if (Boolean.FALSE.equals(exprFactory.getConstantValue(children.get(1)))) {
             fi = exprFactory.getFunctionInfo("not");
-            expr = exprFactory.createFuncCallExpr(null, fi, "not", Lists.newArrayList(expr));
+            expr = exprFactory.createFuncCallExpr(null, fi, "not", Lists.newArrayList(expr), node.getTypeInfo());
           }
         } else {
-          expr = exprFactory.createFuncCallExpr(typeInfo, fi, funcText, children);
+          expr = exprFactory.createFuncCallExpr(typeInfo, fi, funcText, children, node.getTypeInfo());
         }
 
         if (exprFactory.isSTRUCTFuncCallExpr(expr)) {
