@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
@@ -56,13 +57,24 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobID;
+import org.apache.iceberg.DeleteFile;
+import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.data.GenericAppenderFactory;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.IcebergGenerics;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.deletes.EqualityDeleteWriter;
+import org.apache.iceberg.deletes.PositionDelete;
+import org.apache.iceberg.deletes.PositionDeleteWriter;
+import org.apache.iceberg.encryption.EncryptedOutputFile;
+import org.apache.iceberg.hadoop.HadoopOutputFile;
 import org.apache.iceberg.io.CloseableIterable;
+import org.apache.iceberg.io.FileAppenderFactory;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.ArrayUtil;
 import org.apache.iceberg.util.ByteBuffers;
 import org.junit.Assert;
 
@@ -299,4 +311,68 @@ public class HiveIcebergTestUtils {
       }
     }
   }
+
+  /**
+   * @param table The table to create the delete file for
+   * @param deleteFilePath The path where the delete file should be created, relative to the table location root
+   * @param equalityFields List of field names that should play a role in the equality check
+   * @param fileFormat The file format that should be used for writing out the delete file
+   * @param rowsToDelete The rows that should be deleted. It's enough to fill out the fields that are relevant for the
+   *                     equality check, as listed in equalityFields, the rest of the fields are ignored
+   * @return The DeleteFile created
+   * @throws IOException If there is an error during DeleteFile write
+   */
+  public static DeleteFile createEqualityDeleteFile(Table table, String deleteFilePath, List<String> equalityFields,
+      FileFormat fileFormat, List<Record> rowsToDelete) throws IOException {
+    List<Integer> equalityFieldIds = equalityFields.stream()
+        .map(id -> table.schema().findField(id).fieldId())
+        .collect(Collectors.toList());
+    Schema eqDeleteRowSchema = table.schema().select(equalityFields.toArray(new String[]{}));
+
+    FileAppenderFactory<Record> appenderFactory = new GenericAppenderFactory(table.schema(), table.spec(),
+        ArrayUtil.toIntArray(equalityFieldIds), eqDeleteRowSchema, null);
+    EncryptedOutputFile outputFile = table.encryption().encrypt(HadoopOutputFile.fromPath(
+        new org.apache.hadoop.fs.Path(table.location(), deleteFilePath), new Configuration()));
+
+    PartitionKey part = new PartitionKey(table.spec(), eqDeleteRowSchema);
+    part.partition(rowsToDelete.get(0));
+    EqualityDeleteWriter<Record> eqWriter = appenderFactory.newEqDeleteWriter(outputFile, fileFormat, part);
+    try (EqualityDeleteWriter<Record> writer = eqWriter) {
+      writer.deleteAll(rowsToDelete);
+    }
+    return eqWriter.toDeleteFile();
+  }
+
+  /**
+   * @param table The table to create the delete file for
+   * @param deleteFilePath The path where the delete file should be created, relative to the table location root
+   * @param fileFormat The file format that should be used for writing out the delete file
+   * @param partitionValues A map of partition values (partitionKey=partitionVal, ...) to be used for the delete file
+   * @param deletes The list of position deletes, each containing the data file path, the position of the row in the
+   *                data file and the row itself that should be deleted
+   * @return The DeleteFile created
+   * @throws IOException If there is an error during DeleteFile write
+   */
+  public static DeleteFile createPositionalDeleteFile(Table table, String deleteFilePath, FileFormat fileFormat,
+      Map<String, Object> partitionValues, List<PositionDelete<Record>> deletes) throws IOException {
+
+    FileAppenderFactory<Record> appenderFactory = new GenericAppenderFactory(table.schema(), table.spec(),
+        null, null, table.schema());
+    EncryptedOutputFile outputFile = table.encryption().encrypt(HadoopOutputFile.fromPath(
+        new org.apache.hadoop.fs.Path(table.location(), deleteFilePath), new Configuration()));
+
+    PartitionKey partitionKey = null;
+    if (partitionValues != null) {
+      Record record = GenericRecord.create(table.schema()).copy(partitionValues);
+      partitionKey = new PartitionKey(table.spec(), table.schema());
+      partitionKey.partition(record);
+    }
+
+    PositionDeleteWriter<Record> posWriter = appenderFactory.newPosDeleteWriter(outputFile, fileFormat, partitionKey);
+    try (PositionDeleteWriter<Record> writer = posWriter) {
+      deletes.forEach(del -> writer.delete(del.path(), del.pos(), del.row()));
+    }
+    return posWriter.toDeleteFile();
+  }
+
 }
