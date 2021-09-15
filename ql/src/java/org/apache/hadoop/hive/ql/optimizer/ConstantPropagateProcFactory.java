@@ -916,7 +916,7 @@ public final class ConstantPropagateProcFactory {
         arguments[i] = new DeferredJavaObject(writableValue);
         argois[i] =
             ObjectInspectorUtils.getConstantObjectInspector(constant.getWritableObjectInspector(),
-                writableValue);
+                writableValue, true);
 
       } else if (desc instanceof ExprNodeGenericFuncDesc) {
         ExprNodeDesc evaluatedFn = foldExpr((ExprNodeGenericFuncDesc)desc);
@@ -931,7 +931,7 @@ public final class ConstantPropagateProcFactory {
         Object writableValue = PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
           (PrimitiveTypeInfo) constant.getTypeInfo()).getPrimitiveWritableObject(constant.getValue());
         arguments[i] = new DeferredJavaObject(writableValue);
-        argois[i] = ObjectInspectorUtils.getConstantObjectInspector(constant.getWritableObjectInspector(), writableValue);
+        argois[i] = ObjectInspectorUtils.getConstantObjectInspector(constant.getWritableObjectInspector(), writableValue, true);
       } else {
         return null;
       }
