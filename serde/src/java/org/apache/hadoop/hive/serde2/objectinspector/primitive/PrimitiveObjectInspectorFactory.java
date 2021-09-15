@@ -362,7 +362,7 @@ public final class PrimitiveObjectInspectorFactory {
     case INTERVAL_DAY_TIME:
       return new WritableConstantHiveIntervalDayTimeObjectInspector((HiveIntervalDayTimeWritable) value);
     case DECIMAL:
-      return new WritableConstantHiveDecimalObjectInspector((DecimalTypeInfo)typeInfo, (HiveDecimalWritable)value);
+      return new WritableConstantHiveDecimalObjectInspector((HiveDecimalWritable)value);
     case BINARY:
       return new WritableConstantBinaryObjectInspector((BytesWritable)value);
     case VOID:
