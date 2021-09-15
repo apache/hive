@@ -190,5 +190,15 @@ public class TestTxnIdUtils {
         new ValidReaderWriteIdList("default.table2", new long[] {8,10,11}, new BitSet(), 11)),
     -1);
 
+    ValidWriteIdList a =
+        new ValidReaderWriteIdList("default.test:1:1:1:");
+    ValidWriteIdList b =
+        new ValidReaderWriteIdList("default.test:1:9223372036854775807::");
+
+    // should return -1 since b is more recent
+    assertEquals(TxnIdUtils.compare(a, b), -1);
+
+    // should return 1 since b is more recent
+    assertEquals(TxnIdUtils.compare(b, a), 1);
   }
 }
