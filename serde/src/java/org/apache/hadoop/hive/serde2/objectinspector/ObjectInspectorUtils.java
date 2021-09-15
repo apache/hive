@@ -83,6 +83,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspec
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DoubleWritable;
@@ -1426,6 +1428,11 @@ public final class ObjectInspectorUtils {
   }
 
   public static ConstantObjectInspector getConstantObjectInspector(ObjectInspector oi, Object value) {
+    return getConstantObjectInspector(oi, value, false);
+  }
+
+  public static ConstantObjectInspector getConstantObjectInspector(ObjectInspector oi, Object value,
+      boolean useValueTypeInfo) {
     if (oi instanceof ConstantObjectInspector) {
       return (ConstantObjectInspector) oi;
     }
@@ -1435,8 +1442,10 @@ public final class ObjectInspectorUtils {
     switch (writableOI.getCategory()) {
       case PRIMITIVE:
         PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
+        PrimitiveTypeInfo typeInfo =
+             useValueTypeInfo ? getValueTypeInfo(poi.getTypeInfo(), value) : poi.getTypeInfo();
         return PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
-            poi.getTypeInfo(), writableValue);
+            typeInfo, writableValue);
       case LIST:
         ListObjectInspector loi = (ListObjectInspector) oi;
         return ObjectInspectorFactory.getStandardConstantListObjectInspector(
@@ -1639,6 +1648,14 @@ public final class ObjectInspectorUtils {
           + oi.getTypeName() + " not supported yet.");
     }
     return setOISettablePropertiesMap(oi, oiSettableProperties, returnValue);
+  }
+
+  private static PrimitiveTypeInfo getValueTypeInfo(PrimitiveTypeInfo typeInfo, Object value) {
+    if (!(value instanceof HiveDecimalWritable)) {
+      return typeInfo;
+    }
+    HiveDecimalWritable dec = (HiveDecimalWritable) value;
+    return new DecimalTypeInfo(dec.precision(), dec.scale());
   }
 
   private ObjectInspectorUtils() {
