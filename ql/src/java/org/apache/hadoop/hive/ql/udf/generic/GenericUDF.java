@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
@@ -52,6 +53,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -72,6 +74,9 @@ import org.apache.hadoop.io.LongWritable;
 @InterfaceStability.Stable
 @UDFType(deterministic = true)
 public abstract class GenericUDF implements Closeable {
+
+  protected static final Logger LOG = LoggerFactory.getLogger(GenericUDF.class.getName());
+  protected transient TypeInfo predefinedTypeInfo;
 
   private static final String[] ORDINAL_SUFFIXES = new String[] { "th", "st", "nd", "rd", "th",
       "th", "th", "th", "th", "th" };
@@ -113,6 +118,11 @@ public abstract class GenericUDF implements Closeable {
    */
   public GenericUDF() {
   }
+
+  public void setNewTypeInfo(TypeInfo typeInfo) {
+    this.predefinedTypeInfo = typeInfo;
+  }
+
 
   /**
    * Initialize this GenericUDF. This will be called once and only once per
@@ -175,7 +185,8 @@ public abstract class GenericUDF implements Closeable {
       }
       try {
         Object constantValue = evaluate(argumentValues);
-        oi = ObjectInspectorUtils.getConstantObjectInspector(oi, constantValue);
+        boolean useFlag = !(this instanceof SettableUDF);
+        oi = ObjectInspectorUtils.getConstantObjectInspector(oi, constantValue, useFlag);
       } catch (HiveException e) {
         throw new UDFArgumentException(e);
       }
