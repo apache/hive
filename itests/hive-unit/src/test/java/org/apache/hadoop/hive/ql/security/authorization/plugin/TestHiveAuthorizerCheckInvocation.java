@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Registry;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
@@ -47,6 +48,10 @@ import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+import org.apache.hive.service.cli.operation.OperationManager;
+import org.apache.hive.service.server.KillQueryImpl;
+import org.apache.hive.service.server.KillQueryZookeeperManager;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -64,6 +69,7 @@ public class TestHiveAuthorizerCheckInvocation {
   private final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());;
   protected static HiveConf conf;
   protected static Driver driver;
+  protected static SessionState ss;
   private static final String tableName = TestHiveAuthorizerCheckInvocation.class.getSimpleName()
       + "Table";
   private static final String viewName = TestHiveAuthorizerCheckInvocation.class.getSimpleName()
@@ -102,10 +108,17 @@ public class TestHiveAuthorizerCheckInvocation {
     conf.setVar(ConfVars.HIVE_TXN_MANAGER, DbTxnManager.class.getName());
     conf.setBoolVar(ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED, true);
     conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
+    conf.setBoolVar(ConfVars.HIVE_TEST_AUTHORIZATION_SQLSTD_HS2_MODE, true);
+    conf.setBoolVar(ConfVars.HIVE_ZOOKEEPER_KILLQUERY_ENABLE, false);
 
     TestTxnDbUtil.prepDb(conf);
 
-    SessionState.start(conf);
+    SessionState ss = SessionState.start(conf);
+    OperationManager operationManager = Mockito.mock(OperationManager.class);
+    KillQueryZookeeperManager killQueryZookeeperManager = Mockito.mock(KillQueryZookeeperManager.class);
+    KillQueryImpl killQueryImpl = new KillQueryImpl(operationManager, killQueryZookeeperManager);
+    ss.setKillQuery(killQueryImpl);
+
     driver = new Driver(conf);
     runCmd("create table " + tableName
         + " (i int, j int, k string) partitioned by (city string, `date` string) ");
@@ -674,6 +687,31 @@ public class TestHiveAuthorizerCheckInvocation {
 
     return new ImmutablePair<List<HivePrivilegeObject>, List<HivePrivilegeObject>>(
         inputsCapturer.getValue(), outputsCapturer.getValue());
+  }
+
+  /**
+   * Unit test for HIVE-25532.
+   * Checks if the right privilege objects are being sent when a kill query call is made.
+   * @throws Exception
+   */
+  @Test
+  public void testKillQueryAuthorization() throws Exception {
+    int queryStatus = driver.compile("select " + viewName + ".i, " + tableName + ".city from "
+            + viewName + " join " + tableName + " on " + viewName + ".city = " + tableName
+            + ".city where " + tableName + ".k = 'X'", true);
+    assertEquals(0, queryStatus);
+
+    resetAuthorizer();
+    QueryState queryState = driver.getQueryState();
+    String queryId = queryState.getQueryId();
+    int killQueryStatus = driver.compile("kill query '" + queryId + "'", true);
+    assertEquals(0, killQueryStatus);
+    driver.run();
+
+    List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
+    HivePrivilegeObject dbObj = inputs.get(0);
+    assertEquals("input type", HivePrivilegeObjectType.SERVICE_NAME, dbObj.getType());
+    assertEquals("object name","hiveservice", dbObj.getObjectName());
   }
 
 }
