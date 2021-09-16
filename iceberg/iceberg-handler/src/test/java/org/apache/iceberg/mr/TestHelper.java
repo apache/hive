@@ -22,7 +22,6 @@ package org.apache.iceberg.mr;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
@@ -41,6 +40,7 @@ import org.apache.iceberg.data.RandomGenericData;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.junit.rules.TemporaryFolder;
 
 public class TestHelper {
@@ -82,7 +82,7 @@ public class TestHelper {
   }
 
   public Map<String, String> properties() {
-    Map<String, String> props = new HashMap<>(tblProps);
+    Map<String, String> props = Maps.newHashMap(tblProps);
     props.put(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.name());
     props.put(TableProperties.ENGINE_HIVE_ENABLED, "true");
     return props;

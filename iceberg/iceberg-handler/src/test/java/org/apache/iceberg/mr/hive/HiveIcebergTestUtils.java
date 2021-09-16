@@ -356,8 +356,9 @@ public class HiveIcebergTestUtils {
   public static DeleteFile createPositionalDeleteFile(Table table, String deleteFilePath, FileFormat fileFormat,
       Map<String, Object> partitionValues, List<PositionDelete<Record>> deletes) throws IOException {
 
+    Schema posDeleteRowSchema = deletes.get(0).row() == null ? null : table.schema();
     FileAppenderFactory<Record> appenderFactory = new GenericAppenderFactory(table.schema(), table.spec(),
-        null, null, table.schema());
+        null, null, posDeleteRowSchema);
     EncryptedOutputFile outputFile = table.encryption().encrypt(HadoopOutputFile.fromPath(
         new org.apache.hadoop.fs.Path(table.location(), deleteFilePath), new Configuration()));
 
