@@ -1831,7 +1831,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
             }
           }
         } else {
-          LOG.warn("Null NodeInfo when attempting to get available resources");
+          LOG.warn("Null NodeInfo when attempting to get available resources for " + inst.getWorkerIdentity());
         }
       }
       // isClusterCapacityFull will be set to false on every trySchedulingPendingTasks call
