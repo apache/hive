@@ -477,9 +477,9 @@ public abstract class TaskCompiler {
     if (pCtx.getQueryProperties().isCTAS()) {
       boolean isExternal = pCtx.getCreateTable().isExternal();
       boolean isAcid = pCtx.getCreateTable().getTblProps().getOrDefault(
-              hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false").equalsIgnoreCase("true") ||
+              hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false").equalsIgnoreCase("true") &&
               pCtx.getCreateTable().getTblProps().containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-      if ((HiveConf.getBoolVar(conf, HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL) || isExternal) && !isAcid) {
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL) || isExternal || !isAcid) {
         CreateTableDesc ctd = pCtx.getCreateTable();
         ctd.getTblProps().put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false"); // create as external table
         try {

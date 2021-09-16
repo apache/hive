@@ -951,6 +951,6 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
   }
 
   private boolean isExternalWarehouseSet() {
-    return !"".equals(hmsHandler.getConf().get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname()));
+    return hmsHandler.getConf().get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname()) != null;
   }
 }
