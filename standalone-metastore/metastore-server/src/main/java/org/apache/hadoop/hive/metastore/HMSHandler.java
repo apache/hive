@@ -2247,7 +2247,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (!tbl.isSetCatName()) {
       tbl.setCatName(getDefaultCatalog(conf));
     }
-    if (transformer != null && !isInTest) {
+    if (transformer != null) {
       transformedTbl = transformer.transformCreateTable(tbl, null, null);
     }
     return transformedTbl != null ? transformedTbl : tbl;

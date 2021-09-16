@@ -1,5 +1,4 @@
 set metastore.metadata.transformer.class=org.apache.hadoop.hive.metastore.MetastoreDefaultTransformer;
-set metastore.metadata.transformer.location.mode=seqprefix;
 
 set hive.fetch.task.conversion=none;
 set hive.compute.query.using.stats=false;
