@@ -252,7 +252,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortPullUpConstants
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortRemoveRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortUnionReduceRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSubQueryRemoveRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveTransformSimpleSelectsToInlineTableInUnion;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionSimpleSelectsToInlineTableRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionPullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
@@ -2211,7 +2211,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 1. Run other optimizations that do not need stats
       generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
           ProjectRemoveRule.Config.DEFAULT.toRule(), HiveUnionMergeRule.INSTANCE,
-          new HiveTransformSimpleSelectsToInlineTableInUnion(dummyTableScan),
+          new HiveUnionSimpleSelectsToInlineTableRule(dummyTableScan),
           HiveAggregateProjectMergeRule.INSTANCE, HiveProjectMergeRule.INSTANCE_NO_FORCE,
           HiveJoinCommuteRule.INSTANCE);
 

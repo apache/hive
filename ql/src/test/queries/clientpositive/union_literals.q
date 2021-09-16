@@ -31,8 +31,11 @@ union all
 SELECT * FROM (
    VALUES(1, '1'),
          (2, 'orange'),
-         (5, 'yellow'),
-         (10, 'green'),
+         (5, 'yellow'))
+   as colors1
+UNION ALL
+SELECT * FROM (
+   VALUES(10, 'green'),
          (11, 'blue'),
          (12, 'indigo'),
          (20, 'violet'))

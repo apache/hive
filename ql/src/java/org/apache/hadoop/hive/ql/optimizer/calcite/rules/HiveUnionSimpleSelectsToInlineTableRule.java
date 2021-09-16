@@ -50,14 +50,27 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * Transforms SELECTS of literals under UNION ALL into inline table scans.
+ *
+ * It processes plain projects and inline tables below UNION ALL nodes.
+ *
+ * SELECT 1
+ * UNION ALL
+ * SELECT 2
+ *
+ *
+ * HiveUnion(all=true)
+ *  HiveProject(a=[1])
+ *  HiveProject(a=[42])
+ *  Hive
+ *  ...
  */
-public class HiveTransformSimpleSelectsToInlineTableInUnion extends RelOptRule {
+public class HiveUnionSimpleSelectsToInlineTableRule extends RelOptRule {
 
-  protected static final Logger LOG = LoggerFactory.getLogger(HiveTransformSimpleSelectsToInlineTableInUnion.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(HiveUnionSimpleSelectsToInlineTableRule.class);
 
   private RelNode dummyTable;
 
-  public HiveTransformSimpleSelectsToInlineTableInUnion(RelNode dummyTable) {
+  public HiveUnionSimpleSelectsToInlineTableRule(RelNode dummyTable) {
     super(operand(HiveUnion.class, any()));
     this.dummyTable = dummyTable;
   }
@@ -144,7 +157,7 @@ public class HiveTransformSimpleSelectsToInlineTableInUnion extends RelOptRule {
       RelDataType arrayType = rexBuilder.getTypeFactory().createArrayType(type, -1);
       try {
         SqlOperator inlineFn =
-            SqlFunctionConverter.getCalciteFn("inline", ImmutableList.of(arrayType), type, true, false);
+            SqlFunctionConverter.getCalciteFn("inline", Collections.singletonList(arrayType), type, true, false);
         SqlOperator arrayFn =
             SqlFunctionConverter.getCalciteFn("array", Collections.nCopies(rows.size(), type), arrayType, true, false);
 
@@ -198,7 +211,7 @@ public class HiveTransformSimpleSelectsToInlineTableInUnion extends RelOptRule {
     }
     HiveTableScan ts = (HiveTableScan) input;
     Table table = ((RelOptHiveTable) ts.getTable()).getHiveTableMD();
-    if (!table.getDbName().equals(SemanticAnalyzer.DUMMY_DATABASE)) {
+    if (!SemanticAnalyzer.DUMMY_DATABASE.equals(table.getDbName())) {
       return false;
     }
     return true;
