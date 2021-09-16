@@ -61,8 +61,9 @@ public class DatabaseProduct implements Configurable {
   protected DatabaseProduct() {}
 
   public static final String DERBY_NAME = "derby";
-  public static final String SQL_SERVER_NAME = "microsoft sql server";
+  public static final String SQL_SERVER_NAME = "sqlserver";
   public static final String MYSQL_NAME = "mysql";
+  public static final String MARIADB_NAME = "mariadb";
   public static final String POSTGRESQL_NAME = "postgresql";
   public static final String ORACLE_NAME = "oracle";
   public static final String UNDEFINED_NAME = "other";
@@ -131,13 +132,13 @@ public class DatabaseProduct implements Configurable {
 
   private static DbType getDbType(String productName) {
     DbType dbt;
-    productName = productName.toLowerCase();
+    productName = productName.replaceAll("\\s+", "").toLowerCase();
 
     if (productName.contains(DERBY_NAME)) {
       dbt = DbType.DERBY;
     } else if (productName.contains(SQL_SERVER_NAME)) {
       dbt = DbType.SQLSERVER;
-    } else if (productName.contains(MYSQL_NAME)) {
+    } else if (productName.contains(MYSQL_NAME) || productName.contains(MARIADB_NAME)) {
       dbt = DbType.MYSQL;
     } else if (productName.contains(ORACLE_NAME)) {
       dbt = DbType.ORACLE;
