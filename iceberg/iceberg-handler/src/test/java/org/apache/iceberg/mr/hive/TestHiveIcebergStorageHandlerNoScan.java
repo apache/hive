@@ -516,7 +516,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   public void testCreateTableAboveExistingTable() throws IOException {
     // Create the Iceberg table
     testTables.createIcebergTable(shell.getHiveConf(), "customers", COMPLEX_SCHEMA, FileFormat.PARQUET,
-        Collections.emptyList());
+        Collections.emptyMap(), Collections.emptyList());
 
     if (testTableType == TestTables.TestTableType.HIVE_CATALOG) {
       // In HiveCatalog we just expect an exception since the table is already exists
@@ -894,7 +894,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     // Create the Iceberg table in non-HiveCatalog
     testTables.createIcebergTable(shell.getHiveConf(), identifier.name(),
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, FileFormat.PARQUET,
-        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+        Collections.emptyMap(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
     // Create Hive table on top
     String tableLocation = testTables.locationForCreateTableSQL(identifier);
