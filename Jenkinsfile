@@ -15,9 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-node {
-    sh 'set'
-}
 
 properties([
     // max 5 build/branch/day
@@ -29,7 +26,6 @@ properties([
         string(name: 'OPTS', defaultValue: '', description: 'additional maven opts'),
     ])
 ])
-
 
 this.prHead = null;
 def checkPrHead() {
@@ -85,9 +81,6 @@ def buildHive(args) {
   configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
     withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
       sh '''#!/bin/bash -e
-echo "@@ set"
-set
-echo "@@ set"
 set -x
 . /etc/profile.d/confs.sh
 export USER="`whoami`"
@@ -154,8 +147,7 @@ def jobWrappers(closure) {
   def finalLabel="FAILURE";
   try {
     // allocate 1 precommit token for the execution
-//    lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
-      withEnv(["LOCKED_RESOURCE=99"]) {
+    lock(label:'hive-precommit', quantity:1, variable: 'LOCKED_RESOURCE')  {
       timestamps {
         echo env.LOCKED_RESOURCE
         checkPrHead()
@@ -200,7 +192,6 @@ jobWrappers {
   executorNode {
     container('hdb') {
       stage('Checkout') {
-
         if(env.CHANGE_ID) {
           checkout([
             $class: 'GitSCM',
@@ -229,10 +220,6 @@ git merge origin/target
         } else {
           checkout scm
         }
-
-//	sh('sleep 6h')
-//	scm.extensions.add( [$class: 'SparseCheckoutPaths', ] 
-//        error('AAA;aborting current build')
       }
       stage('Prechecks') {
         def spotbugsProjects = [
