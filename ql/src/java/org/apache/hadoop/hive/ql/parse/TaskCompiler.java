@@ -475,13 +475,16 @@ public abstract class TaskCompiler {
     }
     Path location = (loc == null) ? getDefaultCtasLocation(pCtx) : new Path(loc);
     if (pCtx.getQueryProperties().isCTAS()) {
-      boolean isExternal = pCtx.getCreateTable().isExternal();
-      boolean isAcid = pCtx.getCreateTable().getTblProps().getOrDefault(
-              hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false").equalsIgnoreCase("true") &&
-              pCtx.getCreateTable().getTblProps().containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL) || isExternal || !isAcid) {
-        CreateTableDesc ctd = pCtx.getCreateTable();
+//      boolean isExternal = pCtx.getCreateTable().isExternal();
+//      boolean isAcid = pCtx.getCreateTable().getTblProps().getOrDefault(
+//              hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false").equalsIgnoreCase("true") &&
+//              pCtx.getCreateTable().getTblProps().containsKey(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+//      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL) || isExternal || !isAcid) {
+      CreateTableDesc ctd = pCtx.getCreateTable();
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL)) {
         ctd.getTblProps().put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false"); // create as external table
+      }
+
         try {
           Table table = ctd.toTable(conf);
           table = db.getTranslateTableDryrun(table.getTTable());
@@ -494,7 +497,7 @@ public abstract class TaskCompiler {
           throw new SemanticException(ex);
         }
         pCtx.setCreateTable(ctd);
-      }
+//      }
     }
     if (txnId != null) {
       dataSink.setDirName(location);
