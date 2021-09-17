@@ -1430,6 +1430,13 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         boolean requestedHostsWillBecomeAvailable = false;
         for (String host : requestedHosts) {
           prefHostCount++;
+
+          // Check if the host is removed from the registry after availableHostMap is created.
+          Set<LlapServiceInstance> activeInstancesByHost = activeInstances.getByHost(host);
+          if (activeInstancesByHost == null || activeInstancesByHost.isEmpty()) {
+            continue;
+          }
+
           // Pick the first host always. Weak attempt at cache affinity.
           if (availableHostMap.containsKey(host)) {
             List<NodeInfo> instances = availableHostMap.getOrDefault(host, new ArrayList<>());
@@ -1447,23 +1454,26 @@ public class LlapTaskSchedulerService extends TaskScheduler {
                 if (request.shouldForceLocality()) {
                   requestedHostsWillBecomeAvailable = true;
                 } else {
-                  LlapServiceInstance inst = activeInstances.getByHost(host).stream().findFirst().get();
-                  NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
-                  if (nodeInfo != null && nodeInfo.getEnableTime() > request.getLocalityDelayTimeout()
-                      && nodeInfo.isDisabled() && nodeInfo.hadCommFailure()) {
-                    LOG.debug("Host={} will not become available within requested timeout", nodeInfo);
-                    // This node will likely be activated after the task timeout expires.
-                  } else {
-                    // Worth waiting for the timeout.
-                    requestedHostsWillBecomeAvailable = true;
+                  for (LlapServiceInstance inst : activeInstancesByHost) {
+                    NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
+                    if (nodeInfo == null) {
+                      LOG.warn("Null NodeInfo when attempting to get host {}", host);
+                      // Leave requestedHostWillBecomeAvailable as is. If some other host is found - delay,
+                      // else ends up allocating to a random host immediately.
+                      continue;
+                    }
+                    if (nodeInfo.getEnableTime() > request.getLocalityDelayTimeout()
+                            && nodeInfo.isDisabled() && nodeInfo.hadCommFailure()) {
+                      LOG.debug("Host={} will not become available within requested timeout", nodeInfo);
+                      // This node will likely be activated after the task timeout expires.
+                    } else {
+                      // Worth waiting for the timeout.
+                      requestedHostsWillBecomeAvailable = true;
+                    }
                   }
                 }
               }
             }
-          } else {
-            LOG.warn("Null NodeInfo when attempting to get host {}", host);
-            // Leave requestedHostWillBecomeAvailable as is. If some other host is found - delay,
-            // else ends up allocating to a random host immediately.
           }
         }
         // Check if forcing the location is required.
@@ -1820,6 +1830,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
               hostList.add(nodeInfo);
             }
           }
+        } else {
+          LOG.warn("Null NodeInfo when attempting to get available resources for " + inst.getWorkerIdentity());
         }
       }
       // isClusterCapacityFull will be set to false on every trySchedulingPendingTasks call
