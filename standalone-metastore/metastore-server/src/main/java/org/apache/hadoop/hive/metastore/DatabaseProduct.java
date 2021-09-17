@@ -48,9 +48,9 @@ import com.google.common.base.Preconditions;
 public class DatabaseProduct implements Configurable {
   static final private Logger LOG = LoggerFactory.getLogger(DatabaseProduct.class.getName());
 
-  private static enum DbType {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, CUSTOM, UNDEFINED};
+  public enum DbType {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, CUSTOM, UNDEFINED};
   public DbType dbType;
-  
+
   // Singleton instance
   private static DatabaseProduct theDatabaseProduct;
 
@@ -67,7 +67,7 @@ public class DatabaseProduct implements Configurable {
   public static final String POSTGRESQL_NAME = "postgresql";
   public static final String ORACLE_NAME = "oracle";
   public static final String UNDEFINED_NAME = "other";
-  
+
   /**
    * Determine the database product type
    * @param productName string to defer database connection
@@ -149,7 +149,7 @@ public class DatabaseProduct implements Configurable {
     }
     return dbt;
   }
-  
+
   public final boolean isDERBY() {
     return dbType == DbType.DERBY;
   }
