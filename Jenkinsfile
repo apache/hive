@@ -201,9 +201,9 @@ jobWrappers {
     container('hdb') {
       stage('Checkout') {
         checkout scm
-	shell('git branch')
-	shell('git branch -a')
-	shell('sleep 6h')
+	sh('git branch')
+	sh('git branch -a')
+	sh('sleep 6h')
         error('AAA;aborting current build')
       }
       stage('Prechecks') {
