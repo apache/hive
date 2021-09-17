@@ -216,13 +216,13 @@ jobWrappers {
           def extraExtensions = [[name: "${CHANGE_TARGET}" ]]
         }
 
-        checkout [
+        checkout([
           $class: 'GitSCM',
           branches: scm.branches + extraBranches,
           doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
           extensions: scm.extensions,
           userRemoteConfigs: scm.userRemoteConfigs
-        ]
+        ])
 
 	sh('git branch')
 	sh('git branch -a')
