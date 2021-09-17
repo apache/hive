@@ -223,9 +223,7 @@ git log HEAD..origin/target
 echo "@@@ merging target"
 git merge origin/target
 '''
-')
-	sh('git branch -a')
-	sh('git merge origin/target')
+
         } else {
           checkout scm
         }
