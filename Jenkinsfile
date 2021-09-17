@@ -206,29 +206,21 @@ jobWrappers {
             $class: 'GitSCM',
             branches: scm.branches,
             doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-            extensions: scm.extensions
-/* +[  [
-              $class: 'PreBuildMerge',
-              options: [
-                mergeRemote: 'target',
-                mergeTarget: 'target'
-              ]
-            ]]*/,
+            extensions: scm.extensions,
             userRemoteConfigs: scm.userRemoteConfigs + [[
-              name: 'target',
-              refspec: "+refs/heads/${CHANGE_TARGET}:refs/remotes/target/target",
+              name: 'origin',
+              refspec: scm.userRemoteConfigs[0].refspec+ " +refs/heads/${CHANGE_TARGET}:refs/remotes/origin/target",
               url: scm.userRemoteConfigs[0].url,
               credentialsId: scm.userRemoteConfigs[0].credentialsId
             ]],
           ])
-
         } else {
           checkout scm
         }
 
-
 	sh('git branch')
 	sh('git branch -a')
+	sh('git merge origin/target')
 //	sh('sleep 6h')
 //	scm.extensions.add( [$class: 'SparseCheckoutPaths', ] 
         error('AAA;aborting current build')
