@@ -32,24 +32,6 @@ properties([
 ])
 
 
-def localScm = [
- $class: 'GitSCM',
- branches: scm.branches,
- doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
- extensions: scm.extensions,
- userRemoteConfigs: scm.userRemoteConfigs
-]
-
-
-if(env.CHANGE_ID) {
-  println scm.branches
-  println scm.extensions
-  def val = [[name: "${CHANGE_TARGET}" ]]
-println val
-//  localScm.branches = val
-  println localScm.branches
-}
-
 this.prHead = null;
 def checkPrHead() {
   if(env.CHANGE_ID) {
@@ -226,8 +208,22 @@ jobWrappers {
           extensions: scm.extensions,
           userRemoteConfigs: scm.userRemoteConfigs
         ])*/
-        checkout localScm
-	
+
+
+        def extraBranches = []
+        if(env.CHANGE_ID) {
+          extraBranches = [[name: "${CHANGE_TARGET}" ]]
+          def extraExtensions = [[name: "${CHANGE_TARGET}" ]]
+        }
+
+        checkout [
+          $class: 'GitSCM',
+          branches: scm.branches + ,
+          doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+          extensions: scm.extensions,
+          userRemoteConfigs: scm.userRemoteConfigs
+        ]
+
 	sh('git branch')
 	sh('git branch -a')
 //	sh('sleep 6h')
