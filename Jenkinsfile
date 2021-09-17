@@ -223,7 +223,7 @@ jobWrappers {
           extensions: scm.extensions +[  [
             $class: 'PreBuildMerge',
             options: [
-                fastForwardMode: 'NO_FF',
+//                fastForwardMode: 'NO_FF',
                 mergeRemote: 'origin',
 //                mergeStrategy: 'DEFAULT',
                 mergeTarget: 'master'
