@@ -218,7 +218,7 @@ println(scm.userRemoteConfigs[0].refspec + " +refs/heads/${CHANGE_TARGET}:refs/r
             ]],
             userRemoteConfigs: [ scm.userRemoteConfigs + [[
               name: 'target',
-              refspec: "+refs/heads/${CHANGE_TARGET}:refs/remotes/origin/target"
+              refspec: "+refs/heads/${CHANGE_TARGET}:refs/remotes/origin/target",
               url: scm.userRemoteConfigs[0].url,
               credentialsId: scm.userRemoteConfigs[0].credentialsId
             ]],
