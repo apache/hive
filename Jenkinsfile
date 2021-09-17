@@ -209,7 +209,7 @@ jobWrappers {
           extensions: scm.extensions,
           userRemoteConfigs: scm.userRemoteConfigs
         ])
-#        checkout scm
+//        checkout scm
 	
 	sh('git branch')
 	sh('git branch -a')
