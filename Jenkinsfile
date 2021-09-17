@@ -220,7 +220,15 @@ jobWrappers {
           $class: 'GitSCM',
           branches: scm.branches + extraBranches,
           doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-          extensions: scm.extensions,
+          extensions: scm.extensions +[  [
+            $class: 'PreBuildMerge',
+            options: [
+                fastForwardMode: 'NO_FF',
+                mergeRemote: 'origin',
+                mergeStrategy: 'MergeCommand.Strategy',
+                mergeTarget: 'master'
+            ]
+        ]],
           userRemoteConfigs: scm.userRemoteConfigs
         ])
 
