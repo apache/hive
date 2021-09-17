@@ -16,9 +16,7 @@
  * limitations under the License.
  */
 node {
-	println scm.branches
-	println scm.extensions
-    sh 'set'
+//    sh 'set'
     sh 'set'
 }
 
@@ -32,6 +30,14 @@ properties([
         string(name: 'OPTS', defaultValue: '', description: 'additional maven opts'),
     ])
 ])
+
+
+if(env.CHANGE_ID) {
+  println scm.branches
+  println scm.extensions
+  scm.branches += [name: "${CHANGE_TARGET}" ]
+  println scm.branches
+}
 
 this.prHead = null;
 def checkPrHead() {
