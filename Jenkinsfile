@@ -46,7 +46,6 @@ if(env.CHANGE_ID) {
   println scm.extensions
   localScm.branches+=[[name: "${CHANGE_TARGET}" ]]
   println localScm.branches
-asdfsds
 }
 
 this.prHead = null;
