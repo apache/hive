@@ -217,9 +217,9 @@ jobWrappers {
 	  sh '''#!/bin/bash
 set -e
 echo "@@@ patches in the PR but not on target ($CHANGE_TARGET)"
-git log origin/target..HEAD
+git log --oneline origin/target..HEAD
 echo "@@@ patches on target but not in the PR"
-git log HEAD..origin/target
+git log --oneline HEAD..origin/target
 echo "@@@ merging target"
 git merge origin/target
 '''
@@ -230,7 +230,7 @@ git merge origin/target
 
 //	sh('sleep 6h')
 //	scm.extensions.add( [$class: 'SparseCheckoutPaths', ] 
-        error('AAA;aborting current build')
+//        error('AAA;aborting current build')
       }
       stage('Prechecks') {
         def spotbugsProjects = [
