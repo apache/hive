@@ -46,7 +46,7 @@ if(env.CHANGE_ID) {
   println scm.extensions
   def val = [[name: "${CHANGE_TARGET}" ]]
 println val
-  localScm.branches = val
+//  localScm.branches = val
   println localScm.branches
 }
 
