@@ -201,6 +201,9 @@ jobWrappers {
     container('hdb') {
       stage('Checkout') {
 
+println("xxx")
+println(" " +scm.userRemoteConfigs[0].refspec + " +refs/heads/${CHANGE_TARGET}:refs/remotes/origin/target")
+println(scm.userRemoteConfigs[0].refspec + " +refs/heads/${CHANGE_TARGET}:refs/remotes/origin/target")
         if(env.CHANGE_ID) {
           checkout([
             $class: 'GitSCM',
