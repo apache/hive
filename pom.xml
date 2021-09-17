@@ -172,7 +172,7 @@
     <junit.version>4.13</junit.version>
     <junit.jupiter.version>5.6.2</junit.jupiter.version>
     <junit.vintage.version>5.6.2</junit.vintage.version>
-    <kafka.version>2.5.0</kafka.version>
+    <kafka.version>2.8.0</kafka.version>
     <kryo.version>5.0.3</kryo.version>
     <kryo4.version>4.0.2</kryo4.version> <!-- old kryo, for spark-client, might be removed in HIVE-23885 -->
     <reflectasm.version>1.11.9</reflectasm.version>
@@ -204,7 +204,7 @@
     <super-csv.version>2.2.0</super-csv.version>
     <spark.version>2.4.5</spark.version>
     <scala.binary.version>2.12</scala.binary.version>
-    <scala.version>2.12.10</scala.version>
+    <scala.version>2.12.13</scala.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
     <snappy.version>1.1.4</snappy.version>
     <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
