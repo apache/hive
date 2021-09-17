@@ -213,7 +213,7 @@ jobWrappers {
         if(env.CHANGE_ID) {
           extraBranches = [[name: "${CHANGE_TARGET}" ]]
           def extraExtensions = [[name: "${CHANGE_TARGET}" ]]
-          scm.userRemoteConfigs[0].refSpec += "  +refs/heads/master:refs/remotes/origin/master "
+          scm.userRemoteConfigs[0] = [];//.refSpec += "  +refs/heads/master:refs/remotes/origin/master "
         }
 
         checkout([
