@@ -32,11 +32,20 @@ properties([
 ])
 
 
+def localScm = [
+ $class: 'GitSCM',
+ branches: scm.branches,
+ doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+ extensions: scm.extensions,
+ userRemoteConfigs: scm.userRemoteConfigs
+]
+
+
 if(env.CHANGE_ID) {
   println scm.branches
   println scm.extensions
-  scm.branches.add([name: "${CHANGE_TARGET}" ])
-  println scm.branches
+  localScm.branches.add([name: "${CHANGE_TARGET}" ])
+  println localScm.branches
 asdfsds
 }
 
@@ -209,14 +218,14 @@ jobWrappers {
   executorNode {
     container('hdb') {
       stage('Checkout') {
-        checkout([
+/*        checkout([
           $class: 'GitSCM',
           branches: scm.branches,
           doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
           extensions: scm.extensions,
           userRemoteConfigs: scm.userRemoteConfigs
-        ])
-//        checkout scm
+        ])*/
+        checkout localScm
 	
 	sh('git branch')
 	sh('git branch -a')
