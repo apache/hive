@@ -206,13 +206,14 @@ jobWrappers {
             $class: 'GitSCM',
             branches: scm.branches,
             doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-            extensions: scm.extensions +[  [
+            extensions: scm.extensions
+/* +[  [
               $class: 'PreBuildMerge',
               options: [
                 mergeRemote: 'target',
                 mergeTarget: 'target'
               ]
-            ]],
+            ]]*/,
             userRemoteConfigs: scm.userRemoteConfigs + [[
               name: 'target',
               refspec: "+refs/heads/${CHANGE_TARGET}:refs/remotes/target/target",
