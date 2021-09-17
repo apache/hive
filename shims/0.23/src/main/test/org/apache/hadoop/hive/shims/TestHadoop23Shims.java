@@ -19,26 +19,29 @@
 package org.apache.hadoop.hive.shims;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DFSClient;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
-
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
 
 
 public class TestHadoop23Shims {
 
   @Test
-  public void testConstructDistCpParams() {
+  public void testConstructDistCpParams() throws Exception {
     Path copySrc = new Path("copySrc");
     Path copyDst = new Path("copyDst");
     Configuration conf = new Configuration();
@@ -47,7 +50,6 @@ public class TestHadoop23Shims {
     List<String> paramsDefault = shims.constructDistCpParams(Collections.singletonList(copySrc), copyDst, conf);
 
     assertEquals(5, paramsDefault.size());
-    assertTrue("Distcp -pbx set by default", paramsDefault.contains("-pbx"));
     assertTrue("Distcp -update set by default", paramsDefault.contains("-update"));
     assertTrue("Distcp -delete set by default", paramsDefault.contains("-delete"));
     assertEquals(copySrc.toString(), paramsDefault.get(3));
@@ -92,6 +94,96 @@ public class TestHadoop23Shims {
     assertEquals(copySrc.toString(), paramsWithCustomParamInjection.get(6));
     assertEquals(copyDst.toString(), paramsWithCustomParamInjection.get(7));
 
+  }
+
+  @Test
+  public void testXAttrNotPreservedDueToDestFS() throws Exception {
+    FileSystem fsWithXAttrSupport = mock(FileSystem.class);
+    FileSystem fsWithoutXAttrSupport = mock(FileSystem.class);
+    when(fsWithXAttrSupport.getXAttrs(any())).thenReturn(new HashMap<>());
+    when(fsWithoutXAttrSupport.getXAttrs(any())).thenThrow(
+            new UnsupportedOperationException("XAttr not supported for file system."));
+    Configuration conf = new Configuration();
+    Path copySrc = mock(Path.class);
+    when(copySrc.getFileSystem(any())).thenReturn(fsWithXAttrSupport);
+    Path copyDst = mock(Path.class);
+    when(copyDst.getFileSystem(any())).thenReturn(fsWithoutXAttrSupport);
+
+    Hadoop23Shims shims = new Hadoop23Shims();
+    List<String> paramsDefault = shims.constructDistCpParams(Collections.singletonList(copySrc), copyDst, conf);
+
+    assertEquals(5, paramsDefault.size());
+    assertTrue("Distcp -pb set by default", paramsDefault.contains("-pb"));
+    assertTrue("Distcp -update set by default", paramsDefault.contains("-update"));
+    assertTrue("Distcp -delete set by default", paramsDefault.contains("-delete"));
+    assertEquals(copySrc.toString(), paramsDefault.get(3));
+    assertEquals(copyDst.toString(), paramsDefault.get(4));
+  }
+
+  @Test
+  public void testXAttrNotPreservedDueToSrcFS() throws Exception {
+    FileSystem fsWithXAttrSupport = mock(FileSystem.class);
+    FileSystem fsWithoutXAttrSupport = mock(FileSystem.class);
+    when(fsWithXAttrSupport.getXAttrs(any())).thenReturn(new HashMap<>());
+    when(fsWithoutXAttrSupport.getXAttrs(any())).thenThrow(
+            new UnsupportedOperationException("XAttr not supported for file system."));
+    Configuration conf = new Configuration();
+    Path copySrc = mock(Path.class);
+    when(copySrc.getFileSystem(any())).thenReturn(fsWithoutXAttrSupport);
+    Path copyDst = mock(Path.class);
+    when(copyDst.getFileSystem(any())).thenReturn(fsWithXAttrSupport);
+
+    Hadoop23Shims shims = new Hadoop23Shims();
+    List<String> paramsDefault = shims.constructDistCpParams(Collections.singletonList(copySrc), copyDst, conf);
+
+    assertEquals(5, paramsDefault.size());
+    assertTrue("Distcp -pb set by default", paramsDefault.contains("-pb"));
+    assertTrue("Distcp -update set by default", paramsDefault.contains("-update"));
+    assertTrue("Distcp -delete set by default", paramsDefault.contains("-delete"));
+    assertEquals(copySrc.toString(), paramsDefault.get(3));
+    assertEquals(copyDst.toString(), paramsDefault.get(4));
+  }
+
+  @Test
+  public void testXAttrPreserved() throws Exception {
+    FileSystem fsWithXAttrSupport = mock(FileSystem.class);
+    when(fsWithXAttrSupport.getXAttrs(any())).thenReturn(new HashMap<>());
+    Configuration conf = new Configuration();
+    Path copySrc = mock(Path.class);
+    when(copySrc.getFileSystem(any())).thenReturn(fsWithXAttrSupport);
+    Path copyDst = mock(Path.class);
+    when(copyDst.getFileSystem(any())).thenReturn(fsWithXAttrSupport);
+    Hadoop23Shims shims = new Hadoop23Shims();
+    List<String> paramsDefault = shims.constructDistCpParams(Collections.singletonList(copySrc), copyDst, conf);
+
+    assertEquals(5, paramsDefault.size());
+    assertTrue("Distcp -pbx set by default", paramsDefault.contains("-pbx"));
+    assertTrue("Distcp -update set by default", paramsDefault.contains("-update"));
+    assertTrue("Distcp -delete set by default", paramsDefault.contains("-delete"));
+    assertEquals(copySrc.toString(), paramsDefault.get(3));
+    assertEquals(copyDst.toString(), paramsDefault.get(4));
+  }
+
+  @Test
+  public void testPreserveOptionsOverwritenByUser() throws Exception {
+    FileSystem fsWithoutXAttrSupport = mock(FileSystem.class);
+    when(fsWithoutXAttrSupport.getXAttrs(any())).thenThrow(
+            new UnsupportedOperationException("XAttr not supported for file system."));
+    Configuration conf = new Configuration();
+    conf.set("distcp.options.pbx", "");
+    Path copySrc = mock(Path.class);
+    when(copySrc.getFileSystem(any())).thenReturn(fsWithoutXAttrSupport);
+    Path copyDst = mock(Path.class);
+    when(copyDst.getFileSystem(any())).thenReturn(fsWithoutXAttrSupport);
+    Hadoop23Shims shims = new Hadoop23Shims();
+    List<String> paramsDefault = shims.constructDistCpParams(Collections.singletonList(copySrc), copyDst, conf);
+
+    assertEquals(5, paramsDefault.size());
+    assertTrue("Distcp -pbx set by default", paramsDefault.contains("-pbx"));
+    assertTrue("Distcp -update set by default", paramsDefault.contains("-update"));
+    assertTrue("Distcp -delete set by default", paramsDefault.contains("-delete"));
+    assertEquals(copySrc.toString(), paramsDefault.get(3));
+    assertEquals(copyDst.toString(), paramsDefault.get(4));
   }
 
   @Test(expected = FileNotFoundException.class)

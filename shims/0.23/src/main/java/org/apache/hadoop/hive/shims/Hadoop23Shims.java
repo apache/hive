@@ -277,6 +277,16 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         equalsIgnoreCase(conf.get(YarnConfiguration.RM_SCHEDULER));
   }
 
+  private boolean checkFileSystemXAttrSupport(FileSystem fs) throws IOException {
+    try {
+      fs.getXAttrs(new Path(Path.SEPARATOR));
+      return true;
+    } catch (UnsupportedOperationException e) {
+      LOG.warn("XAttr won't be preserved since it is not supported for file system: " + fs.getUri());
+      return false;
+    }
+  }
+
   /**
    * Returns a shim to wrap MiniMrCluster
    */
@@ -1102,10 +1112,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   private static final String DISTCP_OPTIONS_PREFIX = "distcp.options.";
 
-  List<String> constructDistCpParams(List<Path> srcPaths, Path dst, Configuration conf) {
+  List<String> constructDistCpParams(List<Path> srcPaths, Path dst, Configuration conf) throws IOException {
     // -update and -delete are mandatory options for directory copy to work.
-    // -pbx is default preserve options if user doesn't pass any.
-    List<String> params = constructDistCpDefaultParams(conf);
+    List<String> params = constructDistCpDefaultParams(conf, dst.getFileSystem(conf),
+            srcPaths.get(0).getFileSystem(conf));
     if (!params.contains("-delete")) {
       params.add("-delete");
     }
@@ -1116,7 +1126,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return params;
   }
 
-  private List<String> constructDistCpDefaultParams(Configuration conf) {
+  private List<String> constructDistCpDefaultParams(Configuration conf, FileSystem dstFs,
+                                                    FileSystem sourceFs) throws IOException {
     List<String> params = new ArrayList<String>();
     boolean needToAddPreserveOption = true;
     for (Map.Entry<String,String> entry : conf.getPropsWithPrefix(DISTCP_OPTIONS_PREFIX).entrySet()){
@@ -1131,7 +1142,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       }
     }
     if (needToAddPreserveOption) {
-      params.add("-pbx");
+      params.add((checkFileSystemXAttrSupport(dstFs) && checkFileSystemXAttrSupport(sourceFs)) ? "-pbx" : "-pb");
     }
     if (!params.contains("-update")) {
       params.add("-update");
@@ -1150,9 +1161,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
    * @return
    */
   List<String> constructDistCpWithSnapshotParams(List<Path> srcPaths, Path dst, String sourceSnap, String destSnap,
-      Configuration conf, String diff) {
+      Configuration conf, String diff) throws IOException {
     // Get the default distcp params
-    List<String> params = constructDistCpDefaultParams(conf);
+    List<String> params = constructDistCpDefaultParams(conf, dst.getFileSystem(conf),
+            srcPaths.get(0).getFileSystem(conf));
     if (params.contains("-delete")) {
       params.remove("-delete");
     }
@@ -1192,12 +1204,15 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public boolean runDistCp(List<Path> srcPaths, Path dst, Configuration conf) throws IOException {
-       DistCpOptions options = new DistCpOptions.Builder(srcPaths, dst)
-               .withSyncFolder(true)
-               .withDeleteMissing(true)
-               .preserve(FileAttribute.BLOCKSIZE)
-               .preserve(FileAttribute.XATTR)
-               .build();
+    DistCpOptions.Builder builder = new DistCpOptions.Builder(srcPaths, dst)
+            .withSyncFolder(true)
+            .withDeleteMissing(true)
+            .preserve(FileAttribute.BLOCKSIZE);
+    if (checkFileSystemXAttrSupport(dst.getFileSystem(conf))
+            && checkFileSystemXAttrSupport(srcPaths.get(0).getFileSystem(conf))) {
+      builder = builder.preserve(FileAttribute.XATTR);
+    }
+    DistCpOptions options = builder.build();
 
     // Creates the command-line parameters for distcp
     List<String> params = constructDistCpParams(srcPaths, dst, conf);
@@ -1230,9 +1245,14 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public boolean runDistCpWithSnapshots(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst,
       boolean overwriteTarget, Configuration conf)
       throws IOException {
-    DistCpOptions options =
-        new DistCpOptions.Builder(srcPaths, dst).withSyncFolder(true).withUseDiff(oldSnapshot, newSnapshot)
-        .preserve(FileAttribute.BLOCKSIZE).preserve(FileAttribute.XATTR).build();
+    DistCpOptions.Builder builder = new DistCpOptions.Builder(srcPaths, dst).withSyncFolder(true)
+            .withUseDiff(oldSnapshot, newSnapshot)
+            .preserve(FileAttribute.BLOCKSIZE);
+    if (checkFileSystemXAttrSupport(dst.getFileSystem(conf))
+            && checkFileSystemXAttrSupport(srcPaths.get(0).getFileSystem(conf))) {
+      builder.preserve(FileAttribute.XATTR);
+    }
+    DistCpOptions options = builder.build();
 
     List<String> params = constructDistCpWithSnapshotParams(srcPaths, dst, oldSnapshot, newSnapshot, conf, "-diff");
     try {
