@@ -48,6 +48,7 @@ class hive_metastoreConstants {
   std::string JDBC_CONFIG_PREFIX;
   std::string TABLE_IS_CTAS;
   std::string PARTITION_TRANSFORM_SPEC;
+  std::string NO_CLEANUP;
 };
 
 extern const hive_metastoreConstants g_hive_metastore_constants;

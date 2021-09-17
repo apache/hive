@@ -77,6 +77,8 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   PARTITION_TRANSFORM_SPEC = "partition_transform_spec";
 
+  NO_CLEANUP = "no_cleanup";
+
 }
 
 }}} // namespace

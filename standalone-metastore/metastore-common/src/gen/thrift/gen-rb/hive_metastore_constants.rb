@@ -73,3 +73,5 @@ TABLE_IS_CTAS = %q"created_with_ctas"
 
 PARTITION_TRANSFORM_SPEC = %q"partition_transform_spec"
 
+NO_CLEANUP = %q"no_cleanup"
+
