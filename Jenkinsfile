@@ -221,6 +221,8 @@ git log --oneline origin/target..HEAD
 echo "@@@ patches on target but not in the PR"
 git log --oneline HEAD..origin/target
 echo "@@@ merging target"
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
 git merge origin/target
 '''
 
