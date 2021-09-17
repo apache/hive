@@ -218,7 +218,7 @@ jobWrappers {
 
         checkout [
           $class: 'GitSCM',
-          branches: scm.branches + ,
+          branches: scm.branches + extraBranches,
           doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
           extensions: scm.extensions,
           userRemoteConfigs: scm.userRemoteConfigs
