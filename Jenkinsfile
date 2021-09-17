@@ -229,7 +229,7 @@ jobWrappers {
 	
 	sh('git branch')
 	sh('git branch -a')
-	sh('sleep 6h')
+//	sh('sleep 6h')
 //	scm.extensions.add( [$class: 'SparseCheckoutPaths', ] 
         error('AAA;aborting current build')
       }
