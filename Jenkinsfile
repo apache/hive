@@ -200,10 +200,19 @@ jobWrappers {
   executorNode {
     container('hdb') {
       stage('Checkout') {
-        checkout scm
+        checkout([
+          $class: 'GitSCM',
+          branches: scm.branches,
+          doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+          extensions: scm.extensions,
+          userRemoteConfigs: scm.userRemoteConfigs
+        ])
+#        checkout scm
+	
 	sh('git branch')
 	sh('git branch -a')
 	sh('sleep 6h')
+	scm.extensions = []
         error('AAA;aborting current build')
       }
       stage('Prechecks') {
