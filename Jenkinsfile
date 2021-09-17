@@ -71,7 +71,6 @@ setPrLabel("PENDING");
 
 def executorNode(run) {
   hdbPodTemplate {
-        error('AAA;aborting current build')
     timeout(time: 6, unit: 'HOURS') {
       node(POD_LABEL) {
         container('hdb') {
@@ -202,6 +201,10 @@ jobWrappers {
     container('hdb') {
       stage('Checkout') {
         checkout scm
+	shell('git branch')
+	shell('git branch -a')
+	shell('sleep 6h')
+        error('AAA;aborting current build')
       }
       stage('Prechecks') {
         def spotbugsProjects = [
