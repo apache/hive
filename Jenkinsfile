@@ -35,8 +35,9 @@ properties([
 if(env.CHANGE_ID) {
   println scm.branches
   println scm.extensions
-  scm.branches += [name: "${CHANGE_TARGET}" ]
+  scm.branches.add([name: "${CHANGE_TARGET}" ])
   println scm.branches
+asdfsds
 }
 
 this.prHead = null;
