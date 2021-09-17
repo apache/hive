@@ -212,13 +212,13 @@ println(scm.userRemoteConfigs[0].refspec + " +refs/heads/${CHANGE_TARGET}:refs/r
             extensions: scm.extensions +[  [
               $class: 'PreBuildMerge',
               options: [
-                mergeRemote: 'origin',
+                mergeRemote: 'target',
                 mergeTarget: 'target'
               ]
             ]],
-            userRemoteConfigs: [[
-              name: 'origin',
-              refspec: "+refs/heads/${CHANGE_TARGET}:refs/remotes/origin/target " + scm.userRemoteConfigs[0].refspec,
+            userRemoteConfigs: [ scm.userRemoteConfigs + [[
+              name: 'target',
+              refspec: "+refs/heads/${CHANGE_TARGET}:refs/remotes/origin/target"
               url: scm.userRemoteConfigs[0].url,
               credentialsId: scm.userRemoteConfigs[0].credentialsId
             ]],
