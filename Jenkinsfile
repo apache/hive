@@ -214,13 +214,22 @@ jobWrappers {
               credentialsId: scm.userRemoteConfigs[0].credentialsId
             ]],
           ])
+	  sh '''#!/bin/bash
+set -e
+echo "@@@ patches in the PR but not on target ($CHANGE_TARGET)"
+git log origin/target..HEAD
+echo "@@@ patches on target but not in the PR"
+git log HEAD..origin/target
+echo "@@@ merging target"
+git merge origin/target
+'''
+')
+	sh('git branch -a')
+	sh('git merge origin/target')
         } else {
           checkout scm
         }
 
-	sh('git branch')
-	sh('git branch -a')
-	sh('git merge origin/target')
 //	sh('sleep 6h')
 //	scm.extensions.add( [$class: 'SparseCheckoutPaths', ] 
         error('AAA;aborting current build')
