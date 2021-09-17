@@ -200,37 +200,31 @@ jobWrappers {
   executorNode {
     container('hdb') {
       stage('Checkout') {
-/*        checkout([
-          $class: 'GitSCM',
-          branches: scm.branches,
-          doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-          extensions: scm.extensions,
-          userRemoteConfigs: scm.userRemoteConfigs
-        ])*/
 
-
-        def extraBranches = []
         if(env.CHANGE_ID) {
-          extraBranches = [[name: "${CHANGE_TARGET}" ]]
-          def extraExtensions = [[name: "${CHANGE_TARGET}" ]]
-          scm.userRemoteConfigs[0] = [];//.refSpec += "  +refs/heads/master:refs/remotes/origin/master "
+          checkout([
+            $class: 'GitSCM',
+            branches: scm.branches,
+            doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+            extensions: scm.extensions +[  [
+              $class: 'PreBuildMerge',
+              options: [
+                mergeRemote: 'origin',
+                mergeTarget: 'target'
+              ]
+            ]],
+            userRemoteConfigs: [[
+              name: 'origin',
+              refspec: scm.userRemoteConfigs[0].refspec + " +refs/heads/${CHANGE_TARGET}:refs/remotes/origin/target",
+              url: scm.userRemoteConfigs[0].url,
+              credentialsId: scm.userRemoteConfigs[0].credentialsId
+            ]],
+          ])
+
+        } else {
+          checkout scm
         }
 
-        checkout([
-          $class: 'GitSCM',
-          branches: scm.branches + extraBranches,
-          doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-          extensions: scm.extensions +[  [
-            $class: 'PreBuildMerge',
-            options: [
-//                fastForwardMode: 'NO_FF',
-                mergeRemote: 'origin',
-//                mergeStrategy: 'DEFAULT',
-                mergeTarget: 'master'
-            ]
-        ]],
-          userRemoteConfigs: scm.userRemoteConfigs
-        ])
 
 	sh('git branch')
 	sh('git branch -a')
