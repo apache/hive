@@ -225,7 +225,7 @@ jobWrappers {
             options: [
                 fastForwardMode: 'NO_FF',
                 mergeRemote: 'origin',
-                mergeStrategy: 'MergeCommand.Strategy',
+//                mergeStrategy: 'DEFAULT',
                 mergeTarget: 'master'
             ]
         ]],
