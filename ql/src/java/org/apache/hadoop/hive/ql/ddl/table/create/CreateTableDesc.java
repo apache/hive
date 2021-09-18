@@ -504,7 +504,6 @@ public class CreateTableDesc implements DDLDesc, Serializable {
   public Map<String, String> getTblPropsExplain() { // only for displaying plan
     HashMap<String, String> copy = new HashMap<>(tblProps);
     copy.remove(hive_metastoreConstants.TABLE_IS_CTAS);
-    copy.remove(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
     copy.remove(hive_metastoreConstants.TABLE_BUCKETING_VERSION);
     return copy;
   }
@@ -985,5 +984,6 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     }
     setExternal(TableType.EXTERNAL_TABLE.toString().equals(tTable.getTableType()));
     setTblProps(tTable.getParameters());
+    tblProps.remove(hive_metastoreConstants.CTAS_LEGACY_CONFIG);
   }
 }

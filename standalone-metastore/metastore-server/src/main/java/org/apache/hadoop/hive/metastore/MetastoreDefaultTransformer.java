@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_NONE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READONLY;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READWRITE;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.CTAS_LEGACY_CONFIG;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_TRANSACTIONAL;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.EXTERNAL_TABLE_PURGE;
@@ -636,7 +637,8 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       txnal = params.get(TABLE_IS_TRANSACTIONAL);
       txn_properties = params.get(TABLE_TRANSACTIONAL_PROPERTIES);
       isInsertAcid = (txn_properties != null && txn_properties.equalsIgnoreCase("insert_only"));
-      if ((txnal == null || txnal.equalsIgnoreCase("FALSE")) && !isInsertAcid) { // non-ACID MANAGED TABLE
+      boolean ctas_legacy_config = params.containsKey(CTAS_LEGACY_CONFIG) && params.get(CTAS_LEGACY_CONFIG).equalsIgnoreCase("true") ? true : false;
+      if (((txnal == null || txnal.equalsIgnoreCase("FALSE")) && !isInsertAcid) || (ctas_legacy_config && (txnal == null || txnal.equalsIgnoreCase("FALSE")))) { // non-ACID MANAGED TABLE
         LOG.info("Converting " + newTable.getTableName() + " to EXTERNAL tableType for " + processorId);
         newTable.setTableType(TableType.EXTERNAL_TABLE.toString());
         params.remove(TABLE_IS_TRANSACTIONAL);
