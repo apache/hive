@@ -22,6 +22,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.txn.DummyTxnHandler;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -39,6 +41,7 @@ public class TestMetaStoreConnectionUrlHook {
     MetastoreConf.setVar(conf, ConfVars.CONNECT_URL_HOOK, DummyJdoConnectionUrlHook.class.getName());
     MetastoreConf.setVar(conf, ConfVars.CONNECT_URL_KEY, DummyJdoConnectionUrlHook.initialUrl);
     MetastoreConf.setVar(conf, ConfVars.RAW_STORE_IMPL, DummyRawStoreForJdoConnection.class.getName());
+    MetastoreConf.setVar(conf, ConfVars.TXN_STORE_IMPL, DummyTxnHandler.class.getName());
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
     // Instantiating the HMSHandler with hive.metastore.checkForDefaultDb will cause it to

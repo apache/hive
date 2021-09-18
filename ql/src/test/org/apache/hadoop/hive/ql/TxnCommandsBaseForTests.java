@@ -53,6 +53,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,6 +125,7 @@ public abstract class TxnCommandsBaseForTests {
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.MERGE_SPLIT_UPDATE, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
     hiveConf.setBoolean("mapred.input.dir.recursive", true);
+    TxnUtils.initializeTxnStore(hiveConf);
     TestTxnDbUtil.setConfValues(hiveConf);
     txnHandler = TxnUtils.getTxnStore(hiveConf);
     TestTxnDbUtil.prepDb(hiveConf);

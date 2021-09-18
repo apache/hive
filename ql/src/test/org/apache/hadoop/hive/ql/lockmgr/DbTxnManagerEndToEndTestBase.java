@@ -70,6 +70,7 @@ public abstract class DbTxnManagerEndToEndTestBase {
     ss.initTxnMgr(conf);
     txnMgr = ss.getTxnMgr();
     Assert.assertTrue(txnMgr instanceof DbTxnManager);
+    TxnUtils.initializeTxnStore(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
 
   }

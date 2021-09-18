@@ -80,6 +80,7 @@ public class TestDbTxnManager {
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     TestTxnDbUtil.setConfValues(conf);
+    TxnUtils.initializeTxnStore(conf);
     SessionState.start(conf);
     ctx = new Context(conf);
     tearDown();

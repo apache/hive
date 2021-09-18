@@ -47,6 +47,7 @@ public class TestOpenTxn {
   @Before
   public void setUp() throws Exception {
     // This will init the metastore db
+    TxnUtils.initializeTxnStore(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
     TestTxnDbUtil.prepDb(conf);
   }

@@ -43,7 +43,7 @@ public class TestTxnHandlerNegative {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY, "blah");
     RuntimeException e = null;
     try {
-      TxnUtils.getTxnStore(conf);
+      TxnUtils.initializeTxnStore(conf);
     }
     catch(RuntimeException ex) {
       LOG.info("Expected error: " + ex.getMessage(), ex);
@@ -51,8 +51,8 @@ public class TestTxnHandlerNegative {
     }
     assertNotNull(e);
     assertTrue(
-        e.getMessage().contains("No suitable driver found for blah")
-        || e.getMessage().contains("Failed to get driver instance for jdbcUrl=blah")
+        e.getCause().getCause().getMessage().contains("No suitable driver found for blah")
+        || e.getCause().getCause().getMessage().contains("Failed to get driver instance for jdbcUrl=blah")
     );
   }
 }

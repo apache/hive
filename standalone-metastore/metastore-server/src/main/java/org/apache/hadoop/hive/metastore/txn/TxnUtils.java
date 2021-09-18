@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -125,6 +126,22 @@ public class TxnUtils {
       return handler;
     } catch (Exception e) {
       LOG.error("Unable to instantiate raw store directly in fastpath mode", e);
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Initialize static variables of TxnStore
+   * @param conf configuration
+   */
+  public static void initializeTxnStore(Configuration conf) {
+    String className = MetastoreConf.getVar(conf, ConfVars.TXN_STORE_IMPL);
+    try {
+      Method init = JavaUtils.getClass(className, TxnStore.class)
+              .getMethod("init", Configuration.class);
+      init.invoke(null, conf);
+    } catch (Exception e) {
+      LOG.error("Unable to initialize txnStore : " + className, e);
       throw new RuntimeException(e);
     }
   }

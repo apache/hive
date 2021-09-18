@@ -164,6 +164,7 @@ public class TestTxnCommands2 {
 
     TestTxnDbUtil.setConfValues(hiveConf);
     TestTxnDbUtil.prepDb(hiveConf);
+    TxnUtils.initializeTxnStore(hiveConf);
     txnHandler = TxnUtils.getTxnStore(hiveConf);
     File f = new File(TEST_WAREHOUSE_DIR);
     if (f.exists()) {
