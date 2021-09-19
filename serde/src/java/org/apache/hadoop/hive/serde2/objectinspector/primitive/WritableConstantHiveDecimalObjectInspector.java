@@ -35,8 +35,9 @@ implements ConstantObjectInspector {
     super();
   }
 
-  WritableConstantHiveDecimalObjectInspector(HiveDecimalWritable value) {
-    super(new DecimalTypeInfo(value.precision(), value.scale()));
+  WritableConstantHiveDecimalObjectInspector(DecimalTypeInfo typeInfo,
+      HiveDecimalWritable value) {
+    super(getTypeInfo(typeInfo, value));
     this.value = value;
   }
 
@@ -52,5 +53,9 @@ implements ConstantObjectInspector {
       return null;
     }
     return result;
+  }
+
+  private static DecimalTypeInfo getTypeInfo(DecimalTypeInfo typeInfo, HiveDecimalWritable value) {
+    return value == null ? typeInfo : new DecimalTypeInfo(value.precision(), value.scale());
   }
 }
