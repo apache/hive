@@ -56,6 +56,7 @@ implements ConstantObjectInspector {
   }
 
   private static DecimalTypeInfo getTypeInfo(DecimalTypeInfo typeInfo, HiveDecimalWritable value) {
-    return value == null ? typeInfo : new DecimalTypeInfo(value.precision(), value.scale());
+    return typeInfo; 
+   // return value == null ? typeInfo : new DecimalTypeInfo(value.precision(), value.scale());
   }
 }
