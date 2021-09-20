@@ -48,6 +48,8 @@ POSTHOOK: Output: default@mat1
 POSTHOOK: Output: default@mat1@a=1
 POSTHOOK: Output: default@mat1@a=2
 POSTHOOK: Output: default@mat1@a=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: mat1.b SIMPLE [(t1)t1.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1.sumc EXPRESSION [(t1)t1.FieldSchema(name:c, type:int, comment:null), ]
 POSTHOOK: Lineage: mat1 PARTITION(a=1).b SIMPLE [(t1)t1.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: mat1 PARTITION(a=1).sumc EXPRESSION [(t1)t1.FieldSchema(name:c, type:int, comment:null), ]
 POSTHOOK: Lineage: mat1 PARTITION(a=2).b SIMPLE [(t1)t1.FieldSchema(name:b, type:int, comment:null), ]

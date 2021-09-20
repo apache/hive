@@ -326,6 +326,7 @@ POSTHOOK: Output: default@acid_cmv_part
 POSTHOOK: Output: default@acid_cmv_part@k=0
 POSTHOOK: Output: default@acid_cmv_part@k=10
 POSTHOOK: Output: default@acid_cmv_part@k=100
+POSTHOOK: Lineage: acid_cmv_part.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: acid_cmv_part PARTITION(k=0).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: acid_cmv_part PARTITION(k=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: acid_cmv_part PARTITION(k=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
