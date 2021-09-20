@@ -183,7 +183,7 @@ public abstract class GenericUDF implements Closeable {
       }
       try {
         Object constantValue = evaluate(argumentValues);
-        oi = ObjectInspectorUtils.getConstantObjectInspector(oi, constantValue);
+        oi = ObjectInspectorUtils.getConstantObjectInspector(oi, constantValue, true);
       } catch (HiveException e) {
         throw new UDFArgumentException(e);
       }
