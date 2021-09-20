@@ -81,7 +81,6 @@ def buildHive(args) {
   configFileProvider([configFile(fileId: 'artifactory', variable: 'SETTINGS')]) {
     withEnv(["MULTIPLIER=$params.MULTIPLIER","M_OPTS=$params.OPTS"]) {
       sh '''#!/bin/bash -e
-ls -l
 set -x
 . /etc/profile.d/confs.sh
 export USER="`whoami`"
@@ -193,7 +192,34 @@ jobWrappers {
   executorNode {
     container('hdb') {
       stage('Checkout') {
-        checkout scm
+        if(env.CHANGE_ID) {
+          checkout([
+            $class: 'GitSCM',
+            branches: scm.branches,
+            doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+            extensions: scm.extensions,
+            userRemoteConfigs: scm.userRemoteConfigs + [[
+              name: 'origin',
+              refspec: scm.userRemoteConfigs[0].refspec+ " +refs/heads/${CHANGE_TARGET}:refs/remotes/origin/target",
+              url: scm.userRemoteConfigs[0].url,
+              credentialsId: scm.userRemoteConfigs[0].credentialsId
+            ]],
+          ])
+	  sh '''#!/bin/bash
+set -e
+echo "@@@ patches in the PR but not on target ($CHANGE_TARGET)"
+git log --oneline origin/target..HEAD
+echo "@@@ patches on target but not in the PR"
+git log --oneline HEAD..origin/target
+echo "@@@ merging target"
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+git merge origin/target
+'''
+
+        } else {
+          checkout scm
+        }
       }
       stage('Prechecks') {
         def spotbugsProjects = [
