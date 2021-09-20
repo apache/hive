@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import com.amazonaws.services.dynamodbv2.xspec.S;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -202,10 +201,11 @@ public abstract class CompactorTest {
   }
 
   protected Partition newPartition(Table t, String value, List<Order> sortCols) throws Exception {
-    return newPartition(t,value,sortCols,new HashMap<String, String>());
+    return newPartition(t, value, sortCols, new HashMap<>());
   }
 
-  protected Partition newPartition(Table t, String value, List<Order> sortCols, Map<String, String> parameters) throws Exception {
+  protected Partition newPartition(Table t, String value, List<Order> sortCols, Map<String, String> parameters)
+      throws Exception {
     Partition part = new Partition();
     part.addToValues(value);
     part.setDbName(t.getDbName());
@@ -215,8 +215,6 @@ public abstract class CompactorTest {
     ms.add_partition(part);
     return part;
   }
-
-
 
   protected long openTxn() throws MetaException {
     return openTxn(TxnType.DEFAULT);

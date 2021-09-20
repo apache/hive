@@ -637,9 +637,9 @@ public class TestCleaner extends CompactorTest {
     Assert.assertEquals(4, paths.size());
 
     //With no clean up false
-    t = ms.getTable(new GetTableRequest("default","dcamc"));
+    t = ms.getTable(new GetTableRequest("default", "dcamc"));
     t.getParameters().put("no_cleanup", "false");
-    ms.alter_table("default","dcamc",t);
+    ms.alter_table("default", "dcamc", t);
     rqst = new CompactionRequest("default", "dcamc", CompactionType.MAJOR);
     compactInTxn(rqst);
 
@@ -660,7 +660,7 @@ public class TestCleaner extends CompactorTest {
     Map<String, String> parameters = new HashMap<>();
     parameters.put("no_cleanup", "true");
     Table t = newTable("default", "dcamicop", true);
-    Partition p = newPartition(t, "today",null,parameters);
+    Partition p = newPartition(t, "today", null, parameters);
 
     addBaseFile(t, p, 20L, 20);
     addDeltaFile(t, p, 21L, 22L, 2);
@@ -687,9 +687,9 @@ public class TestCleaner extends CompactorTest {
     // compaction with no cleanup false
     ArrayList<String> list = new ArrayList<>();
     list.add("ds=today");
-    p = ms.getPartition("default","dcamicop","ds=today");
+    p = ms.getPartition("default", "dcamicop", "ds=today");
     p.getParameters().put("no_cleanup", "false");
-    ms.alter_partition("default","dcamicop",p);
+    ms.alter_partition("default", "dcamicop", p);
     rqst = new CompactionRequest("default", "dcamicop", CompactionType.MINOR);
     rqst.setPartitionname("ds=today");
     compactInTxn(rqst);
