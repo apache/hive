@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang3.StringUtils.join;
+import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
@@ -188,6 +189,8 @@ import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
+import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.FetchGroups;
@@ -9754,8 +9757,24 @@ public class ObjectStore implements RawStore, Configurable {
                                                       List<TransactionalMetaStoreEventListener> listeners,
                                                       String validWriteIds, long writeId)
           throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    return directSql.updatePartitionColumnStatisticsBatch(partColStatsMap, tbl,
-            listeners, validWriteIds, writeId);
+    if (directSql != null && directSql.supportBatchStatsUpdate()) {
+      return directSql.updatePartitionColumnStatisticsBatch(partColStatsMap, tbl, listeners, validWriteIds, writeId);
+    } else {
+      LOG.info("Executing batch stats update through JDO mode as direct sql is disabled");
+      Map<String, Map<String, String>> result = new HashMap();
+      for (Map.Entry<String, ColumnStatistics> entry : partColStatsMap.entrySet()) {
+        ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
+        List<String> partVals = getPartValsFromName(tbl, colStats.getStatsDesc().getPartName());
+        Map<String, String> parameters = updatePartitionColumnStatistics(colStats, partVals, validWriteIds, writeId);
+        if (parameters != null && listeners != null && !listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners,
+                  EventMessage.EventType.UPDATE_PARTITION_COLUMN_STAT,
+                  new UpdatePartitionColumnStatEvent(colStats, partVals, parameters, tbl, writeId, null));
+        }
+        result.put(entry.getKey(), parameters);
+      }
+      return result;
+    }
   }
 
   private List<MTableColumnStatistics> getMTableColumnStatistics(Table table, List<String> colNames, String engine)

@@ -3037,4 +3037,9 @@ class MetaStoreDirectSql {
     long csId = updateStat.getNextCSIdForMPartitionColumnStatistics(numStats);
     return updateStat.updatePartitionColumnStatistics(partColStatsMap, tbl, csId, validWriteIds, writeId, listeners);
   }
+
+  public boolean supportBatchStatsUpdate() {
+    // Currently this flow is tested only for Postgres and Mysql.
+    return dbType.isMYSQL() || dbType.isPOSTGRES();
+  }
 }

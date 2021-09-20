@@ -6959,10 +6959,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     startFunction("write_partition_column_statistics", ":  db=" + dbName  + " table=" + tableName
         + " part=" + csd.getPartName());
 
-    boolean ret = false;
-
-    Map<String, String> parameters;
-    List<String> partVals;
     boolean committed = false;
     getMS().openTransaction();
 
@@ -6970,20 +6966,42 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       if (tbl == null) {
         tbl = getTable(catName, dbName, tableName);
       }
-      partVals = getPartValsFromName(tbl, csd.getPartName());
-      parameters = getMS().updatePartitionColumnStatistics(colStats, partVals, validWriteIds, writeId);
-      if (parameters != null) {
-        if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventType.UPDATE_PARTITION_COLUMN_STAT,
-                  new UpdatePartitionColumnStatEvent(colStats, partVals, parameters, tbl,
-                          writeId, this));
-        }
-        if (!listeners.isEmpty()) {
+      Map<String, ColumnStatistics> statsMap = new HashMap<>();
+      statsMap.put(csd.getPartName(), colStats);
+      updatePartitionColStatsForOneBatch(tbl, statsMap, validWriteIds, writeId);
+      committed = getMS().commitTransaction();
+    } finally {
+      if (!committed) {
+        getMS().rollbackTransaction();
+      }
+      endFunction("write_partition_column_statistics", committed, null, tableName);
+    }
+    return committed;
+  }
+
+  private void updatePartitionColStatsForOneBatch(Table tbl, Map<String, ColumnStatistics> statsMap,
+                                                     String validWriteIds, long writeId)
+          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    startFunction("updatePartitionColStatsForOneBatch", ":  db = " + tbl.getDbName()
+            + " table = " + tbl.getTableName());
+    boolean committed = false;
+    getMS().openTransaction();
+    try {
+      Map<String, Map<String, String>> result =
+              getMS().updatePartitionColumnStatisticsInBatch(statsMap, tbl, transactionalListeners, validWriteIds, writeId);
+      if (result != null && result.size() != 0 && listeners != null) {
+        // The normal listeners, unlike transaction listeners are not using the same transactions used by the update
+        // operations. So there is no need of keeping them within the same transactions. If notification to one of
+        // the listeners failed, then even if we abort the transaction, we can not revert the notifications sent to the
+        // other listeners.
+        for (Map.Entry entry : result.entrySet()) {
+          Map<String, String> parameters = (Map<String, String>) entry.getValue();
+          ColumnStatistics colStats = statsMap.get(entry.getKey());
+          List<String> partVals = getPartValsFromName(tbl, colStats.getStatsDesc().getPartName());
           MetaStoreListenerNotifier.notifyEvent(listeners,
-                  EventType.UPDATE_PARTITION_COLUMN_STAT,
-                  new UpdatePartitionColumnStatEvent(colStats, partVals, parameters, tbl,
-                          writeId, this));
+                  EventMessage.EventType.UPDATE_PARTITION_COLUMN_STAT,
+                  new UpdatePartitionColumnStatEvent(colStats, partVals, parameters,
+                          tbl, writeId, this));
         }
       }
       committed = getMS().commitTransaction();
@@ -6991,30 +7009,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       if (!committed) {
         getMS().rollbackTransaction();
       }
-      endFunction("write_partition_column_statistics", ret != false, null, tableName);
-    }
-    return parameters != null;
-  }
-
-  private void updatePartitionColStatsForOneBatch(Table tbl, Map<String, ColumnStatistics> statsMap,
-                                                     String validWriteIds, long writeId)
-          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    Map<String, Map<String, String>> result =
-        getMS().updatePartitionColumnStatisticsInBatch(statsMap, tbl, transactionalListeners, validWriteIds, writeId);
-    if (result != null && result.size() != 0 && listeners != null) {
-      // The normal listeners, unlike transaction listeners are not using the same transactions used by the update
-      // operations. So there is no need of keeping them within the same transactions. If notification to one of
-      // the listeners failed, then even if we abort the transaction, we can not revert the notifications sent to the
-      // other listeners.
-      for (Map.Entry entry : result.entrySet()) {
-        Map<String, String> parameters = (Map<String, String>) entry.getValue();
-        ColumnStatistics colStats = statsMap.get(entry.getKey());
-        List<String> partVals = getPartValsFromName(tbl, colStats.getStatsDesc().getPartName());
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-                EventMessage.EventType.UPDATE_PARTITION_COLUMN_STAT,
-                new UpdatePartitionColumnStatEvent(colStats, partVals, parameters,
-                        tbl, writeId, this));
-      }
+      endFunction("updatePartitionColStatsForOneBatch", committed, null, tbl.getTableName());
     }
   }
 
@@ -9034,16 +9029,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       } else { // No merge.
         Table t = getTable(catName, dbName, tableName);
         // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
-        if (MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL)) {
-          ret = updatePartitionColStatsInBatch(t, newStatsMap,
-                  request.getValidWriteIdList(), request.getWriteId());
-        } else {
-          for (Map.Entry<String, ColumnStatistics> entry : newStatsMap.entrySet()) {
-            // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
-            ret = updatePartitonColStatsInternal(t, entry.getValue(),
-                    request.getValidWriteIdList(), request.getWriteId()) && ret;
-          }
-        }
+        ret = updatePartitionColStatsInBatch(t, newStatsMap, request.getValidWriteIdList(), request.getWriteId());
       }
     }
     return ret;
@@ -9079,7 +9065,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
       Table t = getTable(catName, dbName, tableName);
       Map<String, ColumnStatistics> statsMap =  new HashMap<>();
-      boolean useDirectSql = MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL);
       for (Map.Entry<String, ColumnStatistics> entry : newStatsMap.entrySet()) {
         ColumnStatistics csNew = entry.getValue();
         ColumnStatistics csOld = oldStatsMap.get(entry.getKey());
@@ -9100,12 +9085,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
         if (!csNew.getStatsObj().isEmpty()) {
           // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
-          if (useDirectSql) {
-            statsMap.put(csNew.getStatsDesc().getPartName(), csNew);
-          } else {
-            result = updatePartitonColStatsInternal(t, csNew,
-                    request.getValidWriteIdList(), request.getWriteId()) && result;
-          }
+          statsMap.put(csNew.getStatsDesc().getPartName(), csNew);
         } else if (isInvalidTxnStats) {
           // For now because the stats state is such as it is, we will invalidate everything.
           // Overall the sematics here are not clear - we could invalide only some columns, but does
