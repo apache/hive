@@ -24,7 +24,7 @@ public class Mssql extends DatabaseRule {
 
   @Override
   public String getDockerImageName() {
-    return "microsoft/mssql-server-linux:2017-GA";
+    return "mcr.microsoft.com/mssql/server:2019-latest";
   }
 
   @Override

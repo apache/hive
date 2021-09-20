@@ -4524,6 +4524,13 @@ public class HiveConf extends Configuration {
 
     HIVE_RPC_QUERY_PLAN("hive.rpc.query.plan", false,
         "Whether to send the query plan via local resource or RPC"),
+    HIVE_PLAN_MAPWORK_SERIALIZATION_SKIP_PROPERTIES("hive.plan.mapwork.serialization.skip.properties", "",
+        "Comma separated list of properties which is not needed in execution time, so can be removed "
+            + "from PartitionDesc properties before serialization, config can contain exact strings and regex "
+            + "expressions, the regex mode is activated if at least 1 asterisk (*) is present in the current word: "
+            + "rawDataSize                exact string match, removes only rawDataSize property"
+            + ".*Size                     regex match, removes every property ending with 'Size'"
+            + "numRows,impala_.*chunk.*   comma separated and mixed (handles strings and regexes at the same time)"),
     HIVE_AM_SPLIT_GENERATION("hive.compute.splits.in.am", true,
         "Whether to generate the splits locally or in the AM (tez only)"),
     HIVE_TEZ_GENERATE_CONSISTENT_SPLITS("hive.tez.input.generate.consistent.splits", true,

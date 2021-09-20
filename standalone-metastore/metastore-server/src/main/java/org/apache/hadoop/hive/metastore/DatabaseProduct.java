@@ -48,9 +48,9 @@ import com.google.common.base.Preconditions;
 public class DatabaseProduct implements Configurable {
   static final private Logger LOG = LoggerFactory.getLogger(DatabaseProduct.class.getName());
 
-  private static enum DbType {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, CUSTOM, UNDEFINED};
+  public enum DbType {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, CUSTOM, UNDEFINED};
   public DbType dbType;
-  
+
   // Singleton instance
   private static DatabaseProduct theDatabaseProduct;
 
@@ -61,12 +61,13 @@ public class DatabaseProduct implements Configurable {
   protected DatabaseProduct() {}
 
   public static final String DERBY_NAME = "derby";
-  public static final String SQL_SERVER_NAME = "microsoft sql server";
+  public static final String SQL_SERVER_NAME = "sqlserver";
   public static final String MYSQL_NAME = "mysql";
+  public static final String MARIADB_NAME = "mariadb";
   public static final String POSTGRESQL_NAME = "postgresql";
   public static final String ORACLE_NAME = "oracle";
   public static final String UNDEFINED_NAME = "other";
-  
+
   /**
    * Determine the database product type
    * @param productName string to defer database connection
@@ -131,13 +132,13 @@ public class DatabaseProduct implements Configurable {
 
   private static DbType getDbType(String productName) {
     DbType dbt;
-    productName = productName.toLowerCase();
+    productName = productName.replaceAll("\\s+", "").toLowerCase();
 
     if (productName.contains(DERBY_NAME)) {
       dbt = DbType.DERBY;
     } else if (productName.contains(SQL_SERVER_NAME)) {
       dbt = DbType.SQLSERVER;
-    } else if (productName.contains(MYSQL_NAME)) {
+    } else if (productName.contains(MYSQL_NAME) || productName.contains(MARIADB_NAME)) {
       dbt = DbType.MYSQL;
     } else if (productName.contains(ORACLE_NAME)) {
       dbt = DbType.ORACLE;
@@ -148,7 +149,7 @@ public class DatabaseProduct implements Configurable {
     }
     return dbt;
   }
-  
+
   public final boolean isDERBY() {
     return dbType == DbType.DERBY;
   }

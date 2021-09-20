@@ -89,6 +89,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -5140,10 +5141,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   private void deleteParentRecursive(Path parent, int depth, boolean mustPurge, boolean needRecycle)
       throws IOException, MetaException {
-    if (depth > 0 && parent != null && wh.isWritable(parent)) {
-      if (wh.isDir(parent) && wh.isEmptyDir(parent)) {
-        wh.deleteDir(parent, true, mustPurge, needRecycle);
-      }
+    if (depth > 0 && parent != null && wh.isWritable(parent) && wh.isEmptyDir(parent)) {
+      wh.deleteDir(parent, true, mustPurge, needRecycle);
       deleteParentRecursive(parent.getParent(), depth - 1, mustPurge, needRecycle);
     }
   }
@@ -5156,13 +5155,34 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         null);
   }
 
-  private static class PathAndPartValSize {
-    PathAndPartValSize(Path path, int partValSize) {
+  /** Stores a path and its size. */
+  private static class PathAndDepth implements Comparable<PathAndDepth> {
+    final Path path;
+    final int depth;
+
+    public PathAndDepth(Path path, int depth) {
       this.path = path;
-      this.partValSize = partValSize;
+      this.depth = depth;
     }
-    public Path path;
-    int partValSize;
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(path.hashCode(), depth);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      PathAndDepth that = (PathAndDepth) o;
+      return depth == that.depth && Objects.equals(path, that.path);
+    }
+
+    /** The largest {@code depth} is processed first in a {@link PriorityQueue}. */
+    @Override
+    public int compareTo(PathAndDepth o) {
+      return o.depth - depth;
+    }
   }
 
   @Override
@@ -5175,7 +5195,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     boolean deleteData = request.isSetDeleteData() && request.isDeleteData();
     boolean ignoreProtection = request.isSetIgnoreProtection() && request.isIgnoreProtection();
     boolean needResult = !request.isSetNeedResult() || request.isNeedResult();
-    List<PathAndPartValSize> dirsToDelete = new ArrayList<>();
+    List<PathAndDepth> dirsToDelete = new ArrayList<>();
     List<Path> archToDelete = new ArrayList<>();
     EnvironmentContext envContext = request.isSetEnvironmentContext()
         ? request.getEnvironmentContext() : null;
@@ -5262,7 +5282,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
           Path partPath = new Path(part.getSd().getLocation());
           verifyIsWritablePath(partPath);
-          dirsToDelete.add(new PathAndPartValSize(partPath, part.getValues().size()));
+          dirsToDelete.add(new PathAndDepth(partPath, part.getValues().size()));
         }
       }
 
@@ -5292,16 +5312,38 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         for (Path path : archToDelete) {
           wh.deleteDir(path, true, mustPurge, needsCm);
         }
-        for (PathAndPartValSize p : dirsToDelete) {
+
+        // Uses a priority queue to delete the parents of deleted directories if empty.
+        // Parents with the deepest path are always processed first. It guarantees that the emptiness
+        // of a parent won't be changed once it has been processed. So duplicated processing can be
+        // avoided.
+        PriorityQueue<PathAndDepth> parentsToDelete = new PriorityQueue<>();
+        for (PathAndDepth p : dirsToDelete) {
           wh.deleteDir(p.path, true, mustPurge, needsCm);
+          addParentForDel(parentsToDelete, p);
+        }
+
+        HashSet<PathAndDepth> processed = new HashSet<>();
+        while (!parentsToDelete.isEmpty()) {
           try {
-            deleteParentRecursive(p.path.getParent(), p.partValSize - 1, mustPurge, needsCm);
+            PathAndDepth p = parentsToDelete.poll();
+            if (processed.contains(p)) {
+              continue;
+            }
+            processed.add(p);
+
+            Path path = p.path;
+            if (wh.isWritable(path) && wh.isEmptyDir(path)) {
+              wh.deleteDir(path, true, mustPurge, needsCm);
+              addParentForDel(parentsToDelete, p);
+            }
           } catch (IOException ex) {
-            LOG.warn("Error from deleteParentRecursive", ex);
+            LOG.warn("Error from recursive parent deletion", ex);
             throw new MetaException("Failed to delete parent: " + ex.getMessage());
           }
         }
       }
+
       if (parts != null) {
         if (parts != null && !parts.isEmpty() && !listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners,
@@ -5311,6 +5353,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                 transactionalListenerResponses, ms);
         }
       }
+    }
+  }
+
+  private static void addParentForDel(PriorityQueue<PathAndDepth> parentsToDelete, PathAndDepth p) {
+    Path parent = p.path.getParent();
+    if (parent != null && p.depth - 1 > 0) {
+      parentsToDelete.add(new PathAndDepth(parent, p.depth - 1));
     }
   }
 
@@ -8279,6 +8328,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Map<String, String> transactionalListenerResponses = Collections.emptyMap();
     try {
       String catName = func.isSetCatName() ? func.getCatName() : getDefaultCatalog(conf);
+      if (!func.isSetOwnerName()) {
+        try {
+          func.setOwnerName(SecurityUtils.getUGI().getShortUserName());
+        } catch (Exception ex) {
+          LOG.error("Cannot obtain username from the session to create a function", ex);
+          throw new TException(ex);
+        }
+      }
       ms.openTransaction();
       Database db = ms.getDatabase(catName, func.getDbName());
       if (db == null) {
@@ -8294,7 +8351,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw new AlreadyExistsException(
             "Function " + func.getFunctionName() + " already exists");
       }
-
+      firePreEvent(new PreCreateFunctionEvent(func, this));
       long time = System.currentTimeMillis() / 1000;
       func.setCreateTime((int) time);
       ms.createFunction(func);
@@ -8355,6 +8412,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           }
         }
       }
+      firePreEvent(new PreDropFunctionEvent(func, this));
 
       // if the operation on metastore fails, we don't do anything in change management, but fail
       // the metastore transaction, as having a copy of the jar in change management is not going
@@ -8389,6 +8447,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     boolean success = false;
     RawStore ms = getMS();
     try {
+      firePreEvent(new PreCreateFunctionEvent(newFunc, this));
       ms.openTransaction();
       ms.alterFunction(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], funcName, newFunc);
       success = ms.commitTransaction();

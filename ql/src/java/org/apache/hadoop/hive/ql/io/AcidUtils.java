@@ -689,7 +689,11 @@ public class AcidUtils {
     public static final int HASH_BASED_MERGE_BIT = 0x02;
     public static final String HASH_BASED_MERGE_STRING = "hash_merge";
     public static final int INSERT_ONLY_BIT = 0x04;
+    public static final int INSERT_ONLY_FETCH_BUCKET_ID_BIT = 0x08;
+    public static final int FETCH_DELETED_ROWS_BIT = 0x10;
     public static final String INSERT_ONLY_STRING = "insert_only";
+    public static final String INSERT_ONLY_FETCH_BUCKET_ID_STRING = "insert_only_fetch_bucket_id";
+    public static final String FETCH_DELETED_ROWS_STRING = "fetch_deleted_rows";
     public static final String DEFAULT_VALUE_STRING = TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY;
     public static final String INSERTONLY_VALUE_STRING = TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY;
 
@@ -771,6 +775,12 @@ public class AcidUtils {
       if ((properties & INSERT_ONLY_BIT) > 0) {
         obj.setInsertOnly(true);
       }
+      if ((properties & INSERT_ONLY_FETCH_BUCKET_ID_BIT) > 0) {
+        obj.setInsertOnlyFetchBucketId(true);
+      }
+      if ((properties & FETCH_DELETED_ROWS_BIT) > 0) {
+        obj.setFetchDeletedRows(true);
+      }
       return obj;
     }
 
@@ -782,9 +792,7 @@ public class AcidUtils {
      * @return the acidOperationalProperties object.
      */
     public AcidOperationalProperties setSplitUpdate(boolean isSplitUpdate) {
-      description = (isSplitUpdate
-              ? (description | SPLIT_UPDATE_BIT) : (description & ~SPLIT_UPDATE_BIT));
-      return this;
+      return set(isSplitUpdate, SPLIT_UPDATE_BIT);
     }
 
     /**
@@ -794,14 +802,23 @@ public class AcidUtils {
      * @return the acidOperationalProperties object.
      */
     public AcidOperationalProperties setHashBasedMerge(boolean isHashBasedMerge) {
-      description = (isHashBasedMerge
-              ? (description | HASH_BASED_MERGE_BIT) : (description & ~HASH_BASED_MERGE_BIT));
-      return this;
+      return set(isHashBasedMerge, HASH_BASED_MERGE_BIT);
     }
 
     public AcidOperationalProperties setInsertOnly(boolean isInsertOnly) {
-      description = (isInsertOnly
-              ? (description | INSERT_ONLY_BIT) : (description & ~INSERT_ONLY_BIT));
+      return set(isInsertOnly, INSERT_ONLY_BIT);
+    }
+
+    public AcidOperationalProperties setInsertOnlyFetchBucketId(boolean fetchBucketId) {
+      return set(fetchBucketId, INSERT_ONLY_FETCH_BUCKET_ID_BIT);
+    }
+
+    public AcidOperationalProperties setFetchDeletedRows(boolean fetchDeletedRows) {
+      return set(fetchDeletedRows, FETCH_DELETED_ROWS_BIT);
+    }
+
+    private AcidOperationalProperties set(boolean value, int bit) {
+      description = (value ? (description | bit) : (description & ~bit));
       return this;
     }
 
@@ -815,6 +832,14 @@ public class AcidUtils {
 
     public boolean isInsertOnly() {
       return (description & INSERT_ONLY_BIT) > 0;
+    }
+
+    public boolean isFetchBucketId() {
+      return (description & INSERT_ONLY_FETCH_BUCKET_ID_BIT) > 0;
+    }
+
+    public boolean isFetchDeletedRows() {
+      return (description & FETCH_DELETED_ROWS_BIT) > 0;
     }
 
     public int toInt() {
@@ -832,6 +857,12 @@ public class AcidUtils {
       }
       if (isInsertOnly()) {
         str.append("|" + INSERT_ONLY_STRING);
+      }
+      if (isFetchBucketId()) {
+        str.append("|" + INSERT_ONLY_FETCH_BUCKET_ID_STRING);
+      }
+      if (isFetchBucketId()) {
+        str.append("|" + FETCH_DELETED_ROWS_STRING);
       }
       return str.toString();
     }
@@ -1951,9 +1982,19 @@ public class AcidUtils {
     return !props.isInsertOnly();
   }
 
-  public static void setAcidOperationalProperties(
-      Configuration conf, boolean isTxnTable, AcidOperationalProperties properties) {
-    setAcidOperationalProperties(conf, isTxnTable, properties, false);
+  public static boolean isInsertOnlyFetchBucketId(Configuration conf) {
+    if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN)) {
+      return false;
+    }
+    int propInt = conf.getInt(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname, -1);
+    if (propInt == -1) {
+      return false;
+    }
+    AcidOperationalProperties props = AcidOperationalProperties.parseInt(propInt);
+    if (!props.isInsertOnly()) {
+      return false;
+    }
+    return props.isFetchBucketId();
   }
 
   /**
@@ -1963,17 +2004,15 @@ public class AcidUtils {
    *                   we assume this is a full transactional table.
    */
   public static void setAcidOperationalProperties(
-      Configuration conf, boolean isTxnTable, AcidOperationalProperties properties, boolean fetchDeletedRows) {
+      Configuration conf, boolean isTxnTable, AcidOperationalProperties properties) {
     if (isTxnTable) {
       HiveConf.setBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, isTxnTable);
       if (properties != null) {
         HiveConf.setIntVar(conf, ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES, properties.toInt());
       }
-      conf.setBoolean(Constants.ACID_FETCH_DELETED_ROWS, fetchDeletedRows);
     } else {
       conf.unset(ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN.varname);
       conf.unset(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname);
-      conf.unset(Constants.ACID_FETCH_DELETED_ROWS);
     }
   }
 

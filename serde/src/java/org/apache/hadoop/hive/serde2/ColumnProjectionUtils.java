@@ -56,7 +56,12 @@ public final class ColumnProjectionUtils {
   private static final String READ_NESTED_COLUMN_PATH_CONF_STR_DEFAULT = "";
   private static final boolean READ_ALL_COLUMNS_DEFAULT = true;
   private static final Joiner CSV_JOINER = Joiner.on(",").skipNulls();
-  public static final String ICEBERG_ORC_SCHEMA_STRING = "hive.iceberg.orc.schema.string";
+  /**
+   * job config key for an ORC TypeDescription.toString().
+   * If set it will be favoured by ORC record readers over Hive schema literals such as
+   * IOConstants.SCHEMA_EVOLUTION_COLUMNS or IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES
+   */
+  public static final String ORC_SCHEMA_STRING = "hive.orc.schema.string";
 
   /**
    * @deprecated for backwards compatibility with &lt;= 0.12, use setReadAllColumns

@@ -80,10 +80,8 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
-import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
-import org.apache.hadoop.hive.common.type.TimestampUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -7166,7 +7164,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return input;
     }
 
-    if (updating(dest) && isCBOExecuted()) {
+      if (updating(dest) && isCBOExecuted() && this.ctx.getOperation() != Context.Operation.MERGE) {
       // for UPDATE statements CBO already added and pushed down the constraints
       return input;
     }
@@ -8189,7 +8187,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     if (ltd != null) {
       queryState.getLineageState().mapDirToOp(ltd.getSourcePath(), output);
-    } else if ( queryState.getCommandType().equals(HiveOperation.CREATETABLE_AS_SELECT.getOperationName())) {
+    }
+    if (queryState.getCommandType().equals(HiveOperation.CREATETABLE_AS_SELECT.getOperationName())) {
 
       Path tlocation = null;
       String tName = Utilities.getDbTableName(tableDesc.getDbTableName())[1];
@@ -11428,10 +11427,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       Map<String, String> tblProperties = tab.getParameters();
       Map<String, String> tblPropertiesFromQuery = qb.getTabPropsForAlias(alias);
-      tsDesc.setFetchDeletedRows(
-          (tblProperties != null && Boolean.parseBoolean(tblProperties.get(Constants.ACID_FETCH_DELETED_ROWS))) ||
-          (tblPropertiesFromQuery != null &&
-              Boolean.parseBoolean(tblPropertiesFromQuery.get(Constants.ACID_FETCH_DELETED_ROWS))));
+
+      AcidUtils.AcidOperationalProperties acidOperationalProperties = tsDesc.getAcidOperationalProperties();
+      if (acidOperationalProperties != null) {
+        tsDesc.getAcidOperationalProperties().setInsertOnlyFetchBucketId(
+            (tblProperties != null && Boolean.parseBoolean(tblProperties.get(Constants.INSERT_ONLY_FETCH_BUCKET_ID))) ||
+                (tblPropertiesFromQuery != null &&
+                    Boolean.parseBoolean(tblPropertiesFromQuery.get(Constants.INSERT_ONLY_FETCH_BUCKET_ID))));
+
+        tsDesc.getAcidOperationalProperties().setFetchDeletedRows(
+            (tblProperties != null && Boolean.parseBoolean(tblProperties.get(Constants.ACID_FETCH_DELETED_ROWS))) ||
+                (tblPropertiesFromQuery != null &&
+                    Boolean.parseBoolean(tblPropertiesFromQuery.get(Constants.ACID_FETCH_DELETED_ROWS))));
+      }
 
       SplitSample sample = nameToSplitSample.get(alias_id);
       if (sample != null && sample.getRowCount() != null) {

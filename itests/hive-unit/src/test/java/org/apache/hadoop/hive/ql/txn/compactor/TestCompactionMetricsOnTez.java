@@ -88,9 +88,9 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
     Thread.sleep(1000);
 
     verifyMetricsMatch(new HashMap<String, String>() {{
-          put(tableName + Path.SEPARATOR + partitionTomorrow, "3");
-          put(tableName + Path.SEPARATOR + partitionYesterday, "4");
-          put(tableName + Path.SEPARATOR + partitionToday, "5");
+      put("default." + tableName + Path.SEPARATOR + partitionTomorrow, "3");
+      put("default." + tableName + Path.SEPARATOR + partitionYesterday, "4");
+      put("default." + tableName + Path.SEPARATOR + partitionToday, "5");
         }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS));
 
     Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS).size());
@@ -103,9 +103,9 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
     Thread.sleep(1000);
 
     verifyMetricsMatch(new HashMap<String, String>() {{
-          put(tableName + Path.SEPARATOR + partitionTomorrow, "3");
-          put(tableName + Path.SEPARATOR + partitionYesterday, "4");
-          put(tableName + Path.SEPARATOR + partitionToday, "5");
+      put("default." + tableName + Path.SEPARATOR + partitionTomorrow, "3");
+      put("default." + tableName + Path.SEPARATOR + partitionYesterday, "4");
+      put("default." + tableName + Path.SEPARATOR + partitionToday, "5");
         }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS));
 
     Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS).size());
@@ -124,8 +124,86 @@ public class TestCompactionMetricsOnTez extends CompactorOnTezTest {
     Thread.sleep(1000);
 
     verifyMetricsMatch(new HashMap<String, String>() {{
-          put(tableName + Path.SEPARATOR + partitionToday, "1");
+          put("default." + tableName + Path.SEPARATOR + partitionToday, "1");
         }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS));
+  }
+
+  @Test
+  public void testDeltaFilesMetricMultiPartitioned() throws Exception {
+    HiveConf conf = new HiveConf();
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, true);
+    setupWithConf(conf);
+    DeltaFilesMetricReporter.init(conf);
+
+    String dbName = "default", tableName = "test_metrics";
+    String partitionToday = "ds=today", partitionTomorrow = "ds=tomorrow", partitionYesterday = "ds=yesterday";
+    String partitionB2 = "b=2", partitionB3 = "b=3", partitionB4 = "b=4";
+
+    CompactorOnTezTest.TestDataProvider testDataProvider = new CompactorOnTezTest.TestDataProvider();
+    testDataProvider.createFullAcidTable(tableName, true, false);
+    executeStatementOnDriver("drop table if exists " + tableName, driver);
+    executeStatementOnDriver("create table " + tableName + " (a string)"
+        + " partitioned by (b int, ds string)"
+        + " clustered by (a) into 2 buckets stored as orc "
+        + "TBLPROPERTIES('transactional'='true', 'transactional_properties'='default')", driver);
+    testDataProvider.insertTestDataPartitioned(tableName);
+
+    executeStatementOnDriver("select avg(b) from " + tableName, driver);
+    Thread.sleep(1000);
+
+    verifyMetricsMatch(new HashMap<String, String>() {{
+      put("default." + tableName + Path.SEPARATOR + partitionB2 + Path.SEPARATOR + partitionToday, "4");
+      put("default." + tableName + Path.SEPARATOR + partitionB2 + Path.SEPARATOR + partitionTomorrow, "3");
+      put("default." + tableName + Path.SEPARATOR + partitionB2 + Path.SEPARATOR + partitionYesterday, "1");
+
+      put("default." + tableName + Path.SEPARATOR + partitionB3 + Path.SEPARATOR + partitionToday, "4");
+      put("default." + tableName + Path.SEPARATOR + partitionB3 + Path.SEPARATOR + partitionTomorrow, "1");
+      put("default." + tableName + Path.SEPARATOR + partitionB3 + Path.SEPARATOR + partitionYesterday, "2");
+
+      put("default." + tableName + Path.SEPARATOR + partitionB4 + Path.SEPARATOR + partitionToday, "3");
+      put("default." + tableName + Path.SEPARATOR + partitionB4 + Path.SEPARATOR + partitionYesterday, "3");
+
+    }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS));
+
+    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS).size());
+    Assert.assertEquals(0, gaugeToMap(MetricsConstants.COMPACTION_NUM_SMALL_DELTAS).size());
+
+    CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MAJOR, true,
+        partitionB2 + Path.SEPARATOR + partitionToday,
+        partitionB2 + Path.SEPARATOR + partitionTomorrow,
+        partitionB2 + Path.SEPARATOR + partitionYesterday,
+        partitionB3 + Path.SEPARATOR + partitionToday,
+        partitionB3 + Path.SEPARATOR + partitionTomorrow,
+        partitionB3 + Path.SEPARATOR + partitionYesterday,
+        partitionB4 + Path.SEPARATOR + partitionToday,
+        partitionB4 + Path.SEPARATOR + partitionTomorrow,
+        partitionB4 + Path.SEPARATOR + partitionYesterday
+        );
+
+    executeStatementOnDriver("select avg(b) from " + tableName, driver);
+    Thread.sleep(1000);
+
+    verifyMetricsMatch(new HashMap<String, String>() {{
+      put("default." + tableName + Path.SEPARATOR + partitionB2 + Path.SEPARATOR + partitionToday, "4");
+      // TODO uncomment after HIVE-25492 is fixed:
+//      put("default." + tableName + Path.SEPARATOR + partitionB2 + Path.SEPARATOR + partitionTomorrow, "3");
+      // 1 delta file isn't enough to compact partitionB2/partitionYesterday
+
+      put("default." + tableName + Path.SEPARATOR + partitionB3 + Path.SEPARATOR + partitionToday, "4");
+      // 1 delta file isn't enough to compact partitionB3/partitionTomorrow
+      put("default." + tableName + Path.SEPARATOR + partitionB3 + Path.SEPARATOR + partitionYesterday, "2");
+
+      put("default." + tableName + Path.SEPARATOR + partitionB4 + Path.SEPARATOR + partitionToday, "3");
+      put("default." + tableName + Path.SEPARATOR + partitionB4 + Path.SEPARATOR + partitionYesterday, "3");
+    }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS));
+
+    verifyMetricsMatch(new HashMap<String, String>() {{
+      // TODO remove after HIVE-25492 is fixed:
+      put("default." + tableName + Path.SEPARATOR + partitionB2 + Path.SEPARATOR + partitionTomorrow, "3");
+
+      put("default." + tableName + Path.SEPARATOR + partitionB2 + Path.SEPARATOR + partitionYesterday, "1");
+      put("default." + tableName + Path.SEPARATOR + partitionB3 + Path.SEPARATOR + partitionTomorrow, "1");
+    }}, gaugeToMap(MetricsConstants.COMPACTION_NUM_DELTAS));
   }
 
   /**

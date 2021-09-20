@@ -86,8 +86,10 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hive.common.util.FixedSizedObjectPool;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.orc.impl.OrcTail;
 
 
@@ -417,15 +419,21 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   }
 
   @Override
-  public RecordReader<NullWritable, VectorizedRowBatch> llapVectorizedOrcReaderForPath(Object fileKey, Path path, CacheTag tag, List<Integer> tableIncludedCols,
-      JobConf conf, long offset, long length) throws IOException {
+  public RecordReader<NullWritable, VectorizedRowBatch> llapVectorizedOrcReaderForPath(Object fileKey, Path path,
+      CacheTag tag, List<Integer> tableIncludedCols, JobConf conf, long offset, long length, Reporter reporter)
+      throws IOException {
 
-    OrcTail tail = getOrcTailFromCache(path, conf, tag, fileKey);
+    OrcTail tail = null;
+    if (tag != null) {
+      // Tag information is required for metadata lookup only - which itself can be done later should this info be yet
+      // to be known
+      tail = getOrcTailFromCache(path, conf, tag, fileKey);
+    }
     OrcSplit split = new OrcSplit(path, fileKey, offset, length, (String[]) null, tail, false, false,
         Lists.newArrayList(), 0, length, path.getParent(), null);
     try {
-      LlapRecordReader rr = LlapRecordReader.create(conf, split, tableIncludedCols, "localhost", orcCvp,
-          executor, null, null, null, daemonConf);
+      LlapRecordReader rr = LlapRecordReader.create(conf, split, tableIncludedCols, HiveStringUtils.getHostname(),
+          orcCvp, executor, null, null, reporter, daemonConf);
 
       // May happen when attempting with unsupported schema evolution between reader and file schemas
       if (rr == null) {
