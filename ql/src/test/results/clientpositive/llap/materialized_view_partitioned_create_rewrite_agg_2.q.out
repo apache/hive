@@ -53,6 +53,8 @@ POSTHOOK: Output: default@mat1@a=1/c=1/d=one
 POSTHOOK: Output: default@mat1@a=2/c=2/d=two
 POSTHOOK: Output: default@mat1@a=__HIVE_DEFAULT_PARTITION__/c=2/d=unknown
 POSTHOOK: Output: default@mat1@a=__HIVE_DEFAULT_PARTITION__/c=__HIVE_DEFAULT_PARTITION__/d=unknown
+POSTHOOK: Lineage: mat1.sumb EXPRESSION [(t1)t1.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1.sume EXPRESSION [(t1)t1.FieldSchema(name:e, type:float, comment:null), ]
 POSTHOOK: Lineage: mat1 PARTITION(a=1,c=1,d=one).sumb EXPRESSION [(t1)t1.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: mat1 PARTITION(a=1,c=1,d=one).sume EXPRESSION [(t1)t1.FieldSchema(name:e, type:float, comment:null), ]
 POSTHOOK: Lineage: mat1 PARTITION(a=2,c=2,d=two).sumb EXPRESSION [(t1)t1.FieldSchema(name:b, type:int, comment:null), ]
