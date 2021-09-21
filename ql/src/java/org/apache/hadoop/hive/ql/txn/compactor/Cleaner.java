@@ -182,7 +182,7 @@ public class Cleaner extends MetaStoreCompactorThread {
       }
       if (MetaStoreUtils.isNoCleanUpSet(t.getParameters())) {
         // The table was marked no clean up true.
-        LOG.info("Skipping " + ci.getFullTableName() + " clean up, as NO_CLEANUP set to true");
+        LOG.info("Skipping table " + ci.getFullTableName() + " clean up, as NO_CLEANUP set to true");
         txnHandler.markCleaned(ci);
         return;
       }
@@ -197,9 +197,9 @@ public class Cleaner extends MetaStoreCompactorThread {
           txnHandler.markCleaned(ci);
           return;
         }
-        if(MetaStoreUtils.isNoCleanUpSet(p.getParameters())){
-          // The table was marked no clean up true.
-          LOG.info("Skipping " + ci.getFullPartitionName() + " clean up, as NO_CLEANUP set to true");
+        if (MetaStoreUtils.isNoCleanUpSet(p.getParameters())) {
+          // The partition was marked no clean up true.
+          LOG.info("Skipping partition " + ci.getFullPartitionName() + " clean up, as NO_CLEANUP set to true");
           txnHandler.markCleaned(ci);
           return;
         }
