@@ -51,18 +51,35 @@ import com.google.common.collect.ImmutableList;
 /**
  * Transforms SELECTS of literals under UNION ALL into inline table scans.
  *
- * It processes plain projects and inline tables below UNION ALL nodes.
+ * This rule processes plain projects and inline tables below UNION ALL nodes.
  *
+ *<pre>
  * SELECT 1
  * UNION ALL
  * SELECT 2
+ * UNION ALL
+ * [...]
+ * </pre>
  *
- *
+ * <pre>
  * HiveUnion(all=true)
- *  HiveProject(a=[1])
- *  HiveProject(a=[42])
- *  Hive
- *  ...
+ *  HiveProject(_o__c0=[1])
+ *   HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+ *  HiveProject(_o__c0=[2])
+ *   HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+ *  [...]
+ * </pre>
+ *
+ * will be transformed into
+ * <pre>
+ * HiveUnion(all=true)
+ *  HiveProject(EXPR$0=[$0])
+ *   HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(1), ROW(2)))], rowType=[RecordType(INTEGER EXPR$0)])
+ *    HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+ *  [...]
+ * </pre>
+ *
+ *
  */
 public class HiveUnionSimpleSelectsToInlineTableRule extends RelOptRule {
 
