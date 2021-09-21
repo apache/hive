@@ -29,6 +29,21 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 
 /**
  * Rule that adds sorting to GROUP BY col0 LIMIT n in presence of aggregate functions.
+ * Ex.: SELECT id, count(1) FROM t_table GROUP BY id LIMIT 2
+ *
+ * Above query has a physical plan like Reducer 2 <- Map 1 (SIMPLE_EDGE)
+ * Both mapper and reducer edges may have multiple Mapper and Reducer instances to enable parallel process of data.
+ * Aggregate function results are calculated in two steps:
+ * 1) first mappers calculate a partial result from the rows processed by each instance.
+ *    The result is going to be filtered by Top N optimization in the mappers.
+ * 2) In the second step reducers aggregate the partial results coming from the mappers. However, some of partial
+ *    results are filtered out by Top N optimization.
+ * Each reducer generates an output file and in the last stage Fetch Operator choose one af the to be the result of the
+ * query. In these result files only the first n row has correct aggregation results the ones which has a key value
+ * falls in the top n key.
+ *
+ * In order to get correct aggregation results this rule adds sorting to the HiveSortLimit above the HiveAggregate
+ * which enables hive to sort merge the results of the reducers and take the first n rows of the merged result.
  *
  * from:
  * HiveSortLimit(fetch=[2])
@@ -81,8 +96,6 @@ public class HiveAggregateSortLimitRule extends RelOptRule {
       return;
     }
 
-    // TODO: GBY keys == Sort keys
-    // TODO: GBYkeys != Sort keys
     if (!sortLimit.getSortExps().isEmpty()) {
       // Sort keys already present
       return;
