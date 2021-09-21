@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
-import static org.apache.hadoop.hive.metastore.Warehouse.makePartNameUtil;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -9688,16 +9687,21 @@ public class ObjectStore implements RawStore, Configurable {
       List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
       ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
       String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
+      MTable mTable = null;
       if(table == null) {
-        MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
+        mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
         table = convertToTable(mTable);
+      } else {
+        mTable = convertToMTable(table);
       }
-      //MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
-      MTable mTable = convertToMTable(table);
+
       MPartition mPartition = getMPartition(catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable);
       Partition partition = convertToPart(mPartition, false);
-      List<String> colNames = new ArrayList<>();
+      if (partition == null) {
+        throw new NoSuchObjectException("Partition for which stats is gathered doesn't exist.");
+      }
 
+      List<String> colNames = new ArrayList<>();
       for(ColumnStatisticsObj statsObj : statsObjs) {
         colNames.add(statsObj.getColName());
       }
@@ -9705,17 +9709,13 @@ public class ObjectStore implements RawStore, Configurable {
       Map<String, MPartitionColumnStatistics> oldStats = getPartitionColStats(table, statsDesc
           .getPartName(), colNames, colStats.getEngine());
 
-      //MPartition mPartition = convertToMPart(partition,mTable,false);
-      if (partition == null) {
-        throw new NoSuchObjectException("Partition for which stats is gathered doesn't exist.");
-      }
-
       for (ColumnStatisticsObj statsObj : statsObjs) {
         MPartitionColumnStatistics mStatsObj =
             StatObjectConverter.convertToMPartitionColumnStatistics(mPartition, statsDesc, statsObj, colStats.getEngine());
         writeMPartitionColumnStatistics(table, partition, mStatsObj,
             oldStats.get(statsObj.getColName()));
       }
+
       // TODO: (HIVE-20109) the col stats stats should be in colstats, not in the partition!
       Map<String, String> newParams = new HashMap<>(mPartition.getParameters());
       StatsSetupConst.setColumnStatsState(newParams, colNames);
