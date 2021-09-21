@@ -246,6 +246,7 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.HiveTransactionWrapper;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -288,10 +289,6 @@ public class ObjectStore implements RawStore, Configurable {
   private final static AtomicBoolean isSchemaVerified = new AtomicBoolean(false);
   private static final Logger LOG = LoggerFactory.getLogger(ObjectStore.class);
 
-  private enum TXN_STATUS {
-    NO_STATE, OPEN, COMMITED, ROLLBACK
-  }
-
   /**
    * Java system properties for configuring SSL to the database store
    */
@@ -317,14 +314,12 @@ public class ObjectStore implements RawStore, Configurable {
 
   private boolean isInitialized = false;
   private PersistenceManager pm = null;
+  private HiveTransactionWrapper txWrapper = null;
   private SQLGenerator sqlGenerator = null;
   private MetaStoreDirectSql directSql = null;
   private DatabaseProduct dbType = null;
   private PartitionExpressionProxy expressionProxy = null;
   private Configuration conf;
-  private volatile int openTrasactionCalls = 0;
-  private Transaction currentTransaction = null;
-  private TXN_STATUS transactionStatus = TXN_STATUS.NO_STATE;
   private Pattern partitionValidationPattern;
   private Counter directSqlErrors;
   private boolean areTxnStatsSupported = false;
@@ -358,9 +353,7 @@ public class ObjectStore implements RawStore, Configurable {
     pm = null;
     directSql = null;
     expressionProxy = null;
-    openTrasactionCalls = 0;
-    currentTransaction = null;
-    transactionStatus = TXN_STATUS.NO_STATE;
+    txWrapper = null;
 
     initialize();
 
@@ -396,6 +389,7 @@ public class ObjectStore implements RawStore, Configurable {
     pm = PersistenceManagerProvider.getPersistenceManager();
     LOG.info("RawStore: {}, with PersistenceManager: {}" +
         " created in the thread with id: {}", this, pm, Thread.currentThread().getId());
+    txWrapper = new HiveTransactionWrapper(pm);
 
     String productName = MetaStoreDirectSql.getProductName(pm);
     sqlGenerator = new SQLGenerator(DatabaseProduct.determineDatabaseProduct(productName, conf), conf);
@@ -556,23 +550,12 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public boolean openTransaction() {
-    openTrasactionCalls++;
-    if (openTrasactionCalls == 1) {
-      currentTransaction = pm.currentTransaction();
-      currentTransaction.begin();
-      transactionStatus = TXN_STATUS.OPEN;
-    } else {
-      // openTransactionCalls > 1 means this is an interior transaction
-      // We should already have a transaction created that is active.
-      if ((currentTransaction == null) || (!currentTransaction.isActive())){
-        throw new RuntimeException("openTransaction called in an interior"
-            + " transaction scope, but currentTransaction is not active.");
-      }
-    }
+    this.txWrapper.openTransaction();
+    return true;
+  }
 
-    boolean result = currentTransaction.isActive();
-    debugLog("Open transaction: count = " + openTrasactionCalls + ", isActive = " + result);
-    return result;
+  private void openReadOnlyTransaction() {
+    this.txWrapper.openReadOnlyTransaction();
   }
 
   /**
@@ -584,31 +567,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   @SuppressWarnings("nls")
   public boolean commitTransaction() {
-    if (TXN_STATUS.ROLLBACK == transactionStatus) {
-      debugLog("Commit transaction: rollback");
-      return false;
-    }
-    if (openTrasactionCalls <= 0) {
-      RuntimeException e = new RuntimeException("commitTransaction was called but openTransactionCalls = "
-          + openTrasactionCalls + ". This probably indicates that there are unbalanced " +
-          "calls to openTransaction/commitTransaction");
-      LOG.error("Unbalanced calls to open/commit Transaction", e);
-      throw e;
-    }
-    if (!currentTransaction.isActive()) {
-      RuntimeException e = new RuntimeException("commitTransaction was called but openTransactionCalls = "
-          + openTrasactionCalls + ". This probably indicates that there are unbalanced " +
-          "calls to openTransaction/commitTransaction");
-      LOG.error("Unbalanced calls to open/commit Transaction", e);
-      throw e;
-    }
-    openTrasactionCalls--;
-    debugLog("Commit transaction: count = " + openTrasactionCalls + ", isactive "+ currentTransaction.isActive());
-
-    if ((openTrasactionCalls == 0) && currentTransaction.isActive()) {
-      transactionStatus = TXN_STATUS.COMMITED;
-      currentTransaction.commit();
-    }
+    this.txWrapper.commitTransaction();
     return true;
   }
 
@@ -618,10 +577,7 @@ public class ObjectStore implements RawStore, Configurable {
    */
   @Override
   public boolean isActiveTransaction() {
-    if (currentTransaction == null) {
-      return false;
-    }
-    return currentTransaction.isActive();
+    return this.txWrapper.isTransactionActive();
   }
 
   /**
@@ -629,23 +585,7 @@ public class ObjectStore implements RawStore, Configurable {
    */
   @Override
   public void rollbackTransaction() {
-    if (openTrasactionCalls < 1) {
-      debugLog("rolling back transaction: no open transactions: " + openTrasactionCalls);
-      return;
-    }
-    debugLog("Rollback transaction, isActive: " + isActiveTransaction());
-    try {
-      if (isActiveTransaction() && transactionStatus != TXN_STATUS.ROLLBACK) {
-        currentTransaction.rollback();
-      }
-    } finally {
-      openTrasactionCalls = 0;
-      transactionStatus = TXN_STATUS.ROLLBACK;
-      // remove all detached objects from the cache, since the transaction is
-      // being rolled back they are no longer relevant, and this prevents them
-      // from reattaching in future transactions
-      pm.evictAll();
-    }
+    this.txWrapper.rollback();
   }
 
   @Override
@@ -1006,22 +946,22 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<String> getAllDatabases(String catName) throws MetaException {
-    boolean commited = false;
-    List<String> databases = null;
+    List<String> databases = Collections.emptyList();
 
-    Query query = null;
-    catName = normalizeIdentifier(catName);
+    final String normalizedcatName = normalizeIdentifier(catName);
 
-    openTransaction();
-    try {
-      query = pm.newQuery("select name from org.apache.hadoop.hive.metastore.model.MDatabase " +
-          "where catalogName == catname");
+    openReadOnlyTransaction();
+    try (Query<?> query = pm
+        .newQuery("select name from org.apache.hadoop.hive.metastore.model.MDatabase where catalogName == catname")) {
       query.declareParameters("java.lang.String catname");
       query.setResult("name");
-      databases = new ArrayList<>((Collection<String>) query.execute(catName));
-      commited = commitTransaction();
+      databases = new ArrayList<>((Collection<String>) query.execute(normalizedcatName));
+    } catch (JDOException jdoe) {
+      throw jdoe;
+    } catch (Exception e) {
+      throw new MetaException(e.getMessage());
     } finally {
-      rollbackAndCleanup(commited, query);
+      commitTransaction();
     }
     Collections.sort(databases);
     return databases;
@@ -3685,7 +3625,7 @@ public class ObjectStore implements RawStore, Configurable {
   private Collection<String> getPartitionPsQueryResults(String catName, String dbName, String tableName, List<String> part_vals,
       short max_parts, String resultsCol) throws Exception {
 
-    Preconditions.checkState(this.currentTransaction.isActive());
+    Preconditions.checkState(this.txWrapper.isTransactionActive());
 
     catName = normalizeIdentifier(catName);
     dbName = normalizeIdentifier(dbName);
@@ -3812,7 +3752,7 @@ public class ObjectStore implements RawStore, Configurable {
   private List<MPartition> listMPartitions(String catName, String dbName, String tableName, int max) throws Exception {
     LOG.debug("Executing listMPartitions");
 
-    Preconditions.checkState(this.currentTransaction.isActive());
+    Preconditions.checkState(this.txWrapper.isTransactionActive());
 
     dbName = normalizeIdentifier(dbName);
     tableName = normalizeIdentifier(tableName);
@@ -4314,7 +4254,7 @@ public class ObjectStore implements RawStore, Configurable {
         }
         if (rollbackEx != null) {
           // Datanucleus propagates some pointless exceptions and rolls back in the finally.
-          if (currentTransaction != null && currentTransaction.isActive()) {
+          if (txWrapper.isTransactionActive()) {
             throw rollbackEx; // Throw if the tx wasn't rolled back.
           }
           LOG.info("Ignoring exception, rollback succeeded: " + rollbackEx.getMessage());
@@ -6373,7 +6313,7 @@ public class ObjectStore implements RawStore, Configurable {
       final PrincipalType principalType) throws Exception {
     LOG.debug("Executing listMSecurityPrincipalMembershipRole");
 
-    Preconditions.checkState(this.currentTransaction.isActive());
+    Preconditions.checkState(this.txWrapper.isTransactionActive());
 
     try (Query query = pm.newQuery(MRoleMap.class, "principalName == t1 && principalType == t2")) {
       query.declareParameters("java.lang.String t1, java.lang.String t2");
@@ -7795,7 +7735,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     LOG.debug("Executing listPrincipalAllDBGrant");
 
-    Preconditions.checkState(this.currentTransaction.isActive());
+    Preconditions.checkState(this.txWrapper.isTransactionActive());
 
     if (principalName != null && principalType != null) {
       try (Query query = pm.newQuery(MDBPrivilege.class, "principalName == t1 && principalType == t2")) {
@@ -7898,7 +7838,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     LOG.debug("Executing listPrincipalAllDCGrant");
 
-    Preconditions.checkState(this.currentTransaction.isActive());
+    Preconditions.checkState(this.txWrapper.isTransactionActive());
 
     if (principalName != null && principalType != null) {
       try (Query query = pm.newQuery(MDCPrivilege.class, "principalName == t1 && principalType == t2")) {
@@ -8095,7 +8035,7 @@ public class ObjectStore implements RawStore, Configurable {
   private List<MDBPrivilege> listDatabaseGrants(String catName, String dbName, String authorizer) throws Exception {
     LOG.debug("Executing listDatabaseGrants");
 
-    Preconditions.checkState(currentTransaction.isActive());
+    Preconditions.checkState(this.txWrapper.isTransactionActive());
 
     dbName = normalizeIdentifier(dbName);
     catName = normalizeIdentifier(catName);
@@ -8124,7 +8064,7 @@ public class ObjectStore implements RawStore, Configurable {
   private List<MDCPrivilege> listDataConnectorGrants(String dcName, String authorizer) throws Exception {
     LOG.debug("Executing listDataConnectorGrants");
 
-    Preconditions.checkState(currentTransaction.isActive());
+    Preconditions.checkState(this.txWrapper.isTransactionActive());
 
     dcName = normalizeIdentifier(dcName);
 
@@ -8630,7 +8570,7 @@ public class ObjectStore implements RawStore, Configurable {
       throws Exception {
     LOG.debug("Executing listPrincipalAllTableGrants");
 
-    Preconditions.checkState(this.currentTransaction.isActive());
+    Preconditions.checkState(this.txWrapper.isTransactionActive());
 
     try (Query query = pm.newQuery(MTablePrivilege.class, "principalName == t1 && principalType == t2")) {
       query.declareParameters("java.lang.String t1, java.lang.String t2");
@@ -8738,7 +8678,7 @@ public class ObjectStore implements RawStore, Configurable {
       throws Exception {
     LOG.debug("Executing listPrincipalAllPartitionGrants");
 
-    Preconditions.checkState(this.currentTransaction.isActive());
+    Preconditions.checkState(this.txWrapper.isTransactionActive());
 
     try (Query query = pm.newQuery(MPartitionPrivilege.class, "principalName == t1 && principalType == t2")) {
       query.declareParameters("java.lang.String t1, java.lang.String t2");
@@ -8836,7 +8776,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     LOG.debug("Executing listPrincipalAllTableColumnGrants");
 
-    Preconditions.checkState(this.currentTransaction.isActive());
+    Preconditions.checkState(this.txWrapper.isTransactionActive());
 
     try (Query query = pm.newQuery(MTableColumnPrivilege.class, "principalName == t1 && principalType == t2")) {
       query.declareParameters("java.lang.String t1, java.lang.String t2");
@@ -8936,7 +8876,7 @@ public class ObjectStore implements RawStore, Configurable {
       PrincipalType principalType) throws Exception {
     LOG.debug("Executing listPrincipalAllTableColumnGrants");
 
-    Preconditions.checkState(this.currentTransaction.isActive());
+    Preconditions.checkState(this.txWrapper.isTransactionActive());
 
     try (Query query = pm.newQuery(MPartitionColumnPrivilege.class, "principalName == t1 && principalType == t2")) {
       query.declareParameters("java.lang.String t1, java.lang.String t2");
@@ -9526,7 +9466,7 @@ public class ObjectStore implements RawStore, Configurable {
   private void writeMTableColumnStatistics(Table table, MTableColumnStatistics mStatsObj,
       MTableColumnStatistics oldStats) throws MetaException {
 
-    Preconditions.checkState(this.currentTransaction.isActive());
+    Preconditions.checkState(this.txWrapper.isTransactionActive());
 
     String colName = mStatsObj.getColName();
 
@@ -9549,7 +9489,7 @@ public class ObjectStore implements RawStore, Configurable {
     String partName = mStatsObj.getPartitionName();
     String colName = mStatsObj.getColName();
 
-    Preconditions.checkState(this.currentTransaction.isActive());
+    Preconditions.checkState(this.txWrapper.isTransactionActive());
 
     LOG.info("Updating partition level column statistics for table=" +
         TableName.getQualified(catName, dbName, tableName) +
@@ -9761,7 +9701,7 @@ public class ObjectStore implements RawStore, Configurable {
   private List<MTableColumnStatistics> getMTableColumnStatistics(Table table, List<String> colNames, String engine)
       throws MetaException {
 
-    Preconditions.checkState(this.currentTransaction.isActive());
+    Preconditions.checkState(this.txWrapper.isTransactionActive());
 
     if (colNames.isEmpty()) {
       return Collections.emptyList();
@@ -10885,16 +10825,6 @@ public class ObjectStore implements RawStore, Configurable {
       throws MetaException {
     String name = Warehouse.makePartName(partKeys, partVals);
     return this.getMPartition(catName, dbName, tableName, name) != null;
-  }
-
-  private void debugLog(final String message) {
-    if (LOG.isDebugEnabled()) {
-      if (LOG.isTraceEnabled()) {
-        LOG.debug("{}", message, new Exception("Debug Dump Stack Trace (Not an Exception)"));
-      } else {
-        LOG.debug("{}", message);
-      }
-    }
   }
 
   private Function convertToFunction(MFunction mfunc) {
@@ -12412,7 +12342,7 @@ public class ObjectStore implements RawStore, Configurable {
     String catName = request.getCatName();
     String dbName = request.getDbName();
     String tblName = request.getTblName();
-    debugLog("Get all table constraints for the table - " + catName + "." + dbName + "." + tblName
+    LOG.debug("Get all table constraints for the table - " + catName + "." + dbName + "." + tblName
         + " in class ObjectStore.java");
     SQLAllTableConstraints sqlAllTableConstraints = new SQLAllTableConstraints();
     sqlAllTableConstraints.setPrimaryKeys(getPrimaryKeys(catName, dbName, tblName));
