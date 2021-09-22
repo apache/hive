@@ -420,8 +420,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmulti
 PREHOOK: query: explain alter table tmulti add constraint un1 UNIQUE (userName, numClicks) DISABLE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@tmulti
+PREHOOK: Output: default@tmulti
 POSTHOOK: query: explain alter table tmulti add constraint un1 UNIQUE (userName, numClicks) DISABLE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@tmulti
+POSTHOOK: Output: default@tmulti
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -432,8 +436,12 @@ STAGE PLANS:
 
 PREHOOK: query: alter table tmulti add constraint un1 UNIQUE (userName, numClicks) DISABLE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@tmulti
+PREHOOK: Output: default@tmulti
 POSTHOOK: query: alter table tmulti add constraint un1 UNIQUE (userName, numClicks) DISABLE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@tmulti
+POSTHOOK: Output: default@tmulti
 PREHOOK: query: DESC formatted tmulti
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@tmulti
@@ -582,12 +590,20 @@ POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@tmulti
 PREHOOK: query: alter table tmulti add constraint chk1 CHECK (userName != NULL)
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@tmulti
+PREHOOK: Output: default@tmulti
 POSTHOOK: query: alter table tmulti add constraint chk1 CHECK (userName != NULL)
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@tmulti
+POSTHOOK: Output: default@tmulti
 PREHOOK: query: alter table tmulti add constraint chk2 CHECK (numClicks <= 10000 AND userName != '')
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@tmulti
+PREHOOK: Output: default@tmulti
 POSTHOOK: query: alter table tmulti add constraint chk2 CHECK (numClicks <= 10000 AND userName != '')
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@tmulti
+POSTHOOK: Output: default@tmulti
 PREHOOK: query: DESC formatted tmulti
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@tmulti
@@ -2147,8 +2163,12 @@ POSTHOOK: Input: default@acid_uami_n0
 #### A masked pattern was here ####
 PREHOOK: query: explain ALTER table acid_uami_n0 drop constraint ch2
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@acid_uami_n0
+PREHOOK: Output: default@acid_uami_n0
 POSTHOOK: query: explain ALTER table acid_uami_n0 drop constraint ch2
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@acid_uami_n0
+POSTHOOK: Output: default@acid_uami_n0
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -2160,8 +2180,12 @@ STAGE PLANS:
 
 PREHOOK: query: ALTER table acid_uami_n0 drop constraint ch2
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@acid_uami_n0
+PREHOOK: Output: default@acid_uami_n0
 POSTHOOK: query: ALTER table acid_uami_n0 drop constraint ch2
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@acid_uami_n0
+POSTHOOK: Output: default@acid_uami_n0
 PREHOOK: query: explain update acid_uami_n0 set vc = 'apache_hive' where de = 893.14
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uami_n0
@@ -3170,8 +3194,12 @@ Column Name:b       	Check Value:b in(4,5)
 	 	 
 PREHOOK: query: ALTER TABLE numericDataType DROP CONSTRAINT check1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@numericdatatype
+PREHOOK: Output: default@numericdatatype
 POSTHOOK: query: ALTER TABLE numericDataType DROP CONSTRAINT check1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Output: default@numericdatatype
 PREHOOK: query: DESC FORMATTED numericDataType
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@numericdatatype
@@ -3897,8 +3925,12 @@ POSTHOOK: Input: default@tbl1_n1
 a	69
 PREHOOK: query: ALTER TABLE tbl1_n1 add constraint chk2 CHECK (b < 100)
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@tbl1_n1
+PREHOOK: Output: default@tbl1_n1
 POSTHOOK: query: ALTER TABLE tbl1_n1 add constraint chk2 CHECK (b < 100)
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@tbl1_n1
+POSTHOOK: Output: default@tbl1_n1
 PREHOOK: query: desc formatted tbl1_n1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@tbl1_n1

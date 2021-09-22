@@ -82,11 +82,12 @@ public class AlterTableAddConstraintAnalyzer extends AbstractAlterTableAnalyzer 
     Constraints constraints =
         new Constraints(primaryKeys, foreignKeys, null, uniqueConstraints, null, checkConstraints);
     AlterTableAddConstraintDesc desc = new AlterTableAddConstraintDesc(tableName, null, constraints);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 
     Table table = getTable(tableName);
     if (AcidUtils.isTransactionalTable(table)) {
       setAcidDdlDesc(desc);
     }
+    addInputsOutputsAlterTable(tableName, partitionSpec, desc, desc.getType(), false);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 }
