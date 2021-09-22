@@ -1445,7 +1445,9 @@ public final class ObjectInspectorUtils {
         PrimitiveTypeInfo typeInfo =
              useValueTypeInfo ? getValueTypeInfo(poi.getTypeInfo(), value) : poi.getTypeInfo();
         return PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
-            typeInfo, writableValue);
+            poi.getTypeInfo(), writableValue);
+        //return PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
+        //    typeInfo, writableValue);
       case LIST:
         ListObjectInspector loi = (ListObjectInspector) oi;
         return ObjectInspectorFactory.getStandardConstantListObjectInspector(
