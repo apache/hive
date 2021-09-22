@@ -1121,6 +1121,10 @@ public class MetaStoreUtils {
   }
 
   public static boolean isNoCleanUpSet(Map<String, String> parameters) {
-    return parameters.getOrDefault(hive_metastoreConstants.NO_CLEANUP, "false").equalsIgnoreCase("true");
+    String noCleanUp = parameters.get(hive_metastoreConstants.NO_CLEANUP);
+    if (noCleanUp == null) {
+      noCleanUp = parameters.get(hive_metastoreConstants.NO_CLEANUP.toUpperCase());
+    }
+    return noCleanUp != null && noCleanUp.equalsIgnoreCase("true");
   }
 }

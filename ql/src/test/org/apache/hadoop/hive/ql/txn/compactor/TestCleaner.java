@@ -658,7 +658,7 @@ public class TestCleaner extends CompactorTest {
   @Test
   public void noCleanupAfterMinorCompactionOnPartition() throws Exception {
     Map<String, String> parameters = new HashMap<>();
-    parameters.put("no_cleanup", "true");
+    parameters.put("NO_CLEANUP", "True");
     Table t = newTable("default", "dcamicop", true);
     Partition p = newPartition(t, "today", null, parameters);
 
