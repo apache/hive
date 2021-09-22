@@ -563,7 +563,7 @@ public class SqlFunctionConverter {
   }
 
   public static SqlOperator getCalciteFn(String hiveUdfName,
-      ImmutableList<RelDataType> calciteArgTypes, RelDataType calciteRetType,
+      List<RelDataType> calciteArgTypes, RelDataType calciteRetType,
       boolean deterministic, boolean runtimeConstant)
       throws CalciteSemanticException {
 
