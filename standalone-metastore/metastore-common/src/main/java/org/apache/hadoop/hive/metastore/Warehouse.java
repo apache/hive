@@ -355,11 +355,8 @@ public class Warehouse {
     Path dbPath = null;
     if (isExternal) {
       dbPath = new Path(db.getLocationUri());
-      Path dbLocation = Path.getPathWithoutSchemeAndAuthority(dbPath);
-      Path whRootLocation = Path.getPathWithoutSchemeAndAuthority(getWhRoot());
-
-      if (FileUtils.isSubdirectory(whRootLocation.toString(), dbLocation.toString()) ||
-          dbLocation.equals(whRootLocation)) {
+      if (FileUtils.isSubdirectory(getWhRoot().toString(), dbPath.toString()) ||
+          getWhRoot().equals(dbPath)) {
         // db metadata incorrect, find new location based on external warehouse root
         dbPath = getDefaultExternalDatabasePath(db.getName());
       }
