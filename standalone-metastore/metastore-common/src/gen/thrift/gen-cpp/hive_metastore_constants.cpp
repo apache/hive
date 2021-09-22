@@ -79,6 +79,8 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   NO_CLEANUP = "no_cleanup";
 
+  CTAS_LEGACY_CONFIG = "create_table_as_external";
+
 }
 
 }}} // namespace
