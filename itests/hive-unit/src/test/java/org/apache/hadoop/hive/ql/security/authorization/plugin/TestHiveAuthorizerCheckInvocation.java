@@ -737,4 +737,28 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals("object name","hiveservice", dbObj.getObjectName());
   }
 
+  @Test
+  public void AddDropConstraints() throws Exception{
+    reset(mockedAuthorizer);
+    final String tableName = "foo_constraint_tbl";
+    driver.run("create table " + dbName+"."+tableName + "(eid int, yoj int)");
+
+    reset(mockedAuthorizer);
+    int status = driver.compile("Alter table "+dbName+"."+tableName +" ADD constraint c1_unique UNIQUE(eid) disable novalidate", true);
+    assertEquals(0, status);
+    Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
+    List<HivePrivilegeObject> inputs = io.getLeft();
+    assertEquals(1, inputs.size());
+    HivePrivilegeObject tableObj = inputs.get(0);
+    assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, tableObj.getType());
+
+    reset(mockedAuthorizer);
+    status = driver.compile("Alter table "+dbName+"."+tableName +" DROP constraint c1_unique", true);
+    assertEquals(0, status);
+    io = getHivePrivilegeObjectInputs();
+    inputs = io.getLeft();
+    assertEquals(1, inputs.size());
+    tableObj = inputs.get(0);
+    assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, tableObj.getType());
+  }
 }
