@@ -23,7 +23,8 @@ import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 
 import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
@@ -36,18 +37,18 @@ public class Retryable {
   private static final long MINIMUM_DELAY_IN_SEC = 60;
 
   private long totalDurationInSeconds;
-  private List<Class<? extends Exception>> retryOn;
-  private List<Class<? extends Exception>> failOn;
-  private List<Class<? extends Exception>> failOnParentExceptions;
+  private Set<Class<? extends Exception>> retryOn;
+  private Set<Class<? extends Exception>> failOn;
+  private Set<Class<? extends Exception>> failOnParentExceptions;
   private long initialDelayInSeconds;
   private long maxRetryDelayInSeconds;
   private double backOff;
   private int maxJitterInSeconds;
 
   private Retryable() {
-    this.retryOn = new ArrayList<>();
-    this.failOn = new ArrayList<>();
-    this.failOnParentExceptions = new ArrayList<>();
+    this.retryOn = new HashSet<>();
+    this.failOn = new HashSet<>();
+    this.failOnParentExceptions = new HashSet<>();
     this.initialDelayInSeconds = HiveConf.toTime(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY.defaultStrVal,
       HiveConf.getDefaultTimeUnit(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY), TimeUnit.SECONDS);
     this.maxRetryDelayInSeconds = HiveConf.toTime(HiveConf.ConfVars.REPL_RETRY_MAX_DELAY_BETWEEN_RETRIES.defaultStrVal,
@@ -152,8 +153,7 @@ public class Retryable {
 
     // making this thread safe as it appends to list
     public synchronized Builder withRetryOnException(final Class<? extends Exception> exceptionClass) {
-      if (exceptionClass != null &&
-        runnable.retryOn.stream().noneMatch(k -> exceptionClass.equals(k))) {
+      if (exceptionClass != null) {
         runnable.retryOn.add(exceptionClass);
       }
       return this;
@@ -161,8 +161,7 @@ public class Retryable {
 
     public synchronized Builder withRetryOnExceptionList(final List<Class<? extends Exception>> exceptionClassList) {
       for (final Class<? extends Exception> exceptionClass : exceptionClassList) {
-        if (exceptionClass != null &&
-          runnable.retryOn.stream().noneMatch(k -> exceptionClass.equals(k))) {
+        if (exceptionClass != null) {
           runnable.retryOn.add(exceptionClass);
         }
       }
@@ -170,8 +169,7 @@ public class Retryable {
     }
 
     public synchronized Builder withFailOnParentException(final Class<? extends Exception> exceptionClass) {
-      if (exceptionClass != null &&
-              runnable.failOnParentExceptions.stream().noneMatch(k -> exceptionClass.equals(k))) {
+      if (exceptionClass != null) {
         runnable.failOnParentExceptions.add(exceptionClass);
       }
       return this;
@@ -180,8 +178,7 @@ public class Retryable {
     public synchronized Builder withFailOnParentExceptionList(final List<Class<?
             extends Exception>> exceptionClassList) {
       for (final Class<? extends Exception> exceptionClass : exceptionClassList) {
-        if (exceptionClass != null &&
-                runnable.failOnParentExceptions.stream().noneMatch(k -> exceptionClass.equals(k))) {
+        if (exceptionClass != null) {
           runnable.failOnParentExceptions.add(exceptionClass);
         }
       }
@@ -189,8 +186,7 @@ public class Retryable {
     }
 
     public synchronized Builder withFailOnException(final Class<? extends Exception> exceptionClass) {
-      if (exceptionClass != null &&
-        runnable.failOn.stream().noneMatch(k -> exceptionClass.equals(k))) {
+      if (exceptionClass != null) {
         runnable.failOn.add(exceptionClass);
       }
       return this;
@@ -199,8 +195,7 @@ public class Retryable {
     public synchronized Builder withFailOnExceptionList(final List<Class<?
       extends Exception>> exceptionClassList) {
       for (final Class<? extends Exception> exceptionClass : exceptionClassList) {
-        if (exceptionClass != null &&
-          runnable.failOn.stream().noneMatch(k -> exceptionClass.equals(k))) {
+        if (exceptionClass != null) {
           runnable.failOn.add(exceptionClass);
         }
       }
