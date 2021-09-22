@@ -688,7 +688,7 @@ public class TestCleaner extends CompactorTest {
     ArrayList<String> list = new ArrayList<>();
     list.add("ds=today");
     p = ms.getPartition("default", "dcamicop", "ds=today");
-    p.getParameters().put("no_cleanup", "false");
+    p.getParameters().put("NO_CLEANUP", "false");
     ms.alter_partition("default", "dcamicop", p);
     rqst = new CompactionRequest("default", "dcamicop", CompactionType.MINOR);
     rqst.setPartitionname("ds=today");
