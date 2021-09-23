@@ -591,6 +591,46 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals("table name", inDbTableName.toLowerCase(), dbObj.getObjectName());
   }
 
+  @Test
+  public void showTablesInDB() throws Exception{
+    final String tableName1 = "table1";
+    driver.run("create table " + dbName+"."+tableName1 + "(eid int, yoj int)");
+    final String tableName2 = "table2";
+    driver.run("create table " + dbName+"."+tableName2 + "(eid int, ecode int)");
+    reset(mockedAuthorizer);
+
+    int status = driver.compile("show tables in "+dbName, true);
+    assertEquals(0, status);
+    Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
+    List<HivePrivilegeObject> inputs = io.getLeft();
+    HivePrivilegeObject dbObj = inputs.get(0);
+    assertEquals("input type", HivePrivilegeObjectType.DATABASE, dbObj.getType());
+    assertTrue(dbObj.getOwnerName() != null);
+  }
+
+  @Test
+  public void AlterViewAsStmnt() throws Exception{
+    reset(mockedAuthorizer);
+    final String tableName1 = "foo_tbl";
+    driver.run("create table " + dbName+"."+tableName1 + "(eid int, yoj int)");
+    final String tableName2 = "foo_bar";
+    driver.run("create table " + dbName+"."+tableName2 + "(eid int, name string)");
+    final String viewName = "foo_view";
+    driver.run("create view " + dbName+"."+viewName + " as select * from "+ dbName+"."+tableName1);
+    reset(mockedAuthorizer);
+    int status = driver.compile("Alter view "+dbName+"."+viewName+" as select * from "+ dbName+"."+tableName2, true);
+    assertEquals(0, status);
+    Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
+    List<HivePrivilegeObject> inputs = io.getLeft();
+    assertEquals(1, inputs.size()); // foo_bar table object
+    List<HivePrivilegeObject> outputs = io.getRight();
+    assertEquals(2, outputs.size()); // Database and view objects
+    HivePrivilegeObject dbObj = outputs.get(0);
+    assertEquals("input type", HivePrivilegeObjectType.DATABASE, dbObj.getType());
+    HivePrivilegeObject viewObj = outputs.get(1);
+    assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, viewObj.getType());
+  }
+
   private void checkSingleTableInput(List<HivePrivilegeObject> inputs) {
     assertEquals("number of inputs", 1, inputs.size());
 

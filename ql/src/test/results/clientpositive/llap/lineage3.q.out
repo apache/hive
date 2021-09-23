@@ -240,7 +240,7 @@ PREHOOK: Input: default@dest_v1
 -64	253665376
 -64	253665376
 PREHOOK: query: alter view dest_v1 as select ctinyint from alltypesorc
-PREHOOK: type: CREATEVIEW
+PREHOOK: type: ALTERVIEW_AS
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_v1
@@ -307,7 +307,7 @@ PREHOOK: query: alter view dest_v3 as
     group by a.ctinyint, a.csmallint, b.cboolean1
     having count(a.cint) > 10
     order by a, x, b.cboolean1 limit 10) t_n20
-PREHOOK: type: CREATEVIEW
+PREHOOK: type: ALTERVIEW_AS
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_v3
