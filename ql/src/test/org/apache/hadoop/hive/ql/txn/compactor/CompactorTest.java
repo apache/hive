@@ -201,12 +201,17 @@ public abstract class CompactorTest {
   }
 
   protected Partition newPartition(Table t, String value, List<Order> sortCols) throws Exception {
+    return newPartition(t, value, sortCols, new HashMap<>());
+  }
+
+  protected Partition newPartition(Table t, String value, List<Order> sortCols, Map<String, String> parameters)
+      throws Exception {
     Partition part = new Partition();
     part.addToValues(value);
     part.setDbName(t.getDbName());
     part.setTableName(t.getTableName());
     part.setSd(newStorageDescriptor(getLocation(t.getTableName(), value), sortCols));
-    part.setParameters(new HashMap<String, String>());
+    part.setParameters(parameters);
     ms.add_partition(part);
     return part;
   }
