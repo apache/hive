@@ -318,6 +318,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     currentPartitionIntervalDayTimes = new HiveIntervalDayTime[partitionKeyCount];
 
     VectorExpression.doTransientInit(partitionExpressions, hconf);
+    VectorExpression.doTransientInit(orderExpressions, hconf);
 
     /*
      * Setup the overflow batch.
