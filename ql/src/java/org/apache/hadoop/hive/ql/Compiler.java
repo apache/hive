@@ -212,6 +212,7 @@ public class Compiler {
         setLastReplIdForDump(driverContext.getQueryState().getConf());
       }
       driverContext.setTxnType(AcidUtils.getTxnType(driverContext.getConf(), tree));
+      context.setExplainPlan(AcidUtils.isExplainPlan(tree));
       openTransaction(driverContext.getTxnType());
 
       generateValidTxnList();

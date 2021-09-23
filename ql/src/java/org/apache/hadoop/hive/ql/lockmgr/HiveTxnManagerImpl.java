@@ -210,6 +210,7 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
   public boolean recordSnapshot(QueryPlan queryPlan) {
     return false;
   }
+
   @Override
   public boolean isImplicitTransactionOpen() {
     return true;
