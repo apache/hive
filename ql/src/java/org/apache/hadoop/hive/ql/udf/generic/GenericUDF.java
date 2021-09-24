@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
@@ -74,6 +75,7 @@ import org.apache.hadoop.io.LongWritable;
 @UDFType(deterministic = true)
 public abstract class GenericUDF implements Closeable {
 
+  protected static final Logger LOG = LoggerFactory.getLogger(GenericUDF.class.getName());
   protected transient TypeInfo predefinedTypeInfo;
 
   private static final String[] ORDINAL_SUFFIXES = new String[] { "th", "st", "nd", "rd", "th",
@@ -183,7 +185,8 @@ public abstract class GenericUDF implements Closeable {
       }
       try {
         Object constantValue = evaluate(argumentValues);
-        oi = ObjectInspectorUtils.getConstantObjectInspector(oi, constantValue, true);
+        boolean useFlag = !(this instanceof SettableUDF);
+        oi = ObjectInspectorUtils.getConstantObjectInspector(oi, constantValue, useFlag);
       } catch (HiveException e) {
         throw new UDFArgumentException(e);
       }
