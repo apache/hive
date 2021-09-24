@@ -234,7 +234,11 @@ public class MapJoinResolver implements PhysicalPlanResolver {
           // get the list of task
           List<Task<?>> taskList = ((ConditionalTask) currTask).getListTasks();
           for (Task<?> tsk : taskList) {
-            if (tsk.isMapRedTask()) {
+            if (tsk.isMapRedTask() && (tsk instanceof ConditionalTask)) {
+              //for ConditionalTask,make sure we can visit it later
+              checkCanBeVisited(tsk);
+            }
+            if (tsk.isMapRedTask() && !(tsk instanceof ConditionalTask)) {
               this.processCurrentTask(tsk, ((ConditionalTask) currTask));
             }
           }
@@ -243,6 +247,25 @@ public class MapJoinResolver implements PhysicalPlanResolver {
         }
       }
       return null;
+    }
+
+    private void checkCanBeVisited(Task<?> tsk) throws SemanticException {
+      if (! (tsk instanceof ConditionalTask)) {
+        return;
+      }
+      boolean dependedByMRTask = false;
+      if (tsk.getParentTasks() != null) {
+        for (Task<? extends Serializable> other : tsk.getParentTasks()) {
+          if (other.isMapRedTask() && !(other instanceof ConditionalTask)) {
+            dependedByMRTask = true;
+            break;
+          }
+        }
+      }
+      if (!dependedByMRTask) {
+        //we can not handle this for now
+        throw new SemanticException("Unexpected ConditionalTask");
+      }
     }
 
     // replace the map join operator to local_map_join operator in the operator tree
