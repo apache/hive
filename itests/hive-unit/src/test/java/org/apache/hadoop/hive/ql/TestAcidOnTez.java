@@ -75,11 +75,11 @@ import org.slf4j.LoggerFactory;
  */
 public class TestAcidOnTez {
   static final private Logger LOG = LoggerFactory.getLogger(TestAcidOnTez.class);
-  private static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
+  public static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
       File.separator + TestAcidOnTez.class.getCanonicalName()
       + "-" + System.currentTimeMillis()
   ).getPath().replaceAll("\\\\", "/");
-  private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
+  public static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
   //bucket count for test tables; set it to 1 for easier debugging
   private static int BUCKET_COUNT = 2;
   @Rule
@@ -994,7 +994,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
     }
   }
 
-  private void setupTez(HiveConf conf) {
+  public static void setupTez(HiveConf conf) {
     conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
     conf.setVar(HiveConf.ConfVars.HIVE_USER_INSTALL_DIR, TEST_DATA_DIR);
     conf.set("tez.am.resource.memory.mb", "128");
@@ -1025,7 +1025,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
   /**
    * Run statement with customized hive conf
    */
-  private List<String> runStatementOnDriver(String stmt, HiveConf conf)
+  public static List<String> runStatementOnDriver(String stmt, HiveConf conf)
       throws Exception {
     IDriver driver = DriverFactory.newDriver(conf);
     driver.setMaxRows(10000);

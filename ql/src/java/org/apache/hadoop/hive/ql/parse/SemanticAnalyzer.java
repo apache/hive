@@ -80,10 +80,8 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
-import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
-import org.apache.hadoop.hive.common.type.TimestampUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -301,6 +299,7 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.ReflectionUtils;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -2201,7 +2200,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String cteName = tabName.toLowerCase();
 
       // Get table details from tabNameToTabObject cache
-      Table tab = getTableObjectByName(tabName, false);
+      Table tab = aliasToCTEs.containsKey(tabName)? null: getTableObjectByName(tabName, false);
       if (tab != null) {
         Table newTab = tab.makeCopy();
         tab = newTab;
@@ -2231,6 +2230,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         ASTNode src = qb.getParseInfo().getSrcForAlias(alias);
         if (null != src) {
+          if (src.getChildCount() == 3) {
+            throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg() + " '" + src.getChild(2).getText() + "'");
+          }
           throw new SemanticException(ASTErrorUtils.getMsg(ErrorMsg.INVALID_TABLE.getMsg(), src));
         } else {
           throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(alias));
@@ -2242,15 +2244,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (!Optional.ofNullable(tab.getStorageHandler()).map(HiveStorageHandler::isTimeTravelAllowed).orElse(false)) {
           throw new SemanticException(ErrorMsg.TIME_TRAVEL_NOT_ALLOWED, alias);
         }
-        if (asOf.getLeft() != null) {
-          tab.setAsOfVersion(Long.parseLong(asOf.getLeft()));
-        }
-        if (asOf.getRight() != null) {
-          ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() :
-                                 SessionState.get().getConf().getLocalTimeZone();
-          TimestampTZ ts = TimestampTZUtil.parse(stripQuotes(asOf.getRight()), timeZone);
-          tab.setAsOfTimestamp(ts.toEpochMilli());
-        }
+        tab.setAsOfVersion(asOf.getLeft());
+        tab.setAsOfTimestamp(asOf.getRight());
       }
 
       if (tab.isView()) {
@@ -7169,7 +7164,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return input;
     }
 
-    if (updating(dest) && isCBOExecuted()) {
+      if (updating(dest) && isCBOExecuted() && this.ctx.getOperation() != Context.Operation.MERGE) {
       // for UPDATE statements CBO already added and pushed down the constraints
       return input;
     }
@@ -8192,7 +8187,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     if (ltd != null) {
       queryState.getLineageState().mapDirToOp(ltd.getSourcePath(), output);
-    } else if ( queryState.getCommandType().equals(HiveOperation.CREATETABLE_AS_SELECT.getOperationName())) {
+    }
+    if (queryState.getCommandType().equals(HiveOperation.CREATETABLE_AS_SELECT.getOperationName())) {
 
       Path tlocation = null;
       String tName = Utilities.getDbTableName(tableDesc.getDbTableName())[1];
@@ -9020,7 +9016,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     List<String> keyColNames = rsdesc.getOutputKeyColumnNames();
     for (int i = 0 ; i < keyColNames.size(); i++) {
-      colExprMap.put(Utilities.ReduceField.KEY + "." + keyColNames.get(i), sortCols.get(i));
+      colExprMap.put(Utilities.ReduceField.KEY + "." + keyColNames.get(i), newSortCols.get(i));
     }
     List<String> valueColNames = rsdesc.getOutputValueColumnNames();
     for (int i = 0 ; i < valueColNames.size(); i++) {
@@ -11431,10 +11427,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       Map<String, String> tblProperties = tab.getParameters();
       Map<String, String> tblPropertiesFromQuery = qb.getTabPropsForAlias(alias);
-      tsDesc.setFetchDeletedRows(
-          (tblProperties != null && Boolean.parseBoolean(tblProperties.get(Constants.ACID_FETCH_DELETED_ROWS))) ||
-          (tblPropertiesFromQuery != null &&
-              Boolean.parseBoolean(tblPropertiesFromQuery.get(Constants.ACID_FETCH_DELETED_ROWS))));
+
+      AcidUtils.AcidOperationalProperties acidOperationalProperties = tsDesc.getAcidOperationalProperties();
+      if (acidOperationalProperties != null) {
+        tsDesc.getAcidOperationalProperties().setInsertOnlyFetchBucketId(
+            (tblProperties != null && Boolean.parseBoolean(tblProperties.get(Constants.INSERT_ONLY_FETCH_BUCKET_ID))) ||
+                (tblPropertiesFromQuery != null &&
+                    Boolean.parseBoolean(tblPropertiesFromQuery.get(Constants.INSERT_ONLY_FETCH_BUCKET_ID))));
+
+        tsDesc.getAcidOperationalProperties().setFetchDeletedRows(
+            (tblProperties != null && Boolean.parseBoolean(tblProperties.get(Constants.ACID_FETCH_DELETED_ROWS))) ||
+                (tblPropertiesFromQuery != null &&
+                    Boolean.parseBoolean(tblPropertiesFromQuery.get(Constants.ACID_FETCH_DELETED_ROWS))));
+      }
 
       SplitSample sample = nameToSplitSample.get(alias_id);
       if (sample != null && sample.getRowCount() != null) {
@@ -11879,8 +11884,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opParseCtx.get(operator).setRowResolver(newRR);
   }
 
+  Path dummyPath;
   protected Table getDummyTable() throws SemanticException {
-    Path dummyPath = createDummyFile();
+    if (dummyPath == null) {
+      dummyPath = createDummyFile();
+    }
+
     Table desc = new Table(DUMMY_DATABASE, DUMMY_TABLE);
     desc.getTTable().getSd().setLocation(dummyPath.toString());
     desc.getTTable().getSd().getSerdeInfo().setSerializationLib(NullStructSerDe.class.getName());
@@ -13168,13 +13177,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *
    * @param tblProp
    *          property map
-   * @param isCTAS
    * @return Modified table property map
    */
   private Map<String, String> validateAndAddDefaultProperties(
-          Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat,
-          String qualifiedTableName, List<Order> sortCols, boolean isMaterialization,
-          boolean isTemporaryTable, boolean isTransactional, boolean isManaged, boolean isCTAS) throws SemanticException {
+      Map<String, String> tblProp, boolean isExt, StorageFormat storageFormat,
+      String qualifiedTableName, List<Order> sortCols, boolean isMaterialization,
+      boolean isTemporaryTable, boolean isTransactional, boolean isManaged) throws SemanticException {
     Map<String, String> retValue = Optional.ofNullable(tblProp).orElseGet(HashMap::new);
 
     String paraString = HiveConf.getVar(conf, ConfVars.NEWTABLEDEFAULTPARA);
@@ -13223,9 +13231,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (makeAcid || isTransactional || (isManaged && !makeInsertOnly)) {
         retValue = convertToAcidByDefault(storageFormat, qualifiedTableName, sortCols, retValue);
       }
-    }
-    if (isCTAS) {
-      retValue.put(TABLE_IS_CTAS, Boolean.toString(isCTAS));
     }
     return retValue;
   }
@@ -13375,6 +13380,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.KW_MANAGED:
         isManaged = true;
+        isTransactional = true;
         break;
       case HiveParser.KW_TEMPORARY:
         isTemporary = true;
@@ -13591,9 +13597,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary,
-          isTransactional, isManaged, false);
+          isTransactional, isManaged);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
-          TableType.MANAGED_TABLE, isTemporary, tblProps);
+          TableType.MANAGED_TABLE, isTemporary, tblProps, storageFormat);
 
       CreateTableDesc crtTblDesc = new CreateTableDesc(qualifiedTabName,
           isExt, isTemporary, cols, partCols,
@@ -13619,9 +13625,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             qualifiedTabName.getTable() + " cannot be declared transactional because it's an external table");
       }
       tblProps = validateAndAddDefaultProperties(tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization,
-          isTemporary, isTransactional, isManaged, false);
+          isTemporary, isTransactional, isManaged);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
-          TableType.MANAGED_TABLE, false, tblProps);
+          TableType.MANAGED_TABLE, false, tblProps, storageFormat);
 
       CreateTableDesc crtTranTblDesc =
           new CreateTableDesc(qualifiedTabName, isExt, isTemporary, cols, partCols, bucketCols, sortCols, numBuckets,
@@ -13643,9 +13649,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary,
-          isTransactional, isManaged, false);
+          isTransactional, isManaged);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
-          TableType.MANAGED_TABLE, isTemporary, tblProps);
+          TableType.MANAGED_TABLE, isTemporary, tblProps, storageFormat);
 
       Table likeTable = getTable(likeTableName, false);
       if (likeTable != null) {
@@ -13726,9 +13732,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary,
-          isTransactional, isManaged, true);
+          isTransactional, isManaged);
+      tblProps.put(TABLE_IS_CTAS, "true");
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
-          TableType.MANAGED_TABLE, isTemporary, tblProps);
+          TableType.MANAGED_TABLE, isTemporary, tblProps, storageFormat);
       tableDesc = new CreateTableDesc(qualifiedTabName, isExt, isTemporary, cols,
           partColNames, bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
           rowFormatParams.fieldEscape, rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim,
@@ -13752,7 +13759,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   /** Adds entities for create table/create view. */
   private void addDbAndTabToOutputs(String[] qualifiedTabName, TableType type,
-      boolean isTemporary, Map<String, String> tblProps) throws SemanticException {
+      boolean isTemporary, Map<String, String> tblProps, StorageFormat storageFormat) throws SemanticException {
     Database database  = getDatabase(qualifiedTabName[0]);
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
 
@@ -13760,6 +13767,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     t.setParameters(tblProps);
     t.setTableType(type);
     t.setTemporary(isTemporary);
+    HiveStorageHandler storageHandler = null;
+    if (storageFormat.getStorageHandler() != null) {
+      try {
+        storageHandler = (HiveStorageHandler) ReflectionUtils.newInstance(
+                conf.getClassByName(storageFormat.getStorageHandler()), SessionState.get().getConf());
+      } catch (ClassNotFoundException ex) {
+        LOG.error("Class not found. Storage handler will be set to null: "+ex.getMessage() , ex);
+      }
+    }
+    t.setStorageHandler(storageHandler);
+    for(Map.Entry<String,String> serdeMap : storageFormat.getSerdeProps().entrySet()){
+      t.setSerdeParam(serdeMap.getKey(), serdeMap.getValue());
+    }
     outputs.add(new WriteEntity(t, WriteEntity.WriteType.DDL_NO_LOCK));
   }
 
@@ -13899,7 +13919,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         location, storageFormat.getSerde(), storageFormat.getStorageHandler(),
         storageFormat.getSerdeProps());
     addDbAndTabToOutputs(new String[] {qualTabName.getDb(), qualTabName.getTable()}, TableType.MATERIALIZED_VIEW,
-        false, tblProps);
+        false, tblProps, storageFormat);
     queryState.setCommandType(HiveOperation.CREATE_MATERIALIZED_VIEW);
     qb.setViewDesc(createVwDesc);
 

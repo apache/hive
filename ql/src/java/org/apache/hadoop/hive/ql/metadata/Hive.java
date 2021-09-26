@@ -29,6 +29,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_WRITE_NOTIFICATION_MAX_BATCH_SIZE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.ql.io.AcidUtils.getFullTableName;
@@ -182,6 +183,7 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
+import org.apache.hadoop.hive.metastore.api.WriteNotificationLogBatchRequest;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -218,6 +220,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.thrift.TException;
+import org.apache.thrift.TApplicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -661,6 +664,25 @@ public class Hive {
     }
   }
 
+
+  /**
+   * Dry run that translates table
+   *
+   * @param tbl
+   *          a table object
+   * @throws HiveException
+   */
+  public Table getTranslateTableDryrun(org.apache.hadoop.hive.metastore.api.Table tbl) throws HiveException {
+    org.apache.hadoop.hive.metastore.api.Table tTable = null;
+    try {
+      tTable  = getMSC().getTranslateTableDryrun(tbl);
+    } catch (AlreadyExistsException e) {
+      throw new HiveException(e);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+    return new Table(tTable);
+  }
 
   /**
    * Creates a table metadata and the directory for the table data
@@ -1440,8 +1462,15 @@ public class Hive {
    * table doesn't exist
    */
   public Table getTable(final String tableName, boolean throwException) throws HiveException {
-    String[] names = Utilities.getDbTableName(tableName);
-    return this.getTable(names[0], names[1], throwException);
+    String[] nameParts = tableName.split("\\.");
+    if (nameParts.length == 3) {
+      Table table = this.getTable(nameParts[0], nameParts[1], nameParts[2], throwException);
+      return table;
+    } else {
+      String[] names = Utilities.getDbTableName(tableName);
+      Table table = this.getTable(names[0], names[1], null, throwException);
+      return table;
+    }
   }
 
   /**
@@ -1459,9 +1488,9 @@ public class Hive {
      // TODO: catalog... etc everywhere
     if (tableName.contains(".")) {
       String[] names = Utilities.getDbTableName(tableName);
-      return this.getTable(names[0], names[1], true);
+      return this.getTable(names[0], names[1], null, true);
     } else {
-      return this.getTable(dbName, tableName, true);
+      return this.getTable(dbName, tableName, null, true);
     }
   }
 
@@ -1476,9 +1505,28 @@ public class Hive {
    */
   public Table getTable(TableName tableName) throws HiveException {
     return this.getTable(ObjectUtils.firstNonNull(tableName.getDb(), SessionState.get().getCurrentDatabase()),
-        tableName.getTable(), true);
+        tableName.getTable(), null, true);
   }
 
+  /**
+   * Returns metadata of the table
+   *
+   * @param dbName
+   *          the name of the database
+   * @param tableName
+   *          the name of the table
+   * @param metaTableName
+   *          the name of the metadata table
+   * @param throwException
+   *          controls whether an exception is thrown or a returns a null
+   * @return the table or if throwException is false a null value.
+   * @throws HiveException
+   */
+  public Table getTable(final String dbName, final String tableName,
+                        final String metaTableName, boolean throwException) throws HiveException {
+    return this.getTable(dbName, tableName, metaTableName, throwException, false);
+  }
+  
   /**
    * Returns metadata of the table
    *
@@ -1491,9 +1539,8 @@ public class Hive {
    * @return the table or if throwException is false a null value.
    * @throws HiveException
    */
-  public Table getTable(final String dbName, final String tableName,
-                        boolean throwException) throws HiveException {
-    return this.getTable(dbName, tableName, throwException, false);
+  public Table getTable(final String dbName, final String tableName, boolean throwException) throws HiveException {
+    return this.getTable(dbName, tableName, null, throwException);
   }
 
   /**
@@ -1511,9 +1558,9 @@ public class Hive {
    * @return the table or if throwException is false a null value.
    * @throws HiveException
    */
-  public Table getTable(final String dbName, final String tableName, boolean throwException,
-                        boolean checkTransactional) throws HiveException {
-    return getTable(dbName, tableName, throwException, checkTransactional, false);
+  public Table getTable(final String dbName, final String tableName, boolean throwException, boolean checkTransactional)
+      throws HiveException {
+    return getTable(dbName, tableName, null, throwException, checkTransactional, false);
   }
 
   /**
@@ -1523,6 +1570,30 @@ public class Hive {
    *          the name of the database
    * @param tableName
    *          the name of the table
+   * @param metaTableName
+   *          the name of the metadata table
+   * @param throwException
+   *          controls whether an exception is thrown or a returns a null
+   * @param checkTransactional
+   *          checks whether the metadata table stats are valid (or
+   *          compilant with the snapshot isolation of) for the current transaction.
+   * @return the table or if throwException is false a null value.
+   * @throws HiveException
+   */
+  public Table getTable(final String dbName, final String tableName, String metaTableName, boolean throwException,
+                        boolean checkTransactional) throws HiveException {
+    return getTable(dbName, tableName, metaTableName, throwException, checkTransactional, false);
+  }
+
+  /**
+   * Returns metadata of the table.
+   *
+   * @param dbName
+   *          the name of the database
+   * @param tableName
+   *          the name of the table
+   * @param metaTableName
+   *          the name of the metadata table
    * @param throwException
    *          controls whether an exception is thrown or a returns a null
    * @param checkTransactional
@@ -1533,7 +1604,7 @@ public class Hive {
    * @return the table or if throwException is false a null value.
    * @throws HiveException
    */
-  public Table getTable(final String dbName, final String tableName, boolean throwException,
+  public Table getTable(final String dbName, final String tableName, String metaTableName, boolean throwException,
                         boolean checkTransactional, boolean getColumnStats) throws HiveException {
 
     if (tableName == null || tableName.equals("")) {
@@ -1595,7 +1666,17 @@ public class Hive {
       }
     }
 
-    return new Table(tTable);
+    Table t = new Table(tTable);
+    if (metaTableName != null) {
+      if (t.getStorageHandler() == null || !t.getStorageHandler().isMetadataTableSupported()) {
+        throw new SemanticException(ErrorMsg.METADATA_TABLE_NOT_SUPPORTED, t.getTableName());
+      }
+      if (!t.getStorageHandler().isValidMetadataTable(metaTableName)) {
+        throw new SemanticException(ErrorMsg.INVALID_METADATA_TABLE_NAME, metaTableName);
+      }
+    }
+    t.setMetaTable(metaTableName);
+    return t;
   }
 
   /**
@@ -2361,7 +2442,7 @@ public class Hive {
     // If config is set, table is not temporary and partition being inserted exists, capture
     // the list of files added. For not yet existing partitions (insert overwrite to new partition
     // or dynamic partition inserts), the add partition event will capture the list of files added.
-    List<Path> newFiles = null;
+    List<FileStatus> newFiles = null;
     if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {
       newFiles = Collections.synchronizedList(new ArrayList<>());
     }
@@ -2381,7 +2462,7 @@ public class Hive {
       // For acid table, add the acid_write event with file list at the time of load itself. But
       // it should be done after partition is created.
       if (isTxnTable && (null != newFiles)) {
-        addWriteNotificationLog(tbl, partSpec, newFiles, writeId);
+        addWriteNotificationLog(tbl, partSpec, newFiles, writeId, null);
       }
     } else {
       try {
@@ -2440,7 +2521,7 @@ public class Hive {
                         boolean inheritLocation, boolean isSkewedStoreAsSubdir,
                         boolean isSrcLocal, boolean isAcidIUDoperation, boolean resetStatistics,
                         Long writeId, int stmtId, boolean isInsertOverwrite,
-                        boolean isTxnTable, List<Path> newFiles, boolean isDirectInsert) throws HiveException {
+                        boolean isTxnTable, List<FileStatus> newFiles, boolean isDirectInsert) throws HiveException {
     Path tblDataLocationPath =  tbl.getDataLocation();
     boolean isMmTableWrite = AcidUtils.isInsertOnlyTable(tbl.getParameters());
     assert tbl.getPath() != null : "null==getPath() for " + tbl.getTableName();
@@ -2497,18 +2578,11 @@ public class Hive {
         }
         if (newFiles != null) {
           if (!newFiles.isEmpty()) {
-            // We already know the file list from the direct insert manifestfile
-            FileSystem srcFs = loadPath.getFileSystem(conf);
             newFileStatuses = new ArrayList<>();
-            for (Path filePath : newFiles) {
-              newFileStatuses.add(srcFs.getFileStatus(filePath));
-            }
+            newFileStatuses.addAll(newFiles);
           } else {
             newFileStatuses = listFilesCreatedByQuery(loadPath, writeId, stmtId);
-            newFiles.addAll(newFileStatuses
-                .stream()
-                .map(FileStatus::getPath)
-                .collect(Collectors.toList()));
+            newFiles.addAll(newFileStatuses);
           }
         }
         if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
@@ -2559,7 +2633,7 @@ public class Hive {
       // When inserting into a new partition, the add partition event takes care of insert event
       if ((null != oldPart) && (null != newFiles)) {
         if (isTxnTable) {
-          addWriteNotificationLog(tbl, partSpec, newFiles, writeId);
+          addWriteNotificationLog(tbl, partSpec, newFiles, writeId, null);
         } else {
           fireInsertEvent(tbl, partSpec, (loadFileType == LoadFileType.REPLACE_ALL), newFiles);
         }
@@ -3019,7 +3093,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           LOG.info("New loading path = " + entry.getKey() + " withPartSpec " + fullPartSpec);
 
           Partition oldPartition = partitionDetails.partition;
-          List<Path> newFiles = null;
+          List<FileStatus> newFiles = null;
           if (partitionDetails.newFiles != null) {
             // If we already know the files from the direct insert manifest, use them
             newFiles = partitionDetails.newFiles;
@@ -3101,11 +3175,28 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // For acid table, add the acid_write event with file list at the time of load itself. But
       // it should be done after partition is created.
 
+      List<WriteNotificationLogRequest> requestList = new ArrayList<>();
+      int maxBatchSize = conf.getIntVar(HIVE_WRITE_NOTIFICATION_MAX_BATCH_SIZE);
       for (Entry<Path, PartitionDetails> entry : partitionDetailsMap.entrySet()) {
         PartitionDetails partitionDetails = entry.getValue();
         if (isTxnTable && partitionDetails.newFiles != null) {
-          addWriteNotificationLog(tbl, partitionDetails.fullSpec, partitionDetails.newFiles, writeId);
+          addWriteNotificationLog(tbl, partitionDetails.fullSpec, partitionDetails.newFiles,
+                  writeId, requestList);
+          if (requestList != null && requestList.size() >= maxBatchSize) {
+            // If the first call returns that the HMS does not supports batching, avoid batching
+            // for later requests.
+            boolean batchSupported = addWriteNotificationLogInBatch(tbl, requestList);
+            if (batchSupported) {
+              requestList.clear();
+            } else {
+              requestList = null;
+            }
+          }
         }
+      }
+
+      if (requestList != null && requestList.size() > 0) {
+        addWriteNotificationLogInBatch(tbl, requestList);
       }
 
       setStatsPropAndAlterPartitions(resetStatistics, tbl,
@@ -3163,6 +3254,30 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  private boolean addWriteNotificationLogInBatch(Table tbl, List<WriteNotificationLogRequest> requestList)
+          throws HiveException,MetaException,TException {
+    long start = System. currentTimeMillis();
+    boolean supported = true;
+    WriteNotificationLogBatchRequest rqst = new WriteNotificationLogBatchRequest(tbl.getCatName(), tbl.getDbName(),
+            tbl.getTableName(), requestList);
+    try {
+      get(conf).getSynchronizedMSC().addWriteNotificationLogInBatch(rqst);
+    } catch (TApplicationException e) {
+      int type = e.getType();
+      if (type == TApplicationException.UNKNOWN_METHOD || type == TApplicationException.WRONG_METHOD_NAME) {
+        // For older HMS, if the batch API is not supported, fall back to older API.
+        LOG.info("addWriteNotificationLogInBatch failed with ", e);
+        for (WriteNotificationLogRequest request : requestList) {
+          get(conf).getSynchronizedMSC().addWriteNotificationLog(request);
+        }
+        supported = false;
+      }
+    }
+    long end = System.currentTimeMillis();
+    LOG.info("Time taken to add " + requestList.size() + " write notifications: " + ((end - start)/1000F) + " seconds");
+    return supported;
+  }
+
   /**
    * Load a directory into a Hive Table. - Alters existing content of table with
    * the contents of loadPath. - If table does not exist - an exception is
@@ -3192,7 +3307,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin("MoveTask", PerfLogger.LOAD_TABLE);
 
-    List<Path> newFiles = null;
+    List<FileStatus> newFiles = null;
     Table tbl = getTable(tableName);
     assert tbl.getPath() != null : "null==getPath() for " + tbl.getTableName();
     boolean isTxnTable = AcidUtils.isTransactionalTable(tbl);
@@ -3201,7 +3316,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     boolean isCompactionTable = AcidUtils.isCompactionTable(tbl.getParameters());
 
     if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {
-      newFiles = Collections.synchronizedList(new ArrayList<Path>());
+      newFiles = Collections.synchronizedList(new ArrayList<FileStatus>());
     }
 
     // Note: this assumes both paths are qualified; which they are, currently.
@@ -3218,9 +3333,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       //new files list is required only for event notification.
       if (newFiles != null) {
-        newFiles.addAll(listFilesCreatedByQuery(loadPath, writeId, stmtId).stream()
-            .map(FileStatus::getPath)
-            .collect(Collectors.toList()));
+        newFiles.addAll(listFilesCreatedByQuery(loadPath, writeId, stmtId));
       }
     } else {
       // Either a non-MM query, or a load into MM table from an external source.
@@ -3292,7 +3405,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             true, ((writeId == null) ? 0 : writeId));
 
     if (AcidUtils.isTransactionalTable(tbl)) {
-      addWriteNotificationLog(tbl, null, newFiles, writeId);
+      addWriteNotificationLog(tbl, null, newFiles, writeId, null);
     } else {
       fireInsertEvent(tbl, null, (loadFileType == LoadFileType.REPLACE_ALL), newFiles);
     }
@@ -3525,7 +3638,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public void addWriteNotificationLog(Table tbl, Map<String, String> partitionSpec,
-                                       List<Path> newFiles, Long writeId) throws HiveException {
+                                       List<FileStatus> newFiles, Long writeId,
+                                       List<WriteNotificationLogRequest> requestList) throws HiveException {
     if (!conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML)) {
       LOG.debug("write notification log is ignored as dml event logging is disabled");
       return;
@@ -3554,14 +3668,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
         }
       }
 
-      addWriteNotificationLog(conf, tbl, partitionVals, txnId, writeId, newFiles);
+      addWriteNotificationLog(conf, tbl, partitionVals, txnId, writeId, newFiles, requestList);
     } catch (IOException | TException e) {
       throw new HiveException(e);
     }
   }
 
   public static void addWriteNotificationLog(HiveConf conf, Table tbl, List<String> partitionVals,
-                                             Long txnId, Long writeId, List<Path> newFiles)
+                                             Long txnId, Long writeId, List<FileStatus> newFiles,
+                                             List<WriteNotificationLogRequest> requestList)
           throws IOException, HiveException, TException {
     FileSystem fileSystem = tbl.getDataLocation().getFileSystem(conf);
     InsertEventRequestData insertData = new InsertEventRequestData();
@@ -3572,10 +3687,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
     addInsertFileInformation(newFiles, fileSystem, insertData);
     rqst.setPartitionVals(partitionVals);
 
-    get(conf).getSynchronizedMSC().addWriteNotificationLog(rqst);
+    if (requestList == null) {
+      get(conf).getSynchronizedMSC().addWriteNotificationLog(rqst);
+    } else {
+      requestList.add(rqst);
+    }
   }
 
-  private void fireInsertEvent(Table tbl, Map<String, String> partitionSpec, boolean replace, List<Path> newFiles)
+  private void fireInsertEvent(Table tbl, Map<String, String> partitionSpec, boolean replace, List<FileStatus> newFiles)
       throws HiveException {
     if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML)) {
       LOG.debug("Firing dml insert event");
@@ -3612,19 +3731,18 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
 
-  private static void addInsertFileInformation(List<Path> newFiles, FileSystem fileSystem,
+  private static void addInsertFileInformation(List<FileStatus> newFiles, FileSystem fileSystem,
       InsertEventRequestData insertData) throws IOException {
     LinkedList<Path> directories = null;
-    for (Path p : newFiles) {
-      if (!AcidUtils.bucketFileFilter.accept(p) && !AcidUtils.originalBucketFilter.accept(p)
-          && fileSystem.isDirectory(p)) { // Avoid the fs call if it is possible
+    for (FileStatus status : newFiles) {
+      if (status.isDirectory()) {
         if (directories == null) {
           directories = new LinkedList<>();
         }
-        directories.add(p);
+        directories.add(status.getPath());
         continue;
       }
-      addInsertNonDirectoryInformation(p, fileSystem, insertData);
+      addInsertNonDirectoryInformation(status.getPath(), fileSystem, insertData);
     }
     if (directories == null) {
       return;
@@ -4879,7 +4997,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws HiveException
    */
   static protected void copyFiles(HiveConf conf, Path srcf, Path destf, FileSystem fs,
-      boolean isSrcLocal, boolean isAcidIUD, boolean isOverwrite, List<Path> newFiles, boolean isBucketed,
+      boolean isSrcLocal, boolean isAcidIUD, boolean isOverwrite, List<FileStatus> newFilesStatus, boolean isBucketed,
       boolean isFullAcidTable, boolean isManaged, boolean isCompactionTable) throws HiveException {
     try {
       // create the destination if it does not exist
@@ -4907,6 +5025,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // srcs = new FileStatus[0]; Why is this needed?
     }
 
+    List<Path> newFiles = null;
+    if (newFilesStatus != null) {
+      newFiles = Collections.synchronizedList(new ArrayList<Path>());
+    }
+
     // If we're moving files around for an ACID write then the rules and paths are all different.
     // You can blame this on Owen.
     if (isAcidIUD) {
@@ -4917,6 +5040,17 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // The extension is only maintained for files which are compressed.
       copyFiles(conf, fs, srcs, srcFs, destf, isSrcLocal, isOverwrite,
               newFiles, isFullAcidTable && !isBucketed, isManaged, isCompactionTable);
+    }
+
+    if (newFilesStatus != null) {
+      for (Path filePath : newFiles) {
+        try {
+          newFilesStatus.add(fs.getFileStatus(filePath));
+        } catch (Exception e) {
+          LOG.error("Failed to get getFileStatus", e);
+          throw new HiveException(e.getMessage());
+        }
+      }
     }
   }
 
@@ -5080,7 +5214,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    *          If the table is managed.
    */
   private void replaceFiles(Path tablePath, Path srcf, Path destf, Path oldPath, HiveConf conf,
-          boolean isSrcLocal, boolean purge, List<Path> newFiles, PathFilter deletePathFilter,
+          boolean isSrcLocal, boolean purge, List<FileStatus> newFiles, PathFilter deletePathFilter,
       boolean isNeedRecycle, boolean isManaged, boolean isInsertOverwrite) throws HiveException {
     try {
 
@@ -5126,7 +5260,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
         // Add file paths of the files that will be moved to the destination if the caller needs it
         if (newFiles != null) {
-          newFiles.addAll(HdfsUtils.listPath(destFs, destf, null, true));
+          newFiles.addAll(HdfsUtils.listLocatedFileStatus(destFs, destf, null, true));
         }
       } else {
         final Map<Future<Boolean>, Path> moveFutures = Maps.newLinkedHashMapWithExpectedSize(srcs.length);
@@ -5174,7 +5308,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
           // Add file paths of the files that will be moved to the destination if the caller needs it
           if (null != newFiles) {
-            newFiles.add(moveFuture.getValue());
+            newFiles.add(destFs.getFileStatus(moveFuture.getValue()));
           }
         }
       }

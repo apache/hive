@@ -3243,4 +3243,45 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
   }
+
+  @Test
+  public void testRemoveDuplicateCompletedTxnComponents() throws Exception {
+    dropTable(new String[] {"tab_acid"});
+
+    driver.run("create table if not exists tab_acid (a int) partitioned by (p string) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true')");
+
+    driver.run("insert into tab_acid values(1,'foo'),(3,'bar')");
+    driver.run("insert into tab_acid values(2,'foo'),(4,'bar')");
+    driver.run("delete from tab_acid where a=2");
+
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from \"COMPLETED_TXN_COMPONENTS\""),
+      5, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\""));
+
+    MetastoreTaskThread houseKeeper = new AcidHouseKeeperService();
+    houseKeeper.setConf(conf);
+    houseKeeper.run();
+
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from \"COMPLETED_TXN_COMPONENTS\""),
+      2, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\""));
+
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" " +
+        "where \"CTC_PARTITION\"='p=bar' and \"CTC_TXNID\"=4"));
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" " +
+        "where \"CTC_PARTITION\"='p=foo' and \"CTC_TXNID\"=5"));
+
+    driver.run("insert into tab_acid values(3,'foo')");
+    driver.run("insert into tab_acid values(4,'foo')");
+
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from \"COMPLETED_TXN_COMPONENTS\""),
+      4, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\""));
+
+    houseKeeper.run();
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from \"COMPLETED_TXN_COMPONENTS\""),
+      3, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\""));
+
+    Assert.assertEquals(2, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" " +
+        "where \"CTC_PARTITION\"='p=foo' and \"CTC_TXNID\" IN (5,7)"));
+  }
+
 }

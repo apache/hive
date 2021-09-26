@@ -565,6 +565,14 @@ class DirectSqlUpdateStat {
     return partitionInfoMap;
   }
 
+  private void setAnsiQuotes(Connection dbConn) throws SQLException {
+    if (sqlGenerator.getDbProduct().isMYSQL()) {
+      try (Statement stmt = dbConn.createStatement()) {
+        stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
+      }
+    }
+  }
+
   /**
    * Update the statistics for the given partitions. Add the notification logs also.
    * @return map of partition key to column stats if successful, null otherwise.
@@ -581,6 +589,8 @@ class DirectSqlUpdateStat {
       lockInternal();
       jdoConn = pm.getDataStoreConnection();
       dbConn = (Connection) (jdoConn.getNativeConnection());
+
+      setAnsiQuotes(dbConn);
 
       Map<PartitionInfo, ColumnStatistics> partitionInfoMap = getPartitionInfo(dbConn, tbl.getId(), partColStatsMap);
 
@@ -646,6 +656,8 @@ class DirectSqlUpdateStat {
       lockInternal();
       jdoConn = pm.getDataStoreConnection();
       dbConn = (Connection) (jdoConn.getNativeConnection());
+
+      setAnsiQuotes(dbConn);
 
       // This loop will be iterated at max twice. If there is no records, it will first insert and then do a select.
       // We are not using any upsert operations as select for update and then update is required to make sure that

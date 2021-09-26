@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.NoDynamicValuesException;
@@ -32,21 +33,27 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Set;
+import java.util.Queue;
 import java.util.TreeMap;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
@@ -585,11 +592,12 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   }
 
   static String getNeededColumnNamesString(Configuration conf) {
-    String icebergOrcSchema = conf.get(ColumnProjectionUtils.ICEBERG_ORC_SCHEMA_STRING);
+    String orcSchemaOverrideString = conf.get(ColumnProjectionUtils.ORC_SCHEMA_STRING);
 
-    if (icebergOrcSchema != null) {
-      final String columnNameDelimiter = conf.get(serdeConstants.COLUMN_NAME_DELIMITER, String.valueOf(SerDeUtils.COMMA));
-      return String.join(columnNameDelimiter, TypeDescription.fromString(icebergOrcSchema).getFieldNames());
+    if (orcSchemaOverrideString != null) {
+      final String columnNameDelimiter = conf.get(serdeConstants.COLUMN_NAME_DELIMITER,
+          String.valueOf(SerDeUtils.COMMA));
+      return String.join(columnNameDelimiter, TypeDescription.fromString(orcSchemaOverrideString).getFieldNames());
     } else {
       return conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
     }
@@ -1787,8 +1795,12 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     long checkThresholdInSec = HiveConf.getTimeVar(conf,
         HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_CHECK_THRESHOLD, TimeUnit.SECONDS);
     float deltaPctThreshold = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_PCT_THRESHOLD);
+    int deltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_DELTA_NUM_THRESHOLD);
+    int obsoleteDeltasThreshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_OBSOLETE_DELTA_NUM_THRESHOLD);
+    int maxCacheSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE);
 
-    EnumMap<DeltaFilesMetricType, Map<String, Integer>> deltaFilesStats = new EnumMap<>(DeltaFilesMetricType.class);
+    EnumMap<DeltaFilesMetricType, Queue<Pair<String, Integer>>> deltaFilesStats =
+        new EnumMap<>(DeltaFilesMetricType.class);
 
     // complete path futures and schedule split generation
     try {
@@ -1817,7 +1829,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
         if (metricsEnabled && directory instanceof AcidDirectory) {
           DeltaFilesMetricReporter.mergeDeltaFilesStats((AcidDirectory) directory, checkThresholdInSec,
-              deltaPctThreshold, deltaFilesStats, conf);
+              deltaPctThreshold, deltasThreshold, obsoleteDeltasThreshold, maxCacheSize, deltaFilesStats, conf);
         }
         // We have received a new directory information, make split strategies.
         --resultsLeft;
@@ -1848,7 +1860,9 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           }
         }
       }
-      DeltaFilesMetricReporter.addAcidMetricsToConfObj(deltaFilesStats, conf);
+      if (metricsEnabled) {
+        DeltaFilesMetricReporter.addAcidMetricsToConfObj(deltaFilesStats, conf);
+      }
 
       // Run the last combined strategy, if any.
       if (combinedCtx != null && combinedCtx.combined != null) {
@@ -2106,7 +2120,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             + " isTransactionalTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN));
       LOG.debug("Creating merger for {} and {}", split.getPath(), Arrays.toString(deltas));
     }
-    boolean fetchDeletedRows = conf.getBoolean(Constants.ACID_FETCH_DELETED_ROWS, false);
+    boolean fetchDeletedRows = acidOperationalProperties.isFetchDeletedRows();
 
     Map<String, Integer> deltaToAttemptId = AcidUtils.getDeltaToAttemptIdMap(pathToDeltaMetaData, deltas, bucket);
     final OrcRawRecordMerger records;
@@ -2692,6 +2706,77 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     return result;
   }
+
+  /**
+   * Based on the file schema and the low level file includes provided in the SchemaEvolution instance, this method
+   * calculates which top level columns should be included i.e. if any of the nested columns inside complex types is
+   * required, then its relevant top level parent column will be considered as required (and thus the full subtree).
+   * Hive and LLAP currently only supports column pruning on the first level, thus we need to calculate this ourselves.
+   * @param evolution
+   * @return bool array of include values, where 0th element is root struct, and any Nth element is a first level
+   * column within that
+   */
+  public static boolean[] firstLevelFileIncludes(SchemaEvolution evolution) {
+    // This is the leaf level type description include bool array
+    boolean[] lowLevelIncludes = evolution.getFileIncluded();
+    Map<Integer, TypeDescription> idMap = new HashMap<>();
+    Map<Integer, Integer> parentIdMap = new HashMap<>();
+    idToFieldSchemaMap(evolution.getFileSchema(), idMap, parentIdMap);
+
+    // Root + N top level columns...
+    boolean[] result = new boolean[evolution.getFileSchema().getChildren().size() + 1];
+
+    Set<Integer> requiredTopLevelSchemaIds = new HashSet<>();
+    for (int i = 1; i < lowLevelIncludes.length; ++i) {
+      if (lowLevelIncludes[i]) {
+        int topLevelParentId = getTopLevelParentId(i, parentIdMap);
+        if (!requiredTopLevelSchemaIds.contains(topLevelParentId)) {
+          requiredTopLevelSchemaIds.add(topLevelParentId);
+        }
+      }
+    }
+
+    List<TypeDescription> topLevelFields = evolution.getFileSchema().getChildren();
+
+    for (int typeDescriptionId : requiredTopLevelSchemaIds) {
+      result[IntStream.range(0, topLevelFields.size()).filter(
+          i -> typeDescriptionId == topLevelFields.get(i).getId()).findFirst().getAsInt() + 1] = true;
+    }
+
+    return result;
+  }
+
+  /**
+   * Recursively builds 2 maps:
+   *  ID to type description
+   *  child to parent type description ID
+   * @param typeDescription - the considered type description, root on first invocation
+   * @param idMap
+   * @param parentIdMap
+   */
+  private static void idToFieldSchemaMap(TypeDescription typeDescription, Map<Integer, TypeDescription> idMap,
+      Map<Integer, Integer> parentIdMap) {
+    List<TypeDescription> children = typeDescription.getChildren();
+    idMap.put(typeDescription.getId(), typeDescription);
+    if (children != null) {
+      for (TypeDescription child : children) {
+        // Outermost struct column (always id=0) is not of any concern.
+        if (typeDescription.getId() != 0) {
+          parentIdMap.put(child.getId(), typeDescription.getId());
+        }
+        idToFieldSchemaMap(child, idMap, parentIdMap);
+      }
+    }
+  }
+
+  private static Integer getTopLevelParentId(Integer id, Map<Integer, Integer> parentMap) {
+    if (parentMap.get(id) == null) {
+      return id;
+    } else {
+      return getTopLevelParentId(parentMap.get(id), parentMap);
+    }
+  }
+
 
   @VisibleForTesting
   protected ExternalFooterCachesByConf createExternalCaches() {

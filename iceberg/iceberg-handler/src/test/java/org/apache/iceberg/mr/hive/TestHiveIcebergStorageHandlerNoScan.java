@@ -40,6 +40,7 @@ import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
@@ -515,7 +516,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   public void testCreateTableAboveExistingTable() throws IOException {
     // Create the Iceberg table
     testTables.createIcebergTable(shell.getHiveConf(), "customers", COMPLEX_SCHEMA, FileFormat.PARQUET,
-        Collections.emptyList());
+        Collections.emptyMap(), Collections.emptyList());
 
     if (testTableType == TestTables.TestTableType.HIVE_CATALOG) {
       // In HiveCatalog we just expect an exception since the table is already exists
@@ -893,7 +894,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     // Create the Iceberg table in non-HiveCatalog
     testTables.createIcebergTable(shell.getHiveConf(), identifier.name(),
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, FileFormat.PARQUET,
-        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+        Collections.emptyMap(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
     // Create Hive table on top
     String tableLocation = testTables.locationForCreateTableSQL(identifier);
@@ -924,6 +925,19 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
+  public void testCreateTableWithFormatV2ThroughTableProperty() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    shell.executeStatement("CREATE EXTERNAL TABLE customers (id int, name string) STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) + " TBLPROPERTIES ('" +
+        InputFormatConfig.CATALOG_NAME + "'='" + Catalogs.ICEBERG_DEFAULT_CATALOG_NAME + "', " +
+        "'" + TableProperties.FORMAT_VERSION + "'='2')");
+
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    Assert.assertEquals("should create table using format v2",
+        2, ((BaseTable) icebergTable).operations().current().formatVersion());
+  }
+
+  @Test
   public void testAlterTableAddColumnsConcurrently() throws Exception {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
@@ -949,6 +963,35 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
+  public void testAlterTableRenamePartitionColumn() throws Exception {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, SPEC,
+        FileFormat.PARQUET, ImmutableList.of());
+    shell.executeStatement("ALTER TABLE default.customers SET PARTITION SPEC (last_name)");
+
+    // Renaming (and reordering) a partition column
+    shell.executeStatement("ALTER TABLE default.customers CHANGE last_name family_name string FIRST");
+    List<PartitionField> partitionFields = testTables.loadTable(identifier).spec().fields();
+    Assert.assertEquals(1, partitionFields.size());
+    Assert.assertEquals("family_name", partitionFields.get(0).name());
+
+    // Addign new columns, assigning them as partition columns then removing 1 partition column
+    shell.executeStatement("ALTER TABLE default.customers ADD COLUMNS (p1 string, p2 string)");
+    shell.executeStatement("ALTER TABLE default.customers SET PARTITION SPEC (family_name, p1, p2)");
+
+    shell.executeStatement("ALTER TABLE default.customers CHANGE p1 region string");
+    shell.executeStatement("ALTER TABLE default.customers CHANGE p2 city string");
+
+    shell.executeStatement("ALTER TABLE default.customers SET PARTITION SPEC (region, city)");
+
+    List<Object[]> result = shell.executeStatement("DESCRIBE default.customers");
+    Assert.assertArrayEquals(new String[] {"family_name", "VOID", null}, result.get(8));
+    Assert.assertArrayEquals(new String[] {"region", "IDENTITY", null}, result.get(9));
+    Assert.assertArrayEquals(new String[] {"city", "IDENTITY", null}, result.get(10));
+  }
+
+  @Test
   public void testAlterTableReplaceColumns() throws TException, InterruptedException {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
@@ -963,9 +1006,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
     testTables.createTable(shell, identifier.name(), schema, SPEC, FileFormat.PARQUET, ImmutableList.of());
 
     shell.executeStatement("ALTER TABLE default.customers REPLACE COLUMNS " +
-        "(customer_id bigint, last_name string COMMENT 'This is last name', " +
-        "address struct<city:string,street:string> COMMENT 'Adding some comment', " +
-        "new_col string COMMENT 'This is a new column added')");
+        "(customer_id int, last_name string COMMENT 'This is last name', " +
+        "address struct<city:string,street:string>)");
 
     org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
     org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "customers");
@@ -974,18 +1016,62 @@ public class TestHiveIcebergStorageHandlerNoScan {
     List<FieldSchema> hmsSchema = hmsTable.getSd().getCols();
 
     List<FieldSchema> expectedSchema = Lists.newArrayList(
-        // customer_id: type promotion (int -> bigint), no change in comment
-        new FieldSchema("customer_id", "bigint", null),
+        new FieldSchema("customer_id", "int", null),
         // first_name column is dropped
-        // last_name: no changes
         new FieldSchema("last_name", "string", "This is last name"),
-        // address: comment added, no change in type
-        new FieldSchema("address", "struct<city:string,street:string>", "Adding some comment"),
-        // new_col: brand new column
-        new FieldSchema("new_col", "string", "This is a new column added"));
+        new FieldSchema("address", "struct<city:string,street:string>", null));
 
     Assert.assertEquals(expectedSchema, icebergSchema);
     Assert.assertEquals(expectedSchema, hmsSchema);
+  }
+
+  @Test
+  public void testAlterTableReplaceColumnsFailsWhenNotOnlyDropping() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    Schema schema = new Schema(
+        optional(1, "customer_id", Types.IntegerType.get()),
+        optional(2, "first_name", Types.StringType.get(), "This is first name"),
+        optional(3, "last_name", Types.StringType.get(), "This is last name"),
+        optional(4, "address",  Types.StructType.of(
+            optional(5, "city", Types.StringType.get()),
+            optional(6, "street", Types.StringType.get())), null)
+    );
+    testTables.createTable(shell, identifier.name(), schema, SPEC, FileFormat.PARQUET, ImmutableList.of());
+
+    // check unsupported operations
+    String[] commands = {
+        // type promotion
+        "ALTER TABLE default.customers REPLACE COLUMNS (customer_id bigint, first_name string COMMENT 'This is " +
+            "first name', last_name string COMMENT 'This is last name', address struct<city:string,street:string>)",
+        // delete a comment
+        "ALTER TABLE default.customers REPLACE COLUMNS (customer_id int, first_name string, " +
+            "last_name string COMMENT 'This is last name', address struct<city:string,street:string>)",
+        // change a comment
+        "ALTER TABLE default.customers REPLACE COLUMNS (customer_id int, first_name string COMMENT 'New docs', " +
+            "last_name string COMMENT 'This is last name', address struct<city:string,street:string>)",
+        // reorder columns
+        "ALTER TABLE default.customers REPLACE COLUMNS (customer_id int, last_name string COMMENT 'This is " +
+            "last name', first_name string COMMENT 'This is first name', address struct<city:string,street:string>)",
+        // add new column
+        "ALTER TABLE default.customers REPLACE COLUMNS (customer_id int, first_name string COMMENT 'This is " +
+            "first name', last_name string COMMENT 'This is last name', address struct<city:string,street:string>, " +
+            "new_col timestamp)",
+        // dropping a column + reordering columns
+        "ALTER TABLE default.customers REPLACE COLUMNS (last_name string COMMENT 'This is " +
+            "last name', first_name string COMMENT 'This is first name', address struct<city:string,street:string>)"
+    };
+
+    for (String command : commands) {
+      AssertHelpers.assertThrows("", IllegalArgumentException.class,
+          "Unsupported operation to use REPLACE COLUMNS", () -> shell.executeStatement(command));
+    }
+
+    // check no-op case too
+    String command = "ALTER TABLE default.customers REPLACE COLUMNS (customer_id int, first_name string COMMENT 'This" +
+        " is first name', last_name string COMMENT 'This is last name', address struct<city:string,street:string>)";
+    AssertHelpers.assertThrows("", IllegalArgumentException.class,
+        "No schema change detected", () -> shell.executeStatement(command));
   }
 
   @Test

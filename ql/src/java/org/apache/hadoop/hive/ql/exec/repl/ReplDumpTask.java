@@ -191,7 +191,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           Path currentDumpPath = getCurrentDumpPath(dumpRoot, work.isBootstrap());
           Path hiveDumpRoot = new Path(currentDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
           if (!work.isBootstrap()) {
-            preProcessFailoverIfRequired(previousValidHiveDumpPath, hiveDumpRoot, isFailoverMarkerPresent);
+            preProcessFailoverIfRequired(previousValidHiveDumpPath, isFailoverMarkerPresent);
           }
           // Set distCp custom name corresponding to the replication policy.
           String mapRedCustomName = ReplUtils.getDistCpCustomName(conf, work.dbNameOrPattern);
@@ -257,25 +257,26 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return 0;
   }
 
-  private void preProcessFailoverIfRequired(Path previousValidHiveDumpDir, Path currentHiveDumpDir,
-                                            boolean isPrevFailoverReadyMarkerPresent) throws HiveException, IOException {
-    FileSystem fs = currentHiveDumpDir.getFileSystem(conf);
+  private void preProcessFailoverIfRequired(Path previousValidHiveDumpDir, boolean isPrevFailoverReadyMarkerPresent)
+          throws HiveException, IOException {
+    FileSystem fs = previousValidHiveDumpDir.getFileSystem(conf);
     Database db = getHive().getDatabase(work.dbNameOrPattern);
     if (isPrevFailoverReadyMarkerPresent) {
-      if (MetaStoreUtils.isDbBeingFailedOver(db)) {
-        //Since previous valid dump is failover ready and repl.failover.enabled is set for database, just rollback
+      if (MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.SOURCE)) {
+        //Since previous valid dump is failover ready and repl.failover.endpoint is set for source, just rollback
         // the failover process initiated in the previous iteration.
         LOG.info("Rolling back failover initiated in previous dump iteration.");
         fs.delete(new Path(previousValidHiveDumpDir, ReplAck.FAILOVER_READY_MARKER.toString()), true);
-      } else {
-        //Since previous valid dump is failover ready and repl.failover.enabled is not set for database, this means
-        //this is first dump operation in the reverse direction.
+      } else if (MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET)) {
+        //Since previous valid dump is failover ready and repl.failover.endpoint is set for target,
+        // this means it is first dump operation in the reverse direction.
         LOG.info("Switching to bootstrap dump as this is the first dump execution after failover.");
         work.setFirstDumpAfterFailover(true);
       }
     }
-    if (!shouldFailover()) {
-      unsetReplFailoverEnabledIfSet(db);
+    if (!shouldFailover() && !work.isFirstDumpAfterFailover()) {
+      //If this is first dump operation, don't unset this property until first incremental dump.
+      ReplUtils.unsetDbPropIfSet(db, ReplConst.REPL_FAILOVER_ENDPOINT, getHive());
     }
   }
 
@@ -690,7 +691,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
     if (shouldFailover()) {
       if (!MetaStoreUtils.isDbBeingFailedOver(db)) {
-        setReplFailoverEnabled(db);
+        setReplFailoverEnabledAtSource(db);
       }
       fetchFailoverMetadata(hiveDb);
       assert work.getFailoverMetadata().isValidMetadata();
@@ -1198,25 +1199,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
-  private void unsetReplFailoverEnabledIfSet(Database db) throws HiveException {
-    if (db == null) {
-      return;
-    }
-    Map<String, String> dbProps = db.getParameters();
-    if (dbProps != null && dbProps.containsKey(ReplConst.REPL_FAILOVER_ENABLED)) {
-      LOG.info("Removing property: {} from database: {}", ReplConst.REPL_FAILOVER_ENABLED, work.dbNameOrPattern);
-      dbProps.remove(ReplConst.REPL_FAILOVER_ENABLED);
-      db.setParameters(dbProps);
-      getHive().alterDatabase(work.dbNameOrPattern, db);
-    }
-  }
-
-  private void setReplFailoverEnabled(Database db) throws HiveException {
+  private void setReplFailoverEnabledAtSource(Database db) throws HiveException {
     Map<String, String> params = db.getParameters();
     if (params != null) {
-      params.put(ReplConst.REPL_FAILOVER_ENABLED, ReplConst.TRUE);
+      params.put(ReplConst.REPL_FAILOVER_ENDPOINT, MetaStoreUtils.FailoverEndpoint.SOURCE.toString());
     } else {
-      db.setParameters(Collections.singletonMap(ReplConst.REPL_FAILOVER_ENABLED, ReplConst.TRUE));
+      db.setParameters(Collections.singletonMap(ReplConst.REPL_FAILOVER_ENDPOINT,
+              MetaStoreUtils.FailoverEndpoint.SOURCE.toString()));
     }
     getHive().alterDatabase(work.dbNameOrPattern, db);
   }

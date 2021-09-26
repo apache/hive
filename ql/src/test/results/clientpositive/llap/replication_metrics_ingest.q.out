@@ -45,6 +45,10 @@ PREHOOK: query: alter scheduled query repl1 execute
 PREHOOK: type: ALTER SCHEDULED QUERY
 POSTHOOK: query: alter scheduled query repl1 execute
 POSTHOOK: type: ALTER SCHEDULED QUERY
+PREHOOK: query: alter scheduled query repl1 disabled
+PREHOOK: type: ALTER SCHEDULED QUERY
+POSTHOOK: query: alter scheduled query repl1 disabled
+POSTHOOK: type: ALTER SCHEDULED QUERY
 PREHOOK: query: create scheduled query repl2 every 15 minutes as repl load src into destination
 #### A masked pattern was here ####
 PREHOOK: type: CREATE SCHEDULED QUERY
@@ -54,6 +58,10 @@ POSTHOOK: type: CREATE SCHEDULED QUERY
 PREHOOK: query: alter scheduled query repl2 execute
 PREHOOK: type: ALTER SCHEDULED QUERY
 POSTHOOK: query: alter scheduled query repl2 execute
+POSTHOOK: type: ALTER SCHEDULED QUERY
+PREHOOK: query: alter scheduled query repl2 disabled
+PREHOOK: type: ALTER SCHEDULED QUERY
+POSTHOOK: query: alter scheduled query repl2 disabled
 POSTHOOK: type: ALTER SCHEDULED QUERY
 PREHOOK: query: show databases
 PREHOOK: type: SHOWDATABASES

@@ -249,7 +249,21 @@ public class MetaStoreUtils {
   public static boolean isDbBeingFailedOver(Database db) {
     assert (db != null);
     Map<String, String> dbParameters = db.getParameters();
-    return dbParameters != null && ReplConst.TRUE.equalsIgnoreCase(dbParameters.get(ReplConst.REPL_FAILOVER_ENABLED));
+    if (dbParameters == null) {
+      return false;
+    }
+    String dbFailoverEndPoint = dbParameters.get(ReplConst.REPL_FAILOVER_ENDPOINT);
+    return FailoverEndpoint.SOURCE.toString().equalsIgnoreCase(dbFailoverEndPoint)
+            || FailoverEndpoint.TARGET.toString().equalsIgnoreCase(dbFailoverEndPoint);
+  }
+
+  public static boolean isDbBeingFailedOverAtEndpoint(Database db, FailoverEndpoint endPoint) {
+    if (db == null) {
+      return false;
+    }
+    Map<String, String> dbParameters = db.getParameters();
+    return dbParameters != null
+            && endPoint.toString().equalsIgnoreCase(dbParameters.get(ReplConst.REPL_FAILOVER_ENDPOINT));
   }
 
   public static boolean isTargetOfReplication(Database db) {
@@ -1067,7 +1081,7 @@ public class MetaStoreUtils {
   }
 
   public static TableName getTableNameFor(Table table) {
-    return TableName.fromString(table.getTableName(), table.getCatName(), table.getDbName());
+    return TableName.fromString(table.getTableName(), table.getCatName(), table.getDbName(), null);
   }
 
   /**
@@ -1097,5 +1111,20 @@ public class MetaStoreUtils {
       return NO_VAL;
     }
     return id.substring(id.lastIndexOf('-') + 1);
+  }
+
+  public enum FailoverEndpoint {
+    /**
+     * EndPoint to specify nature of database for which failover is initiated.
+     */
+    SOURCE, TARGET;
+  }
+
+  public static boolean isNoCleanUpSet(Map<String, String> parameters) {
+    String noCleanUp = parameters.get(hive_metastoreConstants.NO_CLEANUP);
+    if (noCleanUp == null) {
+      noCleanUp = parameters.get(hive_metastoreConstants.NO_CLEANUP.toUpperCase());
+    }
+    return noCleanUp != null && noCleanUp.equalsIgnoreCase("true");
   }
 }

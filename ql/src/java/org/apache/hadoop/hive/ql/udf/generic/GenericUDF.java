@@ -434,10 +434,19 @@ public abstract class GenericUDF implements Closeable {
     case TIMESTAMP:
     case DATE:
     case TIMESTAMPLOCALTZ:
+    case INT:
+    case SHORT:
+    case LONG:
+    case DOUBLE:
+    case FLOAT:
+    case DECIMAL:
+    case VOID:
+    case BOOLEAN:
+    case BYTE:
       break;
     default:
       throw new UDFArgumentTypeException(i, getFuncName()
-          + " only takes STRING_GROUP or DATE_GROUP types as " + getArgOrder(i) + " argument, got "
+          + " only takes STRING_GROUP/DATE_GROUP/NUMERIC_GROUP/VOID_GROUP/BOOLEAN_GROUP types as " + getArgOrder(i) + " argument, got "
           + inputType);
     }
     outOi = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;

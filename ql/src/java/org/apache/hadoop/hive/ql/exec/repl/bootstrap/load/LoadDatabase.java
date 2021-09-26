@@ -146,9 +146,7 @@ public class LoadDatabase {
   }
 
   private boolean isDbEmpty(String dbName) throws HiveException {
-    List<String> allTables = context.hiveDb.getAllTables(dbName);
-    List<String> allFunctions = context.hiveDb.getFunctions(dbName, "*");
-    return allTables.isEmpty() && allFunctions.isEmpty();
+    return context.hiveDb.getAllTables(dbName).isEmpty() && context.hiveDb.getFunctions(dbName, "*").isEmpty();
   }
 
   private Task<?> createDbTask(Database dbObj) throws MetaException {

@@ -185,7 +185,7 @@ public class TestHiveShell {
     hiveConf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT, -1);
 
     // Switch off optimizers in order to contain the map reduction within this JVM
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_INFER_BUCKET_SORT, false);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEMETADATAONLYQUERIES, false);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTINDEXFILTER, false);

@@ -40,6 +40,7 @@ import org.apache.iceberg.data.RandomGenericData;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.junit.rules.TemporaryFolder;
 
 public class TestHelper {
@@ -50,17 +51,24 @@ public class TestHelper {
   private final PartitionSpec spec;
   private final FileFormat fileFormat;
   private final TemporaryFolder tmp;
+  private final Map<String, String> tblProps;
 
   private Table table;
 
   public TestHelper(Configuration conf, Tables tables, String tableIdentifier, Schema schema, PartitionSpec spec,
                     FileFormat fileFormat, TemporaryFolder tmp) {
+    this(conf, tables, tableIdentifier, schema, spec, fileFormat, ImmutableMap.of(), tmp);
+  }
+
+  public TestHelper(Configuration conf, Tables tables, String tableIdentifier, Schema schema, PartitionSpec spec,
+      FileFormat fileFormat, Map<String, String> tblProps, TemporaryFolder tmp) {
     this.conf = conf;
     this.tables = tables;
     this.tableIdentifier = tableIdentifier;
     this.schema = schema;
     this.spec = spec;
     this.fileFormat = fileFormat;
+    this.tblProps = tblProps;
     this.tmp = tmp;
   }
 
@@ -74,8 +82,10 @@ public class TestHelper {
   }
 
   public Map<String, String> properties() {
-    return ImmutableMap.of(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.name(),
-        TableProperties.ENGINE_HIVE_ENABLED, "true");
+    Map<String, String> props = Maps.newHashMap(tblProps);
+    props.put(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.name());
+    props.put(TableProperties.ENGINE_HIVE_ENABLED, "true");
+    return props;
   }
 
   public Table createTable(Schema theSchema, PartitionSpec theSpec) {

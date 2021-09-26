@@ -58,5 +58,7 @@ public class AlterTableIntoBucketsAnalyzer extends AbstractAlterTableAnalyzer {
     int numberOfBuckets = Integer.parseInt(command.getChild(0).getText());
     AlterTableIntoBucketsDesc desc = new AlterTableIntoBucketsDesc(tableName, partitionSpec, numberOfBuckets);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
+
+    setAcidDdlDesc(getTable(tableName), desc);
   }
 }

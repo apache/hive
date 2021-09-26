@@ -34,10 +34,12 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.orc.TestVectorizedOrcAcidRowBatchReader;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorMR;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -479,12 +481,18 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
 
     runStatementOnDriver("alter table T compact 'minor'");
     //create failed compaction attempt so that compactor txn is aborted
+    CompactorMR compactorMr = Mockito.spy(new CompactorMR());
+
+    Mockito.doAnswer((Answer<Void>) invocationOnMock -> {
+      invocationOnMock.callRealMethod();
+      throw new RuntimeException(
+        "Will cause CompactorMR to fail all opening txn and creating directories for compaction.");
+    }).when(compactorMr).run(any(), any(), any(), any(), any(), any(), any(), any(), any(), any());
+
     Worker worker = Mockito.spy(new Worker());
     worker.setConf(hiveConf);
     worker.init(new AtomicBoolean(true));
-    Mockito.doThrow(new RuntimeException(
-      "Will cause CompactorMR to fail all opening txn and creating directories for compaction."))
-      .when(worker).verifyTableIdHasNotChanged(any(), any());
+    Mockito.doReturn(compactorMr).when(worker).getMrCompactor();
     worker.run();
 
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
@@ -497,6 +505,8 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     Assert.assertEquals(openResp.toString(), 1, openResp.getOpen_txnsSize());
     //check that the compactor txn is aborted
     Assert.assertTrue(openResp.toString(), BitSet.valueOf(openResp.getAbortedBits()).get(0));
+    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(hiveConf,
+        "SELECT count(*) FROM hive_locks WHERE hl_txnid=" + openResp.getOpen_txns().get(0)));
 
     FileSystem fs = FileSystem.get(hiveConf);
     Path warehousePath = new Path(getWarehouseDir());
@@ -526,12 +536,18 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
 
     runStatementOnDriver("alter table T compact 'minor'");
     //create failed compaction attempt so that compactor txn is aborted
+    CompactorMR compactorMr = Mockito.spy(new CompactorMR());
+
+    Mockito.doAnswer((Answer<Void>) invocationOnMock -> {
+      invocationOnMock.callRealMethod();
+      throw new RuntimeException(
+        "Will cause CompactorMR to fail all opening txn and creating directories for compaction.");
+    }).when(compactorMr).run(any(), any(), any(), any(), any(), any(), any(), any(), any(), any());
+
     Worker worker = Mockito.spy(new Worker());
     worker.setConf(hiveConf);
     worker.init(new AtomicBoolean(true));
-    Mockito.doThrow(new RuntimeException(
-      "Will cause CompactorMR to fail all opening txn and creating directories for compaction."))
-      .when(worker).verifyTableIdHasNotChanged(any(), any());
+    Mockito.doReturn(compactorMr).when(worker).getMrCompactor();
     worker.run();
 
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
@@ -544,6 +560,8 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     Assert.assertEquals(openResp.toString(), 1, openResp.getOpen_txnsSize());
     //check that the compactor txn is aborted
     Assert.assertTrue(openResp.toString(), BitSet.valueOf(openResp.getAbortedBits()).get(0));
+    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(hiveConf,
+       "SELECT count(*) FROM hive_locks WHERE hl_txnid=" + openResp.getOpen_txns().get(0)));
 
     FileSystem fs = FileSystem.get(hiveConf);
     Path warehousePath = new Path(getWarehouseDir());

@@ -1,0 +1,528 @@
+PREHOOK: query: drop table if exists ice_meta_2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists ice_meta_2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists ice_meta_3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists ice_meta_3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table ice_meta_2(a int) partitioned by (b string) stored by iceberg stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_meta_2
+POSTHOOK: query: create external table ice_meta_2(a int) partitioned by (b string) stored by iceberg stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_meta_2
+PREHOOK: query: insert into table ice_meta_2 values (1, 'one'), (2, 'one'), (3, 'one')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_meta_2
+POSTHOOK: query: insert into table ice_meta_2 values (1, 'one'), (2, 'one'), (3, 'one')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_meta_2
+PREHOOK: query: truncate table ice_meta_2
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ice_meta_2
+POSTHOOK: query: truncate table ice_meta_2
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ice_meta_2
+PREHOOK: query: insert into table ice_meta_2 values (4, 'two'), (5, 'two')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_meta_2
+POSTHOOK: query: insert into table ice_meta_2 values (4, 'two'), (5, 'two')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_meta_2
+PREHOOK: query: truncate table ice_meta_2
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ice_meta_2
+POSTHOOK: query: truncate table ice_meta_2
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ice_meta_2
+PREHOOK: query: insert into table ice_meta_2 values (6, 'three'), (7, 'three'), (8, 'three')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_meta_2
+POSTHOOK: query: insert into table ice_meta_2 values (6, 'three'), (7, 'three'), (8, 'three')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_meta_2
+PREHOOK: query: insert into table ice_meta_2 values (9, 'four')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_meta_2
+POSTHOOK: query: insert into table ice_meta_2 values (9, 'four')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_meta_2
+PREHOOK: query: select * from ice_meta_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_meta_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+6	three
+7	three
+8	three
+9	four
+PREHOOK: query: create external table ice_meta_3(a int) partitioned by (b string, c string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_meta_3
+POSTHOOK: query: create external table ice_meta_3(a int) partitioned by (b string, c string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_meta_3
+PREHOOK: query: insert into table ice_meta_3 partition (b='one', c='Monday') values (1), (2), (3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_meta_3@b=one/c=Monday
+POSTHOOK: query: insert into table ice_meta_3 partition (b='one', c='Monday') values (1), (2), (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_meta_3@b=one/c=Monday
+POSTHOOK: Lineage: ice_meta_3 PARTITION(b=one,c=Monday).a SCRIPT []
+PREHOOK: query: insert into table ice_meta_3 partition (b='two', c='Tuesday') values (4), (5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_meta_3@b=two/c=Tuesday
+POSTHOOK: query: insert into table ice_meta_3 partition (b='two', c='Tuesday') values (4), (5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_meta_3@b=two/c=Tuesday
+POSTHOOK: Lineage: ice_meta_3 PARTITION(b=two,c=Tuesday).a SCRIPT []
+PREHOOK: query: insert into table ice_meta_3 partition (b='two', c='Friday') values (10), (11)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_meta_3@b=two/c=Friday
+POSTHOOK: query: insert into table ice_meta_3 partition (b='two', c='Friday') values (10), (11)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_meta_3@b=two/c=Friday
+POSTHOOK: Lineage: ice_meta_3 PARTITION(b=two,c=Friday).a SCRIPT []
+PREHOOK: query: insert into table ice_meta_3 partition (b='three', c='Wednesday') values (6), (7), (8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_meta_3@b=three/c=Wednesday
+POSTHOOK: query: insert into table ice_meta_3 partition (b='three', c='Wednesday') values (6), (7), (8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_meta_3@b=three/c=Wednesday
+POSTHOOK: Lineage: ice_meta_3 PARTITION(b=three,c=Wednesday).a SCRIPT []
+PREHOOK: query: insert into table ice_meta_3 partition (b='four', c='Thursday') values (9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_meta_3@b=four/c=Thursday
+POSTHOOK: query: insert into table ice_meta_3 partition (b='four', c='Thursday') values (9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_meta_3@b=four/c=Thursday
+POSTHOOK: Lineage: ice_meta_3 PARTITION(b=four,c=Thursday).a SCRIPT []
+PREHOOK: query: insert into table ice_meta_3 partition (b='four', c='Saturday') values (12), (13), (14)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_meta_3@b=four/c=Saturday
+POSTHOOK: query: insert into table ice_meta_3 partition (b='four', c='Saturday') values (12), (13), (14)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_meta_3@b=four/c=Saturday
+POSTHOOK: Lineage: ice_meta_3 PARTITION(b=four,c=Saturday).a SCRIPT []
+PREHOOK: query: insert into table ice_meta_3 partition (b='four', c='Sunday') values (15)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_meta_3@b=four/c=Sunday
+POSTHOOK: query: insert into table ice_meta_3 partition (b='four', c='Sunday') values (15)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_meta_3@b=four/c=Sunday
+POSTHOOK: Lineage: ice_meta_3 PARTITION(b=four,c=Sunday).a SCRIPT []
+PREHOOK: query: alter table ice_meta_3 set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: default@ice_meta_3
+POSTHOOK: query: alter table ice_meta_3 set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: default@ice_meta_3
+PREHOOK: query: select * from ice_meta_3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_meta_3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one	Monday
+10	two	Friday
+11	two	Friday
+12	four	Saturday
+13	four	Saturday
+14	four	Saturday
+15	four	Sunday
+2	one	Monday
+3	one	Monday
+4	two	Tuesday
+5	two	Tuesday
+6	three	Wednesday
+7	three	Wednesday
+8	three	Wednesday
+9	four	Thursday
+PREHOOK: query: select `partition` from default.ice_meta_2.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.ice_meta_2.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"four"}
+{"b":"three"}
+PREHOOK: query: select `partition` from default.ice_meta_3.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.ice_meta_3.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"four","c":"Saturday"}
+{"b":"four","c":"Sunday"}
+{"b":"four","c":"Thursday"}
+{"b":"one","c":"Monday"}
+{"b":"three","c":"Wednesday"}
+{"b":"two","c":"Friday"}
+{"b":"two","c":"Tuesday"}
+PREHOOK: query: select `partition`.b from default.ice_meta_2.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition`.b from default.ice_meta_2.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+four
+three
+PREHOOK: query: select data_file.`partition` from default.ice_meta_3.entries
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select data_file.`partition` from default.ice_meta_3.entries
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"four","c":"Saturday"}
+{"b":"four","c":"Sunday"}
+{"b":"four","c":"Thursday"}
+{"b":"one","c":"Monday"}
+{"b":"three","c":"Wednesday"}
+{"b":"two","c":"Friday"}
+{"b":"two","c":"Tuesday"}
+PREHOOK: query: select data_file.`partition` from default.ice_meta_2.entries
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select data_file.`partition` from default.ice_meta_2.entries
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"four"}
+{"b":"three"}
+PREHOOK: query: select data_file.`partition`.c from default.ice_meta_3.entries
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select data_file.`partition`.c from default.ice_meta_3.entries
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Friday
+Monday
+Saturday
+Sunday
+Thursday
+Tuesday
+Wednesday
+PREHOOK: query: select summary from default.ice_meta_3.snapshots
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select summary from default.ice_meta_3.snapshots
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"added-data-files":"7","added-records":"15","added-files-size":"1329","changed-partition-count":"7","total-records":"15","total-files-size":"1329","total-data-files":"7","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0"}
+PREHOOK: query: select summary['changed-partition-count'] from default.ice_meta_2.snapshots
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select summary['changed-partition-count'] from default.ice_meta_2.snapshots
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+1
+1
+1
+1
+1
+PREHOOK: query: select partition_spec_id, partition_summaries from default.ice_meta_2.manifests
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select partition_spec_id, partition_summaries from default.ice_meta_2.manifests
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	[{"contains_null":false,"contains_nan":false,"lower_bound":"four","upper_bound":"four"}]
+0	[{"contains_null":false,"contains_nan":false,"lower_bound":"three","upper_bound":"three"}]
+PREHOOK: query: select partition_spec_id, partition_summaries[1].upper_bound from default.ice_meta_3.manifests
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select partition_spec_id, partition_summaries[1].upper_bound from default.ice_meta_3.manifests
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	Wednesday
+PREHOOK: query: select * from default.ice_meta_2.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice_meta_2.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"four"}	1	1
+{"b":"three"}	3	1
+PREHOOK: query: select * from default.ice_meta_3.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice_meta_3.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"four","c":"Saturday"}	3	1
+{"b":"four","c":"Sunday"}	1	1
+{"b":"four","c":"Thursday"}	1	1
+{"b":"one","c":"Monday"}	3	1
+{"b":"three","c":"Wednesday"}	3	1
+{"b":"two","c":"Friday"}	2	1
+{"b":"two","c":"Tuesday"}	2	1
+PREHOOK: query: select `partition` from default.ice_meta_2.partitions where `partition`.b='four'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.ice_meta_2.partitions where `partition`.b='four'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"four"}
+PREHOOK: query: select * from default.ice_meta_3.partitions where `partition`.b='two' and `partition`.c='Tuesday'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice_meta_3.partitions where `partition`.b='two' and `partition`.c='Tuesday'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"two","c":"Tuesday"}	2	1
+PREHOOK: query: select partition_summaries from default.ice_meta_3.manifests where partition_summaries[1].upper_bound='Wednesday'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select partition_summaries from default.ice_meta_3.manifests where partition_summaries[1].upper_bound='Wednesday'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+[{"contains_null":false,"contains_nan":false,"lower_bound":"four","upper_bound":"two"},{"contains_null":false,"contains_nan":false,"lower_bound":"Friday","upper_bound":"Wednesday"}]
+PREHOOK: query: select `partition` from default.ice_meta_2.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.ice_meta_2.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"four"}
+{"b":"three"}
+PREHOOK: query: select `partition` from default.ice_meta_3.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.ice_meta_3.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"four","c":"Saturday"}
+{"b":"four","c":"Sunday"}
+{"b":"four","c":"Thursday"}
+{"b":"one","c":"Monday"}
+{"b":"three","c":"Wednesday"}
+{"b":"two","c":"Friday"}
+{"b":"two","c":"Tuesday"}
+PREHOOK: query: select `partition`.b from default.ice_meta_2.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition`.b from default.ice_meta_2.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+four
+three
+PREHOOK: query: select data_file.`partition` from default.ice_meta_3.entries
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select data_file.`partition` from default.ice_meta_3.entries
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"four","c":"Saturday"}
+{"b":"four","c":"Sunday"}
+{"b":"four","c":"Thursday"}
+{"b":"one","c":"Monday"}
+{"b":"three","c":"Wednesday"}
+{"b":"two","c":"Friday"}
+{"b":"two","c":"Tuesday"}
+PREHOOK: query: select data_file.`partition` from default.ice_meta_2.entries
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select data_file.`partition` from default.ice_meta_2.entries
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"four"}
+{"b":"three"}
+PREHOOK: query: select data_file.`partition`.c from default.ice_meta_3.entries
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select data_file.`partition`.c from default.ice_meta_3.entries
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Friday
+Monday
+Saturday
+Sunday
+Thursday
+Tuesday
+Wednesday
+PREHOOK: query: select summary from default.ice_meta_3.snapshots
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select summary from default.ice_meta_3.snapshots
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"added-data-files":"7","added-records":"15","added-files-size":"1329","changed-partition-count":"7","total-records":"15","total-files-size":"1329","total-data-files":"7","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0"}
+PREHOOK: query: select summary['changed-partition-count'] from default.ice_meta_2.snapshots
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select summary['changed-partition-count'] from default.ice_meta_2.snapshots
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+1
+1
+1
+1
+1
+PREHOOK: query: select partition_spec_id, partition_summaries from default.ice_meta_2.manifests
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select partition_spec_id, partition_summaries from default.ice_meta_2.manifests
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	[{"contains_null":false,"contains_nan":false,"lower_bound":"four","upper_bound":"four"}]
+0	[{"contains_null":false,"contains_nan":false,"lower_bound":"three","upper_bound":"three"}]
+PREHOOK: query: select partition_spec_id, partition_summaries[1].upper_bound from default.ice_meta_3.manifests
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select partition_spec_id, partition_summaries[1].upper_bound from default.ice_meta_3.manifests
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	Wednesday
+PREHOOK: query: select * from default.ice_meta_2.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice_meta_2.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"four"}	1	1
+{"b":"three"}	3	1
+PREHOOK: query: select * from default.ice_meta_3.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice_meta_3.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"four","c":"Saturday"}	3	1
+{"b":"four","c":"Sunday"}	1	1
+{"b":"four","c":"Thursday"}	1	1
+{"b":"one","c":"Monday"}	3	1
+{"b":"three","c":"Wednesday"}	3	1
+{"b":"two","c":"Friday"}	2	1
+{"b":"two","c":"Tuesday"}	2	1
+PREHOOK: query: select `partition` from default.ice_meta_2.partitions where `partition`.b='four'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.ice_meta_2.partitions where `partition`.b='four'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"four"}
+PREHOOK: query: select * from default.ice_meta_3.partitions where `partition`.b='two' and `partition`.c='Tuesday'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice_meta_3.partitions where `partition`.b='two' and `partition`.c='Tuesday'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"two","c":"Tuesday"}	2	1
+PREHOOK: query: select partition_summaries from default.ice_meta_3.manifests where partition_summaries[1].upper_bound='Wednesday'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select partition_summaries from default.ice_meta_3.manifests where partition_summaries[1].upper_bound='Wednesday'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+[{"contains_null":false,"contains_nan":false,"lower_bound":"four","upper_bound":"two"},{"contains_null":false,"contains_nan":false,"lower_bound":"Friday","upper_bound":"Wednesday"}]
+PREHOOK: query: drop table ice_meta_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: default@ice_meta_2
+POSTHOOK: query: drop table ice_meta_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: default@ice_meta_2
+PREHOOK: query: drop table ice_meta_3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: default@ice_meta_3
+POSTHOOK: query: drop table ice_meta_3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: default@ice_meta_3

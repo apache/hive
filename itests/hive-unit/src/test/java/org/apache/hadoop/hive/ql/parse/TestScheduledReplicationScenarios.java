@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
@@ -56,12 +57,12 @@ import java.util.ArrayList;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 
 /**
  * TestScheduledReplicationScenarios - test scheduled replication .
  */
-@org.junit.Ignore("HIVE-24766")
 public class TestScheduledReplicationScenarios extends BaseReplicationScenariosAcidTables {
   private static final long DEFAULT_PROBE_TIMEOUT = 5 * 60 * 1000L; // 5 minutes
 
@@ -265,20 +266,17 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
     // Remove the SOURCE_OF_REPLICATION property from the database.
     primary.run("ALTER DATABASE " + primaryDbName + " Set DBPROPERTIES ( '"
         + SOURCE_OF_REPLICATION + "' = '')");
+    assertFalse(ReplChangeManager.isSourceOfReplication(primary.getDatabase(primaryDbName)));
 
     // Schedule Dump & Load and verify the data is replicated properly.
     try (ScheduledQueryExecutionService schqS = ScheduledQueryExecutionService
         .startScheduledQueryExecutorService(primary.hiveConf)) {
       int next = -1;
       ReplDumpWork.injectNextDumpDirForTest(String.valueOf(next), true);
-      primary.run("create scheduled query s1_t2 every 5 seconds as repl dump "
-          + primaryDbName + withClause);
+      primary.run("create scheduled query s1_t2 every 5 seconds as repl dump " + primaryDbName + withClause);
       replica.run("create scheduled query s2_t2 every 5 seconds as repl load "
           + primaryDbName + " INTO " + replicatedDbName + withClause);
-      Path dumpRoot =
-          new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR),
-              Base64.getEncoder().encodeToString(primaryDbName.toLowerCase()
-                  .getBytes(StandardCharsets.UTF_8.name())));
+      Path dumpRoot = ReplUtils.getEncodedDumpRootPath(primary.hiveConf, primaryDbName.toLowerCase());
       FileSystem fs = FileSystem.get(dumpRoot.toUri(), primary.hiveConf);
       next = Integer.parseInt(ReplDumpWork.getTestInjectDumpDir()) + 1;
       Path ackPath = new Path(dumpRoot,
@@ -290,40 +288,33 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
           .verifyResults(new String[] {"1", "2"});
 
       // Check the database got the SOURCE_OF_REPLICATION property set.
-      primary.run("DESCRIBE DATABASE EXTENDED " + primaryDbName);
-      String result = primary.getOutput().get(0);
-      assertTrue(result, result.contains("repl.source.for=s1_t2"));
+      assertTrue(ReplChangeManager.getReplPolicyIdString(primary.getDatabase(primaryDbName)).equals("s1_t2"));
+
+      // Remove the SOURCE_OF_REPLICATION property from the database.
+      primary.run("ALTER DATABASE " + primaryDbName + " Set DBPROPERTIES ( '" + SOURCE_OF_REPLICATION + "' = '')");
+      assertFalse(ReplChangeManager.isSourceOfReplication(primary.getDatabase(primaryDbName)));
+
+      //Test to ensure that repl.source.for is added in incremental iteration of replication also.
+      GenericTestUtils.waitFor(() -> {
+        try {
+          return ReplChangeManager.getReplPolicyIdString(primary.getDatabase(primaryDbName)).equals("s1_t2");
+        } catch (Throwable e) {
+          return false;
+        }
+      }, 100, 10000);
 
       // Test the new policy id is appended
       primary.run("drop scheduled query s1_t2");
-      fs.delete(new Path(dumpRoot, String.valueOf(next)), true);
-      primary.run(
-          "create scheduled query s1_t2_new every 5 seconds as repl " + "dump "
-              + primaryDbName + withClause);
-
+      fs.delete(dumpRoot, true);
+      primary.run("create scheduled query s1_t2_new every 5 seconds as repl " + "dump " + primaryDbName + withClause);
       GenericTestUtils.waitFor(() -> {
         try {
-          primary.run("DESCRIBE DATABASE EXTENDED " + primaryDbName);
-          return primary.getOutput().get(0)
-              .contains("repl.source.for=s1_t2, s1_t2_new");
+          return ReplChangeManager.getReplPolicyIdString(primary.getDatabase(primaryDbName)).equals("s1_t2, s1_t2_new");
         } catch (Throwable e) {
           return false;
         }
       }, 100, 10000);
 
-      // Remove the SOURCE_OF_REPLICATION property from the database.
-      primary.run("ALTER DATABASE " + primaryDbName + " Set DBPROPERTIES ( '"
-              + SOURCE_OF_REPLICATION + "' = '')");
-
-      GenericTestUtils.waitFor(() -> {
-        try {
-          primary.run("DESCRIBE DATABASE EXTENDED " + primaryDbName);
-          return primary.getOutput().get(0)
-                  .contains("repl.source.for=s1_t2_new");
-        } catch (Throwable e) {
-          return false;
-        }
-      }, 100, 10000);
     } finally {
       primary.run("drop scheduled query s1_t2_new");
       replica.run("drop scheduled query s2_t2");

@@ -118,7 +118,7 @@
     <calcite.version>1.25.0</calcite.version>
     <datanucleus-api-jdo.version>5.2.6</datanucleus-api-jdo.version>
     <datanucleus-core.version>5.2.6</datanucleus-core.version>
-    <datanucleus-jdo.version>3.2.0-m13</datanucleus-jdo.version>
+    <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
     <datanucleus-rdbms.version>5.2.6</datanucleus-rdbms.version>
     <commons-cli.version>1.2</commons-cli.version>
     <commons-codec.version>1.15</commons-codec.version>
@@ -225,6 +225,8 @@
     <datasketches.version>1.1.0-incubating</datasketches.version>
     <spotbugs.version>4.0.3</spotbugs.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
+    <aws-secretsmanager-caching.version>1.0.1</aws-secretsmanager-caching.version>
+    <aws-java-sdk.version>1.11.901</aws-java-sdk.version>
   </properties>
 
   <repositories>
@@ -267,6 +269,28 @@
   <dependencyManagement>
     <dependencies>
       <!-- dependencies are always listed in sorted order by groupId, artifactId -->
+      <dependency>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>aws-java-sdk-bundle</artifactId>
+        <version>${aws-java-sdk.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.amazonaws.secretsmanager</groupId>
+        <artifactId>aws-secretsmanager-caching-java</artifactId>
+        <version>${aws-secretsmanager-caching.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-secretsmanager</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
       <dependency>
         <groupId>com.esotericsoftware</groupId>
         <artifactId>kryo</artifactId>

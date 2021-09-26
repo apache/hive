@@ -1770,6 +1770,16 @@ public interface IMetaStoreClient {
   void validatePartitionNameCharacters(List<String> partVals) throws TException, MetaException;
 
   /**
+   * Dry run that translates table
+   *    *
+   *    * @param tbl
+   *    *          a table object
+   *    * @throws HiveException
+   */
+  public Table getTranslateTableDryrun(Table tbl) throws AlreadyExistsException,
+          InvalidObjectException, MetaException, NoSuchObjectException, TException;
+
+  /**
    * @param tbl
    * @throws AlreadyExistsException
    * @throws InvalidObjectException
@@ -3661,6 +3671,14 @@ public interface IMetaStoreClient {
    */
   @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
   void addWriteNotificationLog(WriteNotificationLogRequest rqst) throws TException;
+
+  /**
+   * Add a batch of event related to write operations in an ACID table.
+   * @param rqst message containing information for acid write operations.
+   * @throws TException
+   */
+  @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
+  void addWriteNotificationLogInBatch(WriteNotificationLogBatchRequest rqst) throws TException;
 
   class IncompatibleMetastoreException extends MetaException {
     IncompatibleMetastoreException(String message) {

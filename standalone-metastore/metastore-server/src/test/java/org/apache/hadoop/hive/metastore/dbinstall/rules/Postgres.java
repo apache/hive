@@ -32,7 +32,7 @@ public class Postgres extends DatabaseRule {
 
   @Override
   public String getDockerImageName() {
-    return "postgres:9.3";
+    return "postgres:11.6";
   }
 
   @Override

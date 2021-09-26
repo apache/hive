@@ -66,6 +66,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void add_not_null_constraint(const AddNotNullConstraintRequest& req) = 0;
   virtual void add_default_constraint(const AddDefaultConstraintRequest& req) = 0;
   virtual void add_check_constraint(const AddCheckConstraintRequest& req) = 0;
+  virtual void translate_table_dryrun(Table& _return, const Table& tbl) = 0;
   virtual void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) = 0;
   virtual void drop_table_with_environment_context(const std::string& dbname, const std::string& name, const bool deleteData, const EnvironmentContext& environment_context) = 0;
   virtual void truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames) = 0;
@@ -230,6 +231,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void fire_listener_event(FireEventResponse& _return, const FireEventRequest& rqst) = 0;
   virtual void flushCache() = 0;
   virtual void add_write_notification_log(WriteNotificationLogResponse& _return, const WriteNotificationLogRequest& rqst) = 0;
+  virtual void add_write_notification_log_in_batch(WriteNotificationLogBatchResponse& _return, const WriteNotificationLogBatchRequest& rqst) = 0;
   virtual void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request) = 0;
   virtual void get_file_metadata_by_expr(GetFileMetadataByExprResult& _return, const GetFileMetadataByExprRequest& req) = 0;
   virtual void get_file_metadata(GetFileMetadataResult& _return, const GetFileMetadataRequest& req) = 0;
@@ -438,6 +440,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void add_check_constraint(const AddCheckConstraintRequest& /* req */) {
+    return;
+  }
+  void translate_table_dryrun(Table& /* _return */, const Table& /* tbl */) {
     return;
   }
   void drop_table(const std::string& /* dbname */, const std::string& /* name */, const bool /* deleteData */) {
@@ -956,6 +961,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void add_write_notification_log(WriteNotificationLogResponse& /* _return */, const WriteNotificationLogRequest& /* rqst */) {
+    return;
+  }
+  void add_write_notification_log_in_batch(WriteNotificationLogBatchResponse& /* _return */, const WriteNotificationLogBatchRequest& /* rqst */) {
     return;
   }
   void cm_recycle(CmRecycleResponse& /* _return */, const CmRecycleRequest& /* request */) {
@@ -5989,6 +5997,142 @@ class ThriftHiveMetastore_add_check_constraint_presult {
   MetaException o2;
 
   _ThriftHiveMetastore_add_check_constraint_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_translate_table_dryrun_args__isset {
+  _ThriftHiveMetastore_translate_table_dryrun_args__isset() : tbl(false) {}
+  bool tbl :1;
+} _ThriftHiveMetastore_translate_table_dryrun_args__isset;
+
+class ThriftHiveMetastore_translate_table_dryrun_args {
+ public:
+
+  ThriftHiveMetastore_translate_table_dryrun_args(const ThriftHiveMetastore_translate_table_dryrun_args&);
+  ThriftHiveMetastore_translate_table_dryrun_args& operator=(const ThriftHiveMetastore_translate_table_dryrun_args&);
+  ThriftHiveMetastore_translate_table_dryrun_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_translate_table_dryrun_args() noexcept;
+  Table tbl;
+
+  _ThriftHiveMetastore_translate_table_dryrun_args__isset __isset;
+
+  void __set_tbl(const Table& val);
+
+  bool operator == (const ThriftHiveMetastore_translate_table_dryrun_args & rhs) const
+  {
+    if (!(tbl == rhs.tbl))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_translate_table_dryrun_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_translate_table_dryrun_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_translate_table_dryrun_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_translate_table_dryrun_pargs() noexcept;
+  const Table* tbl;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_translate_table_dryrun_result__isset {
+  _ThriftHiveMetastore_translate_table_dryrun_result__isset() : success(false), o1(false), o2(false), o3(false), o4(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+  bool o4 :1;
+} _ThriftHiveMetastore_translate_table_dryrun_result__isset;
+
+class ThriftHiveMetastore_translate_table_dryrun_result {
+ public:
+
+  ThriftHiveMetastore_translate_table_dryrun_result(const ThriftHiveMetastore_translate_table_dryrun_result&);
+  ThriftHiveMetastore_translate_table_dryrun_result& operator=(const ThriftHiveMetastore_translate_table_dryrun_result&);
+  ThriftHiveMetastore_translate_table_dryrun_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_translate_table_dryrun_result() noexcept;
+  Table success;
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+  NoSuchObjectException o4;
+
+  _ThriftHiveMetastore_translate_table_dryrun_result__isset __isset;
+
+  void __set_success(const Table& val);
+
+  void __set_o1(const AlreadyExistsException& val);
+
+  void __set_o2(const InvalidObjectException& val);
+
+  void __set_o3(const MetaException& val);
+
+  void __set_o4(const NoSuchObjectException& val);
+
+  bool operator == (const ThriftHiveMetastore_translate_table_dryrun_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    if (!(o4 == rhs.o4))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_translate_table_dryrun_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_translate_table_dryrun_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_translate_table_dryrun_presult__isset {
+  _ThriftHiveMetastore_translate_table_dryrun_presult__isset() : success(false), o1(false), o2(false), o3(false), o4(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+  bool o4 :1;
+} _ThriftHiveMetastore_translate_table_dryrun_presult__isset;
+
+class ThriftHiveMetastore_translate_table_dryrun_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_translate_table_dryrun_presult() noexcept;
+  Table* success;
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+  NoSuchObjectException o4;
+
+  _ThriftHiveMetastore_translate_table_dryrun_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -26006,6 +26150,110 @@ class ThriftHiveMetastore_add_write_notification_log_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_add_write_notification_log_in_batch_args__isset {
+  _ThriftHiveMetastore_add_write_notification_log_in_batch_args__isset() : rqst(false) {}
+  bool rqst :1;
+} _ThriftHiveMetastore_add_write_notification_log_in_batch_args__isset;
+
+class ThriftHiveMetastore_add_write_notification_log_in_batch_args {
+ public:
+
+  ThriftHiveMetastore_add_write_notification_log_in_batch_args(const ThriftHiveMetastore_add_write_notification_log_in_batch_args&);
+  ThriftHiveMetastore_add_write_notification_log_in_batch_args& operator=(const ThriftHiveMetastore_add_write_notification_log_in_batch_args&);
+  ThriftHiveMetastore_add_write_notification_log_in_batch_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_write_notification_log_in_batch_args() noexcept;
+  WriteNotificationLogBatchRequest rqst;
+
+  _ThriftHiveMetastore_add_write_notification_log_in_batch_args__isset __isset;
+
+  void __set_rqst(const WriteNotificationLogBatchRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_add_write_notification_log_in_batch_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_write_notification_log_in_batch_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_write_notification_log_in_batch_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_add_write_notification_log_in_batch_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_write_notification_log_in_batch_pargs() noexcept;
+  const WriteNotificationLogBatchRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_write_notification_log_in_batch_result__isset {
+  _ThriftHiveMetastore_add_write_notification_log_in_batch_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_add_write_notification_log_in_batch_result__isset;
+
+class ThriftHiveMetastore_add_write_notification_log_in_batch_result {
+ public:
+
+  ThriftHiveMetastore_add_write_notification_log_in_batch_result(const ThriftHiveMetastore_add_write_notification_log_in_batch_result&);
+  ThriftHiveMetastore_add_write_notification_log_in_batch_result& operator=(const ThriftHiveMetastore_add_write_notification_log_in_batch_result&);
+  ThriftHiveMetastore_add_write_notification_log_in_batch_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_write_notification_log_in_batch_result() noexcept;
+  WriteNotificationLogBatchResponse success;
+
+  _ThriftHiveMetastore_add_write_notification_log_in_batch_result__isset __isset;
+
+  void __set_success(const WriteNotificationLogBatchResponse& val);
+
+  bool operator == (const ThriftHiveMetastore_add_write_notification_log_in_batch_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_write_notification_log_in_batch_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_write_notification_log_in_batch_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_write_notification_log_in_batch_presult__isset {
+  _ThriftHiveMetastore_add_write_notification_log_in_batch_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_add_write_notification_log_in_batch_presult__isset;
+
+class ThriftHiveMetastore_add_write_notification_log_in_batch_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_write_notification_log_in_batch_presult() noexcept;
+  WriteNotificationLogBatchResponse* success;
+
+  _ThriftHiveMetastore_add_write_notification_log_in_batch_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_cm_recycle_args__isset {
   _ThriftHiveMetastore_cm_recycle_args__isset() : request(false) {}
   bool request :1;
@@ -33025,6 +33273,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void add_check_constraint(const AddCheckConstraintRequest& req);
   void send_add_check_constraint(const AddCheckConstraintRequest& req);
   void recv_add_check_constraint();
+  void translate_table_dryrun(Table& _return, const Table& tbl);
+  void send_translate_table_dryrun(const Table& tbl);
+  void recv_translate_table_dryrun(Table& _return);
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData);
   void send_drop_table(const std::string& dbname, const std::string& name, const bool deleteData);
   void recv_drop_table();
@@ -33517,6 +33768,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void add_write_notification_log(WriteNotificationLogResponse& _return, const WriteNotificationLogRequest& rqst);
   void send_add_write_notification_log(const WriteNotificationLogRequest& rqst);
   void recv_add_write_notification_log(WriteNotificationLogResponse& _return);
+  void add_write_notification_log_in_batch(WriteNotificationLogBatchResponse& _return, const WriteNotificationLogBatchRequest& rqst);
+  void send_add_write_notification_log_in_batch(const WriteNotificationLogBatchRequest& rqst);
+  void recv_add_write_notification_log_in_batch(WriteNotificationLogBatchResponse& _return);
   void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request);
   void send_cm_recycle(const CmRecycleRequest& request);
   void recv_cm_recycle(CmRecycleResponse& _return);
@@ -33744,6 +33998,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_add_not_null_constraint(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_default_constraint(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_check_constraint(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_translate_table_dryrun(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_table_with_environment_context(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_truncate_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -33908,6 +34163,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_fire_listener_event(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_flushCache(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_write_notification_log(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_add_write_notification_log_in_batch(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_cm_recycle(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_file_metadata_by_expr(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_file_metadata(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -34011,6 +34267,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["add_not_null_constraint"] = &ThriftHiveMetastoreProcessor::process_add_not_null_constraint;
     processMap_["add_default_constraint"] = &ThriftHiveMetastoreProcessor::process_add_default_constraint;
     processMap_["add_check_constraint"] = &ThriftHiveMetastoreProcessor::process_add_check_constraint;
+    processMap_["translate_table_dryrun"] = &ThriftHiveMetastoreProcessor::process_translate_table_dryrun;
     processMap_["drop_table"] = &ThriftHiveMetastoreProcessor::process_drop_table;
     processMap_["drop_table_with_environment_context"] = &ThriftHiveMetastoreProcessor::process_drop_table_with_environment_context;
     processMap_["truncate_table"] = &ThriftHiveMetastoreProcessor::process_truncate_table;
@@ -34175,6 +34432,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["fire_listener_event"] = &ThriftHiveMetastoreProcessor::process_fire_listener_event;
     processMap_["flushCache"] = &ThriftHiveMetastoreProcessor::process_flushCache;
     processMap_["add_write_notification_log"] = &ThriftHiveMetastoreProcessor::process_add_write_notification_log;
+    processMap_["add_write_notification_log_in_batch"] = &ThriftHiveMetastoreProcessor::process_add_write_notification_log_in_batch;
     processMap_["cm_recycle"] = &ThriftHiveMetastoreProcessor::process_cm_recycle;
     processMap_["get_file_metadata_by_expr"] = &ThriftHiveMetastoreProcessor::process_get_file_metadata_by_expr;
     processMap_["get_file_metadata"] = &ThriftHiveMetastoreProcessor::process_get_file_metadata;
@@ -34642,6 +34900,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->add_check_constraint(req);
     }
     ifaces_[i]->add_check_constraint(req);
+  }
+
+  void translate_table_dryrun(Table& _return, const Table& tbl) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->translate_table_dryrun(_return, tbl);
+    }
+    ifaces_[i]->translate_table_dryrun(_return, tbl);
+    return;
   }
 
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) {
@@ -36224,6 +36492,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
+  void add_write_notification_log_in_batch(WriteNotificationLogBatchResponse& _return, const WriteNotificationLogBatchRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->add_write_notification_log_in_batch(_return, rqst);
+    }
+    ifaces_[i]->add_write_notification_log_in_batch(_return, rqst);
+    return;
+  }
+
   void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -36933,6 +37211,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void add_check_constraint(const AddCheckConstraintRequest& req);
   int32_t send_add_check_constraint(const AddCheckConstraintRequest& req);
   void recv_add_check_constraint(const int32_t seqid);
+  void translate_table_dryrun(Table& _return, const Table& tbl);
+  int32_t send_translate_table_dryrun(const Table& tbl);
+  void recv_translate_table_dryrun(Table& _return, const int32_t seqid);
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData);
   int32_t send_drop_table(const std::string& dbname, const std::string& name, const bool deleteData);
   void recv_drop_table(const int32_t seqid);
@@ -37425,6 +37706,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void add_write_notification_log(WriteNotificationLogResponse& _return, const WriteNotificationLogRequest& rqst);
   int32_t send_add_write_notification_log(const WriteNotificationLogRequest& rqst);
   void recv_add_write_notification_log(WriteNotificationLogResponse& _return, const int32_t seqid);
+  void add_write_notification_log_in_batch(WriteNotificationLogBatchResponse& _return, const WriteNotificationLogBatchRequest& rqst);
+  int32_t send_add_write_notification_log_in_batch(const WriteNotificationLogBatchRequest& rqst);
+  void recv_add_write_notification_log_in_batch(WriteNotificationLogBatchResponse& _return, const int32_t seqid);
   void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request);
   int32_t send_cm_recycle(const CmRecycleRequest& request);
   void recv_cm_recycle(CmRecycleResponse& _return, const int32_t seqid);

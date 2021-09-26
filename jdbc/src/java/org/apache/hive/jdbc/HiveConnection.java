@@ -46,7 +46,6 @@ import java.sql.CallableStatement;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
 import java.sql.NClob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -68,7 +67,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
@@ -100,8 +98,6 @@ import org.apache.hive.jdbc.saml.IJdbcBrowserClientFactory;
 import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 
 import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
-import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.KerberosSaslHelper;
@@ -120,8 +116,6 @@ import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenReq;
 import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenResp;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
-import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
-import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
@@ -155,8 +149,6 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.annotations.VisibleForTesting;
 
 /**
  * HiveConnection.
@@ -696,7 +688,7 @@ public class HiveConnection implements java.sql.Connection {
         } else {
           for (final Class<? extends IOException> rejectException : this.nonRetriableClasses) {
             if (rejectException.isInstance(exception)) {
-              LOG.info("Not retrying as the class (" + exception.getClass() + ") is an instance of is non-retriable class.");;
+              LOG.info("Not retrying as the class (" + exception.getClass() + ") is an instance of is non-retriable class.");
               return false;
             }
           }
@@ -1674,7 +1666,7 @@ public class HiveConnection implements java.sql.Connection {
     }
     boolean rc = false;
     try {
-      String productName = new HiveDatabaseMetaData(this, client, sessHandle)
+      new HiveDatabaseMetaData(this, client, sessHandle)
               .getDatabaseProductName();
       rc = true;
     } catch (SQLException e) {

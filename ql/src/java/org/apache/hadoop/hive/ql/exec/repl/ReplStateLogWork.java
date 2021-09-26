@@ -51,6 +51,7 @@ public class ReplStateLogWork implements Serializable {
   private TableType tableType;
   private String functionName;
   private String lastReplId;
+  private boolean shouldFailover;
   String dumpDirectory;
   private final transient ReplicationMetricCollector metricCollector;
 
@@ -115,19 +116,14 @@ public class ReplStateLogWork implements Serializable {
     this.metricCollector = metricCollector;
   }
 
-  public ReplStateLogWork(ReplLogger replLogger, Map<String, String> dbProps, ReplicationMetricCollector collector) {
-    this.logType = LOG_TYPE.END;
-    this.replLogger = replLogger;
-    this.lastReplId = ReplicationSpec.getLastReplicatedStateFromParameters(dbProps);
-    this.metricCollector = collector;
-  }
-
-  public ReplStateLogWork(ReplLogger replLogger, Map<String, String> dbProps, String dumpDirectory, ReplicationMetricCollector collector) {
+  public ReplStateLogWork(ReplLogger replLogger, Map<String, String> dbProps, String dumpDirectory,
+                          ReplicationMetricCollector collector, boolean shouldFailover) {
     this.logType = LOG_TYPE.END;
     this.replLogger = replLogger;
     this.lastReplId = ReplicationSpec.getLastReplicatedStateFromParameters(dbProps);
     this.dumpDirectory = dumpDirectory;
     this.metricCollector = collector;
+    this.shouldFailover = shouldFailover;
   }
 
   public ReplStateLogWork(ReplLogger replLogger, String message) {
@@ -164,7 +160,7 @@ public class ReplStateLogWork implements Serializable {
         metricCollector.reportStageEnd("REPL_LOAD", Status.SUCCESS,
             Long.parseLong(lastReplId), new SnapshotUtils.ReplSnapshotCount(), replLogger.getReplStatsTracker());
       }
-      metricCollector.reportEnd(Status.SUCCESS);
+      metricCollector.reportEnd((shouldFailover) ? Status.FAILOVER_READY : Status.SUCCESS);
       break;
     case DATA_COPY_END:
       replLogger.dataCopyLog(message);

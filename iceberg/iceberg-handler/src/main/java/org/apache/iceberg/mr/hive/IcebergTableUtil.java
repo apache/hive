@@ -55,6 +55,12 @@ public class IcebergTableUtil {
    * @return an Iceberg table
    */
   static Table getTable(Configuration configuration, Properties properties) {
+    String metaTable = properties.getProperty("metaTable");
+    String tableName = properties.getProperty(Catalogs.NAME);
+    if (metaTable != null) {
+      properties.setProperty(Catalogs.NAME, tableName + "." + metaTable);
+    }
+
     String tableIdentifier = properties.getProperty(Catalogs.NAME);
     return SessionStateUtil.getResource(configuration, tableIdentifier).filter(o -> o instanceof Table)
         .map(o -> (Table) o).orElseGet(() -> {

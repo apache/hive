@@ -1,5 +1,5 @@
 --! qt:dataset:srcpart
-SET hive.vectorized.execution.enabled=false;
+SET hive.vectorized.execution.enabled=true;
 set hive.compute.query.using.stats=false;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
