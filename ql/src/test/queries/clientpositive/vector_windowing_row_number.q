@@ -15,6 +15,13 @@ insert into row_number_test select (posexplode(split(repeat("y,", 700), ","))) a
 
 insert into row_number_test select (posexplode(split(repeat("z,", 600), ","))) as (pos, col);
 
+-- get detailed plan for just vectorized casts
+explain vectorization detail select
+        row_number() over(partition by cast (pos as string)) r8, -- cast int to string
+        row_number() over(order by cast (pos as string)) r9, -- cast int to string in order by
+        row_number() over(partition by cast (pos as string) order by cast (pos as string)) r10 -- cast both
+        from row_number_test;
+
 explain select
         row_number() over() as r1,
         row_number() over(order by col) r2,
