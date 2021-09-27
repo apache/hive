@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -74,6 +75,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
   private final long connectionLifeTimeInMillis;
   private long lastConnectionTime;
   private boolean localMetaStore;
+  private int retriesMade = 0;
 
 
   protected RetryingMetaStoreClient(Configuration conf, Class<?>[] constructorArgTypes,
@@ -118,6 +120,16 @@ public class RetryingMetaStoreClient implements InvocationHandler {
     return getProxy(hiveConf, hookLoader, null, mscClassName, true);
   }
 
+  @VisibleForTesting
+  public static IMetaStoreClient getProxy(RetryingMetaStoreClient handler) throws MetaException {
+    Class<? extends IMetaStoreClient> baseClass =
+
+        JavaUtils.getClass(HiveMetaStoreClient.class.getName(), IMetaStoreClient.class);
+
+    return (IMetaStoreClient) Proxy.newProxyInstance(
+        RetryingMetaStoreClient.class.getClassLoader(), baseClass.getInterfaces(), handler);
+  }
+
   public static IMetaStoreClient getProxy(Configuration hiveConf, HiveMetaHookLoader hookLoader,
       ConcurrentHashMap<String, Long> metaCallTimeMap, String mscClassName, boolean allowEmbedded)
           throws MetaException {
@@ -158,10 +170,14 @@ public class RetryingMetaStoreClient implements InvocationHandler {
         RetryingMetaStoreClient.class.getClassLoader(), baseClass.getInterfaces(), handler);
   }
 
+  public int getRetriesMade(){
+    return this.retriesMade;
+  }
+
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     Object ret;
-    int retriesMade = 0;
+    retriesMade = 0;
     TException caughtException;
 
     boolean allowReconnect = ! method.isAnnotationPresent(NoReconnect.class);
@@ -226,6 +242,10 @@ public class RetryingMetaStoreClient implements InvocationHandler {
         Throwable t = e.getCause();
         if (t instanceof TApplicationException) {
           TApplicationException tae = (TApplicationException)t;
+          if(tae.getMessage().contains("Internal error processing")){
+            LOG.debug("Probably a genuine error, bailing out .........");
+            throw tae;
+          }
           switch (tae.getType()) {
           case TApplicationException.UNSUPPORTED_CLIENT_TYPE:
           case TApplicationException.UNKNOWN_METHOD:
@@ -236,6 +256,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
             // TODO: most other options are probably unrecoverable... throw?
             caughtException = tae;
           }
+
         } else if ((t instanceof TProtocolException) || (t instanceof TTransportException)) {
           // TODO: most protocol exceptions are probably unrecoverable... throw?
           caughtException = (TException)t;
@@ -257,6 +278,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
         throw caughtException;
       }
       retriesMade++;
+      LOG.debug("In the loop, updated.............");
       LOG.warn("MetaStoreClient lost connection. Attempting to reconnect (" + retriesMade + " of " +
           retryLimit + ") after " + retryDelaySeconds + "s. " + method.getName(), caughtException);
       Thread.sleep(retryDelaySeconds * 1000);
