@@ -122,7 +122,6 @@ public class TestHiveMetastoreClientForGenuineErrors {
       msc.addForeignKey(fks);
     } catch (Exception e){
       Log.warn("Total retries made:"+ retryingMetaStoreClient.getRetriesMade());
-      LOG.warn(e.getMessage());
     }
     Assert.assertEquals(0, retryingMetaStoreClient.getRetriesMade());
   }

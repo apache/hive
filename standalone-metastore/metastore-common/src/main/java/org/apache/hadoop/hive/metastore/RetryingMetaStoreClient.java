@@ -170,9 +170,6 @@ public class RetryingMetaStoreClient implements InvocationHandler {
         RetryingMetaStoreClient.class.getClassLoader(), baseClass.getInterfaces(), handler);
   }
 
-  public int getRetriesMade(){
-    return this.retriesMade;
-  }
 
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -243,7 +240,8 @@ public class RetryingMetaStoreClient implements InvocationHandler {
         if (t instanceof TApplicationException) {
           TApplicationException tae = (TApplicationException)t;
           if(tae.getMessage().contains("Internal error processing")){
-            LOG.debug("Probably a genuine error, bailing out .........");
+            LOG.debug("Probably a genuine error, will bail out(" + e.getMessage() + "). Retries made:"+
+                retriesMade + " out of:" + retryLimit);
             throw tae;
           }
           switch (tae.getType()) {
@@ -256,7 +254,6 @@ public class RetryingMetaStoreClient implements InvocationHandler {
             // TODO: most other options are probably unrecoverable... throw?
             caughtException = tae;
           }
-
         } else if ((t instanceof TProtocolException) || (t instanceof TTransportException)) {
           // TODO: most protocol exceptions are probably unrecoverable... throw?
           caughtException = (TException)t;
@@ -353,6 +350,11 @@ public class RetryingMetaStoreClient implements InvocationHandler {
       LOG.debug("Reconnection status for Method: " + method.getName() + " is " + shouldReconnect);
     }
     return shouldReconnect;
+  }
+
+  @VisibleForTesting
+  public int getRetriesMade(){
+    return this.retriesMade;
   }
 
 }
