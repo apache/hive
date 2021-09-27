@@ -1204,18 +1204,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public boolean runDistCp(List<Path> srcPaths, Path dst, Configuration conf) throws IOException {
-    DistCpOptions options = new DistCpOptions.Builder(srcPaths, dst)
-            .withSyncFolder(true)
-            .withDeleteMissing(true)
-            .preserve(FileAttribute.BLOCKSIZE)
-            .preserve(FileAttribute.XATTR)
-            .build();
-
     // Creates the command-line parameters for distcp
     List<String> params = constructDistCpParams(srcPaths, dst, conf);
     DistCp distcp = null;
     try {
-      distcp = new DistCp(conf, options);
+      distcp = new DistCp(conf, null);
       distcp.getConf().setBoolean("mapred.mapper.new-api", true);
 
       // HIVE-13704 states that we should use run() instead of execute() due to a hadoop known issue
@@ -1242,14 +1235,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public boolean runDistCpWithSnapshots(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst,
       boolean overwriteTarget, Configuration conf)
       throws IOException {
-    DistCpOptions options =
-            new DistCpOptions.Builder(srcPaths, dst).withSyncFolder(true).withUseDiff(oldSnapshot, newSnapshot)
-                    .preserve(FileAttribute.BLOCKSIZE).preserve(FileAttribute.XATTR).build();
-
     List<String> params = constructDistCpWithSnapshotParams(srcPaths, dst, oldSnapshot, newSnapshot, conf, "-diff");
     try {
-      conf.setBoolean("mapred.mapper.new-api", true);
-      DistCp distcp = new DistCp(conf, options);
+      DistCp distcp = new DistCp(conf, null);
+      distcp.getConf().setBoolean("mapred.mapper.new-api", true);
       int returnCode = distcp.run(params.toArray(new String[0]));
       if (returnCode == 0) {
         return true;
@@ -1285,8 +1274,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       }
     } catch (Exception e) {
       throw new IOException("Cannot execute DistCp process: ", e);
-    } finally {
-      conf.setBoolean("mapred.mapper.new-api", false);
     }
     return false;
   }
