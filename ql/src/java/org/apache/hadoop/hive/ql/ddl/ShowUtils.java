@@ -132,11 +132,11 @@ public final class ShowUtils {
   }
 
 
-  public static String[] extractColumnValues(FieldSchema column, boolean isColumnStatsAvailable,
+  public static String[] extractColumnValues(FieldSchema column, String colConstraint, boolean isColumnStatsAvailable,
       ColumnStatisticsObj columnStatisticsObj) {
     List<String> values = new ArrayList<>();
     values.add(column.getName());
-    values.add(column.getType());
+    values.add(column.getType() + colConstraint);
 
     if (isColumnStatsAvailable) {
       if (columnStatisticsObj != null) {

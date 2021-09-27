@@ -1,0 +1,93 @@
+PREHOOK: query: CREATE TABLE TEST(
+  col1 varchar(100) NOT NULL COMMENT "comment for column 1",
+  col2 timestamp DEFAULT CURRENT_TIMESTAMP() COMMENT "comment for column 2",
+  col3 decimal,
+  col4 varchar(512) NOT NULL,
+  col5 varchar(100),
+  primary key(col1, col2) disable novalidate)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TEST
+POSTHOOK: query: CREATE TABLE TEST(
+  col1 varchar(100) NOT NULL COMMENT "comment for column 1",
+  col2 timestamp DEFAULT CURRENT_TIMESTAMP() COMMENT "comment for column 2",
+  col3 decimal,
+  col4 varchar(512) NOT NULL,
+  col5 varchar(100),
+  primary key(col1, col2) disable novalidate)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TEST
+PREHOOK: query: DESC FORMATTED TEST
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test
+POSTHOOK: query: DESC FORMATTED TEST
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test
+# col_name            	data_type           	comment             
+col1                	varchar(100) PRIMARY KEY NOT NULL	comment for column 1
+col2                	timestamp PRIMARY KEY DEFAULT CURRENT_TIMESTAMP()	comment for column 2
+col3                	decimal(10,0)       	                    
+col4                	varchar(512) NOT NULL	                    
+col5                	varchar(100)        	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\",\"col4\":\"true\",\"col5\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.test        	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:        	col1                	 
+Column Name:        	col2                	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.test        	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:        	col1                	 
+	 	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:        	col4                	 
+	 	 
+	 	 
+# Default Constraints	 	 
+Table:              	default.test        	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:col2    	Default Value:CURRENT_TIMESTAMP()	 
+	 	 

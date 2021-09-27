@@ -108,7 +108,7 @@ public class ShowColumnsOperation extends DDLOperation<ShowColumnsDesc> {
   private void writeColumns(DataOutputStream outStream, List<FieldSchema> columns) throws IOException {
     TextMetaDataTable tmd = new TextMetaDataTable();
     for (FieldSchema fieldSchema : columns) {
-      tmd.addRow(ShowUtils.extractColumnValues(fieldSchema, false, null));
+      tmd.addRow(ShowUtils.extractColumnValues(fieldSchema, "", false, null));
     }
 
     // In case the query is served by HiveServer2, don't pad it with spaces,

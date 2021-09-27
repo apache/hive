@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -81,7 +82,7 @@ class TextDescTableFormatter extends DescTableFormatter {
       Partition partition, List<FieldSchema> columns, boolean isFormatted, boolean isExtended, boolean isOutputPadded,
       List<ColumnStatisticsObj> columnStats) throws HiveException {
     try {
-      addStatsData(out, columnPath, columns, isFormatted, columnStats, isOutputPadded);
+      addStatsData(out, columnPath, table, columns, isFormatted, columnStats, isOutputPadded);
       addPartitionData(out, conf, columnPath, table, isFormatted, isOutputPadded);
 
       boolean isIcebergMetaTable = table.getMetaTable() != null;
@@ -101,6 +102,44 @@ class TextDescTableFormatter extends DescTableFormatter {
     } catch (IOException e) {
       throw new HiveException(e);
     }
+  }
+
+  /**
+   * Returns a Map of all columns and constraints.
+   *
+   */
+  private Map<String, StringBuilder> getColumnConstraints (Table table) {
+    Map<String, StringBuilder> mapColToConstraints = new HashMap<>();
+
+    if (PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(table.getPrimaryKeyInfo())) {
+      for (String col: table.getPrimaryKeyInfo().getColNames().values()) {
+        if (!mapColToConstraints.containsKey(col)) {
+          mapColToConstraints.put(col, new StringBuilder());
+        }
+        mapColToConstraints.get(col).append(" PRIMARY KEY");
+      }
+    }
+
+    if (NotNullConstraint.isNotNullConstraintNotEmpty(table.getNotNullConstraint())) {
+      for (String col: table.getNotNullConstraint().getNotNullConstraints().values()) {
+        if (!mapColToConstraints.containsKey(col)) {
+          mapColToConstraints.put(col, new StringBuilder());
+        }
+        mapColToConstraints.get(col).append(" NOT NULL");
+      }
+    }
+
+    if (DefaultConstraint.isCheckConstraintNotEmpty(table.getDefaultConstraint())) {
+      for (String col: table.getDefaultConstraint().getColNameToDefaultValueMap().keySet()) {
+        if (!mapColToConstraints.containsKey(col)) {
+          mapColToConstraints.put(col, new StringBuilder());
+        }
+        mapColToConstraints.get(col).append(" DEFAULT " +
+          table.getDefaultConstraint().getColNameToDefaultValueMap().get(col));
+      }
+    }
+
+    return mapColToConstraints;
   }
 
   private void addPartitionTransformData(DataOutputStream out, Table table, boolean isOutputPadded) throws IOException {
@@ -129,7 +168,7 @@ class TextDescTableFormatter extends DescTableFormatter {
     out.write(partitionTransformOutput.getBytes(StandardCharsets.UTF_8));
   }
 
-  private void addStatsData(DataOutputStream out, String columnPath, List<FieldSchema> columns, boolean isFormatted,
+  private void addStatsData(DataOutputStream out, String columnPath, Table table, List<FieldSchema> columns, boolean isFormatted,
       List<ColumnStatisticsObj> columnStats, boolean isOutputPadded) throws IOException {
     String statsData = "";
     
@@ -141,8 +180,10 @@ class TextDescTableFormatter extends DescTableFormatter {
       statsData += "# ";
       metaDataTable.addRow(DescTableDesc.SCHEMA.split("#")[0].split(","));
     }
+    Map<String, StringBuilder> mapColConstraints = getColumnConstraints(table);
     for (FieldSchema column : columns) {
-      metaDataTable.addRow(ShowUtils.extractColumnValues(column, needColStats,
+      String colConstraint = mapColConstraints.getOrDefault(column.getName(), new StringBuilder()).toString();
+      metaDataTable.addRow(ShowUtils.extractColumnValues(column, colConstraint, needColStats,
           getColumnStatisticsObject(column.getName(), column.getType(), columnStats)));
     }
     if (needColStats) {
@@ -176,7 +217,7 @@ class TextDescTableFormatter extends DescTableFormatter {
         partitionData += LINE_DELIM + "# Partition Information" + LINE_DELIM + "# ";
         metaDataTable.addRow(DescTableDesc.SCHEMA.split("#")[0].split(","));
         for (FieldSchema partitionColumn : partitionColumns) {
-          metaDataTable.addRow(ShowUtils.extractColumnValues(partitionColumn, false, null));
+          metaDataTable.addRow(ShowUtils.extractColumnValues(partitionColumn, "", false, null));
         }
         partitionData += metaDataTable.renderTable(isOutputPadded);
       }
