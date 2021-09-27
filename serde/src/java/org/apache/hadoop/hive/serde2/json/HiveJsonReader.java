@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.serde2.JsonSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -409,7 +410,8 @@ public class HiveJsonReader {
           return leafNode.toString();
         } else {
           throw new SerDeException(
-              "Complex field found in JSON does not match table definition: " + typeInfo.getTypeName());
+              "Complex field found in JSON does not match table definition: " + typeInfo.getTypeName()
+                  + ", please consider enabling `" + JsonSerDe.STRINGIFY_COMPLEX + "` table property");
         }
       }
     case BINARY:
