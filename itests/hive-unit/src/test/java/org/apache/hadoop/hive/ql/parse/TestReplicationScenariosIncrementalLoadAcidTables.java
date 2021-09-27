@@ -249,7 +249,18 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
   }
 
   @Test
-  public void testReplCommitTransactionOnSourceDelete() throws Throwable {
+  public void testReplCommitTransactionOnSourceDeleteORC() throws Throwable {
+    // Run test with ORC format & with transactional true.
+    testReplCommitTransactionOnSourceDelete("STORED AS ORC", "'transactional'='true'");
+  }
+
+  @Test
+  public void testReplCommitTransactionOnSourceDeleteText() throws Throwable {
+    // Run test with TEXT format & with transactional true.
+    testReplCommitTransactionOnSourceDelete("STORED AS TEXTFILE", "'transactional'='false'");
+  }
+
+  public void testReplCommitTransactionOnSourceDelete(String tableStorage, String tableProperty) throws Throwable {
     String tableName = "testReplCommitTransactionOnSourceDelete";
     String[] result = new String[] { "5" };
 
@@ -259,8 +270,8 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
         .verifyResult(bootStrapDump.lastReplicationId);
 
     // Add some data to the table & do a incremental dump.
-    ReplicationTestUtils.insertRecords(primary, primaryDbName, primaryDbNameExtra, tableName, null, false,
-        ReplicationTestUtils.OperationType.REPL_TEST_ACID_INSERT);
+    ReplicationTestUtils.insertIntoDB(primary, primaryDbName, tableName, tableProperty, tableStorage,
+        new String[] { "1", "2", "3", "4", "5" });
     WarehouseInstance.Tuple incrementalDump = primary.dump(primaryDbName);
 
     // Keep a copy of the data, before we drop the table, so that we can copy it back to the location, in order to
