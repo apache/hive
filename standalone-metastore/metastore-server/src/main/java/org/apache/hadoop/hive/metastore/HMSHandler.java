@@ -1362,7 +1362,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             });
             if (madeManagedDir) {
               LOG.info("Created database path in managed directory " + dbMgdPath);
-            } else {
+            } else if (!isInTest || !isDbReplicationTarget(db)) { // Hive replication tests doesn't drop the db after each test
               throw new MetaException(
                   "Unable to create database managed directory " + dbMgdPath + ", failed to create database " + db.getName());
             }
