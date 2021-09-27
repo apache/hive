@@ -1254,7 +1254,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
           LOG.warn("Copy failed due to target modified. Attempting to restore back the target. source: {} target: {} "
               + "snapshot: {}", srcPaths, dst, oldSnapshot);
           List<String> rParams = constructDistCpWithSnapshotParams(srcPaths, dst, ".", oldSnapshot, conf, "-rdiff");
-          DistCp rDistcp = new DistCp(conf, options);
+          DistCp rDistcp = new DistCp(conf, null);
           returnCode = rDistcp.run(rParams.toArray(new String[0]));
           if (returnCode == 0) {
             LOG.info("Target restored to previous state.  source: {} target: {} snapshot: {}. Reattempting to copy.",
