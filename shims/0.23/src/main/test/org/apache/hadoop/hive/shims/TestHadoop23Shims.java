@@ -26,6 +26,7 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +41,19 @@ import static org.mockito.Mockito.any;
 
 public class TestHadoop23Shims {
 
+  private Path getMockedPath(boolean supportXAttr) throws IOException {
+    FileSystem fs = mock(FileSystem.class);
+    if (supportXAttr) {
+      when(fs.getXAttrs(any())).thenReturn(new HashMap<>());
+    } else {
+      when(fs.getXAttrs(any())).thenThrow(
+              new UnsupportedOperationException("XAttr not supported for file system."));
+    }
+    Path path = mock(Path.class);
+    when(path.getFileSystem(any())).thenReturn(fs);
+    return path;
+  }
+  
   @Test
   public void testConstructDistCpParams() throws Exception {
     Path copySrc = new Path("copySrc");
@@ -98,16 +112,9 @@ public class TestHadoop23Shims {
 
   @Test
   public void testXAttrNotPreservedDueToDestFS() throws Exception {
-    FileSystem fsWithXAttrSupport = mock(FileSystem.class);
-    FileSystem fsWithoutXAttrSupport = mock(FileSystem.class);
-    when(fsWithXAttrSupport.getXAttrs(any())).thenReturn(new HashMap<>());
-    when(fsWithoutXAttrSupport.getXAttrs(any())).thenThrow(
-            new UnsupportedOperationException("XAttr not supported for file system."));
     Configuration conf = new Configuration();
-    Path copySrc = mock(Path.class);
-    when(copySrc.getFileSystem(any())).thenReturn(fsWithXAttrSupport);
-    Path copyDst = mock(Path.class);
-    when(copyDst.getFileSystem(any())).thenReturn(fsWithoutXAttrSupport);
+    Path copySrc = getMockedPath(true);
+    Path copyDst = getMockedPath(false);
 
     Hadoop23Shims shims = new Hadoop23Shims();
     List<String> paramsDefault = shims.constructDistCpParams(Collections.singletonList(copySrc), copyDst, conf);
@@ -122,16 +129,9 @@ public class TestHadoop23Shims {
 
   @Test
   public void testXAttrNotPreservedDueToSrcFS() throws Exception {
-    FileSystem fsWithXAttrSupport = mock(FileSystem.class);
-    FileSystem fsWithoutXAttrSupport = mock(FileSystem.class);
-    when(fsWithXAttrSupport.getXAttrs(any())).thenReturn(new HashMap<>());
-    when(fsWithoutXAttrSupport.getXAttrs(any())).thenThrow(
-            new UnsupportedOperationException("XAttr not supported for file system."));
     Configuration conf = new Configuration();
-    Path copySrc = mock(Path.class);
-    when(copySrc.getFileSystem(any())).thenReturn(fsWithoutXAttrSupport);
-    Path copyDst = mock(Path.class);
-    when(copyDst.getFileSystem(any())).thenReturn(fsWithXAttrSupport);
+    Path copySrc = getMockedPath(false);
+    Path copyDst = getMockedPath(true);
 
     Hadoop23Shims shims = new Hadoop23Shims();
     List<String> paramsDefault = shims.constructDistCpParams(Collections.singletonList(copySrc), copyDst, conf);
@@ -146,13 +146,9 @@ public class TestHadoop23Shims {
 
   @Test
   public void testXAttrPreserved() throws Exception {
-    FileSystem fsWithXAttrSupport = mock(FileSystem.class);
-    when(fsWithXAttrSupport.getXAttrs(any())).thenReturn(new HashMap<>());
     Configuration conf = new Configuration();
-    Path copySrc = mock(Path.class);
-    when(copySrc.getFileSystem(any())).thenReturn(fsWithXAttrSupport);
-    Path copyDst = mock(Path.class);
-    when(copyDst.getFileSystem(any())).thenReturn(fsWithXAttrSupport);
+    Path copySrc = getMockedPath(true);
+    Path copyDst = getMockedPath(true);
     Hadoop23Shims shims = new Hadoop23Shims();
     List<String> paramsDefault = shims.constructDistCpParams(Collections.singletonList(copySrc), copyDst, conf);
 
@@ -166,15 +162,10 @@ public class TestHadoop23Shims {
 
   @Test
   public void testPreserveOptionsOverwritenByUser() throws Exception {
-    FileSystem fsWithoutXAttrSupport = mock(FileSystem.class);
-    when(fsWithoutXAttrSupport.getXAttrs(any())).thenThrow(
-            new UnsupportedOperationException("XAttr not supported for file system."));
     Configuration conf = new Configuration();
     conf.set("distcp.options.pbx", "");
-    Path copySrc = mock(Path.class);
-    when(copySrc.getFileSystem(any())).thenReturn(fsWithoutXAttrSupport);
-    Path copyDst = mock(Path.class);
-    when(copyDst.getFileSystem(any())).thenReturn(fsWithoutXAttrSupport);
+    Path copySrc = getMockedPath(false);
+    Path copyDst = getMockedPath(false);
     Hadoop23Shims shims = new Hadoop23Shims();
     List<String> paramsDefault = shims.constructDistCpParams(Collections.singletonList(copySrc), copyDst, conf);
 

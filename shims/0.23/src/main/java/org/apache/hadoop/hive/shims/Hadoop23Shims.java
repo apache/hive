@@ -1204,15 +1204,12 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public boolean runDistCp(List<Path> srcPaths, Path dst, Configuration conf) throws IOException {
-    DistCpOptions.Builder builder = new DistCpOptions.Builder(srcPaths, dst)
+    DistCpOptions options = new DistCpOptions.Builder(srcPaths, dst)
             .withSyncFolder(true)
             .withDeleteMissing(true)
-            .preserve(FileAttribute.BLOCKSIZE);
-    if (checkFileSystemXAttrSupport(dst.getFileSystem(conf))
-            && checkFileSystemXAttrSupport(srcPaths.get(0).getFileSystem(conf))) {
-      builder = builder.preserve(FileAttribute.XATTR);
-    }
-    DistCpOptions options = builder.build();
+            .preserve(FileAttribute.BLOCKSIZE)
+            .preserve(FileAttribute.XATTR)
+            .build();
 
     // Creates the command-line parameters for distcp
     List<String> params = constructDistCpParams(srcPaths, dst, conf);
@@ -1245,14 +1242,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public boolean runDistCpWithSnapshots(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst,
       boolean overwriteTarget, Configuration conf)
       throws IOException {
-    DistCpOptions.Builder builder = new DistCpOptions.Builder(srcPaths, dst).withSyncFolder(true)
-            .withUseDiff(oldSnapshot, newSnapshot)
-            .preserve(FileAttribute.BLOCKSIZE);
-    if (checkFileSystemXAttrSupport(dst.getFileSystem(conf))
-            && checkFileSystemXAttrSupport(srcPaths.get(0).getFileSystem(conf))) {
-      builder.preserve(FileAttribute.XATTR);
-    }
-    DistCpOptions options = builder.build();
+    DistCpOptions options =
+            new DistCpOptions.Builder(srcPaths, dst).withSyncFolder(true).withUseDiff(oldSnapshot, newSnapshot)
+                    .preserve(FileAttribute.BLOCKSIZE).preserve(FileAttribute.XATTR).build();
 
     List<String> params = constructDistCpWithSnapshotParams(srcPaths, dst, oldSnapshot, newSnapshot, conf, "-diff");
     try {
