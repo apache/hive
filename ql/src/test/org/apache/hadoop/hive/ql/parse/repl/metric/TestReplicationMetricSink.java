@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse.repl.metric;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
@@ -28,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.metric.BootstrapDumpMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.dump.metric.IncrementalDumpMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.load.FailoverMetaData;
@@ -40,6 +42,7 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.ProgressMapper;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.StageMapper;
 
+import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,6 +55,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker.RM_PROGRESS_LENGTH;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit Test class for In Memory Replication Metric Collection.
@@ -300,4 +306,27 @@ public class TestReplicationMetricSink {
     }
   }
 
+  @Test
+  public void testReplStatsInMetrics() throws HiveException, InterruptedException, TException {
+    ReplicationMetricCollector incrementDumpMetricCollector =
+        new IncrementalDumpMetricCollector("testAcidTablesReplLoadBootstrapIncr_1592205875387",
+            "hdfs://localhost:65158/tmp/org_apache_hadoop_hive_ql_parse_TestReplicationScenarios_245261428230295"
+                + "/hrepl0/dGVzdGFjaWR0YWJsZXNyZXBsbG9hZGJvb3RzdHJhcGluY3JfMTU5MjIwNTg3NTM4Nw==/0/hive", conf);
+    Map<String, Long> metricMap = new HashMap<>();
+    ReplStatsTracker repl = Mockito.mock(ReplStatsTracker.class);
+
+    Mockito.when(repl.toString()).thenReturn(RandomStringUtils.randomAlphabetic(RM_PROGRESS_LENGTH));
+    metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) 10);
+    incrementDumpMetricCollector.reportStageStart("dump", metricMap);
+    incrementDumpMetricCollector.reportStageProgress("dump", ReplUtils.MetricName.EVENTS.name(), 10);
+    incrementDumpMetricCollector
+        .reportStageEnd("dump", Status.SUCCESS, 10, new SnapshotUtils.ReplSnapshotCount(), repl);
+    Thread.sleep(1000 * 20);
+    GetReplicationMetricsRequest metricsRequest = new GetReplicationMetricsRequest();
+    metricsRequest.setPolicy("repl");
+    ReplicationMetricList actualReplicationMetrics = Hive.get(conf).getMSC().getReplicationMetrics(metricsRequest);
+    assertTrue(actualReplicationMetrics.getReplicationMetricList().get(0).getProgress(),
+        actualReplicationMetrics.getReplicationMetricList().get(0).getProgress()
+            .contains("RM_PROGRESS LIMIT EXCEEDED"));
+  }
 }
