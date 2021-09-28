@@ -256,7 +256,7 @@ public class TestReplicationScenariosIncrementalLoadAcidTables {
 
   @Test
   public void testReplCommitTransactionOnSourceDeleteText() throws Throwable {
-    // Run test with TEXT format & with transactional true.
+    // Run test with TEXT format & with transactional false.
     testReplCommitTransactionOnSourceDelete("STORED AS TEXTFILE", "'transactional'='false'");
   }
 
