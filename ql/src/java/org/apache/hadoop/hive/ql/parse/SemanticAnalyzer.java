@@ -1890,7 +1890,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (destination.getChildCount() == 2 &&
             tab.getChildCount() == 2 &&
             destination.getChild(1).getType() == HiveParser.TOK_IFNOTEXISTS) {
-          String tableName = tab.getChild(0).getChild(0).getText();
+          final String tableName = getUnescapedName((ASTNode) tab.getChild(0), SessionState.get().getCurrentDatabase());
 
           Tree partitions = tab.getChild(1);
           int childCount = partitions.getChildCount();
