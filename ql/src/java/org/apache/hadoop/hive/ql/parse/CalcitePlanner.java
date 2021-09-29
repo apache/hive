@@ -1612,6 +1612,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private final StatsSource statsSource;
     private RelNode dummyTableScan;
 
+    // these variables are to ensure that they get instantiated only once
+    private JdbcConvention jc = null;
+    private JdbcSchema schema = null;
+
     protected CalcitePlannerAction(
             Map<String, PrunedPartitionList> partitionCache,
             StatsSource statsSource,
@@ -3024,8 +3028,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
             if (LOG.isDebugEnabled()) {
               LOG.debug("Dialect for table {}: {}", tableName, jdbcDialect.getClass().getName());
             }
-            JdbcConvention jc = JdbcConvention.of(jdbcDialect, null, dataBaseType);
-            JdbcSchema schema = new JdbcSchema(ds, jc.dialect, jc, catalogName, schemaName);
+            if (jc == null) {
+              jc = JdbcConvention.of(jdbcDialect, null, dataBaseType);
+            }
+            if (schema == null) {
+              schema = new JdbcSchema(ds, jc.dialect, jc, catalogName, schemaName);
+            }
             JdbcTable jt = (JdbcTable) schema.getTable(tableName);
             if (jt == null) {
               throw new SemanticException("Table " + tableName + " was not found in the database");
