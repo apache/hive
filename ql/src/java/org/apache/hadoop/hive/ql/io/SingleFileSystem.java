@@ -257,32 +257,32 @@ public abstract class SingleFileSystem extends FileSystem {
   @Override
   public FSDataOutputStream create(Path f, FsPermission permission, boolean overwrite, int bufferSize,
       short replication, long blockSize, Progressable progress) throws IOException {
-    throw unsupported("create");
+    throw unsupported("create: " + f);
   }
 
   @Override
   public FSDataOutputStream append(Path f, int bufferSize, Progressable progress) throws IOException {
-    throw unsupported("append");
+    throw unsupported("append: " + f);
 
   }
 
   @Override
   public boolean rename(Path src, Path dst) throws IOException {
-    throw unsupported("rename");
+    throw unsupported("rename: " + src + " to " + dst);
   }
 
   @Override
   public boolean delete(Path f, boolean recursive) throws IOException {
-    throw unsupported("delete");
+    throw unsupported("delete: " + f);
 
   }
 
   @Override
   public boolean mkdirs(Path f, FsPermission permission) throws IOException {
-    throw unsupported("mkdirs");
+    throw unsupported("mkdirs: " + f);
   }
 
   private IOException unsupported(String str) {
-    return new IOException("Unsupported operation on sfs filesystem! (" + str + ")");
+    return new IOException("Unsupported SFS filesystem operation! (" + str + ")");
   }
 }
