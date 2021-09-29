@@ -1,4 +1,3 @@
---! qt:disabled:HIVE-25578
 --! qt:dataset:src
 set hive.map.aggr.hash.percentmemory = 0.3;
 set hive.mapred.local.mem = 384;

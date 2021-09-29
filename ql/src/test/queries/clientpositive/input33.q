@@ -1,4 +1,3 @@
---! qt:disabled:HIVE-25578
 --! qt:dataset:src
 CREATE TABLE dest1_n135(key INT, value STRING) STORED AS TEXTFILE;
 

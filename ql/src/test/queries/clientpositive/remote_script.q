@@ -1,4 +1,3 @@
---! qt:disabled:HIVE-25578
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 dfs -put ../../data/scripts/newline.py /newline.py;
