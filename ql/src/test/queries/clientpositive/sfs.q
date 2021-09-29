@@ -7,9 +7,9 @@ create external table t1 (a string,b string,c string) location 'file://${system:
 
 select * from t1;
 
-create external table t1s (a string,b string,c string) location 'sfs+file://${system:test.tmp.dir}/sfs/f1.txt/SINGLEFILE';
--- create external table t1s (a string,b string,c string) location 'sfs:///pfile/${system:test.tmp.dir}/sfs/f1.txt/SINGLEFILE';
--- create external table t1 (a string,b string,c string) location 'sfs:${system:test.tmp.dir}/sfs/f1.txt/SINGLEFILE';
+create external table t1s (a string,b string,c string) location 'sfs+file://${system:test.tmp.dir}/sfs/f1.txt/#SINGLEFILE#';
+-- create external table t1s (a string,b string,c string) location 'sfs:///pfile/${system:test.tmp.dir}/sfs/f1.txt/#SINGLEFILE#';
+-- create external table t1 (a string,b string,c string) location 'sfs:${system:test.tmp.dir}/sfs/f1.txt/#SINGLEFILE#';
 
 select * from t1s;
 

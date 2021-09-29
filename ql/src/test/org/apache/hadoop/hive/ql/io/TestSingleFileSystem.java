@@ -82,13 +82,13 @@ public class TestSingleFileSystem {
   public void testGetFileStatus() throws Exception {
     assertSfsDir(fs.getFileStatus(new Path("sfs+" + folder.getRoot().toURI())));
     assertSfsDir(fs.getFileStatus(new Path("sfs+" + f1path)));
-    assertSfsDir(fs.getFileStatus(new Path("sfs+" + f1path + "/SINGLEFILE")));
-    assertSfsFile(fs.getFileStatus(new Path("sfs+" + f1path + "/SINGLEFILE/f1")));
+    assertSfsDir(fs.getFileStatus(new Path("sfs+" + f1path + "/#SINGLEFILE#")));
+    assertSfsFile(fs.getFileStatus(new Path("sfs+" + f1path + "/#SINGLEFILE#/f1")));
   }
 
   @Test
   public void testListStatusSingleFileDir() throws Exception {
-    String targetSfsPath = "sfs+" + f1path + "/SINGLEFILE";
+    String targetSfsPath = "sfs+" + f1path + "/#SINGLEFILE#";
     FileStatus[] list = fs.listStatus(new Path(targetSfsPath));
     assertEquals(1, list.length);
     assertEquals(targetSfsPath + "/f1", list[0].getPath().toString());
@@ -96,7 +96,7 @@ public class TestSingleFileSystem {
 
   @Test
   public void testListStatusSingleFileDir2() throws Exception {
-    String targetSfsPath = "sfs+" + f1path + "/SINGLEFILE/";
+    String targetSfsPath = "sfs+" + f1path + "/#SINGLEFILE#/";
     FileStatus[] list = fs.listStatus(new Path(targetSfsPath));
     assertEquals(1, list.length);
     assertEquals(targetSfsPath + "f1", list[0].getPath().toString());
@@ -107,7 +107,7 @@ public class TestSingleFileSystem {
     String targetSfsPath = "sfs+" + f1path;
     FileStatus[] list = fs.listStatus(new Path(targetSfsPath));
     assertEquals(1, list.length);
-    assertEquals(targetSfsPath + "/SINGLEFILE", list[0].getPath().toString());
+    assertEquals(targetSfsPath + "/#SINGLEFILE#", list[0].getPath().toString());
   }
 
   @Test
@@ -129,7 +129,7 @@ public class TestSingleFileSystem {
 
   @Test
   public void testOpenTargetFile() throws Exception {
-    try (FSDataInputStream ret = fs.open(new Path("sfs+" + f1path + "/SINGLEFILE/f1"))) {
+    try (FSDataInputStream ret = fs.open(new Path("sfs+" + f1path + "/#SINGLEFILE#/f1"))) {
       try (Scanner sc = new Scanner(ret)) {
         String line = sc.nextLine();
         assertEquals("asd", line);
@@ -139,7 +139,7 @@ public class TestSingleFileSystem {
 
   @Test(expected = IOException.class)
   public void testOpenSinglefileDir() throws Exception {
-    fs.open(new Path("sfs+" + f1path + "/SINGLEFILE/"));
+    fs.open(new Path("sfs+" + f1path + "/#SINGLEFILE#/"));
   }
 
   @Test(expected = IOException.class)

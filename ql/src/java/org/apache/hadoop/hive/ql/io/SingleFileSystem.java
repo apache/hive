@@ -43,7 +43,7 @@ import org.apache.hadoop.util.Progressable;
  * In case of Hive the content of a directory may be inside a table.
  * To give a way to show a single file as a single file in a directory it could be specified:
  *
- * sfs+file://somedir/f1.txt/SINGLEFILE
+ * sfs+file://somedir/f1.txt/#SINGLEFILE#
  *
  * This will be a directory containing only the f1.txt and nothing else.
  *
@@ -77,7 +77,7 @@ public abstract class SingleFileSystem extends FileSystem {
   public static class FILE extends SingleFileSystem {
   }
 
-  private static final String SINGLEFILE = "SINGLEFILE";
+  private static final String SINGLEFILE = "#SINGLEFILE#";
 
   private URI uri;
   private Configuration conf;
