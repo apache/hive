@@ -7793,9 +7793,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             isMmCreate);
         loadFileDesc.setMoveTaskId(moveTaskId);
         loadFileWork.add(loadFileDesc);
-        if (!outputs.add(new WriteEntity(destinationPath, !isDfsDir, isDestTempFile))) {
-          throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
-              .getMsg(destinationPath.toUri().toString()));
+        try {
+          Path qualifiedPath = destinationPath.getFileSystem(conf).makeQualified(destinationPath);
+          if (!outputs.add(new WriteEntity(qualifiedPath, !isDfsDir, isDestTempFile))) {
+            throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
+                    .getMsg(destinationPath.toUri().toString()));
+          }
+        } catch (IOException ex) {
+          throw new SemanticException("Error while getting the full qualified path for the given directory: " + ex.getMessage());
         }
       }
       break;
