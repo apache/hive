@@ -298,6 +298,9 @@ public class VectorPTFOperator extends Operator<PTFDesc>
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
 
+    VectorExpression.doTransientInit(partitionExpressions, hconf);
+    VectorExpression.doTransientInit(orderExpressions, hconf);
+
     if (LOG.isDebugEnabled()) {
       // Determine the name of our map or reduce task for debug tracing.
       BaseWork work = Utilities.getMapWork(hconf);
