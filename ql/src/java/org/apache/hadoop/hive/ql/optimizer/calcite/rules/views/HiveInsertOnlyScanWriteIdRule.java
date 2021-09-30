@@ -25,10 +25,15 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 
-import static org.apache.hadoop.hive.conf.Constants.INSERT_ONLY_FETCH_BUCKET_ID;
-
 /**
  * This rule turns on populating writeId of insert only table scans.
+ * Currently fetching writeId from insert-only tables is not turned on automatically:
+ * 1. only not compacted records has valid writeId.
+ * 2. the writeId and bucketId is populated into the ROW_ID struct however the third field
+ * of the struct (rowId) is always 0.
+ *
+ * This feature is only used when rebuilding materialized view incrementally when the view has
+ * insert-only source tables.
  */
 public class HiveInsertOnlyScanWriteIdRule extends RelOptRule {
 
