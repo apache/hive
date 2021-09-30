@@ -24,7 +24,6 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.hive.metastore.ObjectStore.RetryingExecutor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
-import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -44,6 +43,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.ListPackageRequest;
 import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
+import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -602,6 +602,28 @@ public class TestObjectStore {
     checkBackendTableSize("SERDES", 1); // Table has a serde
   }
 
+  @Test
+  public void testGetPartitionStatistics() throws Exception {
+    createPartitionedTable(true, true);
+
+    List<List<ColumnStatistics>> stat;
+    try (AutoCloseable c = deadline()) {
+      stat = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+              Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
+              Arrays.asList("test_part_col"));
+    }
+
+    Assert.assertEquals(1, stat.size());
+    Assert.assertEquals(3, stat.get(0).size());
+    Assert.assertEquals(ENGINE, stat.get(0).get(0).getEngine());
+    Assert.assertEquals(1, stat.get(0).get(0).getStatsObj().size());
+    Assert.assertTrue(stat.get(0).get(0).getStatsObj().get(0).getStatsData().isSetLongStats());
+    Assert.assertEquals(1, stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getNumNulls());
+    Assert.assertEquals(2, stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getNumDVs());
+    Assert.assertEquals(3, stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getLowValue());
+    Assert.assertEquals(4, stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getHighValue());
+  }
+
   /**
    * Creates DB1 database, TABLE1 table with 3 partitions.
    * @param withPrivileges Should we create privileges as well
@@ -683,11 +705,12 @@ public class TestObjectStore {
         stats.setEngine(ENGINE);
 
         ColumnStatisticsData data = new ColumnStatisticsData();
-        BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
-        boolStats.setNumTrues(0);
-        boolStats.setNumFalses(0);
-        boolStats.setNumNulls(0);
-        data.setBooleanStats(boolStats);
+        LongColumnStatsData longStats = new LongColumnStatsData();
+        longStats.setNumNulls(1);
+        longStats.setNumDVs(2);
+        longStats.setLowValue(3);
+        longStats.setHighValue(4);
+        data.setLongStats(longStats);
 
         ColumnStatisticsObj partStats = new ColumnStatisticsObj("test_part_col", "int", data);
         statsObjList.add(partStats);
