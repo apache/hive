@@ -21,9 +21,9 @@ import datetime
 import os
 
 table_name=None
-if os.environ.has_key('hive_streaming_tablename'):
+if 'hive_streaming_tablename' in os.environ:
   table_name=os.environ['hive_streaming_tablename']
 
 for line in sys.stdin:
-  print line
-  print >> sys.stderr, "dummy"
+  print(line)
+  print("dummy", file=sys.stderr)
