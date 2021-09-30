@@ -1,9 +1,7 @@
 -- Test Incremental rebuild of materialized view without aggregate when a source table is insert only.
 
-SET hive.vectorized.execution.enabled=false;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-set hive.strict.checks.cartesian.product=false;
 set hive.materializedview.rewriting=true;
 
 create table cmv_basetable_n6 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true');
@@ -36,11 +34,6 @@ SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10;
 
-EXPLAIN
-SELECT cmv_basetable_n6.a
-FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
-WHERE cmv_basetable_2_n3.c > 10.10;
-
 SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 JOIN cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10;
@@ -53,11 +46,6 @@ ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD;
 
 -- NOW IT CAN BE USED AGAIN
 EXPLAIN CBO
-SELECT cmv_basetable_n6.a
-FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
-WHERE cmv_basetable_2_n3.c > 10.10;
-
-EXPLAIN
 SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10;
@@ -77,11 +65,6 @@ ALTER MATERIALIZED VIEW cmv_mat_view_n6 REBUILD;
 
 -- MV CAN BE USED
 EXPLAIN CBO
-SELECT cmv_basetable_n6.a
-FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
-WHERE cmv_basetable_2_n3.c > 10.10;
-
-EXPLAIN
 SELECT cmv_basetable_n6.a
 FROM cmv_basetable_n6 join cmv_basetable_2_n3 ON (cmv_basetable_n6.a = cmv_basetable_2_n3.a)
 WHERE cmv_basetable_2_n3.c > 10.10;

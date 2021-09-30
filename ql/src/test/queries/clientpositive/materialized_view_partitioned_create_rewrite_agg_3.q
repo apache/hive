@@ -1,4 +1,4 @@
--- Test partition bases MV rebuild when source table is insert only
+-- Test partition based MV rebuild when source table is insert only
 
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
