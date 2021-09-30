@@ -18,10 +18,13 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.TimeZone;
 
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -37,6 +40,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
+
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
 
 /**
@@ -44,20 +48,19 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
  *
  */
 @Description(name = "from_unixtime",
-    value = "_FUNC_(unix_time, format) - returns unix_time in the specified format",
-    extended = "Example:\n"
-        + "  > SELECT _FUNC_(0, 'yyyy-MM-dd HH:mm:ss') FROM src LIMIT 1;\n"
-        + "  '1970-01-01 00:00:00'")
+             value = "_FUNC_(unix_time, format) - returns unix_time in the specified format",
+             extended = "Example:\n" + "  > SELECT _FUNC_(0, 'yyyy-MM-dd HH:mm:ss') FROM src LIMIT 1;\n"
+                 + "  '1970-01-01 00:00:00'")
 public class GenericUDFFromUnixTime extends GenericUDF {
 
   private transient IntObjectInspector inputIntOI;
   private transient LongObjectInspector inputLongOI;
   private transient ZoneId timeZone;
   private transient final Text result = new Text();
-  private transient String lastFormat ="uuuu-MM-dd HH:mm:ss";
-  private transient DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(lastFormat);
+  private transient DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");
   private transient Converter[] converters = new Converter[2];
-  private transient PrimitiveObjectInspector.PrimitiveCategory[] inputTypes = new PrimitiveObjectInspector.PrimitiveCategory[2];
+  private transient PrimitiveObjectInspector.PrimitiveCategory[] inputTypes =
+      new PrimitiveObjectInspector.PrimitiveCategory[2];
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -69,15 +72,16 @@ public class GenericUDFFromUnixTime extends GenericUDF {
 
     PrimitiveObjectInspector arg0OI = (PrimitiveObjectInspector) arguments[0];
     switch (arg0OI.getPrimitiveCategory()) {
-      case INT:
-        inputIntOI = (IntObjectInspector) arguments[0];
-        break;
-      case LONG:
-        inputLongOI = (LongObjectInspector) arguments[0];
-        break;
-      default:
-        throw new UDFArgumentException("The function from_unixtime takes only int/long types for first argument. Got Type:"
-            + arg0OI.getPrimitiveCategory().name());
+    case INT:
+      inputIntOI = (IntObjectInspector) arguments[0];
+      break;
+    case LONG:
+      inputLongOI = (LongObjectInspector) arguments[0];
+      break;
+    default:
+      throw new UDFArgumentException(
+          "The function from_unixtime takes only int/long types for first argument. Got Type:"
+              + arg0OI.getPrimitiveCategory().name());
     }
 
     if (arguments.length == 2) {
@@ -87,8 +91,7 @@ public class GenericUDFFromUnixTime extends GenericUDF {
 
     if (timeZone == null) {
       timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
-              .getLocalTimeZone();
-      FORMATTER.withZone(timeZone);
+          .getLocalTimeZone();
     }
 
     return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
@@ -99,7 +102,6 @@ public class GenericUDFFromUnixTime extends GenericUDF {
     if (context != null) {
       String timeZoneStr = HiveConf.getVar(context.getJobConf(), HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE);
       timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
-      FORMATTER.withZone(timeZone);
     }
   }
 
@@ -109,15 +111,25 @@ public class GenericUDFFromUnixTime extends GenericUDF {
       return null;
     }
 
-    if(arguments.length == 2) {
+    String timeParserPolicy = SessionState.get() == null ? new HiveConf().getVar(
+        HiveConf.ConfVars.HIVE_LEGACY_TIMEPARSER_POLICY) : SessionState.get().getConf()
+        .getVar(HiveConf.ConfVars.HIVE_LEGACY_TIMEPARSER_POLICY);
+
+    return timeParserPolicy.equalsIgnoreCase("legacy") ? evaluateLegacy(arguments) : evaluateCorrected(arguments);
+  }
+
+  @Override
+  public String getDisplayString(String[] children) {
+    return getStandardDisplayString("from_unixtime", children, ", ");
+  }
+
+  public Object evaluateCorrected(DeferredObject[] arguments) throws HiveException {
+    if (arguments.length == 2) {
       String format = getStringValue(arguments, 1, converters);
       if (format == null) {
         return null;
       }
-      if (!format.equals(lastFormat)) {
-        FORMATTER = DateTimeFormatter.ofPattern(format);
-        lastFormat = format;
-      }
+      FORMATTER = DateTimeFormatter.ofPattern(format).withZone(timeZone);
     }
 
     long unixTime = (inputIntOI != null) ? inputIntOI.get(arguments[0].get()) : inputLongOI.get(arguments[0].get());
@@ -127,9 +139,30 @@ public class GenericUDFFromUnixTime extends GenericUDF {
     return result;
   }
 
-  @Override
-  public String getDisplayString(String[] children) {
-    return getStandardDisplayString("from_unixtime", children, ", ");
+  public Object evaluateLegacy(DeferredObject[] arguments) throws HiveException {
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    formatter.setTimeZone(TimeZone.getTimeZone(timeZone));
+
+    if (arguments.length == 2) {
+      String format = getStringValue(arguments, 1, converters);
+      if (format == null) {
+        return null;
+      }
+      formatter = new SimpleDateFormat(format);
+      formatter.setTimeZone(TimeZone.getTimeZone(timeZone));
+    }
+
+    // convert seconds to milliseconds
+    long unixtime;
+    if (inputIntOI != null) {
+      unixtime = inputIntOI.get(arguments[0].get());
+    } else {
+      unixtime = inputLongOI.get(arguments[0].get());
+    }
+
+    Date date = new Date(unixtime * 1000L);
+    result.set(formatter.format(date));
+    return result;
   }
 }
 
