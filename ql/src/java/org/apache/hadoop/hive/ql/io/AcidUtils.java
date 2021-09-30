@@ -184,7 +184,6 @@ public class AcidUtils {
   public static final Pattern LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{6}");
   public static final Pattern BUCKET_PATTERN = Pattern.compile("bucket_([0-9]+)(_[0-9]+)?$");
   private static final Set<Integer> READ_TXN_TOKENS = new HashSet<>();
-  private static final Set<Integer> EXPLAIN_PLAN_TOKENS = new HashSet<>();
 
   private static Cache<String, DirInfoValue> dirCache;
   private static AtomicBoolean dirCacheInited = new AtomicBoolean();
@@ -193,13 +192,6 @@ public class AcidUtils {
     READ_TXN_TOKENS.addAll(Arrays.asList(
       HiveParser.TOK_DESCDATABASE,
       HiveParser.TOK_DESCTABLE,
-      HiveParser.TOK_SHOWTABLES,
-      HiveParser.TOK_SHOW_TABLESTATUS,
-      HiveParser.TOK_SHOW_TBLPROPERTIES,
-      HiveParser.TOK_EXPLAIN
-    ));
-
-    EXPLAIN_PLAN_TOKENS.addAll(Arrays.asList(
       HiveParser.TOK_EXPLAIN,
       HiveParser.TOK_EXPLAIN_SQ_REWRITE
     ));
@@ -3099,11 +3091,6 @@ public class AcidUtils {
     } catch (IOException | URISyntaxException ex) {
       throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ex.getMessage()), ex);
     }
-  }
-
-
-  public static boolean isExplainPlan(ASTNode tree) {
-    return EXPLAIN_PLAN_TOKENS.contains(tree.getToken().getType());
   }
 
   /**

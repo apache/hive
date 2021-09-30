@@ -506,7 +506,7 @@ class DriverTxnHandler {
   void handleTransactionAfterExecution() throws CommandProcessorException {
     try {
       //since set autocommit starts an implicit txn, close it
-      if (driverContext.getTxnManager().isImplicitTransactionOpen() ||
+      if (driverContext.getTxnManager().isImplicitTransactionOpen(context) ||
           driverContext.getPlan().getOperation() == HiveOperation.COMMIT) {
         endTransactionAndCleanup(true);
       } else if (driverContext.getPlan().getOperation() == HiveOperation.ROLLBACK) {

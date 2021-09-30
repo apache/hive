@@ -217,6 +217,11 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
   }
 
   @Override
+  public boolean isImplicitTransactionOpen(Context ctx) {
+    return true;
+  }
+
+  @Override
   public LockResponse acquireMaterializationRebuildLock(String dbName, String tableName, long txnId)
       throws LockException {
     // This is default implementation. Locking only works for incremental maintenance
