@@ -48,11 +48,15 @@ public class OrcFileStripeMergeRecordReader implements
     // if the combined split has only part of the file split, the entire file will be handled by the mapper that
     // owns the start of file split.
     skipFile = start > 0; // skip the file if start is not 0
-    FileSystem fs = path.getFileSystem(conf);
-    this.reader = OrcFile.createReader(path, OrcFile.readerOptions(conf).filesystem(fs));
-    this.iter = reader.getStripes().iterator();
-    this.stripeIdx = 0;
-    this.stripeStatistics = ((ReaderImpl) reader).getOrcProtoStripeStatistics();
+    if (!skipFile) {
+      FileSystem fs = path.getFileSystem(conf);
+      this.reader = OrcFile.createReader(path, OrcFile.readerOptions(conf).filesystem(fs));
+      this.iter = reader.getStripes().iterator();
+      this.stripeIdx = 0;
+      this.stripeStatistics = ((ReaderImpl) reader).getOrcProtoStripeStatistics();
+    } else {
+      reader = null;
+    }
   }
 
   public Class<?> getKeyClass() {
@@ -80,7 +84,7 @@ public class OrcFileStripeMergeRecordReader implements
   }
 
   protected boolean nextStripe(OrcFileKeyWrapper keyWrapper, OrcFileValueWrapper valueWrapper)
-        throws IOException {
+      throws IOException {
     // missing stripe stats (old format). If numRows is 0 then its an empty file and no statistics
     // is present. We have to differentiate no stats (empty file) vs missing stats (old format).
     if ((stripeStatistics == null || stripeStatistics.isEmpty()) && reader.getNumberOfRows() > 0) {
@@ -137,6 +141,9 @@ public class OrcFileStripeMergeRecordReader implements
   }
 
   public void close() throws IOException {
+    if (reader != null) {
+      reader.close();
+    }
   }
 
 }
