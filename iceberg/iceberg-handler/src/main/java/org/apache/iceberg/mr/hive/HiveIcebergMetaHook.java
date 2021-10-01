@@ -98,7 +98,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       AlterTableType.ADDCOLS, AlterTableType.REPLACE_COLUMNS, AlterTableType.RENAME_COLUMN,
       AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.SETPARTITIONSPEC,
       AlterTableType.UPDATE_COLUMNS);
-  private static final List<String> ALLOWED_SOURCE_FORMATS = Arrays.stream(FileFormat.values())
+  private static final List<String> MIGRATION_ALLOWED_SOURCE_FORMATS = Arrays.stream(FileFormat.values())
       .filter(f -> !f.equals(FileFormat.METADATA))
       .map(FileFormat::name).map(String::toLowerCase).collect(Collectors.toList());
 
@@ -302,7 +302,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       throw new MetaException("Converting non-external, temporary or transactional hive table to iceberg " +
           "table is not allowed.");
     }
-    boolean hasCorrectFileFormat = ALLOWED_SOURCE_FORMATS.stream()
+    boolean hasCorrectFileFormat = MIGRATION_ALLOWED_SOURCE_FORMATS.stream()
         .anyMatch(f -> sd.getInputFormat().toLowerCase().contains(f));
     if (!hasCorrectFileFormat) {
       throw new MetaException("Cannot convert hive table to iceberg with input format: " + sd.getInputFormat());
