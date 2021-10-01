@@ -320,7 +320,7 @@ public class ReplicationTestUtils {
             .run(txnStrCommit);
   }
 
-  private static void insertIntoDB(WarehouseInstance primary, String dbName, String tableName,
+  public static void insertIntoDB(WarehouseInstance primary, String dbName, String tableName,
                                    String tableProperty, String storageType, String[] resultArray)
           throws Throwable {
     insertIntoDB(primary, dbName, tableName, tableProperty, storageType, resultArray, false);

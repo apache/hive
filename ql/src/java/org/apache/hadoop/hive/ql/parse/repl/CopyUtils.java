@@ -66,6 +66,8 @@ public class CopyUtils {
   private final String copyAsUser;
   private FileSystem destinationFs;
   private final int maxParallelCopyTask;
+  @VisibleForTesting
+  public static Callable<Boolean> testCallable;
 
   private List<Class<? extends Exception>> failOnParentExceptionList = Arrays.asList(org.apache.hadoop.fs.PathIOException.class,
           org.apache.hadoop.fs.UnsupportedFileSystemException.class,
@@ -294,12 +296,12 @@ public class CopyUtils {
         continue;
       }
       Path srcPath = srcFile.getEffectivePath();
-      //Path destPath = new Path(destination, srcPath.getName());
+      Path destPath = new Path(destination, srcPath.getName());
       if (exists(destinationFs, destination)) {
         // If destination file is present and checksum of source mismatch, then retry copy.
         if (isSourceFileMismatch(sourceFs, srcFile)) {
           // Delete the incorrectly copied file and retry with CM path
-          delete(destinationFs, destination, true);
+          delete(destinationFs, destPath, true);
           srcFile.setIsUseSourcePath(false);
         } else {
           // If the retry logic is reached after copy error, then include the copied file as well.
@@ -377,6 +379,7 @@ public class CopyUtils {
 
   // Check if the source file unmodified even after copy to see if we copied the right file
   private boolean isSourceFileMismatch(FileSystem sourceFs, ReplChangeManager.FileInfo srcFile) throws IOException {
+    runTestOnlyExecutions();
     // If source is already CM path, the checksum will be always matching
     if (srcFile.isUseSourcePath()) {
       String sourceChecksumString = srcFile.getCheckSum();
@@ -399,6 +402,18 @@ public class CopyUtils {
       }
     }
     return false;
+  }
+
+  @VisibleForTesting
+  private void runTestOnlyExecutions() throws IOException {
+    if (testCallable != null) {
+      // testCallable will be not-null only in cases of execution through test code.
+      try {
+        testCallable.call();
+      } catch (Exception e) {
+        throw new IOException(e);
+      }
+    }
   }
 
   private UserGroupInformation getProxyUser() throws IOException {
