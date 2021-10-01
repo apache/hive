@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -29,6 +30,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -52,6 +54,7 @@ import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.DeleteFiles;
+import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
@@ -95,6 +98,9 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       AlterTableType.ADDCOLS, AlterTableType.REPLACE_COLUMNS, AlterTableType.RENAME_COLUMN,
       AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.SETPARTITIONSPEC,
       AlterTableType.UPDATE_COLUMNS);
+  private static final List<String> ALLOWED_SOURCE_FORMATS = Arrays.stream(FileFormat.values())
+      .filter(f -> !f.equals(FileFormat.METADATA))
+      .map(FileFormat::name).map(String::toLowerCase).collect(Collectors.toList());
 
   private final Configuration conf;
   private Table icebergTable = null;
@@ -102,7 +108,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   private boolean deleteIcebergTable;
   private FileIO deleteIo;
   private TableMetadata deleteMetadata;
-  private boolean canMigrateHiveTable;
+  private boolean isTableMigration;
   private PreAlterTableProperties preAlterTableProperties;
   private UpdateSchema updateSchema;
   private UpdatePartitionSpec updatePartitionSpec;
@@ -242,16 +248,16 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       icebergTable = IcebergTableUtil.getTable(conf, catalogProperties);
     } catch (NoSuchTableException nte) {
       context.getProperties().put(MIGRATE_HIVE_TO_ICEBERG, "true");
-      // If the iceberg table does not exist, and the hms table is external and not temporary and not acid
-      // we will create it in commitAlterTable
-      StorageDescriptor sd = hmsTable.getSd();
-      canMigrateHiveTable = MetaStoreUtils.isExternalTable(hmsTable) && !hmsTable.isTemporary() &&
-          !AcidUtils.isTransactionalTable(hmsTable);
-      if (!canMigrateHiveTable) {
-        throw new MetaException("Converting non-external, temporary or transactional hive table to iceberg " +
-            "table is not allowed.");
-      }
+      // If the iceberg table does not exist, and the hms table is:
+      // - external
+      // - not temporary
+      // - not acid
+      // - uses one of supported file formats
+      // then we will create it in commitAlterTable and go ahead with the migration
+      checkEligibilityForMigrationOrThrow(hmsTable);
+      isTableMigration = true;
 
+      StorageDescriptor sd = hmsTable.getSd();
       preAlterTableProperties = new PreAlterTableProperties();
       preAlterTableProperties.tableLocation = sd.getLocation();
       preAlterTableProperties.format = sd.getInputFormat();
@@ -287,10 +293,26 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     }
   }
 
+  private void checkEligibilityForMigrationOrThrow(org.apache.hadoop.hive.metastore.api.Table hmsTable)
+      throws MetaException {
+    StorageDescriptor sd = hmsTable.getSd();
+    boolean hasCorrectTableType = MetaStoreUtils.isExternalTable(hmsTable) && !hmsTable.isTemporary() &&
+        !AcidUtils.isTransactionalTable(hmsTable);
+    if (!hasCorrectTableType) {
+      throw new MetaException("Converting non-external, temporary or transactional hive table to iceberg " +
+          "table is not allowed.");
+    }
+    boolean hasCorrectFileFormat = ALLOWED_SOURCE_FORMATS.stream()
+        .anyMatch(f -> sd.getInputFormat().toLowerCase().contains(f));
+    if (!hasCorrectFileFormat) {
+      throw new MetaException("Cannot convert hive table to iceberg with input format: " + sd.getInputFormat());
+    }
+  }
+
   @Override
   public void commitAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context,
       PartitionSpecProxy partitionSpecProxy) throws MetaException {
-    if (canMigrateHiveTable) {
+    if (isTableMigration) {
       catalogProperties = getCatalogProperties(hmsTable);
       catalogProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(preAlterTableProperties.schema));
       catalogProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(preAlterTableProperties.spec));
