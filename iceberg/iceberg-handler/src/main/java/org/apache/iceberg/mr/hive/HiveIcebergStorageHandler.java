@@ -164,6 +164,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
+    setCommonJobConf(jobConf);
     if (tableDesc != null && tableDesc.getProperties() != null &&
         tableDesc.getProperties().get(WRITE_KEY) != null) {
       String tableName = tableDesc.getTableName();
@@ -357,6 +358,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public boolean isValidMetadataTable(String metaTableName) {
     return IcebergMetadataTables.isValidMetaTable(metaTableName);
+  }
+
+  private void setCommonJobConf(JobConf jobConf) {
+    jobConf.set("tez.mrreader.config.update.properties", "hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids");
   }
 
   public boolean addDynamicSplitPruningEdge(org.apache.hadoop.hive.ql.metadata.Table table,
