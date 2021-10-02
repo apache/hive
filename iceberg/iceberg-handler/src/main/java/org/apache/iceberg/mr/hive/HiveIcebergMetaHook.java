@@ -248,12 +248,9 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       icebergTable = IcebergTableUtil.getTable(conf, catalogProperties);
     } catch (NoSuchTableException nte) {
       context.getProperties().put(MIGRATE_HIVE_TO_ICEBERG, "true");
-      // If the iceberg table does not exist, and the hms table is:
-      // - external
-      // - not temporary
-      // - not acid
-      // - uses one of supported file formats
-      // then we will create it in commitAlterTable and go ahead with the migration
+      // If the iceberg table does not exist, then this is an ALTER command aimed at migrating the table to iceberg
+      // First we must check whether it's eligible for migration to iceberg
+      // If so, we will create the iceberg table in commitAlterTable and go ahead with the migration
       checkEligibilityForMigrationOrThrow(hmsTable);
       isTableMigration = true;
 
@@ -293,6 +290,15 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     }
   }
 
+  /**
+   * Checks if the table can be migrated to iceberg format. An eligible table is:
+   * - external
+   * - not temporary
+   * - not acid
+   * - uses one of supported file formats
+   * @param hmsTable the table which should be migrated to iceberg, if eligible
+   * @throws MetaException if the table is not eligible for migration due to violating one of the conditions above
+   */
   private void checkEligibilityForMigrationOrThrow(org.apache.hadoop.hive.metastore.api.Table hmsTable)
       throws MetaException {
     StorageDescriptor sd = hmsTable.getSd();
