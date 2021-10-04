@@ -698,7 +698,8 @@ public class MetastoreConf {
             "\n" +
             "See HIVE-4409 for more details."),
     ALLOW_INCOMPATIBLE_COL_TYPE_CHANGES_TABLE_SERDES("metastore.allow.incompatible.col.type.changes.serdes",
-        "hive.metastore.allow.incompatible.col.type.changes.serdes", "org.apache.hadoop.hive.kudu.KuduSerDe",
+        "hive.metastore.allow.incompatible.col.type.changes.serdes",
+        "org.apache.hadoop.hive.kudu.KuduSerDe,org.apache.iceberg.mr.hive.HiveIcebergSerDe",
         "Comma-separated list of table serdes which are allowed to make incompatible column type\n" +
         "changes. This configuration is only applicable if metastore.disallow.incompatible.col.type.changes\n" +
         "is true."),
