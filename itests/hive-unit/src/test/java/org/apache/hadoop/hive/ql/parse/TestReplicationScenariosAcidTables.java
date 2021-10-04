@@ -976,10 +976,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
       primary.run("SHOW TABLES " + dbName);
       primary.run("SHOW TABLE EXTENDED LIKE 't1'");
       primary.run("SHOW TBLPROPERTIES t1");
-      primary.run("EXPLAIN SELECT * from " + dbName + ".t1");
       primary.run("SHOW LOCKS");
-      primary.run("EXPLAIN SHOW LOCKS");
-      primary.run("EXPLAIN LOCKS UPDATE target SET b = 1 WHERE p IN (SELECT t.q1 FROM source t WHERE t.a1=5)");
       long currentEventId = primary.getCurrentNotificationEventId().getEventId();
       Assert.assertEquals(lastEventId, currentEventId);
     } finally {
@@ -1659,7 +1656,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             primary.dump(primaryDbName);
 
     long lastReplId = Long.parseLong(bootStrapDump.lastReplicationId);
-    primary.testEventCounts(primaryDbName, lastReplId, null, null, 12);
+    primary.testEventCounts(primaryDbName, lastReplId, null, null, 14);
 
     // Test load
     replica.load(replicatedDbName, primaryDbName)

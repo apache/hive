@@ -195,8 +195,7 @@ public class AcidUtils {
             HiveParser.TOK_DESCTABLE,
             HiveParser.TOK_SHOWTABLES,
             HiveParser.TOK_SHOW_TABLESTATUS,
-            HiveParser.TOK_SHOW_TBLPROPERTIES,
-            HiveParser.TOK_EXPLAIN
+            HiveParser.TOK_SHOW_TBLPROPERTIES
     ));
   }
 
