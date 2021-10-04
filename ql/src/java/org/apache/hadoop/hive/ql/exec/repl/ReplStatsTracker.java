@@ -23,6 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.management.ObjectName;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
@@ -32,6 +34,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * Tracks the replication statistics per event type.
  */
 public class ReplStatsTracker {
+
+  // Maintains the length of the RM_Progress column in the RDBMS, which stores the ReplStats
+  public static int RM_PROGRESS_LENGTH = 24000;
 
   // Maintains the descriptive statistics per event type.
   private ConcurrentHashMap<String, DescriptiveStatistics> descMap;
@@ -117,25 +122,34 @@ public class ReplStatsTracker {
     return lastEventId;
   }
 
+  private String formatDouble(DecimalFormat dFormat, Double d) {
+    if (!d.isNaN()) {
+      return dFormat.format(d);
+    }
+    return d.toString();
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
+    DecimalFormat dFormat = new DecimalFormat("#.##");
+    dFormat.setRoundingMode(RoundingMode.HALF_UP);
     sb.append("Replication Stats{");
     for (Map.Entry<String, DescriptiveStatistics> event : descMap.entrySet()) {
       DescriptiveStatistics statistics = event.getValue();
       sb.append("[[Event Name: ").append(event.getKey()).append("; ");
       sb.append("Total Number: ").append(statistics.getN()).append("; ");
-      sb.append("Total Time: ").append(statistics.getSum()).append("; ");
-      sb.append("Mean: ").append(statistics.getMean()).append("; ");
-      sb.append("Median: ").append(statistics.getPercentile(50)).append("; ");
-      sb.append("Standard Deviation: ").append(statistics.getStandardDeviation()).append("; ");
-      sb.append("Variance: ").append(statistics.getVariance()).append("; ");
-      sb.append("Kurtosis: ").append(statistics.getKurtosis()).append("; ");
-      sb.append("Skewness: ").append(statistics.getKurtosis()).append("; ");
-      sb.append("25th Percentile: ").append(statistics.getPercentile(25)).append("; ");
-      sb.append("50th Percentile: ").append(statistics.getPercentile(50)).append("; ");
-      sb.append("75th Percentile: ").append(statistics.getPercentile(75)).append("; ");
-      sb.append("90th Percentile: ").append(statistics.getPercentile(90)).append("; ");
+      sb.append("Total Time: ").append(dFormat.format(statistics.getSum())).append("; ");
+      sb.append("Mean: ").append(formatDouble(dFormat, statistics.getMean())).append("; ");
+      sb.append("Median: ").append(formatDouble(dFormat, statistics.getPercentile(50))).append("; ");
+      sb.append("Standard Deviation: ").append(formatDouble(dFormat, statistics.getStandardDeviation())).append("; ");
+      sb.append("Variance: ").append(formatDouble(dFormat, statistics.getVariance())).append("; ");
+      sb.append("Kurtosis: ").append(formatDouble(dFormat, statistics.getKurtosis())).append("; ");
+      sb.append("Skewness: ").append(formatDouble(dFormat, statistics.getSkewness())).append("; ");
+      sb.append("25th Percentile: ").append(formatDouble(dFormat, statistics.getPercentile(25))).append("; ");
+      sb.append("50th Percentile: ").append(formatDouble(dFormat, statistics.getPercentile(50))).append("; ");
+      sb.append("75th Percentile: ").append(formatDouble(dFormat, statistics.getPercentile(75))).append("; ");
+      sb.append("90th Percentile: ").append(formatDouble(dFormat, statistics.getPercentile(90))).append("; ");
       sb.append("Top ").append(k).append(" EventIds(EventId=Time) ").append(topKEvents.get(event.getKey()))
           .append(";" + "]]");
     }
