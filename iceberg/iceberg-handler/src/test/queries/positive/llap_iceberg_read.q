@@ -1,6 +1,3 @@
---makes no sense for iceberg tables for this to be 'true':
-set hive.metastore.disallow.incompatible.col.type.changes=false;
-
 --test against vectorized LLAP execution mode
 set hive.llap.io.enabled=true;
 set hive.vectorized.execution.enabled=true;
