@@ -5000,7 +5000,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       case EXCEPT:
       case EXCEPTALL:
         RelNode qbexpr1Ops = genLogicalPlan(qbexpr.getQBExpr1());
+        jc = null; schema = null;
         RelNode qbexpr2Ops = genLogicalPlan(qbexpr.getQBExpr2());
+        jc = null; schema = null;
         return genSetOpLogicalPlan(qbexpr.getOpcode(), qbexpr.getAlias(), qbexpr.getQBExpr1()
             .getAlias(), qbexpr1Ops, qbexpr.getQBExpr2().getAlias(), qbexpr2Ops);
       default:
