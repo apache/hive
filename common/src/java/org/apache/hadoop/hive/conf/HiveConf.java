@@ -3711,11 +3711,11 @@ public class HiveConf extends Configuration {
         "1800s", new TimeValidator(TimeUnit.SECONDS),
         "Interval to synchronize privileges from external authorizer periodically in HS2"),
 
-    HIVE_LEGACY_TIMEPARSER_POLICY("hive.legacy.timeparser.policy", "CORRECTED",
-        "When LEGACY, java.text.SimpleDateFormat is used for formatting and parsing\n"
+    HIVE_LEGACY_TIMEPARSER_POLICY("hive.legacy.timeparser.policy", false,
+        "When true, java.text.SimpleDateFormat is used for formatting and parsing\n"
             + "dates/timestamps in a locale-sensitive manner, which is the approach before Hive 3.x.\n"
-            + "When set to CORRECTED, classes from java.time.* packages are used for the same purpose.\n"
-            + "The default value is EXCEPTION, RuntimeException is thrown when we will get different results."),
+            + "When set to false, classes from java.time.* packages are used for the same purpose.\n"
+            + "The default value is false, RuntimeException is thrown when we will get different results."),
      // HiveServer2 specific configs
     HIVE_SERVER2_CLEAR_DANGLING_SCRATCH_DIR("hive.server2.clear.dangling.scratchdir", false,
         "Clear dangling scratch dir periodically in HS2"),

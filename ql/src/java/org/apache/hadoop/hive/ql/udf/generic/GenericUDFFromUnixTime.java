@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
-
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
 
 /**
@@ -48,9 +47,10 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
  *
  */
 @Description(name = "from_unixtime",
-             value = "_FUNC_(unix_time, format) - returns unix_time in the specified format",
-             extended = "Example:\n" + "  > SELECT _FUNC_(0, 'yyyy-MM-dd HH:mm:ss') FROM src LIMIT 1;\n"
-                 + "  '1970-01-01 00:00:00'")
+    value = "_FUNC_(unix_time, format) - returns unix_time in the specified format",
+    extended = "Example:\n"
+        + "  > SELECT _FUNC_(0, 'yyyy-MM-dd HH:mm:ss') FROM src LIMIT 1;\n"
+        + "  '1970-01-01 00:00:00'")
 public class GenericUDFFromUnixTime extends GenericUDF {
 
   private transient IntObjectInspector inputIntOI;
@@ -59,8 +59,7 @@ public class GenericUDFFromUnixTime extends GenericUDF {
   private transient final Text result = new Text();
   private transient DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");
   private transient Converter[] converters = new Converter[2];
-  private transient PrimitiveObjectInspector.PrimitiveCategory[] inputTypes =
-      new PrimitiveObjectInspector.PrimitiveCategory[2];
+  private transient PrimitiveObjectInspector.PrimitiveCategory[] inputTypes = new PrimitiveObjectInspector.PrimitiveCategory[2];
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -72,16 +71,15 @@ public class GenericUDFFromUnixTime extends GenericUDF {
 
     PrimitiveObjectInspector arg0OI = (PrimitiveObjectInspector) arguments[0];
     switch (arg0OI.getPrimitiveCategory()) {
-    case INT:
-      inputIntOI = (IntObjectInspector) arguments[0];
-      break;
-    case LONG:
-      inputLongOI = (LongObjectInspector) arguments[0];
-      break;
-    default:
-      throw new UDFArgumentException(
-          "The function from_unixtime takes only int/long types for first argument. Got Type:"
-              + arg0OI.getPrimitiveCategory().name());
+      case INT:
+        inputIntOI = (IntObjectInspector) arguments[0];
+        break;
+      case LONG:
+        inputLongOI = (LongObjectInspector) arguments[0];
+        break;
+      default:
+        throw new UDFArgumentException("The function from_unixtime takes only int/long types for first argument. Got Type:"
+            + arg0OI.getPrimitiveCategory().name());
     }
 
     if (arguments.length == 2) {
@@ -111,16 +109,11 @@ public class GenericUDFFromUnixTime extends GenericUDF {
       return null;
     }
 
-    String timeParserPolicy = SessionState.get() == null ? new HiveConf().getVar(
+    boolean timeParserPolicy = SessionState.get() == null ? new HiveConf().getBoolVar(
         HiveConf.ConfVars.HIVE_LEGACY_TIMEPARSER_POLICY) : SessionState.get().getConf()
-        .getVar(HiveConf.ConfVars.HIVE_LEGACY_TIMEPARSER_POLICY);
+        .getBoolVar(HiveConf.ConfVars.HIVE_LEGACY_TIMEPARSER_POLICY);
 
-    return timeParserPolicy.equalsIgnoreCase("legacy") ? evaluateLegacy(arguments) : evaluateCorrected(arguments);
-  }
-
-  @Override
-  public String getDisplayString(String[] children) {
-    return getStandardDisplayString("from_unixtime", children, ", ");
+    return timeParserPolicy == true ? evaluateLegacy(arguments) : evaluateCorrected(arguments);
   }
 
   public Object evaluateCorrected(DeferredObject[] arguments) throws HiveException {
@@ -163,6 +156,11 @@ public class GenericUDFFromUnixTime extends GenericUDF {
     Date date = new Date(unixtime * 1000L);
     result.set(formatter.format(date));
     return result;
+  }
+
+  @Override
+  public String getDisplayString(String[] children) {
+    return getStandardDisplayString("from_unixtime", children, ", ");
   }
 }
 

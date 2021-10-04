@@ -101,6 +101,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
               PrimitiveObjectInspectorFactory.javaStringObjectInspector);
         }
         break;
+
       case DATE:
         inputDateOI = (DateObjectInspector) arguments[0];
         break;
@@ -140,12 +141,12 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
       return null;
     }
 
-    String timeParserPolicy = SessionState.get() == null ? new HiveConf().getVar(
+    boolean timeParserPolicy = SessionState.get() == null ? new HiveConf().getBoolVar(
         HiveConf.ConfVars.HIVE_LEGACY_TIMEPARSER_POLICY) : SessionState.get().getConf()
-        .getVar(HiveConf.ConfVars.HIVE_LEGACY_TIMEPARSER_POLICY);
+        .getBoolVar(HiveConf.ConfVars.HIVE_LEGACY_TIMEPARSER_POLICY);
 
     if (inputTextConverter != null) {
-      return timeParserPolicy.equalsIgnoreCase("legacy") ? evaluateLegacy(arguments) : evaluateCorrected(arguments);
+      return timeParserPolicy == true ? evaluateLegacy(arguments) : evaluateCorrected(arguments);
     } else if (inputDateOI != null) {
       TimestampTZ timestampTZ = TimestampTZUtil.convert(
           inputDateOI.getPrimitiveJavaObject(arguments[0].get()), timeZone);
@@ -161,18 +162,6 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
     }
 
     return retValue;
-  }
-
-  @Override
-  public String getDisplayString(String[] children) {
-    return getStandardDisplayString(getName(),children);
-  }
-
-  public DateTimeFormatter getFormatter(String pattern){
-    return new DateTimeFormatterBuilder()
-        .parseCaseInsensitive()
-        .appendPattern(pattern)
-        .toFormatter();
   }
 
   public Object evaluateCorrected(DeferredObject[] arguments) throws HiveException {
