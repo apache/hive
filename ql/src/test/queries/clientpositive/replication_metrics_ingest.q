@@ -43,4 +43,6 @@ show databases;
 
 select policy_name, dump_execution_id from sys.replication_metrics;
 
+select policy_name, dump_execution_id from sys.replication_metrics_view;
+
 select count(*) from sys.replication_metrics where scheduled_execution_id > 0;

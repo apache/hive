@@ -34,16 +34,20 @@ class Serializer implements MessageSerializer {
 
   @Override
   public String serialize(EventMessage message) {
-    String messageAsString = MessageSerializer.super.serialize(message);
+    return serialize(MessageSerializer.super.serialize(message));
+  }
+
+  @Override
+  public String serialize(String msg) {
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
       GZIPOutputStream gout = new GZIPOutputStream(baos);
-      gout.write(messageAsString.getBytes(StandardCharsets.UTF_8));
+      gout.write(msg.getBytes(StandardCharsets.UTF_8));
       gout.close();
       byte[] compressed = baos.toByteArray();
       return new String(Base64.getEncoder().encode(compressed), StandardCharsets.UTF_8);
     } catch (IOException e) {
       LOG.error("could not use gzip output stream", e);
-      LOG.debug("message " + messageAsString);
+      LOG.debug("message " + msg);
       throw new RuntimeException("could not use the gzip output Stream", e);
     }
   }

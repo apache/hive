@@ -237,6 +237,8 @@ public abstract class MessageDeserializer {
    */
   public abstract DeletePartitionColumnStatMessage getDeletePartitionColumnStatMessage(String messageBody);
 
+  public abstract String deSerializeGenericString(String messageBody);
+
   // Protection against construction.
   protected MessageDeserializer() {}
 }

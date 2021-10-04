@@ -25,6 +25,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetrics;
+import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
+import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
@@ -65,6 +67,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(MockitoJUnitRunner.class)
 public class TestReplicationMetricSink {
 
+  MessageDeserializer deserializer = GzipJSONMessageEncoder.getInstance().getDeserializer();
   HiveConf conf;
 
   @Mock
@@ -78,6 +81,10 @@ public class TestReplicationMetricSink {
     MetricSink metricSinkSpy = Mockito.spy(MetricSink.getInstance());
     Mockito.doReturn(1L).when(metricSinkSpy).getFrequencyInSecs();
     metricSinkSpy.init(conf);
+  }
+
+  private String deSerialize(String msg) {
+    return deserializer.deSerializeGenericString(msg);
   }
 
   @Test
@@ -125,8 +132,8 @@ public class TestReplicationMetricSink {
     ObjectMapper mapper = new ObjectMapper();
     ReplicationMetric actualMetric = new ReplicationMetric(actualThriftMetric.getScheduledExecutionId(),
         actualThriftMetric.getPolicy(), actualThriftMetric.getDumpExecutionId(),
-        mapper.readValue(actualThriftMetric.getMetadata(), Metadata.class));
-    ProgressMapper progressMapper = mapper.readValue(actualThriftMetric.getProgress(), ProgressMapper.class);
+        mapper.readValue(deSerialize(actualThriftMetric.getMetadata()), Metadata.class));
+    ProgressMapper progressMapper = mapper.readValue(deSerialize(actualThriftMetric.getProgress()), ProgressMapper.class);
     Progress progress = new Progress();
     progress.setStatus(progressMapper.getStatus());
     for (StageMapper stageMapper : progressMapper.getStages()) {
@@ -183,8 +190,8 @@ public class TestReplicationMetricSink {
     mapper = new ObjectMapper();
     actualMetric = new ReplicationMetric(actualThriftMetric.getScheduledExecutionId(),
       actualThriftMetric.getPolicy(), actualThriftMetric.getDumpExecutionId(),
-      mapper.readValue(actualThriftMetric.getMetadata(), Metadata.class));
-    progressMapper = mapper.readValue(actualThriftMetric.getProgress(), ProgressMapper.class);
+      mapper.readValue(deSerialize(actualThriftMetric.getMetadata()), Metadata.class));
+    progressMapper = mapper.readValue(deSerialize(actualThriftMetric.getProgress()), ProgressMapper.class);
     progress = new Progress();
     progress.setStatus(progressMapper.getStatus());
     for (StageMapper stageMapper : progressMapper.getStages()) {
@@ -244,8 +251,8 @@ public class TestReplicationMetricSink {
     mapper = new ObjectMapper();
     actualMetric = new ReplicationMetric(actualThriftMetric.getScheduledExecutionId(),
             actualThriftMetric.getPolicy(), actualThriftMetric.getDumpExecutionId(),
-            mapper.readValue(actualThriftMetric.getMetadata(), Metadata.class));
-    progressMapper = mapper.readValue(actualThriftMetric.getProgress(), ProgressMapper.class);
+            mapper.readValue(deSerialize(actualThriftMetric.getMetadata()), Metadata.class));
+    progressMapper = mapper.readValue(deSerialize(actualThriftMetric.getProgress()), ProgressMapper.class);
     progress = new Progress();
     progress.setStatus(progressMapper.getStatus());
     for (StageMapper stageMapper : progressMapper.getStages()) {
@@ -325,8 +332,7 @@ public class TestReplicationMetricSink {
     GetReplicationMetricsRequest metricsRequest = new GetReplicationMetricsRequest();
     metricsRequest.setPolicy("repl");
     ReplicationMetricList actualReplicationMetrics = Hive.get(conf).getMSC().getReplicationMetrics(metricsRequest);
-    assertTrue(actualReplicationMetrics.getReplicationMetricList().get(0).getProgress(),
-        actualReplicationMetrics.getReplicationMetricList().get(0).getProgress()
-            .contains("RM_PROGRESS LIMIT EXCEEDED"));
+    String progress = deSerialize(actualReplicationMetrics.getReplicationMetricList().get(0).getProgress());
+    assertTrue(progress, progress.contains("RM_PROGRESS LIMIT EXCEEDED"));
   }
 }
