@@ -20,7 +20,6 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -30,7 +29,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -77,6 +75,7 @@ import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -98,9 +97,10 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       AlterTableType.ADDCOLS, AlterTableType.REPLACE_COLUMNS, AlterTableType.RENAME_COLUMN,
       AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.SETPARTITIONSPEC,
       AlterTableType.UPDATE_COLUMNS);
-  private static final List<String> MIGRATION_ALLOWED_SOURCE_FORMATS = Arrays.stream(FileFormat.values())
-      .filter(f -> !f.equals(FileFormat.METADATA))
-      .map(FileFormat::name).map(String::toLowerCase).collect(Collectors.toList());
+  private static final List<String> MIGRATION_ALLOWED_SOURCE_FORMATS = ImmutableList.of(
+      FileFormat.PARQUET.name().toLowerCase(),
+      FileFormat.ORC.name().toLowerCase(),
+      FileFormat.AVRO.name().toLowerCase());
 
   private final Configuration conf;
   private Table icebergTable = null;
