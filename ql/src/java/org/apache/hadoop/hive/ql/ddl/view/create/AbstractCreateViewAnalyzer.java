@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.ddl.view.create;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -42,7 +41,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 /**
  * Abstract ancestor of analyzers that can create a view.
  */
-abstract class AbstractCreateViewAnalyzer extends BaseSemanticAnalyzer {
+public abstract class AbstractCreateViewAnalyzer extends BaseSemanticAnalyzer {
   AbstractCreateViewAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
@@ -85,26 +84,17 @@ abstract class AbstractCreateViewAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  protected void validateTablesUsed(SemanticAnalyzer analyzer) throws SemanticException {
+  public static void validateTablesUsed(SemanticAnalyzer analyzer) throws SemanticException {
     // Do not allow view to be defined on temp table or other materialized view
-    Set<String> tableAliases = analyzer.getQB().getTabAliases();
-    for (String alias : tableAliases) {
-      if (SemanticAnalyzer.DUMMY_TABLE.equals(alias)) {
-        continue;
-      }
-      Table table = null;
-      try {
-        table = analyzer.getTableObjectByName(analyzer.getQB().getTabNameForAlias(alias));
-      } catch (HiveException ex) {
-        throw new SemanticException(ex);
-      }
+    for (TableScanOperator ts : analyzer.getTopOps().values()) {
+      Table table = ts.getConf().getTableMetadata();
 
       if (table.isTemporary()) {
-        throw new SemanticException("View definition references temporary table " + alias);
+        throw new SemanticException("View definition references temporary table " + table.getCompleteName());
       }
 
       if (table.isMaterializedView()) {
-        throw new SemanticException("View definition references materialized view " + alias);
+        throw new SemanticException("View definition references materialized view " + table.getCompleteName());
       }
     }
   }

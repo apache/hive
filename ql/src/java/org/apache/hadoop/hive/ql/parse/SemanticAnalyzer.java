@@ -23,12 +23,12 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONV
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
+import static org.apache.hadoop.hive.ql.ddl.view.create.AbstractCreateViewAnalyzer.validateTablesUsed;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.NON_FK_FILTERED;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.AccessControlException;
-import java.time.ZoneId;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13938,25 +13938,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     try {
       // Do not allow view to be defined on temp table or other materialized view
-      Set<String> tableAliases = qb.getTabAliases();
-      for (String alias : tableAliases) {
-        try {
-          if (DUMMY_TABLE.equals(alias)) {
-            continue;
-          }
-          Table table = getTableObjectByName(qb.getTabNameForAlias(alias));
-          if (table.isTemporary()) {
-            throw new SemanticException("View definition references temporary table " + alias);
-          }
-          if (table.isMaterializedView()) {
-            throw new SemanticException("View definition references materialized view " + alias);
-          }
-          if (createVwDesc.isRewriteEnabled() && !AcidUtils.isTransactionalTable(table)) {
+      validateTablesUsed(this);
+      if (createVwDesc.isRewriteEnabled()) {
+        for (TableScanOperator ts : topOps.values()) {
+          if (!AcidUtils.isTransactionalTable(ts.getConf().getTableMetadata())) {
             throw new SemanticException("Automatic rewriting for materialized view cannot "
-                + "be enabled if the materialized view uses non-transactional tables");
+                    + "be enabled if the materialized view uses non-transactional tables");
           }
-        } catch (HiveException ex) {
-          throw new SemanticException(ex);
         }
       }
 
