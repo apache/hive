@@ -1,7 +1,9 @@
+-- Test partition based MV rebuild when source table is insert only
+
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
-CREATE TABLE t1(a int, b int,c int) STORED AS ORC TBLPROPERTIES ('transactional' = 'true');
+CREATE TABLE t1(a int, b int,c int) STORED AS ORC TBLPROPERTIES ('transactional' = 'true', 'transactional_properties'='insert_only');
 
 INSERT INTO t1(a, b, c) VALUES
 (1, 1, 1),
