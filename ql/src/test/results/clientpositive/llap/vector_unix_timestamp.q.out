@@ -27,7 +27,7 @@ from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
->1400-11-16 22:18:40 UTC<	-17959772902	1400-11-16 22:18:40	1400-11-16
+>1400-11-16 22:18:40 UTC<	-17959801280	1400-11-16 14:25:42	1400-11-16
 PREHOOK: query: select 
   '>' || d || '<' , unix_timestamp(d,"yyyy-MM-dd HH:mm:ss z"), from_unixtime(unix_timestamp(d,"yyyy-MM-dd HH:mm:ss z")), to_date(from_unixtime(unix_timestamp(d,"yyyy-MM-dd HH:mm:ss z")))
 from t
@@ -40,7 +40,7 @@ from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
->1400-11-16 22:18:40 UTC<	-17959772902	1400-11-16 22:18:40	1400-11-16
+>1400-11-16 22:18:40 UTC<	-17959801280	1400-11-16 14:25:42	1400-11-16
 PREHOOK: query: select 
   '>' || d || '<' , assert_true(unix_timestamp(d,"yyyy-MM-dd HH:mm:ss z") is not null)
 from t
