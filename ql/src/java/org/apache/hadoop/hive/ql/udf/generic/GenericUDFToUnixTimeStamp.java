@@ -20,11 +20,10 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.util.Locale;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -172,13 +171,13 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
         }
 
         try {
-          LocalDateTime localDateTime = LocalDateTime.parse(textVal, formatter);
-          timestamp = new Timestamp(localDateTime);
-        } catch (DateTimeException e) {
+          ZonedDateTime zonedDateTime = ZonedDateTime.parse(textVal, formatter.withZone(timeZone)).withZoneSameInstant(timeZone);
+          timestamp = new Timestamp(zonedDateTime.toLocalDateTime());
+        } catch (DateTimeException e1) {
           try {
             LocalDate localDate = LocalDate.parse(textVal, formatter);
             timestamp = new Timestamp(localDate.atStartOfDay());
-          } catch (DateTimeException ex) {
+          } catch (DateTimeException e3) {
             return null;
           }
         }
@@ -211,12 +210,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
 
   @Override
   public String getDisplayString(String[] children) {
-    StringBuilder sb = new StringBuilder(32);
-    sb.append(getName());
-    sb.append('(');
-    sb.append(StringUtils.join(children, ','));
-    sb.append(')');
-    return sb.toString();
+    return getStandardDisplayString(getName(),children);
   }
 
   public DateTimeFormatter getFormatter(String pattern){
