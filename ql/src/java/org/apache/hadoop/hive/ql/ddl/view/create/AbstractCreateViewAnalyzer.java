@@ -88,6 +88,9 @@ public abstract class AbstractCreateViewAnalyzer extends BaseSemanticAnalyzer {
     // Do not allow view to be defined on temp table or other materialized view
     for (TableScanOperator ts : analyzer.getTopOps().values()) {
       Table table = ts.getConf().getTableMetadata();
+      if (SemanticAnalyzer.DUMMY_TABLE.equals(table.getTableName())) {
+        continue;
+      }
 
       if (table.isTemporary()) {
         throw new SemanticException("View definition references temporary table " + table.getCompleteName());

@@ -13941,7 +13941,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       validateTablesUsed(this);
       if (createVwDesc.isRewriteEnabled()) {
         for (TableScanOperator ts : topOps.values()) {
-          if (!AcidUtils.isTransactionalTable(ts.getConf().getTableMetadata())) {
+          Table table = ts.getConf().getTableMetadata();
+          if (SemanticAnalyzer.DUMMY_TABLE.equals(table.getTableName())) {
+            continue;
+          }
+          if (!AcidUtils.isTransactionalTable(table)) {
             throw new SemanticException("Automatic rewriting for materialized view cannot "
                     + "be enabled if the materialized view uses non-transactional tables");
           }
