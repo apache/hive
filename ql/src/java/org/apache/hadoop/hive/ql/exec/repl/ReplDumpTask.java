@@ -1173,17 +1173,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           boolean isExternalTablePresent = false;
 
           String snapshotPrefix = dbName.toLowerCase();
-          ArrayList<String> prevSnaps = new ArrayList<>(); // Will stay empty in case of bootstrap
+          ArrayList<String> prevSnaps = new ArrayList<>();
           if (isSnapshotEnabled) {
-            // Delete any old existing snapshot file, We always start fresh in case of bootstrap.
-            FileUtils.deleteIfExists(getDFS(SnapshotUtils.getSnapshotFileListPath(dumpRoot), conf),
-                new Path(SnapshotUtils.getSnapshotFileListPath(dumpRoot),
-                    EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT));
-            FileUtils.deleteIfExists(getDFS(SnapshotUtils.getSnapshotFileListPath(dumpRoot), conf),
-                new Path(SnapshotUtils.getSnapshotFileListPath(dumpRoot),
-                    EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_OLD));
             // Get the counter to store the snapshots created & deleted at source.
             replSnapshotCount = new SnapshotUtils.ReplSnapshotCount();
+            if (snapPathFileList.hasNext()) {
+              prevSnaps = getListFromFileList(snapPathFileList);
+            }
           }
           for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
             Table table = null;

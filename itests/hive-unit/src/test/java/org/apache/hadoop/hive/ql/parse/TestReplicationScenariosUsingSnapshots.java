@@ -1075,8 +1075,9 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
         .run("insert into table3 values(7)")
         .dump(primaryDbName, withClause);
 
-    // Check if target dir exists.
+    // Check if ext-tbl directory exists.
     assertFalse(fs.exists(externalTableLocation1));
+    withClause.remove(withClause.size() - 1);
 
     replica.load(replicatedDbName, primaryDbName, withClause)
         .run("use " + replicatedDbName)

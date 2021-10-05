@@ -260,10 +260,12 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
 
     DistributedFileSystem targetFs = SnapshotUtils.getDFS(targetPath, clonedConf);
     boolean result = false;
-    boolean isSecondSnapshotAvl =
+    boolean secondSnapAvailable =
             SnapshotUtils.isSnapshotAvailable(targetFs, targetPath, work.getSnapshotPrefix(), NEW_SNAPSHOT, clonedConf);
     if (getWork().getCopyMode().equals(SnapshotUtils.SnapshotCopyMode.DIFF_COPY)) {
-      if(isSecondSnapshotAvl) {
+      //In case of reverse replication from B(src) to A(tgt), both snapshots may exist in tgt.
+      //In this case, we need to delete the old snapshot and rename new one to old to enable diff-copy.
+      if(secondSnapAvailable) {
         SnapshotUtils.deleteSnapshotIfExists(targetFs, targetPath, firstSnapshot(work.getSnapshotPrefix()), clonedConf);
         SnapshotUtils.renameSnapshot(targetFs, targetPath,
                 secondSnapshot(work.getSnapshotPrefix()), firstSnapshot(work.getSnapshotPrefix()), clonedConf);
@@ -294,7 +296,8 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
       // snapshots.
       SnapshotUtils.allowSnapshot(targetFs, work.getFullyQualifiedTargetPath(), clonedConf);
       // Attempt to delete the snapshot, in case this is a bootstrap post a failed incremental, Since in case of
-      // bootstrap we go from start, so delete any pre-existing snapshot, (both snapshots can exist in case of failback)
+      // bootstrap we go from start, so delete any pre-existing snapshot, (both snapshots can exist in case of reverse-
+      // replication)
       SnapshotUtils.deleteSnapshotIfExists(targetFs, targetPath, firstSnapshot(work.getSnapshotPrefix()), clonedConf);
       SnapshotUtils.deleteSnapshotIfExists(targetFs, targetPath, secondSnapshot(work.getSnapshotPrefix()), clonedConf);
 

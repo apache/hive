@@ -230,13 +230,29 @@ public class ReplExternalTables {
           //dir not snapshottable, continue
         }
       }
-      boolean isFirstSnapshotAvl =
+      boolean firstSnapAvailable =
               SnapshotUtils.isSnapshotAvailable(sourceDfs, sourcePath, snapshotPrefix, OLD_SNAPSHOT, conf);
-      boolean isSecondSnapAvl =
+      boolean secondSnapAvailable =
               SnapshotUtils.isSnapshotAvailable(sourceDfs, sourcePath, snapshotPrefix, NEW_SNAPSHOT, conf);
-      //for bootstrap and non - failback case, use initial_copy
-      if(isBootstrap && !(!isSecondSnapAvl && isFirstSnapshotAvl)) {
-        // Delete any pre existing snapshots.
+
+      //While resuming a failed replication
+      if (prevSnaps.contains(sourcePath.toString())) {
+        // We already created a snapshot for this, just refresh the latest snapshot and leave.
+        // In case of reverse replication after failover, in some paths, second snapshot may not be present.
+        SnapshotUtils.deleteSnapshotIfExists(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf);
+        replSnapshotCount.incrementNumDeleted();
+        SnapshotUtils.createSnapshot(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf);
+        snapPathFileList.add(sourcePath.toString());
+        replSnapshotCount.incrementNumCreated();
+        copyMode = SnapshotUtils
+                .isSnapshotAvailable(sourceDfs, sourcePath, snapshotPrefix, OLD_SNAPSHOT, conf) ? DIFF_COPY : INITIAL_COPY;
+        ret.put(prefix, copyMode);
+        return ret;
+      }
+
+      //for bootstrap and forward replication, use initial_copy
+      if(isBootstrap && !(!secondSnapAvailable && firstSnapAvailable)) {
+        // Delete any pre-existing snapshots.
         SnapshotUtils.deleteSnapshotIfExists(sourceDfs, sourcePath, firstSnapshot(snapshotPrefix), conf);
         SnapshotUtils.deleteSnapshotIfExists(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf);
         allowAndCreateInitialSnapshot(sourcePath, snapshotPrefix, conf, replSnapshotCount, snapPathFileList, sourceDfs);
@@ -244,19 +260,6 @@ public class ReplExternalTables {
         return ret;
       }
 
-      //While resuming a failed replication
-      if (prevSnaps.contains(sourcePath.toString())) {
-        // We already created a snapshot for this, just refresh the latest snapshot and leave.
-        sourceDfs.deleteSnapshot(sourcePath, secondSnapshot(snapshotPrefix));
-        replSnapshotCount.incrementNumDeleted();
-        SnapshotUtils.createSnapshot(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf);
-        snapPathFileList.add(sourcePath.toString());
-        replSnapshotCount.incrementNumCreated();
-        copyMode = SnapshotUtils
-            .isSnapshotAvailable(sourceDfs, sourcePath, snapshotPrefix, OLD_SNAPSHOT, conf) ? DIFF_COPY : INITIAL_COPY;
-        ret.put(prefix, copyMode);
-        return ret;
-      }
       /*
       * We have 4 cases :
       * i.   both old and new snapshots exist in src -
@@ -276,8 +279,8 @@ public class ReplExternalTables {
       * iv.  none exist - new path added in conf, need to do initial copy.
       * */
 
-      if (isSecondSnapAvl) {
-        if(isFirstSnapshotAvl) {
+      if (secondSnapAvailable) {
+        if(firstSnapAvailable) {
           sourceDfs.deleteSnapshot(sourcePath, firstSnapshot(snapshotPrefix));
           replSnapshotCount.incrementNumDeleted();
           SnapshotUtils.renameSnapshot(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), firstSnapshot(snapshotPrefix), conf);
@@ -296,7 +299,7 @@ public class ReplExternalTables {
           return ret;
         }
       } else {
-        if (isFirstSnapshotAvl) {
+        if (firstSnapAvailable) {
           //only first available
           if(conf.getBoolVar(HiveConf.ConfVars.REPL_REUSE_SNAPSHOTS)) {
             SnapshotUtils.createSnapshot(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf);

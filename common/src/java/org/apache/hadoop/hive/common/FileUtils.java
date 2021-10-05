@@ -842,6 +842,16 @@ public final class FileUtils {
             oldSnapshot, newSnapshot);
     } catch (IOException e) {
       LOG.error("Can not copy using snapshot from source: {}, target: {}", srcPaths, dst);
+      try {
+        // in case overwriteTarget is set to false, and we encounter an exception due to targetFs getting
+        // changed since last snapshot, then fallback to initial copy
+        if (!overwriteTarget && !e.getCause().getMessage().contains("changed since snapshot")) {
+          LOG.warn("Diff copy failed due to changed target filesystem, falling back to normal distcp.");
+          return distCp(srcPaths.get(0).getFileSystem(conf), srcPaths, dst, false, proxyUser, conf, shims);
+        }
+      } catch (IOException ex) {
+        LOG.error("can not copy using fallback initial copy from source : {}, target: {}", srcPaths, dst, ex);
+      }
     }
     return copied;
   }

@@ -232,14 +232,17 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     HiveConf primaryConf = primary.getConf();
     TxnStore txnHandler = TxnUtils.getTxnStore(primary.getConf());
     Path externalTableLocation = new Path("/external" + testName.getMethodName() + "/t3/");
+    Path externalTableLocationErr = new Path("/external" + testName.getMethodName() + "/error/terr/");
     DistributedFileSystem dfs = primary.miniDFSCluster.getFileSystem();
     dfs.mkdirs(externalTableLocation, new FsPermission("777"));
+    dfs.mkdirs(externalTableLocationErr, new FsPermission("777"));
     DistributedFileSystem replicaDfs = replica.miniDFSCluster.getFileSystem();
     Path externalBaseDir = new Path("/");
     replicaDfs.mkdirs(externalBaseDir, new FsPermission("777"));
 
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
     withClause.add("'hive.repl.external.warehouse.single.copy.task.paths'='" + externalTableLocation
+            .makeQualified(dfs.getUri(), dfs.getWorkingDirectory()).toString() + "," + externalTableLocationErr
             .makeQualified(dfs.getUri(), dfs.getWorkingDirectory()).toString() + "'");
     withClause.add("'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "' = '" +
             UserGroupInformation.getCurrentUser().getUserName() + "'");
@@ -258,10 +261,14 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("create external table t3 (place string) partitioned by (country string) row format "
                     + "delimited fields terminated by ',' location '" + externalTableLocation.toString()
                     + "'")
+            .run("create external table t_err (place string) partitioned by (country string) row format "
+                    + "delimited fields terminated by ',' location '" + externalTableLocationErr.toString()
+                    + "'")
             .run("insert into t3 partition(country='india') values ('bangalore')")
             .dump(primaryDbName, withClause);
     //validate initial snapshots
     validateSnapshotsFailover(externalTableLocation.toString(), false, false);
+    validateSnapshotsFailover(externalTableLocationErr.toString(), false, false);
 
     //This dump is not failover ready as target db can be used for replication only after first incremental load.
     FileSystem fs = new Path(dumpData.dumpLocation).getFileSystem(conf);
@@ -272,7 +279,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     replica.load(replicatedDbName, primaryDbName, withClause)
             .run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(new String[]{"t1", "t2", "t3"})
+            .verifyResults(new String[]{"t1", "t2", "t3", "t_err"})
             .run("repl status " + replicatedDbName)
             .verifyResult(dumpData.lastReplicationId);
 
@@ -352,7 +359,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     replica.load(replicatedDbName, primaryDbName, withClause)
             .run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(new String[]{"t1", "t2", "t3"})
+            .verifyResults(new String[]{"t1", "t2", "t3", "t_err"})
             .run("repl status " + replicatedDbName)
             .verifyResult(dumpData.lastReplicationId)
             .run("select id from t1")
@@ -364,6 +371,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     //validate diff snapshots
     validateSnapshotsFailover(externalTableLocation.toString(), false, true);
+    validateSnapshotsFailover(externalTableLocationErr.toString(), false, true);
 
     db = replica.getDatabase(replicatedDbName);
     assertTrue(MetaStoreUtils.isTargetOfReplication(db));
@@ -391,8 +399,30 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     withClause.set(withClause.size() - 1, "'hive.repl.replica.external.table.base.dir'='"
             + externalBaseDir.makeQualified(dfs.getUri(), dfs.getWorkingDirectory()).toString() + "'");
     withClause.set(withClause.size() - 5, "'hive.repl.external.warehouse.single.copy.task.paths'='" + externalTableLocation
+            .makeQualified(replicaDfs.getUri(), replicaDfs.getWorkingDirectory()).toString() + "," + externalTableLocationErr
             .makeQualified(replicaDfs.getUri(), replicaDfs.getWorkingDirectory()).toString() + "'");
     withClause.add("'hive.repl.reuse.snapshots'='true'");
+
+    //delete snapshot and disallow to create error on one exteral table path.
+    //After creating the error, re-create the snapshot to test checkpointing.
+    FileStatus[] listing = replicaDfs.listStatus(new Path(externalTableLocationErr, ".snapshot"));
+    String existingSnapshotName = null;
+    for (FileStatus elem : listing) {
+      existingSnapshotName = elem.getPath().getName();
+      replicaDfs.deleteSnapshot(externalTableLocationErr, existingSnapshotName);
+    }
+    replicaDfs.disallowSnapshot(externalTableLocationErr);
+
+    try {
+      WarehouseInstance.Tuple tuple = replica.run("use " + replicatedDbName)
+              .dump(replicatedDbName, withClause);
+      fail("Should have thrown snapshot exception");
+    } catch (Exception se) {
+      // Ignore
+    }
+
+    replicaDfs.allowSnapshot(externalTableLocationErr);
+    replicaDfs.createSnapshot(externalTableLocationErr, existingSnapshotName);
 
     WarehouseInstance.Tuple reverseDumpData = replica.run("use " + replicatedDbName)
             .run("create table t4 (id int)")
@@ -413,7 +443,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     primary.load(primaryDbName, replicatedDbName, withClause)
             .run("use " + primaryDbName)
             .run("show tables")
-            .verifyResults(new String[]{"t1", "t2", "t3", "t4"})
+            .verifyResults(new String[]{"t1", "t2", "t3", "t4", "t_err"})
             .run("repl status " + primaryDbName)
             .verifyResult(reverseDumpData.lastReplicationId)
             .run("select id from t1")
@@ -425,8 +455,9 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("select id from t4")
             .verifyResults(new String[]{"2"});
 
-    //validate diff snapshots for reverese replication
+    //validate diff snapshots for reverse replication
     validateSnapshotsFailover(externalTableLocation.toString(), true, true);
+    validateSnapshotsFailover(externalTableLocationErr.toString(), true, true);
 
     Database primaryDb = primary.getDatabase(primaryDbName);
     assertFalse(primaryDb == null);
@@ -458,6 +489,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     //validate diff snapshots for reverse replication
     validateSnapshotsFailover(externalTableLocation.toString(), true, true);
+    validateSnapshotsFailover(externalTableLocationErr.toString(), true, true);
   }
 
   @Test
