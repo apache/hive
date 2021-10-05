@@ -2554,10 +2554,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       queryCompletedCompactions.append(" AND (\"CC_HIGHEST_WRITE_ID\" > " + tblValidWriteIdList.getHighWatermark());
       queryUpdateDelete.append(tblValidWriteIdList.getInvalidWriteIds().length == 0 ? ") " :
               " OR \"CTC_WRITEID\" IN(" + StringUtils.join(",",
-                      Arrays.asList(ArrayUtils.toObject(tblValidWriteIdList.getInvalidWriteIds()))) + ") ");
+                      Arrays.asList(ArrayUtils.toObject(tblValidWriteIdList.getInvalidWriteIds()))) + ") ) ");
       queryCompletedCompactions.append(tblValidWriteIdList.getInvalidWriteIds().length == 0 ? ") " :
               " OR \"CC_HIGHEST_WRITE_ID\" IN(" + StringUtils.join(",",
-                      Arrays.asList(ArrayUtils.toObject(tblValidWriteIdList.getInvalidWriteIds()))) + ") ");
+                      Arrays.asList(ArrayUtils.toObject(tblValidWriteIdList.getInvalidWriteIds()))) + ") ) ");
       queryUpdateDelete.append(") ");
       queryCompletedCompactions.append(") ");
       queryCompactionQueue.append(") ");
