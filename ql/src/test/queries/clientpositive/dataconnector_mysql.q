@@ -1,3 +1,4 @@
+--!qt:database:mysql:q_test_extDB_init.mysql.sql
 -- CREATE with comment
 CREATE CONNECTOR mysql_qtest
 TYPE 'mysql'

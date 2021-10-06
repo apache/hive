@@ -49,7 +49,7 @@ public abstract class AbstractExternalDB {
 
     private static final int MAX_STARTUP_WAIT = 5 * 60 * 1000;
 
-    public static class ProcessResults {
+    protected static class ProcessResults {
         final String stdout;
         final String stderr;
         final int rc;
@@ -59,21 +59,6 @@ public abstract class AbstractExternalDB {
             this.stderr = stderr;
             this.rc = rc;
         }
-    }
-
-    public static AbstractExternalDB initalizeExternalDB(String externalDBType) throws IOException {
-        AbstractExternalDB abstractExternalDB;
-        switch (externalDBType) {
-            case "mysql":
-                abstractExternalDB = new MySQLExternalDB();
-                break;
-            case "postgres":
-                abstractExternalDB = new PostgresExternalDB();
-                break;
-            default:
-                throw new IOException("unsupported external database type " + externalDBType);
-        }
-        return abstractExternalDB;
     }
 
     private final String getDockerContainerName() {
@@ -93,21 +78,11 @@ public abstract class AbstractExternalDB {
     }
 
     private String[] buildRmCmd() {
-        return buildArray(
-                "docker",
-                "rm",
-                "-f",
-                "-v",
-                getDockerContainerName()
-        );
+        return new String[] { "docker", "rm", "-f", "-v", getDockerContainerName() };
     }
 
     private String[] buildLogCmd() {
-        return buildArray(
-                "docker",
-                "logs",
-                getDockerContainerName()
-        );
+        return new String[] { "docker", "logs", getDockerContainerName() };
     }
 
 
@@ -170,7 +145,7 @@ public abstract class AbstractExternalDB {
     }
 
 
-    public final String getContainerHostAddress() {
+    protected final String getContainerHostAddress() {
         String hostAddress = System.getenv("HIVE_TEST_DOCKER_HOST");
         if (hostAddress != null) {
             return hostAddress;
@@ -183,44 +158,11 @@ public abstract class AbstractExternalDB {
 
     public abstract String getJdbcDriver();
 
-    public abstract String getDockerImageName();
+    protected abstract String getDockerImageName();
 
-    public abstract String[] getDockerAdditionalArgs();
+    protected abstract String[] getDockerAdditionalArgs();
 
     public abstract boolean isContainerReady(ProcessResults pr);
-
-    protected String[] buildArray(String... strs) {
-        return strs;
-    }
-
-    public Connection getConnectionToExternalDB() throws SQLException, ClassNotFoundException {
-        try {
-            LOG.info("external database connection URL:\t " + getJdbcUrl());
-            LOG.info("JDBC Driver :\t " + getJdbcDriver());
-            LOG.info("external database connection User:\t " + userName);
-            LOG.info("external database connection Password:\t " + password);
-
-            Class.forName(getJdbcDriver());
-
-            Connection conn = DriverManager.getConnection(getJdbcUrl(), userName, password);
-            return conn;
-        } catch (SQLException e) {
-            LOG.error("Failed to connect to external databse", e);
-            throw new SQLException(e);
-        } catch (ClassNotFoundException e) {
-            LOG.error("Unable to find driver class", e);
-            throw new ClassNotFoundException("Unable to find driver class");
-        }
-    }
-
-    public void testConnectionToExternalDB() throws SQLException, ClassNotFoundException {
-        Connection conn = getConnectionToExternalDB();
-        try {
-            conn.close();
-        } catch (SQLException e) {
-            LOG.error("Failed to close external database connection", e);
-        }
-    }
 
     protected String[] SQLLineCmdBuild(String sqlScriptFile) {
         return new String[] {"-u", getJdbcUrl(),
@@ -256,17 +198,13 @@ public abstract class AbstractExternalDB {
     }
 
     public void execute(String script) throws IOException, SQLException, ClassNotFoundException {
-        testConnectionToExternalDB();
-        LOG.info("Starting {} initialization", getClass().getSimpleName());
-
-        try {
-            LOG.info("Initialization script " + script);
-            execSql(script);
-            LOG.info("Initialization script completed in external database");
-
-        } catch (IOException e) {
-            throw new IOException("initialization in external database FAILED!");
+        // Test we can connect to database
+        Class.forName(getJdbcDriver());
+        try (Connection ignored = DriverManager.getConnection(getJdbcUrl(), userName, password)) {
+            LOG.info("Successfully connected to {} with user {} and password {}", getJdbcUrl(), userName, password);
         }
-
+        LOG.info("Starting {} initialization", getClass().getSimpleName());
+        execSql(script);
+        LOG.info("Completed {} initialization", getClass().getSimpleName());
     }
 }
