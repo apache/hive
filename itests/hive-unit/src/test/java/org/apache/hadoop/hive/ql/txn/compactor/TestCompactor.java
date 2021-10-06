@@ -380,15 +380,17 @@ public class TestCompactor {
 
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     CompactionInfo ci = new CompactionInfo("default", tblName, "bkt=0", CompactionType.MAJOR);
+    Table table = msClient.getTable("default", tblName);
     LOG.debug("List of stats columns before analyze Part1: " + txnHandler.findColumnsWithStats(ci));
     Worker.StatsUpdater su = Worker.StatsUpdater.init(ci, colNames, conf,
-      System.getProperty("user.name"));
+      System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
     su.gatherStats();//compute stats before compaction
     LOG.debug("List of stats columns after analyze Part1: " + txnHandler.findColumnsWithStats(ci));
 
     CompactionInfo ciPart2 = new CompactionInfo("default", tblName, "bkt=1", CompactionType.MAJOR);
     LOG.debug("List of stats columns before analyze Part2: " + txnHandler.findColumnsWithStats(ci));
-    su = Worker.StatsUpdater.init(ciPart2, colNames, conf, System.getProperty("user.name"));
+    su = Worker.StatsUpdater.init(ciPart2, colNames, conf, System.getProperty("user.name"),
+        CompactorUtil.getCompactorJobQueueName(conf, ciPart2, table));
     su.gatherStats();//compute stats before compaction
     LOG.debug("List of stats columns after analyze Part2: " + txnHandler.findColumnsWithStats(ci));
 
