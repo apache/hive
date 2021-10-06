@@ -929,6 +929,7 @@ public class TestLlapTaskSchedulerService {
           break;
         }
       }
+      // Active node instances do exist so delay should be adjusted
       assertTrue(tsWrapper.ts.getTaskInfo(task2).adjustedLocalityDelay);
     } finally {
       tsWrapper.shutdown();
