@@ -529,7 +529,6 @@ public class QTestUtil {
   }
 
   private void externalDBCleanupContainer(String externalDBType) throws IOException {
-    // get externalDB initScript
     try {
       AbstractExternalDB abstractExternalDB = AbstractExternalDB.initalizeExternalDB(externalDBType);
       abstractExternalDB.cleanupDockerContainer();
