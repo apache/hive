@@ -291,7 +291,10 @@ public interface HiveTxnManager {
    */
   boolean recordSnapshot(QueryPlan queryPlan);
 
+  @Deprecated
   boolean isImplicitTransactionOpen();
+
+  boolean isImplicitTransactionOpen(Context ctx);
 
   boolean isTxnOpen();
   /**

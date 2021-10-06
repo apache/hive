@@ -3284,4 +3284,19 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
         "where \"CTC_PARTITION\"='p=foo' and \"CTC_TXNID\" IN (5,7)"));
   }
 
+  @Test
+  public void testSkipAcquireLocksForExplain() throws Exception {
+    dropTable(new String[] {"tab_acid"});
+
+    driver.run("create table if not exists tab_acid (a int) partitioned by (p string) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into tab_acid values(1,'foo'),(3,'bar')");
+
+    driver.compileAndRespond("explain update tab_acid set a = a+2 where a > 2", true);
+    driver.lockAndRespond();
+
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 0, locks.size());
+  }
+
 }
