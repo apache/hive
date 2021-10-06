@@ -16,23 +16,13 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hive.metastore.txn;
-
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.SQLTransactionRollbackException;
-import java.sql.Statement;
-import java.util.Properties;
-
 import com.google.common.annotations.VisibleForTesting;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.ShimLoader;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.sql.*;
+import java.util.Properties;
 /**
  * Utility methods for creating and destroying txn database/schema, plus methods for
  * querying against metastore tables.
@@ -42,7 +32,7 @@ public final class TxnDbUtil {
 
   static final private Logger LOG = LoggerFactory.getLogger(TxnDbUtil.class.getName());
   private static final String TXN_MANAGER = "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager";
-
+  private static final int CLEAN_DB_RETRY_COUNT = 3;
   private static int deadlockCnt = 0;
 
   private TxnDbUtil() {
@@ -69,101 +59,15 @@ public final class TxnDbUtil {
 
     Connection conn = null;
     Statement stmt = null;
+    String jdbcDriver = getDriver(conf);
     try {
       conn = getConnection(conf);
       stmt = conn.createStatement();
-      stmt.execute("CREATE TABLE TXNS (" +
-          "  TXN_ID bigint PRIMARY KEY," +
-          "  TXN_STATE char(1) NOT NULL," +
-          "  TXN_STARTED bigint NOT NULL," +
-          "  TXN_LAST_HEARTBEAT bigint NOT NULL," +
-          "  TXN_USER varchar(128) NOT NULL," +
-          "  TXN_HOST varchar(128) NOT NULL)");
-
-      stmt.execute("CREATE TABLE TXN_COMPONENTS (" +
-          "  TC_TXNID bigint REFERENCES TXNS (TXN_ID)," +
-          "  TC_DATABASE varchar(128) NOT NULL," +
-          "  TC_TABLE varchar(128)," +
-          "  TC_PARTITION varchar(767)," +
-          "  TC_OPERATION_TYPE char(1) NOT NULL)");
-      stmt.execute("CREATE TABLE COMPLETED_TXN_COMPONENTS (" +
-          "  CTC_TXNID bigint," +
-          "  CTC_DATABASE varchar(128) NOT NULL," +
-          "  CTC_TABLE varchar(128)," +
-          "  CTC_PARTITION varchar(767))");
-      stmt.execute("CREATE TABLE NEXT_TXN_ID (" + "  NTXN_NEXT bigint NOT NULL)");
-      stmt.execute("INSERT INTO NEXT_TXN_ID VALUES(1)");
-      stmt.execute("CREATE TABLE HIVE_LOCKS (" +
-          " HL_LOCK_EXT_ID bigint NOT NULL," +
-          " HL_LOCK_INT_ID bigint NOT NULL," +
-          " HL_TXNID bigint," +
-          " HL_DB varchar(128) NOT NULL," +
-          " HL_TABLE varchar(128)," +
-          " HL_PARTITION varchar(767)," +
-          " HL_LOCK_STATE char(1) NOT NULL," +
-          " HL_LOCK_TYPE char(1) NOT NULL," +
-          " HL_LAST_HEARTBEAT bigint NOT NULL," +
-          " HL_ACQUIRED_AT bigint," +
-          " HL_USER varchar(128) NOT NULL," +
-          " HL_HOST varchar(128) NOT NULL," +
-          " HL_HEARTBEAT_COUNT integer," +
-          " HL_AGENT_INFO varchar(128)," +
-          " HL_BLOCKEDBY_EXT_ID bigint," +
-          " HL_BLOCKEDBY_INT_ID bigint," +
-        " PRIMARY KEY(HL_LOCK_EXT_ID, HL_LOCK_INT_ID))");
-      stmt.execute("CREATE INDEX HL_TXNID_INDEX ON HIVE_LOCKS (HL_TXNID)");
-
-      stmt.execute("CREATE TABLE NEXT_LOCK_ID (" + " NL_NEXT bigint NOT NULL)");
-      stmt.execute("INSERT INTO NEXT_LOCK_ID VALUES(1)");
-
-      stmt.execute("CREATE TABLE COMPACTION_QUEUE (" +
-          " CQ_ID bigint PRIMARY KEY," +
-          " CQ_DATABASE varchar(128) NOT NULL," +
-          " CQ_TABLE varchar(128) NOT NULL," +
-          " CQ_PARTITION varchar(767)," +
-          " CQ_STATE char(1) NOT NULL," +
-          " CQ_TYPE char(1) NOT NULL," +
-          " CQ_TBLPROPERTIES varchar(2048)," +
-          " CQ_WORKER_ID varchar(128)," +
-          " CQ_START bigint," +
-          " CQ_RUN_AS varchar(128)," +
-          " CQ_HIGHEST_TXN_ID bigint," +
-          " CQ_META_INFO varchar(2048) for bit data," +
-          " CQ_HADOOP_JOB_ID varchar(32))");
-
-      stmt.execute("CREATE TABLE NEXT_COMPACTION_QUEUE_ID (NCQ_NEXT bigint NOT NULL)");
-      stmt.execute("INSERT INTO NEXT_COMPACTION_QUEUE_ID VALUES(1)");
-      
-      stmt.execute("CREATE TABLE COMPLETED_COMPACTIONS (" +
-        " CC_ID bigint PRIMARY KEY," +
-        " CC_DATABASE varchar(128) NOT NULL," +
-        " CC_TABLE varchar(128) NOT NULL," +
-        " CC_PARTITION varchar(767)," +
-        " CC_STATE char(1) NOT NULL," +
-        " CC_TYPE char(1) NOT NULL," +
-        " CC_TBLPROPERTIES varchar(2048)," +
-        " CC_WORKER_ID varchar(128)," +
-        " CC_START bigint," +
-        " CC_END bigint," +
-        " CC_RUN_AS varchar(128)," +
-        " CC_HIGHEST_TXN_ID bigint," +
-        " CC_META_INFO varchar(2048) for bit data," +
-        " CC_HADOOP_JOB_ID varchar(32))");
-      
-      stmt.execute("CREATE TABLE AUX_TABLE (" +
-        " MT_KEY1 varchar(128) NOT NULL," +
-        " MT_KEY2 bigint NOT NULL," +
-        " MT_COMMENT varchar(255)," +
-        " PRIMARY KEY(MT_KEY1, MT_KEY2))");
-      
-      stmt.execute("CREATE TABLE WRITE_SET (" +
-        " WS_DATABASE varchar(128) NOT NULL," +
-        " WS_TABLE varchar(128) NOT NULL," +
-        " WS_PARTITION varchar(767)," +
-        " WS_TXNID bigint NOT NULL," +
-        " WS_COMMIT_ID bigint NOT NULL," +
-        " WS_OPERATION_TYPE char(1) NOT NULL)"
-      );
+      if (jdbcDriver.toLowerCase().contains("spanner")) {
+        setDefaultValuesForSpanner(stmt);
+      } else {
+        executeCreateTableStatements(stmt);
+      }
     } catch (SQLException e) {
       try {
         conn.rollback();
@@ -186,37 +90,40 @@ public final class TxnDbUtil {
 
   public static void cleanDb(HiveConf conf) throws Exception {
     int retryCount = 0;
-    while(++retryCount <= 3) {
+    while (++retryCount <= CLEAN_DB_RETRY_COUNT) {
       boolean success = true;
       Connection conn = null;
       Statement stmt = null;
+      boolean isSpanner = getDriver(conf).toLowerCase().contains("spanner");
       try {
         conn = getConnection(conf);
         stmt = conn.createStatement();
-
         // We want to try these, whether they succeed or fail.
-        try {
-          stmt.execute("DROP INDEX HL_TXNID_INDEX");
-        } catch (SQLException e) {
-          if(!("42X65".equals(e.getSQLState()) && 30000 == e.getErrorCode())) {
-            //42X65/3000 means index doesn't exist
-            LOG.error("Unable to drop index HL_TXNID_INDEX " + e.getMessage() +
-              "State=" + e.getSQLState() + " code=" + e.getErrorCode() + " retryCount=" + retryCount);
-            success = false;
+        if(!isSpanner) {
+          try {
+            stmt.execute("DROP INDEX HL_TXNID_INDEX");
+          } catch (SQLException e) {
+            if (!("42X65".equals(e.getSQLState()) && 30000 == e.getErrorCode())) {
+              //42X65/3000 means index doesn't exist
+              LOG.error("Unable to drop index HL_TXNID_INDEX " + e.getMessage() +
+                  "State=" + e.getSQLState() + " code=" + e.getErrorCode() + " retryCount="
+                  + retryCount);
+              success = false;
+            }
           }
         }
 
-        success &= dropTable(stmt, "TXN_COMPONENTS", retryCount);
-        success &= dropTable(stmt, "COMPLETED_TXN_COMPONENTS", retryCount);
-        success &= dropTable(stmt, "TXNS", retryCount);
-        success &= dropTable(stmt, "NEXT_TXN_ID", retryCount);
-        success &= dropTable(stmt, "HIVE_LOCKS", retryCount);
-        success &= dropTable(stmt, "NEXT_LOCK_ID", retryCount);
-        success &= dropTable(stmt, "COMPACTION_QUEUE", retryCount);
-        success &= dropTable(stmt, "NEXT_COMPACTION_QUEUE_ID", retryCount);
-        success &= dropTable(stmt, "COMPLETED_COMPACTIONS", retryCount);
-        success &= dropTable(stmt, "AUX_TABLE", retryCount);
-        success &= dropTable(stmt, "WRITE_SET", retryCount);
+        success &= dropTable(stmt, "TXN_COMPONENTS", retryCount, isSpanner);
+        success &= dropTable(stmt, "COMPLETED_TXN_COMPONENTS", retryCount, isSpanner);
+        success &= dropTable(stmt, "TXNS", retryCount, isSpanner);
+        success &= dropTable(stmt, "NEXT_TXN_ID", retryCount, isSpanner);
+        success &= dropTable(stmt, "HIVE_LOCKS", retryCount, isSpanner);
+        success &= dropTable(stmt, "NEXT_LOCK_ID", retryCount, isSpanner);
+        success &= dropTable(stmt, "COMPACTION_QUEUE", retryCount, isSpanner);
+        success &= dropTable(stmt, "NEXT_COMPACTION_QUEUE_ID", retryCount, isSpanner);
+        success &= dropTable(stmt, "COMPLETED_COMPACTIONS", retryCount, isSpanner);
+        success &= dropTable(stmt, "AUX_TABLE", retryCount, isSpanner);
+        success &= dropTable(stmt, "WRITE_SET", retryCount, isSpanner);
       } finally {
         closeResources(conn, stmt, null);
       }
@@ -225,22 +132,6 @@ public final class TxnDbUtil {
       }
     }
   }
-
-  private static boolean dropTable(Statement stmt, String name, int retryCount) throws SQLException {
-    try {
-      stmt.execute("DROP TABLE " + name);
-      return true;
-    } catch (SQLException e) {
-      if("42Y55".equals(e.getSQLState()) && 30000 == e.getErrorCode()) {
-        //failed because object doesn't exist
-        return true;
-      }
-      LOG.error("Unable to drop table " + name + ": " + e.getMessage() +
-        " State=" + e.getSQLState() + " code=" + e.getErrorCode() + " retryCount=" + retryCount);
-    }
-    return false;
-  }
-
   /**
    * A tool to count the number of partitions, tables,
    * and databases locked by a particular lockId.
@@ -322,15 +213,17 @@ public final class TxnDbUtil {
   }
 
   static Connection getConnection(HiveConf conf) throws Exception {
-    String jdbcDriver = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER);
+    String jdbcDriver = getDriver(conf);
     Driver driver = (Driver) Class.forName(jdbcDriver).newInstance();
     Properties prop = new Properties();
     String driverUrl = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORECONNECTURLKEY);
-    String user = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME);
-    String passwd =
-      ShimLoader.getHadoopShims().getPassword(conf, HiveConf.ConfVars.METASTOREPWD.varname);
-    prop.setProperty("user", user);
-    prop.setProperty("password", passwd);
+    if (!jdbcDriver.contains("spanner")) {
+      String user = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME);
+      String passwd =
+          ShimLoader.getHadoopShims().getPassword(conf, HiveConf.ConfVars.METASTOREPWD.varname);
+      prop.setProperty("user", user);
+      prop.setProperty("password", passwd);
+    }
     Connection conn = driver.connect(driverUrl, prop);
     conn.setAutoCommit(true);
     return conn;
@@ -365,5 +258,84 @@ public final class TxnDbUtil {
         System.err.println("Error closing Connection: " + e.getMessage());
       }
     }
+  }
+  private static String getDriver(HiveConf conf) {
+    return HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER);
+  }
+  private static void executeCreateTableStatements(Statement stmt) throws SQLException {
+    stmt.execute(
+        "CREATE TABLE TXNS (" + "  TXN_ID bigint PRIMARY KEY," + "  TXN_STATE char(1) NOT NULL,"
+            + "  TXN_STARTED bigint NOT NULL," + "  TXN_LAST_HEARTBEAT bigint NOT NULL,"
+            + "  TXN_USER varchar(128) NOT NULL," + "  TXN_HOST varchar(128) NOT NULL)");
+    stmt.execute("CREATE TABLE TXN_COMPONENTS (" + "  TC_TXNID bigint REFERENCES TXNS (TXN_ID),"
+        + "  TC_DATABASE varchar(128) NOT NULL," + "  TC_TABLE varchar(128),"
+        + "  TC_PARTITION varchar(767)," + "  TC_OPERATION_TYPE char(1) NOT NULL)");
+    stmt.execute("CREATE TABLE COMPLETED_TXN_COMPONENTS (" + "  CTC_TXNID bigint,"
+        + "  CTC_DATABASE varchar(128) NOT NULL," + "  CTC_TABLE varchar(128),"
+        + "  CTC_PARTITION varchar(767))");
+    stmt.execute("CREATE TABLE NEXT_TXN_ID (" + "  NTXN_NEXT bigint NOT NULL)");
+    stmt.execute("INSERT INTO NEXT_TXN_ID VALUES(1)");
+    stmt.execute("CREATE TABLE HIVE_LOCKS (" + " HL_LOCK_EXT_ID bigint NOT NULL,"
+        + " HL_LOCK_INT_ID bigint NOT NULL," + " HL_TXNID bigint," + " HL_DB varchar(128) NOT NULL,"
+        + " HL_TABLE varchar(128)," + " HL_PARTITION varchar(767),"
+        + " HL_LOCK_STATE char(1) NOT NULL," + " HL_LOCK_TYPE char(1) NOT NULL,"
+        + " HL_LAST_HEARTBEAT bigint NOT NULL," + " HL_ACQUIRED_AT bigint,"
+        + " HL_USER varchar(128) NOT NULL," + " HL_HOST varchar(128) NOT NULL,"
+        + " HL_HEARTBEAT_COUNT integer," + " HL_AGENT_INFO varchar(128),"
+        + " HL_BLOCKEDBY_EXT_ID bigint," + " HL_BLOCKEDBY_INT_ID bigint,"
+        + " PRIMARY KEY(HL_LOCK_EXT_ID, HL_LOCK_INT_ID))");
+    stmt.execute("CREATE INDEX HL_TXNID_IDX ON HIVE_LOCKS (HL_TXNID)");
+    stmt.execute("CREATE TABLE NEXT_LOCK_ID (" + " NL_NEXT bigint NOT NULL)");
+    stmt.execute("INSERT INTO NEXT_LOCK_ID VALUES(1)");
+    stmt.execute("CREATE TABLE COMPACTION_QUEUE (" + " CQ_ID bigint PRIMARY KEY,"
+        + " CQ_DATABASE varchar(128) NOT NULL," + " CQ_TABLE varchar(128) NOT NULL,"
+        + " CQ_PARTITION varchar(767)," + " CQ_STATE char(1) NOT NULL,"
+        + " CQ_TYPE char(1) NOT NULL," + " CQ_TBLPROPERTIES varchar(2048),"
+        + " CQ_WORKER_ID varchar(128)," + " CQ_START bigint," + " CQ_RUN_AS varchar(128),"
+        + " CQ_HIGHEST_TXN_ID bigint," + " CQ_META_INFO varchar(2048) for bit data,"
+        + " CQ_HADOOP_JOB_ID varchar(32))");
+    stmt.execute("CREATE TABLE NEXT_COMPACTION_QUEUE_ID (NCQ_NEXT bigint NOT NULL)");
+    stmt.execute("INSERT INTO NEXT_COMPACTION_QUEUE_ID VALUES(1)");
+    stmt.execute("CREATE TABLE COMPLETED_COMPACTIONS (" + " CC_ID bigint PRIMARY KEY,"
+        + " CC_DATABASE varchar(128) NOT NULL," + " CC_TABLE varchar(128) NOT NULL,"
+        + " CC_PARTITION varchar(767)," + " CC_STATE char(1) NOT NULL,"
+        + " CC_TYPE char(1) NOT NULL," + " CC_TBLPROPERTIES varchar(2048),"
+        + " CC_WORKER_ID varchar(128)," + " CC_START bigint," + " CC_END bigint,"
+        + " CC_RUN_AS varchar(128)," + " CC_HIGHEST_TXN_ID bigint,"
+        + " CC_META_INFO varchar(2048) for bit data," + " CC_HADOOP_JOB_ID varchar(32))");
+    stmt.execute(
+        "CREATE TABLE AUX_TABLE (" + " MT_KEY1 varchar(128) NOT NULL," + " MT_KEY2 bigint NOT NULL,"
+            + " MT_COMMENT varchar(255)," + " PRIMARY KEY(MT_KEY1, MT_KEY2))");
+    stmt.execute("CREATE TABLE WRITE_SET (" + " WS_DATABASE varchar(128) NOT NULL,"
+        + " WS_TABLE varchar(128) NOT NULL," + " WS_PARTITION varchar(767),"
+        + " WS_TXNID bigint NOT NULL," + " WS_COMMIT_ID bigint NOT NULL,"
+        + " WS_OPERATION_TYPE char(1) NOT NULL)");
+  }
+  // For spanner we don't re-create tables since in a real Cloud Spanner database it takes long
+  private static void setDefaultValuesForSpanner(Statement stmt) throws SQLException {
+    stmt.execute("DELETE FROM NEXT_TXN_ID WHERE TRUE;");
+    stmt.execute("DELETE FROM NEXT_LOCK_ID WHERE TRUE;");
+    stmt.execute("DELETE FROM NEXT_COMPACTION_QUEUE_ID WHERE TRUE;");
+    stmt.execute("INSERT INTO NEXT_TXN_ID(NTXN_ID,NTXN_NEXT) VALUES(1,1);");
+    stmt.execute("INSERT INTO NEXT_LOCK_ID(NL_ID,NL_NEXT) VALUES(1,1);");
+    stmt.execute("INSERT INTO NEXT_COMPACTION_QUEUE_ID(NCQ_ID, NCQ_NEXT) VALUES(1,1);");
+  }
+  private static boolean dropTable(Statement stmt, String name, int retryCount, boolean isSpanner) {
+    try {
+      if (isSpanner) {
+        stmt.execute("DELETE from " + name + " WHERE true");
+      } else {
+        stmt.execute("DROP TABLE " + name);
+      }
+      return true;
+    } catch (SQLException e) {
+      if ("42Y55".equals(e.getSQLState()) && 30000 == e.getErrorCode()) {
+        //failed because object doesn't exist
+        return true;
+      }
+      LOG.error("Unable to drop table " + name + ": " + e.getMessage() + " State=" + e.getSQLState()
+          + " code=" + e.getErrorCode() + " retryCount=" + retryCount);
+    }
+    return false;
   }
 }

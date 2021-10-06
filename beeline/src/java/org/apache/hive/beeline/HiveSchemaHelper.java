@@ -38,6 +38,7 @@ public class HiveSchemaHelper {
   public static final String DB_MYSQL = "mysql";
   public static final String DB_POSTGRACE = "postgres";
   public static final String DB_ORACLE = "oracle";
+  public static final String DB_CLOUDSPANNER = "cloudspanner";
 
   /***
    * Get JDBC connection to metastore db
@@ -473,6 +474,32 @@ public class HiveSchemaHelper {
     }
   }
 
+  public static class CloudSpannerCommandParser extends AbstractCommandParser {
+    private static final String CLOUDSPANNER_NESTING_TOKEN = "EXECUTE";
+
+    public CloudSpannerCommandParser(String dbOpts, String msUsername, String msPassword,
+        HiveConf hiveConf) {
+      super(dbOpts, msUsername, msPassword, hiveConf);
+    }
+
+    @Override public String getScriptName(String dbCommand) throws IllegalArgumentException {
+      if (!isNestedScript(dbCommand)) {
+        throw new IllegalArgumentException("Not a nested script format " + dbCommand);
+      }
+      // remove ending ';' and starting 'RUN'
+      return dbCommand.replace(";", "").replace(CLOUDSPANNER_NESTING_TOKEN, "").replace("'", "")
+          .trim();
+    }
+
+    @Override public boolean isNestedScript(String dbCommand) {
+      return dbCommand.startsWith(CLOUDSPANNER_NESTING_TOKEN);
+    }
+
+    @Override public String cleanseCommand(String dbCommand) {
+      return super.cleanseCommand(dbCommand).replace("\"", "");
+    }
+  }
+
   public static NestedScriptParser getDbCommandParser(String dbName) {
     return getDbCommandParser(dbName, null, null, null, null);
   }
@@ -490,6 +517,8 @@ public class HiveSchemaHelper {
       return new PostgresCommandParser(dbOpts, msUsername, msPassword, hiveConf);
     } else if (dbName.equalsIgnoreCase(DB_ORACLE)) {
       return new OracleCommandParser(dbOpts, msUsername, msPassword, hiveConf);
+    } else if (dbName.equalsIgnoreCase(DB_CLOUDSPANNER)) {
+      return new CloudSpannerCommandParser(dbOpts, msUsername, msPassword, hiveConf);
     } else {
       throw new IllegalArgumentException("Unknown dbType " + dbName);
     }

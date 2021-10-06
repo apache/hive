@@ -308,8 +308,8 @@ public class TestObjectStore {
     objectStore.addRole(ROLE1, OWNER);
     objectStore.addRole(ROLE2, OWNER);
     List<String> roles = objectStore.listRoleNames();
-    Assert.assertEquals(2, roles.size());
-    Assert.assertEquals(ROLE2, roles.get(1));
+    Assert.assertEquals(2,roles.size());
+    Assert.assertTrue(roles.containsAll(Arrays.asList(ROLE1, ROLE2)));
     Role role1 = objectStore.getRole(ROLE1);
     Assert.assertEquals(OWNER, role1.getOwnerName());
     objectStore.grantRole(role1, USER1, PrincipalType.USER, OWNER, PrincipalType.ROLE, true);

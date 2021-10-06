@@ -836,6 +836,11 @@ public class HiveSchemaTool {
         groupNo = 3;
         break;
 
+      case HiveSchemaHelper.DB_CLOUDSPANNER:
+        regexp = Pattern.compile("(CREATE TABLE) (\\S+).*");
+        groupNo = 2;
+        break;
+
       default:
         regexp = Pattern.compile("(CREATE TABLE(IF NOT EXISTS)*) (\\S+).*");
         groupNo = 3;
@@ -970,7 +975,8 @@ public class HiveSchemaTool {
         beeLine.getOpts().setSilent(true);
       }
       beeLine.getOpts().setAllowMultiLineCommand(false);
-      beeLine.getOpts().setIsolation("TRANSACTION_READ_COMMITTED");
+      beeLine.getOpts().setIsolation(
+          HiveSchemaHelper.getValidConfVar(ConfVars.METASTORE_TRANSACTION_ISOLATION, hiveConf));
       // We can be pretty sure that an entire line can be processed as a single command since
       // we always add a line separator at the end while calling dbCommandParser.buildCommand.
       beeLine.getOpts().setEntireLineAsCommand(true);
@@ -1005,6 +1011,14 @@ public class HiveSchemaTool {
     }
 
     private String[] argsWith(String password) throws IOException {
+      if (HiveSchemaHelper.getValidConfVar(ConfVars.METASTORECONNECTURLKEY, hiveConf).toLowerCase()
+          .contains(HiveSchemaHelper.DB_CLOUDSPANNER)) {
+        // Spanner does not like to receive username and password even if they are empty or null
+        return new String[] { "-u",
+            HiveSchemaHelper.getValidConfVar(ConfVars.METASTORECONNECTURLKEY, hiveConf), "-d",
+            HiveSchemaHelper.getValidConfVar(ConfVars.METASTORE_CONNECTION_DRIVER, hiveConf), "-f",
+            sqlScriptFile };
+      }
       return new String[] { "-u",
           HiveSchemaHelper.getValidConfVar(ConfVars.METASTORECONNECTURLKEY, hiveConf), "-d",
           HiveSchemaHelper.getValidConfVar(ConfVars.METASTORE_CONNECTION_DRIVER, hiveConf), "-n",
@@ -1102,8 +1116,9 @@ public class HiveSchemaTool {
       if ((!dbType.equalsIgnoreCase(HiveSchemaHelper.DB_DERBY) &&
           !dbType.equalsIgnoreCase(HiveSchemaHelper.DB_MSSQL) &&
           !dbType.equalsIgnoreCase(HiveSchemaHelper.DB_MYSQL) &&
-          !dbType.equalsIgnoreCase(HiveSchemaHelper.DB_POSTGRACE) && !dbType
-          .equalsIgnoreCase(HiveSchemaHelper.DB_ORACLE))) {
+          !dbType.equalsIgnoreCase(HiveSchemaHelper.DB_POSTGRACE) &&
+          !dbType.equalsIgnoreCase(HiveSchemaHelper.DB_ORACLE) &&
+          !dbType.equalsIgnoreCase(HiveSchemaHelper.DB_CLOUDSPANNER))) {
         System.err.println("Unsupported dbType " + dbType);
         printAndExit(cmdLineOptions);
       }

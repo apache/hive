@@ -1,0 +1,10 @@
+-- ----------------------------------
+-- DML statements for initialization
+-- ----------------------------------
+
+START BATCH DML;
+INSERT INTO NEXT_TXN_ID(NTXN_ID,NTXN_NEXT) VALUES(1,1);
+INSERT INTO NEXT_LOCK_ID(NL_ID,NL_NEXT) VALUES(1,1);
+INSERT INTO NEXT_COMPACTION_QUEUE_ID(NCQ_ID, NCQ_NEXT) VALUES(1,1);
+INSERT INTO VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '2.3.0', 'Hive release version 2.3.0');
+RUN BATCH;

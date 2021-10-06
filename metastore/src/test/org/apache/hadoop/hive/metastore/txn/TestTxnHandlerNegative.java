@@ -48,7 +48,8 @@ public class TestTxnHandlerNegative {
     assertNotNull(e);
     assertTrue(
         e.getMessage().contains("No suitable driver found for blah")
-        || e.getMessage().contains("Failed to get driver instance for jdbcUrl=blah")
+            || e.getMessage().contains("Failed to get driver instance for jdbcUrl=blah")
+            || e.getMessage().contains("Connection is null. Check your jdbcUrl")
     );
   }
 }

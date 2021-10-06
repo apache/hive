@@ -22,6 +22,8 @@
  */
 package org.apache.hive.beeline;
 
+import static org.apache.hive.beeline.HiveSchemaHelper.DB_CLOUDSPANNER;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -1002,7 +1004,11 @@ public class Commands {
 
         beeLine.showWarnings();
 
-        if (hasResults) {
+        // if there are some results, print the changed rows.
+        // During bootstrap, we batch the DML statements for the Spanner database,
+        // and the outcome cannot be printed similar to normal Query calls.
+        // So we skip row level printing in Spanner BATCH operations.
+        if (hasResults && !sql.toLowerCase().contains("batch")) {
           do {
             ResultSet rs = stmnt.getResultSet();
             try {
@@ -1622,7 +1628,8 @@ public class Commands {
     }
 
     beeLine.info("Connecting to " + url);
-    if (Utils.parsePropertyFromUrl(url, JdbcConnectionParams.AUTH_PRINCIPAL) == null) {
+    if (Utils.parsePropertyFromUrl(url, JdbcConnectionParams.AUTH_PRINCIPAL) == null && !driver
+        .toLowerCase().contains(DB_CLOUDSPANNER)) {
       String urlForPrompt = url.substring(0, url.contains(";") ? url.indexOf(';') : url.length());
       if (username == null) {
         username = beeLine.getConsoleReader().readLine("Enter username for " + urlForPrompt + ": ");

@@ -53,6 +53,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -250,6 +251,10 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_CACHE_LEVEL2_TYPE,
       HiveConf.ConfVars.METASTORE_IDENTIFIER_FACTORY,
       HiveConf.ConfVars.METASTORE_PLUGIN_REGISTRY_BUNDLE_CHECK,
+      HiveConf.ConfVars.METASTORE_DATANUCLEUS_VALUE_GENERATION_OMIT_CHECK_TABLE_EXISTENCE,
+      HiveConf.ConfVars.METASTORE_DATANUCLEUS_VALUE_GENERATION_CONNECTION,
+      HiveConf.ConfVars.METASTORE_DATANUCLEUS_VALUE_GENERATION_TRANSACTION_ISOLATION,
+      HiveConf.ConfVars.METASTORE_DATANUCLEUS_QUERY_JDOQL_ALLOWALL,
       HiveConf.ConfVars.METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS,
       HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX,
       HiveConf.ConfVars.METASTORE_EVENT_LISTENERS,
@@ -785,6 +790,18 @@ public class HiveConf extends Configuration {
     METASTORE_USE_LEGACY_VALUE_STRATEGY("datanucleus.rdbms.useLegacyNativeValueStrategy", true, ""),
     METASTORE_PLUGIN_REGISTRY_BUNDLE_CHECK("datanucleus.plugin.pluginRegistryBundleCheck", "LOG",
         "Defines what happens when plugin bundles are found and are duplicated [EXCEPTION|LOG|NONE]"),
+    METASTORE_DATANUCLEUS_VALUE_GENERATION_OMIT_CHECK_TABLE_EXISTENCE("datanucleus.rdbms.omitValueGenerationGetColumns",
+        false,"For value generation Datanucleus creates a sequence_table.\n" +
+        "If you set this field to true, then Datanucleus does not check the existence of the table\n" +
+        "assuming that it exists."),
+    METASTORE_DATANUCLEUS_VALUE_GENERATION_CONNECTION("datanucleus.valuegeneration.transactionAttribute",
+        "existing","Defines whether value generation should use the existing connection or create a new one.\n"+
+        "Possible values are: new, existing"),
+    METASTORE_DATANUCLEUS_VALUE_GENERATION_TRANSACTION_ISOLATION("datanucleus.valuegeneration.transactionIsolation",
+        "read-committed","The transaction isolation level when a new connection is created for value generation.\n"+
+        "Possible values are: read-committed, repeatable-read, serializable."),
+    METASTORE_DATANUCLEUS_QUERY_JDOQL_ALLOWALL("datanucleus.query.jdoql.allowAll",false,
+        "Enables bulk UPDATE/DELETE operations. Otherwise, JDOQL deletes one by one."),
     METASTORE_BATCH_RETRIEVE_MAX("hive.metastore.batch.retrieve.max", 300,
         "Maximum number of objects (tables/partitions) can be retrieved from metastore in one batch. \n" +
         "The higher the number, the less the number of round trips is needed to the Hive metastore server, \n" +
@@ -4611,6 +4628,30 @@ public class HiveConf extends Configuration {
       if (reverseMap != null) return reverseMap;
       reverseMap = vars;
       return reverseMap;
+    }
+  }
+  /**
+   * <p>Default isolation level in Hive is READ_COMMITTED.  However, some databases
+   * do not allow all the isolation levels. For instance, Cloud Spanner supports only the serializable
+   * transaction level. For those databases we have defined a new isolation level parameter.
+   * This function maps datanucleus isolation level naming to SQL Connection isolation levels.
+   *
+   * @return transaction isolation level defined in configuration
+   */
+  public int getTransactionIsolation() {
+    // we use data nucleus terminology,
+    // see https://www.datanucleus.com/products/accessplatform_5_0/jdo/persistence.pdf
+    switch(this.getVar(ConfVars.METASTORE_TRANSACTION_ISOLATION).toLowerCase()) {
+      case "read-uncommitted":
+        return Connection.TRANSACTION_READ_UNCOMMITTED;
+      case "read-committed":
+        return Connection.TRANSACTION_READ_COMMITTED;
+      case "repeatable-read":
+        return Connection.TRANSACTION_REPEATABLE_READ;
+      case "serializable":
+        return Connection.TRANSACTION_SERIALIZABLE;
+      default:
+        return Connection.TRANSACTION_NONE;
     }
   }
 }

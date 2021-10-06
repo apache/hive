@@ -604,6 +604,7 @@ public class BeeLine implements Closeable {
     return new String[] {
         "jdbc:JSQLConnect://<hostname>/database=<database>",
         "jdbc:cloudscape:<database>;create=true",
+        "jdbc:cloudspanner:/projects/<projectId>/instances/<instance>/databases/<database>",
         "jdbc:twtds:sqlserver://<hostname>/<database>",
         "jdbc:daffodilDB_embedded:<database>;create=true",
         "jdbc:datadirect:db2://<hostname>:50000;databaseName=<database>",

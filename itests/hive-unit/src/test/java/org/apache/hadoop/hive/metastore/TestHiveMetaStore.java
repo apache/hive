@@ -2712,12 +2712,21 @@ public abstract class TestHiveMetaStore extends TestCase {
     }
   }
 
+  private List<String> extractFunctionNames(List<Function> functions){
+    List<String> functionNames = new ArrayList<>();
+    for(Function function : functions){
+      functionNames.add(function.getFunctionName());
+    }
+    return functionNames;
+  }
+
   public void testSimpleFunction() throws Exception {
     String dbName = "test_db";
     String funcName = "test_func";
     String className = "org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper";
     String owner = "test_owner";
     final int N_FUNCTIONS = 5;
+    List<String> createdFunctionNames =  new ArrayList<>();
     PrincipalType ownerType = PrincipalType.USER;
     int createTime = (int) (System.currentTimeMillis() / 1000);
     FunctionType funcType = FunctionType.JAVA;
@@ -2732,6 +2741,7 @@ public abstract class TestHiveMetaStore extends TestCase {
 
       for (int i = 0; i < N_FUNCTIONS; i++) {
         createFunction(dbName, funcName + "_" + i, className, owner, ownerType, createTime, funcType, null);
+        createdFunctionNames.add(funcName + "_" + i);
       }
 
       // Try the different getters
@@ -2760,12 +2770,14 @@ public abstract class TestHiveMetaStore extends TestCase {
       GetAllFunctionsResponse response = client.getAllFunctions();
       List<Function> allFunctions = response.getFunctions();
       assertEquals(N_FUNCTIONS, allFunctions.size());
-      assertEquals(funcName + "_3", allFunctions.get(3).getFunctionName());
+      assertTrue("All functions exists in returned list",
+          extractFunctionNames(allFunctions).containsAll(createdFunctionNames));
 
       // getFunctions()
       List<String> funcs = client.getFunctions(dbName, "*_func_*");
       assertEquals(N_FUNCTIONS, funcs.size());
-      assertEquals(funcName + "_0", funcs.get(0));
+      assertTrue("Queried functions exists in returned list",
+          funcs.containsAll(createdFunctionNames));
 
       funcs = client.getFunctions(dbName, "nonexistent_func");
       assertEquals(0, funcs.size());

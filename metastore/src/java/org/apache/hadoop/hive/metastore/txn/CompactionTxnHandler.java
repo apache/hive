@@ -65,7 +65,7 @@ class CompactionTxnHandler extends TxnHandler {
     ResultSet rs = null;
     try {
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConnReadOnly(transactionIsolationLevel);
         stmt = dbConn.createStatement();
         // Check for completed transactions
         String s = "select distinct ctc_database, ctc_table, " +
@@ -127,7 +127,7 @@ class CompactionTxnHandler extends TxnHandler {
       Connection dbConn = null;
       Statement stmt = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(transactionIsolationLevel);
         stmt = dbConn.createStatement();
         String s = "update COMPACTION_QUEUE set cq_run_as = '" + user + "' where cq_id = " + cq_id;
         LOG.debug("Going to execute update <" + s + ">");
@@ -169,7 +169,7 @@ class CompactionTxnHandler extends TxnHandler {
       Statement updStmt = null;
       ResultSet rs = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(transactionIsolationLevel);
         stmt = dbConn.createStatement();
         String s = "select cq_id, cq_database, cq_table, cq_partition, " +
           "cq_type, cq_tblproperties from COMPACTION_QUEUE where cq_state = '" + INITIATED_STATE + "'";
@@ -239,7 +239,7 @@ class CompactionTxnHandler extends TxnHandler {
       Connection dbConn = null;
       Statement stmt = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(transactionIsolationLevel);
         stmt = dbConn.createStatement();
         String s = "update COMPACTION_QUEUE set cq_state = '" + READY_FOR_CLEANING + "', " +
           "cq_worker_id = null where cq_id = " + info.id;
@@ -283,7 +283,7 @@ class CompactionTxnHandler extends TxnHandler {
     ResultSet rs = null;
     try {
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConnReadOnly(transactionIsolationLevel);
         stmt = dbConn.createStatement();
         String s = "select cq_id, cq_database, cq_table, cq_partition, " +
           "cq_type, cq_run_as, cq_highest_txn_id from COMPACTION_QUEUE where cq_state = '" + READY_FOR_CLEANING + "'";
@@ -337,7 +337,7 @@ class CompactionTxnHandler extends TxnHandler {
       PreparedStatement pStmt = null;
       ResultSet rs = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(transactionIsolationLevel);
         stmt = dbConn.createStatement();
         rs = stmt.executeQuery("select CQ_ID, CQ_DATABASE, CQ_TABLE, CQ_PARTITION, CQ_STATE, CQ_TYPE, CQ_TBLPROPERTIES, CQ_WORKER_ID, CQ_START, CQ_RUN_AS, CQ_HIGHEST_TXN_ID, CQ_META_INFO, CQ_HADOOP_JOB_ID from COMPACTION_QUEUE WHERE CQ_ID = " + info.id);
         if(rs.next()) {
@@ -452,7 +452,7 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         //Aborted is a terminal state, so nothing about the txn can change
         //after that, so READ COMMITTED is sufficient.
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(transactionIsolationLevel);
         stmt = dbConn.createStatement();
         String s = "select txn_id from TXNS where " +
           "txn_id not in (select tc_txnid from TXN_COMPONENTS) and " +
@@ -515,7 +515,7 @@ class CompactionTxnHandler extends TxnHandler {
       Connection dbConn = null;
       Statement stmt = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(transactionIsolationLevel);
         stmt = dbConn.createStatement();
         String s = "update COMPACTION_QUEUE set cq_worker_id = null, cq_start = null, cq_state = '"
           + INITIATED_STATE+ "' where cq_state = '" + WORKING_STATE + "' and cq_worker_id like '"
@@ -559,7 +559,7 @@ class CompactionTxnHandler extends TxnHandler {
       Connection dbConn = null;
       Statement stmt = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(transactionIsolationLevel);
         long latestValidStart = getDbTime(dbConn) - timeout;
         stmt = dbConn.createStatement();
         String s = "update COMPACTION_QUEUE set cq_worker_id = null, cq_start = null, cq_state = '"
@@ -602,7 +602,7 @@ class CompactionTxnHandler extends TxnHandler {
     ResultSet rs = null;
     try {
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConnReadOnly(transactionIsolationLevel);
         String quote = getIdentifierQuoteString(dbConn);
         stmt = dbConn.createStatement();
         StringBuilder bldr = new StringBuilder();
@@ -659,7 +659,7 @@ class CompactionTxnHandler extends TxnHandler {
     Statement stmt = null;
     try {
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(transactionIsolationLevel);
         stmt = dbConn.createStatement();
         int updCount = stmt.executeUpdate("UPDATE COMPACTION_QUEUE SET CQ_HIGHEST_TXN_ID = " + highestTxnId +
           " WHERE CQ_ID = " + ci.id);
@@ -729,7 +729,7 @@ class CompactionTxnHandler extends TxnHandler {
     RetentionCounters rc = null;
     try {
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(transactionIsolationLevel);
         stmt = dbConn.createStatement();
         /*cc_id is monotonically increasing so for any entity sorts in order of compaction history,
         thus this query groups by entity and withing group sorts most recent first*/
@@ -816,7 +816,7 @@ class CompactionTxnHandler extends TxnHandler {
     ResultSet rs = null;
     try {
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConnReadOnly(transactionIsolationLevel);
         stmt = dbConn.createStatement();
         rs = stmt.executeQuery("select CC_STATE from COMPLETED_COMPACTIONS where " +
           "CC_DATABASE = " + quoteString(ci.dbname) + " and " +
@@ -866,7 +866,7 @@ class CompactionTxnHandler extends TxnHandler {
       PreparedStatement pStmt = null;
       ResultSet rs = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(transactionIsolationLevel);
         stmt = dbConn.createStatement();
         rs = stmt.executeQuery("select CQ_ID, CQ_DATABASE, CQ_TABLE, CQ_PARTITION, CQ_STATE, CQ_TYPE, CQ_TBLPROPERTIES, CQ_WORKER_ID, CQ_START, CQ_RUN_AS, CQ_HIGHEST_TXN_ID, CQ_META_INFO, CQ_HADOOP_JOB_ID from COMPACTION_QUEUE WHERE CQ_ID = " + ci.id);
         if(rs.next()) {
@@ -929,7 +929,7 @@ class CompactionTxnHandler extends TxnHandler {
       Connection dbConn = null;
       Statement stmt = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(transactionIsolationLevel);
         stmt = dbConn.createStatement();
         String s = "update COMPACTION_QUEUE set CQ_HADOOP_JOB_ID = " + quoteString(hadoopJobId) + " WHERE CQ_ID = " + id;
         LOG.debug("Going to execute <" + s + ">");

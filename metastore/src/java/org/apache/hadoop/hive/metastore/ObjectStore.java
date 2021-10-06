@@ -2856,8 +2856,8 @@ public class ObjectStore implements RawStore, Configurable {
     if (partNames.isEmpty()) {
       return new ArrayList<Partition>();
     }
-    ObjectPair<Query, Map<String, String>> queryWithParams =
-        getPartQueryWithParams(dbName, tblName, partNames);
+    ObjectPair<Query, Map<String, Object>> queryWithParams =
+        getPartQueryWithParams(MPartition.class, /* isDelete */ false, dbName, tblName, partNames);
     Query query = queryWithParams.getFirst();
     query.setResultClass(MPartition.class);
     query.setClass(MPartition.class);
@@ -2872,12 +2872,24 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private void dropPartitionsNoTxn(String dbName, String tblName, List<String> partNames) {
-    ObjectPair<Query, Map<String, String>> queryWithParams =
-        getPartQueryWithParams(dbName, tblName, partNames);
-    Query query = queryWithParams.getFirst();
-    query.setClass(MPartition.class);
-    long deleted = query.deletePersistentAll(queryWithParams.getSecond());
-    LOG.debug("Deleted " + deleted + " partition from store");
+    Query query;
+    long deleted;
+    if (HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_DATANUCLEUS_QUERY_JDOQL_ALLOWALL)) {
+      // if bulk delete is allowed..
+      ObjectPair<Query, Map<String, Object>> queryWithParams =
+          getPartQueryWithParams(MPartition.class, /* isDelete */ true, dbName, tblName, partNames);
+      query = queryWithParams.getFirst();
+      query.setClass(MPartition.class);
+      deleted = (Long) query.executeWithMap(queryWithParams.getSecond());
+    } else {
+      ObjectPair<Query, Map<String, Object>> queryWithParams =
+          getPartQueryWithParams(
+              MPartition.class, /* isDelete */ false, dbName, tblName, partNames);
+      query = queryWithParams.getFirst();
+      query.setClass(MPartition.class);
+      deleted = (Long) query.deletePersistentAll(queryWithParams.getSecond());
+    }
+    LOG.debug("Deleted " + deleted + " partition(s) from store");
     query.closeAll();
   }
 
@@ -2889,8 +2901,8 @@ public class ObjectStore implements RawStore, Configurable {
    */
   private HashSet<MColumnDescriptor> detachCdsFromSdsNoTxn(
       String dbName, String tblName, List<String> partNames) {
-    ObjectPair<Query, Map<String, String>> queryWithParams =
-        getPartQueryWithParams(dbName, tblName, partNames);
+    ObjectPair<Query, Map<String, Object>> queryWithParams =
+        getPartQueryWithParams(MPartition.class, /* isDelete */ false, dbName, tblName, partNames);
     Query query = queryWithParams.getFirst();
     query.setClass(MPartition.class);
     query.setResult("sd");
@@ -2910,28 +2922,10 @@ public class ObjectStore implements RawStore, Configurable {
     return candidateCds;
   }
 
-  private ObjectPair<Query, Map<String, String>> getPartQueryWithParams(String dbName,
-      String tblName, List<String> partNames) {
-    StringBuilder sb = new StringBuilder("table.tableName == t1 && table.database.name == t2 && (");
-    int n = 0;
-    Map<String, String> params = new HashMap<String, String>();
-    for (Iterator<String> itr = partNames.iterator(); itr.hasNext();) {
-      String pn = "p" + n;
-      n++;
-      String part = itr.next();
-      params.put(pn, part);
-      sb.append("partitionName == ").append(pn);
-      sb.append(" || ");
-    }
-    sb.setLength(sb.length() - 4); // remove the last " || "
-    sb.append(')');
-    Query query = pm.newQuery();
-    query.setFilter(sb.toString());
-    LOG.debug(" JDOQL filter is " + sb.toString());
-    params.put("t1", HiveStringUtils.normalizeIdentifier(tblName));
-    params.put("t2", HiveStringUtils.normalizeIdentifier(dbName));
-    query.declareParameters(makeParameterDeclarationString(params));
-    return new ObjectPair<Query, Map<String, String>>(query, params);
+  private ObjectPair<Query, Map<String, Object>> getPartQueryWithParams(Class clazz,
+      boolean isDelete, String dbName, String tblName, List<String> partNames) {
+    return makeQueryByPartitionNamesBulk(isDelete, dbName, tblName, partNames, clazz,
+        "this.table.tableName", "this.table.database.name", "this.partitionName");
   }
 
   @Override
@@ -3355,15 +3349,6 @@ public class ObjectStore implements RawStore, Configurable {
     String jdoFilter = queryBuilder.getFilter();
     LOG.debug("jdoFilter = " + jdoFilter);
     return jdoFilter;
-  }
-
-  private String makeParameterDeclarationString(Map<String, String> params) {
-    //Create the parameter declaration string
-    StringBuilder paramDecl = new StringBuilder();
-    for (String key : params.keySet()) {
-      paramDecl.append(", java.lang.String " + key);
-    }
-    return paramDecl.toString();
   }
 
   private String makeParameterDeclarationStringObj(Map<String, Object> params) {
@@ -5686,10 +5671,30 @@ public class ObjectStore implements RawStore, Configurable {
 
   public void dropPartitionAllColumnGrantsNoTxn(
       String dbName, String tableName, List<String> partNames) {
-    ObjectPair<Query, Object[]> queryWithParams = makeQueryByPartitionNames(
-          dbName, tableName, partNames, MPartitionColumnPrivilege.class,
-          "partition.table.tableName", "partition.table.database.name", "partition.partitionName");
-    queryWithParams.getFirst().deletePersistentAll(queryWithParams.getSecond());
+    if (HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_DATANUCLEUS_QUERY_JDOQL_ALLOWALL)) {
+      ObjectPair<Query, Map<String, Object>> queryWithParams =
+          makeQueryByPartitionNamesBulk(
+              /* isDelete */true,
+              dbName,
+              tableName,
+              partNames,
+              MPartitionColumnPrivilege.class,
+              "this.partition.table.tableName",
+              "this.partition.table.database.name",
+              "this.partition.partitionName");
+      queryWithParams.getFirst().executeWithMap(queryWithParams.getSecond());
+    } else {
+      ObjectPair<Query, Object[]> queryWithParams =
+          makeQueryByPartitionNames(
+              dbName,
+              tableName,
+              partNames,
+              MPartitionColumnPrivilege.class,
+              "partition.table.tableName",
+              "partition.table.database.name",
+              "partition.partitionName");
+      queryWithParams.getFirst().deletePersistentAll(queryWithParams.getSecond());
+    }
   }
 
   @SuppressWarnings("unchecked")
@@ -5741,18 +5746,50 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private void dropPartitionGrantsNoTxn(String dbName, String tableName, List<String> partNames) {
-    ObjectPair<Query, Object[]> queryWithParams = makeQueryByPartitionNames(
-          dbName, tableName, partNames,MPartitionPrivilege.class, "partition.table.tableName",
-          "partition.table.database.name", "partition.partitionName");
-    queryWithParams.getFirst().deletePersistentAll(queryWithParams.getSecond());
+    if (HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_DATANUCLEUS_QUERY_JDOQL_ALLOWALL)) {
+      ObjectPair<Query, Map<String, Object>> queryWithParams =
+          makeQueryByPartitionNamesBulk(
+              /* isDelete */true,
+              dbName,
+              tableName,
+              partNames,
+              MPartitionPrivilege.class,
+              "this.partition.table.tableName",
+              "this.partition.table.database.name",
+              "this.partition.partitionName");
+      queryWithParams.getFirst().executeWithMap(queryWithParams.getSecond());
+    } else {
+      ObjectPair<Query, Object[]> queryWithParams =
+          makeQueryByPartitionNames(
+              dbName,
+              tableName,
+              partNames,
+              MPartitionPrivilege.class,
+              "partition.table.tableName",
+              "partition.table.database.name",
+              "partition.partitionName");
+      queryWithParams.getFirst().deletePersistentAll(queryWithParams.getSecond());
+    }
   }
 
   @SuppressWarnings("unchecked")
-  private <T> List<T> queryByPartitionNames(String dbName, String tableName,
-      List<String> partNames, Class<T> clazz, String tbCol, String dbCol, String partCol) {
-    ObjectPair<Query, Object[]> queryAndParams = makeQueryByPartitionNames(
-        dbName, tableName, partNames, clazz, tbCol, dbCol, partCol);
-    return (List<T>)queryAndParams.getFirst().executeWithArray(queryAndParams.getSecond());
+  private <T> List<T> queryByPartitionNames(
+      String dbName,
+      String tableName,
+      List<String> partNames,
+      Class<T> clazz,
+      String tbCol,
+      String dbCol,
+      String partCol) {
+    if (HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_DATANUCLEUS_QUERY_JDOQL_ALLOWALL)) {
+      ObjectPair<Query, Map<String, Object>> queryWithParams = makeQueryByPartitionNamesBulk(
+          /* isDelete */false, dbName, tableName, partNames, clazz, tbCol, dbCol, partCol);
+      return (List<T>) queryWithParams.getFirst().executeWithMap(queryWithParams.getSecond());
+    } else {
+      ObjectPair<Query, Object[]> queryAndParams =
+          makeQueryByPartitionNames(dbName, tableName, partNames, clazz, tbCol, dbCol, partCol);
+      return (List<T>) queryAndParams.getFirst().executeWithArray(queryAndParams.getSecond());
+    }
   }
 
   private ObjectPair<Query, Object[]> makeQueryByPartitionNames(
@@ -5774,6 +5811,43 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = pm.newQuery(clazz, queryStr);
     query.declareParameters(paramStr);
     return new ObjectPair<Query, Object[]>(query, params);
+  }
+
+  /**
+   * Generates a query to include all the partitions
+   *
+   * We want to be able to run bulk deletes. Otherwise for each partition a separate delete
+   * command is run and databases like Spanner which has a limit on the number of mutations inside a
+   * transaction fails on tables with high partition count. For that we can only use single string
+   * jdoql. https://www.datanucleus.org/products/accessplatform/jdo/query.html#_updatedelete_queries
+   */
+  private ObjectPair<Query, Map<String, Object>> makeQueryByPartitionNamesBulk(
+      boolean isDelete,
+      String dbName,
+      String tableName,
+      List<String> partNames,
+      Class<?> clazz,
+      String tbCol,
+      String dbCol,
+      String partCol) {
+    String queryStr =
+        (isDelete ? "DELETE" : "SELECT")
+            + " FROM "
+            + clazz.getName()
+            + " WHERE "
+            + tbCol
+            + " == t1 && "
+            + dbCol
+            + " == t2 && partitionList.contains("
+            + partCol
+            + ") PARAMETERS java.lang.String t1, java.lang.String t2, java.util.List partitionList";
+    Query query = pm.newQuery(queryStr);
+    Map<String, Object> params = new HashMap<>();
+    params.put("t1", HiveStringUtils.normalizeIdentifier(tableName));
+    params.put("t2", HiveStringUtils.normalizeIdentifier(dbName));
+    params.put("partitionList", partNames);
+    query.setClass(clazz);
+    return new ObjectPair<Query, Map<String, Object>>(query, params);
   }
 
   @SuppressWarnings("unchecked")
@@ -7390,32 +7464,17 @@ public class ObjectStore implements RawStore, Configurable {
       // We are not going to verify SD for each partition. Just verify for the table.
       validateTableCols(table, colNames);
       Query query = queryWrapper.query = pm.newQuery(MPartitionColumnStatistics.class);
-      String paramStr = "java.lang.String t1, java.lang.String t2";
-      String filter = "tableName == t1 && dbName == t2 && (";
-      Object[] params = new Object[colNames.size() + partNames.size() + 2];
-      int i = 0;
-      params[i++] = table.getTableName();
-      params[i++] = table.getDbName();
-      int firstI = i;
-      for (String s : partNames) {
-        filter += ((i == firstI) ? "" : " || ") + "partitionName == p" + i;
-        paramStr += ", java.lang.String p" + i;
-        params[i++] = s;
-      }
-      filter += ") && (";
-      firstI = i;
-      for (String s : colNames) {
-        filter += ((i == firstI) ? "" : " || ") + "colName == c" + i;
-        paramStr += ", java.lang.String c" + i;
-        params[i++] = s;
-      }
-      filter += ")";
+      String paramStr =
+          "java.lang.String t1, java.lang.String t2, java.util.List partitionNamesList, java.util.List columnNamesList";
+      String filter =
+          "tableName == t1 && dbName == t2 && partitionNamesList.contains(partitionName) && columnNamesList.contains(colName)";
       query.setFilter(filter);
       query.declareParameters(paramStr);
       query.setOrdering("partitionName ascending");
       @SuppressWarnings("unchecked")
       List<MPartitionColumnStatistics> result =
-          (List<MPartitionColumnStatistics>) query.executeWithArray(params);
+          (List<MPartitionColumnStatistics>)
+              query.executeWithArray(table.getTableName(), table.getDbName(), partNames, colNames);
       pm.retrieveAll(result);
       committed = commitTransaction();
       return result;
@@ -7435,10 +7494,30 @@ public class ObjectStore implements RawStore, Configurable {
 
   private void dropPartitionColumnStatisticsNoTxn(
       String dbName, String tableName, List<String> partNames) throws MetaException {
-    ObjectPair<Query, Object[]> queryWithParams = makeQueryByPartitionNames(
-        dbName, tableName, partNames, MPartitionColumnStatistics.class,
-        "tableName", "dbName", "partition.partitionName");
-    queryWithParams.getFirst().deletePersistentAll(queryWithParams.getSecond());
+    if (HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_DATANUCLEUS_QUERY_JDOQL_ALLOWALL)) {
+      ObjectPair<Query, Map<String, Object>> queryWithParams =
+          makeQueryByPartitionNamesBulk(
+              /* isDelete */true,
+              dbName,
+              tableName,
+              partNames,
+              MPartitionColumnStatistics.class,
+              "this.tableName",
+              "this.dbName",
+              "this.partition.partitionName");
+      queryWithParams.getFirst().executeWithMap(queryWithParams.getSecond());
+    } else {
+      ObjectPair<Query, Object[]> queryWithParams =
+          makeQueryByPartitionNames(
+              dbName,
+              tableName,
+              partNames,
+              MPartitionColumnStatistics.class,
+              "tableName",
+              "dbName",
+              "partition.partitionName");
+      queryWithParams.getFirst().deletePersistentAll(queryWithParams.getSecond());
+    }
   }
 
   @Override

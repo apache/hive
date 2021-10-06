@@ -23,7 +23,7 @@ import java.sql.SQLTransactionRollbackException;
 
 /** Database product infered via JDBC. */
 public enum DatabaseProduct {
-  DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, OTHER;
+  DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, CLOUDSPANNER, OTHER;
 
   /**
    * Determine the database product type
@@ -45,6 +45,8 @@ public enum DatabaseProduct {
       return ORACLE;
     } else if (productName.contains("postgresql")) {
       return POSTGRES;
+    } else if (productName.toLowerCase().contains("spanner")) {
+      return CLOUDSPANNER;
     } else {
       return OTHER;
     }
@@ -56,7 +58,8 @@ public enum DatabaseProduct {
             && e.getSQLState().equals("40001"))
         || (dbProduct == POSTGRES && e.getSQLState().equals("40P01"))
         || (dbProduct == ORACLE && (e.getMessage().contains("deadlock detected")
-            || e.getMessage().contains("can't serialize access for this transaction")));
+        || e.getMessage().contains("can't serialize access for this transaction")))
+        || (dbProduct == CLOUDSPANNER && (e.getMessage().toLowerCase().contains("abort"))) ;
   }
 
   /**
