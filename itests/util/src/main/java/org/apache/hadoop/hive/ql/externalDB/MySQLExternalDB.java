@@ -21,34 +21,35 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * MySQLExternalDB is a extension of abstractExternalDB
  * Designed for MySQL external database connection
  */
 public class MySQLExternalDB extends AbstractExternalDB {
 
     public MySQLExternalDB() {
-        super("mysql");
-        setJdbcUrl(getContainerHostAddress());
-        setJdbcDriver();
     }
 
-    public void setJdbcUrl(String hostAddress) {
-        this.url = "jdbc:mysql://" + hostAddress + ":3306/" + dbName;
+    @Override
+    public String getRootUser() {
+        return "root";
     }
 
-    public void setJdbcDriver() {
-        this.driver = "org.mariadb.jdbc.Driver";
+    @Override
+    public String getJdbcUrl() {
+        return "jdbc:mysql://" + getContainerHostAddress() + ":3306/" + dbName;
     }
 
-    public String getDockerImageName() { return "mariadb:5.5"; }
+    public String getJdbcDriver() {
+        return "com.mysql.jdbc.Driver";
+    }
+
+    public String getDockerImageName() { return "mysql:5.7"; }
 
     public String[] getDockerAdditionalArgs() {
-        return buildArray("-p", "3306:3306",
-                          "-e", "MYSQL_ROOT_PASSWORD=its-a-secret",
-                          "-e", "MYSQL_USER=" + userName,
-                          "-e", "MYSQL_PASSWORD=" + password,
+        return new String[] {"-p", "3306:3306",
+                          "-e", "MYSQL_ROOT_PASSWORD=" + getRootPassword(),
                           "-e", "MYSQL_DATABASE=" + dbName,
-                          "-d");
+                          "-d"
+        };
     }
 
     public boolean isContainerReady(ProcessResults pr) {

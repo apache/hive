@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.processors.HiveCommand;
 import org.apache.hadoop.hive.ql.qoption.QTestAuthorizerHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestDisabledHandler;
+import org.apache.hadoop.hive.ql.qoption.QTestDatabaseHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
 import org.apache.hadoop.hive.ql.qoption.QTestReplaceHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestSysDbHandler;
@@ -88,7 +89,6 @@ import org.apache.hadoop.hive.ql.qoption.QTestTransactional;
 import org.apache.hadoop.hive.ql.scheduled.QTestScheduledQueryCleaner;
 import org.apache.hadoop.hive.ql.scheduled.QTestScheduledQueryServiceProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.externalDB.*;
 import org.apache.hive.common.util.ProcessUtils;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -130,7 +130,6 @@ public class QTestUtil {
   protected QTestReplaceHandler replaceHandler;
   private final String initScript;
   private final String cleanupScript;
-  private final Set<QTestExternalDB> externalDBs = new LinkedHashSet<>();
   QTestOptionDispatcher dispatcher = new QTestOptionDispatcher();
 
   private boolean isSessionStateStarted = false;
@@ -181,14 +180,13 @@ public class QTestUtil {
 
   public QTestUtil(QTestArguments testArgs) throws Exception {
     LOG.info("Setting up QTestUtil with outDir={}, logDir={}, clusterType={}, confDir={},"
-            + " initScript={}, cleanupScript={}, externalDBs={}, withLlapIo={}, fsType={}",
+            + " initScript={}, cleanupScript={}, withLlapIo={}, fsType={}",
         testArgs.getOutDir(),
         testArgs.getLogDir(),
         testArgs.getClusterType(),
         testArgs.getConfDir(),
         testArgs.getInitScript(),
         testArgs.getCleanupScript(),
-        testArgs.getExternalDBs(),
         testArgs.isWithLlapIo(),
         testArgs.getFsType());
 
@@ -218,7 +216,8 @@ public class QTestUtil {
     conf = new HiveConf(IDriver.class);
     setMetaStoreProperties();
 
-    this.miniClusters.setup(testArgs, conf, getScriptsDir(), logDir);
+    final String scriptsDir = getScriptsDir(conf);
+    this.miniClusters.setup(testArgs, conf, scriptsDir, logDir);
 
     initConf();
 
@@ -235,20 +234,10 @@ public class QTestUtil {
     dispatcher.register("timezone", new QTestTimezoneHandler());
     dispatcher.register("authorizer", new QTestAuthorizerHandler());
     dispatcher.register("disabled", new QTestDisabledHandler());
-
-    String scriptsDir = getScriptsDir();
+    dispatcher.register("database", new QTestDatabaseHandler());
 
     this.initScript = scriptsDir + File.separator + testArgs.getInitScript();
     this.cleanupScript = scriptsDir + File.separator + testArgs.getCleanupScript();
-
-    QTestExternalDB newExternalDB;
-    for (QTestExternalDB externalDB : testArgs.getExternalDBs()) {
-      newExternalDB = new QTestExternalDB();
-      newExternalDB.setExternalDBType(externalDB.getExternalDBType());
-      newExternalDB.setExternalDBInitScript(scriptsDir + File.separator + externalDB.getExternalDBType() + File.separator + externalDB.getExternalDBInitScript());
-      newExternalDB.setExternalDBCleanupScript(scriptsDir + File.separator + externalDB.getExternalDBType() + File.separator + externalDB.getExternalDBCleanupScript());
-      this.externalDBs.add(newExternalDB);
-    }
 
     savedConf = new HiveConf(conf);
 
@@ -278,7 +267,7 @@ public class QTestUtil {
     }
   }
 
-  private String getScriptsDir() {
+  public static String getScriptsDir(HiveConf conf) {
     // Use the current directory if it is not specified
     String scriptsDir = conf.get("test.data.scripts");
     if (scriptsDir == null) {
@@ -493,14 +482,6 @@ public class QTestUtil {
     }
     conf.setBoolean("hive.test.shutdown.phase", true);
 
-    // if has external database, clean up docker container
-    // connect to externalDB if size is not zero
-    if (this.externalDBs != null && this.externalDBs.size() != 0) {
-      for (QTestExternalDB externalDB : this.externalDBs) {
-        externalDBCleanupContainer(externalDB.getExternalDBType());
-      }
-    }
-
     clearKeysCreatedInTests();
 
     String metastoreDb = QTestSystemProperties.getMetaStoreDb();
@@ -528,18 +509,6 @@ public class QTestUtil {
     FunctionRegistry.unregisterTemporaryUDF("test_error");
   }
 
-  private void externalDBCleanupContainer(String externalDBType) throws IOException {
-    // get externalDB initScript
-    try {
-      AbstractExternalDB abstractExternalDB = AbstractExternalDB.initalizeExternalDB(externalDBType);
-      abstractExternalDB.cleanupDockerContainer();
-      LOG.info("cleanup externalDB docker container succeeed!");
-    } catch (Exception e) {
-      LOG.info("cleanup externalDB failed: " + e.getMessage());
-      Assert.fail("Failed during cleanup externalDB docker container");
-    }
-  }
-
   private void cleanupFromFile() throws IOException {
     File cleanupFile = new File(cleanupScript);
     if (cleanupFile.isFile()) {
@@ -562,13 +531,6 @@ public class QTestUtil {
       startSessionState(qTestResultProcessor.canReuseSession());
     }
 
-    // connect to externalDB if size is not zero
-    if (this.externalDBs != null && this.externalDBs.size() != 0) {
-      for (QTestExternalDB externalDB : this.externalDBs) {
-        externalDBLoadFromScript(externalDB.getExternalDBType(), externalDB.getExternalDBInitScript());
-      }
-    }
-
     getCliDriver().processLine("set test.data.dir=" + testFiles + ";");
 
     conf.setBoolean("hive.test.init.phase", true);
@@ -576,25 +538,6 @@ public class QTestUtil {
     initFromScript();
 
     conf.setBoolean("hive.test.init.phase", false);
-  }
-
-  private void externalDBLoadFromScript(String externalDBType, String externalDBScript) throws IOException {
-    // get externalDB initScript
-    File scriptFile = new File(externalDBScript);
-    if (!scriptFile.isFile()) {
-      Assert.fail("cannot getting externaldb scirpt file");
-      LOG.info("No externalDB init script detected. Skipping");
-      return;
-    }
-
-    try {
-      AbstractExternalDB abstractExternalDB = AbstractExternalDB.initalizeExternalDB(externalDBType);
-      abstractExternalDB.launchDockerContainer();
-      abstractExternalDB.execute(externalDBScript);
-      LOG.info("initialize external databases succeed!");
-    } catch (Exception e) {
-      Assert.fail("Failed during initialize external database");
-    }
   }
 
   private void initFromScript() throws IOException {

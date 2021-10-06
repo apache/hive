@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.externalDB;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -30,17 +28,14 @@ import java.net.Socket;
 public class PostgresExternalDB extends AbstractExternalDB {
 
     public PostgresExternalDB() {
-        super("postgres");
-        setJdbcUrl(getContainerHostAddress());
-        setJdbcDriver();
     }
 
-    public void setJdbcUrl(String hostAddress) {
-        this.url = "jdbc:postgresql://" + hostAddress + ":5432/" + dbName;
+    public String getJdbcUrl() {
+        return "jdbc:postgresql://" + getContainerHostAddress() + ":5432/" + dbName;
     }
 
-    public void setJdbcDriver() {
-        this.driver = "org.postgresql.Driver";
+    public String getJdbcDriver() {
+        return "org.postgresql.Driver";
     }
 
     public String getDockerImageName() {
@@ -48,7 +43,12 @@ public class PostgresExternalDB extends AbstractExternalDB {
     }
 
     public String[] getDockerAdditionalArgs() {
-        return buildArray("-p", "5432:5432", "-e", "POSTGRES_PASSWORD=its-a-secret", "-d");
+        return new String[] {"-p", "5432:5432",
+            "-e", "POSTGRES_PASSWORD=" + getRootPassword(),
+            "-e", "POSTGRES_USER=" + getRootUser(),
+            "-e", "POSTGRES_DB=" + dbName,
+            "-d"
+        };
     }
 
     public boolean isContainerReady(ProcessResults pr) {

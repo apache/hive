@@ -1,10 +1,11 @@
+--!qt:database:mysql:q_test_country_state_city_tables.sql
 -- CREATE with comment
 CREATE CONNECTOR mysql_qtest
 TYPE 'mysql'
 URL 'jdbc:mysql://localhost:3306/qtestDB'
 COMMENT 'test connector'
 WITH DCPROPERTIES (
-"hive.sql.dbcp.username"="qtestuser",
+"hive.sql.dbcp.username"="root",
 "hive.sql.dbcp.password"="qtestpassword");
 SHOW CONNECTORS;
 

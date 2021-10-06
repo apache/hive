@@ -182,7 +182,9 @@
     <libthrift.version>0.14.1</libthrift.version>
     <log4j2.version>2.13.2</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
+    <mysql.version>8.0.27</mysql.version>
     <postgres.version>42.2.14</postgres.version>
+    <oracle.version>21.3.0.0</oracle.version>
     <opencsv.version>2.3</opencsv.version>
     <orc.version>1.6.9</orc.version>
     <mockito-core.version>3.4.4</mockito-core.version>
