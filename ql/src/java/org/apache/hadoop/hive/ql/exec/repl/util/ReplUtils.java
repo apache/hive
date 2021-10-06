@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
@@ -41,6 +42,8 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -165,7 +168,6 @@ public class ReplUtils {
   public static final String DISTCP_JOB_ID_CONF = "distcp.job.id";
   public static final String DISTCP_JOB_ID_CONF_DEFAULT = "UNAVAILABLE";
 
-
   private static transient Logger LOG = LoggerFactory.getLogger(ReplUtils.class);
 
   public static Map<Integer, List<ExprNodeGenericFuncDesc>> genPartSpecs(
@@ -201,13 +203,17 @@ public class ReplUtils {
     return partSpecs;
   }
 
-  public static Task<?> getTableReplLogTask(ImportTableDesc tableDesc, ReplLogger replLogger, HiveConf conf,
-                                            ReplicationMetricCollector metricCollector)
-          throws SemanticException {
-    TableType tableType = tableDesc.isExternal() ? TableType.EXTERNAL_TABLE : tableDesc.tableType();
-    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, metricCollector,
-        tableDesc.getTableName(), tableType);
-    return TaskFactory.get(replLogWork, conf);
+  public static void unsetDbPropIfSet(Database db, String prop, Hive hiveDb) throws HiveException {
+    if (db == null) {
+      return;
+    }
+    Map<String, String> dbProps = db.getParameters();
+    if (dbProps == null || !dbProps.containsKey(prop)) {
+      return;
+    }
+    LOG.info("Removing property: {} from database: {}", prop, db.getName());
+    dbProps.remove(prop);
+    hiveDb.alterDatabase(db.getName(), db);
   }
 
   public static Task<?> getTableReplLogTask(ImportTableDesc tableDesc, ReplLogger replLogger, HiveConf conf,
@@ -218,18 +224,6 @@ public class ReplUtils {
     ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, metricCollector,
             tableDesc.getTableName(), tableType, dumpRoot);
     return TaskFactory.get(replLogWork, conf);
-  }
-
-
-  public static Task<?> getTableCheckpointTask(ImportTableDesc tableDesc, HashMap<String, String> partSpec,
-                                               String dumpRoot, HiveConf conf) throws SemanticException {
-    HashMap<String, String> mapProp = new HashMap<>();
-    mapProp.put(REPL_CHECKPOINT_KEY, dumpRoot);
-
-    final TableName tName = TableName.fromString(tableDesc.getTableName(), null, tableDesc.getDatabaseName());
-    AlterTableSetPropertiesDesc alterTblDesc =  new AlterTableSetPropertiesDesc(tName, partSpec, null, false,
-        mapProp, false, false, null);
-    return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), alterTblDesc), conf);
   }
 
   public static Task<?> getTableCheckpointTask(ImportTableDesc tableDesc, HashMap<String, String> partSpec,
@@ -273,21 +267,6 @@ public class ReplUtils {
     List<Task<?>> taskList = new ArrayList<>();
     taskList.add(childTask);
     return taskList;
-  }
-
-  public static List<Task<?>> addTasksForLoadingColStats(ColumnStatistics colStats,
-                                                                              HiveConf conf,
-                                                                              UpdatedMetaDataTracker updatedMetadata,
-                                                                              org.apache.hadoop.hive.metastore.api.Table tableObj,
-                                                                              long writeId)
-          throws IOException, TException {
-    List<Task<?>> taskList = new ArrayList<>();
-    ColumnStatsUpdateWork work = new ColumnStatsUpdateWork(colStats);
-    work.setWriteId(writeId);
-    Task<?> task = TaskFactory.get(work, conf);
-    taskList.add(task);
-    return taskList;
-
   }
 
   public static List<Task<?>> addTasksForLoadingColStats(ColumnStatistics colStats,
@@ -362,7 +341,7 @@ public class ReplUtils {
 
   private static String getMetricStageName(String stageName, ReplicationMetricCollector metricCollector) {
     if( stageName == "REPL_DUMP" || stageName == "REPL_LOAD" || stageName == "ATLAS_DUMP" || stageName == "ATLAS_LOAD"
-            || stageName == "RANGER_DUMP" || stageName == "RANGER_LOAD"){
+            || stageName == "RANGER_DUMP" || stageName == "RANGER_LOAD" || stageName == "RANGER_DENY"){
       return stageName;
     }
     if(isDumpMetricCollector(metricCollector)){
@@ -383,13 +362,9 @@ public class ReplUtils {
   }
 
   public static boolean isFirstIncPending(Map<String, String> parameters) {
-    if (parameters == null) {
-      return false;
-    }
-    String firstIncPendFlag = parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG);
     // If flag is not set, then we assume first incremental load is done as the database/table may be created by user
     // and not through replication.
-    return firstIncPendFlag != null && !firstIncPendFlag.isEmpty() && "true".equalsIgnoreCase(firstIncPendFlag);
+    return parameters != null && ReplConst.TRUE.equalsIgnoreCase(parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG));
   }
 
   public static EnvironmentContext setReplDataLocationChangedFlag(EnvironmentContext envContext) {

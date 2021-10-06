@@ -23,6 +23,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
+import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexCorrelVariable;
@@ -99,9 +100,13 @@ public class HiveFilter extends Filter implements HiveRelNode {
   // Note that correlated variables are supported in Filter only i.e. Where & Having
   private static void traverseFilter(RexNode node, Set<CorrelationId> allVars) {
       if(node instanceof RexSubQuery) {
+          RexSubQuery rexSubQuery = (RexSubQuery) node;
           //we expect correlated variables in HiveFilter only for now.
           // Also check for case where operator has 0 inputs .e.g TableScan
-          RelNode input = ((RexSubQuery)node).rel.getInput(0);
+          if (rexSubQuery.rel.getInputs().isEmpty()) {
+            return;
+          }
+          RelNode input = rexSubQuery.rel.getInput(0);
           while(input != null && !(input instanceof HiveFilter)
                   && input.getInputs().size() >=1) {
               //we don't expect corr vars within UNION for now

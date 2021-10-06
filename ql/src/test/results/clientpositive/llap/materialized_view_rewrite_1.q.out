@@ -144,6 +144,11 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
+POSTHOOK: Lineage: mv1_n2.commission SIMPLE [(emps_n3)emps_n3.FieldSchema(name:commission, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n2.deptno SIMPLE [(emps_n3)emps_n3.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n2.empid SIMPLE [(emps_n3)emps_n3.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n2.name SIMPLE [(emps_n3)emps_n3.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_n2.salary SIMPLE [(emps_n3)emps_n3.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select *
 from (select * from emps_n3 where empid < 120) t
@@ -223,10 +228,10 @@ STAGE PLANS:
                 keys:
                   0 _col1 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col0, _col2, _col3, _col4, _col5, _col6, _col7
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col6, _col7
                 Statistics: Num rows: 3 Data size: 594 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col5 (type: int), _col0 (type: int), _col2 (type: varchar(256)), _col3 (type: float), _col4 (type: int), _col6 (type: varchar(256)), _col7 (type: int)
+                  expressions: _col1 (type: int), _col0 (type: int), _col2 (type: varchar(256)), _col3 (type: float), _col4 (type: int), _col6 (type: varchar(256)), _col7 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
                   Statistics: Num rows: 3 Data size: 594 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -283,6 +288,10 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
+POSTHOOK: Lineage: mv1_n2.commission SIMPLE [(emps_n3)emps_n3.FieldSchema(name:commission, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n2.deptno SIMPLE [(emps_n3)emps_n3.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n2.name SIMPLE [(emps_n3)emps_n3.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_n2.salary SIMPLE [(emps_n3)emps_n3.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select emps_n3.name, emps_n3.salary, emps_n3.commission
 from emps_n3
@@ -364,6 +373,7 @@ POSTHOOK: Input: default@depts_n2
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
+POSTHOOK: Lineage: mv1_n2.deptno SIMPLE [(emps_n3)emps_n3.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select empid deptno from emps_n3
 join depts_n2 using (deptno) where empid = 1
@@ -432,6 +442,11 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
+POSTHOOK: Lineage: mv1_n2.commission SIMPLE [(emps_n3)emps_n3.FieldSchema(name:commission, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n2.deptno SIMPLE [(emps_n3)emps_n3.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n2.empid SIMPLE [(emps_n3)emps_n3.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n2.name SIMPLE [(emps_n3)emps_n3.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_n2.salary SIMPLE [(emps_n3)emps_n3.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select * from emps_n3 where empid > 120
 union all select * from emps_n3 where empid < 150
@@ -549,6 +564,8 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
+POSTHOOK: Lineage: mv1_n2.deptno SIMPLE [(emps_n3)emps_n3.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n2.empid SIMPLE [(emps_n3)emps_n3.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain cbo
 select empid, deptno from emps_n3 group by empid, deptno
 PREHOOK: type: QUERY
@@ -621,6 +638,8 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
+POSTHOOK: Lineage: mv1_n2.empid SIMPLE [(emps_n3)emps_n3.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n2.name SIMPLE [(emps_n3)emps_n3.FieldSchema(name:name, type:varchar(256), comment:null), ]
 PREHOOK: query: explain
 select empid, name from emps_n3 group by empid, name
 PREHOOK: type: QUERY
@@ -679,6 +698,8 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
+POSTHOOK: Lineage: mv1_n2.name SIMPLE [(emps_n3)emps_n3.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_n2.salary SIMPLE [(emps_n3)emps_n3.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select name, salary from emps_n3 group by name, salary
 PREHOOK: type: QUERY
@@ -740,6 +761,8 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
+POSTHOOK: Lineage: mv1_n2.name SIMPLE [(emps_n3)emps_n3.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_n2.salary SIMPLE [(emps_n3)emps_n3.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select name from emps_n3 group by name
 PREHOOK: type: QUERY
@@ -843,6 +866,8 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
+POSTHOOK: Lineage: mv1_n2.name SIMPLE [(emps_n3)emps_n3.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_n2.salary SIMPLE [(emps_n3)emps_n3.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select name from emps_n3 where deptno = 10 group by name
 PREHOOK: type: QUERY
@@ -947,6 +972,10 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@emps_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
+POSTHOOK: Lineage: mv1_n2.c EXPRESSION [(emps_n3)emps_n3.null, ]
+POSTHOOK: Lineage: mv1_n2.name SIMPLE [(emps_n3)emps_n3.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_n2.s EXPRESSION [(emps_n3)emps_n3.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n2.salary SIMPLE [(emps_n3)emps_n3.FieldSchema(name:salary, type:float, comment:null), ]
 PREHOOK: query: explain
 select name from emps_n3 group by name
 PREHOOK: type: QUERY
@@ -1054,6 +1083,9 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@depts_n2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
+POSTHOOK: Lineage: mv1_n2.c EXPRESSION [(depts_n2)depts_n2.null, ]
+POSTHOOK: Lineage: mv1_n2.deptno SIMPLE [(depts_n2)depts_n2.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n2.name SIMPLE [(depts_n2)depts_n2.FieldSchema(name:name, type:varchar(256), comment:null), ]
 PREHOOK: query: explain
 select name, count(*) as c
 from depts_n2
@@ -1181,6 +1213,10 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@depts_n2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n2
+POSTHOOK: Lineage: mv1_n2.c EXPRESSION [(depts_n2)depts_n2.null, ]
+POSTHOOK: Lineage: mv1_n2.deptno SIMPLE [(depts_n2)depts_n2.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n2.locationid SIMPLE [(depts_n2)depts_n2.FieldSchema(name:locationid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n2.name SIMPLE [(depts_n2)depts_n2.FieldSchema(name:name, type:varchar(256), comment:null), ]
 PREHOOK: query: explain
 select deptno, name, count(*) as c
 from depts_n2

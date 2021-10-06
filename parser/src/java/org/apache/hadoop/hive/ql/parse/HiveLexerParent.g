@@ -386,6 +386,9 @@ KW_TYPE: 'TYPE';
 KW_URL: 'URL';
 KW_REMOTE: 'REMOTE';
 KW_SPEC: 'SPEC';
+KW_SYSTEM_TIME: 'SYSTEM_TIME';
+KW_SYSTEM_VERSION: 'SYSTEM_VERSION';
+
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

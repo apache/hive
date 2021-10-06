@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 
 import org.apache.hadoop.hive.metastore.client.builder.GetTablesRequestBuilder;
 import org.apache.hadoop.hive.metastore.api.Catalog;
@@ -44,11 +45,11 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_NONE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READONLY;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READWRITE;
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -155,11 +156,12 @@ public class TestHiveMetastoreTransformer {
 
   /**
    * EXTERNAL_TABLE
-   *   1) Old table with no capabilities
-   *   2a) New table with capabilities with no client requirements
-   *   2b) New table with capabilities with no matching client requirements
-   *   2c) New table with capabilities with partial match requirements
-   *   2d) New table with capabilities with full match requirements
+   *   1) Old table (name in upper case) with no capabilities
+   *   2) Old table with no capabilities
+   *   3a) New table with capabilities with no client requirements
+   *   3b) New table with capabilities with no matching client requirements
+   *   3c) New table with capabilities with partial match requirements
+   *   3d) New table with capabilities with full match requirements
    */
   @Test
   public void testTransformerExternalTable() throws Exception {
@@ -169,15 +171,38 @@ public class TestHiveMetastoreTransformer {
       Map<String, Object> tProps = new HashMap<>();
       int buckets = 32;
 
-      String tblName = basetblName;
+      // create external table with uppercase
+      String tblNameUpper = "TAB_EXT1";
       tProps.put("DBNAME", dbName);
-      tProps.put("TBLNAME", tblName);
+      tProps.put("TBLNAME", tblNameUpper);
       tProps.put("TBLTYPE", TableType.EXTERNAL_TABLE);
       tProps.put("BUCKETS", buckets);
       StringBuilder properties = new StringBuilder();
       properties.append("EXTERNAL").append("=").append("TRUE");
       tProps.put("PROPERTIES", properties.toString());
       Table tbl = createTableWithCapabilities(tProps);
+
+      Table hiveTbl = client.getTable(dbName, tblNameUpper.toLowerCase(Locale.ROOT));
+      Path actualPath = new Path(hiveTbl.getSd().getLocation());
+      Database db = client.getDatabase(dbName);
+      LOG.info("Table=" + tblNameUpper + ",Table Details=" + hiveTbl);
+      assertEquals("Created and retrieved tables do not match:" + hiveTbl.getTableName() + ":" +
+              tblNameUpper.toLowerCase(Locale.ROOT), hiveTbl.getTableName(),
+          tblNameUpper.toLowerCase(Locale.ROOT));
+      Path expectedTablePath = new Path(db.getLocationUri(), tblNameUpper.toLowerCase(Locale.ROOT));
+      assertEquals(String.format("Table location %s is not a subset of the database location %s",
+          actualPath.toString(), db.getLocationUri()), expectedTablePath.toString(), actualPath.toString());
+
+      String tblName = basetblName;
+      tProps = new HashMap<>();
+      tProps.put("DBNAME", dbName);
+      tProps.put("TBLNAME", tblName);
+      tProps.put("TBLTYPE", TableType.EXTERNAL_TABLE);
+      tProps.put("BUCKETS", buckets);
+      properties = new StringBuilder();
+      properties.append("EXTERNAL").append("=").append("TRUE");
+      tProps.put("PROPERTIES", properties.toString());
+      tbl = createTableWithCapabilities(tProps);
 
       // retrieve the table
       Table tbl2 = client.getTable(dbName, tblName);
@@ -553,30 +578,6 @@ public class TestHiveMetastoreTransformer {
       resetHMSClient();
 
       LOG.info("Test execution complete:testTransformerManagedTable");
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("testTransformerManagedTable failed with " + e.getMessage());
-    } finally {
-      resetHMSClient();
-    }
-  }
-
-
-  @Test
-  public void testLeavesCtasTableAlone() throws Exception {
-    try {
-      resetHMSClient();
-      final String dbName = "db1";
-      String basetblName = "oldstylemgdtable";
-      Map<String, Object> tProps = new HashMap<>();
-      String tblName = basetblName;
-      tProps.put("DBNAME", dbName);
-      tProps.put("TBLNAME", tblName);
-      tProps.put("TBLTYPE", TableType.MANAGED_TABLE);
-      tProps.put("PROPERTIES", TABLE_IS_CTAS + "=true;transactional=false");
-      createTableWithCapabilities(tProps);
-      Table tbl2 = client.getTable(dbName, tblName);
-      assertEquals(TableType.MANAGED_TABLE.name(), tbl2.getTableType());
     } catch (Exception e) {
       e.printStackTrace();
       fail("testTransformerManagedTable failed with " + e.getMessage());

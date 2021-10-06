@@ -27,4 +27,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@rmvwv_basetable
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rmvwv_mat_view
+POSTHOOK: Lineage: rmvwv_mat_view.a SIMPLE [(rmvwv_basetable)rmvwv_basetable.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: rmvwv_mat_view.b SIMPLE [(rmvwv_basetable)rmvwv_basetable.FieldSchema(name:b, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: rmvwv_mat_view.c SIMPLE [(rmvwv_basetable)rmvwv_basetable.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 FAILED: SemanticException [Error 10401]: Attempt to replace materialized view rmvwv_mat_view with view

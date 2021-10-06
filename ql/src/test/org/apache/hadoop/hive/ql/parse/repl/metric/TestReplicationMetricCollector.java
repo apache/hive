@@ -24,8 +24,10 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.metric.BootstrapDumpMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.dump.metric.IncrementalDumpMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.load.FailoverMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.IncrementalLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
@@ -40,6 +42,7 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Map;
@@ -49,6 +52,7 @@ import java.util.Arrays;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit Test class for In Memory Replication Metric Collection.
@@ -58,12 +62,17 @@ public class TestReplicationMetricCollector {
 
   HiveConf conf;
 
+  @Mock
+  private FailoverMetaData fmd;
+
   @Before
   public void setup() throws Exception {
     conf = new HiveConf();
     conf.set(Constants.SCHEDULED_QUERY_SCHEDULENAME, "repl");
     conf.set(Constants.SCHEDULED_QUERY_EXECUTIONID, "1");
     MetricCollector.getInstance().init(conf);
+    Mockito.when(fmd.getFailoverEventId()).thenReturn(10L);
+    Mockito.when(fmd.getFilePath()).thenReturn("staging");
   }
 
   @After
@@ -203,6 +212,42 @@ public class TestReplicationMetricCollector {
     expectedMetric.setProgress(expectedProgress);
     checkSuccess(actualMetrics.get(0), expectedMetric, "dump",
         Arrays.asList(ReplUtils.MetricName.TABLES.name(), ReplUtils.MetricName.FUNCTIONS.name()));
+  }
+
+  @Test
+  public void testFailoverReadyDumpMetrics() throws Exception {
+    ReplicationMetricCollector incrDumpMetricCollector = new IncrementalDumpMetricCollector("db",
+            "staging", conf);
+    Map<String, Long> metricMap = new HashMap<>();
+    metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) 10);
+    incrDumpMetricCollector.reportFailoverStart("dump", metricMap, fmd);
+    incrDumpMetricCollector.reportStageProgress("dump", ReplUtils.MetricName.EVENTS.name(), 2);
+    List<ReplicationMetric> actualMetrics = MetricCollector.getInstance().getMetrics();
+    Assert.assertEquals(1, actualMetrics.size());
+
+    incrDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10, new SnapshotUtils.ReplSnapshotCount(),
+            new ReplStatsTracker(0));
+    incrDumpMetricCollector.reportEnd(Status.FAILOVER_READY);
+    actualMetrics = MetricCollector.getInstance().getMetrics();
+    Assert.assertEquals(1, actualMetrics.size());
+
+    Metadata expectedMetadata = new Metadata("db", Metadata.ReplicationType.INCREMENTAL, "staging");
+    expectedMetadata.setLastReplId(10);
+    expectedMetadata.setFailoverEventId(10);
+    expectedMetadata.setFailoverMetadataLoc("staging");
+    Progress expectedProgress = new Progress();
+    expectedProgress.setStatus(Status.FAILOVER_READY);
+    Stage dumpStage = new Stage("dump", Status.SUCCESS, 0);
+    dumpStage.setEndTime(0);
+    Metric expectedEventMetric = new Metric(ReplUtils.MetricName.EVENTS.name(), 10);
+    expectedEventMetric.setCurrentCount(2);
+    dumpStage.addMetric(expectedEventMetric);
+    expectedProgress.addStage(dumpStage);
+    ReplicationMetric expectedMetric = new ReplicationMetric(1, "repl", 0,
+            expectedMetadata);
+    expectedMetric.setProgress(expectedProgress);
+    checkSuccess(actualMetrics.get(0), expectedMetric, "dump",
+            Arrays.asList(ReplUtils.MetricName.EVENTS.name()));
   }
 
   @Test
@@ -413,5 +458,31 @@ public class TestReplicationMetricCollector {
         repl.getTopKEvents().get("EVENT_ADD_DATABASE").valueList().toArray());
 
     assertEquals(4, repl.getDescMap().get("EVENT_ADD_DATABASE").getN());
+  }
+
+  @Test
+  public void testReplStatsTrackerLimit() {
+    ReplStatsTracker repl = new ReplStatsTracker(10);
+    // Check for k=10
+    generateStatsString(10, repl);
+    assertTrue("ReplStat string is " + repl.toString().length(), repl.toString().length() < 24000);
+    // Check for k=5
+    repl = new ReplStatsTracker(5);
+    generateStatsString(5, repl);
+    assertTrue("ReplStat string is " + repl.toString().length(), repl.toString().length() < 24000);
+    // Check for k=2 & check NaN values doesn't get messed up due to formatter
+    repl = new ReplStatsTracker(2);
+    generateStatsString(2, repl);
+    assertTrue(repl.toString().contains("NaN"));
+  }
+
+  private void generateStatsString(int k, ReplStatsTracker repl) {
+    DumpType[] types = DumpType.values();
+    for (DumpType type : types) {
+      for (int i = 0; i < k; i++) {
+        int eventId = 1000000 + i * type.ordinal();
+        repl.addEntry(type.toString(), Integer.toString(eventId), 10000 + i + ( i * 1234));
+      }
+    }
   }
 }

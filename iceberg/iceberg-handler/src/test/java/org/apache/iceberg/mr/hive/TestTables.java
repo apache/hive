@@ -50,7 +50,6 @@ import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.hive.MetastoreUtil;
-import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestCatalogs;
 import org.apache.iceberg.mr.TestHelper;
@@ -132,7 +131,7 @@ abstract class TestTables {
   public String createHiveTableSQL(TableIdentifier identifier, Map<String, String> tableProps) {
     Preconditions.checkArgument(!identifier.namespace().isEmpty(), "Namespace should not be empty");
     Preconditions.checkArgument(identifier.namespace().levels().length == 1, "Namespace should be single level");
-    return String.format("CREATE TABLE %s.%s STORED BY '%s' %s %s", identifier.namespace(), identifier.name(),
+    return String.format("CREATE EXTERNAL TABLE %s.%s STORED BY '%s' %s %s", identifier.namespace(), identifier.name(),
         HiveIcebergStorageHandler.class.getName(), locationForCreateTableSQL(identifier),
             propertiesForCreateTableSQL(tableProps));
   }
@@ -161,8 +160,27 @@ abstract class TestTables {
    */
   public Table createTable(TestHiveShell shell, String tableName, Schema schema, FileFormat fileFormat,
       List<Record> records) throws IOException {
-    Table table = createIcebergTable(shell.getHiveConf(), tableName, schema, fileFormat, records);
-    String createHiveSQL = createHiveTableSQL(TableIdentifier.of("default", tableName), ImmutableMap.of());
+    return createTable(shell, tableName, schema, fileFormat, records, 1);
+  }
+
+  /**
+   * Creates an non partitioned Hive test table. Creates the Iceberg table/data and creates the corresponding Hive
+   * table as well when needed. The table will be in the 'default' database. The table will be populated with the
+   * provided List of {@link Record}s.
+   * @param shell The HiveShell used for Hive table creation
+   * @param tableName The name of the test table
+   * @param schema The schema used for the table creation
+   * @param fileFormat The file format used for writing the data
+   * @param records The records with which the table is populated
+   * @param formatVersion The version of the spec the table should use (format-version)
+   * @return The created table
+   * @throws IOException If there is an error writing data
+   */
+  public Table createTable(TestHiveShell shell, String tableName, Schema schema, FileFormat fileFormat,
+      List<Record> records, int formatVersion) throws IOException {
+    Map<String, String> tblProps = ImmutableMap.of(TableProperties.FORMAT_VERSION, Integer.toString(formatVersion));
+    Table table = createIcebergTable(shell.getHiveConf(), tableName, schema, fileFormat, tblProps, records);
+    String createHiveSQL = createHiveTableSQL(TableIdentifier.of("default", tableName), tblProps);
     if (createHiveSQL != null) {
       shell.executeStatement(createHiveSQL);
     }
@@ -184,16 +202,33 @@ abstract class TestTables {
    */
   public Table createTable(TestHiveShell shell, String tableName, Schema schema, PartitionSpec spec,
       FileFormat fileFormat, List<Record> records)  {
+    return createTable(shell, tableName, schema, spec, fileFormat, records, 1);
+  }
+
+  /**
+   * Creates a partitioned Hive test table using Hive SQL. The table will be in the 'default' database.
+   * The table will be populated with the provided List of {@link Record}s using a Hive insert statement.
+   * @param shell The HiveShell used for Hive table creation
+   * @param tableName The name of the test table
+   * @param schema The schema used for the table creation
+   * @param spec The partition specification for the table
+   * @param fileFormat The file format used for writing the data
+   * @param records The records with which the table is populated
+   * @param formatVersion The version of the spec the table should use (format-version)
+   * @return The created table
+   * @throws IOException If there is an error writing data
+   */
+  public Table createTable(TestHiveShell shell, String tableName, Schema schema, PartitionSpec spec,
+      FileFormat fileFormat, List<Record> records, Integer formatVersion)  {
     TableIdentifier identifier = TableIdentifier.of("default", tableName);
+    String tblProps = propertiesForCreateTableSQL(ImmutableMap.of(
+        TableProperties.DEFAULT_FILE_FORMAT, fileFormat.toString(),
+        InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(schema),
+        InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec),
+        TableProperties.FORMAT_VERSION, Integer.toString(formatVersion)));
+
     shell.executeStatement("CREATE EXTERNAL TABLE " + identifier +
-        " STORED BY '" + HiveIcebergStorageHandler.class.getName() + "' " +
-        locationForCreateTableSQL(identifier) +
-        "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
-        SchemaParser.toJson(schema) + "', " +
-        "'" + InputFormatConfig.PARTITION_SPEC + "'='" +
-        PartitionSpecParser.toJson(spec) + "', " +
-        "'" + TableProperties.DEFAULT_FILE_FORMAT + "'='" + fileFormat + "', " +
-        "'" + InputFormatConfig.CATALOG_NAME + "'='" + Catalogs.ICEBERG_DEFAULT_CATALOG_NAME + "')");
+        " STORED BY ICEBERG " + locationForCreateTableSQL(identifier) + tblProps);
 
     if (records != null && !records.isEmpty()) {
       String query = getInsertQuery(records, identifier, false);
@@ -248,10 +283,10 @@ abstract class TestTables {
    * @throws IOException If there is an error writing data
    */
   public Table createIcebergTable(Configuration configuration, String tableName, Schema schema, FileFormat fileFormat,
-      List<Record> records) throws IOException {
+      Map<String, String> additionalTableProps, List<Record> records) throws IOException {
     String identifier = identifier("default." + tableName);
     TestHelper helper = new TestHelper(new Configuration(configuration), tables(), identifier, schema,
-        PartitionSpec.unpartitioned(), fileFormat, temp);
+        PartitionSpec.unpartitioned(), fileFormat, additionalTableProps, temp);
     Table table = helper.createTable();
 
     if (records != null && !records.isEmpty()) {

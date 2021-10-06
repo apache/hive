@@ -96,6 +96,12 @@ class Partition
             'type' => TType::STRUCT,
             'class' => '\metastore\ColumnStatistics',
         ),
+        13 => array(
+            'var' => 'fileMetadata',
+            'isRequired' => false,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\FileMetadata',
+        ),
     );
 
     /**
@@ -146,6 +152,10 @@ class Partition
      * @var \metastore\ColumnStatistics
      */
     public $colStats = null;
+    /**
+     * @var \metastore\FileMetadata
+     */
+    public $fileMetadata = null;
 
     public function __construct($vals = null)
     {
@@ -186,6 +196,9 @@ class Partition
             if (isset($vals['colStats'])) {
                 $this->colStats = $vals['colStats'];
             }
+            if (isset($vals['fileMetadata'])) {
+                $this->fileMetadata = $vals['fileMetadata'];
+            }
         }
     }
 
@@ -211,13 +224,13 @@ class Partition
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->values = array();
-                        $_size269 = 0;
-                        $_etype272 = 0;
-                        $xfer += $input->readListBegin($_etype272, $_size269);
-                        for ($_i273 = 0; $_i273 < $_size269; ++$_i273) {
-                            $elem274 = null;
-                            $xfer += $input->readString($elem274);
-                            $this->values []= $elem274;
+                        $_size301 = 0;
+                        $_etype304 = 0;
+                        $xfer += $input->readListBegin($_etype304, $_size301);
+                        for ($_i305 = 0; $_i305 < $_size301; ++$_i305) {
+                            $elem306 = null;
+                            $xfer += $input->readString($elem306);
+                            $this->values []= $elem306;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -263,16 +276,16 @@ class Partition
                 case 7:
                     if ($ftype == TType::MAP) {
                         $this->parameters = array();
-                        $_size275 = 0;
-                        $_ktype276 = 0;
-                        $_vtype277 = 0;
-                        $xfer += $input->readMapBegin($_ktype276, $_vtype277, $_size275);
-                        for ($_i279 = 0; $_i279 < $_size275; ++$_i279) {
-                            $key280 = '';
-                            $val281 = '';
-                            $xfer += $input->readString($key280);
-                            $xfer += $input->readString($val281);
-                            $this->parameters[$key280] = $val281;
+                        $_size307 = 0;
+                        $_ktype308 = 0;
+                        $_vtype309 = 0;
+                        $xfer += $input->readMapBegin($_ktype308, $_vtype309, $_size307);
+                        for ($_i311 = 0; $_i311 < $_size307; ++$_i311) {
+                            $key312 = '';
+                            $val313 = '';
+                            $xfer += $input->readString($key312);
+                            $xfer += $input->readString($val313);
+                            $this->parameters[$key312] = $val313;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -316,6 +329,14 @@ class Partition
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 13:
+                    if ($ftype == TType::STRUCT) {
+                        $this->fileMetadata = new \metastore\FileMetadata();
+                        $xfer += $this->fileMetadata->read($input);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -336,8 +357,8 @@ class Partition
             }
             $xfer += $output->writeFieldBegin('values', TType::LST, 1);
             $output->writeListBegin(TType::STRING, count($this->values));
-            foreach ($this->values as $iter282) {
-                $xfer += $output->writeString($iter282);
+            foreach ($this->values as $iter314) {
+                $xfer += $output->writeString($iter314);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -376,9 +397,9 @@ class Partition
             }
             $xfer += $output->writeFieldBegin('parameters', TType::MAP, 7);
             $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
-            foreach ($this->parameters as $kiter283 => $viter284) {
-                $xfer += $output->writeString($kiter283);
-                $xfer += $output->writeString($viter284);
+            foreach ($this->parameters as $kiter315 => $viter316) {
+                $xfer += $output->writeString($kiter315);
+                $xfer += $output->writeString($viter316);
             }
             $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();
@@ -412,6 +433,14 @@ class Partition
             }
             $xfer += $output->writeFieldBegin('colStats', TType::STRUCT, 12);
             $xfer += $this->colStats->write($output);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->fileMetadata !== null) {
+            if (!is_object($this->fileMetadata)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('fileMetadata', TType::STRUCT, 13);
+            $xfer += $this->fileMetadata->write($output);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

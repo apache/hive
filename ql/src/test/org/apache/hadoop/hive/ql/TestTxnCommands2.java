@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -37,11 +39,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.Metastore;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
@@ -62,7 +64,10 @@ import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
-import org.apache.hadoop.hive.ql.txn.compactor.Initiator;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorMR;
+import org.apache.hadoop.hive.ql.txn.compactor.Worker;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.orc.OrcFile;
 import org.apache.orc.Reader;
 import org.apache.orc.TypeDescription;
@@ -74,6 +79,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TestName;
+import static org.mockito.ArgumentMatchers.any;
+import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1042,11 +1051,7 @@ public class TestTxnCommands2 {
       runWorker(hiveConf);
     }
     //this should not schedule a new compaction due to prior failures, but will create 'did not initiate' entry
-    Initiator init = new Initiator();
-    init.setThreadId((int)init.getId());
-    init.setConf(hiveConf);
-    init.init(stop);
-    init.run();
+    runInitiator(hiveConf);
     int numDidNotInitiateCompactions = 1;
     checkCompactionState(new CompactionsByState(numDidNotInitiateCompactions,numFailedCompactions,0,0,0,0,numFailedCompactions + numDidNotInitiateCompactions), countCompacts(txnHandler));
 
@@ -1061,9 +1066,9 @@ public class TestTxnCommands2 {
     runWorker(hiveConf);//will fail
     txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MINOR));
     runWorker(hiveConf);//will fail
-    init.run();
+    runInitiator(hiveConf);
     numDidNotInitiateCompactions++;
-    init.run();
+    runInitiator(hiveConf);
     numDidNotInitiateCompactions++;
     checkCompactionState(new CompactionsByState(numDidNotInitiateCompactions,numFailedCompactions + 2,0,0,0,0,numFailedCompactions + 2 + numDidNotInitiateCompactions), countCompacts(txnHandler));
 
@@ -1071,7 +1076,7 @@ public class TestTxnCommands2 {
     //COMPACTOR_HISTORY_RETENTION_FAILED failed compacts left (and no other since we only have failed ones here)
     checkCompactionState(new CompactionsByState(
       MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE),
-            MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED),0,0,0,0, 
+            MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED),0,0,0,0,
             MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED) + MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE)),
         countCompacts(txnHandler));
 
@@ -1205,6 +1210,112 @@ public class TestTxnCommands2 {
   public static void runInitiator(HiveConf hiveConf) throws Exception {
     TxnCommandsBaseForTests.runInitiator(hiveConf);
   }
+
+  @Test
+  public void testDropTableAndCompactionConcurrent() throws Exception {
+    execDDLOpAndCompactionConcurrently("DROP_TABLE", false);
+  }
+  @Test
+  public void testTruncateTableAndCompactioConcurrent() throws Exception {
+    execDDLOpAndCompactionConcurrently("TRUNCATE_TABLE", false);
+  }
+  @Test
+  public void testDropPartitionAndCompactionConcurrent() throws Exception {
+    execDDLOpAndCompactionConcurrently("DROP_PARTITION", true);
+  }
+  @Test
+  public void testTruncatePartitionAndCompactionConcurrent() throws Exception {
+    execDDLOpAndCompactionConcurrently("TRUNCATE_PARTITION", true);
+  }
+  private void execDDLOpAndCompactionConcurrently(String opType, boolean isPartioned) throws Exception {
+    String tblName = "hive12352";
+    String partName = "test";
+
+    runStatementOnDriver("DROP TABLE if exists " + tblName);
+    runStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING)" +
+      (isPartioned ? "partitioned by (p STRING)" : "") +
+      " STORED AS ORC  TBLPROPERTIES ( 'transactional'='true' )");
+
+    //create some data
+    runStatementOnDriver("INSERT INTO " + tblName +
+      (isPartioned ? " PARTITION (p='" + partName + "')" : "") +
+      " VALUES (1, 'foo'),(2, 'bar'),(3, 'baz')");
+    runStatementOnDriver("UPDATE " + tblName + " SET b = 'blah' WHERE a = 3");
+
+    //run Worker to execute compaction
+    CompactionRequest req = new CompactionRequest("default", tblName, CompactionType.MAJOR);
+    if (isPartioned) {
+      req.setPartitionname("p=" + partName);
+    }
+    txnHandler.compact(req);
+    CompactorMR compactorMr = Mockito.spy(new CompactorMR());
+
+    Mockito.doAnswer((Answer<JobConf>) invocationOnMock -> {
+      JobConf job = (JobConf) invocationOnMock.callRealMethod();
+      job.setMapperClass(SlowCompactorMap.class);
+      return job;
+    }).when(compactorMr).createBaseJobConf(any(), any(), any(), any(), any(), any());
+
+    Worker worker = Mockito.spy(new Worker());
+    worker.setConf(hiveConf);
+    worker.init(new AtomicBoolean(true));
+    Mockito.doReturn(compactorMr).when(worker).getMrCompactor();
+
+    CompletableFuture<Void> compactionJob = CompletableFuture.runAsync(worker);
+    Thread.sleep(1000);
+
+    int compHistory = 0;
+    switch (opType) {
+      case "DROP_TABLE":
+      runStatementOnDriver("DROP TABLE " + tblName);
+      runStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+          " STORED AS ORC  TBLPROPERTIES ( 'transactional'='true' )");
+      break;
+      case "TRUNCATE_TABLE":
+        runStatementOnDriver("TRUNCATE TABLE " + tblName);
+        compHistory = 1;
+        break;
+      case "DROP_PARTITION": {
+        runStatementOnDriver("ALTER TABLE " + tblName + " DROP PARTITION (p='" + partName + "')");
+        runStatementOnDriver("ALTER TABLE " + tblName + " ADD PARTITION (p='" + partName + "')");
+        break;
+      }
+      case "TRUNCATE_PARTITION": {
+        runStatementOnDriver("TRUNCATE TABLE " + tblName + " PARTITION (p='" + partName + "')");
+        compHistory = 1;
+        break;
+      }
+    }
+    compactionJob.join();
+
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history",
+      compHistory, resp.getCompactsSize());
+    if (compHistory != 0) {
+      Assert.assertEquals("Unexpected 0th compaction state",
+        TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
+    }
+    GetOpenTxnsResponse openResp =  txnHandler.getOpenTxns();
+    Assert.assertEquals(openResp.toString(), 0, openResp.getOpen_txnsSize());
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" + tblName +
+        (isPartioned ? "/p=" + partName : "")),
+      FileUtils.HIDDEN_FILES_PATH_FILTER);
+    Assert.assertEquals(0, status.length);
+  }
+
+  static class SlowCompactorMap<V extends Writable> extends CompactorMR.CompactorMap<V>{
+    @Override
+    public void cleanupTmpLocationOnTaskRetry(AcidOutputFormat.Options options, Path rootDir) throws IOException {
+      try {
+        Thread.sleep(2000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      super.cleanupTmpLocationOnTaskRetry(options, rootDir);
+    }
+  }
   /**
    * HIVE-12352 has details
    * @throws Exception
@@ -1249,7 +1360,26 @@ public class TestTxnCommands2 {
     Set<String> expectedDeltas = new HashSet<>();
     expectedDeltas.add("delete_delta_0000001_0000002_v0000019");
     expectedDeltas.add("delta_0000001_0000002_v0000019");
+    expectedDeltas.add("delete_delta_0000003_0000003_0000");
     Set<String> actualDeltas = new HashSet<>();
+    for(FileStatus file : status) {
+      actualDeltas.add(file.getPath().getName());
+    }
+    Assert.assertEquals(expectedDeltas, actualDeltas);
+
+    runStatementOnDriver("insert into " + tblName + " values(4, 'xyz')");
+    expected.add("4\txyz");
+    //run Worker to execute compaction
+    txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MINOR));
+    runWorker(hiveConf);
+    runCleaner(hiveConf);
+
+    status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" + tblName.toLowerCase()),
+        FileUtils.HIDDEN_FILES_PATH_FILTER);
+    expectedDeltas = new HashSet<>();
+    expectedDeltas.add("delete_delta_0000001_0000004_v0000023");
+    expectedDeltas.add("delta_0000001_0000004_v0000023");
+    actualDeltas = new HashSet<>();
     for(FileStatus file : status) {
       actualDeltas.add(file.getPath().getName());
     }

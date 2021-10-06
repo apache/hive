@@ -104,6 +104,7 @@ import com.google.common.collect.Lists;
 public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   private final String CLASS_NAME = HiveMetaStoreClient.class.getName();
+  public static final String MANUALLY_INITIATED_COMPACTION = "manual";
 
   /**
    * Capabilities of the current client. If this client talks to a MetaStore server in a manner
@@ -1217,6 +1218,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   /**
+   * Dry run that translates table
+   *    *
+   *    * @param tbl
+   *    *          a table object
+   *    * @throws HiveException
+   */
+  @Override
+  public Table getTranslateTableDryrun(Table tbl) throws AlreadyExistsException,
+          InvalidObjectException, MetaException, NoSuchObjectException, TException {
+    return client.translate_table_dryrun(tbl);
+  }
+
+  /**
    * @param tbl
    * @throws MetaException
    * @throws NoSuchObjectException
@@ -1848,11 +1862,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   private void truncateTableInternal(String catName, String dbName, String tableName,
       List<String> partNames, String validWriteIds, long writeId)
           throws MetaException, TException {
+    Table table = getTable(catName, dbName, tableName);
+    HiveMetaHook hook = getHook(table);
+    EnvironmentContext envContext = new EnvironmentContext();
+    if (hook != null) {
+      hook.preTruncateTable(table, envContext);
+    }
     TruncateTableRequest req = new TruncateTableRequest(
         prependCatalogToDbName(catName, dbName, conf), tableName);
     req.setPartNames(partNames);
     req.setValidWriteIdList(validWriteIds);
     req.setWriteId(writeId);
+    req.setEnvironmentContext(envContext);
     client.truncate_table_req(req);
   }
 
@@ -2299,6 +2320,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return res;
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
           List<String> part_names, boolean getColStats, String engine)
@@ -2306,6 +2331,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, getColStats, engine);
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
           List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)
@@ -2314,12 +2343,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       validWriteIdList, tableId);
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
       List<String> part_names) throws TException {
     return getPartitionsByNames(catName, db_name, tbl_name, part_names, false, null);
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
       List<String> part_names, String validWriteIdList, Long tableId) throws TException {
@@ -2327,6 +2364,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       validWriteIdList, tableId);
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
           List<String> part_names, boolean getColStats, String engine)
@@ -2335,6 +2376,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       null, null);
   }
 
+  /**
+   * Deprecated: Use getPartitionsByNames using request argument instead
+   */
+  @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
           List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)
@@ -4075,7 +4120,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     cr.setType(type);
     cr.setProperties(tblproperties);
-    cr.setInitiatorId(JavaUtils.hostname() + "-manual");
+    cr.setInitiatorId(JavaUtils.hostname() + "-" + MANUALLY_INITIATED_COMPACTION);
     cr.setInitiatorVersion(HiveMetaStoreClient.class.getPackage().getImplementationVersion());
     return client.compact2(cr);
   }
@@ -4203,6 +4248,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public void addWriteNotificationLog(WriteNotificationLogRequest rqst) throws TException {
     client.add_write_notification_log(rqst);
+  }
+
+  @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
+  @Override
+  public void addWriteNotificationLogInBatch(WriteNotificationLogBatchRequest rqst) throws TException {
+    client.add_write_notification_log_in_batch(rqst);
   }
 
   /**
@@ -4836,12 +4887,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Deprecated
   @Override
   public OptionalCompactionInfoStruct findNextCompact(String workerId) throws MetaException, TException {
-    return client.find_next_compact(workerId, null);
+    return client.find_next_compact(workerId);
   }
 
   @Override
-  public OptionalCompactionInfoStruct findNextCompact(String workerId, String workerVersion) throws MetaException, TException {
-    return client.find_next_compact(workerId, workerVersion);
+  public OptionalCompactionInfoStruct findNextCompact(FindNextCompactRequest rqst) throws MetaException, TException {
+    return client.find_next_compact2(rqst);
   }
 
   @Override
@@ -4949,5 +5000,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public void dropPackage(DropPackageRequest request) throws TException {
     client.drop_package(request);
+  }
+
+  @Override
+  public List<WriteEventInfo> getAllWriteEventInfo(GetAllWriteEventInfoRequest request)
+      throws TException {
+    return client.get_all_write_event_info(request);
   }
 }

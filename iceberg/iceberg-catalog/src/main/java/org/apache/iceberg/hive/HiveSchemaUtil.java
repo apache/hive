@@ -20,7 +20,11 @@
 package org.apache.iceberg.hive;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -29,6 +33,7 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.Pair;
 
 
 public final class HiveSchemaUtil {
@@ -133,6 +138,114 @@ public final class HiveSchemaUtil {
   public static Type convert(TypeInfo typeInfo) {
     return HiveSchemaConverter.convert(typeInfo, false);
   }
+
+  /**
+   * Returns a SchemaDifference containing those fields which are present in only one of the collections, as well as
+   * those fields which are present in both (in terms of the name) but their type or comment has changed.
+   * @param minuendCollection Collection of fields to subtract from
+   * @param subtrahendCollection Collection of fields to subtract
+   * @param bothDirections Whether or not to compute the missing fields from the minuendCollection as well
+   * @return the difference between the two schemas
+   */
+  public static SchemaDifference getSchemaDiff(Collection<FieldSchema> minuendCollection,
+                                               Collection<FieldSchema> subtrahendCollection, boolean bothDirections) {
+    SchemaDifference difference = new SchemaDifference();
+
+    for (FieldSchema first : minuendCollection) {
+      boolean found = false;
+      for (FieldSchema second : subtrahendCollection) {
+        if (Objects.equals(first.getName(), second.getName())) {
+          found = true;
+          if (!Objects.equals(first.getType(), second.getType())) {
+            difference.addTypeChanged(first);
+          }
+          if (!Objects.equals(first.getComment(), second.getComment())) {
+            difference.addCommentChanged(first);
+          }
+        }
+      }
+      if (!found) {
+        difference.addMissingFromSecond(first);
+      }
+    }
+
+    if (bothDirections) {
+      SchemaDifference otherWay = getSchemaDiff(subtrahendCollection, minuendCollection, false);
+      otherWay.getMissingFromSecond().forEach(difference::addMissingFromFirst);
+    }
+
+    return difference;
+  }
+
+  /**
+   * Compares a list of columns to another list, by name, to find an out of order column.
+   * It iterates through updated one by one, and compares the name of the column to the name of the column in the old
+   * list, in the same position. It returns the first mismatch it finds in updated, if any.
+   *
+   * @param updated The list of the columns after some updates have taken place
+   * @param old The list of the original columns
+   * @param renameMapping A map of name aliases for the updated columns (e.g. if a column rename occurred)
+   * @return A pair consisting of the first out of order column name, and its preceding column name (if any).
+   *         Returns a null in case there are no out of order columns.
+   */
+  public static Pair<String, Optional<String>> getFirstOutOfOrderColumn(List<FieldSchema> updated,
+                                                                        List<FieldSchema> old,
+                                                                        Map<String, String> renameMapping) {
+    for (int i = 0; i < updated.size() && i < old.size(); ++i) {
+      String updatedCol = renameMapping.getOrDefault(updated.get(i).getName(), updated.get(i).getName());
+      String oldCol = old.get(i).getName();
+      if (!oldCol.equals(updatedCol)) {
+        Optional<String> previousCol = i > 0 ? Optional.of(updated.get(i - 1).getName()) : Optional.empty();
+        return Pair.of(updatedCol, previousCol);
+      }
+    }
+    return null;
+  }
+
+  public static class SchemaDifference {
+    private final List<FieldSchema> missingFromFirst = new ArrayList<>();
+    private final List<FieldSchema> missingFromSecond = new ArrayList<>();
+    private final List<FieldSchema> typeChanged = new ArrayList<>();
+    private final List<FieldSchema> commentChanged = new ArrayList<>();
+
+    public List<FieldSchema> getMissingFromFirst() {
+      return missingFromFirst;
+    }
+
+    public List<FieldSchema> getMissingFromSecond() {
+      return missingFromSecond;
+    }
+
+    public List<FieldSchema> getTypeChanged() {
+      return typeChanged;
+    }
+
+    public List<FieldSchema> getCommentChanged() {
+      return commentChanged;
+    }
+
+    public boolean isEmpty() {
+      return missingFromFirst.isEmpty() && missingFromSecond.isEmpty() && typeChanged.isEmpty() &&
+          commentChanged.isEmpty();
+    }
+
+    void addMissingFromFirst(FieldSchema field) {
+      missingFromFirst.add(field);
+    }
+
+    void addMissingFromSecond(FieldSchema field) {
+      missingFromSecond.add(field);
+    }
+
+    void addTypeChanged(FieldSchema field) {
+      typeChanged.add(field);
+    }
+
+    void addCommentChanged(FieldSchema field) {
+      commentChanged.add(field);
+    }
+  }
+
 
   private static String convertToTypeString(Type type) {
     switch (type.typeId()) {

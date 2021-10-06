@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
@@ -25,7 +26,9 @@ import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -36,7 +39,9 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * HiveStorageHandler defines a pluggable interface for adding
@@ -59,6 +64,10 @@ import java.util.Map;
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public interface HiveStorageHandler extends Configurable {
+
+  List<AlterTableType> DEFAULT_ALLOWED_ALTER_OPS = ImmutableList.of(
+      AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.ADDCOLS);
+
   /**
    * @return Class providing an implementation of {@link InputFormat}
    */
@@ -257,10 +266,77 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
+   * Return a list of partition transform specifications. This method should be overwritten in case
+   * {@link HiveStorageHandler#supportsPartitionTransform()} returns true.
+   * @param table the HMS table, must be non-null
+   * @return partition transform specification, can be null.
+   */
+  default List<PartitionTransformSpec> getPartitionTransformSpec(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return null;
+  }
+
+  /**
    * Get file format property key, if the file format is configured through a table property.
    * @return table property key, can be null
    */
   default String getFileFormatPropertyKey() {
     return null;
   }
+
+  /**
+   * Checks if we should keep the {@link org.apache.hadoop.hive.ql.exec.MoveTask} and use the
+   * {@link #storageHandlerCommit(Properties, boolean)} method for committing inserts instead of
+   * {@link org.apache.hadoop.hive.metastore.DefaultHiveMetaHook#commitInsertTable(Table, boolean)}.
+   * @return Returns true if we should use the {@link #storageHandlerCommit(Properties, boolean)} method
+   */
+  default boolean commitInMoveTask() {
+    return false;
+  }
+
+  /**
+   * Commits the inserts for the non-native tables. Used in the {@link org.apache.hadoop.hive.ql.exec.MoveTask}.
+   * @param commitProperties Commit properties which are needed for the handler based commit
+   * @param overwrite If this is an INSERT OVERWRITE then it is true
+   * @throws HiveException If there is an error during commit
+   */
+  default void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Checks whether a certain ALTER TABLE operation is supported by the storage handler implementation.
+   *
+   * @param opType The alter operation type (e.g. RENAME_COLUMNS)
+   * @return whether the operation is supported by the storage handler
+   */
+  default boolean isAllowedAlterOperation(AlterTableType opType) {
+    return DEFAULT_ALLOWED_ALTER_OPS.contains(opType);
+  }
+
+  /**
+   * Check if the underlying storage handler implementation supports truncate operation
+   * for non native tables.
+   * @return true if the storage handler can support it
+   * @return
+   */
+  default boolean supportsTruncateOnNonNativeTables() {
+    return false;
+  }
+
+  /**
+   * Should return true if the StorageHandler is able to handle time travel.
+   * @return True if time travel is allowed
+   */
+  default boolean isTimeTravelAllowed() {
+    return false;
+  }
+
+  default boolean isMetadataTableSupported() {
+    return false;
+  }
+
+  default boolean isValidMetadataTable(String metaTableName) {
+    return false;
+  }
+
 }

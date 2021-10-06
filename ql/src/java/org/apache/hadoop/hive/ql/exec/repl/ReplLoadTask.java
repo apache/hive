@@ -124,6 +124,10 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     try {
       long loadTaskStartTime = System.currentTimeMillis();
       SecurityUtils.reloginExpiringKeytabUser();
+      //Don't proceed if target db is replication incompatible.
+      if (MetaStoreUtils.isDbReplIncompatible(getHive().getDatabase(work.getTargetDatabase()))) {
+        throw new SemanticException(ErrorMsg.REPL_INCOMPATIBLE_EXCEPTION, work.dbNameToLoadIn);
+      }
       Task<?> rootTask = work.getRootTask();
       if (rootTask != null) {
         rootTask.setChildTasks(null);
@@ -135,6 +139,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       conf.set(JobContext.JOB_NAME, mapRedCustomName);
       if (shouldLoadAtlasMetadata()) {
         addAtlasLoadTask();
+      }
+      if (conf.getBoolVar(HiveConf.ConfVars.REPL_RANGER_HANDLE_DENY_POLICY_TARGET)) {
+        initiateRangerDenytask();
       }
       if (shouldLoadAuthorizationMetadata()) {
         initiateAuthorizationLoadTask();
@@ -171,6 +178,22 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
 
   private boolean shouldLoadAuthorizationMetadata() {
     return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_AUTHORIZATION_METADATA);
+  }
+
+  private void initiateRangerDenytask() throws SemanticException {
+    if (RANGER_AUTHORIZER.equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE))) {
+      LOG.info("Adding Ranger Deny Policy Task for {} ", work.dbNameToLoadIn);
+      RangerDenyWork rangerDenyWork = new RangerDenyWork(new Path(work.getDumpDirectory()), work.getSourceDbName(),
+              work.dbNameToLoadIn, work.getMetricCollector());
+      if (childTasks == null) {
+        childTasks = new ArrayList<>();
+      }
+      childTasks.add(TaskFactory.get(rangerDenyWork, conf));
+    } else {
+      throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format("Authorizer: " +
+              conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE)
+              + " not supported for deny policy creation. Currently Only supports: ", ReplUtils.REPL_RANGER_SERVICE));
+    }
   }
 
   private void initiateAuthorizationLoadTask() throws SemanticException {
@@ -531,6 +554,29 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           }
         }
       });
+      if (work.shouldFailover()) {
+        listOfPreAckTasks.add(new PreAckTask() {
+          @Override
+          public void run() throws SemanticException {
+            try {
+              Database db = getHive().getDatabase(work.getTargetDatabase());
+              if (MetaStoreUtils.isDbBeingFailedOverAtEndpoint(db, MetaStoreUtils.FailoverEndpoint.TARGET)) {
+                return;
+              }
+              Map<String, String> params = db.getParameters();
+              if (params == null) {
+                params = new HashMap<>();
+                db.setParameters(params);
+              }
+              LOG.info("Setting failover endpoint:{} to TARGET for database: {}", ReplConst.REPL_FAILOVER_ENDPOINT, db.getName());
+              params.put(ReplConst.REPL_FAILOVER_ENDPOINT, MetaStoreUtils.FailoverEndpoint.TARGET.toString());
+              getHive().alterDatabase(work.getTargetDatabase(), db);
+            } catch (HiveException e) {
+              throw new SemanticException(e);
+            }
+          }
+        });
+      }
       AckWork replLoadAckWork = new AckWork(new Path(work.dumpDirectory, LOAD_ACKNOWLEDGEMENT.toString()),
               work.getMetricCollector(), listOfPreAckTasks);
       Task<AckWork> loadAckWorkTask = TaskFactory.get(replLoadAckWork, conf);
@@ -555,7 +601,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     }
     ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, dbProps,
                                                         (new Path(work.dumpDirectory).getParent()).toString(),
-                                                        work.getMetricCollector());
+                                                        work.getMetricCollector(), work.shouldFailover());
     Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, conf);
     if (scope.rootTasks.isEmpty()) {
       scope.rootTasks.add(replLogTask);
@@ -632,9 +678,15 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     if (work.replScopeModified) {
       dropTablesExcludedInReplScope(work.currentReplScope);
     }
-    if (!MetaStoreUtils.isTargetOfReplication(getHive().getDatabase(work.dbNameToLoadIn))) {
-      Map<String, String> props = new HashMap<>();
-      props.put(ReplConst.TARGET_OF_REPLICATION, "true");
+    Database targetDb = getHive().getDatabase(work.dbNameToLoadIn);
+    Map<String, String> props = new HashMap<>();
+    if (!MetaStoreUtils.isTargetOfReplication(targetDb)) {
+      props.put(ReplConst.TARGET_OF_REPLICATION, ReplConst.TRUE);
+    }
+    if (!work.shouldFailover() && MetaStoreUtils.isDbBeingFailedOver(targetDb)) {
+      props.put(ReplConst.REPL_FAILOVER_ENDPOINT, "");
+    }
+    if (!props.isEmpty()) {
       AlterDatabaseSetPropertiesDesc setTargetDesc = new AlterDatabaseSetPropertiesDesc(work.dbNameToLoadIn, props, null);
       Task<?> addReplTargetPropTask =
               TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), setTargetDesc, true,

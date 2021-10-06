@@ -45,6 +45,14 @@ struct FieldSchema {
   3: string comment
 }
 
+// Key-value store to be used with selected
+// Metastore APIs (create, alter methods).
+// The client can pass environment properties / configs that can be
+// accessed in hooks.
+struct EnvironmentContext {
+  1: map<string, string> properties
+}
+
 struct SQLPrimaryKey {
   1: string table_db,    // table schema
   2: string table_name,  // table name
@@ -144,6 +152,7 @@ enum HiveObjectType {
   TABLE = 3,
   PARTITION = 4,
   COLUMN = 5,
+  DATACONNECTOR = 6,
 }
 
 enum PrincipalType {
@@ -302,7 +311,8 @@ struct TruncateTableRequest {
   2: required string tableName,
   3: optional list<string> partNames,
   4: optional i64 writeId=-1,
-  5: optional string validWriteIdList
+  5: optional string validWriteIdList,
+  6: optional EnvironmentContext environmentContext
 }
 
 struct TruncateTableResponse {
@@ -567,6 +577,30 @@ struct ColumnStatistics {
 4: optional string engine
 }
 
+// FileMetadata represents the table-level (in case of unpartitioned) or partition-level
+// file metadata. Each partition could have more than 1 files and hence the list of
+// binary data field. Each value in data field corresponds to metadata for one file.
+struct FileMetadata {
+  // current supported type mappings are
+  // 1 -> IMPALA
+  1: byte type = 1
+  2: byte version = 1
+  3: list<binary> data
+}
+
+// this field can be used to store repeatitive information
+// (like network addresses in filemetadata). Instead of
+// sending the same object repeatedly, we can send the indices
+// corresponding to the object in this list.
+struct ObjectDictionary {
+  // the key can be used to determine the object type
+  // the value is the list of the objects which can be accessed
+  // using their indices. These indices can be used to send instead of
+  // full object which can reduce the payload significantly in case of
+  // repetitive objects.
+  1: required map<string, list<binary>> values
+}
+
 // table information
 struct Table {
   1: string tableName,                // name of the table
@@ -594,7 +628,10 @@ struct Table {
   23: optional list<string> requiredReadCapabilities,
   24: optional list<string> requiredWriteCapabilities
   25: optional i64 id,                 // id of the table. It will be ignored if set. It's only for
-                                        // read purposed
+                                       // read purposes
+  26: optional FileMetadata fileMetadata, // optional serialized file-metadata for this table
+					  // for certain execution engines
+  27: optional ObjectDictionary dictionary
 }
 
 struct Partition {
@@ -609,7 +646,8 @@ struct Partition {
   9: optional string catName,
   10: optional i64 writeId=-1,
   11: optional bool isStatsCompliant,
-  12: optional ColumnStatistics colStats // column statistics for partition
+  12: optional ColumnStatistics colStats, // column statistics for partition
+  13: optional FileMetadata fileMetadata  // optional serialized file-metadata useful for certain execution engines
 }
 
 struct PartitionWithoutSD {
@@ -667,18 +705,12 @@ struct Schema {
  2: map<string, string> properties
 }
 
-// Key-value store to be used with selected
-// Metastore APIs (create, alter methods).
-// The client can pass environment properties / configs that can be
-// accessed in hooks.
-struct EnvironmentContext {
-  1: map<string, string> properties
-}
-
 struct PrimaryKeysRequest {
   1: required string db_name,
   2: required string tbl_name,
-  3: optional string catName
+  3: optional string catName,
+  4: optional string validWriteIdList,
+  5: optional i64 tableId=-1
 }
 
 struct PrimaryKeysResponse {
@@ -689,8 +721,10 @@ struct ForeignKeysRequest {
   1: string parent_db_name,
   2: string parent_tbl_name,
   3: string foreign_db_name,
-  4: string foreign_tbl_name
-  5: optional string catName          // No cross catalog constraints
+  4: string foreign_tbl_name,
+  5: optional string catName,          // No cross catalog constraints
+  6: optional string validWriteIdList,
+  7: optional i64 tableId=-1
 }
 
 struct ForeignKeysResponse {
@@ -701,6 +735,8 @@ struct UniqueConstraintsRequest {
   1: required string catName,
   2: required string db_name,
   3: required string tbl_name,
+  4: optional string validWriteIdList,
+  5: optional i64 tableId=-1
 }
 
 struct UniqueConstraintsResponse {
@@ -711,6 +747,8 @@ struct NotNullConstraintsRequest {
   1: required string catName,
   2: required string db_name,
   3: required string tbl_name,
+  4: optional string validWriteIdList,
+  5: optional i64 tableId=-1
 }
 
 struct NotNullConstraintsResponse {
@@ -720,7 +758,9 @@ struct NotNullConstraintsResponse {
 struct DefaultConstraintsRequest {
   1: required string catName,
   2: required string db_name,
-  3: required string tbl_name
+  3: required string tbl_name,
+  4: optional string validWriteIdList,
+  5: optional i64 tableId=-1
 }
 
 struct DefaultConstraintsResponse {
@@ -730,7 +770,9 @@ struct DefaultConstraintsResponse {
 struct CheckConstraintsRequest {
   1: required string catName,
   2: required string db_name,
-  3: required string tbl_name
+  3: required string tbl_name,
+  4: optional string validWriteIdList,
+  5: optional i64 tableId=-1
 }
 
 struct CheckConstraintsResponse {
@@ -740,7 +782,9 @@ struct CheckConstraintsResponse {
 struct AllTableConstraintsRequest {
   1: required string dbName,
   2: required string tblName,
-  3: required string catName
+  3: required string catName,
+  4: optional string validWriteIdList,
+  5: optional i64 tableId=-1
 }
 
 struct AllTableConstraintsResponse {
@@ -916,6 +960,7 @@ struct GetPartitionsByNamesRequest {
 
 struct GetPartitionsByNamesResult {
   1: required list<Partition> partitions
+  2: optional ObjectDictionary dictionary
 }
 
 struct DataConnector {
@@ -1285,6 +1330,11 @@ struct GetLatestCommittedCompactionInfoResponse {
     1: required list<CompactionInfoStruct> compactions,
 }
 
+struct FindNextCompactRequest {
+    1: required string workerId,
+    2: required string workerVersion
+}
+
 struct AddDynamicPartitions {
     1: required i64 txnid,
     2: required i64 writeid,
@@ -1384,6 +1434,17 @@ struct WriteNotificationLogRequest {
 }
 
 struct WriteNotificationLogResponse {
+    // NOP for now, this is just a place holder for future responses
+}
+
+struct WriteNotificationLogBatchRequest {
+    1: required string catalog,
+    2: required string db,
+    3: required string table,
+    4: required list<WriteNotificationLogRequest> requestList,
+}
+
+struct WriteNotificationLogBatchResponse {
     // NOP for now, this is just a place holder for future responses
 }
 
@@ -2210,6 +2271,12 @@ struct Package {
   6: string body
 }
 
+struct GetAllWriteEventInfoRequest {
+  1: required i64 txnId,
+  2: optional string dbName,
+  3: optional string tableName
+}
+
 // Exceptions.
 
 exception MetaException {
@@ -2360,7 +2427,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
       throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void add_check_constraint(1:AddCheckConstraintRequest req)
       throws(1:NoSuchObjectException o1, 2:MetaException o2)
-
+  Table translate_table_dryrun(1:Table tbl) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3, 4:NoSuchObjectException o4)
   // drops the table and all the partitions associated with it if the table has partitions
   // delete data (including partitions) if deleteData is set to true
   void drop_table(1:string dbname, 2:string name, 3:bool deleteData)
@@ -2830,7 +2897,9 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   CompactionResponse compact2(1:CompactionRequest rqst) 
   ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
   void add_dynamic_partitions(1:AddDynamicPartitions rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
-  OptionalCompactionInfoStruct find_next_compact(1: string workerId, 2: string workerVersion) throws(1:MetaException o1)
+  // Deprecated, use find_next_compact2()
+  OptionalCompactionInfoStruct find_next_compact(1: string workerId) throws(1:MetaException o1)
+  OptionalCompactionInfoStruct find_next_compact2(1: FindNextCompactRequest rqst) throws(1:MetaException o1)
   void update_compactor_state(1: CompactionInfoStruct cr, 2: i64 txn_id)
   list<string> find_columns_with_stats(1: CompactionInfoStruct cr)
   void mark_cleaned(1:CompactionInfoStruct cr) throws(1:MetaException o1)
@@ -2846,6 +2915,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   FireEventResponse fire_listener_event(1:FireEventRequest rqst)
   void flushCache()
   WriteNotificationLogResponse add_write_notification_log(1:WriteNotificationLogRequest rqst)
+  WriteNotificationLogBatchResponse add_write_notification_log_in_batch(1:WriteNotificationLogBatchRequest rqst)
 
   // Repl Change Management api
   CmRecycleResponse cm_recycle(1:CmRecycleRequest request) throws(1:MetaException o1)
@@ -2969,6 +3039,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   void add_package(1: AddPackageRequest request) throws (1:MetaException o1)
   list<string> get_all_packages(1: ListPackageRequest request) throws (1:MetaException o1)
   void drop_package(1: DropPackageRequest request) throws (1:MetaException o1)
+  list<WriteEventInfo> get_all_write_event_info(1: GetAllWriteEventInfoRequest request) throws (1:MetaException o1)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,
@@ -3012,3 +3083,5 @@ const string DRUID_CONFIG_PREFIX = "druid.",
 const string JDBC_CONFIG_PREFIX = "hive.sql.",
 const string TABLE_IS_CTAS = "created_with_ctas",
 const string PARTITION_TRANSFORM_SPEC = "partition_transform_spec",
+const string NO_CLEANUP = "no_cleanup",
+const string CTAS_LEGACY_CONFIG = "create_table_as_external",

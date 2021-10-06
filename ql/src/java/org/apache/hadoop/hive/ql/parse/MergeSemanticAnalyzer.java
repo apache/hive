@@ -611,7 +611,6 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     if (columnListNode != null) {
       rewrittenQueryStr.append(' ').append(getMatchedText(columnListNode));
     }
-    addPartitionColsToInsert(targetTable.getPartCols(), rewrittenQueryStr);
 
     rewrittenQueryStr.append("    -- insert clause\n  SELECT ");
     if (hintStr != null) {

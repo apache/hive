@@ -18,12 +18,13 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptUtil;
@@ -34,6 +35,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Join;
+import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
 import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
@@ -61,8 +63,6 @@ import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
-import org.apache.calcite.sql.type.SqlTypeFamily;
-import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
@@ -247,9 +247,9 @@ public class HiveCalciteUtil {
     // added project if need to produce new keys than the original input
     // fields
     if (newKeyCount > 0) {
-      leftRel = factory.createProject(leftRel, newLeftFields,
+      leftRel = factory.createProject(leftRel, Collections.emptyList(), newLeftFields,
           SqlValidatorUtil.uniquify(newLeftFieldNames));
-      rightRel = factory.createProject(rightRel, newRightFields,
+      rightRel = factory.createProject(rightRel, Collections.emptyList(), newRightFields,
           SqlValidatorUtil.uniquify(newRightFieldNames));
     }
 
@@ -908,7 +908,7 @@ public class HiveCalciteUtil {
       String inputTabAlias) {
     List<ExprNodeDesc> exprNodes = new ArrayList<ExprNodeDesc>();
     List<RexNode> rexInputRefs = getInputRef(inputRefs, inputRel);
-    List<RexNode> exprs = inputRel.getChildExps();
+    List<RexNode> exprs = inputRel instanceof Project ? ((Project) inputRel).getProjects() : null;
     // TODO: Change ExprNodeConverter to be independent of Partition Expr
     ExprNodeConverter exprConv = new ExprNodeConverter(inputTabAlias, inputRel.getRowType(),
         new HashSet<Integer>(), inputRel.getCluster().getTypeFactory());
@@ -1251,5 +1251,19 @@ public class HiveCalciteUtil {
       }
     }
     return refs.build();
+  }
+
+  public static Set<RexTableInputRef> findRexTableInputRefs(RexNode rexNode) {
+    Set<RexTableInputRef> rexTableInputRefs = new HashSet<>();
+    RexVisitor<RexTableInputRef> visitor = new RexVisitorImpl<RexTableInputRef>(true) {
+      @Override
+      public RexTableInputRef visitTableInputRef(RexTableInputRef ref) {
+        rexTableInputRefs.add(ref);
+        return ref;
+      }
+    };
+
+    rexNode.accept(visitor);
+    return rexTableInputRefs;
   }
 }

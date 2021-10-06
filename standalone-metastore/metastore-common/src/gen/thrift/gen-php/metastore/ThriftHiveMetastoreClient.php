@@ -2623,6 +2623,77 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         return;
     }
 
+    public function translate_table_dryrun(\metastore\Table $tbl)
+    {
+        $this->send_translate_table_dryrun($tbl);
+        return $this->recv_translate_table_dryrun();
+    }
+
+    public function send_translate_table_dryrun(\metastore\Table $tbl)
+    {
+        $args = new \metastore\ThriftHiveMetastore_translate_table_dryrun_args();
+        $args->tbl = $tbl;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'translate_table_dryrun',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('translate_table_dryrun', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_translate_table_dryrun()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_translate_table_dryrun_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_translate_table_dryrun_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->success !== null) {
+            return $result->success;
+        }
+        if ($result->o1 !== null) {
+            throw $result->o1;
+        }
+        if ($result->o2 !== null) {
+            throw $result->o2;
+        }
+        if ($result->o3 !== null) {
+            throw $result->o3;
+        }
+        if ($result->o4 !== null) {
+            throw $result->o4;
+        }
+        throw new \Exception("translate_table_dryrun failed: unknown result");
+    }
+
     public function drop_table($dbname, $name, $deleteData)
     {
         $this->send_drop_table($dbname, $name, $deleteData);
@@ -12298,17 +12369,16 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         return;
     }
 
-    public function find_next_compact($workerId, $workerVersion)
+    public function find_next_compact($workerId)
     {
-        $this->send_find_next_compact($workerId, $workerVersion);
+        $this->send_find_next_compact($workerId);
         return $this->recv_find_next_compact();
     }
 
-    public function send_find_next_compact($workerId, $workerVersion)
+    public function send_find_next_compact($workerId)
     {
         $args = new \metastore\ThriftHiveMetastore_find_next_compact_args();
         $args->workerId = $workerId;
-        $args->workerVersion = $workerVersion;
         $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
         if ($bin_accel) {
             thrift_protocol_write_binary(
@@ -12359,6 +12429,68 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
             throw $result->o1;
         }
         throw new \Exception("find_next_compact failed: unknown result");
+    }
+
+    public function find_next_compact2(\metastore\FindNextCompactRequest $rqst)
+    {
+        $this->send_find_next_compact2($rqst);
+        return $this->recv_find_next_compact2();
+    }
+
+    public function send_find_next_compact2(\metastore\FindNextCompactRequest $rqst)
+    {
+        $args = new \metastore\ThriftHiveMetastore_find_next_compact2_args();
+        $args->rqst = $rqst;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'find_next_compact2',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('find_next_compact2', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_find_next_compact2()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_find_next_compact2_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_find_next_compact2_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->success !== null) {
+            return $result->success;
+        }
+        if ($result->o1 !== null) {
+            throw $result->o1;
+        }
+        throw new \Exception("find_next_compact2 failed: unknown result");
     }
 
     public function update_compactor_state(\metastore\CompactionInfoStruct $cr, $txn_id)
@@ -13117,6 +13249,65 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
             return $result->success;
         }
         throw new \Exception("add_write_notification_log failed: unknown result");
+    }
+
+    public function add_write_notification_log_in_batch(\metastore\WriteNotificationLogBatchRequest $rqst)
+    {
+        $this->send_add_write_notification_log_in_batch($rqst);
+        return $this->recv_add_write_notification_log_in_batch();
+    }
+
+    public function send_add_write_notification_log_in_batch(\metastore\WriteNotificationLogBatchRequest $rqst)
+    {
+        $args = new \metastore\ThriftHiveMetastore_add_write_notification_log_in_batch_args();
+        $args->rqst = $rqst;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'add_write_notification_log_in_batch',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('add_write_notification_log_in_batch', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_add_write_notification_log_in_batch()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_add_write_notification_log_in_batch_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_add_write_notification_log_in_batch_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->success !== null) {
+            return $result->success;
+        }
+        throw new \Exception("add_write_notification_log_in_batch failed: unknown result");
     }
 
     public function cm_recycle(\metastore\CmRecycleRequest $request)
@@ -16815,5 +17006,67 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
             throw $result->o1;
         }
         return;
+    }
+
+    public function get_all_write_event_info(\metastore\GetAllWriteEventInfoRequest $request)
+    {
+        $this->send_get_all_write_event_info($request);
+        return $this->recv_get_all_write_event_info();
+    }
+
+    public function send_get_all_write_event_info(\metastore\GetAllWriteEventInfoRequest $request)
+    {
+        $args = new \metastore\ThriftHiveMetastore_get_all_write_event_info_args();
+        $args->request = $request;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'get_all_write_event_info',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('get_all_write_event_info', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_get_all_write_event_info()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_get_all_write_event_info_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_get_all_write_event_info_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->success !== null) {
+            return $result->success;
+        }
+        if ($result->o1 !== null) {
+            throw $result->o1;
+        }
+        throw new \Exception("get_all_write_event_info failed: unknown result");
     }
 }

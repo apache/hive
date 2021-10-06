@@ -125,6 +125,8 @@ public class MetaStoreUtils {
       '!', '~', '#', '@', '`'
   };
 
+  public static final String NO_VAL = " --- ";
+
   /**
    * Catches exceptions that cannot be handled and wraps them in MetaException.
    *
@@ -231,10 +233,37 @@ public class MetaStoreUtils {
     return isExternal(params);
   }
 
+  public static String getDbNameFromReplPolicy(String replPolicy) {
+    assert replPolicy != null;
+    return replPolicy.split(Pattern.quote("."))[0];
+  }
+
+  public static boolean isDbReplIncompatible(Database db) {
+    if (db == null) {
+      return false;
+    }
+    Map<String, String> dbParameters = db.getParameters();
+    return dbParameters != null && ReplConst.TRUE.equalsIgnoreCase(dbParameters.get(ReplConst.REPL_INCOMPATIBLE));
+  }
+
   public static boolean isDbBeingFailedOver(Database db) {
     assert (db != null);
     Map<String, String> dbParameters = db.getParameters();
-    return dbParameters != null && ReplConst.TRUE.equalsIgnoreCase(dbParameters.get(ReplConst.REPL_FAILOVER_ENABLED));
+    if (dbParameters == null) {
+      return false;
+    }
+    String dbFailoverEndPoint = dbParameters.get(ReplConst.REPL_FAILOVER_ENDPOINT);
+    return FailoverEndpoint.SOURCE.toString().equalsIgnoreCase(dbFailoverEndPoint)
+            || FailoverEndpoint.TARGET.toString().equalsIgnoreCase(dbFailoverEndPoint);
+  }
+
+  public static boolean isDbBeingFailedOverAtEndpoint(Database db, FailoverEndpoint endPoint) {
+    if (db == null) {
+      return false;
+    }
+    Map<String, String> dbParameters = db.getParameters();
+    return dbParameters != null
+            && endPoint.toString().equalsIgnoreCase(dbParameters.get(ReplConst.REPL_FAILOVER_ENDPOINT));
   }
 
   public static boolean isTargetOfReplication(Database db) {
@@ -1052,7 +1081,7 @@ public class MetaStoreUtils {
   }
 
   public static TableName getTableNameFor(Table table) {
-    return TableName.fromString(table.getTableName(), table.getCatName(), table.getDbName());
+    return TableName.fromString(table.getTableName(), table.getCatName(), table.getDbName(), null);
   }
 
   /**
@@ -1067,5 +1096,35 @@ public class MetaStoreUtils {
               parameters.get(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT.toUpperCase());
     }
     return noAutoCompact != null && noAutoCompact.equalsIgnoreCase("true");
+  }
+
+  public static String getHostFromId(String id) {
+    if (id == null) {
+      return NO_VAL;
+    }
+    int lastDash = id.lastIndexOf('-');
+    return id.substring(0, lastDash > -1 ? lastDash : id.length());
+  }
+
+  public static String getThreadIdFromId(String id) {
+    if (id == null) {
+      return NO_VAL;
+    }
+    return id.substring(id.lastIndexOf('-') + 1);
+  }
+
+  public enum FailoverEndpoint {
+    /**
+     * EndPoint to specify nature of database for which failover is initiated.
+     */
+    SOURCE, TARGET;
+  }
+
+  public static boolean isNoCleanUpSet(Map<String, String> parameters) {
+    String noCleanUp = parameters.get(hive_metastoreConstants.NO_CLEANUP);
+    if (noCleanUp == null) {
+      noCleanUp = parameters.get(hive_metastoreConstants.NO_CLEANUP.toUpperCase());
+    }
+    return noCleanUp != null && noCleanUp.equalsIgnoreCase("true");
   }
 }

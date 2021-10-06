@@ -277,6 +277,16 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         equalsIgnoreCase(conf.get(YarnConfiguration.RM_SCHEDULER));
   }
 
+  private boolean checkFileSystemXAttrSupport(FileSystem fs) throws IOException {
+    try {
+      fs.getXAttrs(new Path(Path.SEPARATOR));
+      return true;
+    } catch (UnsupportedOperationException e) {
+      LOG.warn("XAttr won't be preserved since it is not supported for file system: " + fs.getUri());
+      return false;
+    }
+  }
+
   /**
    * Returns a shim to wrap MiniMrCluster
    */
@@ -1102,10 +1112,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   private static final String DISTCP_OPTIONS_PREFIX = "distcp.options.";
 
-  List<String> constructDistCpParams(List<Path> srcPaths, Path dst, Configuration conf) {
+  List<String> constructDistCpParams(List<Path> srcPaths, Path dst, Configuration conf) throws IOException {
     // -update and -delete are mandatory options for directory copy to work.
-    // -pbx is default preserve options if user doesn't pass any.
-    List<String> params = constructDistCpDefaultParams(conf);
+    List<String> params = constructDistCpDefaultParams(conf, dst.getFileSystem(conf),
+            srcPaths.get(0).getFileSystem(conf));
     if (!params.contains("-delete")) {
       params.add("-delete");
     }
@@ -1116,7 +1126,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return params;
   }
 
-  private List<String> constructDistCpDefaultParams(Configuration conf) {
+  private List<String> constructDistCpDefaultParams(Configuration conf, FileSystem dstFs,
+                                                    FileSystem sourceFs) throws IOException {
     List<String> params = new ArrayList<String>();
     boolean needToAddPreserveOption = true;
     for (Map.Entry<String,String> entry : conf.getPropsWithPrefix(DISTCP_OPTIONS_PREFIX).entrySet()){
@@ -1131,7 +1142,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       }
     }
     if (needToAddPreserveOption) {
-      params.add("-pbx");
+      params.add((checkFileSystemXAttrSupport(dstFs) && checkFileSystemXAttrSupport(sourceFs)) ? "-pbx" : "-pb");
     }
     if (!params.contains("-update")) {
       params.add("-update");
@@ -1150,9 +1161,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
    * @return
    */
   List<String> constructDistCpWithSnapshotParams(List<Path> srcPaths, Path dst, String sourceSnap, String destSnap,
-      Configuration conf, String diff) {
+      Configuration conf, String diff) throws IOException {
     // Get the default distcp params
-    List<String> params = constructDistCpDefaultParams(conf);
+    List<String> params = constructDistCpDefaultParams(conf, dst.getFileSystem(conf),
+            srcPaths.get(0).getFileSystem(conf));
     if (params.contains("-delete")) {
       params.remove("-delete");
     }
@@ -1192,19 +1204,12 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public boolean runDistCp(List<Path> srcPaths, Path dst, Configuration conf) throws IOException {
-       DistCpOptions options = new DistCpOptions.Builder(srcPaths, dst)
-               .withSyncFolder(true)
-               .withDeleteMissing(true)
-               .preserve(FileAttribute.BLOCKSIZE)
-               .preserve(FileAttribute.XATTR)
-               .build();
-
     // Creates the command-line parameters for distcp
     List<String> params = constructDistCpParams(srcPaths, dst, conf);
     DistCp distcp = null;
     try {
-      conf.setBoolean("mapred.mapper.new-api", true);
-      distcp = new DistCp(conf, options);
+      distcp = new DistCp(conf, null);
+      distcp.getConf().setBoolean("mapred.mapper.new-api", true);
 
       // HIVE-13704 states that we should use run() instead of execute() due to a hadoop known issue
       // added by HADOOP-10459
@@ -1223,7 +1228,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
           conf.set(CONF_LABEL_DISTCP_JOB_ID, jobId);
         }
       }
-      conf.setBoolean("mapred.mapper.new-api", false);
     }
   }
 
@@ -1231,14 +1235,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public boolean runDistCpWithSnapshots(String oldSnapshot, String newSnapshot, List<Path> srcPaths, Path dst,
       boolean overwriteTarget, Configuration conf)
       throws IOException {
-    DistCpOptions options =
-        new DistCpOptions.Builder(srcPaths, dst).withSyncFolder(true).withUseDiff(oldSnapshot, newSnapshot)
-        .preserve(FileAttribute.BLOCKSIZE).preserve(FileAttribute.XATTR).build();
-
     List<String> params = constructDistCpWithSnapshotParams(srcPaths, dst, oldSnapshot, newSnapshot, conf, "-diff");
     try {
-      conf.setBoolean("mapred.mapper.new-api", true);
-      DistCp distcp = new DistCp(conf, options);
+      DistCp distcp = new DistCp(conf, null);
+      distcp.getConf().setBoolean("mapred.mapper.new-api", true);
       int returnCode = distcp.run(params.toArray(new String[0]));
       if (returnCode == 0) {
         return true;
@@ -1254,7 +1254,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
           LOG.warn("Copy failed due to target modified. Attempting to restore back the target. source: {} target: {} "
               + "snapshot: {}", srcPaths, dst, oldSnapshot);
           List<String> rParams = constructDistCpWithSnapshotParams(srcPaths, dst, ".", oldSnapshot, conf, "-rdiff");
-          DistCp rDistcp = new DistCp(conf, options);
+          DistCp rDistcp = new DistCp(conf, null);
           returnCode = rDistcp.run(rParams.toArray(new String[0]));
           if (returnCode == 0) {
             LOG.info("Target restored to previous state.  source: {} target: {} snapshot: {}. Reattempting to copy.",
@@ -1274,8 +1274,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       }
     } catch (Exception e) {
       throw new IOException("Cannot execute DistCp process: ", e);
-    } finally {
-      conf.setBoolean("mapred.mapper.new-api", false);
     }
     return false;
   }

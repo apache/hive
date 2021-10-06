@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 
 /**
@@ -175,6 +176,15 @@ public class IOContext {
 
   public void setRecordIdentifier(RecordIdentifier ri) {
     this.ri = ri;
+  }
+
+  public void parseRecordIdentifier(Configuration configuration) {
+    BucketIdentifier bucketIdentifier = BucketIdentifier.from(configuration, inputPath);
+    if (bucketIdentifier == null) {
+      this.ri = null;
+    } else {
+      this.ri = new RecordIdentifier(bucketIdentifier.getWriteId(), bucketIdentifier.getBucketProperty(), 0);
+    }
   }
 
   public boolean isDeletedRecord() {

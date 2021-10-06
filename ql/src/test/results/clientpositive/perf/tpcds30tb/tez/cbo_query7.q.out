@@ -1,6 +1,6 @@
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
-  HiveProject($f0=[$0], $f1=[/(CAST($1):DOUBLE, $2)], $f2=[CAST(/($3, $4)):DECIMAL(11, 6)], $f3=[CAST(/($5, $6)):DECIMAL(11, 6)], $f4=[CAST(/($7, $8)):DECIMAL(11, 6)])
+  HiveProject(i_item_id=[$0], agg1=[/(CAST($1):DOUBLE, $2)], agg2=[CAST(/($3, $4)):DECIMAL(11, 6)], agg3=[CAST(/($5, $6)):DECIMAL(11, 6)], agg4=[CAST(/($7, $8)):DECIMAL(11, 6)])
     HiveAggregate(group=[{12}], agg#0=[sum($3)], agg#1=[count($3)], agg#2=[sum($4)], agg#3=[count($4)], agg#4=[sum($6)], agg#5=[count($6)], agg#6=[sum($5)], agg#7=[count($5)])
       HiveJoin(condition=[=($0, $11)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveJoin(condition=[=($2, $10)], joinType=[inner], algorithm=[none], cost=[not available])

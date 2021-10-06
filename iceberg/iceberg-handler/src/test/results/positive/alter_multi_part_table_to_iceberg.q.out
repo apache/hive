@@ -170,6 +170,11 @@ a                   	int                 	from deserializer
 b                   	string              	from deserializer   
 c                   	string              	from deserializer   
 	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+b                   	IDENTITY            	 
+c                   	IDENTITY            	 
+	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
@@ -402,6 +407,11 @@ POSTHOOK: Input: default@tbl_parquet
 a                   	int                 	from deserializer   
 b                   	string              	from deserializer   
 c                   	string              	from deserializer   
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+b                   	IDENTITY            	 
+c                   	IDENTITY            	 
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -636,6 +646,11 @@ a                   	int                 	from deserializer
 b                   	string              	from deserializer   
 c                   	string              	from deserializer   
 	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+b                   	IDENTITY            	 
+c                   	IDENTITY            	 
+	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
@@ -654,7 +669,7 @@ Table Parameters:
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	1591                
+	totalSize           	1843                
 #### A masked pattern was here ####
 	write.format.default	avro                
 	 	 

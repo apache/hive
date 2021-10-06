@@ -39,7 +39,9 @@ import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
@@ -116,6 +118,7 @@ public abstract class CompactorTest {
   @Before
   public void setup() throws Exception {
     conf = new HiveConf();
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, 2, TimeUnit.SECONDS);
     TestTxnDbUtil.setConfValues(conf);
     TestTxnDbUtil.cleanDb(conf);
     TestTxnDbUtil.prepDb(conf);
@@ -198,12 +201,17 @@ public abstract class CompactorTest {
   }
 
   protected Partition newPartition(Table t, String value, List<Order> sortCols) throws Exception {
+    return newPartition(t, value, sortCols, new HashMap<>());
+  }
+
+  protected Partition newPartition(Table t, String value, List<Order> sortCols, Map<String, String> parameters)
+      throws Exception {
     Partition part = new Partition();
     part.addToValues(value);
     part.setDbName(t.getDbName());
     part.setTableName(t.getTableName());
     part.setSd(newStorageDescriptor(getLocation(t.getTableName(), value), sortCols));
-    part.setParameters(new HashMap<String, String>());
+    part.setParameters(parameters);
     ms.add_partition(part);
     return part;
   }
@@ -280,6 +288,11 @@ public abstract class CompactorTest {
   }
 
   protected void burnThroughTransactions(String dbName, String tblName, int num, Set<Long> open, Set<Long> aborted)
+      throws NoSuchTxnException, TxnAbortedException, MetaException {
+    burnThroughTransactions(dbName, tblName, num, open, aborted, null);
+  }
+
+  protected void burnThroughTransactions(String dbName, String tblName, int num, Set<Long> open, Set<Long> aborted, LockRequest lockReq)
       throws MetaException, NoSuchTxnException, TxnAbortedException {
     OpenTxnsResponse rsp = txnHandler.openTxns(new OpenTxnRequest(num, "me", "localhost"));
     AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(dbName, tblName);
@@ -288,6 +301,10 @@ public abstract class CompactorTest {
     int i = 0;
     for (long tid : rsp.getTxn_ids()) {
       assert(awiResp.getTxnToWriteIds().get(i++).getTxnId() == tid);
+      if(lockReq != null) {
+        lockReq.setTxnid(tid);
+        txnHandler.lock(lockReq);
+      }
       if (aborted != null && aborted.contains(tid)) {
         txnHandler.abortTxn(new AbortTxnRequest(tid));
       } else if (open == null || (open != null && !open.contains(tid))) {
@@ -621,7 +638,7 @@ public abstract class CompactorTest {
 
   protected long compactInTxn(CompactionRequest rqst) throws Exception {
     txnHandler.compact(rqst);
-    CompactionInfo ci = txnHandler.findNextToCompact("fred", WORKER_VERSION);
+    CompactionInfo ci = txnHandler.findNextToCompact(new FindNextCompactRequest("fred", WORKER_VERSION));
     ci.runAs = System.getProperty("user.name");
     long compactorTxnId = openTxn(TxnType.COMPACTION);
     // Need to create a valid writeIdList to set the highestWriteId in ci

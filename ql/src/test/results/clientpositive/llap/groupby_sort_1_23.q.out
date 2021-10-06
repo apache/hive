@@ -1795,9 +1795,11 @@ group by key + key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n80
 POSTHOOK: Output: default@outputtbl1_n18
-OPTIMIZED SQL: SELECT CAST(`key` AS DOUBLE) + CAST(`key` AS DOUBLE) AS `$f0`, SUM(COUNT(*)) AS `$f1`
+OPTIMIZED SQL: SELECT `$f0`, SUM(`$f1`) AS `$f1`
+FROM (SELECT CAST(`key` AS DOUBLE) + CAST(`key` AS DOUBLE) AS `$f0`, COUNT(*) AS `$f1`
 FROM `default`.`t1_n80`
-GROUP BY CAST(`key` AS DOUBLE) + CAST(`key` AS DOUBLE)
+GROUP BY `key`) AS `t0`
+GROUP BY `$f0`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2847,15 +2849,15 @@ ON subq1.key = subq2.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n80
 POSTHOOK: Output: default@outputtbl1_n18
-OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`$f1` + `t2`.`$f1` AS `_o__c1`
+OPTIMIZED SQL: SELECT `t1`.`key`, `t1`.`$f1` + `t4`.`$f1` AS `_o__c1`
 FROM (SELECT `key`, COUNT(*) AS `$f1`
 FROM `default`.`t1_n80`
 WHERE `key` IS NOT NULL
-GROUP BY `key`) AS `t0`
+GROUP BY `key`) AS `t1`
 INNER JOIN (SELECT `key`, COUNT(*) AS `$f1`
 FROM `default`.`t1_n80`
 WHERE `key` IS NOT NULL
-GROUP BY `key`) AS `t2` ON `t0`.`key` = `t2`.`key`
+GROUP BY `key`) AS `t4` ON `t1`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -3172,11 +3174,11 @@ OPTIMIZED SQL: SELECT *
 FROM (SELECT `key`, COUNT(*) AS `$f1`
 FROM `default`.`t1_n80`
 WHERE `key` IS NOT NULL
-GROUP BY `key`) AS `t0`
+GROUP BY `key`) AS `t1`
 INNER JOIN (SELECT `key`, `val`, COUNT(*) AS `$f2`
 FROM `default`.`t1_n80`
 WHERE `key` IS NOT NULL
-GROUP BY `key`, `val`) AS `t2` ON `t0`.`key` = `t2`.`key`
+GROUP BY `key`, `val`) AS `t4` ON `t1`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

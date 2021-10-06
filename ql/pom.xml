@@ -89,6 +89,10 @@
       <version>${commons-configuration.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-math3</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-vector-code-gen</artifactId>
       <version>${project.version}</version>
@@ -161,6 +165,15 @@
     </dependency>
     <!-- inter-project -->
     <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-bundle</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws.secretsmanager</groupId>
+      <artifactId>aws-secretsmanager-caching-java</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.esotericsoftware</groupId>
       <artifactId>kryo</artifactId>
     </dependency>
@@ -172,10 +185,11 @@
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
     </dependency>
-      <dependency>
-        <groupId>org.apache.hbase</groupId>
-        <artifactId>hbase-common</artifactId>
-      </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-common</artifactId>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>org.apache.parquet</groupId>
       <artifactId>parquet-hadoop-bundle</artifactId>

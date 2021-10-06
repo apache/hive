@@ -15,7 +15,7 @@ import java.util.List;
 public class MySQLConnectorProvider extends AbstractJDBCConnectorProvider {
   private static Logger LOG = LoggerFactory.getLogger(MySQLConnectorProvider.class);
 
-  private static final String DRIVER_CLASS = "com.mysql.jdbc.Driver".intern();
+  private static final String DRIVER_CLASS = "org.mariadb.jdbc.Driver";
 
   public MySQLConnectorProvider(String dbName, DataConnector dataConn) {
     super(dbName, dataConn, DRIVER_CLASS);
@@ -35,17 +35,6 @@ public class MySQLConnectorProvider extends AbstractJDBCConnectorProvider {
       throw new MetaException("Could not retrieve table names from remote datasource, cause:" + sqle);
     }
     return rs;
-  }
-
-  /**
-   * Returns Hive Table objects from the remote database for tables that match a name pattern.
-   * @return List A collection of objects that match the name pattern, null otherwise.
-   * @throws MetaException To indicate any failures with executing this API
-   * @param regex
-   */
-  @Override public  List<Table> getTables(String regex) throws MetaException {
-    LOG.info("getTables() not implemented yet");
-    return null;
   }
 
   /**

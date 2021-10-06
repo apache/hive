@@ -71,8 +71,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@like_any_table
-POSTHOOK: Lineage: like_any_table.company EXPRESSION []
-POSTHOOK: Lineage: like_any_table.pat EXPRESSION []
+POSTHOOK: Lineage: like_any_table.company SCRIPT []
+POSTHOOK: Lineage: like_any_table.pat SCRIPT []
 PREHOOK: query: select company from like_any_table where company like any ('%oo%','%in','fa%')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@like_any_table

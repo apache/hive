@@ -432,6 +432,100 @@ public class MetastoreConf {
     COMPACTOR_RUN_AS_USER("metastore.compactor.run.as.user", "hive.compactor.run.as.user", "",
         "Specify the user to run compactor Initiator and Worker as. If empty string, defaults to table/partition " +
         "directory owner."),
+    COMPACTOR_OLDEST_REPLICATION_OPENTXN_THRESHOLD_WARNING(
+        "metastore.compactor.oldest.replication.open.txn.threshold.warning",
+        "hive.compactor.oldest.replication.open.txn.threshold.warning",
+        14, TimeUnit.DAYS,
+        "Age of open replication transaction after which a warning will be logged. Default time unit: days"),
+    COMPACTOR_OLDEST_REPLICATION_OPENTXN_THRESHOLD_ERROR(
+        "metastore.compactor.oldest.replication.open.txn.threshold.error",
+        "hive.compactor.oldest.replication.open.txn.threshold.error",
+        21, TimeUnit.DAYS,
+        "Age of open replication transaction after which an error will be logged. Default time unit: days"),
+    COMPACTOR_OLDEST_OPENTXN_THRESHOLD_WARNING(
+        "metastore.compactor.oldest.open.txn.threshold.warning",
+        "hive.compactor.oldest.open.txn.threshold.warning",
+        24, TimeUnit.HOURS,
+        "Age of oldest open non-replication transaction after which a warning will be logged. " +
+            "Default time unit: hours"),
+    COMPACTOR_OLDEST_OPENTXN_THRESHOLD_ERROR(
+        "metastore.compactor.oldest.open.txn.threshold.error",
+        "hive.compactor.oldest.open.txn.threshold.error",
+        72, TimeUnit.HOURS,
+        "Age of oldest open non-replication transaction after which an error will be logged. "
+            + "Default time unit: hours"),
+    COMPACTOR_OLDEST_UNCLEANED_ABORTEDTXN_TIME_THRESHOLD_WARNING(
+        "metastore.compactor.oldest.uncleaned.aborted.txn.time.threshold.warning",
+        "hive.compactor.oldest.uncleaned.aborted.txn.time.threshold.warning",
+        24, TimeUnit.HOURS,
+        "Age of oldest aborted transaction after which a warning will be logged. Default time unit: hours"),
+    COMPACTOR_OLDEST_UNCLEANED_ABORTEDTXN_TIME_THRESHOLD_ERROR(
+        "metastore.compactor.oldest.uncleaned.aborted.txn.time.threshold.error",
+        "hive.compactor.oldest.uncleaned.aborted.txn.time.threshold.error",
+        48, TimeUnit.HOURS,
+        "Age of oldest aborted transaction after which an error will be logged. Default time unit: hours"),
+    COMPACTOR_TABLES_WITH_ABORTEDTXN_THRESHOLD(
+        "metastore.compactor.tables.with.aborted.txn.threshold",
+        "hive.compactor.tables.with.aborted.txn.threshold", 1,
+        "Number of tables has not been compacted and have more than " +
+            "hive.metastore.acidmetrics.table.aborted.txns.threshold (default 1500) aborted transactions. If this " +
+            "threshold is passed, a warning will be logged."),
+    COMPACTOR_OLDEST_UNCLEANED_COMPACTION_TIME_THRESHOLD(
+        "metastore.compactor.oldest.uncleaned.compaction.time.threshold",
+        "hive.compactor.oldest.uncleaned.compaction.time.threshold",
+        24, TimeUnit.HOURS,
+        "Age of oldest ready for cleaning compaction in the compaction queue. If this threshold is passed, " +
+            "a warning will be logged. Default time unit is: hours"),
+    COMPACTOR_FAILED_COMPACTION_RATIO_THRESHOLD(
+        "metastore.compactor.failed.compaction.ratio.threshold",
+        "hive.compactor.failed.compaction.ratio.threshold", .01,
+        "Ratio between the number of failed compactions + not initiated compactions and number of failed " +
+            "compactions + not initiated compactions + succeeded compactions. If this threshold is passed, a warning " +
+            "will be logged."),
+    COMPACTOR_OLDEST_INITIATED_COMPACTION_TIME_THRESHOLD_WARNING(
+        "metastore.compactor.oldest.initiated.compaction.time.threshold.warning",
+        "hive.compactor.oldest.initiated.compaction.time.threshold.warning",
+        1, TimeUnit.HOURS,
+        "Age of oldest initiated compaction in the compaction queue after which a warning will be logged. " +
+            "Default time unit is: hours"),
+    COMPACTOR_OLDEST_INITIATED_COMPACTION_TIME_THRESHOLD_ERROR(
+        "metastore.compactor.oldest.initiated.compaction.time.threshold.error",
+        "hive.compactor.oldest.initiated.compaction.time.threshold.error",
+        12, TimeUnit.HOURS,
+        "Age of oldest initiated compaction in the compaction queue after which an error will be logged. " +
+            "Default time unit is: hours"),
+    COMPACTOR_COMPLETED_TXN_COMPONENTS_RECORD_THRESHOLD_WARNING(
+        "metastore.compactor.completed.txn.components.record.threshold.warning",
+        "hive.compactor.completed.txn.components.record.threshold.warning",
+        500000,
+        "Number of records in COMPLETED_TXN_COMPONENTS table, after which a warning will be logged."),
+    COMPACTOR_COMPLETED_TXN_COMPONENTS_RECORD_THRESHOLD_ERROR(
+        "metastore.compactor.completed.txn.components.record.threshold.error",
+        "hive.compactor.completed.txn.components.record.threshold.error",
+        1000000,
+        "Number of records in COMPLETED_TXN_COMPONENTS table, after which an error will be logged."),
+    COMPACTOR_TXN_TO_WRITEID_RECORD_THRESHOLD_WARNING(
+        "metastore.compactor.txn.to.writeid.record.threshold.warning",
+        "hive.compactor.txn.to.writeid.record.threshold.warning",
+        500000,
+        "Number of records in TXN_TO_WRITEID table, after which a warning will be logged."),
+    COMPACTOR_TXN_TO_WRITEID_RECORD_THRESHOLD_ERROR(
+        "metastore.compactor.txn.to.writeid.record.threshold.error",
+        "hive.compactor.txn.to.writeid.record.threshold.error",
+        1000000,
+        "Number of records in TXN_TO_WRITEID table, after which an error will be logged."),
+    COMPACTOR_NUMBER_OF_DISABLED_COMPACTION_TABLES_THRESHOLD(
+        "metastore.compactor.number.of.disabled.compaction.tables.threshold",
+        "hive.compactor.number.of.disabled.compaction.tables.threshold",
+        1,
+        "If the number of writes to tables where auto-compaction is disabled reaches this threshold, a " +
+            "warning will be logged after every subsequent write to any table where auto-compaction is disabled."),
+    COMPACTOR_ACID_METRICS_LOGGER_FREQUENCY(
+        "metastore.compactor.acid.metrics.logger.frequency",
+        "hive.compactor.acid.metrics.logger.frequency",
+        360, TimeUnit.MINUTES,
+        "Logging frequency of ACID related metrics. Set this value to 0 to completely turn off logging. " +
+            "Default time unit: minutes"),
     METASTORE_HOUSEKEEPING_LEADER_HOSTNAME("metastore.housekeeping.leader.hostname",
             "hive.metastore.housekeeping.leader.hostname", "",
 "If there are multiple Thrift metastore services running, the hostname of Thrift metastore " +
@@ -454,6 +548,9 @@ public class MetastoreConf {
         "hive.metastore.acidmetrics.check.interval", 300,
         TimeUnit.SECONDS,
         "Time in seconds between acid related metric collection runs."),
+    METASTORE_ACIDMETRICS_EXT_ON("metastore.acidmetrics.ext.on", "hive.metastore.acidmetrics.ext.on", true,
+        "Whether to collect additional acid related metrics outside of the acid metrics service. "
+            + "(metastore.metrics.enabled and/or hive.server2.metrics.enabled are also required to be set to true.)"),
     METASTORE_ACIDMETRICS_TABLES_WITH_ABORTED_TXNS_THRESHOLD("metastore.acidmetrics.table.aborted.txns.threshold",
         "hive.metastore.acidmetrics.table.aborted.txns.threshold", 1500,
         "The acid metrics system will collect the number of tables which have a large number of aborted transactions." +
@@ -601,7 +698,8 @@ public class MetastoreConf {
             "\n" +
             "See HIVE-4409 for more details."),
     ALLOW_INCOMPATIBLE_COL_TYPE_CHANGES_TABLE_SERDES("metastore.allow.incompatible.col.type.changes.serdes",
-        "hive.metastore.allow.incompatible.col.type.changes.serdes", "org.apache.hadoop.hive.kudu.KuduSerDe",
+        "hive.metastore.allow.incompatible.col.type.changes.serdes",
+        "org.apache.hadoop.hive.kudu.KuduSerDe,org.apache.iceberg.mr.hive.HiveIcebergSerDe",
         "Comma-separated list of table serdes which are allowed to make incompatible column type\n" +
         "changes. This configuration is only applicable if metastore.disallow.incompatible.col.type.changes\n" +
         "is true."),

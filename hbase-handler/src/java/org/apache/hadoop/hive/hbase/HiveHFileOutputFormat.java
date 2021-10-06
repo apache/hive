@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.hbase;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.util.Collections;
@@ -163,8 +164,14 @@ public class HiveHFileOutputFormat extends
           FileSystem fs = outputdir.getFileSystem(jc);
           fs.mkdirs(columnFamilyPath);
           Path srcDir = taskAttemptOutputdir;
-          for (;;) {
-            FileStatus [] files = fs.listStatus(srcDir, FileUtils.STAGING_DIR_PATH_FILTER);
+          FileStatus[] files = null;
+          for (; ; ) {
+            try {
+              files = fs.listStatus(srcDir, FileUtils.STAGING_DIR_PATH_FILTER);
+            } catch (FileNotFoundException fnf) {
+              LOG.debug("File doesn't exist {} ",srcDir, fnf);
+              break;
+            }
             if ((files == null) || (files.length == 0)) {
               throw new IOException("No family directories found in " + srcDir);
             }
@@ -181,15 +188,16 @@ public class HiveHFileOutputFormat extends
                   + columnFamilyName);
             }
           }
-          for (FileStatus regionFile : fs.listStatus(srcDir, FileUtils.STAGING_DIR_PATH_FILTER)) {
-            fs.rename(
-              regionFile.getPath(),
-              new Path(
-                columnFamilyPath,
-                regionFile.getPath().getName()));
+          if (files != null) {
+            for (FileStatus regionFile : fs.listStatus(srcDir, FileUtils.STAGING_DIR_PATH_FILTER)) {
+              fs.rename(regionFile.getPath(), new Path(columnFamilyPath, regionFile.getPath().getName()));
+            }
           }
         } catch (InterruptedException ex) {
           throw new IOException(ex);
+        } catch (FileNotFoundException fnf) {
+          // Ignore....
+          LOG.debug("File doesn't exist.", fnf);
         }
       }
 

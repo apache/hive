@@ -38,6 +38,9 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: test1@shtb_test1
 POSTHOOK: Output: database:test1
 POSTHOOK: Output: test1@shtb_test1_view1
+POSTHOOK: Lineage: shtb_test1_view1.ds SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: shtb_test1_view1.key SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_test1_view1.value SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: CREATE MATERIALIZED VIEW shtb_test1_view2 
 TBLPROPERTIES ('rewriting.time.window' = '-1min') AS
 SELECT * FROM shtb_test1 where KEY > 100 and KEY < 200
@@ -52,6 +55,9 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: test1@shtb_test1
 POSTHOOK: Output: database:test1
 POSTHOOK: Output: test1@shtb_test1_view2
+POSTHOOK: Lineage: shtb_test1_view2.ds SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: shtb_test1_view2.key SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_test1_view2.value SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: CREATE MATERIALIZED VIEW shtb_full_view2
 TBLPROPERTIES ('rewriting.time.window' = '5min') AS
 SELECT * FROM shtb_test1
@@ -66,6 +72,9 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: test1@shtb_test1
 POSTHOOK: Output: database:test1
 POSTHOOK: Output: test1@shtb_full_view2
+POSTHOOK: Lineage: shtb_full_view2.ds SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: shtb_full_view2.key SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_full_view2.value SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: CREATE MATERIALIZED VIEW shtb_aggr_view1 AS
 SELECT a.value, sum(a.key) FROM shtb_test1 a join shtb_test1 b on (a.key = b.key) group by a.value
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -78,6 +87,8 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: test1@shtb_test1
 POSTHOOK: Output: database:test1
 POSTHOOK: Output: test1@shtb_aggr_view1
+POSTHOOK: Lineage: shtb_aggr_view1._c1 EXPRESSION [(shtb_test1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_aggr_view1.value SIMPLE [(shtb_test1)a.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: CREATE MATERIALIZED VIEW shtb_aggr_view2 AS
 SELECT a.value, count(1), sum(a.key) FROM shtb_test1 a join shtb_test1 b on (a.key = b.key) group by a.value
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -90,6 +101,9 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: test1@shtb_test1
 POSTHOOK: Output: database:test1
 POSTHOOK: Output: test1@shtb_aggr_view2
+POSTHOOK: Lineage: shtb_aggr_view2._c1 EXPRESSION [(shtb_test1)a.null, (shtb_test1)b.null, ]
+POSTHOOK: Lineage: shtb_aggr_view2._c2 EXPRESSION [(shtb_test1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_aggr_view2.value SIMPLE [(shtb_test1)a.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: USE test2
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:test2
@@ -128,6 +142,9 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: test2@shtb_test1
 POSTHOOK: Output: database:test2
 POSTHOOK: Output: test2@shtb_test1_view1
+POSTHOOK: Lineage: shtb_test1_view1.ds SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: shtb_test1_view1.key SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_test1_view1.value SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: CREATE MATERIALIZED VIEW shtb_test2_view2 DISABLE REWRITE AS
 SELECT * FROM shtb_test2 where KEY > 100 and KEY < 200
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -140,6 +157,9 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: test2@shtb_test2
 POSTHOOK: Output: database:test2
 POSTHOOK: Output: test2@shtb_test2_view2
+POSTHOOK: Lineage: shtb_test2_view2.ds SIMPLE [(shtb_test2)shtb_test2.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: shtb_test2_view2.key SIMPLE [(shtb_test2)shtb_test2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_test2_view2.value SIMPLE [(shtb_test2)shtb_test2.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: USE test1
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:test1
@@ -487,6 +507,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: database@foo_n0
 POSTHOOK: Output: database:database
 POSTHOOK: Output: database@fooview
+POSTHOOK: Lineage: fooview.a SIMPLE [(foo_n0)foo_n0.FieldSchema(name:a, type:int, comment:null), ]
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default

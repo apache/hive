@@ -36,6 +36,7 @@ import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.server.HiveServer2;
 import org.apache.iceberg.hive.TestHiveMetastore;
+import org.apache.iceberg.relocated.com.google.common.base.Joiner;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 
 /**
@@ -82,7 +83,7 @@ public class TestHiveShell {
 
   public void start() {
     // Create a copy of the HiveConf for the metastore
-    metastore.start(new HiveConf(hs2Conf), 10);
+    metastore.start(new HiveConf(hs2Conf), 20);
     hs2Conf.setVar(HiveConf.ConfVars.METASTOREURIS, metastore.hiveConf().getVar(HiveConf.ConfVars.METASTOREURIS));
     hs2Conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE,
         metastore.hiveConf().getVar(HiveConf.ConfVars.METASTOREWAREHOUSE));
@@ -157,13 +158,13 @@ public class TestHiveShell {
 
   /**
    * Used for debugging. Please do not remove even if unused in the codebase.
-   * @param statement EXPLAIN statement
-   * @return EXPLAIN statement output in a single String which is IDE friendly for viewing
+   * @param statement The statement to execute
+   * @return The formatted statement output in a single String which is IDE friendly for viewing
    */
-  public String executeExplain(String statement) {
+  public String executeAndStringify(String statement) {
     List<Object[]> objects = executeStatement(statement);
     return objects.stream()
-        .map(o -> (String) o[0])
+        .map(o -> Joiner.on("\t").useForNull("NULL").join(o))
         .collect(Collectors.joining("\n"));
   }
 
@@ -184,7 +185,7 @@ public class TestHiveShell {
     hiveConf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT, -1);
 
     // Switch off optimizers in order to contain the map reduction within this JVM
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_INFER_BUCKET_SORT, false);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEMETADATAONLYQUERIES, false);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTINDEXFILTER, false);
@@ -212,9 +213,6 @@ public class TestHiveShell {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, false);
     // set to true so that the Tez session will create an empty jar for localization
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_IDE, true);
-
-    // enables vectorization on Tez
-    hiveConf.set("tez.mrreader.config.update.properties", "hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids");
 
     // set lifecycle hooks
     hiveConf.setVar(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS, HiveIcebergQueryLifeTimeHook.class.getName());

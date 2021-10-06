@@ -64,6 +64,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void add_not_null_constraint(AddNotNullConstraintRequest req)')
     print('  void add_default_constraint(AddDefaultConstraintRequest req)')
     print('  void add_check_constraint(AddCheckConstraintRequest req)')
+    print('  Table translate_table_dryrun(Table tbl)')
     print('  void drop_table(string dbname, string name, bool deleteData)')
     print('  void drop_table_with_environment_context(string dbname, string name, bool deleteData, EnvironmentContext environment_context)')
     print('  void truncate_table(string dbName, string tableName,  partNames)')
@@ -213,7 +214,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  CompactionResponse compact2(CompactionRequest rqst)')
     print('  ShowCompactResponse show_compact(ShowCompactRequest rqst)')
     print('  void add_dynamic_partitions(AddDynamicPartitions rqst)')
-    print('  OptionalCompactionInfoStruct find_next_compact(string workerId, string workerVersion)')
+    print('  OptionalCompactionInfoStruct find_next_compact(string workerId)')
+    print('  OptionalCompactionInfoStruct find_next_compact2(FindNextCompactRequest rqst)')
     print('  void update_compactor_state(CompactionInfoStruct cr, i64 txn_id)')
     print('   find_columns_with_stats(CompactionInfoStruct cr)')
     print('  void mark_cleaned(CompactionInfoStruct cr)')
@@ -227,6 +229,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  FireEventResponse fire_listener_event(FireEventRequest rqst)')
     print('  void flushCache()')
     print('  WriteNotificationLogResponse add_write_notification_log(WriteNotificationLogRequest rqst)')
+    print('  WriteNotificationLogBatchResponse add_write_notification_log_in_batch(WriteNotificationLogBatchRequest rqst)')
     print('  CmRecycleResponse cm_recycle(CmRecycleRequest request)')
     print('  GetFileMetadataByExprResult get_file_metadata_by_expr(GetFileMetadataByExprRequest req)')
     print('  GetFileMetadataResult get_file_metadata(GetFileMetadataRequest req)')
@@ -285,6 +288,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void add_package(AddPackageRequest request)')
     print('   get_all_packages(ListPackageRequest request)')
     print('  void drop_package(DropPackageRequest request)')
+    print('   get_all_write_event_info(GetAllWriteEventInfoRequest request)')
     print('  string getName()')
     print('  string getVersion()')
     print('  fb_status getStatus()')
@@ -616,6 +620,12 @@ elif cmd == 'add_check_constraint':
         print('add_check_constraint requires 1 args')
         sys.exit(1)
     pp.pprint(client.add_check_constraint(eval(args[0]),))
+
+elif cmd == 'translate_table_dryrun':
+    if len(args) != 1:
+        print('translate_table_dryrun requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.translate_table_dryrun(eval(args[0]),))
 
 elif cmd == 'drop_table':
     if len(args) != 3:
@@ -1512,10 +1522,16 @@ elif cmd == 'add_dynamic_partitions':
     pp.pprint(client.add_dynamic_partitions(eval(args[0]),))
 
 elif cmd == 'find_next_compact':
-    if len(args) != 2:
-        print('find_next_compact requires 2 args')
+    if len(args) != 1:
+        print('find_next_compact requires 1 args')
         sys.exit(1)
-    pp.pprint(client.find_next_compact(args[0], args[1],))
+    pp.pprint(client.find_next_compact(args[0],))
+
+elif cmd == 'find_next_compact2':
+    if len(args) != 1:
+        print('find_next_compact2 requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.find_next_compact2(eval(args[0]),))
 
 elif cmd == 'update_compactor_state':
     if len(args) != 2:
@@ -1594,6 +1610,12 @@ elif cmd == 'add_write_notification_log':
         print('add_write_notification_log requires 1 args')
         sys.exit(1)
     pp.pprint(client.add_write_notification_log(eval(args[0]),))
+
+elif cmd == 'add_write_notification_log_in_batch':
+    if len(args) != 1:
+        print('add_write_notification_log_in_batch requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.add_write_notification_log_in_batch(eval(args[0]),))
 
 elif cmd == 'cm_recycle':
     if len(args) != 1:
@@ -1942,6 +1964,12 @@ elif cmd == 'drop_package':
         print('drop_package requires 1 args')
         sys.exit(1)
     pp.pprint(client.drop_package(eval(args[0]),))
+
+elif cmd == 'get_all_write_event_info':
+    if len(args) != 1:
+        print('get_all_write_event_info requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_all_write_event_info(eval(args[0]),))
 
 elif cmd == 'getName':
     if len(args) != 0:

@@ -313,6 +313,15 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function add_check_constraint(\metastore\AddCheckConstraintRequest $req);
     /**
+     * @param \metastore\Table $tbl
+     * @return \metastore\Table
+     * @throws \metastore\AlreadyExistsException
+     * @throws \metastore\InvalidObjectException
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function translate_table_dryrun(\metastore\Table $tbl);
+    /**
      * @param string $dbname
      * @param string $name
      * @param bool $deleteData
@@ -1453,11 +1462,16 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
     public function add_dynamic_partitions(\metastore\AddDynamicPartitions $rqst);
     /**
      * @param string $workerId
-     * @param string $workerVersion
      * @return \metastore\OptionalCompactionInfoStruct
      * @throws \metastore\MetaException
      */
-    public function find_next_compact($workerId, $workerVersion);
+    public function find_next_compact($workerId);
+    /**
+     * @param \metastore\FindNextCompactRequest $rqst
+     * @return \metastore\OptionalCompactionInfoStruct
+     * @throws \metastore\MetaException
+     */
+    public function find_next_compact2(\metastore\FindNextCompactRequest $rqst);
     /**
      * @param \metastore\CompactionInfoStruct $cr
      * @param int $txn_id
@@ -1520,6 +1534,11 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @return \metastore\WriteNotificationLogResponse
      */
     public function add_write_notification_log(\metastore\WriteNotificationLogRequest $rqst);
+    /**
+     * @param \metastore\WriteNotificationLogBatchRequest $rqst
+     * @return \metastore\WriteNotificationLogBatchResponse
+     */
+    public function add_write_notification_log_in_batch(\metastore\WriteNotificationLogBatchRequest $rqst);
     /**
      * @param \metastore\CmRecycleRequest $request
      * @return \metastore\CmRecycleResponse
@@ -1904,4 +1923,10 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\MetaException
      */
     public function drop_package(\metastore\DropPackageRequest $request);
+    /**
+     * @param \metastore\GetAllWriteEventInfoRequest $request
+     * @return \metastore\WriteEventInfo[]
+     * @throws \metastore\MetaException
+     */
+    public function get_all_write_event_info(\metastore\GetAllWriteEventInfoRequest $request);
 }

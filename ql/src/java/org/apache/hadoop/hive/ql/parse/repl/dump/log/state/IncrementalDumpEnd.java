@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.ql.parse.repl.dump.log.state;
 
 import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class IncrementalDumpEnd extends ReplState {
   @JsonProperty

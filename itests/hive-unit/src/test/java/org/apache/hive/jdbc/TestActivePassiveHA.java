@@ -29,7 +29,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,17 +42,13 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.registry.impl.ZkRegistryBase;
 import org.apache.hive.http.security.PamAuthenticator;
-import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
-import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.server.HS2ActivePassiveHARegistry;
 import org.apache.hive.service.server.HS2ActivePassiveHARegistryClient;
 import org.apache.hive.service.server.HiveServer2Instance;
 import org.apache.hive.service.server.TestHS2HttpServerPam;
 import org.apache.hive.service.servlet.HS2Peers;
 import org.apache.http.Header;
-import org.apache.http.HttpException;
-import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -63,7 +58,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.StatusLine;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.util.B64Code;
 import org.eclipse.jetty.util.StringUtil;
@@ -72,6 +66,9 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.Ignore;
 
 @Ignore("HIVE-23548")

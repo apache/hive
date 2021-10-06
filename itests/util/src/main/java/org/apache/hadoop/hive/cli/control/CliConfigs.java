@@ -24,6 +24,7 @@ import java.net.URL;
 import org.apache.hadoop.hive.ql.QTestMiniClusters;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.apache.hadoop.hive.ql.parse.CoreParseNegative;
+import org.apache.hadoop.hive.ql.QTestExternalDB;
 
 public class CliConfigs {
 
@@ -225,12 +226,35 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "spark.only.query.files");
         excludesFrom(testConfigProps, "localSpark.only.query.files");
         excludesFrom(testConfigProps, "miniSparkOnYarn.only.query.files");
+        excludesFrom(testConfigProps, "externalDB.llap.query.files");
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
 
         setInitScript("q_test_init.sql");
         setCleanupScript("q_test_cleanup.sql");
+
+        setHiveConfDir("data/conf/llap");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
+  public static class MiniLlapExtDBCliConfig extends AbstractCliConfig {
+
+    public MiniLlapExtDBCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("ql/src/test/queries/clientpositive");
+
+        includesFrom(testConfigProps, "externalDB.llap.query.files");
+
+        setResultsDir("ql/src/test/results/clientpositive/llap");
+        setLogDir("itests/qtest/target/qfile-results/clientpositive");
+
+        addExternalDB(QTestExternalDB.createDefaultExtDB("mysql"));
 
         setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.LLAP_LOCAL);
@@ -763,11 +787,13 @@ public class CliConfigs {
       super(CoreCliDriver.class);
       try {
         setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
+        excludesFrom(testConfigProps, "iceberg.llap.only.query.files");
+
         setResultsDir("iceberg/iceberg-handler/src/test/results/positive");
         setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
         setInitScript("q_test_init_tez.sql");
         setCleanupScript("q_test_cleanup_tez.sql");
-        setHiveConfDir("data/conf/iceberg");
+        setHiveConfDir("data/conf/iceberg/tez");
         setClusterType(MiniClusterType.TEZ);
       } catch (Exception e) {
         throw new RuntimeException("can't contruct cliconfig", e);
@@ -785,10 +811,32 @@ public class CliConfigs {
         setLogDir("itests/qtest/target/qfile-results/iceberg-handler/negative");
         setInitScript("q_test_init_tez.sql");
         setCleanupScript("q_test_cleanup_tez.sql");
-        setHiveConfDir("data/conf/iceberg");
+        setHiveConfDir("data/conf/iceberg/tez");
         setClusterType(MiniClusterType.TEZ);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
+  public static class IcebergLlapLocalCliConfig extends AbstractCliConfig {
+
+    public IcebergLlapLocalCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
+        includesFrom(testConfigProps, "iceberg.llap.query.files");
+
+        setResultsDir("iceberg/iceberg-handler/src/test/results/positive/llap");
+        setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
+
+        setInitScript("q_test_init_tez.sql");
+        setCleanupScript("q_test_cleanup_tez.sql");
+
+        setHiveConfDir("data/conf/iceberg/llap");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
+      } catch (Exception e) {
+        throw new RuntimeException("can't contruct cliconfig", e);
       }
     }
   }

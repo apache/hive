@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec.TransformType;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,10 +31,24 @@ public class PartitionTransform {
 
   private static final Map<Integer, TransformType> TRANSFORMS = Stream
       .of(new Object[][] { { HiveParser.TOK_IDENTITY, TransformType.IDENTITY },
-          { HiveParser.TOK_YEAR, TransformType.YEAR }, { HiveParser.TOK_MONTH, TransformType.MONTH },
-          { HiveParser.TOK_DAY, TransformType.DAY }, { HiveParser.TOK_HOUR, TransformType.HOUR },
-          { HiveParser.TOK_TRUNCATE, TransformType.TRUNCATE }, { HiveParser.TOK_BUCKET, TransformType.BUCKET } })
+          { HiveParser.TOK_YEAR, TransformType.YEAR },
+          { HiveParser.TOK_MONTH, TransformType.MONTH },
+          { HiveParser.TOK_DAY, TransformType.DAY },
+          { HiveParser.TOK_HOUR, TransformType.HOUR },
+          { HiveParser.TOK_TRUNCATE, TransformType.TRUNCATE },
+          { HiveParser.TOK_BUCKET, TransformType.BUCKET } })
       .collect(Collectors.toMap(e -> (Integer) e[0], e -> (TransformType) e[1]));
+
+  /**
+   * Get the identity transform specification based on the partition columns
+   * @param fields The partition column fields
+   * @return list of partition transforms
+   */
+  public static List<PartitionTransformSpec> getPartitionTransformSpec(List<FieldSchema> fields) {
+    return fields.stream()
+               .map(field -> new PartitionTransformSpec(field.getName(), TransformType.IDENTITY, Optional.empty()))
+               .collect(Collectors.toList());
+  }
 
   /**
    * Parse the partition transform specifications from the AST Tree node.
@@ -51,14 +68,14 @@ public class PartitionTransform {
           case HiveParser.TOK_MONTH:
           case HiveParser.TOK_DAY:
           case HiveParser.TOK_HOUR:
-            spec.name = grandChild.getChild(0).getText();
-            spec.transformType = TRANSFORMS.get(grandChild.getToken().getType());
+            spec.setColumnName(grandChild.getChild(0).getText());
+            spec.setTransformType(TRANSFORMS.get(grandChild.getToken().getType()));
             break;
           case HiveParser.TOK_TRUNCATE:
           case HiveParser.TOK_BUCKET:
-            spec.transformType = TRANSFORMS.get(grandChild.getToken().getType());
-            spec.transformParam = Optional.ofNullable(Integer.valueOf(grandChild.getChild(0).getText()));
-            spec.name = grandChild.getChild(1).getText();
+            spec.setTransformType(TRANSFORMS.get(grandChild.getToken().getType()));
+            spec.setTransformParam(Optional.ofNullable(Integer.valueOf(grandChild.getChild(0).getText())));
+            spec.setColumnName(grandChild.getChild(1).getText());
             break;
         }
       }
@@ -68,13 +85,4 @@ public class PartitionTransform {
     return partSpecList;
   }
 
-  public enum TransformType {
-    IDENTITY, YEAR, MONTH, DAY, HOUR, TRUNCATE, BUCKET
-  }
-
-  public static class PartitionTransformSpec {
-    public String name;
-    public TransformType transformType;
-    public Optional<Integer> transformParam;
-  }
 }

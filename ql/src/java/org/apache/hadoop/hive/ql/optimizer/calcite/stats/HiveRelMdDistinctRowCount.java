@@ -17,15 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.Join;
+import org.apache.calcite.rel.convert.Converter;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdDistinctRowCount;
 import org.apache.calcite.rel.metadata.RelMdUtil;
@@ -38,14 +33,15 @@ import org.apache.calcite.util.BuiltInMethod;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.NumberUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCost;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.JdbcHiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 
-import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
 
@@ -91,6 +87,22 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
       RexNode predicate) {
     return getJoinDistinctRowCount(mq, rel, rel.getJoinType(),
            groupKey, predicate, true);
+  }
+
+  /**
+   * Currently Calcite doesn't handle return row counts for Converters and JdbcHiveTableScan. These
+   * method checks for these objects and calls appropriate methods.
+   * https://issues.apache.org/jira/browse/HIVE-25364
+   *
+   */
+  public Double getDistinctRowCount(JdbcHiveTableScan rel, RelMetadataQuery mq, ImmutableBitSet groupKey,
+                                    RexNode predicate) {
+    return getDistinctRowCount(rel.getHiveTableScan(), mq, groupKey, predicate);
+  }
+
+  public Double getDistinctRowCount(Converter r, RelMetadataQuery mq, ImmutableBitSet groupKey,
+                                    RexNode predicate) {
+    return mq.getDistinctRowCount(r.getInput(0), groupKey, predicate);
   }
 
   /**

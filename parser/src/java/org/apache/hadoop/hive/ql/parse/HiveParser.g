@@ -213,6 +213,7 @@ TOK_ALTERTABLE_DROPCONSTRAINT;
 TOK_ALTERTABLE_ADDCONSTRAINT;
 TOK_ALTERTABLE_UPDATECOLUMNS;
 TOK_ALTERTABLE_OWNER;
+TOK_ALTERTABLE_SETPARTSPEC;
 TOK_MSCK;
 TOK_SHOWDATABASES;
 TOK_SHOWDATACONNECTORS;
@@ -495,6 +496,8 @@ TOK_DAY;
 TOK_HOUR;
 TOK_TRUNCATE;
 TOK_BUCKET;
+TOK_AS_OF_TIME;
+TOK_AS_OF_VERSION;
 }
 
 
@@ -1148,16 +1151,22 @@ orReplace
 createDatabaseStatement
 @init { pushMsg("create database statement", state); }
 @after { popMsg(state); }
-    : KW_CREATE (remote=KW_REMOTE)? (KW_DATABASE|KW_SCHEMA)
+    : KW_CREATE (KW_DATABASE|KW_SCHEMA)
         ifNotExists?
         name=identifier
         databaseComment?
         dbLocation?
         dbManagedLocation?
-        dbConnectorName?
         (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
-    -> {$remote != null}? ^(TOK_CREATEDATABASE $name ifNotExists? databaseComment? $dbprops? dbConnectorName?)
-    ->                    ^(TOK_CREATEDATABASE $name ifNotExists? dbLocation? dbManagedLocation? databaseComment? $dbprops?)
+    -> ^(TOK_CREATEDATABASE $name ifNotExists? dbLocation? dbManagedLocation? databaseComment? $dbprops?)
+
+    | KW_CREATE KW_REMOTE (KW_DATABASE|KW_SCHEMA)
+        ifNotExists?
+        name=identifier
+        databaseComment?
+        dbConnectorName
+        (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
+    -> ^(TOK_CREATEDATABASE $name ifNotExists? databaseComment? $dbprops? dbConnectorName)
     ;
 
 dbLocation
@@ -1827,8 +1836,8 @@ createTablePartitionSpec
     : KW_PARTITIONED KW_BY LPAREN (opt1 = createTablePartitionColumnTypeSpec | opt2 = createTablePartitionColumnSpec) RPAREN
     -> {$opt1.tree != null}? $opt1
     -> $opt2
-    | KW_PARTITIONED KW_BY KW_SPEC LPAREN (spec = createTablePartitionTransformSpec) RPAREN
-    -> $spec
+    | KW_PARTITIONED KW_BY KW_SPEC LPAREN (spec = partitionTransformSpec) RPAREN
+    -> ^(TOK_TABLEPARTCOLSBYSPEC $spec)
     ;
 
 createTablePartitionColumnTypeSpec
@@ -1845,11 +1854,11 @@ createTablePartitionColumnSpec
     -> ^(TOK_TABLEPARTCOLNAMES columnName+)
     ;
 
-createTablePartitionTransformSpec
+partitionTransformSpec
 @init { pushMsg("create table partition by specification", state); }
 @after { popMsg(state); }
     : columnNameTransformConstraint (COMMA columnNameTransformConstraint)*
-    -> ^(TOK_TABLEPARTCOLSBYSPEC columnNameTransformConstraint+)
+    -> columnNameTransformConstraint+
     ;
 
 columnNameTransformConstraint

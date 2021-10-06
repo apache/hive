@@ -29,7 +29,9 @@ import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ResultFileFormat;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -282,11 +284,7 @@ public abstract class TaskCompiler {
           setLoadFileLocation(pCtx, lfd);
           oneLoadFileForCtas = false;
         }
-        // for direct insert CTAS, we don't need this MoveTask since the data will be inserted into its final location
-        if (!directInsertCtas) {
-          mvTask.add(TaskFactory
-              .get(new MoveWork(null, null, null, lfd, false)));
-        }
+        mvTask.add(TaskFactory.get(new MoveWork(null, null, null, lfd, false)));
       }
     }
 
@@ -476,6 +474,25 @@ public abstract class TaskCompiler {
       loc = cmv.getLocation();
     }
     Path location = (loc == null) ? getDefaultCtasLocation(pCtx) : new Path(loc);
+    if (pCtx.getQueryProperties().isCTAS()) {
+      CreateTableDesc ctd = pCtx.getCreateTable();
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL)) {
+        ctd.getTblProps().put(hive_metastoreConstants.CTAS_LEGACY_CONFIG, "true"); // create as external table
+      }
+      try {
+        Table table = ctd.toTable(conf);
+        table = db.getTranslateTableDryrun(table.getTTable());
+        org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
+        if (tTable.getSd() != null && tTable.getSd().getLocation() != null) {
+          location = new Path(tTable.getSd().getLocation());
+        }
+        ctd.getTblProps().remove(hive_metastoreConstants.CTAS_LEGACY_CONFIG);
+        ctd.fromTable(tTable);
+      } catch (HiveException ex) {
+        throw new SemanticException(ex);
+      }
+      pCtx.setCreateTable(ctd);
+    }
     if (txnId != null) {
       dataSink.setDirName(location);
       location = new Path(location, AcidUtils.deltaSubdir(txnId, txnId, stmtId));

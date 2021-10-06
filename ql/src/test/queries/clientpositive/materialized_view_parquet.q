@@ -189,8 +189,10 @@ alter materialized view mv1_parquet_n2 rebuild;
 alter materialized view mv1_parquet_n2 rebuild;
 
 explain cbo
-select name from emps_parquet_n3 group by name;
+select name, sum(empid) from emps_parquet_n3 group by name;
 
-select name from emps_parquet_n3 group by name;
+select name, sum(empid) from emps_parquet_n3 group by name;
 
 drop materialized view mv1_parquet_n2;
+
+select name, sum(empid) from emps_parquet_n3 group by name;

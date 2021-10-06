@@ -220,6 +220,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("add_check_constraint\n");
   }
 
+  void translate_table_dryrun(Table& _return, const Table& tbl) {
+    // Your implementation goes here
+    printf("translate_table_dryrun\n");
+  }
+
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) {
     // Your implementation goes here
     printf("drop_table\n");
@@ -965,9 +970,14 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("add_dynamic_partitions\n");
   }
 
-  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId, const std::string& workerVersion) {
+  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId) {
     // Your implementation goes here
     printf("find_next_compact\n");
+  }
+
+  void find_next_compact2(OptionalCompactionInfoStruct& _return, const FindNextCompactRequest& rqst) {
+    // Your implementation goes here
+    printf("find_next_compact2\n");
   }
 
   void update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id) {
@@ -1033,6 +1043,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void add_write_notification_log(WriteNotificationLogResponse& _return, const WriteNotificationLogRequest& rqst) {
     // Your implementation goes here
     printf("add_write_notification_log\n");
+  }
+
+  void add_write_notification_log_in_batch(WriteNotificationLogBatchResponse& _return, const WriteNotificationLogBatchRequest& rqst) {
+    // Your implementation goes here
+    printf("add_write_notification_log_in_batch\n");
   }
 
   void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request) {
@@ -1323,6 +1338,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void drop_package(const DropPackageRequest& request) {
     // Your implementation goes here
     printf("drop_package\n");
+  }
+
+  void get_all_write_event_info(std::vector<WriteEventInfo> & _return, const GetAllWriteEventInfoRequest& request) {
+    // Your implementation goes here
+    printf("get_all_write_event_info\n");
   }
 
 };

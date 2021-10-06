@@ -21,6 +21,7 @@ import com.codahale.metrics.Counter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
@@ -96,10 +97,19 @@ public class HMSMetricsListener extends MetaStoreEventListener {
 
   @Override
   public void onAllocWriteId(AllocWriteIdEvent allocWriteIdEvent, Connection dbConn, SQLGenerator sqlGenerator) throws MetaException {
-    Table table = getTable(allocWriteIdEvent);
-
-    if (MetaStoreUtils.isNoAutoCompactSet(table.getParameters())) {
-      Metrics.getOrCreateGauge(MetricsConstants.WRITES_TO_DISABLED_COMPACTION_TABLE).incrementAndGet();
+    if (MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON)) {
+      Table table = getTable(allocWriteIdEvent);
+      // In the case of CTAS, the table is created after write ids are allocated, so we'll skip metrics collection.
+      if (table != null && MetaStoreUtils.isNoAutoCompactSet(table.getParameters())) {
+        int noAutoCompactSet =
+            Metrics.getOrCreateGauge(MetricsConstants.WRITES_TO_DISABLED_COMPACTION_TABLE).incrementAndGet();
+        if (noAutoCompactSet >=
+            MetastoreConf.getIntVar(getConf(),
+                MetastoreConf.ConfVars.COMPACTOR_NUMBER_OF_DISABLED_COMPACTION_TABLES_THRESHOLD)) {
+          LOGGER.warn("There has been a write to table " + table.getDbName() + "." + table.getTableName() +
+              " where auto-compaction is disabled (tblproperties (\"no_auto_compact\"=\"true\")).");
+        }
+      }
     }
   }
 

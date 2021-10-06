@@ -1,3 +1,5 @@
+-- Test Incremental rebuild of materialized view with aggregate and count(*) when source tables have delete operations since last rebuild.
+
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.materializedview.rewriting.sql=false;

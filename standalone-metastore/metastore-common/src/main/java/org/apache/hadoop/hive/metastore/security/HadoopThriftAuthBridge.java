@@ -692,6 +692,7 @@ public abstract class HadoopThriftAuthBridge {
     static class TUGIAssumingTransportFactory extends TTransportFactory {
       private final UserGroupInformation ugi;
       private final TTransportFactory wrapped;
+      private Throwable cause = null;
 
       public TUGIAssumingTransportFactory(TTransportFactory wrapped, UserGroupInformation ugi) {
         assert wrapped != null;
@@ -700,20 +701,34 @@ public abstract class HadoopThriftAuthBridge {
         this.ugi = ugi;
       }
 
-
       @Override
-      public TTransport getTransport(final TTransport trans) {
-        return ugi.doAs(new PrivilegedAction<TTransport>() {
+      public TTransport getTransport(final TTransport trans) throws TTransportException {
+        // We use the null return result to work around no Exception throws clause for UserGroupInformation doAs method.
+        TTransport result = ugi.doAs(new PrivilegedAction<TTransport>() {
           @Override
           public TTransport run() {
             try {
               return wrapped.getTransport(trans);
             } catch (TTransportException e) {
-              e.printStackTrace();
+              cause = e;
+              return null;
+            } catch (RuntimeException re) {
+              /*
+               * One cause can be:
+               *    org.apache.thrift.transport.TSaslTransportException: No data or no sasl data in the stream
+               * Others are possible.
+               *
+               * Get rid of RuntimeException.
+               */
+              cause = re.getCause();
+              return null;
             }
-            return null;
           }
         });
+        if (result == null) {
+          throw new TTransportException(cause);
+        }
+        return result;
       }
     }
   }

@@ -21,12 +21,15 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
@@ -34,12 +37,15 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
+import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -47,6 +53,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -54,6 +62,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
+import org.apache.hadoop.mapred.JobContextImpl;
+import org.apache.hadoop.mapred.JobID;
+import org.apache.hadoop.mapred.JobStatus;
+import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
@@ -99,6 +111,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public HiveMetaHook getMetaHook() {
+    // Make sure to always return a new instance here, as HiveIcebergMetaHook might hold state relevant for the
+    // operation.
     return new HiveIcebergMetaHook(conf);
   }
 
@@ -150,6 +164,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
+    setCommonJobConf(jobConf);
     if (tableDesc != null && tableDesc.getProperties() != null &&
         tableDesc.getProperties().get(WRITE_KEY) != null) {
       String tableName = tableDesc.getTableName();
@@ -261,12 +276,96 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
+  public List<PartitionTransformSpec> getPartitionTransformSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    List<PartitionTransformSpec> result = new ArrayList<>();
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+    Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+    return table.spec().fields().stream().map(f -> {
+      PartitionTransformSpec spec = new PartitionTransformSpec();
+      spec.setColumnName(table.schema().findColumnName(f.sourceId()));
+      // right now the only way to fetch the transform type and its params is through the toString() call
+      String transformName = f.transform().toString().toUpperCase();
+      // if the transform name contains '[' it means it has some config params
+      if (transformName.contains("[")) {
+        spec.setTransformType(PartitionTransformSpec.TransformType
+            .valueOf(transformName.substring(0, transformName.indexOf("["))));
+        spec.setTransformParam(Optional.of(Integer
+            .valueOf(transformName.substring(transformName.indexOf("[") + 1, transformName.indexOf("]")))));
+      } else {
+        spec.setTransformType(PartitionTransformSpec.TransformType.valueOf(transformName));
+        spec.setTransformParam(Optional.empty());
+      }
+
+      return spec;
+    }).collect(Collectors.toList());
+  }
+
+  @Override
   public String getFileFormatPropertyKey() {
     return TableProperties.DEFAULT_FILE_FORMAT;
   }
 
+  @Override
+  public boolean commitInMoveTask() {
+    return true;
+  }
+
+  @Override
+  public void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
+    String tableName = commitProperties.getProperty(Catalogs.NAME);
+    Configuration configuration = SessionState.getSessionConf();
+    Optional<JobContext> jobContext = generateJobContext(configuration, tableName, overwrite);
+    if (jobContext.isPresent()) {
+      OutputCommitter committer = new HiveIcebergOutputCommitter();
+      try {
+        committer.commitJob(jobContext.get());
+      } catch (Throwable e) {
+        // Aborting the job if the commit has failed
+        LOG.error("Error while trying to commit job: {}, starting rollback changes for table: {}",
+            jobContext.get().getJobID(), tableName, e);
+        try {
+          committer.abortJob(jobContext.get(), JobStatus.State.FAILED);
+        } catch (IOException ioe) {
+          LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", ioe);
+          // no throwing here because the original exception should be propagated
+        }
+        throw new HiveException(
+            "Error committing job: " + jobContext.get().getJobID() + " for table: " + tableName, e);
+      }
+    }
+  }
+
+  @Override
+  public boolean isAllowedAlterOperation(AlterTableType opType) {
+    return HiveIcebergMetaHook.SUPPORTED_ALTER_OPS.contains(opType);
+  }
+
+  @Override
+  public boolean supportsTruncateOnNonNativeTables() {
+    return true;
+  }
+
+  @Override
+  public boolean isTimeTravelAllowed() {
+    return true;
+  }
+
+  @Override
+  public boolean isMetadataTableSupported() {
+    return true;
+  }
+
+  @Override
+  public boolean isValidMetadataTable(String metaTableName) {
+    return IcebergMetadataTables.isValidMetaTable(metaTableName);
+  }
+
+  private void setCommonJobConf(JobConf jobConf) {
+    jobConf.set("tez.mrreader.config.update.properties", "hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids");
+  }
+
   public boolean addDynamicSplitPruningEdge(org.apache.hadoop.hive.ql.metadata.Table table,
-      ExprNodeDesc syntheticFilterPredicate) {
+                                            ExprNodeDesc syntheticFilterPredicate) {
     try {
       Collection<String> partitionColumns = ((HiveIcebergSerDe) table.getDeserializer()).partitionColumns();
       if (partitionColumns.size() > 0) {
@@ -455,5 +554,32 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
 
     return column;
+  }
+
+  /**
+   * Generates a JobContext for the OutputCommitter for the specific table.
+   * @param configuration The configuration used for as a base of the JobConf
+   * @param tableName The name of the table we are planning to commit
+   * @param overwrite If we have to overwrite the existing table or just add the new data
+   * @return The generated JobContext
+   */
+  private Optional<JobContext> generateJobContext(Configuration configuration, String tableName, boolean overwrite) {
+    JobConf jobConf = new JobConf(configuration);
+    Optional<SessionStateUtil.CommitInfo> commitInfo = SessionStateUtil.getCommitInfo(jobConf, tableName);
+    if (commitInfo.isPresent()) {
+      JobID jobID = JobID.forName(commitInfo.get().getJobIdStr());
+      commitInfo.get().getProps().forEach(jobConf::set);
+      jobConf.setBoolean(InputFormatConfig.IS_OVERWRITE, overwrite);
+
+      // we should only commit this current table because
+      // for multi-table inserts, this hook method will be called sequentially for each target table
+      jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
+
+      return Optional.of(new JobContextImpl(jobConf, jobID, null));
+    } else {
+      // most likely empty write scenario
+      LOG.debug("Unable to find commit information in query state for table: {}", tableName);
+      return Optional.empty();
+    }
   }
 }

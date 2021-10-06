@@ -87,6 +87,7 @@ import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLI
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TestReplicationScenariosExternalTables extends BaseReplicationAcrossInstances {
@@ -357,6 +358,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         "/" + testName.getMethodName() + "/" + primaryDbName + "/" + "a/");
     DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
     fs.mkdirs(externalTableLocation, new FsPermission("777"));
+    fs.setOwner(externalTableLocation,"user1","group1");
 
     Path externalFileLoc = new Path(externalTableLocation, "file1.txt");
     try (FSDataOutputStream outputStream = fs.create(externalFileLoc)) {
@@ -382,11 +384,9 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     fs.modifyAclEntries(externalTableLocation, aclEntries);
     fs.modifyAclEntries(externalFileLoc, aclEntries);
 
-    // Run bootstrap with distcp options to preserve ACL.
-    List<String> withClause = Arrays
-        .asList("'distcp.options.update'=''", "'distcp.options.puga'=''",
-            "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname
-                + "'='true'");
+    // Run bootstrap without distcp options to preserve options.
+    List<String> withClause = Arrays.asList("'distcp.options.update'=''",
+        "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
 
     primary.run("use " + primaryDbName).run(
         "create external table a (i int, j int) "
@@ -400,12 +400,40 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .verifyResults(new String[] {"1", "13"}).run("select j from a")
         .verifyResults(new String[] {"2", "21"});
 
-    // Verify the ACL's of the destination table directory and data file are
-    // same as that of source.
+    // Verify the attributes of the destination table directory and data file are
+    // not same as that of source.
     Hive hiveForReplica = Hive.get(replica.hiveConf);
     org.apache.hadoop.hive.ql.metadata.Table replicaTable =
         hiveForReplica.getTable(replicatedDbName + ".a");
     Path dataLocation = replicaTable.getDataLocation();
+
+    assertNotEquals("ACL entries are same for the data file.",
+        fs.getAclStatus(externalFileLoc).getEntries().size(),
+        fs.getAclStatus(new Path(dataLocation, "file1.txt")).getEntries()
+            .size());
+    assertNotEquals("ACL entries are same for the table directory.",
+        fs.getAclStatus(externalTableLocation).getEntries().size(),
+        fs.getAclStatus(dataLocation).getEntries().size());
+
+    assertNotEquals(fs.getFileStatus(externalTableLocation).getOwner(), fs.getFileStatus(dataLocation).getOwner());
+    assertNotEquals(fs.getFileStatus(externalTableLocation).getGroup(), fs.getFileStatus(dataLocation).getGroup());
+
+    // Dump & load with preserve attributes set.
+    withClause = Arrays
+        .asList("'distcp.options.update'=''", "'distcp.options.pugpa'=''",
+            "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname
+                + "'='true'");
+
+    primary.run("use " + primaryDbName).dump(primaryDbName, withClause);
+
+    // Verify load is success and has the appropriate data.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName).run("select i From a")
+        .verifyResults(new String[] {"1", "13"}).run("select j from a")
+        .verifyResults(new String[] {"2", "21"});
+
+    // Verify the ACL's of the destination table directory and data file are
+    // same as that of source.
 
     assertEquals("ACL entries are not same for the data file.",
         fs.getAclStatus(externalFileLoc).getEntries().size(),
@@ -414,6 +442,9 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     assertEquals("ACL entries are not same for the table directory.",
         fs.getAclStatus(externalTableLocation).getEntries().size(),
         fs.getAclStatus(dataLocation).getEntries().size());
+
+    assertEquals(fs.getFileStatus(externalTableLocation).getOwner(), fs.getFileStatus(dataLocation).getOwner());
+    assertEquals(fs.getFileStatus(externalTableLocation).getGroup(), fs.getFileStatus(dataLocation).getGroup());
   }
 
   /**

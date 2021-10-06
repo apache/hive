@@ -37,6 +37,7 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.iceberg.CombinedScanTask;
 import org.apache.iceberg.DataFile;
+import org.apache.iceberg.DataTask;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionSpec;
@@ -47,6 +48,7 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.TableScan;
 import org.apache.iceberg.avro.Avro;
+import org.apache.iceberg.common.DynMethods;
 import org.apache.iceberg.data.DeleteFilter;
 import org.apache.iceberg.data.GenericDeleteFilter;
 import org.apache.iceberg.data.IdentityPartitionConverters;
@@ -59,6 +61,7 @@ import org.apache.iceberg.encryption.EncryptionManager;
 import org.apache.iceberg.expressions.Evaluator;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.hive.MetastoreUtil;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.io.FileIO;
@@ -166,6 +169,24 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
   }
 
   private static final class IcebergRecordReader<T> extends RecordReader<Void, T> {
+
+    private static final String HIVE_VECTORIZED_READER_CLASS = "org.apache.iceberg.mr.hive.vector.HiveVectorizedReader";
+    private static final DynMethods.StaticMethod HIVE_VECTORIZED_READER_BUILDER;
+
+    static {
+      if (MetastoreUtil.hive3PresentOnClasspath()) {
+        HIVE_VECTORIZED_READER_BUILDER = DynMethods.builder("reader")
+            .impl(HIVE_VECTORIZED_READER_CLASS,
+                InputFile.class,
+                FileScanTask.class,
+                Map.class,
+                TaskAttemptContext.class)
+            .buildStatic();
+      } else {
+        HIVE_VECTORIZED_READER_BUILDER = null;
+      }
+    }
+
     private TaskAttemptContext context;
     private Schema tableSchema;
     private Schema expectedSchema;
@@ -173,7 +194,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     private boolean caseSensitive;
     private InputFormatConfig.InMemoryDataModel inMemoryDataModel;
     private Iterator<FileScanTask> tasks;
-    private T currentRow;
+    private T current;
     private CloseableIterator<T> currentIterator;
     private FileIO io;
     private EncryptionManager encryptionManager;
@@ -200,7 +221,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     public boolean nextKeyValue() throws IOException {
       while (true) {
         if (currentIterator.hasNext()) {
-          currentRow = currentIterator.next();
+          current = currentIterator.next();
           return true;
         } else if (tasks.hasNext()) {
           currentIterator.close();
@@ -219,7 +240,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
     @Override
     public T getCurrentValue() {
-      return currentRow;
+      return current;
     }
 
     @Override
@@ -239,6 +260,15 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     }
 
     private CloseableIterable<T> openTask(FileScanTask currentTask, Schema readSchema) {
+      if (currentTask.isDataTask()) {
+        // When querying metadata tables, the currentTask is a DataTask and the data has to
+        // be fetched from the task instead of reading it from files.
+        IcebergInternalRecordWrapper wrapper =
+            new IcebergInternalRecordWrapper(tableSchema.asStruct(), readSchema.asStruct());
+        return (CloseableIterable) CloseableIterable.transform(((DataTask) currentTask).rows(),
+            row -> wrapper.wrap((StructLike) row));
+      }
+
       DataFile file = currentTask.file();
       InputFile inputFile = encryptionManager.decrypt(EncryptedFiles.encryptedInput(
           io.newInputFile(file.path().toString()),
@@ -267,9 +297,10 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     private CloseableIterable<T> open(FileScanTask currentTask, Schema readSchema) {
       switch (inMemoryDataModel) {
         case PIG:
-        case HIVE:
           // TODO: Support Pig and Hive object models for IcebergInputFormat
           throw new UnsupportedOperationException("Pig and Hive object models are not supported.");
+        case HIVE:
+          return openTask(currentTask, readSchema);
         case GENERIC:
           DeleteFilter deletes = new GenericDeleteFilter(io, currentTask, tableSchema, readSchema);
           Schema requiredSchema = deletes.requiredSchema();
@@ -344,24 +375,33 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       Map<Integer, ?> idToConstant = constantsMap(task, IdentityPartitionConverters::convertConstant);
       Schema readSchemaWithoutConstantAndMetadataFields = TypeUtil.selectNot(readSchema,
           Sets.union(idToConstant.keySet(), MetadataColumns.metadataFieldIds()));
-      ORC.ReadBuilder orcReadBuilder = ORC.read(inputFile)
-          .project(readSchemaWithoutConstantAndMetadataFields)
-          .filter(task.residual())
-          .caseSensitive(caseSensitive)
-          .split(task.start(), task.length());
+
+      CloseableIterable<T> orcIterator = null;
       // ORC does not support reuse containers yet
       switch (inMemoryDataModel) {
         case PIG:
-        case HIVE:
           // TODO: implement value readers for Pig and Hive
           throw new UnsupportedOperationException("ORC support not yet supported for Pig and Hive");
+        case HIVE:
+          if (MetastoreUtil.hive3PresentOnClasspath()) {
+            orcIterator = HIVE_VECTORIZED_READER_BUILDER.invoke(inputFile, task, idToConstant, context);
+          } else {
+            throw new UnsupportedOperationException("Vectorized read is unsupported for Hive 2 integration.");
+          }
+          break;
         case GENERIC:
+          ORC.ReadBuilder orcReadBuilder = ORC.read(inputFile)
+              .project(readSchemaWithoutConstantAndMetadataFields)
+              .filter(task.residual())
+              .caseSensitive(caseSensitive)
+              .split(task.start(), task.length());
           orcReadBuilder.createReaderFunc(
               fileSchema -> GenericOrcReader.buildReader(
                   readSchema, fileSchema, idToConstant));
+          orcIterator = orcReadBuilder.build();
       }
 
-      return applyResidualFiltering(orcReadBuilder.build(), task.residual(), readSchema);
+      return applyResidualFiltering(orcIterator, task.residual(), readSchema);
     }
 
     private Map<Integer, ?> constantsMap(FileScanTask task, BiFunction<Type, Object, Object> converter) {
