@@ -27,17 +27,15 @@ import java.util.regex.Pattern;
 public class MySQLExternalDB extends AbstractExternalDB {
 
     public MySQLExternalDB() {
-        super("mysql");
-        setJdbcUrl(getContainerHostAddress());
-        setJdbcDriver();
     }
 
-    public void setJdbcUrl(String hostAddress) {
-        this.url = "jdbc:mysql://" + hostAddress + ":3306/" + dbName;
+    @Override
+    public String getJdbcUrl() {
+        return "jdbc:mysql://" + getContainerHostAddress() + ":3306/" + dbName;
     }
 
-    public void setJdbcDriver() {
-        this.driver = "org.mariadb.jdbc.Driver";
+    public String getJdbcDriver() {
+        return "org.mariadb.jdbc.Driver";
     }
 
     public String getDockerImageName() { return "mariadb:5.5"; }

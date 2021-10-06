@@ -17,35 +17,28 @@
  */
 package org.apache.hadoop.hive.ql.externalDB;
 
+import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sqlline.SqlLine;
 
-import org.apache.commons.io.output.NullOutputStream;
-
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileReader;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.IOException;
-import java.net.URI;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-
-import org.apache.commons.lang3.StringUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * abstractExternalDB is incharge of connect to and populate externaal database for qtest
+ * The class is in charge of connecting and populating dockerized databases for qtest.
  */
 public abstract class AbstractExternalDB {
     protected static final Logger LOG = LoggerFactory.getLogger("AbstractExternalDB");
@@ -54,9 +47,6 @@ public abstract class AbstractExternalDB {
     protected static final String password = "qtestpassword";
     protected static final String dbName = "qtestDB";
 
-    public String externalDBType = "mysql"; // default: mysql
-    protected String url = "jdbc:mysql://localhost:3306/" + dbName; // default: mysql
-    protected String driver = "org.mariadb.jdbc.Driver"; // default: mysql
     private static final int MAX_STARTUP_WAIT = 5 * 60 * 1000;
 
     public static class ProcessResults {
@@ -86,12 +76,8 @@ public abstract class AbstractExternalDB {
         return abstractExternalDB;
     }
 
-    public AbstractExternalDB(String externalDBType) {
-        this.externalDBType = externalDBType;
-    }
-
-    protected String getDockerContainerName() {
-        return String.format("qtestExternalDB-%s", externalDBType);
+    private final String getDockerContainerName() {
+        return String.format("qtestExternalDB-%s", getClass().getSimpleName());
     }
 
     private String[] buildRunCmd() {
@@ -152,7 +138,7 @@ public abstract class AbstractExternalDB {
     }
 
 
-    public void launchDockerContainer() throws Exception { //runDockerContainer
+    public void launchDockerContainer() throws Exception {
         runCmdAndPrintStreams(buildRmCmd(), 600);
         if (runCmdAndPrintStreams(buildRunCmd(), 600) != 0) {
             throw new RuntimeException("Unable to start docker container");
@@ -172,7 +158,7 @@ public abstract class AbstractExternalDB {
         }
     }
 
-    public void cleanupDockerContainer() { // stopAndRmDockerContainer
+    public void cleanupDockerContainer() {
         try {
             if (runCmdAndPrintStreams(buildRmCmd(), 600) != 0) {
                 LOG.info("Unable to remove docker container");
@@ -193,9 +179,9 @@ public abstract class AbstractExternalDB {
         }
     }
 
-    public abstract void setJdbcUrl(String hostAddress);
+    public abstract String getJdbcUrl();
 
-    public abstract void setJdbcDriver();
+    public abstract String getJdbcDriver();
 
     public abstract String getDockerImageName();
 
@@ -209,16 +195,14 @@ public abstract class AbstractExternalDB {
 
     public Connection getConnectionToExternalDB() throws SQLException, ClassNotFoundException {
         try {
-            LOG.info("external database connection URL:\t " + url);
-            LOG.info("JDBC Driver :\t " + driver);
+            LOG.info("external database connection URL:\t " + getJdbcUrl());
+            LOG.info("JDBC Driver :\t " + getJdbcDriver());
             LOG.info("external database connection User:\t " + userName);
             LOG.info("external database connection Password:\t " + password);
 
-            // load required JDBC driver
-            Class.forName(driver);
+            Class.forName(getJdbcDriver());
 
-            // Connect using the JDBC URL and user/password
-            Connection conn = DriverManager.getConnection(url, userName, password);
+            Connection conn = DriverManager.getConnection(getJdbcUrl(), userName, password);
             return conn;
         } catch (SQLException e) {
             LOG.error("Failed to connect to external databse", e);
@@ -238,9 +222,9 @@ public abstract class AbstractExternalDB {
         }
     }
 
-    protected String[] SQLLineCmdBuild(String sqlScriptFile) throws IOException {
-        return new String[] {"-u", url,
-                            "-d", driver,
+    protected String[] SQLLineCmdBuild(String sqlScriptFile) {
+        return new String[] {"-u", getJdbcUrl(),
+                            "-d", getJdbcDriver(),
                             "-n", userName,
                             "-p", password,
                             "--isolation=TRANSACTION_READ_COMMITTED",
@@ -273,7 +257,7 @@ public abstract class AbstractExternalDB {
 
     public void execute(String script) throws IOException, SQLException, ClassNotFoundException {
         testConnectionToExternalDB();
-        LOG.info("Starting external database initialization to " + this.externalDBType);
+        LOG.info("Starting {} initialization", getClass().getSimpleName());
 
         try {
             LOG.info("Initialization script " + script);
