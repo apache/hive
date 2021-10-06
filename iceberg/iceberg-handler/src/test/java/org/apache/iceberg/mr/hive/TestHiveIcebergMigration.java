@@ -27,8 +27,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -133,6 +135,39 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
     validateMigrationRollback(tableName);
   }
 
+  @Test
+  public void testMigrationFailsForUnsupportedSourceFileFormat() {
+    // enough to test once
+    Assume.assumeTrue(fileFormat == FileFormat.ORC && isVectorized &&
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    String tableName = "tbl_unsupported";
+    List<String> formats = ImmutableList.of("TEXTFILE", "JSONFILE", "RCFILE", "SEQUENCEFILE");
+    formats.forEach(format -> {
+      shell.executeStatement("CREATE EXTERNAL TABLE " +  tableName + " (a int) STORED AS " + format + " " +
+          testTables.locationForCreateTableSQL(TableIdentifier.of("default", tableName)));
+      shell.executeStatement("INSERT INTO " + tableName + " VALUES (1), (2), (3)");
+      AssertHelpers.assertThrows("Migrating a " + format + " table to Iceberg should have thrown an exception.",
+          IllegalArgumentException.class, "Cannot convert hive table to iceberg with input format: ",
+          () -> shell.executeStatement("ALTER TABLE " + tableName + " SET TBLPROPERTIES " +
+              "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')"));
+      shell.executeStatement("DROP TABLE " + tableName);
+    });
+  }
+
+  @Test
+  public void testMigrationFailsForManagedTable() {
+    // enough to test once
+    Assume.assumeTrue(fileFormat == FileFormat.ORC && isVectorized &&
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    String tableName = "tbl_unsupported";
+    shell.executeStatement("CREATE MANAGED TABLE " +  tableName + " (a int) STORED AS " + fileFormat + " " +
+        testTables.locationForCreateTableSQL(TableIdentifier.of("default", tableName)));
+    shell.executeStatement("INSERT INTO " + tableName + " VALUES (1), (2), (3)");
+    AssertHelpers.assertThrows("Migrating a managed table to Iceberg should have thrown an exception.",
+        IllegalArgumentException.class, "Converting non-external, temporary or transactional hive table to iceberg",
+        () -> shell.executeStatement("ALTER TABLE " + tableName + " SET TBLPROPERTIES " +
+            "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')"));
+  }
 
   private void validateMigration(String tableName) throws TException, InterruptedException {
     List<Object[]> originalResult = shell.executeStatement("SELECT * FROM " + tableName + " ORDER BY a");

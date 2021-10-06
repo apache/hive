@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.metric.BootstrapDumpMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.dump.metric.IncrementalDumpMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.load.FailoverMetaData;
@@ -51,6 +52,7 @@ import java.util.Arrays;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit Test class for In Memory Replication Metric Collection.
@@ -456,5 +458,31 @@ public class TestReplicationMetricCollector {
         repl.getTopKEvents().get("EVENT_ADD_DATABASE").valueList().toArray());
 
     assertEquals(4, repl.getDescMap().get("EVENT_ADD_DATABASE").getN());
+  }
+
+  @Test
+  public void testReplStatsTrackerLimit() {
+    ReplStatsTracker repl = new ReplStatsTracker(10);
+    // Check for k=10
+    generateStatsString(10, repl);
+    assertTrue("ReplStat string is " + repl.toString().length(), repl.toString().length() < 24000);
+    // Check for k=5
+    repl = new ReplStatsTracker(5);
+    generateStatsString(5, repl);
+    assertTrue("ReplStat string is " + repl.toString().length(), repl.toString().length() < 24000);
+    // Check for k=2 & check NaN values doesn't get messed up due to formatter
+    repl = new ReplStatsTracker(2);
+    generateStatsString(2, repl);
+    assertTrue(repl.toString().contains("NaN"));
+  }
+
+  private void generateStatsString(int k, ReplStatsTracker repl) {
+    DumpType[] types = DumpType.values();
+    for (DumpType type : types) {
+      for (int i = 0; i < k; i++) {
+        int eventId = 1000000 + i * type.ordinal();
+        repl.addEntry(type.toString(), Integer.toString(eventId), 10000 + i + ( i * 1234));
+      }
+    }
   }
 }

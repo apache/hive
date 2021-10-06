@@ -8,10 +8,6 @@
     <value>org.apache.tez.dag.app.dag.impl.DAGSchedulerNaturalOrderControlled</value>
   </property>
   <property>
-    <name>tez.mrreader.config.update.properties</name>
-    <value>hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids</value>
-  </property>
-  <property>
     <name>tez.am.resource.memory.mb</name>
     <value>256</value>
   </property>

@@ -119,7 +119,9 @@ public abstract class ReplicationMetricCollector {
       stage.setEndTime(System.currentTimeMillis());
       stage.setReplSnapshotsCount(replSnapshotCount);
       if (replStatsTracker != null && !(replStatsTracker instanceof NoOpReplStatsTracker)) {
-        stage.setReplStats(replStatsTracker.toString());
+        String replStatString = replStatsTracker.toString();
+        LOG.info("Replication Statistics are: {}", replStatString);
+        stage.setReplStats(replStatString);
       }
       progress.addStage(stage);
       replicationMetric.setProgress(progress);

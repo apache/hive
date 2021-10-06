@@ -19,26 +19,43 @@
 package org.apache.hadoop.hive.shims;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DFSClient;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
-
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
 
 
 public class TestHadoop23Shims {
 
+  private Path getMockedPath(boolean supportXAttr) throws IOException {
+    FileSystem fs = mock(FileSystem.class);
+    if (supportXAttr) {
+      when(fs.getXAttrs(any())).thenReturn(new HashMap<>());
+    } else {
+      when(fs.getXAttrs(any())).thenThrow(
+              new UnsupportedOperationException("XAttr not supported for file system."));
+    }
+    Path path = mock(Path.class);
+    when(path.getFileSystem(any())).thenReturn(fs);
+    return path;
+  }
+  
   @Test
-  public void testConstructDistCpParams() {
+  public void testConstructDistCpParams() throws Exception {
     Path copySrc = new Path("copySrc");
     Path copyDst = new Path("copyDst");
     Configuration conf = new Configuration();
@@ -47,7 +64,6 @@ public class TestHadoop23Shims {
     List<String> paramsDefault = shims.constructDistCpParams(Collections.singletonList(copySrc), copyDst, conf);
 
     assertEquals(5, paramsDefault.size());
-    assertTrue("Distcp -pbx set by default", paramsDefault.contains("-pbx"));
     assertTrue("Distcp -update set by default", paramsDefault.contains("-update"));
     assertTrue("Distcp -delete set by default", paramsDefault.contains("-delete"));
     assertEquals(copySrc.toString(), paramsDefault.get(3));
@@ -92,6 +108,73 @@ public class TestHadoop23Shims {
     assertEquals(copySrc.toString(), paramsWithCustomParamInjection.get(6));
     assertEquals(copyDst.toString(), paramsWithCustomParamInjection.get(7));
 
+  }
+
+  @Test
+  public void testXAttrNotPreservedDueToDestFS() throws Exception {
+    Configuration conf = new Configuration();
+    Path copySrc = getMockedPath(true);
+    Path copyDst = getMockedPath(false);
+
+    Hadoop23Shims shims = new Hadoop23Shims();
+    List<String> paramsDefault = shims.constructDistCpParams(Collections.singletonList(copySrc), copyDst, conf);
+
+    assertEquals(5, paramsDefault.size());
+    assertTrue("Distcp -pb set by default", paramsDefault.contains("-pb"));
+    assertTrue("Distcp -update set by default", paramsDefault.contains("-update"));
+    assertTrue("Distcp -delete set by default", paramsDefault.contains("-delete"));
+    assertEquals(copySrc.toString(), paramsDefault.get(3));
+    assertEquals(copyDst.toString(), paramsDefault.get(4));
+  }
+
+  @Test
+  public void testXAttrNotPreservedDueToSrcFS() throws Exception {
+    Configuration conf = new Configuration();
+    Path copySrc = getMockedPath(false);
+    Path copyDst = getMockedPath(true);
+
+    Hadoop23Shims shims = new Hadoop23Shims();
+    List<String> paramsDefault = shims.constructDistCpParams(Collections.singletonList(copySrc), copyDst, conf);
+
+    assertEquals(5, paramsDefault.size());
+    assertTrue("Distcp -pb set by default", paramsDefault.contains("-pb"));
+    assertTrue("Distcp -update set by default", paramsDefault.contains("-update"));
+    assertTrue("Distcp -delete set by default", paramsDefault.contains("-delete"));
+    assertEquals(copySrc.toString(), paramsDefault.get(3));
+    assertEquals(copyDst.toString(), paramsDefault.get(4));
+  }
+
+  @Test
+  public void testXAttrPreserved() throws Exception {
+    Configuration conf = new Configuration();
+    Path copySrc = getMockedPath(true);
+    Path copyDst = getMockedPath(true);
+    Hadoop23Shims shims = new Hadoop23Shims();
+    List<String> paramsDefault = shims.constructDistCpParams(Collections.singletonList(copySrc), copyDst, conf);
+
+    assertEquals(5, paramsDefault.size());
+    assertTrue("Distcp -pbx set by default", paramsDefault.contains("-pbx"));
+    assertTrue("Distcp -update set by default", paramsDefault.contains("-update"));
+    assertTrue("Distcp -delete set by default", paramsDefault.contains("-delete"));
+    assertEquals(copySrc.toString(), paramsDefault.get(3));
+    assertEquals(copyDst.toString(), paramsDefault.get(4));
+  }
+
+  @Test
+  public void testPreserveOptionsOverwritenByUser() throws Exception {
+    Configuration conf = new Configuration();
+    conf.set("distcp.options.pbx", "");
+    Path copySrc = getMockedPath(false);
+    Path copyDst = getMockedPath(false);
+    Hadoop23Shims shims = new Hadoop23Shims();
+    List<String> paramsDefault = shims.constructDistCpParams(Collections.singletonList(copySrc), copyDst, conf);
+
+    assertEquals(5, paramsDefault.size());
+    assertTrue("Distcp -pbx set by default", paramsDefault.contains("-pbx"));
+    assertTrue("Distcp -update set by default", paramsDefault.contains("-update"));
+    assertTrue("Distcp -delete set by default", paramsDefault.contains("-delete"));
+    assertEquals(copySrc.toString(), paramsDefault.get(3));
+    assertEquals(copyDst.toString(), paramsDefault.get(4));
   }
 
   @Test(expected = FileNotFoundException.class)
