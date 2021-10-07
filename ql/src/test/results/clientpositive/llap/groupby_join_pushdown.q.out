@@ -485,14 +485,14 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN
-SELECT  f.ctinyint, g.ctinyint, SUM(f.cbigint)
+SELECT  f.ctinyint, g.ctinyint, SUM(f.cbigint)              
 FROM alltypesorc f JOIN alltypesorc g ON(f.cint = g.cint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
-SELECT  f.ctinyint, g.ctinyint, SUM(f.cbigint)
+SELECT  f.ctinyint, g.ctinyint, SUM(f.cbigint)              
 FROM alltypesorc f JOIN alltypesorc g ON(f.cint = g.cint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
@@ -604,14 +604,14 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: EXPLAIN
-SELECT  f.cbigint, g.cbigint, MAX(f.cint)
+SELECT  f.cbigint, g.cbigint, MAX(f.cint)              
 FROM alltypesorc f JOIN alltypesorc g ON(f.cbigint = g.cbigint)
 GROUP BY f.cbigint, g.cbigint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
-SELECT  f.cbigint, g.cbigint, MAX(f.cint)
+SELECT  f.cbigint, g.cbigint, MAX(f.cint)              
 FROM alltypesorc f JOIN alltypesorc g ON(f.cbigint = g.cbigint)
 GROUP BY f.cbigint, g.cbigint
 POSTHOOK: type: QUERY
@@ -728,14 +728,14 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-SELECT  f.ctinyint, g.ctinyint, MIN(f.ctinyint)
+SELECT  f.ctinyint, g.ctinyint, MIN(f.ctinyint)              
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-SELECT  f.ctinyint, g.ctinyint, MIN(f.ctinyint)
+SELECT  f.ctinyint, g.ctinyint, MIN(f.ctinyint)              
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
@@ -852,14 +852,14 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-SELECT   MIN(f.cint)
+SELECT   MIN(f.cint)     
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-SELECT   MIN(f.cint)
+SELECT   MIN(f.cint)     
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
@@ -976,14 +976,14 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-SELECT   count(f.ctinyint)
+SELECT   count(f.ctinyint)              
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-SELECT   count(f.ctinyint)
+SELECT   count(f.ctinyint)              
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
@@ -1103,14 +1103,14 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-SELECT   count(f.cint), f.ctinyint
+SELECT   count(f.cint), f.ctinyint              
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-SELECT   count(f.cint), f.ctinyint
+SELECT   count(f.cint), f.ctinyint              
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
@@ -1230,14 +1230,14 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: explain
-SELECT   sum(f.cint), f.ctinyint
+SELECT   sum(f.cint), f.ctinyint            
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-SELECT   sum(f.cint), f.ctinyint
+SELECT   sum(f.cint), f.ctinyint            
 FROM alltypesorc f JOIN alltypesorc g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
@@ -1387,14 +1387,14 @@ POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: Input: default@alltypesorc_new
 POSTHOOK: Output: default@alltypesorc_new
 PREHOOK: query: explain
-SELECT sum(f.cint), f.ctinyint
+SELECT sum(f.cint), f.ctinyint            
 FROM alltypesorc_new f JOIN alltypesorc_new g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc_new
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-SELECT sum(f.cint), f.ctinyint
+SELECT sum(f.cint), f.ctinyint            
 FROM alltypesorc_new f JOIN alltypesorc_new g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
@@ -1517,14 +1517,14 @@ POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: Input: default@alltypesorc_new
 POSTHOOK: Output: default@alltypesorc_new
 PREHOOK: query: explain
-SELECT sum(f.cint), f.ctinyint
+SELECT sum(f.cint), f.ctinyint            
 FROM alltypesorc_new f JOIN alltypesorc_new g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc_new
 #### A masked pattern was here ####
 POSTHOOK: query: explain
-SELECT sum(f.cint), f.ctinyint
+SELECT sum(f.cint), f.ctinyint            
 FROM alltypesorc_new f JOIN alltypesorc_new g ON(f.ctinyint = g.ctinyint)
 GROUP BY f.ctinyint, g.ctinyint
 POSTHOOK: type: QUERY
