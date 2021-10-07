@@ -128,6 +128,7 @@ import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.util.CompositeList;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.ImmutableNullableList;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
@@ -1613,8 +1614,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private RelNode dummyTableScan;
 
     // these variables are to ensure that they get instantiated only once
-    private JdbcConvention jc = null;
-    private JdbcSchema schema = null;
+    Map<List<String>, JdbcConvention> jcMap = new HashMap<>();
+    Map<List<String>, JdbcSchema> schemaMap = new HashMap<>();
 
     protected CalcitePlannerAction(
             Map<String, PrunedPartitionList> partitionCache,
@@ -3025,15 +3026,24 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
             DataSource ds = JdbcSchema.dataSource(url, driver, user, pswd);
             SqlDialect jdbcDialect = JdbcSchema.createDialect(SqlDialectFactoryImpl.INSTANCE, ds);
+            String dialectName = jdbcDialect.getClass().getName();
             if (LOG.isDebugEnabled()) {
-              LOG.debug("Dialect for table {}: {}", tableName, jdbcDialect.getClass().getName());
+              LOG.debug("Dialect for table {}: {}", tableName, dialectName);
             }
-            if (jc == null) {
-              jc = JdbcConvention.of(jdbcDialect, null, dataBaseType);
+
+            List<String> jcKey = ImmutableNullableList.of(url, driver, user, pswd, dialectName, dataBaseType);
+            if (!jcMap.containsKey(jcKey)) {
+              jcMap.put(jcKey, JdbcConvention.of(jdbcDialect, null, dataBaseType));
             }
-            if (schema == null) {
-              schema = new JdbcSchema(ds, jc.dialect, jc, catalogName, schemaName);
+            JdbcConvention jc = jcMap.get(jcKey);
+
+            List<String> schemaKey = ImmutableNullableList.of(url, driver, user, pswd, dialectName, dataBaseType,
+              catalogName, schemaName);
+            if (!schemaMap.containsKey(schemaKey)) {
+              schemaMap.put(schemaKey, new JdbcSchema(ds, jc.dialect, jc, catalogName, schemaName));
             }
+            JdbcSchema schema = schemaMap.get(schemaKey);
+
             JdbcTable jt = (JdbcTable) schema.getTable(tableName);
             if (jt == null) {
               throw new SemanticException("Table " + tableName + " was not found in the database");
@@ -5000,9 +5010,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       case EXCEPT:
       case EXCEPTALL:
         RelNode qbexpr1Ops = genLogicalPlan(qbexpr.getQBExpr1());
-        jc = null; schema = null;
         RelNode qbexpr2Ops = genLogicalPlan(qbexpr.getQBExpr2());
-        jc = null; schema = null;
         return genSetOpLogicalPlan(qbexpr.getOpcode(), qbexpr.getAlias(), qbexpr.getQBExpr1()
             .getAlias(), qbexpr1Ops, qbexpr.getQBExpr2().getAlias(), qbexpr2Ops);
       default:
