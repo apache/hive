@@ -20,6 +20,8 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1202,6 +1204,18 @@ public class TestHiveIcebergStorageHandlerNoScan {
           IllegalArgumentException.class, "Using partition spec in query is unsupported",
           () -> shell.executeStatement(command));
     }
+  }
+
+  @Test
+  public void testAuthzURI() throws URISyntaxException {
+    Map<String, String> props = ImmutableMap.of(
+        Catalogs.LOCATION, "hdfs://abcd/123/"
+    );
+
+    HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
+    URI uriForAuth = storageHandler.getURIForAuth(props);
+
+    Assert.assertEquals("iceberg://hdfs://abcd/123/", uriForAuth.toString());
   }
 
   /**
