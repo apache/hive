@@ -1,10 +1,9 @@
-package org.apache.iceberg.mr.hive.serde.objectinspector;
+package org.apache.iceberg.mr.hive;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 import org.apache.iceberg.mr.Catalogs;
-import org.apache.iceberg.mr.hive.HiveIcebergStorageHandler;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.junit.Assert;
 import org.junit.Test;
