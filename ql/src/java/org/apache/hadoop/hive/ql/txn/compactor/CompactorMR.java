@@ -1038,10 +1038,16 @@ public class CompactorMR {
       for (FileStatus fileStatus : contents) {
         //newPath is the base/delta dir
         Path newPath = new Path(finalLocation, fileStatus.getPath().getName());
-        /*rename(A, B) has "interesting" behavior if A and B are directories. If  B doesn't exist,
-        * it does the expected operation and everything that was in A is now in B.  If B exists,
-        * it will make A a child of B...  thus make sure the rename() is done before creating the
-        * meta files which will create base_x/ (i.e. B)...*/
+        /* rename(A, B) has "interesting" behavior if A and B are directories. If  B doesn't exist,
+        *  it does the expected operation and everything that was in A is now in B.  If B exists,
+        *  it will make A a child of B.
+        *  This issue can happen if the previous MR job succeeded but HMS was unable to persist compaction result.
+        *  We will delete the directory B if it exists to avoid the above issue
+        */
+        if (fs.exists(newPath)) {
+          LOG.info(String.format("Final path %s already exists. Deleting the path to avoid redundant base creation", newPath.toString()));
+          fs.delete(newPath, true);
+        } 
         fs.rename(fileStatus.getPath(), newPath);
         if (options.isWriteVersionFile()) {
           AcidUtils.OrcAcidVersion.writeVersionFile(newPath, fs);
