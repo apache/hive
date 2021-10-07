@@ -14,13 +14,13 @@ public class TestHiveIcebergStorageHandler {
   @Test
   public void testAuthzURI() throws URISyntaxException {
     Map<String, String> props = ImmutableMap.of(
-        Catalogs.LOCATION, "hdfs://abcd/123/"
+        Catalogs.LOCATION, "hdfs://abcd/汉字123/"
     );
 
     HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
     URI uriForAuth = storageHandler.getURIForAuth(props);
 
-    Assert.assertEquals("iceberg://hdfs://abcd/123/", uriForAuth.toString());
+    Assert.assertEquals("iceberg://hdfs://abcd/汉字123/", uriForAuth.toString());
   }
 
 }
