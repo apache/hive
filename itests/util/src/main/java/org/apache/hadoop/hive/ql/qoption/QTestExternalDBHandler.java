@@ -39,6 +39,9 @@ public class QTestExternalDBHandler implements QTestOptionHandler {
 
   @Override
   public void beforeTest(QTestUtil qt) throws Exception {
+    if(dbType == null) {
+      return;
+    }
     Path externalDBScript = Paths.get(qt.getScriptsDir(), dbType, initScript);
 
     AbstractExternalDB abstractExternalDB = createDB(dbType);
@@ -50,6 +53,9 @@ public class QTestExternalDBHandler implements QTestOptionHandler {
 
   @Override
   public void afterTest(QTestUtil qt) throws Exception {
+    if(dbType == null) {
+      return;
+    }
     AbstractExternalDB abstractExternalDB = createDB(dbType);
     abstractExternalDB.cleanupDockerContainer();
   }
