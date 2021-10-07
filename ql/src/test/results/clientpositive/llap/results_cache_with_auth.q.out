@@ -19,12 +19,12 @@ PREHOOK: query: explain
 select count(*) from results_cache_with_auth_t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@results_cache_with_auth_t1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain
 select count(*) from results_cache_with_auth_t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@results_cache_with_auth_t1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
