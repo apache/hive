@@ -1184,6 +1184,16 @@ public class CompactorMR {
         Path tmpPath = fileStatus.getPath();
         //newPath is the base/delta dir
         Path newPath = new Path(finalLocation, tmpPath.getName());
+        /* rename(A, B) has "interesting" behavior if A and B are directories. If  B doesn't exist,
+        *  it does the expected operation and everything that was in A is now in B.  If B exists,
+        *  it will make A a child of B.
+        *  This issue can happen if the previous MR job succeeded but HMS was unable to persist compaction result.
+        *  We will delete the directory B if it exists to avoid the above issue
+        */
+        if (fs.exists(newPath)) {
+          LOG.info(String.format("Final path %s already exists. Deleting the path to avoid redundant base creation", newPath.toString()));
+          fs.delete(newPath, true);
+        }
         /* Create the markers in the tmp location and rename everything in the end to prevent race condition between
          * marker creation and split read. */
         AcidUtils.OrcAcidVersion.writeVersionFile(tmpPath, fs);
@@ -1192,6 +1202,7 @@ public class CompactorMR {
       }
       fs.delete(tmpLocation, true);
     }
+
     private void createCompactorMarker(JobConf conf, Path finalLocation, FileSystem fs)
         throws IOException {
       if(conf.getBoolean(IS_MAJOR, false)) {
