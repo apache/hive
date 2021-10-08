@@ -125,9 +125,15 @@ public class JdbcStorageConfigManager {
   public static String getOrigQueryToExecute(Configuration config) {
     String query;
     String tableName = config.get(Constants.JDBC_TABLE);
+    String schemaName = config.get(Constants.JDBC_SCHEMA);
     if (tableName != null) {
       // We generate query as select *
-      query = "select * from " + tableName;
+      if (schemaName != null) {
+        query = "select * from "+schemaName+"."+tableName;
+      }
+      else {
+        query = "select * from " + tableName;
+      }
     } else {
       query = config.get(Constants.JDBC_QUERY);
     }
