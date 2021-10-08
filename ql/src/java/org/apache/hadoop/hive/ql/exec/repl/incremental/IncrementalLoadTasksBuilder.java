@@ -101,7 +101,7 @@ public class IncrementalLoadTasksBuilder {
     this.shouldFailover = shouldFailover;
     if (shouldFailover) {
       this.metricCollector.reportFailoverStart("REPL_LOAD", metricMap,
-              new FailoverMetaData(new Path(dumpDirectory), conf));
+              new FailoverMetaData(new Path(dumpDirectory, ReplUtils.REPL_HIVE_BASE_DIR), conf));
     } else {
       this.metricCollector.reportStageStart("REPL_LOAD", metricMap);
     }
