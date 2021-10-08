@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileSplit;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,7 +35,7 @@ import org.junit.rules.TestName;
 
 public class TestOrcFileStripeMergeRecordReader {
 
-  private final int DEFAULT_STRIPE_SIZE = 5000;
+  private static final int TEST_STRIPE_SIZE = 5000;
 
   private OrcFileKeyWrapper key;
   private OrcFileValueWrapper value;
@@ -52,19 +53,44 @@ public class TestOrcFileStripeMergeRecordReader {
     key = new OrcFileKeyWrapper();
     value = new OrcFileValueWrapper();
     tmpPath  = prepareTmpPath();
+    createOrcFile(TEST_STRIPE_SIZE, TEST_STRIPE_SIZE + 1);
+  }
+
+  @After
+  public void tearDown() throws IOException {
+    fs.delete(tmpPath, false);
   }
 
   @Test
-  public void testSplitStartsWithOffset() throws IOException {
-    createOrcFile(DEFAULT_STRIPE_SIZE, DEFAULT_STRIPE_SIZE + 1);
+  public void testSplitStartsWithNonZeroOffset() throws IOException {
     FileStatus fileStatus = fs.getFileStatus(tmpPath);
     long length = fileStatus.getLen();
     long offset = length / 2;
-    FileSplit split = new FileSplit(tmpPath, offset, length, (String[])null);
+
+    // Check case for non-zero offset, the file will be skipped.
+    FileSplit split = new FileSplit(tmpPath, offset, length, (String[]) null);
     OrcFileStripeMergeRecordReader reader = new OrcFileStripeMergeRecordReader(conf, split);
+    reader.next(key, value);
+    Assert.assertNull(key.getInputPath());
+  }
+
+  @Test
+  public void testSplitStartsWithZeroOffset() throws IOException {
+    FileStatus fileStatus = fs.getFileStatus(tmpPath);
+    long length = fileStatus.getLen();
+    // New split with zero offset, the file should be processed.
+    FileSplit split = new FileSplit(tmpPath, 0, length, (String[]) null);
+    OrcFileStripeMergeRecordReader reader = new OrcFileStripeMergeRecordReader(conf, split);
+    // both stripes will be processed, first stripe has 5000 rows and second stripe has 1 row
+    reader.next(key, value);
+    Assert.assertEquals("InputPath", tmpPath, key.getInputPath());
+    Assert.assertEquals("NumberOfValues", TEST_STRIPE_SIZE,
+        value.getStripeStatistics().getColStats(0).getNumberOfValues());
     reader.next(key, value);
     Assert.assertEquals("InputPath", tmpPath, key.getInputPath());
     Assert.assertEquals("NumberOfValues", 1L, value.getStripeStatistics().getColStats(0).getNumberOfValues());
+    // we are done with the file, so expect null path
+    Assert.assertFalse(reader.next(key, value));
     reader.close();
   }
 
