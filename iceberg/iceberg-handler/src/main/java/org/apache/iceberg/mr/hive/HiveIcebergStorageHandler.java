@@ -21,6 +21,8 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -43,6 +45,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageAuthorizationHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
@@ -84,9 +87,11 @@ import org.apache.iceberg.util.SerializationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, HiveStorageHandler {
+public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, HiveStorageHandler,
+    HiveStorageAuthorizationHandler {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergStorageHandler.class);
 
+  private static final String ICEBERG_URI_PREFIX = "iceberg://";
   private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String TABLE_NAME_SEPARATOR = "..";
 
@@ -358,6 +363,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public boolean isValidMetadataTable(String metaTableName) {
     return IcebergMetadataTables.isValidMetaTable(metaTableName);
+  }
+
+  @Override
+  public URI getURIForAuth(Map<String, String> tableProperties) throws URISyntaxException {
+    String tableLocation = tableProperties.get(Catalogs.LOCATION);
+    return new URI(ICEBERG_URI_PREFIX + tableLocation);
   }
 
   private void setCommonJobConf(JobConf jobConf) {
