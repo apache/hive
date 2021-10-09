@@ -85,7 +85,7 @@ public class Utils {
     // Client param names:
 
     // Retry setting
-    static final String RETRIES = "retries";
+    public static final String RETRIES = "retries";
     public static final String RETRY_INTERVAL = "retryInterval";
 
     public static final String AUTH_TYPE = "auth";
