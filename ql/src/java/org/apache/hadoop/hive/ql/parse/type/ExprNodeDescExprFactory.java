@@ -576,13 +576,13 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
    */
   @Override
   protected ExprNodeGenericFuncDesc createFuncCallExpr(TypeInfo typeInfo, FunctionInfo fi,
-      String funcText, List<ExprNodeDesc> inputs, TypeInfo typeInfo2) throws UDFArgumentException {
+      String funcText, List<ExprNodeDesc> inputs) throws UDFArgumentException {
     GenericUDF genericUDF = fi.getGenericUDF();
     if (genericUDF instanceof SettableUDF) {
       ((SettableUDF) genericUDF).setTypeInfo(typeInfo);
     }
 
-    genericUDF.setNewTypeInfo(typeInfo2);
+    genericUDF.setNewTypeInfo(typeInfo);
 
     return ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText, inputs);
   }

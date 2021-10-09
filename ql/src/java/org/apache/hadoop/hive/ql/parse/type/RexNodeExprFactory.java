@@ -638,7 +638,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    */
   @Override
   protected RexNode createFuncCallExpr(TypeInfo typeInfo, FunctionInfo functionInfo, String funcText,
-      List<RexNode> inputs, TypeInfo typeInfo2) throws SemanticException {
+      List<RexNode> inputs) throws SemanticException {
     // 2) Compute return type
     RelDataType returnType;
     if (typeInfo != null) {
