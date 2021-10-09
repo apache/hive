@@ -1428,6 +1428,10 @@ public final class ObjectInspectorUtils {
   }
 
   public static ConstantObjectInspector getConstantObjectInspector(ObjectInspector oi, Object value) {
+    // The last parameter, useValueTypeInfo is set to false here. The only time the boolean flag will
+    // affect the typeInfo is on primitve decimal values. In this case, while it probably makes more
+    // sense to use the decimal precision and scale of the "value" passed in, the default is to use
+    // the decimal precision and scale off of the object inspector for legacy purposes.
     return getConstantObjectInspector(oi, value, false);
   }
 
@@ -1442,8 +1446,12 @@ public final class ObjectInspectorUtils {
     switch (writableOI.getCategory()) {
       case PRIMITIVE:
         PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
-        PrimitiveTypeInfo typeInfo =
-             useValueTypeInfo ? getValueTypeInfo(poi.getTypeInfo(), value) : poi.getTypeInfo();
+        PrimitiveTypeInfo typeInfo = poi.getTypeInfo();
+        // special case for decimals, use the precision/scale from the value if flag is true.
+        if (useValueTypeInfo && (value instanceof HiveDecimalWritable)) {
+          HiveDecimalWritable dec = (HiveDecimalWritable) value;
+          typeInfo = new DecimalTypeInfo(dec.precision(), dec.scale());
+        }
         return PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
             typeInfo, writableValue);
       case LIST:
@@ -1648,17 +1656,5 @@ public final class ObjectInspectorUtils {
           + oi.getTypeName() + " not supported yet.");
     }
     return setOISettablePropertiesMap(oi, oiSettableProperties, returnValue);
-  }
-
-  private static PrimitiveTypeInfo getValueTypeInfo(PrimitiveTypeInfo typeInfo, Object value) {
-    if (!(value instanceof HiveDecimalWritable)) {
-      return typeInfo;
-    }
-    HiveDecimalWritable dec = (HiveDecimalWritable) value;
-    return new DecimalTypeInfo(dec.precision(), dec.scale());
-  }
-
-  private ObjectInspectorUtils() {
-    // prevent instantiation
   }
 }
