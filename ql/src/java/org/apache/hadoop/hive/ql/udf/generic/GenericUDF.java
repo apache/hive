@@ -75,8 +75,6 @@ import org.apache.hadoop.io.LongWritable;
 @UDFType(deterministic = true)
 public abstract class GenericUDF implements Closeable {
 
-  protected transient TypeInfo predefinedTypeInfo;
-
   private static final String[] ORDINAL_SUFFIXES = new String[] { "th", "st", "nd", "rd", "th",
       "th", "th", "th", "th", "th" };
 
@@ -116,10 +114,6 @@ public abstract class GenericUDF implements Closeable {
    * The constructor.
    */
   public GenericUDF() {
-  }
-
-  public void setNewTypeInfo(TypeInfo typeInfo) {
-    this.predefinedTypeInfo = typeInfo;
   }
 
 

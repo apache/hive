@@ -47,6 +47,9 @@ public class ASTNode extends CommonTree implements Node,Serializable {
   private transient ASTNode rootNode;
   private transient boolean isValidASTStr;
   private transient boolean visited = false;
+  // At parsing type, the typeInfo isn't known. However, Hive has logic that converts
+  // the CBO plan back into ASTNode objects, and at this point, the typeInfo has
+  // been calculated by the optimizer.
   private transient TypeInfo typeInfo;
 
   private static final Interner<ImmutableCommonToken> TOKEN_CACHE = Interners.newWeakInterner();
@@ -157,7 +160,7 @@ public class ASTNode extends CommonTree implements Node,Serializable {
     this.origin = origin;
   }
 
-  public void setType(TypeInfo typeInfo) {
+  public void setTypeInfo(TypeInfo typeInfo) {
     this.typeInfo = typeInfo;
   }
 

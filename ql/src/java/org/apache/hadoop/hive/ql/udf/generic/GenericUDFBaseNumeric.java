@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -59,7 +60,7 @@ import org.apache.hive.common.HiveCompat.CompatLevel;
  * GenericUDF Base Class for operations.
  */
 @Description(name = "op", value = "a op b - Returns the result of operation")
-public abstract class GenericUDFBaseNumeric extends GenericUDFBaseBinary {
+public abstract class GenericUDFBaseNumeric extends GenericUDFBaseBinary implements SettableUDF{
 
   protected transient PrimitiveObjectInspector leftOI;
   protected transient PrimitiveObjectInspector rightOI;
@@ -78,6 +79,8 @@ public abstract class GenericUDFBaseNumeric extends GenericUDFBaseBinary {
 
   protected boolean confLookupNeeded = true;
   protected boolean ansiSqlArithmetic = false;
+
+  private TypeInfo predefinedTypeInfo;
 
   public GenericUDFBaseNumeric() {
   }
@@ -342,4 +345,15 @@ public abstract class GenericUDFBaseNumeric extends GenericUDFBaseBinary {
   public void setAnsiSqlArithmetic(boolean ansiSqlArithmetic) {
     this.ansiSqlArithmetic = ansiSqlArithmetic;
   }
+
+  @Override
+  public void setTypeInfo(TypeInfo typeInfo) {
+    this.predefinedTypeInfo = typeInfo;
+  }
+
+  @Override
+  public TypeInfo getTypeInfo() {
+    return this.predefinedTypeInfo;
+  }
+
 }

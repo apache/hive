@@ -582,8 +582,6 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
       ((SettableUDF) genericUDF).setTypeInfo(typeInfo);
     }
 
-    genericUDF.setNewTypeInfo(typeInfo);
-
     return ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText, inputs);
   }
 

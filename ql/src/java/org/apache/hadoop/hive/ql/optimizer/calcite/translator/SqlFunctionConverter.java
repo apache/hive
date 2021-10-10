@@ -294,11 +294,7 @@ public class SqlFunctionConverter {
       }
     }
 
-    if (type.getSqlTypeName().equals(SqlTypeName.DECIMAL)) {
-      node.setType(new DecimalTypeInfo(type.getPrecision(), type.getScale())); 
-    } else {
-      node.setType(TypeConverter.convert(type));
-    }
+    node.setTypeInfo(TypeConverter.convert(type));
 
     for (ASTNode c : children) {
       ParseDriver.adaptor.addChild(node, c);
