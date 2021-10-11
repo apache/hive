@@ -9848,8 +9848,10 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       query = pm.newQuery(MTableColumnStatistics.class);
+      query.setFilter("tableName == t1 && dbName == t2 && catName == t3");
+      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
       query.setResult("DISTINCT engine");
-      Collection names = (Collection) query.execute();
+      Collection names = (Collection) query.execute(tableName, dbName, catName);
       List<String> engines = new ArrayList<>();
       for (Iterator i = names.iterator(); i.hasNext();) {
         engines.add((String) i.next());
@@ -9954,8 +9956,10 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       query = pm.newQuery(MPartitionColumnStatistics.class);
+      query.setFilter("tableName == t1 && dbName == t2 && catName == t3");
+      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
       query.setResult("DISTINCT engine");
-      Collection names = (Collection) query.execute();
+      Collection names = (Collection) query.execute(tableName, dbName, catName);
       List<String> engines = new ArrayList<>();
       for (Iterator i = names.iterator(); i.hasNext();) {
         engines.add((String) i.next());
