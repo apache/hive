@@ -356,4 +356,8 @@ public abstract class GenericUDFBaseNumeric extends GenericUDFBaseBinary impleme
     return this.predefinedTypeInfo;
   }
 
+  @Override
+  protected boolean usePrecisionScaleFromValue() {
+    return true;
+  }
 }

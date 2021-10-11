@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
@@ -178,8 +177,8 @@ public abstract class GenericUDF implements Closeable {
       }
       try {
         Object constantValue = evaluate(argumentValues);
-        boolean useFlag = !(this instanceof SettableUDF);
-        oi = ObjectInspectorUtils.getConstantObjectInspector(oi, constantValue, useFlag);
+        oi = ObjectInspectorUtils.getConstantObjectInspector(oi, constantValue,
+             usePrecisionScaleFromValue());
       } catch (HiveException e) {
         throw new UDFArgumentException(e);
       }
@@ -636,5 +635,9 @@ public abstract class GenericUDF implements Closeable {
       return Optional.of((T) this);
     }
     return Optional.empty();
+  }
+
+  protected boolean usePrecisionScaleFromValue() {
+    return false;
   }
 }
