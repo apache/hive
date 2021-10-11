@@ -682,16 +682,16 @@ STAGE PLANS:
                     dataColumnCount: 2
                     dataColumns: KEY.reducesinkkey0:decimal(30,9), VALUE._col0:decimal(30,9)
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [decimal(16,9), decimal(16,9)]
+                    scratchColumnTypeNames: [decimal(17,9), decimal(17,9)]
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: decimal(30,9)), VALUE._col0 (type: decimal(30,9)), 1809242.315111134 (type: decimal(16,9)), -1809242.315111134 (type: decimal(16,9))
+                expressions: KEY.reducesinkkey0 (type: decimal(30,9)), VALUE._col0 (type: decimal(30,9)), 1809242.315111134 (type: decimal(17,9)), -1809242.315111134 (type: decimal(17,9))
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2, 3]
-                    selectExpressions: ConstantVectorExpression(val 1809242.315111134) -> 2:decimal(16,9), ConstantVectorExpression(val -1809242.315111134) -> 3:decimal(16,9)
+                    selectExpressions: ConstantVectorExpression(val 1809242.315111134) -> 2:decimal(17,9), ConstantVectorExpression(val -1809242.315111134) -> 3:decimal(17,9)
                 Statistics: Num rows: 1 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
