@@ -1427,13 +1427,15 @@ public final class ObjectInspectorUtils {
     throw new RuntimeException("Unknown category encountered: " + c1);
   }
 
+/*
   public static ConstantObjectInspector getConstantObjectInspector(ObjectInspector oi, Object value) {
     // The last parameter, useValueTypeInfo is set to false here. The only time the boolean flag will
     // affect the typeInfo is on primitve decimal values. In this case, while it probably makes more
     // sense to use the decimal precision and scale of the "value" passed in, the default is to use
     // the decimal precision and scale off of the object inspector for legacy purposes.
-    return getConstantObjectInspector(oi, value, false);
+    return getConstantObjectInspector(oi, value, true);
   }
+  */
 
   public static ConstantObjectInspector getConstantObjectInspector(ObjectInspector oi, Object value,
       boolean useValueTypeInfo) {

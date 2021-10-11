@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -73,7 +74,6 @@ import org.apache.hadoop.io.LongWritable;
 @InterfaceStability.Stable
 @UDFType(deterministic = true)
 public abstract class GenericUDF implements Closeable {
-
   private static final String[] ORDINAL_SUFFIXES = new String[] { "th", "st", "nd", "rd", "th",
       "th", "th", "th", "th", "th" };
 
@@ -177,8 +177,7 @@ public abstract class GenericUDF implements Closeable {
       }
       try {
         Object constantValue = evaluate(argumentValues);
-        oi = ObjectInspectorUtils.getConstantObjectInspector(oi, constantValue,
-             usePrecisionScaleFromValue());
+        oi = ObjectInspectorUtils.getConstantObjectInspector(oi, constantValue, true);
       } catch (HiveException e) {
         throw new UDFArgumentException(e);
       }
