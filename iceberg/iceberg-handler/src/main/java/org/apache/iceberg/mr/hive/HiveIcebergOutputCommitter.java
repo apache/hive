@@ -50,6 +50,7 @@ import org.apache.iceberg.DataFile;
 import org.apache.iceberg.ReplacePartitions;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.exceptions.NotFoundException;
+import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.Util;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.OutputFile;
@@ -328,13 +329,18 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
     boolean isOverwrite = conf.getBoolean(InputFormatConfig.IS_OVERWRITE, false);
     if (isOverwrite) {
-      // Replacing affected partitions (or whole table) since it's an insert overwrite
-      // We do the replacement even for 0 data files (i.e. empty source)
-      ReplacePartitions overwrite = table.newReplacePartitions();
-      dataFiles.forEach(overwrite::addFile);
-      overwrite.commit();
-      LOG.info("Overwrite commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
-          table, dataFiles.size());
+      if (!dataFiles.isEmpty()) {
+        ReplacePartitions overwrite = table.newReplacePartitions();
+        dataFiles.forEach(overwrite::addFile);
+        overwrite.commit();
+        LOG.info("Overwrite commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
+            table, dataFiles.size());
+      } else if (table.spec().isUnpartitioned()) {
+        // TODO: we won't get here if we have a formerly-partitioned table, whose partition specs have been turned void
+        table.newDelete().deleteFromRowFilter(Expressions.alwaysTrue()).commit();
+        LOG.info("Cleared table contents as part of empty overwrite for unpartitioned table. " +
+            "Commit took {} ms for table: {}", System.currentTimeMillis() - startTime, table);
+      }
       LOG.debug("Overwrote partitions with files {}", dataFiles);
     } else if (dataFiles.size() > 0) {
       // Appending data files to the table

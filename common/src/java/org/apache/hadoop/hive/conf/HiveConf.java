@@ -2914,6 +2914,8 @@ public class HiveConf extends Configuration {
         "UDTFs change the number of rows of the output. A common UDTF is the explode() method that creates\n" +
         "multiple rows for each element in the input array. This factor is applied to the number of\n" +
         "output rows and output size."),
+    HIVE_STATS_USE_BITVECTORS("hive.stats.use.bitvectors", false,
+              "Enables to use bitvectors for estimating selectivity."),
     HIVE_STATS_MAX_NUM_STATS("hive.stats.max.num.stats", (long) 10000,
         "When the number of stats to be updated is huge, this value is used to control the number of \n" +
         " stats to be sent to HMS for update."),
@@ -3062,7 +3064,10 @@ public class HiveConf extends Configuration {
     // Configs having to do with DeltaFilesMetricReporter, which collects lists of most recently active tables
     // with the most number of active/obsolete deltas.
     HIVE_TXN_ACID_METRICS_MAX_CACHE_SIZE("hive.txn.acid.metrics.max.cache.size", 100,
-        "Size of the ACID metrics cache. Only topN metrics would remain in the cache if exceeded."),
+        new RangeValidator(0, 500),
+        "Size of the ACID metrics cache, i.e. max number of partitions and unpartitioned tables with the "
+            + "most deltas that will be included in the lists of active, obsolete and small deltas. "
+            + "Allowed range is 0 to 500."),
     HIVE_TXN_ACID_METRICS_CACHE_DURATION("hive.txn.acid.metrics.cache.duration", "7200s",
         new TimeValidator(TimeUnit.SECONDS),
         "Maximum lifetime in seconds for an entry in the ACID metrics cache."),
@@ -3251,6 +3256,9 @@ public class HiveConf extends Configuration {
 
     TRANSACTIONAL_CONCATENATE_NOBLOCK("hive.transactional.concatenate.noblock", false,
         "Will cause 'alter table T concatenate' to be non-blocking"),
+    CONCATENATE_EXTERNAL_TABLE("hive.concatenate.external.table", false,
+        "Enable concatenate for external tables. This allows 'alter table `tablename` concatenate' " +
+            "on external tables."),
 
     HIVE_COMPACTOR_COMPACT_MM("hive.compactor.compact.insert.only", true,
         "Whether the compactor should compact insert-only tables. A safety switch."),
@@ -4521,6 +4529,13 @@ public class HiveConf extends Configuration {
 
     HIVE_RPC_QUERY_PLAN("hive.rpc.query.plan", false,
         "Whether to send the query plan via local resource or RPC"),
+    HIVE_PLAN_MAPWORK_SERIALIZATION_SKIP_PROPERTIES("hive.plan.mapwork.serialization.skip.properties", "",
+        "Comma separated list of properties which is not needed in execution time, so can be removed "
+            + "from PartitionDesc properties before serialization, config can contain exact strings and regex "
+            + "expressions, the regex mode is activated if at least 1 asterisk (*) is present in the current word: "
+            + "rawDataSize                exact string match, removes only rawDataSize property"
+            + ".*Size                     regex match, removes every property ending with 'Size'"
+            + "numRows,impala_.*chunk.*   comma separated and mixed (handles strings and regexes at the same time)"),
     HIVE_AM_SPLIT_GENERATION("hive.compute.splits.in.am", true,
         "Whether to generate the splits locally or in the AM (tez only)"),
     HIVE_TEZ_GENERATE_CONSISTENT_SPLITS("hive.tez.input.generate.consistent.splits", true,
@@ -5580,6 +5595,10 @@ public class HiveConf extends Configuration {
 
     HIVE_SERVER2_ICEBERG_METADATA_GENERATOR_THREADS("hive.server2.iceberg.metadata.generator.threads", 10,
         "Number of threads used to scan partition directories for data files and update/generate iceberg metadata"),
+
+    HIVE_ICEBERG_METADATA_REFRESH_MAX_RETRIES("hive.iceberg.metadata.refresh.max.retries", 2,
+        "Max retry count for trying to access the metadata location in order to refresh metadata during " +
+         " Iceberg table load."),
 
     /* BLOBSTORE section */
 

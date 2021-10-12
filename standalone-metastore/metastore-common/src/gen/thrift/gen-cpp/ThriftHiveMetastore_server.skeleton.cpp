@@ -220,6 +220,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("add_check_constraint\n");
   }
 
+  void translate_table_dryrun(Table& _return, const Table& tbl) {
+    // Your implementation goes here
+    printf("translate_table_dryrun\n");
+  }
+
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) {
     // Your implementation goes here
     printf("drop_table\n");

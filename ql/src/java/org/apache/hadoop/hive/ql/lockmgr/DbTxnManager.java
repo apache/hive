@@ -869,12 +869,19 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public boolean isImplicitTransactionOpen() {
+    return isImplicitTransactionOpen(null);
+  }
+
+  @Override
+  public boolean isImplicitTransactionOpen(Context ctx) {
     if(!isTxnOpen()) {
       //some commands like "show databases" don't start implicit transactions
       return false;
     }
     if(!isExplicitTransaction) {
-      assert numStatements == 1 : "numStatements=" + numStatements;
+      if (ctx == null || !ctx.isExplainSkipExecution()) {
+        assert numStatements == 1 : "numStatements=" + numStatements;
+      }
       return true;
     }
     return false;

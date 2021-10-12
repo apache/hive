@@ -700,18 +700,18 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
   private void verifyCustomDBLocations(String srcDb, List<String> listOfTables, String managedCustLocOnSrc,
                                        String externalCustLocOnSrc, boolean replaceCustPath) throws Exception {
     Database replDatabase  = replica.getDatabase(replicatedDbName);
+    String managedCustLocOnTgt = new Path(replDatabase.getManagedLocationUri()).toUri().getPath();
+    String externalCustLocOnTgt = new Path(replDatabase.getLocationUri()).toUri().getPath();
     if (replaceCustPath ) {
-      String managedCustLocOnTgt = new Path(replDatabase.getManagedLocationUri()).toUri().getPath();
       Assert.assertEquals(managedCustLocOnSrc,  managedCustLocOnTgt);
       Assert.assertNotEquals(managedCustLocOnTgt,  replica.warehouseRoot.toUri().getPath());
-      String externalCustLocOnTgt = new Path(replDatabase.getLocationUri()).toUri().getPath();
       Assert.assertEquals(externalCustLocOnSrc,  externalCustLocOnTgt);
       Assert.assertNotEquals(externalCustLocOnTgt,  new Path(replica.externalTableWarehouseRoot,
               replicatedDbName.toLowerCase()  + ".db").toUri().getPath());
     } else {
       Assert.assertNotEquals(managedCustLocOnSrc,  null);
-      Assert.assertEquals(replDatabase.getManagedLocationUri(),  null);
-      String externalCustLocOnTgt = new Path(replDatabase.getLocationUri()).toUri().getPath();
+      Assert.assertEquals(managedCustLocOnTgt, new Path(replica.warehouseRoot,
+              replicatedDbName.toLowerCase() + ".db").toUri().getPath());
       Assert.assertNotEquals(externalCustLocOnSrc,  externalCustLocOnTgt);
       Assert.assertEquals(externalCustLocOnTgt,  new Path(replica.externalTableWarehouseRoot,
               replicatedDbName.toLowerCase()  + ".db").toUri().getPath());

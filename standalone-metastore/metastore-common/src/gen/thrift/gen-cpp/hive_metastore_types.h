@@ -423,6 +423,8 @@ class Version;
 
 class FieldSchema;
 
+class EnvironmentContext;
+
 class SQLPrimaryKey;
 
 class SQLForeignKey;
@@ -552,8 +554,6 @@ class SetPartitionsStatsRequest;
 class SetPartitionsStatsResponse;
 
 class Schema;
-
-class EnvironmentContext;
 
 class PrimaryKeysRequest;
 
@@ -1134,6 +1134,48 @@ class FieldSchema : public virtual ::apache::thrift::TBase {
 void swap(FieldSchema &a, FieldSchema &b);
 
 std::ostream& operator<<(std::ostream& out, const FieldSchema& obj);
+
+typedef struct _EnvironmentContext__isset {
+  _EnvironmentContext__isset() : properties(false) {}
+  bool properties :1;
+} _EnvironmentContext__isset;
+
+class EnvironmentContext : public virtual ::apache::thrift::TBase {
+ public:
+
+  EnvironmentContext(const EnvironmentContext&);
+  EnvironmentContext& operator=(const EnvironmentContext&);
+  EnvironmentContext() {
+  }
+
+  virtual ~EnvironmentContext() noexcept;
+  std::map<std::string, std::string>  properties;
+
+  _EnvironmentContext__isset __isset;
+
+  void __set_properties(const std::map<std::string, std::string> & val);
+
+  bool operator == (const EnvironmentContext & rhs) const
+  {
+    if (!(properties == rhs.properties))
+      return false;
+    return true;
+  }
+  bool operator != (const EnvironmentContext &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const EnvironmentContext & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(EnvironmentContext &a, EnvironmentContext &b);
+
+std::ostream& operator<<(std::ostream& out, const EnvironmentContext& obj);
 
 typedef struct _SQLPrimaryKey__isset {
   _SQLPrimaryKey__isset() : table_db(false), table_name(false), column_name(false), key_seq(false), pk_name(false), enable_cstr(false), validate_cstr(false), rely_cstr(false), catName(false) {}
@@ -5500,48 +5542,6 @@ class Schema : public virtual ::apache::thrift::TBase {
 void swap(Schema &a, Schema &b);
 
 std::ostream& operator<<(std::ostream& out, const Schema& obj);
-
-typedef struct _EnvironmentContext__isset {
-  _EnvironmentContext__isset() : properties(false) {}
-  bool properties :1;
-} _EnvironmentContext__isset;
-
-class EnvironmentContext : public virtual ::apache::thrift::TBase {
- public:
-
-  EnvironmentContext(const EnvironmentContext&);
-  EnvironmentContext& operator=(const EnvironmentContext&);
-  EnvironmentContext() {
-  }
-
-  virtual ~EnvironmentContext() noexcept;
-  std::map<std::string, std::string>  properties;
-
-  _EnvironmentContext__isset __isset;
-
-  void __set_properties(const std::map<std::string, std::string> & val);
-
-  bool operator == (const EnvironmentContext & rhs) const
-  {
-    if (!(properties == rhs.properties))
-      return false;
-    return true;
-  }
-  bool operator != (const EnvironmentContext &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const EnvironmentContext & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(EnvironmentContext &a, EnvironmentContext &b);
-
-std::ostream& operator<<(std::ostream& out, const EnvironmentContext& obj);
 
 typedef struct _PrimaryKeysRequest__isset {
   _PrimaryKeysRequest__isset() : catName(false), validWriteIdList(false), tableId(true) {}

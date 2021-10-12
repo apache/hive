@@ -35,7 +35,7 @@ public class JdbcConnectionParams {
   // Client param names:
 
   // Retry setting
-  static final String RETRIES = "retries";
+  public static final String RETRIES = "retries";
   public static final String RETRY_INTERVAL = "retryInterval";
 
   public static final String AUTH_TYPE = "auth";
@@ -79,8 +79,8 @@ public class JdbcConnectionParams {
   static final String HTTP_PATH_DEPRECATED = "hive.server2.thrift.http.path";
   public static final String HTTP_PATH = "httpPath";
   public static final String SERVICE_DISCOVERY_MODE = "serviceDiscoveryMode";
-  public static final String PROPERTY_DRIVER = "driver";
-  public static final String PROPERTY_URL = "url";
+  public static final String PROPERTY_DRIVER        = "driver";
+  public static final String PROPERTY_URL           = "url";
   // Don't use dynamic service discovery
   static final String SERVICE_DISCOVERY_MODE_NONE = "none";
   // Use ZooKeeper for indirection while using dynamic service discovery

@@ -1770,6 +1770,16 @@ public interface IMetaStoreClient {
   void validatePartitionNameCharacters(List<String> partVals) throws TException, MetaException;
 
   /**
+   * Dry run that translates table
+   *    *
+   *    * @param tbl
+   *    *          a table object
+   *    * @throws HiveException
+   */
+  public Table getTranslateTableDryrun(Table tbl) throws AlreadyExistsException,
+          InvalidObjectException, MetaException, NoSuchObjectException, TException;
+
+  /**
    * @param tbl
    * @throws AlreadyExistsException
    * @throws InvalidObjectException

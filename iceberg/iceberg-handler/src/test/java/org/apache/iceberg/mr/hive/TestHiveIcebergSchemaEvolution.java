@@ -127,7 +127,7 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
     shell.executeStatement("ALTER TABLE orders CHANGE COLUMN " +
         "item fruit string");
     List<Object[]> result = shell.executeStatement("SELECT customer_first_name, customer_last_name, SUM(quantity) " +
-        "FROM orders where price >= 3 group by customer_first_name, customer_last_name");
+        "FROM orders where price >= 3 group by customer_first_name, customer_last_name order by customer_first_name");
 
     assertQueryResult(result, 4,
         "Doctor", "Strange", 900L,
@@ -140,7 +140,8 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
     shell.executeStatement("ALTER TABLE orders ADD COLUMNS (nickname string)");
     shell.executeStatement("INSERT INTO orders VALUES (7, 'Romanoff', 'Natasha', 3, 250, 'apple', 'Black Widow')");
     result = shell.executeStatement("SELECT customer_first_name, customer_last_name, nickname, SUM(quantity) " +
-        " FROM orders where price >= 3 group by customer_first_name, customer_last_name, nickname");
+        " FROM orders where price >= 3 group by customer_first_name, customer_last_name, nickname " +
+        " order by customer_first_name");
     assertQueryResult(result, 5,
         "Doctor", "Strange", null, 900L,
         "Natasha", "Romanoff", "Black Widow", 250L,
@@ -152,7 +153,7 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
     shell.executeStatement("ALTER TABLE orders CHANGE COLUMN fruit fruit string AFTER nickname");
     result = shell.executeStatement("SELECT customer_first_name, customer_last_name, nickname, fruit, SUM(quantity) " +
         " FROM orders where price >= 3 and fruit < 'o' group by customer_first_name, customer_last_name, nickname, " +
-        "fruit");
+        "fruit order by customer_first_name");
     assertQueryResult(result, 4,
         "Doctor", "Strange", null, "apple", 100L,
         "Natasha", "Romanoff", "Black Widow", "apple", 250L,

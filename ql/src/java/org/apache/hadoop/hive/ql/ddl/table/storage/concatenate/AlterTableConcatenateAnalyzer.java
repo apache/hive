@@ -78,8 +78,13 @@ public class AlterTableConcatenateAnalyzer extends AbstractAlterTableAnalyzer {
       if (table.isNonNative()) {
         throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_NON_NATIVE.getMsg());
       }
+
       if (table.getTableType() != TableType.MANAGED_TABLE) {
-        throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_NOT_MANAGED.getMsg());
+        // Enable concatenate for external tables if config is set.
+        if (!conf.getBoolVar(ConfVars.CONCATENATE_EXTERNAL_TABLE)
+            || table.getTableType() != TableType.EXTERNAL_TABLE) {
+          throw new SemanticException(ErrorMsg.CONCATENATE_UNSUPPORTED_TABLE_NOT_MANAGED.getMsg());
+        }
       }
 
       if (table.isPartitioned()) {

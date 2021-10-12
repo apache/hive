@@ -435,7 +435,7 @@ public class Context {
 
   /**
    * Find whether we should execute the current query due to explain
-   * @return true if the query needs to be executed, false if not
+   * @return true if the query skips execution, false if does execute
    */
   public boolean isExplainSkipExecution() {
     return (explainConfig != null && explainConfig.getAnalyze() != AnalyzeState.RUNNING);
