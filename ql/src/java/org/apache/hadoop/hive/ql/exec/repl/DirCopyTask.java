@@ -54,6 +54,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_OVERWRITE_TARGET_FOR_EXTERNAL_TABLE_COPY;
 import static org.apache.hadoop.hive.metastore.utils.HdfsUtils.constructDistCpOptions;
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.NEW_SNAPSHOT;
+import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.OLD_SNAPSHOT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.firstSnapshot;
 import static org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils.secondSnapshot;
 
@@ -199,7 +200,7 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
           if (!getWork().getCopyMode().equals(SnapshotUtils.SnapshotCopyMode.FALLBACK_COPY)) {
             LOG.info("Using Snapshot mode of copy for source: {} and target: {}", sourcePath, targetPath);
             // Use distcp with snapshots for copy.
-            result.set(copyUsingDistCpSnapshots(sourcePath, targetPath, proxyUser, clonedConf));
+            result.set(copyUsingDistCpSnapshots(sourcePath, targetPath, proxyUser, work.isBootstrap(), clonedConf));
           } else {
             LOG.info("Using Normal copy for source: {} and target: {}", sourcePath, targetPath);
             result.set(runFallbackDistCp(sourcePath, targetPath, proxyUser, clonedConf));
@@ -255,11 +256,34 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
     return true;
   }
 
-  boolean copyUsingDistCpSnapshots(Path sourcePath, Path targetPath, UserGroupInformation proxyUser,
+  boolean copyUsingDistCpSnapshots(Path sourcePath, Path targetPath, UserGroupInformation proxyUser, boolean isBootstrap,
       HiveConf clonedConf) throws IOException {
 
     DistributedFileSystem targetFs = SnapshotUtils.getDFS(targetPath, clonedConf);
     boolean result = false;
+    String snapPrefix = work.getSnapshotPrefix();
+    if(isBootstrap && conf.getBoolVar(HiveConf.ConfVars.REPL_REUSE_SNAPSHOTS)) {
+      // in case of bootstrap replication from B to A (reverse replication), rename snapshots in A
+      // as they might have been renamed during dump in B
+      FileStatus[] listing = targetFs.listStatus(new Path(targetPath, ".snapshot"));
+      for (FileStatus elem : listing) {
+        String snapShotName = elem.getPath().getName();
+        String prefix;
+        if (snapShotName.contains(OLD_SNAPSHOT)) {
+          prefix = snapShotName.substring(0, snapShotName.lastIndexOf(OLD_SNAPSHOT));
+          if (!prefix.equals(snapPrefix)) {
+            targetFs.renameSnapshot(targetPath, firstSnapshot(prefix), firstSnapshot(snapPrefix));
+          }
+        }
+        if (snapShotName.contains(NEW_SNAPSHOT)) {
+          prefix = snapShotName.substring(0, snapShotName.lastIndexOf(NEW_SNAPSHOT));
+          if (!prefix.equals(snapPrefix)) {
+            targetFs.renameSnapshot(targetPath, secondSnapshot(prefix), secondSnapshot(snapPrefix));
+          }
+        }
+      }
+    }
+
     boolean secondSnapAvailable =
             SnapshotUtils.isSnapshotAvailable(targetFs, targetPath, work.getSnapshotPrefix(), NEW_SNAPSHOT, clonedConf);
     if (getWork().getCopyMode().equals(SnapshotUtils.SnapshotCopyMode.DIFF_COPY)) {

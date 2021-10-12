@@ -219,9 +219,7 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
 
     // Run a cycle of dump & load with snapshot disabled.
     ArrayList<String> withClause = new ArrayList<>(3);
-    ArrayList<String> withClause2 = new ArrayList<>(3);
     withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
-    withClause2.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
     withClause.add("'"+ REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY + "' = 'false'");
     WarehouseInstance.Tuple tuple = primary.dump(primaryDbName, withClause);
     replica.load(replicatedDbName, primaryDbName, withClause);
@@ -250,13 +248,14 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
     // Enable snapshot based copy
     primary.getConf().setBoolVar(REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY, true);
     replica.getConf().setBoolVar(REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY, true);
+    withClause.set(withClause.size() - 1, "'"+ REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY + "' = 'true'");
 
     // Add some data & then try a dump & load cycle.
     primary.run("use " + primaryDbName)
         .run("insert into t1 partition(country='india') values ('mumbai')")
-        .dump(primaryDbName, withClause2);
+        .dump(primaryDbName, withClause);
 
-    replica.load(replicatedDbName, primaryDbName, withClause2)
+    replica.load(replicatedDbName, primaryDbName, withClause)
         .run("use " + replicatedDbName)
         .run("select place from t1 order by place")
         .verifyResults(new String[] {"delhi", "mumbai"})
@@ -273,9 +272,9 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
         .run("create external table t2 (place string) partitioned by (country string) row format "
             + "delimited fields terminated by ',' ")
         .run("insert into t2 partition(country='usa') values ('new york')")
-        .dump(primaryDbName, withClause2);
+        .dump(primaryDbName, withClause);
 
-    replica.load(replicatedDbName, primaryDbName, withClause2)
+    replica.load(replicatedDbName, primaryDbName, withClause)
         .run("use " + replicatedDbName)
         .run("show tables like 't2'")
         .verifyResult("t2")
@@ -641,6 +640,128 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
         .verifyResults(new String[] {"bangalore", "chennai", "kolkata", "patna"})
         .run("select place from tablesource2")
         .verifyResults(new String[] {"delhi", "noida"});
+  }
+
+  /*
+   * test to check reuse of diff snapshots when incremental fails with irrecoverable error during data-copy (target modified)
+   * and re-bootstrap is required but overwrite is off.
+   */
+  @Test
+  public void testRebootstrapDiffCopy() throws Throwable {
+
+    DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
+    DistributedFileSystem fsTarget = replica.miniDFSCluster.getFileSystem();
+    Path externalTableLocation1 = new Path("/" + testName.getMethodName() + "/table1/");
+    fs.mkdirs(externalTableLocation1, new FsPermission("777"));
+
+    List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+    withClause.add("'hive.repl.external.warehouse.single.copy.task.paths'='" + externalTableLocation1
+            .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "'");
+
+    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
+            .run("create external table table1 (place string) partitioned by (country string) row format "
+                    + "delimited fields terminated by ',' location '" + externalTableLocation1.toString() + "'")
+            .run("create external table table2 (id int)")
+            .run("create external table table3 (id int)")
+            .run("insert into table1 partition(country='nepal') values ('kathmandu')")
+            .run("insert into table1 partition(country='china') values ('beejing')")
+            .run("insert into table2 values(1)")
+            .run("insert into table3 values(5)")
+            .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("show tables like 'table1'")
+            .verifyResults(new String[] {"table1"})
+            .run("select place from table1 where country='nepal'")
+            .verifyResults(new String[] {"kathmandu"})
+            .run("select place from table1 where country='china'")
+            .verifyResults(new String[] {"beejing"})
+            .run("select id from table3")
+            .verifyResults(new String[]{"5"})
+            .run("select id from table2")
+            .verifyResults(new String[] {"1"})
+            .verifyReplTargetProperty(replicatedDbName);
+
+    // Check if the table1 directory is snapshotoble and the snapshot is there.
+    validateInitialSnapshotsCreated(externalTableLocation1.toString());
+
+    // Add some more data and do a dump & load
+    primary.run("use " + primaryDbName)
+            .run("insert into table1 partition(country='china') values ('wuhan')")
+            .run("insert into table2 values(2)")
+            .run("insert into table3 values(6)")
+            .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("select place from table1 where country='china'")
+            .verifyResults(new String[] {"beejing", "wuhan"})
+            .run("select id from table3")
+            .verifyResults(new String[]{"5", "6"})
+            .run("select id from table2")
+            .verifyResults(new String[] {"1", "2"})
+            .verifyReplTargetProperty(replicatedDbName);
+
+    // Verify if diff snapshots is there.
+    validateDiffSnapshotsCreated(externalTableLocation1.toString());
+
+    Path targetWhPath = externalTableDataPath(replicaConf, REPLICA_EXTERNAL_BASE,
+            new Path(primary.getDatabase(primaryDbName).getLocationUri()));
+    DistributedFileSystem replicaDfs = (DistributedFileSystem) targetWhPath.getFileSystem(replicaConf);
+
+    // Emulate the situation of a rebootstrap with incomplete data copied in the previous incremental cycle for some paths
+    // a. add some data to some paths
+    // b. do a dump load with snapshot disabled
+    // c. Now, some paths should have outdated snapshots in both source and target.
+    //    Re-enable snapshot and check whether diff-copy takes place for a fresh bootstrap
+    withClause.add("'hive.repl.externaltable.snapshotdiff.copy'='false'");
+    tuple = primary.run("use " + primaryDbName)
+            .run("insert into table table3 values (7)")
+            .run("insert into table table2 values (3)")
+            .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("select id from table3")
+            .verifyResults(new String[]{"5", "6", "7"})
+            .run("select id from table2")
+            .verifyResults(new String[] {"1", "2", "3"});
+
+    replica.run("use " + replicatedDbName)
+            .run("drop table table1")
+            .run("drop table table2")
+            .run("drop table table3")
+            .run("drop database "+ replicatedDbName + " cascade");
+
+    Path dumpDirectoryRebootstrap = new Path("/" + testName.getMethodName() + "/dumpDir/");
+    fs.mkdirs(dumpDirectoryRebootstrap, new FsPermission("777"));
+    withClause.set(withClause.size() - 3,  "'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + dumpDirectoryRebootstrap
+            .makeQualified(fs.getUri(), fs.getWorkingDirectory()).toString() + "'");
+    withClause.set(withClause.size() - 1, "'hive.repl.externaltable.snapshotdiff.copy'='true'");
+    withClause.add("'hive.repl.reuse.snapshots'='true'");
+    withClause.add("'hive.repl.externaltable.snapshot.overwrite.target'='false'");
+
+    primary.run("use " + primaryDbName)
+            .run("insert into table1 partition(country='china') values('shanghai')")
+            .run("insert into table table3 values(8)")
+            .run("insert into table table2 values(4)")
+            .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("select place from table1 where country='china'")
+            .verifyResults(new String[] {"beejing", "wuhan", "shanghai"})
+            .run("select id from table2")
+            .verifyResults(new String[] {"1", "2", "3", "4"})
+            .run("select id from table3")
+            .verifyResults(new String[] {"5", "6", "7", "8"})
+            .verifyReplTargetProperty(replicatedDbName);
+
+    // Verify if diff snapshots are there even for the rebootstrap run.
+    validateDiffSnapshotsCreated(externalTableLocation1.toString());
+    validateDiffSnapshotsCreated(primary.getDatabase(primaryDbName).getLocationUri());
   }
 
   @Test

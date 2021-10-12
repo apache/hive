@@ -936,7 +936,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       List<String> paths = Arrays.asList(conf.getVar(REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS).split(","));
       for (String path : paths) {
         if (!StringUtils.isEmpty(path)) {
-          singleCopyPaths.put(path, false);
+          singleCopyPaths.put(path.trim(), false);
         }
       }
       singleCopyPaths.put(db.getLocationUri(), false);
@@ -1175,6 +1175,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           String snapshotPrefix = dbName.toLowerCase();
           ArrayList<String> prevSnaps = new ArrayList<>();
           if (isSnapshotEnabled) {
+            FileUtils.deleteIfExists(getDFS(SnapshotUtils.getSnapshotFileListPath(dumpRoot), conf),
+                    new Path(SnapshotUtils.getSnapshotFileListPath(dumpRoot), EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_OLD));
             // Get the counter to store the snapshots created & deleted at source.
             replSnapshotCount = new SnapshotUtils.ReplSnapshotCount();
             if (snapPathFileList.hasNext()) {

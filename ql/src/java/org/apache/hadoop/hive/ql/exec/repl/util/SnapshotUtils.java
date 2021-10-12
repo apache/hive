@@ -283,21 +283,23 @@ public class SnapshotUtils {
    */
   private static void cleanUpSnapshots(ArrayList<String> diffList, String prefix,
       ReplSnapshotCount snapshotCount, HiveConf conf) throws IOException {
-    for (String path : diffList) {
-      Path snapshotPath = new Path(path);
-      DistributedFileSystem dfs = (DistributedFileSystem) snapshotPath.getFileSystem(conf);
-      boolean isFirstDeleted = deleteSnapshotIfExists(dfs, snapshotPath, firstSnapshot(prefix), conf);
-      boolean isSecondDeleted = deleteSnapshotIfExists(dfs, snapshotPath, secondSnapshot(prefix), conf);
-      // Only attempt to disallowSnapshot, we have deleted the snapshots related to our replication policy, so if
-      // this path was only used by this policy for snapshots, then the disallow will be success, if it is used by
-      // some other applications as well, it won't be success, in that case we ignore.
-      disallowSnapshot(dfs, snapshotPath);
-      if (snapshotCount != null) {
-        if (isFirstDeleted) {
-          snapshotCount.incrementNumDeleted();
-        }
-        if (isSecondDeleted) {
-          snapshotCount.incrementNumDeleted();
+    if(!diffList.isEmpty()) {
+      DistributedFileSystem dfs = (DistributedFileSystem) new Path(diffList.get(0)).getFileSystem(conf);
+      for (String path : diffList) {
+        Path snapshotPath = new Path(path);
+        boolean isFirstDeleted = deleteSnapshotIfExists(dfs, snapshotPath, firstSnapshot(prefix), conf);
+        boolean isSecondDeleted = deleteSnapshotIfExists(dfs, snapshotPath, secondSnapshot(prefix), conf);
+        // Only attempt to disallowSnapshot, we have deleted the snapshots related to our replication policy, so if
+        // this path was only used by this policy for snapshots, then the disallow will be success, if it is used by
+        // some other applications as well, it won't be success, in that case we ignore.
+        disallowSnapshot(dfs, snapshotPath);
+        if (snapshotCount != null) {
+          if (isFirstDeleted) {
+            snapshotCount.incrementNumDeleted();
+          }
+          if (isSecondDeleted) {
+            snapshotCount.incrementNumDeleted();
+          }
         }
       }
     }

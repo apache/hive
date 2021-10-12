@@ -172,11 +172,9 @@ public class ReplExternalTables {
       FileList snapPathFileList, ArrayList<String> prevSnaps, boolean isBootstrap) throws HiveException, IOException {
     Path basePath = getExternalTableBaseDir(conf);
     Path targetPath = externalTableDataPath(conf, basePath, sourcePath);
-    Map<String, SnapshotUtils.SnapshotCopyMode> ret =
+    SnapshotUtils.SnapshotCopyMode copyMode =
         createSnapshotsAtSource(sourcePath, targetPath, snapshotPrefix, createSnapshot, conf, replSnapshotCount, snapPathFileList,
             prevSnaps, isBootstrap);
-    snapshotPrefix = ret.keySet().iterator().next();
-    SnapshotUtils.SnapshotCopyMode copyMode = ret.get(snapshotPrefix);
     //Here, when src and target are HA clusters with same NS, then sourcePath would have the correct host
     //whereas the targetPath would have an host that refers to the target cluster. This is fine for
     //data-copy running during dump as the correct logical locations would be used. But if data-copy runs during
@@ -193,39 +191,37 @@ public class ReplExternalTables {
       targetPath = new Path(Utils.replaceHost(targetPath.toString(), sourcePath.toUri().getHost()));
       sourcePath = new Path(Utils.replaceHost(sourcePath.toString(), remoteNS));
     }
-    fileList.add(new DirCopyWork(tableName, sourcePath, targetPath, copyMode, snapshotPrefix).convertToString());
+    fileList.add(new DirCopyWork(tableName, sourcePath, targetPath, copyMode, snapshotPrefix, isBootstrap).convertToString());
   }
 
-  private Map<String, SnapshotUtils.SnapshotCopyMode> createSnapshotsAtSource(Path sourcePath, Path targetPath, String snapshotPrefix,
+  SnapshotUtils.SnapshotCopyMode createSnapshotsAtSource(Path sourcePath, Path targetPath, String snapshotPrefix,
                                                                               boolean isSnapshotEnabled, HiveConf conf, SnapshotUtils.ReplSnapshotCount replSnapshotCount, FileList snapPathFileList,
                                                                               ArrayList<String> prevSnaps, boolean isBootstrap) throws IOException {
-    Map<String, SnapshotUtils.SnapshotCopyMode> ret = new HashMap<>();
-    ret.put(snapshotPrefix, FALLBACK_COPY);
     if (!isSnapshotEnabled) {
       LOG.info("Snapshot copy not enabled for path {} Will use normal distCp for copying data.", sourcePath);
-      return ret;
+      return FALLBACK_COPY;
     }
-    String prefix = snapshotPrefix;
-    SnapshotUtils.SnapshotCopyMode copyMode = FALLBACK_COPY;
     DistributedFileSystem sourceDfs = SnapshotUtils.getDFS(sourcePath, conf);
     try {
-      if(conf.getBoolVar(HiveConf.ConfVars.REPL_REUSE_SNAPSHOTS)) {
+      if(isBootstrap && conf.getBoolVar(HiveConf.ConfVars.REPL_REUSE_SNAPSHOTS)) {
         try {
           FileStatus[] listing = sourceDfs.listStatus(new Path(sourcePath, ".snapshot"));
           for (FileStatus elem : listing) {
             String snapShotName = elem.getPath().getName();
+            String prefix;
             if (snapShotName.contains(OLD_SNAPSHOT)) {
               prefix = snapShotName.substring(0, snapShotName.lastIndexOf(OLD_SNAPSHOT));
-              break;
+              if(!prefix.equals(snapshotPrefix)) {
+                sourceDfs.renameSnapshot(sourcePath, firstSnapshot(prefix), firstSnapshot(snapshotPrefix));
+              }
             }
             if (snapShotName.contains(NEW_SNAPSHOT)) {
               prefix = snapShotName.substring(0, snapShotName.lastIndexOf(NEW_SNAPSHOT));
-              break;
+              if(!prefix.equals(snapshotPrefix)) {
+                sourceDfs.renameSnapshot(sourcePath, secondSnapshot(prefix), secondSnapshot(snapshotPrefix));
+              }
             }
           }
-          ret.clear();
-          ret.put(prefix, copyMode);
-          snapshotPrefix = prefix;
         } catch (SnapshotException e) {
           //dir not snapshottable, continue
         }
@@ -238,39 +234,53 @@ public class ReplExternalTables {
       //While resuming a failed replication
       if (prevSnaps.contains(sourcePath.toString())) {
         // We already created a snapshot for this, just refresh the latest snapshot and leave.
-        // In case of reverse replication after failover, in some paths, second snapshot may not be present.
-        SnapshotUtils.deleteSnapshotIfExists(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf);
-        replSnapshotCount.incrementNumDeleted();
+        // In case of reverse replication after fail-over, in some paths, second snapshot may not be present.
+        if(SnapshotUtils.deleteSnapshotIfExists(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf)) {
+          replSnapshotCount.incrementNumDeleted();
+        }
         SnapshotUtils.createSnapshot(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf);
-        snapPathFileList.add(sourcePath.toString());
         replSnapshotCount.incrementNumCreated();
-        copyMode = SnapshotUtils
+        snapPathFileList.add(sourcePath.toString());
+        return SnapshotUtils
                 .isSnapshotAvailable(sourceDfs, sourcePath, snapshotPrefix, OLD_SNAPSHOT, conf) ? DIFF_COPY : INITIAL_COPY;
-        ret.put(prefix, copyMode);
-        return ret;
       }
 
-      //for bootstrap and forward replication, use initial_copy
+      //for bootstrap and forward replication
       if(isBootstrap && !(!secondSnapAvailable && firstSnapAvailable)) {
-        // Delete any pre-existing snapshots.
-        SnapshotUtils.deleteSnapshotIfExists(sourceDfs, sourcePath, firstSnapshot(snapshotPrefix), conf);
-        SnapshotUtils.deleteSnapshotIfExists(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf);
-        allowAndCreateInitialSnapshot(sourcePath, snapshotPrefix, conf, replSnapshotCount, snapPathFileList, sourceDfs);
-        ret.put(prefix, INITIAL_COPY);
-        return ret;
+        if (conf.getBoolVar(HiveConf.ConfVars.REPL_REUSE_SNAPSHOTS)) {
+          //this can be used in re-bootstrap cases after irrecoverable error
+          if(SnapshotUtils.deleteSnapshotIfExists(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf)) {
+            replSnapshotCount.incrementNumDeleted();
+          }
+          SnapshotUtils.createSnapshot(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf);
+          snapPathFileList.add(sourcePath.toString());
+          replSnapshotCount.incrementNumCreated();
+          return SnapshotUtils
+                  .isSnapshotAvailable(sourceDfs, sourcePath, snapshotPrefix, OLD_SNAPSHOT, conf) ? DIFF_COPY : INITIAL_COPY;
+        } else {
+          // for normal bootstrap, use initial_copy
+          if(SnapshotUtils.deleteSnapshotIfExists(sourceDfs, sourcePath, firstSnapshot(snapshotPrefix), conf)) {
+            replSnapshotCount.incrementNumDeleted();
+          }
+          if(SnapshotUtils.deleteSnapshotIfExists(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf)) {
+            replSnapshotCount.incrementNumCreated();
+          }
+          allowAndCreateInitialSnapshot(sourcePath, snapshotPrefix, conf, replSnapshotCount, snapPathFileList, sourceDfs);
+          return INITIAL_COPY;
+        }
       }
 
       /*
       * We have 4 cases :
       * i.   both old and new snapshots exist in src -
-      *        a. In case of bootstrap -   it must be a re-bootstrap case where incremental failed earlier. Todo.
+      *        a. In case of bootstrap -   it must be a re-bootstrap case where incremental failed earlier. Handled above.
       *        b. In case of incremental - denotes normal incremental flow, we delete old snapshot,
       *                                    rename the new as old and create a new 'new-snapshot'. No changes required in target.
       * ii.  only new snapshot exists in src -
       *        a. In case of incremental - denotes a path where initial copy would have been done in the previous
       *                                    iteration, we rename it as 'old' and create a new 'new-snapshot'.
       *                                    No changes required in target.
-      *        b. in case of bootstrap, it must be a re-bootstrap case. Todo
+      *        b. in case of bootstrap, it must be a re-bootstrap case. Handled above.
       * iii. only old snapshot exists in src - this can occur during B(src)->A(tgt) replication after failover.
       *      If reuse snapshots conf is true, attempt to reuse the snapshots :
       *           Assume both snapshots exist in tgt (A). Deleting the old one and renaming the new as old will
@@ -287,16 +297,14 @@ public class ReplExternalTables {
           SnapshotUtils.createSnapshot(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf);
           replSnapshotCount.incrementNumCreated();
           snapPathFileList.add(sourcePath.toString());
-          ret.put(prefix, DIFF_COPY);
-          return ret;
+          return DIFF_COPY;
         } else {
           //only new snapshot exists
           sourceDfs.renameSnapshot(sourcePath, secondSnapshot(snapshotPrefix), firstSnapshot(snapshotPrefix));
           SnapshotUtils.createSnapshot(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf);
           replSnapshotCount.incrementNumCreated();
           snapPathFileList.add(sourcePath.toString());
-          ret.put(prefix, DIFF_COPY);
-          return ret;
+          return DIFF_COPY;
         }
       } else {
         if (firstSnapAvailable) {
@@ -305,29 +313,25 @@ public class ReplExternalTables {
             SnapshotUtils.createSnapshot(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf);
             replSnapshotCount.incrementNumCreated();
             snapPathFileList.add(sourcePath.toString());
-            ret.put(prefix, DIFF_COPY);
-            return ret;
+            return DIFF_COPY;
           } else {
             sourceDfs.deleteSnapshot(sourcePath, firstSnapshot(snapshotPrefix));
             replSnapshotCount.incrementNumDeleted();
             SnapshotUtils.createSnapshot(sourceDfs, sourcePath, secondSnapshot(snapshotPrefix), conf);
             replSnapshotCount.incrementNumCreated();
             snapPathFileList.add(sourcePath.toString());
-            ret.put(prefix, INITIAL_COPY);
-            return ret;
+            return INITIAL_COPY;
           }
         } else {
           allowAndCreateInitialSnapshot(sourcePath, snapshotPrefix, conf, replSnapshotCount, snapPathFileList,
               sourceDfs);
-          ret.put(prefix, INITIAL_COPY);
-          return ret;
+          return INITIAL_COPY;
         }
       }
     } catch (FileNotFoundException fnf) {
       // Source deleted is already handled and is not an abnormal scenario, log and return.
       LOG.debug("Can not enable snapshot for path: {}", sourcePath, fnf);
-      ret.put(prefix, FALLBACK_COPY);
-      return ret;
+      return FALLBACK_COPY;
     }
   }
 

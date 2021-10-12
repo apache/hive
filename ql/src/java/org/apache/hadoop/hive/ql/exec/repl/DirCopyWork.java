@@ -42,6 +42,7 @@ public class DirCopyWork implements Serializable, StringConvertibleObject {
   private transient ReplicationMetricCollector metricCollector;
   private SnapshotUtils.SnapshotCopyMode copyMode = FALLBACK_COPY;
   private String snapshotPrefix = "";
+  private boolean isBootstrap;
 
   public DirCopyWork(ReplicationMetricCollector metricCollector, String dumpDirectory) {
     this.metricCollector = metricCollector;
@@ -55,10 +56,11 @@ public class DirCopyWork implements Serializable, StringConvertibleObject {
   }
 
   public DirCopyWork(String tableName, Path fullyQualifiedSourcePath, Path fullyQualifiedTargetPath,
-      SnapshotUtils.SnapshotCopyMode copyMode, String snapshotPrefix) {
+      SnapshotUtils.SnapshotCopyMode copyMode, String snapshotPrefix, boolean isBootstrap) {
     this(tableName, fullyQualifiedSourcePath, fullyQualifiedTargetPath);
     this.copyMode = copyMode;
     this.snapshotPrefix = snapshotPrefix;
+    this.isBootstrap = isBootstrap;
   }
 
 
@@ -70,6 +72,7 @@ public class DirCopyWork implements Serializable, StringConvertibleObject {
             + ", tableName=" + tableName
             + ", copyMode="+ getCopyMode()
             + ", snapshotPrefix="+ getSnapshotPrefix()
+            + ", isBootstrap=" + isBootstrap
             + '}';
   }
 
@@ -101,6 +104,10 @@ public class DirCopyWork implements Serializable, StringConvertibleObject {
     return tableName;
   }
 
+  public boolean isBootstrap() {
+    return isBootstrap;
+  }
+
   @Override
   public String convertToString() {
     StringBuilder objInStr = new StringBuilder();
@@ -112,7 +119,9 @@ public class DirCopyWork implements Serializable, StringConvertibleObject {
             .append(URI_SEPARATOR)
             .append(copyMode)
             .append(URI_SEPARATOR)
-            .append(snapshotPrefix);
+            .append(snapshotPrefix)
+            .append(URI_SEPARATOR)
+            .append(isBootstrap);
 
     return objInStr.toString();
   }
@@ -126,6 +135,7 @@ public class DirCopyWork implements Serializable, StringConvertibleObject {
       this.tableName = paths[2];
       this.copyMode = SnapshotUtils.SnapshotCopyMode.valueOf(paths[3]);
       this.snapshotPrefix = paths[4];
+      this.isBootstrap = Boolean.parseBoolean(paths[5]);
     }
   }
 }

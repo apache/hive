@@ -126,23 +126,23 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     MiniDFSCluster miniDFSClusterReplica =
             new MiniDFSCluster.Builder(replicaConf).numDataNodes(2).format(true).build();
     Map<String, String> acidEnableConf = new HashMap<String, String>() {{
-      put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
-      put("hive.support.concurrency", "true");
-      put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
-      put("hive.metastore.client.capability.check", "false");
-      put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
-      put("hive.strict.checks.bucketing", "false");
-      put("hive.mapred.mode", "nonstrict");
-      put("mapred.input.dir.recursive", "true");
-      put("hive.metastore.disallow.incompatible.col.type.changes", "false");
-      put("metastore.warehouse.tenant.colocation", "true");
-      put("hive.in.repl.test", "true");
-      put("hive.txn.readonly.enabled", "true");
-      //HIVE-25267
-      put(MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT.getVarname(), "2000");
-      put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
-      put(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET.varname, "false");
-    }};
+        put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
+        put("hive.support.concurrency", "true");
+        put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+        put("hive.metastore.client.capability.check", "false");
+        put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
+        put("hive.strict.checks.bucketing", "false");
+        put("hive.mapred.mode", "nonstrict");
+        put("mapred.input.dir.recursive", "true");
+        put("hive.metastore.disallow.incompatible.col.type.changes", "false");
+        put("metastore.warehouse.tenant.colocation", "true");
+        put("hive.in.repl.test", "true");
+        put("hive.txn.readonly.enabled", "true");
+        //HIVE-25267
+        put(MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT.getVarname(), "2000");
+        put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
+        put(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET.varname, "false");
+      }};
 
     acidEnableConf.putAll(overrides);
 
@@ -151,11 +151,11 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     acidEnableConf.put("fs.defaultFS", miniDFSClusterReplica.getFileSystem().getUri().toString());
     replica = new WarehouseInstance(LOG, miniDFSClusterReplica, acidEnableConf);
     Map<String, String> overridesForHiveConf1 = new HashMap<String, String>() {{
-      put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
-      put("hive.support.concurrency", "false");
-      put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
-      put("hive.metastore.client.capability.check", "false");
-    }};
+          put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
+          put("hive.support.concurrency", "false");
+          put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
+          put("hive.metastore.client.capability.check", "false");
+        }};
     overridesForHiveConf1.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replicaNonAcid = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
   }
@@ -398,8 +398,8 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     //base dir should be "/" so can use same location for external table path
     withClause.set(withClause.size() - 1, "'hive.repl.replica.external.table.base.dir'='"
             + externalBaseDir.makeQualified(dfs.getUri(), dfs.getWorkingDirectory()).toString() + "'");
-    withClause.set(withClause.size() - 5, "'hive.repl.external.warehouse.single.copy.task.paths'='" + externalTableLocation
-            .makeQualified(replicaDfs.getUri(), replicaDfs.getWorkingDirectory()).toString() + "," + externalTableLocationErr
+    withClause.set(withClause.size() - 5, "'hive.repl.external.warehouse.single.copy.task.paths'='" + externalTableLocationErr
+            .makeQualified(replicaDfs.getUri(), replicaDfs.getWorkingDirectory()).toString() + "," + externalTableLocation
             .makeQualified(replicaDfs.getUri(), replicaDfs.getWorkingDirectory()).toString() + "'");
     withClause.add("'hive.repl.reuse.snapshots'='true'");
 
@@ -3461,37 +3461,40 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
       .verifyReplTargetProperty(replicatedDbName);
   }
 
+  //to test snapshots for A->B (forward replication) and B->A (reverse replication after failover)
+  // A: primary, B: replica
   private void validateSnapshotsFailover(String location, boolean isReverseReplication, boolean isDiff) throws Exception {
     Path locationPath = new Path(location);
     Path locationPathTarget = new Path("/", locationPath.toUri().getPath().replaceFirst("/", ""));
-    DistributedFileSystem dfs = (DistributedFileSystem) locationPath.getFileSystem(primary.getConf());
-    DistributedFileSystem dfsReplica = (DistributedFileSystem) locationPath.getFileSystem(replica.getConf());
+    DistributedFileSystem dfsA = (DistributedFileSystem) locationPath.getFileSystem(primary.getConf());
+    DistributedFileSystem dfsB = (DistributedFileSystem) locationPath.getFileSystem(replica.getConf());
 
     if (isReverseReplication) {
-      validateSnapshots(location, dfsReplica, dfs, isDiff);
+      // B->A (snapshots will use B's dbName)
+      // Check whether the source  location got snapshottable
+      assertTrue("Snapshot enabled for the B's location", dfsB.getFileStatus(locationPath).isSnapshotEnabled());
+      // Check whether the initial snapshot got created in the B's db location.
+      assertNotNull(dfsB.getFileStatus(new Path(locationPath, ".snapshot/" + secondSnapshot(replicatedDbName.toLowerCase()))));
+      if(isDiff) {
+        assertNotNull(dfsB.getFileStatus(new Path(locationPath, ".snapshot/" + firstSnapshot(replicatedDbName.toLowerCase()))));
+      }
+      // Verify Snapshots are created in target(A).
+      assertTrue("Snapshot enabled for the A's location", dfsA.getFileStatus(locationPathTarget).isSnapshotEnabled());
+      // Check whether the snapshot got created in the A's location.
+      assertNotNull(dfsA.getFileStatus(new Path(locationPathTarget, ".snapshot" + "/" + firstSnapshot(replicatedDbName.toLowerCase()))));
     } else {
-      validateSnapshots(location, dfs, dfsReplica, isDiff);
+      // A->B (snapshots will use A's dbName)
+      // Check whether the source  location got snapshottable
+      assertTrue("Snapshot enabled for the A's location", dfsA.getFileStatus(locationPath).isSnapshotEnabled());
+      // Check whether the initial snapshot got created in the A's db location.
+      assertNotNull(dfsA.getFileStatus(new Path(locationPath, ".snapshot/" + secondSnapshot(primaryDbName.toLowerCase()))));
+      if (isDiff) {
+        assertNotNull(dfsA.getFileStatus(new Path(locationPath, ".snapshot/" + firstSnapshot(primaryDbName.toLowerCase()))));
+      }
+      // Verify Snapshots are created in target.
+      assertTrue("Snapshot enabled for the B's location", dfsB.getFileStatus(locationPathTarget).isSnapshotEnabled());
+      // Check whether the snapshot got created in the B's location.
+      assertNotNull(dfsB.getFileStatus(new Path(locationPathTarget, ".snapshot" + "/" + firstSnapshot(primaryDbName.toLowerCase()))));
     }
-  }
-
-  private void validateSnapshots(String location, DistributedFileSystem primaryDfs,
-                                 DistributedFileSystem replicaDfs, boolean isDiff) throws Exception {
-    Path locationPath = new Path(location);
-    Path locationPathTarget = new Path("/", locationPath.toUri().getPath().replaceFirst("/", ""));
-
-    // Check whether the source  location got snapshottable
-    assertTrue("Snapshot enabled for the source  location", primaryDfs.getFileStatus(locationPath).isSnapshotEnabled());
-    // Check whether the initial snapshot got created in the source db location.
-    // Use primarydbname since reuse configuration would have reused existing snapshots
-    assertNotNull(primaryDfs.getFileStatus(new Path(locationPath, ".snapshot/" + secondSnapshot(primaryDbName.toLowerCase()))));
-    if(isDiff) {
-      assertNotNull(primaryDfs.getFileStatus(new Path(locationPath, ".snapshot/" + firstSnapshot(primaryDbName.toLowerCase()))));
-    }
-    // Verify Snapshots are created in target.
-    assertTrue("Snapshot enabled for the target location",
-            replicaDfs.getFileStatus(locationPathTarget).isSnapshotEnabled());
-    // Check whether the snapshot got created in the target location.
-    assertNotNull(replicaDfs
-            .getFileStatus(new Path(locationPathTarget, ".snapshot" + "/" + firstSnapshot(primaryDbName.toLowerCase()))));
   }
 }

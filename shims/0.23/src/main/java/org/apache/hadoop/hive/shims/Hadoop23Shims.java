@@ -30,6 +30,7 @@ import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1237,25 +1238,42 @@ public class Hadoop23Shims extends HadoopShimsSecure {
         LOG.warn("Copy failed with INVALID_ARGUMENT for source: {} to target: {} snapshot1: {} snapshot2: {} "
             + "params: {}", srcPaths, dst, oldSnapshot, newSnapshot, params);
         return true;
-      } else if (returnCode == DistCpConstants.UNKNOWN_ERROR && overwriteTarget) {
+      } else if (returnCode == DistCpConstants.UNKNOWN_ERROR) {
         // Check if this error is due to target modified.
-        if (shouldRdiff(dst, conf, oldSnapshot, overwriteTarget)) {
-          LOG.warn("Copy failed due to target modified. Attempting to restore back the target. source: {} target: {} "
-              + "snapshot: {}", srcPaths, dst, oldSnapshot);
-          List<String> rParams = constructDistCpWithSnapshotParams(srcPaths, dst, ".", oldSnapshot, conf, "-rdiff");
-          DistCp rDistcp = new DistCp(conf, null);
-          returnCode = rDistcp.run(rParams.toArray(new String[0]));
-          if (returnCode == 0) {
-            LOG.info("Target restored to previous state.  source: {} target: {} snapshot: {}. Reattempting to copy.",
-                srcPaths, dst, oldSnapshot);
-            dst.getFileSystem(conf).deleteSnapshot(dst, oldSnapshot);
-            dst.getFileSystem(conf).createSnapshot(dst, oldSnapshot);
-            returnCode = distcp.run(params.toArray(new String[0]));
+        if (targetModified(dst, conf, oldSnapshot)) {
+          if (overwriteTarget) {
+            LOG.warn("Copy failed due to target modified. Attempting to restore back the target. source: {} target: {} "
+                    + "snapshot: {}", srcPaths, dst, oldSnapshot);
+            List<String> rParams = constructDistCpWithSnapshotParams(srcPaths, dst, ".", oldSnapshot, conf, "-rdiff");
+            DistCp rDistcp = new DistCp(conf, null);
+            returnCode = rDistcp.run(rParams.toArray(new String[0]));
             if (returnCode == 0) {
+              LOG.info("Target restored to previous state.  source: {} target: {} snapshot: {}. Reattempting to copy.",
+                      srcPaths, dst, oldSnapshot);
+              dst.getFileSystem(conf).deleteSnapshot(dst, oldSnapshot);
+              dst.getFileSystem(conf).createSnapshot(dst, oldSnapshot);
+              returnCode = distcp.run(params.toArray(new String[0]));
+              if (returnCode == 0) {
+                return true;
+              } else {
+                LOG.error("Copy failed with after target restore for source: {} to target: {} snapshot1: {} snapshot2: "
+                        + "{} params: {}. Return code: {}", srcPaths, dst, oldSnapshot, newSnapshot, params, returnCode);
+                return false;
+              }
+            }
+          } else {
+            //in case overwriteTarget is false, and we encounter an exception due to targetFs getting modified
+            // since last snapshot, then fall back to full distcp
+            LOG.warn("Copy failed due to target modified and overwrite is false. Attempting full distcp." +
+                    "Source:{}, target: {}",srcPaths, dst);
+            // Get the path relative to the initial snapshot for copy.
+            Path snapRelPath = new Path(srcPaths.get(0), HdfsConstants.DOT_SNAPSHOT_DIR + "/" + newSnapshot);
+            // Copy from the initial snapshot path.
+            if(runDistCp(Collections.singletonList(snapRelPath), dst, conf)) {
               return true;
             } else {
-              LOG.error("Copy failed with after target restore for source: {} to target: {} snapshot1: {} snapshot2: "
-                  + "{} params: {}. Return code: {}", srcPaths, dst, oldSnapshot, newSnapshot, params, returnCode);
+              LOG.error("Copy failed with full distcp for source: {} to target: {}  snapshot:"
+                      + "{} params: {}. Return code: {}", srcPaths, dst, newSnapshot, returnCode);
               return false;
             }
           }
@@ -1272,10 +1290,9 @@ public class Hadoop23Shims extends HadoopShimsSecure {
    * @param p path where snapshot exists.
    * @param conf the hive configuration.
    * @param snapshot the name of snapshot.
-   * @param overwriteTarget whether overwriting target is enabled.
    * @return true, if we need to do rdiff.
    */
-  private static boolean shouldRdiff(Path p, Configuration conf, String snapshot, boolean overwriteTarget) throws Exception {
+  private static boolean targetModified(Path p, Configuration conf, String snapshot) throws Exception {
     // Using the configuration in string form since hive-shims doesn't have a dependency on hive-common.
     boolean targetModified = false;
     try {
@@ -1297,10 +1314,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       }
     } catch (Exception e) {
       LOG.error("Failed to compute snapshot diff for path: {} and snapshot: {}", p, snapshot);
-    }
-    if (targetModified && !overwriteTarget) {
-      throw new Exception(
-          "The target modified during snapshot based data copy for path: " + p + " and snapshot: " + snapshot);
     }
     return targetModified;
   }

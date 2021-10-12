@@ -544,7 +544,7 @@ public class ReplicationTestUtils {
     Set<String> tableNames = new HashSet<>();
     for (String line = reader.readLine(); line != null; line = reader.readLine()) {
       String[] components = line.split(DirCopyWork.URI_SEPARATOR);
-      Assert.assertEquals("The file should have sourcelocation#targetlocation#tblName#copymode", 5,
+      Assert.assertEquals("The file should have sourcelocation#targetlocation#tblName#copymode#isBootstrap", 6,
           components.length);
       tableNames.add(components[2]);
       Assert.assertTrue(components[0].length() > 0);
