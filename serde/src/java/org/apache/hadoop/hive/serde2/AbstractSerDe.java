@@ -80,8 +80,8 @@ public abstract class AbstractSerDe implements Deserializer, Serializer {
     this.tableProperties = Objects.requireNonNull(tableProperties);
     this.partitionProperties = Optional.ofNullable(partitionProperties);
     this.properties = SerDeUtils.createOverlayedProperties(tableProperties, partitionProperties);
-    this.columnNames = parseColumnNames(serdeConstants.LIST_COLUMNS);
-    this.columnTypes = parseColumnTypes(serdeConstants.LIST_COLUMN_TYPES);
+    this.columnNames = parseColumnNames();
+    this.columnTypes = parseColumnTypes();
     this.columnComments = parseColumnComments(serdeConstants.LIST_COLUMN_COMMENTS);
     this.partitionColumnNames = parseColumnNames(serdeConstants.LIST_PARTITION_COLUMNS);
     this.partitionColumnTypes = parseColumnTypes(serdeConstants.LIST_PARTITION_COLUMN_TYPES);
