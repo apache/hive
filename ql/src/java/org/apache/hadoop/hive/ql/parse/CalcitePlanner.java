@@ -1613,8 +1613,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private final StatsSource statsSource;
     private RelNode dummyTableScan;
 
-    // these variables are to ensure that they get instantiated only once
-    Map<List<String>, JdbcConvention> jcMap = new HashMap<>();
+    Map<List<String>, JdbcConvention> jdbcConventionMap = new HashMap<>();
     Map<List<String>, JdbcSchema> schemaMap = new HashMap<>();
 
     protected CalcitePlannerAction(
@@ -3031,17 +3030,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
               LOG.debug("Dialect for table {}: {}", tableName, dialectName);
             }
 
-            List<String> jcKey = ImmutableNullableList.of(url, driver, user, pswd, dialectName, dataBaseType);
-            if (!jcMap.containsKey(jcKey)) {
-              jcMap.put(jcKey, JdbcConvention.of(jdbcDialect, null, dataBaseType));
-            }
-            JdbcConvention jc = jcMap.get(jcKey);
+            List<String> jdbcConventionKey = ImmutableNullableList.of(url, driver, user, pswd, dialectName, dataBaseType);
+            jdbcConventionMap.putIfAbsent(jdbcConventionKey, JdbcConvention.of(jdbcDialect, null, dataBaseType));
+            JdbcConvention jc = jdbcConventionMap.get(jdbcConventionKey);
 
             List<String> schemaKey = ImmutableNullableList.of(url, driver, user, pswd, dialectName, dataBaseType,
               catalogName, schemaName);
-            if (!schemaMap.containsKey(schemaKey)) {
-              schemaMap.put(schemaKey, new JdbcSchema(ds, jc.dialect, jc, catalogName, schemaName));
-            }
+            schemaMap.putIfAbsent(schemaKey, new JdbcSchema(ds, jc.dialect, jc, catalogName, schemaName));
             JdbcSchema schema = schemaMap.get(schemaKey);
 
             JdbcTable jt = (JdbcTable) schema.getTable(tableName);
