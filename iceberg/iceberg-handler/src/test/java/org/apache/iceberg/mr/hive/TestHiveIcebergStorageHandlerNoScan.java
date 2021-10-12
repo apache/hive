@@ -20,6 +20,8 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1202,6 +1204,20 @@ public class TestHiveIcebergStorageHandlerNoScan {
           IllegalArgumentException.class, "Using partition spec in query is unsupported",
           () -> shell.executeStatement(command));
     }
+  }
+
+  @Test
+  public void testAuthzURI() throws TException, InterruptedException, URISyntaxException {
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), FileFormat.PARQUET, ImmutableList.of());
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(target);
+
+    HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
+    storageHandler.setConf(shell.getHiveConf());
+    URI uriForAuth = storageHandler.getURIForAuth(hmsTable);
+
+    Assert.assertEquals("iceberg://" + table.location(), uriForAuth.toString());
   }
 
   /**

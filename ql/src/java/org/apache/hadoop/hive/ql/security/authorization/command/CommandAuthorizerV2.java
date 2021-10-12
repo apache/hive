@@ -18,17 +18,13 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.command;
 
-import java.lang.reflect.Method;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -40,7 +36,6 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageAuthorizationHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -201,17 +196,15 @@ final class CommandAuthorizerV2 {
                 hiveOpType == HiveOperationType.ALTERTABLE_PROPERTIES ||
                 hiveOpType == HiveOperationType.CREATETABLE_AS_SELECT) {
           String storageuri = null;
-          Map<String, String> tableProperties = new HashMap<>();
           Configuration conf = new Configuration();
-          tableProperties.putAll(table.getSd().getSerdeInfo().getParameters());
-          tableProperties.putAll(table.getParameters());
           try {
             if (table.getStorageHandler() instanceof HiveStorageAuthorizationHandler) {
               HiveStorageAuthorizationHandler authorizationHandler = (HiveStorageAuthorizationHandler) ReflectionUtils.newInstance(
                       conf.getClassByName(table.getStorageHandler().getClass().getName()), SessionState.get().getConf());
-              storageuri = authorizationHandler.getURIForAuth(tableProperties).toString();
+              storageuri = authorizationHandler.getURIForAuth(table.getTTable()).toString();
             } else {
               //Custom storage handler that has not implemented the HiveStorageAuthorizationHandler
+              Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(table.getTTable());
               storageuri = table.getStorageHandler().getClass().getSimpleName().toLowerCase() + "://" +
                       HiveCustomStorageHandlerUtils.getTablePropsForCustomStorageHandler(tableProperties);
             }

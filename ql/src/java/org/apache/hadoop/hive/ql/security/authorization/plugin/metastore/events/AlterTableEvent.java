@@ -32,18 +32,15 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMet
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthzInfo;
-import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageAuthorizationHandler;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 /*
  Authorizable Event for HiveMetaStore operation  AlterTableEvent
@@ -110,26 +107,23 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
     LOG.debug("<== AlterTableEvent.getOutputHObjs(): ret={}", ret);
     if (newTable.getParameters().containsKey(hive_metastoreConstants.META_TABLE_STORAGE)) {
       String storageUri = "";
-      DefaultStorageHandler defaultStorageHandler = null;
       HiveStorageHandler hiveStorageHandler = null;
       Configuration conf = new Configuration();
-      Map<String, String> tableProperties = new HashMap<>();
-      tableProperties.putAll(newTable.getSd().getSerdeInfo().getParameters());
-      tableProperties.putAll(newTable.getParameters());
       try {
         hiveStorageHandler = (HiveStorageHandler) ReflectionUtils.newInstance(
                 conf.getClassByName(newTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE)), event.getHandler().getConf());
         if (hiveStorageHandler instanceof HiveStorageAuthorizationHandler) {
           HiveStorageAuthorizationHandler authorizationHandler = (HiveStorageAuthorizationHandler) ReflectionUtils.newInstance(
                   conf.getClassByName(newTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE)), event.getHandler().getConf());
-          storageUri = authorizationHandler.getURIForAuth(tableProperties).toString();
+          storageUri = authorizationHandler.getURIForAuth(newTable).toString();
         } else {
           //Custom storage handler that has not implemented the getURIForAuth()
+          Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(newTable);
           storageUri = hiveStorageHandler.getClass().getSimpleName().toLowerCase() + "://" +
                   HiveCustomStorageHandlerUtils.getTablePropsForCustomStorageHandler(tableProperties);
         }
-      } catch(Exception ex) {
-        LOG.error("Exception occured while getting the URI from storage handler: "+ex.getMessage(), ex);
+      } catch (Exception ex) {
+        LOG.error("Exception occurred while getting the URI from storage handler: "+ex.getMessage(), ex);
       }
       ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storageUri, null, null,
               HivePrivObjectActionType.OTHER, null, newTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE), newTable.getOwner(), newTable.getOwnerType()));

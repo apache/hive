@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Map;
+import org.apache.hadoop.hive.metastore.api.Table;
 
 /**
  * HiveStorageAuthorizationHandler defines a pluggable interface for
@@ -42,8 +42,8 @@ import java.util.Map;
 public interface HiveStorageAuthorizationHandler{
 
     /**
-     * @return get URI for authentication implementation,
-     * should return uri with table properties.
+     * @param table The HMS table object
+     * @return the URI for authentication implementation
      */
-    public URI getURIForAuth(Map<String, String> tableProperties) throws URISyntaxException;
+    public URI getURIForAuth(Table table) throws URISyntaxException;
 }

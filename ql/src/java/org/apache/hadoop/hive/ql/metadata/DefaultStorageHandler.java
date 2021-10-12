@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -68,7 +69,8 @@ public class DefaultStorageHandler implements HiveStorageHandler, HiveStorageAut
   }
 
   @Override
-  public URI getURIForAuth(Map<String, String> tableProperties) throws URISyntaxException{
+  public URI getURIForAuth(Table table) throws URISyntaxException{
+    Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(table);
     // custom storage URI by default
     try {
       return new URI(this.getClass().getSimpleName().toLowerCase() + "://" +
