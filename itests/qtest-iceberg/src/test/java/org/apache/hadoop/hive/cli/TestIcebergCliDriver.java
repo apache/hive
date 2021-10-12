@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.cli;
 
 import java.io.File;
 import java.util.List;
@@ -29,11 +30,11 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class TestIcebergNegativeCliDriver {
+public class TestIcebergCliDriver {
 
-  static CliAdapter adapter = new CliConfigs.IcebergNegativeCliConfig().getCliAdapter();
+  static CliAdapter adapter = new CliConfigs.IcebergCliConfig().getCliAdapter();
 
-  @Parameters(name = "{0}")
+  @Parameters(name ="{0}")
   public static List<Object[]> getParameters() throws Exception {
     return adapter.getParameters();
   }
@@ -47,7 +48,7 @@ public class TestIcebergNegativeCliDriver {
   private String name;
   private File qfile;
 
-  public TestIcebergNegativeCliDriver(String name, File qfile) {
+  public TestIcebergCliDriver(String name, File qfile) {
     this.name = name;
     this.qfile = qfile;
   }
