@@ -342,7 +342,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
-  public void testCreateDropTableNonDefaultCatalog() throws TException, InterruptedException {
+  public void testCreateDropTableNonDefaultCatalog() {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
     String catalogName = "nondefaultcatalog";
     testTables.properties().entrySet()
@@ -718,6 +718,29 @@ public class TestHiveIcebergStorageHandlerNoScan {
       Assert.assertNull(field.doc());
       Assert.assertArrayEquals(new Object[] {field.name(), HiveSchemaUtil.convert(field.type()).getTypeName(),
           "from deserializer"}, rows.get(i));
+    }
+  }
+
+  @Test
+  public void testCreatePartitionedTableWithColumnComments() {
+    TableIdentifier identifier = TableIdentifier.of("default", "partitioned_with_comment_table");
+    shell.executeStatement("CREATE EXTERNAL TABLE partitioned_with_comment_table (" +
+        "t_int INT COMMENT 'int column',  " +
+        "t_string STRING COMMENT 'string column', " +
+        "t_string_2 STRING) " +
+        "PARTITIONED BY (t_string_3 STRING COMMENT 'partition column') " +
+        "STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) +
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+
+    List<Object[]> rows = shell.executeStatement("DESCRIBE default.partitioned_with_comment_table");
+    // The partition transform information is 3 extra lines, and 1 more line for the columns
+    Assert.assertEquals(icebergTable.schema().columns().size() + 4, rows.size());
+    for (int i = 0; i < icebergTable.schema().columns().size(); i++) {
+      Types.NestedField field = icebergTable.schema().columns().get(i);
+      Assert.assertArrayEquals(new Object[] {field.name(), HiveSchemaUtil.convert(field.type()).getTypeName(),
+          field.doc() != null ? field.doc() : "from deserializer"}, rows.get(i));
     }
   }
 
