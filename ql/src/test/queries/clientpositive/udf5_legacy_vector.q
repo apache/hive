@@ -1,4 +1,7 @@
 --! qt:dataset:src
+set hive.legacy.timeparser.policy=true;
+set hive.vectorized.execution.enabled=true;
+
 CREATE TABLE dest1_n14(c1 STRING) STORED AS TEXTFILE;
 
 FROM src INSERT OVERWRITE TABLE dest1_n14 SELECT '  abc  ' WHERE src.key = 86;

@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.Text;
 
 import java.nio.charset.CharacterCodingException;
@@ -43,6 +44,7 @@ public final class VectorUDFUnixTimeStampString extends VectorUDFTimestampFieldS
 
   private static final long serialVersionUID = 1L;
 
+  private transient SimpleDateFormat format;
   private transient ZoneId timeZone;
 
   public VectorUDFUnixTimeStampString(int colNum, int outputColumnNum) {
@@ -65,13 +67,39 @@ public final class VectorUDFUnixTimeStampString extends VectorUDFTimestampFieldS
   @Override
   protected long getField(byte[] bytes, int start, int length) throws ParseException {
 
+    boolean timeParserPolicy = SessionState.get() == null ? new HiveConf().getBoolVar(
+        HiveConf.ConfVars.HIVE_LEGACY_TIMEPARSER_POLICY) : SessionState.get().getConf()
+        .getBoolVar(HiveConf.ConfVars.HIVE_LEGACY_TIMEPARSER_POLICY);
+
+    return timeParserPolicy == true ? evaluateLegacy(bytes, start, length) : evaluateCorrected(bytes, start, length);
+
+  }
+
+  private static SimpleDateFormat getFormatter(ZoneId timeZone) {
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    format.setTimeZone(TimeZone.getTimeZone(timeZone));
+    return format;
+  }
+
+  private long evaluateLegacy(byte[] bytes, int start, int length) throws ParseException {
+    Date date;
+    format = getFormatter(timeZone);
+    try {
+      date = format.parse(Text.decode(bytes, start, length));
+    } catch (CharacterCodingException e) {
+      throw new ParseException(e.getMessage(), 0);
+    }
+    return date.getTime() / 1000;
+  }
+
+  private long evaluateCorrected(byte[] bytes, int start, int length) throws ParseException {
     try {
       Timestamp timestamp = Timestamp.valueOf(Text.decode(bytes, start, length));
-      TimestampTZ timestampTZ = TimestampTZUtil.convert(timestamp,timeZone);
+      TimestampTZ timestampTZ = TimestampTZUtil.convert(timestamp, timeZone);
       return timestampTZ.getEpochSecond();
     } catch (CharacterCodingException e) {
       throw new ParseException(e.getMessage(), 0);
-    } catch (IllegalArgumentException e){
+    } catch (IllegalArgumentException e) {
       throw new ParseException(e.getMessage(), 0);
     }
   }
