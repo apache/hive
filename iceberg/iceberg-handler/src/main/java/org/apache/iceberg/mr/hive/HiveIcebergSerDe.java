@@ -19,7 +19,6 @@
 
 package org.apache.iceberg.mr.hive;
 
-import com.google.common.collect.Lists;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -56,6 +55,7 @@ import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.serde.objectinspector.IcebergObjectInspector;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -221,12 +221,12 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   }
 
   /**
-   * Gets the hive schema from the serDeProperties, and throws an exception if it is not provided. In the later case
-   * it adds the previousException as a root cause.
+   * Gets the hive schema and throws an exception if it is not provided. In the later case it adds the
+   * previousException as a root cause.
    * @param previousException If we had an exception previously
    * @param autoConversion When <code>true</code>, convert unsupported types to more permissive ones, like tinyint to
    *                       int
-   * @return The hive schema parsed from the serDeProperties
+   * @return The hive schema parsed from the serDeProperties provided when the SerDe was initialized
    * @throws SerDeException If there is no schema information in the serDeProperties
    */
   private Schema hiveSchemaOrThrow(Exception previousException, boolean autoConversion)
