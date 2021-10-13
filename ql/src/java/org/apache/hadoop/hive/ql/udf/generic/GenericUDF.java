@@ -177,7 +177,7 @@ public abstract class GenericUDF implements Closeable {
       }
       try {
         Object constantValue = evaluate(argumentValues);
-        oi = ObjectInspectorUtils.getConstantObjectInspector(oi, constantValue, true);
+        oi = ObjectInspectorUtils.getConstantObjectInspector(oi, constantValue);
       } catch (HiveException e) {
         throw new UDFArgumentException(e);
       }
@@ -634,9 +634,5 @@ public abstract class GenericUDF implements Closeable {
       return Optional.of((T) this);
     }
     return Optional.empty();
-  }
-
-  protected boolean usePrecisionScaleFromValue() {
-    return false;
   }
 }

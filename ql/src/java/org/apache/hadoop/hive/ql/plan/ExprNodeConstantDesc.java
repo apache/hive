@@ -107,7 +107,7 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
   @Override
   public ConstantObjectInspector getWritableObjectInspector() {
     return ObjectInspectorUtils.getConstantObjectInspector(
-      TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfo), value, true);
+      TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfo), value);
   }
 
 

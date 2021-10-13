@@ -112,9 +112,12 @@ public abstract class GenericUDFBaseNumeric extends GenericUDFBaseBinary impleme
       confLookupNeeded = false;
     }
 
+/*
     if (predefinedTypeInfo instanceof DecimalTypeInfo && predefinedTypeInfo != null) {
-      return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((DecimalTypeInfo)predefinedTypeInfo);
+      resultOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((DecimalTypeInfo)predefinedTypeInfo);
+      return resultOI;
     }
+    */
     leftOI = (PrimitiveObjectInspector) arguments[0];
     rightOI = (PrimitiveObjectInspector) arguments[1];
     resultOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
@@ -357,10 +360,5 @@ public abstract class GenericUDFBaseNumeric extends GenericUDFBaseBinary impleme
   @Override
   public TypeInfo getTypeInfo() {
     return this.predefinedTypeInfo;
-  }
-
-  @Override
-  protected boolean usePrecisionScaleFromValue() {
-    return true;
   }
 }
