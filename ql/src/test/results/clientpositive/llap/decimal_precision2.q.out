@@ -162,7 +162,7 @@ STAGE PLANS:
           alias: _dummy_table
           Row Limit Per Split: 1
           Select Operator
-            expressions: 69.0212249755859375 (type: decimal(28,20))
+            expressions: 69.0212249755859375 (type: decimal(29,20))
             outputColumnNames: _col0
             ListSink
 

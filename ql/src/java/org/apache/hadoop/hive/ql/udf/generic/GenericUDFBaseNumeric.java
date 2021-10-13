@@ -112,12 +112,6 @@ public abstract class GenericUDFBaseNumeric extends GenericUDFBaseBinary impleme
       confLookupNeeded = false;
     }
 
-/*
-    if (predefinedTypeInfo instanceof DecimalTypeInfo && predefinedTypeInfo != null) {
-      resultOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((DecimalTypeInfo)predefinedTypeInfo);
-      return resultOI;
-    }
-    */
     leftOI = (PrimitiveObjectInspector) arguments[0];
     rightOI = (PrimitiveObjectInspector) arguments[1];
     resultOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
