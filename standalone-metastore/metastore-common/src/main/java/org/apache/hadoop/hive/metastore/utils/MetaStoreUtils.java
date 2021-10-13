@@ -680,7 +680,7 @@ public class MetaStoreUtils {
       if (!first) {
         colNameBuf.append(columnNameDelimiter);
         colTypeBuf.append(":");
-        colComment.append('\0');
+        colComment.append(ColumnType.COLUMN_COMMENTS_DELIMITER);
       }
       colNameBuf.append(col.getName());
       colTypeBuf.append(col.getType());
