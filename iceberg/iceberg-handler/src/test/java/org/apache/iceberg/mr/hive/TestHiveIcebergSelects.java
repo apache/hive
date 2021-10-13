@@ -26,9 +26,8 @@ import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
-import org.apache.iceberg.mr.Catalogs;
-import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.junit.Assert;
@@ -171,9 +170,9 @@ public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineB
     // note: the Chinese character seems to be accepted in the column name, but not
     // in the table name - this is the case for both Iceberg and standard Hive tables.
     shell.executeStatement(String.format(
-        "CREATE TABLE `%s` (id bigint, `dep,! 是,t` string) STORED BY ICEBERG STORED AS %s %s TBLPROPERTIES ('%s'='%s')",
+        "CREATE TABLE `%s` (id bigint, `dep,! 是,t` string) STORED BY ICEBERG STORED AS %s %s %s",
         table.name(), fileFormat, testTables.locationForCreateTableSQL(table),
-        InputFormatConfig.CATALOG_NAME, Catalogs.ICEBERG_DEFAULT_CATALOG_NAME));
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of())));
     shell.executeStatement(String.format("INSERT INTO `%s` VALUES (1, 'moon'), (2, 'star')", table.name()));
 
     List<Object[]> result = shell.executeStatement(String.format(
