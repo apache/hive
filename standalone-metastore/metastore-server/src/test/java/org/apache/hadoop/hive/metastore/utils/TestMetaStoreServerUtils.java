@@ -774,9 +774,13 @@ public class TestMetaStoreServerUtils {
     p3.unsetSd();
     List<PartitionSpec> result =
         MetaStoreServerUtils.getPartitionspecsGroupedByStorageDescriptor(tbl,
-            Arrays.asList(p1, p2, p3, p4));
+            Arrays.asList(p1, p2, p3, p4))
+                .stream().sorted().collect(Collectors.toList());
     assertThat(result.size(), is(3));
-    PartitionSpec ps1 = result.get(0);
+    PartitionSpec ps1 = result.get(1);
+    PartitionSpec ps2 = result.get(2);
+    PartitionSpec ps4 = result.get(0);
+
     assertThat(ps1.getRootPath(), is((String)null));
     assertThat(ps1.getPartitionList(), is((List<Partition>)null));
     PartitionSpecWithSharedSD partSpec = ps1.getSharedSDPartitionSpec();
@@ -786,7 +790,6 @@ public class TestMetaStoreServerUtils {
     assertThat(partition1.getRelativePath(), is((String)null));
     assertThat(partition1.getValues(), is(Collections.singletonList("val3")));
 
-    PartitionSpec ps2 = result.get(1);
     assertThat(ps2.getRootPath(), is(tbl.getSd().getLocation()));
     assertThat(ps2.getPartitionList(), is((List<Partition>)null));
     List<PartitionWithoutSD> partitions2 = ps2.getSharedSDPartitionSpec().getPartitions();
@@ -804,7 +807,6 @@ public class TestMetaStoreServerUtils {
     assertThat(partition2_2.getRelativePath(), is("/baz"));
     assertThat(partition2_2.getValues(), is(Collections.singletonList("val4")));
 
-    PartitionSpec ps4 = result.get(2);
     assertThat(ps4.getRootPath(), is((String)null));
     assertThat(ps4.getSharedSDPartitionSpec(), is((PartitionSpecWithSharedSD)null));
     List<Partition>partitions = ps4.getPartitionList().getPartitions();
