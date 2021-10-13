@@ -20,7 +20,6 @@ import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
-import org.apache.hadoop.hive.ql.metadata.HiveStorageAuthorizationHandler;
 import org.apache.hadoop.hive.ql.metadata.JarUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -43,7 +42,7 @@ import java.util.Properties;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class JdbcStorageHandler implements HiveStorageHandler, HiveStorageAuthorizationHandler {
+public class JdbcStorageHandler implements HiveStorageHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcStorageHandler.class);
   private Configuration conf;
