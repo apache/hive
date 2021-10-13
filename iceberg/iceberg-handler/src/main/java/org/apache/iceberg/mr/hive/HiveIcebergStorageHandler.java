@@ -76,7 +76,6 @@ import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
-import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
@@ -368,14 +367,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public URI getURIForAuth(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws URISyntaxException {
-    Properties properties = new Properties();
-    properties.setProperty(Catalogs.NAME, TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()).toString());
-    properties.setProperty(Catalogs.LOCATION, hmsTable.getSd().getLocation());
-    if (hmsTable.getParameters().containsKey(InputFormatConfig.CATALOG_NAME)) {
-      properties.setProperty(
-          InputFormatConfig.CATALOG_NAME, hmsTable.getParameters().get(InputFormatConfig.CATALOG_NAME));
-    }
-    Table table = IcebergTableUtil.getTable(conf, properties);
+    Table table = IcebergTableUtil.getTable(conf, hmsTable);
     return new URI(ICEBERG_URI_PREFIX + table.location());
   }
 
