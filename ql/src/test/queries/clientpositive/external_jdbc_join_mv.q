@@ -58,3 +58,5 @@ from person
 join job on person.jid = job.id
 join country on person.cid = country.id
 where job.title = 'Software Engineer';
+
+DROP MATERIALIZED VIEW mv1;
