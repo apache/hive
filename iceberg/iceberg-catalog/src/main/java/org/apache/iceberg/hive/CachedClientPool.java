@@ -27,6 +27,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.iceberg.CatalogProperties;
+import org.apache.iceberg.ClientPool;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.util.PropertyUtil;
 import org.apache.thrift.TException;
@@ -40,7 +41,7 @@ public class CachedClientPool implements ClientPool<HiveMetaStoreClient, TExcept
   private final int clientPoolSize;
   private final long evictionInterval;
 
-  CachedClientPool(Configuration conf, Map<String, String> properties) {
+  public CachedClientPool(Configuration conf, Map<String, String> properties) {
     this.conf = conf;
     this.metastoreUri = conf.get(HiveConf.ConfVars.METASTOREURIS.varname, "");
     this.clientPoolSize = PropertyUtil.propertyAsInt(properties,

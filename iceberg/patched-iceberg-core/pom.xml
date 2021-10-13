@@ -71,14 +71,11 @@
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
                                     <excludes>
-                                        **/SnapshotProducer.class
-                                        **/SnapshotSummary.class
-                                        **/BaseMeta.class
-                                        **/BaseMetadataTable.class
-                                        **/StaticTableOperations.class
-                                        **/CatalogProperties.class
-                                        **/BaseMetastoreCatalog.class
-                                        **/BaseMetastoreTableOperations.class
+                                        **/JdbcClientPool.class
+                                        **/JdbcUtil.class
+                                        **/CatalogUtil.class
+                                        **/ClientPool.class
+                                        **/ClientPoolImpl.class
                                     </excludes>
                                 </artifactItem>
                             </artifactItems>
