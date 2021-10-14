@@ -128,6 +128,7 @@ import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.util.CompositeList;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.ImmutableNullableList;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
@@ -1612,6 +1613,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private final StatsSource statsSource;
     private RelNode dummyTableScan;
 
+    Map<List<String>, JdbcConvention> jdbcConventionMap = new HashMap<>();
+    Map<List<String>, JdbcSchema> schemaMap = new HashMap<>();
+
     protected CalcitePlannerAction(
             Map<String, PrunedPartitionList> partitionCache,
             StatsSource statsSource,
@@ -3021,11 +3025,20 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
             DataSource ds = JdbcSchema.dataSource(url, driver, user, pswd);
             SqlDialect jdbcDialect = JdbcSchema.createDialect(SqlDialectFactoryImpl.INSTANCE, ds);
+            String dialectName = jdbcDialect.getClass().getName();
             if (LOG.isDebugEnabled()) {
-              LOG.debug("Dialect for table {}: {}", tableName, jdbcDialect.getClass().getName());
+              LOG.debug("Dialect for table {}: {}", tableName, dialectName);
             }
-            JdbcConvention jc = JdbcConvention.of(jdbcDialect, null, dataBaseType);
-            JdbcSchema schema = new JdbcSchema(ds, jc.dialect, jc, catalogName, schemaName);
+
+            List<String> jdbcConventionKey = ImmutableNullableList.of(url, driver, user, pswd, dialectName, dataBaseType);
+            jdbcConventionMap.putIfAbsent(jdbcConventionKey, JdbcConvention.of(jdbcDialect, null, dataBaseType));
+            JdbcConvention jc = jdbcConventionMap.get(jdbcConventionKey);
+
+            List<String> schemaKey = ImmutableNullableList.of(url, driver, user, pswd, dialectName, dataBaseType,
+              catalogName, schemaName);
+            schemaMap.putIfAbsent(schemaKey, new JdbcSchema(ds, jc.dialect, jc, catalogName, schemaName));
+            JdbcSchema schema = schemaMap.get(schemaKey);
+
             JdbcTable jt = (JdbcTable) schema.getTable(tableName);
             if (jt == null) {
               throw new SemanticException("Table " + tableName + " was not found in the database");
