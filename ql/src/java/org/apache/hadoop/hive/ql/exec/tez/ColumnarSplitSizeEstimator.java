@@ -47,7 +47,7 @@ public class ColumnarSplitSizeEstimator implements SplitSizeEstimator {
         LOG.debug("Estimated column projection size: {}", colProjSize);
       }
     }
-    if (colProjSize <= 0) {
+    if (colProjSize < 0) {
       /* columnar splits of unknown size - estimate worst-case */
       return Integer.MAX_VALUE;
     }
