@@ -45,60 +45,36 @@ public class CoreKuduCliDriver extends CliAdapter {
 
   @Override
   @BeforeClass
-  public void beforeClass() {
-    try {
-      qt = new QTestUtil(QTestArguments.QTestArgumentsBuilder.instance()
-          .withOutDir(cliConfig.getResultsDir())
-          .withLogDir(cliConfig.getLogDir())
-          .withClusterType(cliConfig.getClusterType())
-          .withConfDir(cliConfig.getHiveConfDir())
-          .withInitScript(cliConfig.getInitScript())
-          .withCleanupScript(cliConfig.getCleanupScript())
-          .withLlapIo(true)
-          .withQTestSetup(new KuduTestSetup())
-          .build());
-    } catch (Exception e) {
-      throw new RuntimeException("Unexpected exception in setUp", e);
-    }
+  public void beforeClass() throws Exception {
+    qt = new QTestUtil(QTestArguments.QTestArgumentsBuilder.instance()
+        .withOutDir(cliConfig.getResultsDir())
+        .withLogDir(cliConfig.getLogDir())
+        .withClusterType(cliConfig.getClusterType())
+        .withConfDir(cliConfig.getHiveConfDir())
+        .withInitScript(cliConfig.getInitScript())
+        .withCleanupScript(cliConfig.getCleanupScript())
+        .withLlapIo(true)
+        .withQTestSetup(new KuduTestSetup())
+        .build());
   }
 
   @Override
   @AfterClass
-  public void shutdown() {
-    try {
-      qt.shutdown();
-    } catch (Exception e) {
-      throw new RuntimeException("Unexpected exception in tearDown", e);
-    }
+  public void shutdown() throws Exception {
+    qt.shutdown();
   }
 
   @Override
   @Before
-  public void setUp() {
-    try {
-      qt.newSession();
-
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in setup");
-    }
+  public void setUp() throws Exception {
+    qt.newSession();
   }
 
   @Override
   @After
-  public void tearDown() {
-    try {
-      qt.clearPostTestEffects();
-      qt.clearTestSideEffects();
-
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in tearDown");
-    }
+  public void tearDown() throws Exception {
+    qt.clearPostTestEffects();
+    qt.clearTestSideEffects();
   }
 
   @Override

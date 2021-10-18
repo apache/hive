@@ -43,59 +43,31 @@ public class CoreHBaseCliDriver extends CliAdapter {
 
   @Override
   @BeforeClass
-  public void beforeClass() {
+  public void beforeClass() throws Exception {
     MiniClusterType miniMR = cliConfig.getClusterType();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
 
-    try {
-      qt = new HBaseQTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR,
-          new HBaseTestSetup(), initScript, cleanupScript);
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      throw new RuntimeException("Unexpected exception in static initialization: ", e);
-    }
+    qt = new HBaseQTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR, new HBaseTestSetup(), initScript,
+        cleanupScript);
   }
 
   @Override
   @Before
-  public void setUp() {
-    try {
-      qt.newSession();
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in setup");
-    }
+  public void setUp() throws Exception {
+    qt.newSession();
   }
   @Override
   @After
-  public void tearDown() {
-    try {
-      qt.clearPostTestEffects();
-      qt.clearTestSideEffects();
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in tearDown");
-    }
+  public void tearDown() throws Exception {
+    qt.clearPostTestEffects();
+    qt.clearTestSideEffects();
   }
 
   @Override
   @AfterClass
-  public void shutdown() {
-    try {
-      qt.shutdown();
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in shutdown");
-    }
+  public void shutdown() throws Exception {
+    qt.shutdown();
   }
 
   @Override

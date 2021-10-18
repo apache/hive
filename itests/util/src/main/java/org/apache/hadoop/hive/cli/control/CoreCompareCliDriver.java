@@ -47,70 +47,40 @@ public class CoreCompareCliDriver extends CliAdapter{
 
   @Override
   @BeforeClass
-  public void beforeClass() {
+  public void beforeClass() throws Exception {
     MiniClusterType miniMR = cliConfig.getClusterType();
     String hiveConfDir = cliConfig.getHiveConfDir();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
 
-    try {
-      qt = new QTestUtil(
-          QTestArguments.QTestArgumentsBuilder.instance()
-            .withOutDir(cliConfig.getResultsDir())
-            .withLogDir(cliConfig.getLogDir())
-            .withClusterType(miniMR)
-            .withConfDir(hiveConfDir)
-            .withInitScript(initScript)
-            .withCleanupScript(cleanupScript)
-            .withLlapIo(false)
-            .build());
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      throw new RuntimeException("Unexpected exception in static initialization", e);
-    }
+    qt = new QTestUtil(
+        QTestArguments.QTestArgumentsBuilder.instance()
+          .withOutDir(cliConfig.getResultsDir())
+          .withLogDir(cliConfig.getLogDir())
+          .withClusterType(miniMR)
+          .withConfDir(hiveConfDir)
+          .withInitScript(initScript)
+          .withCleanupScript(cleanupScript)
+          .withLlapIo(false)
+          .build());
   }
 
   @Override
   @Before
-  public void setUp() {
-    try {
-      qt.clearTestSideEffects();
-
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in setup");
-    }
+  public void setUp() throws Exception {
+    qt.clearTestSideEffects();
   }
 
   @Override
   @After
-  public void tearDown() {
-    try {
-      qt.clearPostTestEffects();
-
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in tearDown");
-    }
+  public void tearDown() throws Exception {
+    qt.clearPostTestEffects();
   }
 
   @Override
   @AfterClass
-  public void shutdown() {
-    try {
-      qt.shutdown();
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in shutdown");
-    }
+  public void shutdown() throws Exception {
+    qt.shutdown();
   }
 
   @Override

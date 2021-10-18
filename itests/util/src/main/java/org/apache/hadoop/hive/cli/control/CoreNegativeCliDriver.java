@@ -70,44 +70,21 @@ public class CoreNegativeCliDriver extends CliAdapter{
 
   @Override
   @Before
-  public void setUp() {
-    try {
-      qt.newSession();
-
-    } catch (Throwable e) {
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in setup");
-    }
+  public void setUp() throws Exception {
+    qt.newSession();
   }
 
   @Override
   @After
-  public void tearDown() {
-    try {
-      qt.clearTestSideEffects();
-      qt.clearPostTestEffects();
-
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in tearDown");
-    }
+  public void tearDown() throws Exception {
+    qt.clearTestSideEffects();
+    qt.clearPostTestEffects();
   }
 
   @Override
   @AfterClass
-  public void shutdown() {
-    try {
-      qt.shutdown();
-
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in shutdown");
-    }
+  public void shutdown() throws Exception {
+    qt.shutdown();
   }
 
   @Override
