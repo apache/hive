@@ -18,13 +18,13 @@
 package org.apache.hive.spark.client;
 
 import com.google.common.base.Throwables;
-import com.google.common.io.Files;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.nio.NioEventLoopGroup;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -100,7 +100,9 @@ public class RemoteDriver {
     this.activeJobs = Maps.newConcurrentMap();
     this.jcLock = new Object();
     this.shutdownLock = new Object();
-    localTmpDir = Files.createTempDir();
+    File tempDirBase = new File(System.getProperty("java.io.tmpdir"));
+    localTmpDir = Files.createTempDirectory(
+            tempDirBase.toPath(), System.currentTimeMillis() + "-").toFile();
 
     addShutdownHook();
 
