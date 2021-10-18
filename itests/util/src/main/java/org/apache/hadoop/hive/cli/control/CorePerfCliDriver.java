@@ -46,20 +46,15 @@ public class CorePerfCliDriver extends CliAdapter {
   }
 
   @Override
-  public void beforeClass() {
+  public void beforeClass() throws Exception {
     MiniClusterType miniMR = cliConfig.getClusterType();
     String hiveConfDir = cliConfig.getHiveConfDir();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
 
-    try {
-      qt = new QTestUtil(QTestArguments.QTestArgumentsBuilder.instance()
-          .withOutDir(cliConfig.getResultsDir()).withLogDir(cliConfig.getLogDir())
-          .withClusterType(miniMR).withConfDir(hiveConfDir).withInitScript(initScript)
-          .withCleanupScript(cleanupScript).withLlapIo(false).build());
-    } catch (Exception e) {
-      throw new RuntimeException("QTest initialization failed. See cause for details.", e);
-    }
+    qt = new QTestUtil(QTestArguments.QTestArgumentsBuilder.instance().withOutDir(cliConfig.getResultsDir())
+        .withLogDir(cliConfig.getLogDir()).withClusterType(miniMR).withConfDir(hiveConfDir).withInitScript(initScript)
+        .withCleanupScript(cleanupScript).withLlapIo(false).build());
   }
 
   @Override
@@ -68,21 +63,13 @@ public class CorePerfCliDriver extends CliAdapter {
   }
 
   @Override
-  public void setUp() {
-    try {
-      qt.newSession();
-    } catch (Exception e) {
-      throw new RuntimeException("Create session failed. See cause for details.", e);
-    }
+  public void setUp() throws Exception {
+    qt.newSession();
   }
 
   @Override
-  public void tearDown() {
-    try {
-      qt.clearPostTestEffects();
-    } catch (Exception e) {
-      throw new RuntimeException("Post test clean up failed. See cause for details.", e);
-    }
+  public void tearDown() throws Exception {
+    qt.clearPostTestEffects();
   }
 
   @Override

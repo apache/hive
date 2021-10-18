@@ -56,7 +56,7 @@ public class CoreCliDriver extends CliAdapter {
 
   @Override
   @BeforeClass
-  public void beforeClass() {
+  public void beforeClass() throws Exception {
     String message = "Starting " + CoreCliDriver.class.getName() + " run at " + System.currentTimeMillis();
     LOG.info(message);
     System.err.println(message);
@@ -67,91 +67,60 @@ public class CoreCliDriver extends CliAdapter {
     String cleanupScript = cliConfig.getCleanupScript();
     Set<QTestExternalDB> externalDBs = cliConfig.getExternalDBs();
 
-    try {
-      qt = new ElapsedTimeLoggingWrapper<QTestUtil>() {
-        @Override
-        public QTestUtil invokeInternal() throws Exception {
-          return new QTestUtil(
-              QTestArguments.QTestArgumentsBuilder.instance()
-                .withOutDir(cliConfig.getResultsDir())
-                .withLogDir(cliConfig.getLogDir())
-                .withClusterType(miniMR)
-                .withConfDir(hiveConfDir)
-                .withInitScript(initScript)
-                .withCleanupScript(cleanupScript)
-                .withExternalDBs(externalDBs)
-                .withLlapIo(true)
-                .withFsType(cliConfig.getFsType())
-                .build());
-        }
-      }.invoke("QtestUtil instance created", LOG, true);
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      throw new RuntimeException("Unexpected exception in static initialization", e);
-    }
+    qt = new ElapsedTimeLoggingWrapper<QTestUtil>() {
+      @Override
+      public QTestUtil invokeInternal() throws Exception {
+        return new QTestUtil(
+            QTestArguments.QTestArgumentsBuilder.instance()
+              .withOutDir(cliConfig.getResultsDir())
+              .withLogDir(cliConfig.getLogDir())
+              .withClusterType(miniMR)
+              .withConfDir(hiveConfDir)
+              .withInitScript(initScript)
+              .withCleanupScript(cleanupScript)
+              .withExternalDBs(externalDBs)
+              .withLlapIo(true)
+              .withFsType(cliConfig.getFsType())
+              .build());
+      }
+    }.invoke("QtestUtil instance created", LOG, true);
   }
 
   @Override
   @Before
-  public void setUp() {
-    try {
-      new ElapsedTimeLoggingWrapper<Void>() {
-        @Override
-        public Void invokeInternal() throws Exception {
-          qt.newSession();
-          return null;
-        }
-      }.invoke("PerTestSetup done.", LOG, false);
-
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in setup");
-    }
+  public void setUp() throws Exception {
+    new ElapsedTimeLoggingWrapper<Void>() {
+      @Override
+      public Void invokeInternal() throws Exception {
+        qt.newSession();
+        return null;
+      }
+    }.invoke("PerTestSetup done.", LOG, false);
   }
 
   @Override
   @After
-  public void tearDown() {
-    try {
-      new ElapsedTimeLoggingWrapper<Void>() {
-        @Override
-        public Void invokeInternal() throws Exception {
-          qt.clearPostTestEffects();
-          qt.clearTestSideEffects();
-          return null;
-        }
-      }.invoke("PerTestTearDown done.", LOG, false);
-
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in tearDown");
-    }
+  public void tearDown() throws Exception {
+    new ElapsedTimeLoggingWrapper<Void>() {
+      @Override
+      public Void invokeInternal() throws Exception {
+        qt.clearPostTestEffects();
+        qt.clearTestSideEffects();
+        return null;
+      }
+    }.invoke("PerTestTearDown done.", LOG, false);
   }
 
   @Override
   @AfterClass
-  public void shutdown() {
-    try {
-      new ElapsedTimeLoggingWrapper<Void>() {
-        @Override
-        public Void invokeInternal() throws Exception {
-          qt.shutdown();
-          return null;
-        }
-      }.invoke("Teardown done.", LOG, false);
-
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      fail("Unexpected exception in shutdown");
-    }
+  public void shutdown() throws Exception {
+    new ElapsedTimeLoggingWrapper<Void>() {
+      @Override
+      public Void invokeInternal() throws Exception {
+        qt.shutdown();
+        return null;
+      }
+    }.invoke("Teardown done.", LOG, false);
   }
 
   @Override
