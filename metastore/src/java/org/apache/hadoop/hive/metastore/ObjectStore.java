@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang.StringUtils.join;
 
-import com.google.common.base.Joiner;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
@@ -170,6 +169,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -2612,7 +2612,6 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("executing listPartitionNamesPsWithAuth");
       Collection parts = getPartitionPsQueryResults(db_name, tbl_name, part_vals,
           max_parts, null, queryWrapper);
-        // Reducing if block checks per Partition.
       for (Object o : parts) {
         Partition part = convertToPart((MPartition) o);
         // set auth privileges
