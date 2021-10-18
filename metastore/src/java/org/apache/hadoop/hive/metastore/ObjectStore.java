@@ -2571,8 +2571,8 @@ public class ObjectStore implements RawStore, Configurable {
    * all the partitions and hence we can attempt to use a directSQL equivalent API which
    * is considerably faster.
    * @param partVals The partitions values used to filter out the partitions.
-   * @return true if partVals is empty or if all the values in partVals is empty strings.
-   * other wise false. If user or groups is valid then returns false since the directSQL
+   * @return false if partVals is empty, true if all the values in partVals are empty strings and
+   * otherwise true for all other cases. If user or groups is valid then returns false since the directSQL
    * doesn't support partition privileges.
    */
   private boolean canTryDirectSQL(List<String> partVals) {
