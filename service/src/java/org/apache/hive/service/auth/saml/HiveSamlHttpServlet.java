@@ -35,7 +35,6 @@ public class HiveSamlHttpServlet extends HttpServlet {
       .getLogger(HiveSamlHttpServlet.class);
   private final HiveConf conf;
   private final ISAMLAuthTokenGenerator tokenGenerator;
-  private static final String LOOP_BACK_INTERFACE = "127.0.0.1";
 
   public HiveSamlHttpServlet(HiveConf conf) {
     this.conf = Preconditions.checkNotNull(conf);
@@ -56,7 +55,8 @@ public class HiveSamlHttpServlet extends HttpServlet {
       return;
     }
     try {
-      LOG.info("RelayState = {}. Driver side port on localhost = {}", relayState, port);
+      LOG.info("RelayState = {}. Driver side port on loopback address is {}", relayState,
+          port);
       nameId = HiveSaml2Client.get(conf).validate(request, response);
     } catch (HttpSamlAuthenticationException e) {
       if (e instanceof HttpSamlNoGroupsMatchedException) {
@@ -77,7 +77,7 @@ public class HiveSamlHttpServlet extends HttpServlet {
   }
 
   private void generateFormData(HttpServletResponse response, String url, String token,
-      boolean sucess, String msg) {
+      boolean success, String msg) {
     StringBuilder sb = new StringBuilder();
     sb.append("<html>");
     sb.append("<body onload='document.forms[\"form\"].submit()'>");
@@ -86,15 +86,17 @@ public class HiveSamlHttpServlet extends HttpServlet {
         .format("<input type='hidden' name='%s' value='%s'>", HiveSamlUtils.TOKEN_KEY,
             token));
     sb.append(String.format("<input type='hidden' name='%s' value='%s'>",
-        HiveSamlUtils.STATUS_KEY, sucess));
+        HiveSamlUtils.STATUS_KEY, success));
     sb.append(String
         .format("<input type='hidden' name='%s' value='%s'>", HiveSamlUtils.MESSAGE_KEY,
             msg));
     sb.append("</form>");
     sb.append("</body>");
     sb.append("</html>");
-    try (PrintWriter write = response.getWriter()) {
-      write.write(sb.toString());
+    response.setContentType("text/html");
+    try {
+      response.getWriter().write(sb.toString());
+      response.getWriter().flush();
     } catch (IOException e) {
       LOG.error("Could not generate the form data for sending a response to url " + url,
           e);
