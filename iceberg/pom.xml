@@ -38,6 +38,7 @@
         <spotless.maven.plugin.version>2.5.0</spotless.maven.plugin.version>
         <google.errorprone.javac.version>9+181-r4173-1</google.errorprone.javac.version>
         <google.errorprone.version>2.5.1</google.errorprone.version>
+        <assertj.version>3.19.0</assertj.version>
     </properties>
 
     <modules>
@@ -190,6 +191,12 @@
                 <classifier>tests</classifier>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>com.esotericsoftware</groupId>
