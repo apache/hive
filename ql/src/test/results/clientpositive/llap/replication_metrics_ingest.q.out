@@ -92,8 +92,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@replication_metrics
 POSTHOOK: Input: sys@replication_metrics_view
 #### A masked pattern was here ####
-repl2	1
 repl1	0
+repl2	1
 PREHOOK: query: select count(*) from sys.replication_metrics where scheduled_execution_id > 0
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@replication_metrics

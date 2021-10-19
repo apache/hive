@@ -34,16 +34,16 @@ import org.apache.hadoop.io.Text;
  * GenericUDFDeserializeString.
  *
  */
-@Description(name = "deserialize",
+@Description(name = "gzip_json_deserialize",
         value="_FUNC_(message) - Returns deserialized string of gzip compressed + base64 encoded message.",
         extended="Example:\n"
                 + "  > SELECT _FUNC_('SDRzSUFBQUFBQUFBL3l0SkxTNEJBQXgrZjlnRUFBQUE=') FROM src LIMIT 1;\n"
                 + "  test")
-public class GenericUDFDeserialize extends GenericUDF {
+public class GenericUDFGzipJsonDeserialize extends GenericUDF {
 
     private static final int STRING_IDX = 0;
     private static final int ARG_COUNT = 1; // Number of arguments to this UDF
-    private static final String FUNC_NAME = "DESERIALIZE"; // External Name
+    private static final String FUNC_NAME = "gzip_json_deserialize"; // External Name
 
     private transient PrimitiveObjectInspector stringOI = null;
 

@@ -31,11 +31,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 /**
  * TestGenericUDFDeserialize.
  */
-public class TestGenericUDFDeserialize {
+public class TestGenericUDFGzipJsonDeserialize {
 
     @Test
     public void testOneArg() throws HiveException {
-        GenericUDFDeserialize udf = new GenericUDFDeserialize();
+        GenericUDFGzipJsonDeserialize udf = new GenericUDFGzipJsonDeserialize();
         ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
         ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
         UDFArgumentException ex = null;
@@ -44,25 +44,25 @@ public class TestGenericUDFDeserialize {
         } catch (UDFArgumentException e) {
             ex = e;
         }
-        assertNotNull("The function deserialize() accepts 1 argument.", ex);
+        assertNotNull("The function gzip_json_deserialize() accepts 1 argument.", ex);
         ex = null;
         try {
             udf.initialize(new ObjectInspector[]{valueOI1});
         } catch (UDFArgumentException e) {
             ex = e;
         }
-        assertNull("The function deserialize() accepts 1 argument.", ex);
+        assertNull("The function gzip_json_deserialize() accepts 1 argument.", ex);
     }
 
     @Test
     public void testDeserializeString() throws HiveException {
-        GenericUDFDeserialize udf = new GenericUDFDeserialize();
+        GenericUDFGzipJsonDeserialize udf = new GenericUDFGzipJsonDeserialize();
         udf.initialize(new ObjectInspector[]{PrimitiveObjectInspectorFactory.writableStringObjectInspector});
         GenericUDF.DeferredObject[] args = new GenericUDF.DeferredObject[1];
         String expectedOutput = "test";
         String serializedMsg = GzipJSONMessageEncoder.getInstance().getSerializer().serialize(expectedOutput);
         args[0] = new GenericUDF.DeferredJavaObject(new Text(serializedMsg));
         Object actualOutput = udf.evaluate(args).toString();
-        assertEquals("deserialize() test", expectedOutput, actualOutput != null ? actualOutput : null);
+        assertEquals("gzip_json_deserialize() test", expectedOutput, actualOutput != null ? actualOutput : null);
     }
 }
