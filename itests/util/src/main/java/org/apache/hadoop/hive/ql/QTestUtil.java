@@ -764,12 +764,6 @@ public class QTestUtil {
     return 0;
   }
 
-  public CommandProcessorResponse executeClient(String tname1, String tname2) throws CommandProcessorException {
-    String commands =
-        getCommand(tname1) + System.getProperty("line.separator") + getCommand(tname2);
-    return executeClientInternal(commands);
-  }
-
   public CommandProcessorResponse executeClient(String fileName) throws CommandProcessorException {
     return executeClientInternal(getCommand(fileName));
   }
@@ -1037,22 +1031,6 @@ public class QTestUtil {
     }
   }
 
-  public QTestProcessExecResult checkCompareCliDriverResults(String tname, List<String> outputs) throws Exception {
-    assert outputs.size() > 1;
-    qOutProcessor.maskPatterns(outputs.get(0), tname);
-    for (int i = 1; i < outputs.size(); ++i) {
-      qOutProcessor.maskPatterns(outputs.get(i), tname);
-      QTestProcessExecResult
-          result =
-          qTestResultProcessor.executeDiffCommand(outputs.get(i - 1), outputs.get(i), false, tname);
-      if (result.getReturnCode() != 0) {
-        System.out.println("Files don't match: " + outputs.get(i - 1) + " and " + outputs.get(i));
-        return result;
-      }
-    }
-    return QTestProcessExecResult.createWithoutOutput(0);
-  }
-
   public ASTNode parseQuery(String tname) throws Exception {
     return pd.parse(qMap.get(tname)).getTree();
   }
@@ -1069,21 +1047,6 @@ public class QTestUtil {
     sem.analyze(ast, ctx);
     ctx.clear();
     return sem.getRootTasks();
-  }
-
-  public void failed(int ecode, String fname, String debugHint) {
-    String command = SessionState.get() != null ? SessionState.get().getLastCommand() : null;
-    String
-        message =
-        "Client execution failed with error code = "
-            + ecode
-            + (command != null ? " running \"" + command : "")
-            + "\" fname="
-            + fname
-            + " "
-            + (debugHint != null ? debugHint : "");
-    LOG.error(message);
-    Assert.fail(message);
   }
 
   // for negative tests, which is succeeded.. no need to print the query string
