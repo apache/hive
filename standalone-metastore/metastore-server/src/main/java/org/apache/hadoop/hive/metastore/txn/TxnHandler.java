@@ -571,7 +571,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Got OpenTxnList with hwm: {} and openTxnList size {}.", hwm, txnInfos.size());
         return new OpenTxnList(hwm, txnInfos);
       } catch (SQLException e) {
-        checkRetryable(dbConn, e, "getOpenTxnsList");
+        checkRetryable(e, "getOpenTxnsList");
         throw new MetaException(
             "Unable to select from transaction database: " + getMessage(e) + StringUtils.stringifyException(e));
       } finally {
@@ -682,7 +682,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } catch (SQLException e) {
         LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "openTxns(" + rqst + ")");
+        checkRetryable(e, "openTxns(" + rqst + ")");
         throw new MetaException("Unable to select from transaction database " + StringUtils.stringifyException(e));
       } finally {
         close(null, stmt, dbConn);
@@ -854,7 +854,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } catch (SQLException e) {
         LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "deleteInvalidOpenTransactions(" + txnIds + ")");
+        checkRetryable(e, "deleteInvalidOpenTransactions(" + txnIds + ")");
         throw new MetaException("Unable to select from transaction database " + StringUtils.stringifyException(e));
       } finally {
         closeStmt(stmt);
@@ -964,7 +964,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         assert (targetTxnIds.size() == 1);
         return targetTxnIds.get(0);
       } catch (SQLException e) {
-        checkRetryable(dbConn, e, "getTargetTxnId(" + replPolicy + sourceTxnId + ")");
+        checkRetryable(e, "getTargetTxnId(" + replPolicy + sourceTxnId + ")");
         throw new MetaException("Unable to get target transaction id "
                 + StringUtils.stringifyException(e));
       } finally {
@@ -1077,7 +1077,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } catch (SQLException e) {
         LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "abortTxn(" + rqst + ")");
+        checkRetryable(e, "abortTxn(" + rqst + ")");
         throw new MetaException("Unable to update transaction database "
           + StringUtils.stringifyException(e));
       } finally {
@@ -1139,7 +1139,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } catch (SQLException e) {
         LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "abortTxns(" + rqst + ")");
+        checkRetryable(e, "abortTxns(" + rqst + ")");
         throw new MetaException("Unable to update transaction database "
             + StringUtils.stringifyException(e));
       } finally {
@@ -1583,7 +1583,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } catch (SQLException e) {
         LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "commitTxn(" + rqst + ")");
+        checkRetryable(e, "commitTxn(" + rqst + ")");
         throw new MetaException("Unable to update transaction database "
           + StringUtils.stringifyException(e));
       } finally {
@@ -1628,12 +1628,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @RetrySemantics.ReadOnly
   public long getLatestTxnIdInConflict(long txnid) throws MetaException {
     try {
-      Connection dbConn = null;
-      Statement stmt = null;
-
-      try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        stmt = dbConn.createStatement();
+      try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+           Statement stmt = dbConn.createStatement()) {
 
         String writeConflictQuery = "SELECT MAX(\"COMMITTED\".\"WS_TXNID\")" +
           " FROM \"WRITE_SET\" \"COMMITTED\"" +
@@ -1659,18 +1655,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         try (ResultSet rs = stmt.executeQuery(writeConflictQuery)) {
           return rs.next() ? rs.getLong(1) : -1;
         }
-
       } catch (SQLException e) {
-        checkRetryable(dbConn, e, "getLatestTxnIdInConflict");
+        checkRetryable(e, "getLatestTxnIdInConflict");
         throw new MetaException(StringUtils.stringifyException(e));
-      } finally {
-        closeStmt(stmt);
-        closeDbConn(dbConn);
       }
     } catch (RetryException e) {
       return getLatestTxnIdInConflict(txnid);
     }
-   }
+  }
 
   private ResultSet checkForWriteConflict(Statement stmt, long txnid) throws SQLException, MetaException {
     String writeConflictQuery = sqlGenerator.addLimitClause(1, "\"COMMITTED\".\"WS_TXNID\", \"COMMITTED\".\"WS_COMMIT_ID\", " +
@@ -1870,7 +1862,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } catch (SQLException e) {
         LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "replTableWriteIdState(" + rqst + ")", true);
+        checkRetryable(e, "replTableWriteIdState(" + rqst + ")", true);
         throw new MetaException("Unable to update transaction database "
                 + StringUtils.stringifyException(e));
       } finally {
@@ -1969,7 +1961,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         GetValidWriteIdsResponse owr = new GetValidWriteIdsResponse(tblValidWriteIdsList);
         return owr;
       } catch (SQLException e) {
-        checkRetryable(dbConn, e, "getValidWriteIds");
+        checkRetryable(e, "getValidWriteIds");
         throw new MetaException("Unable to select from transaction database, "
                 + StringUtils.stringifyException(e));
       } finally {
@@ -2281,7 +2273,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } catch (SQLException e) {
         LOG.error("Exception during write ids allocation for request={}. Will retry if possible.", rqst, e);
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "allocateTableWriteIds(" + rqst + ")", true);
+        checkRetryable(e, "allocateTableWriteIds(" + rqst + ")", true);
         throw new MetaException("Unable to update transaction database "
                 + StringUtils.stringifyException(e));
       } finally {
@@ -2319,7 +2311,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.error(
             "Exception during reading the max allocated writeId for dbName={}, tableName={}. Will retry if possible.",
             dbName, tableName, e);
-        checkRetryable(dbConn, e, "getMaxAllocatedTableWrited(" + rqst + ")");
+        checkRetryable(e, "getMaxAllocatedTableWrited(" + rqst + ")");
         throw new MetaException("Unable to update transaction database " + StringUtils.stringifyException(e));
       } finally {
         close(rs, pStmt, dbConn);
@@ -2354,7 +2346,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         dbConn.commit();
       } catch (SQLException e) {
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "seedWriteId(" + rqst + ")");
+        checkRetryable(e, "seedWriteId(" + rqst + ")");
         throw new MetaException("Unable to update transaction database " + StringUtils.stringifyException(e));
       } finally {
         close(null, pst, dbConn);
@@ -2388,7 +2380,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
       } catch (SQLException e) {
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "seedTxnId(" + rqst + ")");
+        checkRetryable(e, "seedTxnId(" + rqst + ")");
         throw new MetaException("Unable to update transaction database " + StringUtils.stringifyException(e));
       } finally {
         close(null, stmt, dbConn);
@@ -2426,7 +2418,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           retryNum = 0;
           throw new MetaException(e.getMessage());
         }
-        checkRetryable(dbConn, e, "addWriteNotificationLog(" + acidWriteEvent + ")");
+        checkRetryable(e, "addWriteNotificationLog(" + acidWriteEvent + ")");
         throw new MetaException("Unable to add write notification event " + StringUtils.stringifyException(e));
       } finally{
         closeDbConn(dbConn);
@@ -2718,7 +2710,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } catch (SQLException e) {
         LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e,
+        checkRetryable(e,
             "heartbeatLockMaterializationRebuild(" + TableName.getDbTable(dbName, tableName) + ", " + txnId + ")");
         throw new MetaException("Unable to heartbeat rebuild lock due to " +
             StringUtils.stringifyException(e));
@@ -2774,7 +2766,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } catch (SQLException e) {
         LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "cleanupMaterializationRebuildLocks");
+        checkRetryable(e, "cleanupMaterializationRebuildLocks");
         throw new MetaException("Unable to clean rebuild locks due to " +
             StringUtils.stringifyException(e));
       } finally {
@@ -2888,7 +2880,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } catch (SQLException e) {
         LOG.error("enqueueLock failed for request: {}. Exception msg: {}", rqst, getMessage(e));
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "enqueueLockWithRetry(" + rqst + ")");
+        checkRetryable(e, "enqueueLockWithRetry(" + rqst + ")");
         throw new MetaException("Unable to update transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -3134,7 +3126,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } catch (SQLException e) {
         LOG.error("checkLock failed for extLockId={}/txnId={}. Exception msg: {}", extLockId, txnId, getMessage(e));
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "checkLockWithRetry(" + extLockId + "," + txnId + ")");
+        checkRetryable(e, "checkLockWithRetry(" + extLockId + "," + txnId + ")");
         throw new MetaException("Unable to update transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -3194,7 +3186,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } catch (SQLException e) {
         LOG.error("checkLock failed for request={}. Exception msg: {}", rqst, getMessage(e));
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "checkLock(" + rqst + " )");
+        checkRetryable(e, "checkLock(" + rqst + " )");
         throw new MetaException("Unable to update transaction database " +
           JavaUtils.lockIdToString(extLockId) + " " + StringUtils.stringifyException(e));
       } finally {
@@ -3275,7 +3267,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } catch (SQLException e) {
         LOG.error("Unlock failed for request={}. Exception msg: {}", rqst, getMessage(e));
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "unlock(" + rqst + ")");
+        checkRetryable(e, "unlock(" + rqst + ")");
         throw new MetaException("Unable to update transaction database " +
           JavaUtils.lockIdToString(extLockId) + " " + StringUtils.stringifyException(e));
       } finally {
@@ -3390,7 +3382,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           sortedList.add(new LockInfoExt(e));
         }
       } catch (SQLException e) {
-        checkRetryable(dbConn, e, "showLocks(" + rqst + ")");
+        checkRetryable(e, "showLocks(" + rqst + ")");
         throw new MetaException("Unable to select from transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -3427,7 +3419,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } catch (SQLException e) {
         LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "heartbeat(" + ids + ")");
+        checkRetryable(e, "heartbeat(" + ids + ")");
         throw new MetaException("Unable to select from transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -3494,7 +3486,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } catch (SQLException e) {
         LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "heartbeatTxnRange(" + rqst + ")");
+        checkRetryable(e, "heartbeatTxnRange(" + rqst + ")");
         throw new MetaException("Unable to select from transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -3547,7 +3539,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
         return txnId;
       } catch (SQLException e) {
-        checkRetryable(dbConn, e, "getTxnIdForWriteId");
+        checkRetryable(e, "getTxnIdForWriteId");
         throw new MetaException("Unable to select from transaction database, "
                 + StringUtils.stringifyException(e));
       } finally {
@@ -3671,7 +3663,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } catch (SQLException e) {
         LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "COMPACT(" + rqst + ")");
+        checkRetryable(e, "COMPACT(" + rqst + ")");
         throw new MetaException("Unable to select from transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -3758,7 +3750,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           response.addToCompacts(e);
         }
       } catch (SQLException e) {
-        checkRetryable(dbConn, e, "showCompact(" + rqst + ")");
+        checkRetryable(e, "showCompact(" + rqst + ")");
         throw new MetaException("Unable to select from transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -3841,7 +3833,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
       } catch (SQLException e) {
         LOG.error("Unable to execute query " + e.getMessage());
-        checkRetryable(dbConn, e, "getLatestCommittedCompactionInfo");
+        checkRetryable(e, "getLatestCommittedCompactionInfo");
       } finally {
         close(rs, pst, dbConn);
       }
@@ -3893,7 +3885,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         return metrics;
       } catch (SQLException e) {
         LOG.error("Unable to getMetricsInfo", e);
-        checkRetryable(dbConn, e, "getMetricsInfo");
+        checkRetryable(e, "getMetricsInfo");
         throw new MetaException("Unable to execute getMetricsInfo() " + StringUtils.stringifyException(e));
       } finally {
         closeDbConn(dbConn);
@@ -3973,7 +3965,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } catch (SQLException e) {
         LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "addDynamicPartitions(" + rqst + ")");
+        checkRetryable(e, "addDynamicPartitions(" + rqst + ")");
         throw new MetaException("Unable to insert into from transaction database " +
           StringUtils.stringifyException(e));
       } finally {
@@ -4192,7 +4184,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } catch (SQLException e) {
         LOG.debug("Going to rollback: ", e);
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "cleanupRecords");
+        checkRetryable(e, "cleanupRecords");
         if (e.getMessage().contains("does not exist")) {
           LOG.warn("Cannot perform cleanup since metastore table does not exist");
         } else {
@@ -4366,7 +4358,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } catch (SQLException e) {
         LOG.debug("Going to rollback: " + callSig);
         rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, callSig);
+        checkRetryable(e, callSig);
         if (e.getMessage().contains("does not exist")) {
           LOG.warn("Cannot perform " + callSig + " since metastore table does not exist");
         } else {
@@ -4505,10 +4497,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   /**
-   * See {@link #checkRetryable(Connection, SQLException, String, boolean)}.
+   * See {@link #checkRetryable(SQLException, String, boolean)}.
    */
-  protected void checkRetryable(Connection conn, SQLException e, String caller) throws RetryException {
-    checkRetryable(conn, e, caller, false);
+  void checkRetryable(SQLException e, String caller) throws RetryException {
+    checkRetryable(e, caller, false);
   }
 
   /**
@@ -4516,13 +4508,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * this, so we have to inspect the error messages and catch the telltale signs for each
    * different database.  This method will throw {@code RetryException}
    * if the error is retry-able.
-   * @param conn database connection
    * @param e exception that was thrown.
    * @param caller name of the method calling this (and other info useful to log)
    * @param retryOnDuplicateKey whether to retry on unique key constraint violation
    * @throws org.apache.hadoop.hive.metastore.txn.TxnHandler.RetryException when the operation should be retried
    */
-  protected void checkRetryable(Connection conn, SQLException e, String caller, boolean retryOnDuplicateKey)
+  void checkRetryable(SQLException e, String caller, boolean retryOnDuplicateKey)
       throws RetryException {
 
     // If you change this function, remove the @Ignore from TestTxnHandler.deadlockIsDetected()
@@ -5510,7 +5501,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
       } catch (SQLException e) {
         LOG.info("Failed to update number of open transactions");
-        checkRetryable(dbConn, e, "countOpenTxns()");
+        checkRetryable(e, "countOpenTxns()");
       } finally {
         close(rs, stmt, dbConn);
       }
@@ -5744,7 +5735,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         //OK, so now we have a lock
         return new LockHandleImpl(dbConn, stmt, rs, key, derbySemaphore);
       } catch (SQLException ex) {
-        checkRetryable(dbConn, ex, "acquireLock(" + key + ")");
+        checkRetryable(ex, "acquireLock(" + key + ")");
         throw new MetaException("Unable to lock " + quoteString(key) + " due to: " + getMessage(ex) + "; " + StringUtils.stringifyException(ex));
       }
       catch(InterruptedException ex) {
