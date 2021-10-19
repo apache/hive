@@ -27,6 +27,23 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class QTestExternalDBHandler implements QTestOptionHandler {
+  /**
+   * Properties accepted by the handler. 
+   */
+  private enum Property {
+    /**
+     * The database type.
+     */
+    TYPE,
+    /**
+     * The name of the initialization script.
+     */
+    SCRIPT,
+    /**
+     * The reusability status of the database.
+     */
+    REUSE
+  }
   private String dbType;
   private String initScript;
 
@@ -35,6 +52,15 @@ public class QTestExternalDBHandler implements QTestOptionHandler {
     String[] args = arguments.split(":");
     dbType = args[0].toLowerCase();
     initScript = args[1];
+//    Map<Property, String> args = new HashMap<>();
+//    for(String p: pairs) {
+//      String[] propValue = p.split("=");
+//      if(propValue.length != 2) {
+//        throw new IllegalArgumentException("Illegal property format:" + p);
+//      }
+//      args.put(Property.valueOf(propValue[0].toUpperCase()), propValue[1]);
+//    }
+//    args.get(Property.TYPE)
   }
 
   @Override
