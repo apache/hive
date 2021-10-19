@@ -48,6 +48,11 @@
             <groupId>org.apache.iceberg</groupId>
             <artifactId>patched-iceberg-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

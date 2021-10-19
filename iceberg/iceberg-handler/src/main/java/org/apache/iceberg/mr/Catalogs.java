@@ -203,7 +203,11 @@ public final class Catalogs {
    */
   public static boolean hiveCatalog(Configuration conf, Properties props) {
     String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
-    return CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE.equalsIgnoreCase(getCatalogType(conf, catalogName));
+    String catalogType = getCatalogType(conf, catalogName);
+    if (catalogType != null) {
+      return CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE.equalsIgnoreCase(catalogType);
+    }
+    return CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE.equalsIgnoreCase(getCatalogType(conf, ICEBERG_DEFAULT_CATALOG_NAME));
   }
 
   @VisibleForTesting
@@ -280,9 +284,7 @@ public final class Catalogs {
       }
     } else {
       String catalogType = conf.get(InputFormatConfig.CATALOG);
-      if (catalogType == null) {
-        return CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE;
-      } else if (catalogType.equals(LOCATION)) {
+      if (catalogType != null && catalogType.equals(LOCATION)) {
         return NO_CATALOG_TYPE;
       } else {
         return catalogType;
