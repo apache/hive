@@ -39,6 +39,7 @@
         <google.errorprone.javac.version>9+181-r4173-1</google.errorprone.javac.version>
         <google.errorprone.version>2.5.1</google.errorprone.version>
         <assertj.version>3.19.0</assertj.version>
+        <junit.jupiter.version>5.7.2</junit.jupiter.version>
     </properties>
 
     <modules>
@@ -195,6 +196,11 @@
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
                 <version>${assertj.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${junit.jupiter.version}</version>
             </dependency>
 
 
