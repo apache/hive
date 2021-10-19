@@ -437,26 +437,6 @@ public class CliConfigs {
     }
   }
 
-  public static class DummyConfig extends AbstractCliConfig {
-    public DummyConfig() {
-      super(CoreDummy.class);
-      try {
-        setQueryDir("ql/src/test/queries/clientcompare");
-
-        setResultsDir("ql/src/test/results/clientcompare");
-        setLogDir("itests/qtest/target/qfile-results/clientcompare");
-
-        setInitScript("q_test_init_compare.sql");
-        setCleanupScript("q_test_cleanup_compare.sql");
-
-        setHiveConfDir("");
-        setClusterType(MiniClusterType.NONE);
-      } catch (Exception e) {
-        throw new RuntimeException("can't construct cliconfig", e);
-      }
-    }
-  }
-
   public static class HBaseNegativeCliConfig extends AbstractCliConfig {
     public HBaseNegativeCliConfig() {
       super(CoreHBaseNegativeCliDriver.class);
