@@ -651,12 +651,6 @@ public class QTestUtil {
     conf.set("hive.execution.engine", execEngine);
   }
 
-  public void init(String fileName) throws Exception {
-    cleanUp();
-    createSources();
-    cliDriver.processCmd("set hive.cli.print.header=true;");
-  }
-
   public String cliInit() throws Exception {
     File file = Objects.requireNonNull(inputFile);
     String fileName = inputFile.getName();
