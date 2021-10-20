@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -65,6 +66,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -985,6 +987,52 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     } finally {
       primary.run("DROP DATABASE " + dbName + " CASCADE");
       replica.run("DROP DATABASE " + replDbName + " CASCADE");
+    }
+  }
+
+  @Test
+  public void testXAttrsPreserved() throws Throwable {
+    String tbName = "dummyTable";
+    primary.run("use " + primaryDbName)
+            .run("CREATE TABLE " + tbName + "(a int) STORED AS TEXTFILE")
+            .run("INSERT into " + tbName + " values(1)");
+    Table srcTb = primary.getTable(primaryDbName, tbName);
+    Path tablePath = new Path(srcTb.getSd().getLocation());
+    FileSystem fs = tablePath.getFileSystem(conf);
+    setXAttrsRecursive(fs, fs.getFileStatus(tablePath));
+    primary.dump(primaryDbName);
+    replica.load(replicatedDbName, primaryDbName);
+    Table dstTb = primary.getTable(replicatedDbName, tbName);
+    verifyXAttrsPreserved(fs, fs.getFileStatus(tablePath), fs.getFileStatus(new Path(dstTb.getSd().getLocation())));
+  }
+
+  private void setXAttrsRecursive(FileSystem srcFS, FileStatus srcStatus) throws Exception {
+    Path src = srcStatus.getPath();
+    if (srcStatus.isDirectory()) {
+      for(FileStatus content: srcFS.listStatus(src)) {
+        setXAttrsRecursive(srcFS, content);
+      }
+    } else {
+      srcFS.setXAttr(src, "user.random", "value".getBytes(StandardCharsets.UTF_8));
+    }
+  }
+
+  private void verifyXAttrsPreserved(FileSystem fs, FileStatus srcStatus, FileStatus dstStatus) throws Exception {
+    Path src = srcStatus.getPath();
+    Path dst = dstStatus.getPath();
+    if (srcStatus.isDirectory()) {
+      assertTrue(dstStatus.isDirectory());
+      for(FileStatus srcContent: fs.listStatus(src)) {
+        Path dstContent = new Path(dst, srcContent.getPath().getName());
+        assertTrue(fs.exists(dstContent));
+        verifyXAttrsPreserved(fs, srcContent, fs.getFileStatus(dstContent));
+      }
+    } else {
+      assertFalse(dstStatus.isDirectory());
+      Map<String, byte[]> values = fs.getXAttrs(dst);
+      for(Map.Entry<String, byte[]> value : fs.getXAttrs(src).entrySet()) {
+        assertEquals(new String(value.getValue()), new String(values.get(value.getKey())));
+      }
     }
   }
 

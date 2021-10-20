@@ -272,21 +272,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     //no op
   }
 
-  private boolean isFairScheduler (Configuration conf) {
-    return "org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler".
-        equalsIgnoreCase(conf.get(YarnConfiguration.RM_SCHEDULER));
-  }
-
-  private boolean checkFileSystemXAttrSupport(FileSystem fs) throws IOException {
-    try {
-      fs.getXAttrs(new Path(Path.SEPARATOR));
-      return true;
-    } catch (UnsupportedOperationException e) {
-      LOG.warn("XAttr won't be preserved since it is not supported for file system: " + fs.getUri());
-      return false;
-    }
-  }
-
   /**
    * Returns a shim to wrap MiniMrCluster
    */
@@ -1142,7 +1127,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       }
     }
     if (needToAddPreserveOption) {
-      params.add((checkFileSystemXAttrSupport(dstFs) && checkFileSystemXAttrSupport(sourceFs)) ? "-pbx" : "-pb");
+      params.add((Utils.checkFileSystemXAttrSupport(dstFs) && Utils.checkFileSystemXAttrSupport(sourceFs)) ? "-pbx" : "-pb");
     }
     if (!params.contains("-update")) {
       params.add("-update");
