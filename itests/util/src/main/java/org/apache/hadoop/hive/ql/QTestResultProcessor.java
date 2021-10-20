@@ -25,6 +25,7 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -55,25 +56,26 @@ public class QTestResultProcessor {
 
   private static final String SORT_SUFFIX = ".sorted";
 
-  private final Set<String> qSortSet = new HashSet<String>();
-  private final Set<String> qSortQuerySet = new HashSet<String>();
-  private final Set<String> qHashQuerySet = new HashSet<String>();
-  private final Set<String> qSortNHashQuerySet = new HashSet<String>();
-  private final Set<String> qNoSessionReuseQuerySet = new HashSet<String>();
+  private enum Operation {
+    PRESORT, SORT, HASH, REUSE_SESSION
+  }
+  private Set<Operation> operations = new HashSet<>();
 
-  public void add(File qf, String query) {
+  public void init(String query) {
+    operations.clear();
     if (matches(SORT_BEFORE_DIFF, query)) {
-      qSortSet.add(qf.getName());
+      operations.add(Operation.PRESORT);
     } else if (matches(SORT_QUERY_RESULTS, query)) {
-      qSortQuerySet.add(qf.getName());
+      operations.add(Operation.SORT);
     } else if (matches(HASH_QUERY_RESULTS, query)) {
-      qHashQuerySet.add(qf.getName());
+      operations.add(Operation.HASH);
     } else if (matches(SORT_AND_HASH_QUERY_RESULTS, query)) {
-      qSortNHashQuerySet.add(qf.getName());
+      operations.add(Operation.SORT);
+      operations.add(Operation.HASH);
     }
 
-    if (matches(NO_SESSION_REUSE, query)) {
-      qNoSessionReuseQuerySet.add(qf.getName());
+    if (!matches(NO_SESSION_REUSE, query)) {
+      operations.add(Operation.REUSE_SESSION);
     }
   }
 
@@ -85,32 +87,31 @@ public class QTestResultProcessor {
     return false;
   }
 
-  public boolean shouldSort(String fileName) {
-    return qSortSet.contains(fileName);
+  private boolean shouldSort() {
+    return operations.contains(Operation.PRESORT);
   }
 
-  public void setOutputs(CliSessionState ss, OutputStream fo, String fileName) throws Exception {
-    if (qSortQuerySet.contains(fileName)) {
-      ss.out = new SortPrintStream(fo, "UTF-8");
-    } else if (qHashQuerySet.contains(fileName)) {
-      ss.out = new DigestPrintStream(fo, "UTF-8");
-    } else if (qSortNHashQuerySet.contains(fileName)) {
+  public void setOutputs(CliSessionState ss, OutputStream fo) throws Exception {
+    if (operations.containsAll(EnumSet.of(Operation.HASH, Operation.SORT))) {
       ss.out = new SortAndDigestPrintStream(fo, "UTF-8");
+    } else if (operations.contains(Operation.SORT)) {
+      ss.out = new SortPrintStream(fo, "UTF-8");
+    } else if (operations.contains(Operation.HASH)) {
+      ss.out = new DigestPrintStream(fo, "UTF-8");
     } else {
       ss.out = new SessionStream(fo, true, "UTF-8");
     }
   }
 
-  public boolean shouldNotReuseSession(String fileName) {
-    return qNoSessionReuseQuerySet.contains(fileName);
+  public boolean shouldNotReuseSession() {
+    return !operations.contains(Operation.REUSE_SESSION);
   }
 
-  public QTestProcessExecResult executeDiffCommand(String inFileName, String outFileName,
-      boolean ignoreWhiteSpace, String tname) throws Exception {
+  public QTestProcessExecResult executeDiffCommand(String inFileName, String outFileName, boolean ignoreWhiteSpace) throws Exception {
 
     QTestProcessExecResult result;
 
-    if (shouldSort(tname)) {
+    if (shouldSort()) {
       String inSorted = inFileName + SORT_SUFFIX;
       String outSorted = outFileName + SORT_SUFFIX;
 
@@ -137,7 +138,7 @@ public class QTestResultProcessor {
 
     result = executeCmd(diffCommandArgs);
 
-    if (shouldSort(tname)) {
+    if (shouldSort()) {
       new File(inFileName).delete();
       new File(outFileName).delete();
     }

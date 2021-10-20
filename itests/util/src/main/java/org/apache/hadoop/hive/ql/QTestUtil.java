@@ -306,7 +306,7 @@ public class QTestUtil {
     String query = FileUtils.readFileToString(qf);
     inputFile = qf;
     inputContent = query;
-    qTestResultProcessor.add(qf, query);
+    qTestResultProcessor.init(query);
     qOutProcessor.initMasks(query);
   }
 
@@ -456,7 +456,7 @@ public class QTestUtil {
     cliDriver = new CliDriver();
 
     File outf = new File(logDir, "initialize.log");
-    setSessionOutputs("that_shouldnt_happen_there", ss, outf);
+    setSessionOutputs(ss, outf);
 
   }
 
@@ -490,7 +490,7 @@ public class QTestUtil {
   }
 
   public void cleanUp(String fileName) throws Exception {
-    boolean canReuseSession = (fileName == null) || !qTestResultProcessor.shouldNotReuseSession(fileName);
+    boolean canReuseSession = (fileName == null) || !qTestResultProcessor.shouldNotReuseSession();
     if (!isSessionStateStarted) {
       startSessionState(canReuseSession);
     }
@@ -568,7 +568,7 @@ public class QTestUtil {
   }
 
   public void createSources(String fileName) throws Exception {
-    boolean canReuseSession = (fileName == null) || !qTestResultProcessor.shouldNotReuseSession(fileName);
+    boolean canReuseSession = (fileName == null) || !qTestResultProcessor.shouldNotReuseSession();
     if (!isSessionStateStarted) {
       startSessionState(canReuseSession);
     }
@@ -674,7 +674,7 @@ public class QTestUtil {
     dispatcher.beforeTest(this);
 
 
-    if (qTestResultProcessor.shouldNotReuseSession(fileName)) {
+    if (qTestResultProcessor.shouldNotReuseSession()) {
       newSession(false);
     }
 
@@ -691,7 +691,7 @@ public class QTestUtil {
       stdoutName = fileName + outFileExtension;
     }
     File outf = new File(logDir, stdoutName);
-    setSessionOutputs(fileName, ss, outf);
+    setSessionOutputs(ss, outf);
     ss.setIsQtestLogging(true);
 
     if (fileName.equals("init_file.q")) {
@@ -702,7 +702,7 @@ public class QTestUtil {
     return outf.getAbsolutePath();
   }
 
-  private void setSessionOutputs(String fileName, CliSessionState ss, File outf) throws Exception {
+  private void setSessionOutputs(CliSessionState ss, File outf) throws Exception {
     OutputStream fo = new BufferedOutputStream(new FileOutputStream(outf));
     if (ss.out != null) {
       ss.out.flush();
@@ -711,7 +711,7 @@ public class QTestUtil {
       ss.err.flush();
     }
 
-    qTestResultProcessor.setOutputs(ss, fo, fileName);
+    qTestResultProcessor.setOutputs(ss, fo);
 
     ss.err = new CachingPrintStream(fo, true, "UTF-8");
     ss.setIsSilent(true);
@@ -941,7 +941,7 @@ public class QTestUtil {
     outfd.write(e.getMessage());
     outfd.close();
 
-    QTestProcessExecResult result = qTestResultProcessor.executeDiffCommand(outf.getPath(), expf, false, qf.getName());
+    QTestProcessExecResult result = qTestResultProcessor.executeDiffCommand(outf.getPath(), expf, false);
     if (QTestSystemProperties.shouldOverwriteResults()) {
       qTestResultProcessor.overwriteResults(outf.getPath(), expf);
       return QTestProcessExecResult.createWithoutOutput(0);
@@ -972,7 +972,7 @@ public class QTestUtil {
         + "\n");
     outfd.close();
 
-    QTestProcessExecResult result = qTestResultProcessor.executeDiffCommand(outf.getPath(), expf, false, qf.getName());
+    QTestProcessExecResult result = qTestResultProcessor.executeDiffCommand(outf.getPath(), expf, false);
     if (QTestSystemProperties.shouldOverwriteResults()) {
       qTestResultProcessor.overwriteResults(outf.getPath(), expf);
       return QTestProcessExecResult.createWithoutOutput(0);
@@ -1030,7 +1030,7 @@ public class QTestUtil {
       qTestResultProcessor.overwriteResults(f.getPath(), outFileName);
       return QTestProcessExecResult.createWithoutOutput(0);
     } else {
-      return qTestResultProcessor.executeDiffCommand(f.getPath(), outFileName, false, tname);
+      return qTestResultProcessor.executeDiffCommand(f.getPath(), outFileName, false);
     }
   }
 
