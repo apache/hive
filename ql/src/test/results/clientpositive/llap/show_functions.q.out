@@ -106,7 +106,6 @@ dayofweek
 decode
 degrees
 dense_rank
-deserialize
 div
 ds_cpc_estimate
 ds_cpc_estimate_bounds
@@ -202,6 +201,7 @@ get_splits
 get_sql_schema
 greatest
 grouping
+gzip_json_deserialize
 hash
 hex
 histogram_numeric
@@ -465,7 +465,6 @@ coalesce
 current_database
 current_date
 decode
-deserialize
 ds_cpc_estimate
 ds_hll_estimate
 ds_kll_quantile
@@ -482,6 +481,7 @@ explode
 first_value
 floor_minute
 from_unixtime
+gzip_json_deserialize
 in_file
 inline
 isfalse
@@ -625,7 +625,6 @@ dayofweek
 decode
 degrees
 dense_rank
-deserialize
 div
 ds_cpc_estimate
 ds_cpc_estimate_bounds
@@ -721,6 +720,7 @@ get_splits
 get_sql_schema
 greatest
 grouping
+gzip_json_deserialize
 hash
 hex
 histogram_numeric
