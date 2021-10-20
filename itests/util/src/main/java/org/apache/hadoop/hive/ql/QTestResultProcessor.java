@@ -103,8 +103,8 @@ public class QTestResultProcessor {
     }
   }
 
-  public boolean shouldNotReuseSession() {
-    return !operations.contains(Operation.REUSE_SESSION);
+  public boolean canReuseSession() {
+    return operations.contains(Operation.REUSE_SESSION);
   }
 
   public QTestProcessExecResult executeDiffCommand(String inFileName, String outFileName, boolean ignoreWhiteSpace) throws Exception {

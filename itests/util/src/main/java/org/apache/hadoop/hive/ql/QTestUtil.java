@@ -485,9 +485,8 @@ public class QTestUtil {
   }
 
   public void cleanUp() throws Exception {
-    boolean canReuseSession = !qTestResultProcessor.shouldNotReuseSession();
     if (!isSessionStateStarted) {
-      startSessionState(canReuseSession);
+      startSessionState(qTestResultProcessor.canReuseSession());
     }
     if (System.getenv(QTEST_LEAVE_FILES) != null) {
       return;
@@ -559,9 +558,8 @@ public class QTestUtil {
   }
 
   public void createSources() throws Exception {
-    boolean canReuseSession = !qTestResultProcessor.shouldNotReuseSession();
     if (!isSessionStateStarted) {
-      startSessionState(canReuseSession);
+      startSessionState(qTestResultProcessor.canReuseSession());
     }
 
     // connect to externalDB if size is not zero
@@ -658,8 +656,7 @@ public class QTestUtil {
     dispatcher.process(file);
     dispatcher.beforeTest(this);
 
-
-    if (qTestResultProcessor.shouldNotReuseSession()) {
+    if (!qTestResultProcessor.canReuseSession()) {
       newSession(false);
     }
 
