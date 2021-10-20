@@ -59,7 +59,7 @@ public class QTestResultProcessor {
   private enum Operation {
     PRESORT, SORT, HASH, REUSE_SESSION
   }
-  private Set<Operation> operations = new HashSet<>();
+  private final Set<Operation> operations = new HashSet<>();
 
   public void init(String query) {
     operations.clear();
