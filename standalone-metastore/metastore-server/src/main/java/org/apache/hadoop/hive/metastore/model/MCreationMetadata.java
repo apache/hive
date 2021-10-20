@@ -36,7 +36,6 @@ public class MCreationMetadata {
   private String txnList;
   private long materializationTime;
 
-  @SuppressWarnings("serial")
   public static class PK implements Serializable {
     public long id;
 

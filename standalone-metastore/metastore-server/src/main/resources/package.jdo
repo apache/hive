@@ -265,6 +265,18 @@
       </field>
     </class>
 
+    <class name="MMVSource" identity-type="application" table="MV_TABLES_USED" detachable="true" objectid-class="MMVSource$PK">
+      <field name="creationMetadata" primary-key="true">
+        <column name="MV_CREATION_METADATA_ID"/>
+      </field>
+      <field name="table" primary-key="true">
+        <column name="TBL_ID"/>
+      </field>
+      <field name="wasUpdated">
+        <column name="WAS_UPDATED"/>
+      </field>
+    </class>
+
     <class name="MConstraint" identity-type="application" table="KEY_CONSTRAINTS" detachable="true" objectid-class="MConstraint$PK">
       <field name="constraintName" primary-key="true">
         <column name="CONSTRAINT_NAME"/>
