@@ -3015,9 +3015,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
             final String user = tabMetaData.getProperty(Constants.JDBC_USERNAME);
             String pswd = tabMetaData.getProperty(Constants.JDBC_PASSWORD);
             if (pswd == null) {
-              String keystore = tabMetaData.getProperty(Constants.JDBC_KEYSTORE);
-              String key = tabMetaData.getProperty(Constants.JDBC_KEY);
-              pswd = Utilities.getPasswdFromKeystore(keystore, key);
+              if(!(tabMetaData.getProperty(Constants.JDBC_PASSWORD_URI) == null)) {
+                  pswd = Utilities.getPasswdFromUri(tabMetaData.getProperty(Constants.JDBC_PASSWORD_URI));
+              }
+              else {
+                String keystore = tabMetaData.getProperty(Constants.JDBC_KEYSTORE);
+                String key = tabMetaData.getProperty(Constants.JDBC_KEY);
+                pswd = Utilities.getPasswdFromKeystore(keystore, key);
+              }
             }
             final String catalogName = tabMetaData.getProperty(Constants.JDBC_CATALOG);
             final String schemaName = tabMetaData.getProperty(Constants.JDBC_SCHEMA);
