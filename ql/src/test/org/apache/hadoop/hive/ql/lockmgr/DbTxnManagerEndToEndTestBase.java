@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -64,7 +65,8 @@ public abstract class DbTxnManagerEndToEndTestBase {
     ctx = new Context(conf);
     driver = new Driver(new QueryState.Builder().withHiveConf(conf).nonIsolated().build());
     driver2 = new Driver(new QueryState.Builder().withHiveConf(conf).build());
-    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, false);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.TXN_WRITE_X_LOCK, false);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_LEVEL, true);
     TestTxnDbUtil.cleanDb(conf);
     SessionState ss = SessionState.get();
     ss.initTxnMgr(conf);

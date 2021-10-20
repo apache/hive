@@ -21,7 +21,6 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
-import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
@@ -1499,7 +1498,7 @@ public class TestTxnHandler {
                   LOG.debug("no exception, no deadlock");
                 } catch (SQLException e) {
                   try {
-                    tHndlr.checkRetryable(conn1, e, "thread t1");
+                    tHndlr.checkRetryable(e, "thread t1");
                     LOG.debug("Got an exception, but not a deadlock, SQLState is " +
                         e.getSQLState() + " class of exception is " + e.getClass().getName() +
                         " msg is <" + e.getMessage() + ">");
@@ -1529,7 +1528,7 @@ public class TestTxnHandler {
                   LOG.debug("no exception, no deadlock");
                 } catch (SQLException e) {
                   try {
-                    tHndlr.checkRetryable(conn2, e, "thread t2");
+                    tHndlr.checkRetryable(e, "thread t2");
                     LOG.debug("Got an exception, but not a deadlock, SQLState is " +
                         e.getSQLState() + " class of exception is " + e.getClass().getName() +
                         " msg is <" + e.getMessage() + ">");
