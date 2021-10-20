@@ -204,6 +204,7 @@ import org.apache.hadoop.hive.metastore.model.MFieldSchema;
 import org.apache.hadoop.hive.metastore.model.MFunction;
 import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
 import org.apache.hadoop.hive.metastore.model.MISchema;
+import org.apache.hadoop.hive.metastore.model.MMVSource;
 import org.apache.hadoop.hive.metastore.model.MMasterKey;
 import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
@@ -1529,8 +1530,9 @@ public class ObjectStore implements RawStore, Configurable {
       while (iter.hasNext())
       {
         MCreationMetadata p = iter.next();
-        Set<MTable> tables = p.getTables();
-        for (MTable table : tables) {
+        Set<MMVSource> tables = p.getTables();
+        for (MMVSource sourceTable : tables) {
+          MTable table = sourceTable.getTable();
           if (dbName.equals(table.getDatabase().getName())  && tblName.equals(table.getTableName())) {
             LOG.info("Cannot drop table " + table.getTableName() +
                     " as it is being used by MView " + p.getTblName());
@@ -2508,10 +2510,14 @@ public class ObjectStore implements RawStore, Configurable {
       return null;
     }
     assert !m.isSetMaterializationTime();
-    Set<MTable> tablesUsed = new HashSet<>();
+    Set<MMVSource> tablesUsed = new HashSet<>();
     for (String fullyQualifiedName : m.getTablesUsed()) {
       String[] names =  fullyQualifiedName.split("\\.");
-      tablesUsed.add(getMTable(m.getCatName(), names[0], names[1], false).mtbl);
+      MTable mtbl = getMTable(m.getCatName(), names[0], names[1], false).mtbl;
+      MMVSource source = new MMVSource();
+      source.setTable(mtbl);
+      source.setWasUpdated(false);
+      tablesUsed.add(source);
     }
     return new MCreationMetadata(normalizeIdentifier(m.getCatName()),
             normalizeIdentifier(m.getDbName()), normalizeIdentifier(m.getTblName()),
@@ -2523,10 +2529,10 @@ public class ObjectStore implements RawStore, Configurable {
       return null;
     }
     Set<String> tablesUsed = new HashSet<>();
-    for (MTable mtbl : s.getTables()) {
+    for (MMVSource mtbl : s.getTables()) {
       tablesUsed.add(
           Warehouse.getQualifiedName(
-              mtbl.getDatabase().getName(), mtbl.getTableName()));
+              mtbl.getTable().getDatabase().getName(), mtbl.getTable().getTableName()));
     }
     CreationMetadata r = new CreationMetadata(s.getCatalogName(),
         s.getDbName(), s.getTblName(), tablesUsed);
@@ -4959,7 +4965,7 @@ public class ObjectStore implements RawStore, Configurable {
       // Update creation metadata
       MCreationMetadata newMcm = convertToMCreationMetadata(cm);
       MCreationMetadata mcm = getCreationMetadata(catName, dbname, tablename);
-      mcm.setTables(newMcm.getTables());
+//      mcm.setTables(newMcm.getTables());
       mcm.setMaterializationTime(newMcm.getMaterializationTime());
       mcm.setTxnList(newMcm.getTxnList());
       // commit the changes

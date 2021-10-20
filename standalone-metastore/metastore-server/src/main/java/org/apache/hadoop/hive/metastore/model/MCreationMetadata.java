@@ -32,7 +32,7 @@ public class MCreationMetadata {
   private String catalogName;
   private String dbName;
   private String tblName;
-  private Set<MTable> tables;
+  private Set<MMVSource> tables;
   private String txnList;
   private long materializationTime;
 
@@ -66,7 +66,7 @@ public class MCreationMetadata {
   }
 
   public MCreationMetadata(String catName, String dbName, String tblName,
-      Set<MTable> tables, String txnList, long materializationTime) {
+      Set<MMVSource> tables, String txnList, long materializationTime) {
     this.catalogName = catName;
     this.dbName = dbName;
     this.tblName = tblName;
@@ -75,11 +75,11 @@ public class MCreationMetadata {
     this.materializationTime = materializationTime;
   }
 
-  public Set<MTable> getTables() {
+  public Set<MMVSource> getTables() {
     return tables;
   }
 
-  public void setTables(Set<MTable> tables) {
+  public void setTables(Set<MMVSource> tables) {
     this.tables = tables;
   }
 

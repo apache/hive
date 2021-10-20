@@ -253,12 +253,9 @@
       <field name="tblName">
         <column name="TBL_NAME" length="256" jdbc-type="VARCHAR"/>
       </field>
-      <field name="tables" table="MV_TABLES_USED">
-        <collection element-type="MTable"/>
-        <join>
-          <column name="MV_CREATION_METADATA_ID"/>
-        </join>
-        <element column="TBL_ID"/>
+      <field name="tables" mapped-by="creationMetadata" dependent-element="true">
+        <collection element-type="MMVSource" dependent-element="true" />
+        <foreign-key name="MV_TABLES_USED_FK1" delete-action="cascade"/>
       </field>
       <field name="txnList">
         <column name="TXN_LIST" length="32672" jdbc-type="VARCHAR" allows-null="true"/>
