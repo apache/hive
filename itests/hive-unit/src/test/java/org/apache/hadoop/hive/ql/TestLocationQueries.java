@@ -124,7 +124,7 @@ public class TestLocationQueries extends BaseTestQueries {
       qt[i] = new CheckResults(resDir, logDir, MiniClusterType.NONE, "parta");
       qt[i].postInit();
       qt[i].newSession();
-      qt[i].addFile(qfiles[i], false);
+      qt[i].addFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }
 

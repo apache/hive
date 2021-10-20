@@ -298,16 +298,12 @@ public class QTestUtil {
   }
 
   public void addFile(String queryFile) throws IOException {
-    addFile(new File(queryFile), false);
+    addFile(new File(queryFile));
   }
 
-  public void addFile(File qf, boolean partial) throws IOException {
+  public void addFile(File qf) throws IOException {
     String query = FileUtils.readFileToString(qf);
     qMap.put(qf.getName(), query);
-    if (partial) {
-      return;
-    }
-
     qTestResultProcessor.add(qf, query);
     qOutProcessor.initMasks(qf, query);
   }

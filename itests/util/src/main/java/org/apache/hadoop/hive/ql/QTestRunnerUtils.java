@@ -75,7 +75,7 @@ public class QTestRunnerUtils {
           .withCleanupScript(cleanupScript == null ? DEFAULT_CLEANUP_SCRIPT : cleanupScript)
           .withLlapIo(false).build());
 
-      qt[i].addFile(qfiles[i], false);
+      qt[i].addFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }
 
