@@ -45,8 +45,8 @@ public class QTestRunnerUtils {
         qt.startSessionState(false);
         // assumption is that environment has already been cleaned once globally
         // hence each thread does not call cleanUp() and createSources() again
-        qt.cliInit(file);
-        qt.executeClient(file.getName());
+        qt.cliInit();
+        qt.executeClient();
       } catch (Throwable e) {
         System.err
             .println("Query file " + file.getName() + " failed with exception " + e.getMessage());
@@ -75,7 +75,7 @@ public class QTestRunnerUtils {
           .withCleanupScript(cleanupScript == null ? DEFAULT_CLEANUP_SCRIPT : cleanupScript)
           .withLlapIo(false).build());
 
-      qt[i].addFile(qfiles[i]);
+      qt[i].setInputFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }
 
@@ -96,9 +96,9 @@ public class QTestRunnerUtils {
     qt[0].createSources();
     for (int i = 0; i < qfiles.length && !failed; i++) {
       qt[i].clearTestSideEffects();
-      qt[i].cliInit(qfiles[i]);
-      qt[i].executeClient(qfiles[i].getName());
-      QTestProcessExecResult result = qt[i].checkCliDriverResults(qfiles[i].getName());
+      qt[i].cliInit();
+      qt[i].executeClient();
+      QTestProcessExecResult result = qt[i].checkCliDriverResults();
       if (result.getReturnCode() != 0) {
         failed = true;
         StringBuilder builder = new StringBuilder();
@@ -149,7 +149,7 @@ public class QTestRunnerUtils {
 
     for (int i = 0; i < qfiles.length; i++) {
       qtThread[i].join();
-      QTestProcessExecResult result = qt[i].checkCliDriverResults(qfiles[i].getName());
+      QTestProcessExecResult result = qt[i].checkCliDriverResults();
       if (result.getReturnCode() != 0) {
         failed = true;
         StringBuilder builder = new StringBuilder();

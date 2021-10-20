@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.cli.control;
 
-import java.io.File;
-
 import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
@@ -83,16 +81,16 @@ public class CorePerfCliDriver extends CliAdapter {
     try {
       LOG.info("Begin query: " + fname);
 
-      qt.addFile(fpath);
-      qt.cliInit(new File(fpath));
+      qt.setInputFile(fpath);
+      qt.cliInit();
 
       try {
-        qt.executeClient(fname);
+        qt.executeClient();
       } catch (CommandProcessorException e) {
         qt.failedQuery(e.getCause(), e.getResponseCode(), fname, QTestUtil.DEBUG_HINT);
       }
 
-      QTestProcessExecResult result = qt.checkCliDriverResults(fname);
+      QTestProcessExecResult result = qt.checkCliDriverResults();
       if (result.getReturnCode() != 0) {
         String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ? QTestUtil.DEBUG_HINT :
             "\r\n" + result.getCapturedOutput();
