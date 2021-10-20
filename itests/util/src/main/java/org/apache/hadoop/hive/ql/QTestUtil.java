@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.ql.QTestExternalDB;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
@@ -486,11 +485,7 @@ public class QTestUtil {
   }
 
   public void cleanUp() throws Exception {
-    cleanUp(null);
-  }
-
-  public void cleanUp(String fileName) throws Exception {
-    boolean canReuseSession = (fileName == null) || !qTestResultProcessor.shouldNotReuseSession();
+    boolean canReuseSession = !qTestResultProcessor.shouldNotReuseSession();
     if (!isSessionStateStarted) {
       startSessionState(canReuseSession);
     }
@@ -657,7 +652,7 @@ public class QTestUtil {
   }
 
   public void init(String fileName) throws Exception {
-    cleanUp(fileName);
+    cleanUp();
     createSources();
     cliDriver.processCmd("set hive.cli.print.header=true;");
   }

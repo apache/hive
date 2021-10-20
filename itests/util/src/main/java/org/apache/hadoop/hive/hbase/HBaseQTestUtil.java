@@ -79,8 +79,8 @@ public class HBaseQTestUtil extends QTestUtil {
   }
 
   @Override
-  public void cleanUp(String tname) throws Exception {
-    super.cleanUp(tname);
+  public void cleanUp() throws Exception {
+    super.cleanUp();
 
     Admin admin = null;
     try {
