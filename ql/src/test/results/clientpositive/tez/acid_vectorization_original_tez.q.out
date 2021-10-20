@@ -818,8 +818,12 @@ POSTHOOK: Input: default@over10k_orc_bucketed_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain alter table over10k_orc_bucketed_n0 compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500')
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@over10k_orc_bucketed_n0
+PREHOOK: Output: default@over10k_orc_bucketed_n0
 POSTHOOK: query: explain alter table over10k_orc_bucketed_n0 compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500')
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@over10k_orc_bucketed_n0
+POSTHOOK: Output: default@over10k_orc_bucketed_n0
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -835,8 +839,12 @@ STAGE PLANS:
 
 PREHOOK: query: alter table over10k_orc_bucketed_n0 compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500')
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@over10k_orc_bucketed_n0
+PREHOOK: Output: default@over10k_orc_bucketed_n0
 POSTHOOK: query: alter table over10k_orc_bucketed_n0 compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500')
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@over10k_orc_bucketed_n0
+POSTHOOK: Output: default@over10k_orc_bucketed_n0
 PREHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by ROW__ID
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_orc_bucketed_n0

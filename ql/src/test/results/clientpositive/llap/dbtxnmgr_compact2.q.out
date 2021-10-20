@@ -22,12 +22,20 @@ POSTHOOK: Output: default@t1_n105
 POSTHOOK: Output: default@t1_n105@ds=yesterday
 PREHOOK: query: alter table T1_n105 partition (ds = 'today') compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@t1_n105
+PREHOOK: Output: default@t1_n105
 POSTHOOK: query: alter table T1_n105 partition (ds = 'today') compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@t1_n105
+POSTHOOK: Output: default@t1_n105
 PREHOOK: query: explain alter table T1_n105 partition (ds = 'yesterday') compact 'minor'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@t1_n105
+PREHOOK: Output: default@t1_n105
 POSTHOOK: query: explain alter table T1_n105 partition (ds = 'yesterday') compact 'minor'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@t1_n105
+POSTHOOK: Output: default@t1_n105
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -41,8 +49,12 @@ STAGE PLANS:
 
 PREHOOK: query: alter table T1_n105 partition (ds = 'yesterday') compact 'minor'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@t1_n105
+PREHOOK: Output: default@t1_n105
 POSTHOOK: query: alter table T1_n105 partition (ds = 'yesterday') compact 'minor'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@t1_n105
+POSTHOOK: Output: default@t1_n105
 PREHOOK: query: drop table T1_n105
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n105

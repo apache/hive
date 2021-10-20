@@ -46,12 +46,20 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@scr_txn_2
 PREHOOK: query: alter table scr_txn compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@scr_txn
+PREHOOK: Output: default@scr_txn
 POSTHOOK: query: alter table scr_txn compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@scr_txn
+POSTHOOK: Output: default@scr_txn
 PREHOOK: query: alter table scr_txn_2 compact 'minor'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@scr_txn_2
+PREHOOK: Output: default@scr_txn_2
 POSTHOOK: query: alter table scr_txn_2 compact 'minor'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@scr_txn_2
+POSTHOOK: Output: default@scr_txn_2
 PREHOOK: query: CREATE TEMPORARY TABLE src_tmp (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1015,10 +1023,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@columns_v2
 #### A masked pattern was here ####
 a	decimal(10,2)	0
-acquired_at	string	9
-action_expression	string	4
-active_execution_id	bigint	8
-active_execution_id	bigint	8
+a	int	1
+a	int	1
+a	int	1
+a	int	1
 PREHOOK: query: select param_key, param_value from database_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@database_params

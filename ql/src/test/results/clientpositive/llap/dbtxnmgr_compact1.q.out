@@ -16,12 +16,20 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T2_n153
 PREHOOK: query: alter table T1_n153 compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@t1_n153
+PREHOOK: Output: default@t1_n153
 POSTHOOK: query: alter table T1_n153 compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@t1_n153
+POSTHOOK: Output: default@t1_n153
 PREHOOK: query: alter table T2_n153 compact 'minor'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@t2_n153
+PREHOOK: Output: default@t2_n153
 POSTHOOK: query: alter table T2_n153 compact 'minor'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@t2_n153
+POSTHOOK: Output: default@t2_n153
 PREHOOK: query: explain alter table t compact 'MAJOR' pool 'test'
 PREHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: query: explain alter table t compact 'MAJOR' pool 'test'
