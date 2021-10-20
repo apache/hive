@@ -240,10 +240,10 @@
       </fetch-group>
     </class>
 
-    <class name="MCreationMetadata" identity-type="datastore" table="MV_CREATION_METADATA" detachable="true">
-      <datastore-identity>
+    <class name="MCreationMetadata" identity-type="application" table="MV_CREATION_METADATA" detachable="true" objectid-class="MCreationMetadata$PK">
+      <field name="id" primary-key="true" value-strategy="native">
         <column name="MV_CREATION_METADATA_ID"/>
-      </datastore-identity>
+      </field>
       <field name="catalogName">
         <column name="CAT_NAME" length="256" jdbc-type="VARCHAR"/>
       </field>

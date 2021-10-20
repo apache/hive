@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.model;
 
+import java.io.Serializable;
 import java.util.Set;
 
 /**
@@ -27,12 +28,40 @@ import java.util.Set;
  */
 public class MCreationMetadata {
 
+  private long id;
   private String catalogName;
   private String dbName;
   private String tblName;
   private Set<MTable> tables;
   private String txnList;
   private long materializationTime;
+
+  @SuppressWarnings("serial")
+  public static class PK implements Serializable {
+    public long id;
+
+    public PK() {}
+
+    public PK(long id) {
+      this.id = id;
+    }
+
+    public String toString() {
+      return String.format("%d", id);
+    }
+
+    public int hashCode() {
+      return toString().hashCode();
+    }
+
+    public boolean equals(Object other) {
+      if (other != null && (other instanceof MCreationMetadata.PK)) {
+        MCreationMetadata.PK otherPK = (MCreationMetadata.PK) other;
+        return otherPK.id == id;
+      }
+      return false;
+    }
+  }
 
   public MCreationMetadata() {
   }
