@@ -307,7 +307,7 @@ public class QTestUtil {
     inputFile = qf;
     inputContent = query;
     qTestResultProcessor.add(qf, query);
-    qOutProcessor.initMasks(qf, query);
+    qOutProcessor.initMasks(query);
   }
 
   public final File getInputFile() {
@@ -1024,7 +1024,7 @@ public class QTestUtil {
     String outFileName = outPath(outDir, tname + outFileExtension);
 
     File f = new File(logDir, tname + outFileExtension);
-    qOutProcessor.maskPatterns(f.getPath(), tname);
+    qOutProcessor.maskPatterns(f.getPath());
 
     if (QTestSystemProperties.shouldOverwriteResults()) {
       qTestResultProcessor.overwriteResults(f.getPath(), outFileName);
