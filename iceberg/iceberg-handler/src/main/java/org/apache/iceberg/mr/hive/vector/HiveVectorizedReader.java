@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.hive.ql.io.orc.VectorizedOrcInputFormat;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -114,19 +115,24 @@ public class HiveVectorizedReader {
           // Need to turn positional schema evolution off since we use column name based schema evolution for projection
           // and Iceberg will make a mapping between the file schema and the current reading schema.
           job.setBoolean(OrcConf.FORCE_POSITIONAL_EVOLUTION.getHiveConfName(), false);
-          VectorizedReadUtils.handleIcebergProjection(inputFile, task, job);
+
+          // Iceberg currently does not track the last modification time of a file. Until that's added, we need to set
+          // Long.MIN_VALUE as last modification time in the fileId triplet.
+          SyntheticFileId fileId = new SyntheticFileId(path, task.file().fileSizeInBytes(), Long.MIN_VALUE);
+
+          VectorizedReadUtils.handleIcebergProjection(inputFile, task, job, fileId);
 
           RecordReader<NullWritable, VectorizedRowBatch> recordReader = null;
 
           // If LLAP enabled, try to retrieve an LLAP record reader - this might yield to null in some special cases
           if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
               LlapProxy.getIo() != null) {
-            recordReader = LlapProxy.getIo().llapVectorizedOrcReaderForPath(null, path, null, readColumnIds,
+            recordReader = LlapProxy.getIo().llapVectorizedOrcReaderForPath(fileId, path, null, readColumnIds,
                 job, task.start(), task.length(), reporter);
           }
 
           if (recordReader == null) {
-            InputSplit split = new OrcSplit(path, null, task.start(), task.length(), (String[]) null, null, false,
+            InputSplit split = new OrcSplit(path, fileId, task.start(), task.length(), (String[]) null, null, false,
                  false, com.google.common.collect.Lists.newArrayList(), 0, task.length(), path.getParent(), null);
             recordReader = new VectorizedOrcInputFormat().getRecordReader(split, job, reporter);
           }
