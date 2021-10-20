@@ -564,11 +564,7 @@ public class QTestUtil {
   }
 
   public void createSources() throws Exception {
-    createSources(null);
-  }
-
-  public void createSources(String fileName) throws Exception {
-    boolean canReuseSession = (fileName == null) || !qTestResultProcessor.shouldNotReuseSession();
+    boolean canReuseSession = !qTestResultProcessor.shouldNotReuseSession();
     if (!isSessionStateStarted) {
       startSessionState(canReuseSession);
     }
@@ -662,7 +658,7 @@ public class QTestUtil {
 
   public void init(String fileName) throws Exception {
     cleanUp(fileName);
-    createSources(fileName);
+    createSources();
     cliDriver.processCmd("set hive.cli.print.header=true;");
   }
 
