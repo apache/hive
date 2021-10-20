@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.cli.control;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Map;
@@ -115,11 +114,11 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
     try {
       System.err.println("Begin query: " + fname);
 
-      qt.addFile(fpath);
-      qt.cliInit(new File(fpath));
+      qt.setInputFile(fpath);
+      qt.cliInit();
 
       try {
-        qt.executeClient(fname);
+        qt.executeClient();
         if (!expectSuccess) {
           qt.failedQuery(null, 0, fname, debugHint);
         }
@@ -129,7 +128,7 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
         }
       }
 
-      QTestProcessExecResult result = qt.checkCliDriverResults(fname);
+      QTestProcessExecResult result = qt.checkCliDriverResults();
       if (result.getReturnCode() != 0) {
         String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ?
             debugHint : "\r\n" + result.getCapturedOutput();

@@ -54,11 +54,6 @@ public class QOutProcessor {
   
   public static final String MASK_PATTERN = "#### A masked pattern was here ####";
   public static final String PARTIAL_MASK_PATTERN = "#### A PARTIAL masked pattern was here ####";
-
-  private final Set<String> qMaskStatsQuerySet = new HashSet<String>();
-  private final Set<String> qMaskDataSizeQuerySet = new HashSet<String>();
-  private final Set<String> qMaskLineageQuerySet = new HashSet<String>();
-
   private static final PatternReplacementPair MASK_STATS = new PatternReplacementPair(
       Pattern.compile(" Num rows: [1-9][0-9]* Data size: [1-9][0-9]*"),
       " Num rows: ###Masked### Data size: ###Masked###");
@@ -68,10 +63,6 @@ public class QOutProcessor {
   private static final PatternReplacementPair MASK_LINEAGE = new PatternReplacementPair(
       Pattern.compile("POSTHOOK: Lineage: .*"),
       "POSTHOOK: Lineage: ###Masked###");
-
-  private static final Pattern PATTERN_MASK_STATS = Pattern.compile("-- MASK_STATS");
-  private static final Pattern PATTERN_MASK_DATA_SIZE = Pattern.compile("-- MASK_DATA_SIZE");
-  private static final Pattern PATTERN_MASK_LINEAGE = Pattern.compile("-- MASK_LINEAGE");
 
   private FsType fsType = FsType.LOCAL;
 
@@ -151,7 +142,21 @@ public class QOutProcessor {
     {"Output:", "/data/files/"}
   };
 
+  private enum Mask {
+    STATS("-- MASK_STATS"), DATASIZE("-- MASK_DATA_SIZE"), LINEAGE("-- MASK_LINEAGE");
+    private Pattern pattern;
+
+    Mask(String pattern) {
+      this.pattern = Pattern.compile(pattern);
+    }
+
+    boolean existsIn(String query) {
+      return pattern.matcher(query).find();
+    }
+  }
+
   private final QTestReplaceHandler replaceHandler;
+  private final Set<Mask> queryMasks = new HashSet<>();
 
   public QOutProcessor(FsType fsType, QTestReplaceHandler replaceHandler) {
     this.fsType = fsType;
@@ -166,7 +171,7 @@ public class QOutProcessor {
     return patterns;
   }
 
-  public void maskPatterns(String fname, String tname) throws Exception {
+  public void maskPatterns(String fname) throws Exception {
 
     String line;
     BufferedReader in;
@@ -182,7 +187,7 @@ public class QOutProcessor {
     boolean lastWasMasked = false;
 
     while (null != (line = in.readLine())) {
-      LineProcessingResult result = processLine(line, tname);
+      LineProcessingResult result = processLine(line);
 
       if (result.line.equals(MASK_PATTERN)) {
         // We're folding multiple masked lines into one.
@@ -204,7 +209,7 @@ public class QOutProcessor {
     out.close();
   }
 
-  public LineProcessingResult processLine(String line, String tname) {
+  LineProcessingResult processLine(String line) {
     LineProcessingResult result = new LineProcessingResult(line);
     
     Matcher matcher = null;
@@ -242,7 +247,7 @@ public class QOutProcessor {
         }
       }
 
-      if (!result.partialMaskWasMatched && qMaskStatsQuerySet.contains(tname)) {
+      if (!result.partialMaskWasMatched && queryMasks.contains(Mask.STATS)) {
         matcher = MASK_STATS.pattern.matcher(result.line);
         if (matcher.find()) {
           result.line = result.line.replaceAll(MASK_STATS.pattern.pattern(), MASK_STATS.replacement);
@@ -250,7 +255,7 @@ public class QOutProcessor {
         }
       }
 
-      if (!result.partialMaskWasMatched && qMaskDataSizeQuerySet.contains(tname)) {
+      if (!result.partialMaskWasMatched && queryMasks.contains(Mask.DATASIZE)) {
         matcher = MASK_DATA_SIZE.pattern.matcher(result.line);
         if (matcher.find()) {
           result.line = result.line.replaceAll(MASK_DATA_SIZE.pattern.pattern(), MASK_DATA_SIZE.replacement);
@@ -258,7 +263,7 @@ public class QOutProcessor {
         }
       }
 
-      if (!result.partialMaskWasMatched && qMaskLineageQuerySet.contains(tname)) {
+      if (!result.partialMaskWasMatched && queryMasks.contains(Mask.LINEAGE)) {
         matcher = MASK_LINEAGE.pattern.matcher(result.line);
         if (matcher.find()) {
           result.line = result.line.replaceAll(MASK_LINEAGE.pattern.pattern(), MASK_LINEAGE.replacement);
@@ -370,24 +375,13 @@ public class QOutProcessor {
     patternsWithMaskComments.add(toPatternPair(patternStr, maskComment));
   }
 
-  public void initMasks(File qf, String query) {
-    if (matches(PATTERN_MASK_STATS, query)) {
-      qMaskStatsQuerySet.add(qf.getName());
+  public void initMasks(String query) {
+    queryMasks.clear();
+    for (Mask m : Mask.values()) {
+      if (m.existsIn(query)) {
+        queryMasks.add(m);
+      }
     }
-    if (matches(PATTERN_MASK_DATA_SIZE, query)) {
-      qMaskDataSizeQuerySet.add(qf.getName());
-    }
-    if (matches(PATTERN_MASK_LINEAGE, query)) {
-      qMaskLineageQuerySet.add(qf.getName());
-    }
-  }
-
-  private boolean matches(Pattern pattern, String query) {
-    Matcher matcher = pattern.matcher(query);
-    if (matcher.find()) {
-      return true;
-    }
-    return false;
   }
 
   public void resetPatternwithMaskComments() {
