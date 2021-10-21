@@ -285,4 +285,9 @@ public abstract class SingleFileSystem extends FileSystem {
   private IOException unsupported(String str) {
     return new IOException("Unsupported SFS filesystem operation! (" + str + ")");
   }
+
+  public String getCanonicalServiceName() {
+    return null;
+  }
+
 }
