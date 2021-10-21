@@ -58,7 +58,7 @@ public final class ExceptionHandler {
   public <T extends Exception> ExceptionHandler
       throwIfInstance(Class ...te) throws T {
     if (te != null) {
-      for (Class t : te) {
+      for (Class<T> t : te) {
         throwIfInstance(t);
       }
     }
