@@ -991,7 +991,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public void shutdown() {
     cleanupRawStore();
     PerfLogger.getPerfLogger(false).cleanupPerfLogMetrics();
-    ThreadPool.shutdown();
   }
 
   @Override
