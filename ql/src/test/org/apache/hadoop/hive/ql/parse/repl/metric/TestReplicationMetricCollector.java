@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.parse.repl.metric;
 
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.messaging.MessageSerializer;
+import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
@@ -462,14 +464,19 @@ public class TestReplicationMetricCollector {
 
   @Test
   public void testReplStatsTrackerLimit() {
+    MessageSerializer serializer = GzipJSONMessageEncoder.getInstance().getSerializer();
     ReplStatsTracker repl = new ReplStatsTracker(10);
     // Check for k=10
     generateStatsString(10, repl);
-    assertTrue("ReplStat string is " + repl.toString().length(), repl.toString().length() < ReplStatsTracker.RM_PROGRESS_LENGTH);
+    String replStatsTracker = repl.toString();
+    String gzipSerialized = serializer.serialize(replStatsTracker);
+    assertTrue("ReplStat string is " + gzipSerialized.length(), gzipSerialized.length() < ReplStatsTracker.RM_PROGRESS_LENGTH);
     // Check for k=5
     repl = new ReplStatsTracker(5);
     generateStatsString(5, repl);
-    assertTrue("ReplStat string is " + repl.toString().length(), repl.toString().length() < ReplStatsTracker.RM_PROGRESS_LENGTH);
+    replStatsTracker = repl.toString();
+    gzipSerialized = serializer.serialize(replStatsTracker);
+    assertTrue("ReplStat string is " + gzipSerialized.length(), gzipSerialized.length() < ReplStatsTracker.RM_PROGRESS_LENGTH);
     // Check for k=2 & check NaN values doesn't get messed up due to formatter
     repl = new ReplStatsTracker(2);
     generateStatsString(2, repl);
