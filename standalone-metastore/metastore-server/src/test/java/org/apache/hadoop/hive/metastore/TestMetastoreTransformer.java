@@ -44,12 +44,6 @@ public class TestMetastoreTransformer {
   protected static Warehouse warehouse;
   protected static boolean isThriftClient = false;
 
-  private static final String ENGINE = "hive";
-  private static final String TEST_DB1_NAME = "testdb1";
-  private static final String TEST_DB2_NAME = "testdb2";
-
-  private static final int DEFAULT_LIMIT_PARTITION_REQUEST = 100;
-
   @Before
   public void setUp() throws Exception {
     initConf();
@@ -57,17 +51,10 @@ public class TestMetastoreTransformer {
 
     // set some values to use for getting conf. vars
     MetastoreConf.setBoolVar(conf, ConfVars.METRICS_ENABLED, true);
-    conf.set("hive.key1", "value1");
-    conf.set("hive.key2", "http://www.example.com");
-    conf.set("hive.key3", "");
-    conf.set("hive.key4", "0");
     conf.set("datanucleus.autoCreateTables", "false");
     conf.set("hive.in.test", "true");
 
     MetaStoreTestUtils.setConfForStandloneMode(conf);
-    MetastoreConf.setLongVar(conf, ConfVars.BATCH_RETRIEVE_MAX, 2);
-    MetastoreConf.setLongVar(conf, ConfVars.LIMIT_PARTITION_REQUEST, DEFAULT_LIMIT_PARTITION_REQUEST);
-    MetastoreConf.setVar(conf, ConfVars.STORAGE_SCHEMA_READER_IMPL, "no.such.class");
 
     warehouse = new Warehouse(conf);
     client = createClient();
