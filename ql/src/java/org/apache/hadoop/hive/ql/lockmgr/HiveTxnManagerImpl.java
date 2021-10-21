@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AffectedRowsRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ddl.database.lock.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.database.unlock.UnlockDatabaseDesc;
@@ -70,6 +71,27 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
   public Configuration getConf() {
     return conf;
   }
+
+  public long openTxn(Context ctx, String user) throws LockException {
+    rowsAffected.clear();
+    return onOpenTxn(ctx, user);
+  }
+
+  abstract protected long onOpenTxn(Context ctx, String user) throws LockException;
+
+  public long openTxn(Context ctx, String user, TxnType txnType) throws LockException {
+    rowsAffected.clear();
+    return onOpenTxn(ctx, user, txnType);
+  }
+
+  abstract protected long onOpenTxn(Context ctx, String user, TxnType txnType) throws LockException;
+
+  public List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user) throws LockException {
+    rowsAffected.clear();
+    return onReplOpenTxn(replPolicy, srcTxnIds, user);
+  }
+
+  abstract protected List<Long> onReplOpenTxn(String replPolicy, List<Long> srcTxnIds, String user) throws LockException;
 
   abstract protected void destruct();
 

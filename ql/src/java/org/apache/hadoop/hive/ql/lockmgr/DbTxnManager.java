@@ -212,7 +212,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user)  throws LockException {
+  protected List<Long> onReplOpenTxn(String replPolicy, List<Long> srcTxnIds, String user)  throws LockException {
     try {
       return getMS().replOpenTxn(replPolicy, srcTxnIds, user, TxnType.REPL_CREATED);
     } catch (TException e) {
@@ -221,12 +221,12 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public long openTxn(Context ctx, String user) throws LockException {
+  protected long onOpenTxn(Context ctx, String user) throws LockException {
     return openTxn(ctx, user, TxnType.DEFAULT, 0);
   }
 
   @Override
-  public long openTxn(Context ctx, String user, TxnType txnType) throws LockException {
+  protected long onOpenTxn(Context ctx, String user, TxnType txnType) throws LockException {
     return openTxn(ctx, user, txnType, 0);
   }
 

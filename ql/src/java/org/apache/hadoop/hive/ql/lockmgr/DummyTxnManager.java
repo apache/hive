@@ -56,18 +56,18 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   private HiveLockManagerCtx lockManagerCtx;
 
   @Override
-  public long openTxn(Context ctx, String user, TxnType txnType) throws LockException {
+  protected long onOpenTxn(Context ctx, String user, TxnType txnType) throws LockException {
     // No-op
     return 0L;
   }
 
   @Override
-  public long openTxn(Context ctx, String user) throws LockException {
+  protected long onOpenTxn(Context ctx, String user) throws LockException {
     // No-op
     return 0L;
   }
   @Override
-  public List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user)  throws LockException {
+  protected List<Long> onReplOpenTxn(String replPolicy, List<Long> srcTxnIds, String user)  throws LockException {
     return null;
   }
 
