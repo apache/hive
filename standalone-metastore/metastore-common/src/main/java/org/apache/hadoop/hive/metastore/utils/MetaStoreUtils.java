@@ -912,14 +912,19 @@ public class MetaStoreUtils {
    */
   public static String prependCatalogToDbName(@Nullable String catalogName, @Nullable String dbName,
                                               Configuration conf) {
-    if (catalogName == null) catalogName = getDefaultCatalog(conf);
+    if (catalogName == null) {
+      catalogName = getDefaultCatalog(conf);
+    }
     StringBuilder buf = new StringBuilder()
         .append(CATALOG_DB_THRIFT_NAME_MARKER)
         .append(catalogName)
         .append(CATALOG_DB_SEPARATOR);
     if (dbName != null) {
-      if (dbName.isEmpty()) buf.append(DB_EMPTY_MARKER);
-      else buf.append(dbName);
+      if (dbName.isEmpty()) {
+        buf.append(DB_EMPTY_MARKER);
+      } else {
+        buf.append(dbName);
+      }
     }
     return buf.toString();
   }
@@ -998,7 +1003,9 @@ public class MetaStoreUtils {
       return Warehouse.DEFAULT_CATALOG_NAME;
     }
     String catName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT);
-    if (catName == null || "".equals(catName)) catName = Warehouse.DEFAULT_CATALOG_NAME;
+    if (catName == null || "".equals(catName)) {
+      catName = Warehouse.DEFAULT_CATALOG_NAME;
+    }
     return catName;
   }
 
@@ -1081,7 +1088,8 @@ public class MetaStoreUtils {
   }
 
   public static TableName getTableNameFor(Table table) {
-    return TableName.fromString(table.getTableName(), table.getCatName(), table.getDbName(), null);
+    return TableName.fromString(table.getTableName().toLowerCase(), table.getCatName().toLowerCase(),
+        table.getDbName().toLowerCase(), null);
   }
 
   /**
