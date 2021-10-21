@@ -1,3 +1,0 @@
-local remote
-local remote
-rsync -qaPe --delete --delete-during --force remote/local remote
