@@ -1080,7 +1080,7 @@ public class MetastoreConf {
         "Wether TRANSLATED_TO_EXTERNAL tables should follow renames. In case the default directory exists "
             + "the strategy of metastore.metadata.transformer.location.mode is used"),
     METASTORE_METADATA_TRANSFORMER_LOCATION_MODE("metastore.metadata.transformer.location.mode",
-        "metastore.metadata.transformer.location.mode", "prohibit",
+        "metastore.metadata.transformer.location.mode", "force",
         new StringSetValidator("seqsuffix", "seqprefix", "prohibit", "force"),
         "Defines the strategy to use in case the default location for a translated table already exists.\n"
             + "  seqsuffix: add a '_N' suffix to the table name to get a unique location (table,table_1,table_2,...)\n"
