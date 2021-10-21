@@ -229,6 +229,8 @@ CREATE TABLE "REPLICATION_METRICS" (
 );
 
 --Increase the size of RM_PROGRESS to accomodate the replication statistics
+ALTER TABLE "REPLICATION_METRICS" ALTER "RM_PROGRESS" TYPE varchar(24000);
+
 ALTER TABLE "REPLICATION_METRICS" ALTER "RM_PROGRESS" TYPE varchar(10000);
 
 --Create indexes for the replication metrics table

@@ -105,6 +105,8 @@ CREATE TABLE IF NOT EXISTS REPLICATION_METRICS (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --Increase the size of RM_PROGRESS to accomodate the replication statistics
+ALTER TABLE REPLICATION_METRICS MODIFY RM_PROGRESS varchar(24000);
+
 ALTER TABLE REPLICATION_METRICS MODIFY RM_PROGRESS varchar(10000);
 
 -- Create indexes for the replication metrics table

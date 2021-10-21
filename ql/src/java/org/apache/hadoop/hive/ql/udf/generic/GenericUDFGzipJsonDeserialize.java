@@ -37,7 +37,7 @@ import org.apache.hadoop.io.Text;
 @Description(name = "gzip_json_deserialize",
         value="_FUNC_(message) - Returns deserialized string of gzip compressed + base64 encoded message.",
         extended="Example:\n"
-                + "  > SELECT _FUNC_('SDRzSUFBQUFBQUFBL3l0SkxTNEJBQXgrZjlnRUFBQUE=') FROM src LIMIT 1;\n"
+                + "  > SELECT _FUNC_('H4sIAAAAAAAA/ytJLS4BAAx+f9gEAAAA') FROM src LIMIT 1;\n"
                 + "  test")
 public class GenericUDFGzipJsonDeserialize extends GenericUDF {
 
