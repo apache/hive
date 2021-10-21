@@ -465,11 +465,11 @@ public class TestReplicationMetricCollector {
     ReplStatsTracker repl = new ReplStatsTracker(10);
     // Check for k=10
     generateStatsString(10, repl);
-    assertTrue("ReplStat string is " + repl.toString().length(), repl.toString().length() < 24000);
+    assertTrue("ReplStat string is " + repl.toString().length(), repl.toString().length() < ReplStatsTracker.RM_PROGRESS_LENGTH);
     // Check for k=5
     repl = new ReplStatsTracker(5);
     generateStatsString(5, repl);
-    assertTrue("ReplStat string is " + repl.toString().length(), repl.toString().length() < 24000);
+    assertTrue("ReplStat string is " + repl.toString().length(), repl.toString().length() < ReplStatsTracker.RM_PROGRESS_LENGTH);
     // Check for k=2 & check NaN values doesn't get messed up due to formatter
     repl = new ReplStatsTracker(2);
     generateStatsString(2, repl);

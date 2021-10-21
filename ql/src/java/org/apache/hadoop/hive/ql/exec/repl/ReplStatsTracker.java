@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ReplStatsTracker {
 
   // Maintains the length of the RM_Progress column in the RDBMS, which stores the ReplStats
-  public static int RM_PROGRESS_LENGTH = 24000;
+  public static int RM_PROGRESS_LENGTH = 10000;
 
   // Maintains the descriptive statistics per event type.
   private ConcurrentHashMap<String, DescriptiveStatistics> descMap;

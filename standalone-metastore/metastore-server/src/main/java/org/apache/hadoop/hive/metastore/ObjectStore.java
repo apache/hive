@@ -14369,7 +14369,7 @@ public class ObjectStore implements RawStore, Configurable {
         if (!StringUtils.isEmpty(replicationMetric.getProgress())) {
           // Check for the limit of RM_PROGRESS Column.
           if ((dbType.isORACLE() && replicationMetric.getProgress().length() > 4000)
-              || replicationMetric.getProgress().length() > 24000) {
+              || replicationMetric.getProgress().length() > 10000) {
             mReplicationMetrics.setProgress("RM_PROGRESS LIMIT EXCEEDED");
           } else {
             mReplicationMetrics.setProgress(replicationMetric.getProgress());
