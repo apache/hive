@@ -41,7 +41,6 @@
         <exclude>**/.project</exclude>
         <exclude>**/.settings/**</exclude>
         <exclude>**/thirdparty/**</exclude>
-        <exclude>testutils/ptest2/velocity.log*</exclude>
       </excludes>
 
       <includes>
