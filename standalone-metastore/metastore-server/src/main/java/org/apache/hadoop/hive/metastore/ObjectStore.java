@@ -314,6 +314,7 @@ public class ObjectStore implements RawStore, Configurable {
     USER = org.apache.commons.lang3.StringUtils.defaultString(user, "UNKNOWN");
   }
 
+
   private boolean isInitialized = false;
   private PersistenceManager pm = null;
   private SQLGenerator sqlGenerator = null;
@@ -1553,37 +1554,41 @@ public class ObjectStore implements RawStore, Configurable {
     constraintname = constraintname!=null?normalizeIdentifier(constraintname):null;
     List<MConstraint> mConstraints = null;
     List<String> constraintNames = new ArrayList<>();
+    Query query = null;
 
-    try (QueryWrapper queryForConstraintName = new QueryWrapper(pm.newQuery("select constraintName from org.apache.hadoop.hive.metastore.model.MConstraint  where "
+    try {
+      query = pm.newQuery("select constraintName from org.apache.hadoop.hive.metastore.model.MConstraint  where "
         + "((parentTable.tableName == ptblname && parentTable.database.name == pdbname && " +
-        "parentTable.database.catalogName == pcatname) || "
+              "parentTable.database.catalogName == pcatname) || "
         + "(childTable != null && childTable.tableName == ctblname &&" +
-        "childTable.database.name == cdbname && childTable.database.catalogName == ccatname)) " +
-        (constraintname != null ? " && constraintName == constraintname" : "")));
-        QueryWrapper queryForMConstraint = new QueryWrapper(pm.newQuery(MConstraint.class))) {
-
-      queryForConstraintName.declareParameters("java.lang.String ptblname, java.lang.String pdbname,"
+              "childTable.database.name == cdbname && childTable.database.catalogName == ccatname)) " +
+          (constraintname != null ? " && constraintName == constraintname" : ""));
+      query.declareParameters("java.lang.String ptblname, java.lang.String pdbname,"
           + "java.lang.String pcatname, java.lang.String ctblname, java.lang.String cdbname," +
           "java.lang.String ccatname" +
         (constraintname != null ? ", java.lang.String constraintname" : ""));
       Collection<?> constraintNamesColl =
         constraintname != null ?
-          ((Collection<?>) queryForConstraintName.
+          ((Collection<?>) query.
             executeWithArray(tableName, dbName, catName, tableName, dbName, catName, constraintname)):
-          ((Collection<?>) queryForConstraintName.
+          ((Collection<?>) query.
             executeWithArray(tableName, dbName, catName, tableName, dbName, catName));
       for (Iterator<?> i = constraintNamesColl.iterator(); i.hasNext();) {
         String currName = (String) i.next();
         constraintNames.add(currName);
       }
-
-      queryForMConstraint.setFilter("param.contains(constraintName)");
-      queryForMConstraint.declareParameters("java.util.Collection param");
-      Collection<?> constraints = (Collection<?>)queryForMConstraint.execute(constraintNames);
+      query = pm.newQuery(MConstraint.class);
+      query.setFilter("param.contains(constraintName)");
+      query.declareParameters("java.util.Collection param");
+      Collection<?> constraints = (Collection<?>)query.execute(constraintNames);
       mConstraints = new ArrayList<>();
       for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
         MConstraint currConstraint = (MConstraint) i.next();
         mConstraints.add(currConstraint);
+      }
+    } finally {
+      if (query != null) {
+        query.closeAll();
       }
     }
     return mConstraints;
@@ -3139,7 +3144,12 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Done executing query for getPartitionLocations");
       success = commitTransaction();
     } finally {
-      rollbackAndCleanup(success, query);
+      if (!success) {
+        rollbackTransaction();
+      }
+      if (query != null) {
+        query.closeAll();
+      }
     }
     return partLocations;
   }
@@ -3354,35 +3364,36 @@ public class ObjectStore implements RawStore, Configurable {
       return null;
     }
 
-    try (QueryWrapper query = new QueryWrapper(pm.newQuery(
-        "select partitionName from org.apache.hadoop.hive.metastore.model.MPartition"))) {
-      query.setFilter(jdoFilter);
-      List<Object[]> orderSpecs = MetaStoreUtils.makeOrderSpecs(order);
-      StringBuilder builder = new StringBuilder();
-      for (Object[] spec : orderSpecs) {
-        // TODO: order by casted value if the type of partition key is not string
-        builder.append("values.get(").append(spec[0]).append(") ").append(spec[1]).append(",");
-      }
-      if (builder.length() > 0) {
-        builder.setLength(builder.length() - 1);
-        query.setOrdering(builder.toString());
-      } else {
-        query.setOrdering("partitionName ascending");
-      }
-
-      if (maxParts > -1) {
-        query.setRange(0, maxParts);
-      }
-
-      String parameterDeclaration = makeParameterDeclarationStringObj(params);
-      query.declareParameters(parameterDeclaration);
-      Collection jdoRes = (Collection) query.executeWithMap(params);
-      List<String> result = new LinkedList<String>();
-      for (Object partName : jdoRes) {
-        result.add((String) partName);
-      }
-      return result;
+    Query query = pm.newQuery(
+        "select partitionName from org.apache.hadoop.hive.metastore.model.MPartition"
+    );
+    query.setFilter(jdoFilter);
+    List<Object[]> orderSpecs = MetaStoreUtils.makeOrderSpecs(order);
+    StringBuilder builder = new StringBuilder();
+    for (Object[] spec : orderSpecs) {
+      // TODO: order by casted value if the type of partition key is not string
+      builder.append("values.get(").append(spec[0]).append(") ").append(spec[1]).append(",");
     }
+    if (builder.length() > 0) {
+      builder.setLength(builder.length() - 1);
+      query.setOrdering(builder.toString());
+    } else {
+      query.setOrdering("partitionName ascending");
+    }
+
+    if (maxParts > -1) {
+      query.setRange(0, maxParts);
+    }
+
+    String parameterDeclaration = makeParameterDeclarationStringObj(params);
+    query.declareParameters(parameterDeclaration);
+    Collection jdoRes = (Collection)query.executeWithMap(params);
+    List<String> result = new LinkedList<String>();
+    for (Object partName : jdoRes) {
+      result.add((String)partName);
+    }
+    query.closeAll();
+    return result;
   }
 
   private String extractPartitionKey(FieldSchema key, List<FieldSchema> pkeys) {
@@ -3517,7 +3528,6 @@ public class ObjectStore implements RawStore, Configurable {
 
     boolean success = false;
     List<String> partNames = new ArrayList<>();
-    Query query = null;
     try {
       openTransaction();
       LOG.debug("Executing getPartitionNamesByFilter");
@@ -3533,7 +3543,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       Map<String, Object> params = new HashMap<>();
       String queryFilterString = makeQueryFilterString(catName, dbName, mtable, filter, params);
-      query = pm.newQuery(
+      Query query = pm.newQuery(
           "select partitionName from org.apache.hadoop.hive.metastore.model.MPartition "
               + "where " + queryFilterString);
 
@@ -3562,8 +3572,11 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Done executing query for getPartitionNamesByFilter");
       success = commitTransaction();
       LOG.debug("Done retrieving all objects for getPartitionNamesByFilter, size: {}", partNames.size());
+      query.closeAll();
     } finally {
-      rollbackAndCleanup(success, query);
+      if (!success) {
+        rollbackTransaction();
+      }
     }
     return partNames;
   }
@@ -3572,11 +3585,11 @@ public class ObjectStore implements RawStore, Configurable {
       String catName, String dbName, String tableName, List<FieldSchema> cols,
       boolean applyDistinct, long maxParts)
       throws MetaException {
-    try (QueryWrapper q = new QueryWrapper(
-        pm.newQuery("select partitionName from org.apache.hadoop.hive.metastore.model.MPartition "
-            + "where table.database.name == t1 && table.database.catalogName == t2 && "
-            + "table.tableName == t3 "))) {
+    try {
       openTransaction();
+      Query q = pm.newQuery("select partitionName from org.apache.hadoop.hive.metastore.model.MPartition "
+          + "where table.database.name == t1 && table.database.catalogName == t2 && " +
+          "table.tableName == t3 ");
       q.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
 
       // TODO: Ordering seems to affect the distinctness, needs checking, disabling.
@@ -3622,6 +3635,7 @@ public class ObjectStore implements RawStore, Configurable {
           response.addToPartitionValues(rowResponse);
         }
       }
+      q.closeAll();
       return response;
     } finally {
       commitTransaction();
@@ -3636,21 +3650,22 @@ public class ObjectStore implements RawStore, Configurable {
     catName = normalizeIdentifier(catName);
     dbName = normalizeIdentifier(dbName);
     tableName = normalizeIdentifier(tableName);
-    try (QueryWrapper query = new QueryWrapper(
+    Query query =
         pm.newQuery("select partitionName from org.apache.hadoop.hive.metastore.model.MPartition "
             + "where table.database.name == t1 && table.tableName == t2 && table.database.catalogName == t3 "
-            + "order by partitionName asc"))) {
-      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
-      query.setResult("partitionName");
+            + "order by partitionName asc");
+    query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
+    query.setResult("partitionName");
 
-      if (max > 0) {
-        query.setRange(0, max);
-      }
-      Collection<String> names = (Collection<String>) query.execute(dbName, tableName, catName);
-      pns.addAll(names);
-
-      return pns;
+    if (max > 0) {
+      query.setRange(0, max);
     }
+    Collection<String> names = (Collection<String>) query.execute(dbName, tableName, catName);
+    pns.addAll(names);
+
+    query.closeAll();
+
+    return pns;
   }
 
   /**
@@ -4020,21 +4035,21 @@ public class ObjectStore implements RawStore, Configurable {
       assert !isValidatedFilter;
       return null;
     }
-    try (QueryWrapper query = new QueryWrapper(pm.newQuery(MPartition.class, jdoFilter))) {
-      if (maxParts >= 0) {
-        // User specified a row limit, set it on the Query
-        query.setRange(0, maxParts);
-      }
-      String parameterDeclaration = makeParameterDeclarationStringObj(params);
-      query.declareParameters(parameterDeclaration);
-      query.setOrdering("partitionName ascending");
-      List<MPartition> mparts = (List<MPartition>) query.executeWithMap(params);
-      LOG.debug("Done executing query for getPartitionsViaOrmFilter");
-      pm.retrieveAll(mparts); // TODO: why is this inconsistent with what we get by names?
-      LOG.debug("Done retrieving all objects for getPartitionsViaOrmFilter");
-      List<Partition> results = convertToParts(mparts);
-      return results;
+    Query query = pm.newQuery(MPartition.class, jdoFilter);
+    if (maxParts >= 0) {
+      // User specified a row limit, set it on the Query
+      query.setRange(0, maxParts);
     }
+    String parameterDeclaration = makeParameterDeclarationStringObj(params);
+    query.declareParameters(parameterDeclaration);
+    query.setOrdering("partitionName ascending");
+    List<MPartition> mparts = (List<MPartition>) query.executeWithMap(params);
+    LOG.debug("Done executing query for getPartitionsViaOrmFilter");
+    pm.retrieveAll(mparts); // TODO: why is this inconsistent with what we get by names?
+    LOG.debug("Done retrieving all objects for getPartitionsViaOrmFilter");
+    List<Partition> results = convertToParts(mparts);
+    query.closeAll();
+    return results;
   }
 
   private Integer getNumPartitionsViaOrmFilter(String catName, String dbName, String tblName, ExpressionTree tree, boolean isValidatedFilter, List<FieldSchema> partitionKeys)
@@ -4047,15 +4062,16 @@ public class ObjectStore implements RawStore, Configurable {
       return null;
     }
 
-    try (QueryWrapper query = new QueryWrapper(pm.newQuery(
-        "select count(partitionName) from org.apache.hadoop.hive.metastore.model.MPartition"))) {
-      query.setFilter(jdoFilter);
-      String parameterDeclaration = makeParameterDeclarationStringObj(params);
-      query.declareParameters(parameterDeclaration);
-      Long result = (Long) query.executeWithMap(params);
+    Query query = pm.newQuery(
+        "select count(partitionName) from org.apache.hadoop.hive.metastore.model.MPartition"
+    );
+    query.setFilter(jdoFilter);
+    String parameterDeclaration = makeParameterDeclarationStringObj(params);
+    query.declareParameters(parameterDeclaration);
+    Long result = (Long) query.executeWithMap(params);
+    query.closeAll();
 
-      return result.intValue();
-    }
+    return result.intValue();
   }
   /**
    * Gets partition names from the table via ORM (JDOQL) name filter.
@@ -4077,16 +4093,16 @@ public class ObjectStore implements RawStore, Configurable {
         Pair<Query, Map<String, String>> queryWithParams =
             getPartQueryWithParams(catName, dbName, tblName, input);
 
-        try (QueryWrapper query = new QueryWrapper(queryWithParams.getLeft())) {
-          query.setResultClass(MPartition.class);
-          query.setClass(MPartition.class);
-          query.setOrdering("partitionName ascending");
+        Query query = queryWithParams.getLeft();
+        query.setResultClass(MPartition.class);
+        query.setClass(MPartition.class);
+        query.setOrdering("partitionName ascending");
 
-          List<MPartition> mparts = (List<MPartition>) query.executeWithMap(queryWithParams.getRight());
-          List<Partition> partitions = convertToParts(catName, dbName, tblName, mparts, isAcidTable);
+        List<MPartition> mparts = (List<MPartition>) query.executeWithMap(queryWithParams.getRight());
+        List<Partition> partitions = convertToParts(catName, dbName, tblName, mparts, isAcidTable);
+        query.closeAll();
 
-          return partitions;
-        }
+        return partitions;
       }
     });
   }
@@ -4094,11 +4110,11 @@ public class ObjectStore implements RawStore, Configurable {
   private void dropPartitionsNoTxn(String catName, String dbName, String tblName, List<String> partNames) {
     Pair<Query, Map<String, String>> queryWithParams =
         getPartQueryWithParams(catName, dbName, tblName, partNames);
-    try (QueryWrapper query = new QueryWrapper(queryWithParams.getLeft())) {
-      query.setClass(MPartition.class);
-      long deleted = query.deletePersistentAll(queryWithParams.getRight());
-      LOG.debug("Deleted {} partition from store", deleted);
-    }
+    Query query = queryWithParams.getLeft();
+    query.setClass(MPartition.class);
+    long deleted = query.deletePersistentAll(queryWithParams.getRight());
+    LOG.debug("Deleted {} partition from store", deleted);
+    query.closeAll();
   }
 
   /**
@@ -4111,20 +4127,20 @@ public class ObjectStore implements RawStore, Configurable {
       String catName, String dbName, String tblName, List<String> partNames) {
     Pair<Query, Map<String, String>> queryWithParams =
         getPartQueryWithParams(catName, dbName, tblName, partNames);
-    try (QueryWrapper query = new QueryWrapper(queryWithParams.getLeft())) {
-      query.setClass(MPartition.class);
-      query.setResult("sd");
-      List<MStorageDescriptor> sds = (List<MStorageDescriptor>) query.executeWithMap(
-          queryWithParams.getRight());
-      HashSet<MColumnDescriptor> candidateCds = new HashSet<>();
-      for (MStorageDescriptor sd : sds) {
-        if (sd != null && sd.getCD() != null) {
-          candidateCds.add(sd.getCD());
-          sd.setCD(null);
-        }
+    Query query = queryWithParams.getLeft();
+    query.setClass(MPartition.class);
+    query.setResult("sd");
+    List<MStorageDescriptor> sds = (List<MStorageDescriptor>)query.executeWithMap(
+        queryWithParams.getRight());
+    HashSet<MColumnDescriptor> candidateCds = new HashSet<>();
+    for (MStorageDescriptor sd : sds) {
+      if (sd != null && sd.getCD() != null) {
+        candidateCds.add(sd.getCD());
+        sd.setCD(null);
       }
-      return candidateCds;
     }
+    query.closeAll();
+    return candidateCds;
   }
 
   private String getJDOFilterStrForPartitionNames(String catName, String dbName, String tblName,
@@ -5199,31 +5215,31 @@ public class ObjectStore implements RawStore, Configurable {
         // If we find it, we will change the reference for the CD.
         // If we do not find it, i.e., the column will be deleted, we do not change it
         // and we let the logic in removeUnusedColumnDescriptor take care of it
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery(MConstraint.class, "parentColumn == inCD || childColumn == inCD"))) {
-          query.declareParameters("MColumnDescriptor inCD");
-          List<MConstraint> mConstraintsList = (List<MConstraint>) query.execute(oldSd.getCD());
-          pm.retrieveAll(mConstraintsList);
-          for (MConstraint mConstraint : mConstraintsList) {
-            if (oldSd.getCD().equals(mConstraint.getParentColumn())) {
-              Integer newIdx = mapping.get(mConstraint.getParentIntegerIndex());
-              if (newIdx != null) {
-                mConstraint.setParentColumn(newSd.getCD());
-                mConstraint.setParentIntegerIndex(newIdx);
-              }
-            }
-            if (oldSd.getCD().equals(mConstraint.getChildColumn())) {
-              Integer newIdx = mapping.get(mConstraint.getChildIntegerIndex());
-              if (newIdx != null) {
-                mConstraint.setChildColumn(newSd.getCD());
-                mConstraint.setChildIntegerIndex(newIdx);
-              }
+        Query query = pm.newQuery(MConstraint.class, "parentColumn == inCD || childColumn == inCD");
+        query.declareParameters("MColumnDescriptor inCD");
+        List<MConstraint> mConstraintsList = (List<MConstraint>) query.execute(oldSd.getCD());
+        pm.retrieveAll(mConstraintsList);
+        for (MConstraint mConstraint : mConstraintsList) {
+          if (oldSd.getCD().equals(mConstraint.getParentColumn())) {
+            Integer newIdx = mapping.get(mConstraint.getParentIntegerIndex());
+            if (newIdx != null) {
+              mConstraint.setParentColumn(newSd.getCD());
+              mConstraint.setParentIntegerIndex(newIdx);
             }
           }
-          pm.makePersistentAll(mConstraintsList);
+          if (oldSd.getCD().equals(mConstraint.getChildColumn())) {
+            Integer newIdx = mapping.get(mConstraint.getChildIntegerIndex());
+            if (newIdx != null) {
+              mConstraint.setChildColumn(newSd.getCD());
+              mConstraint.setChildIntegerIndex(newIdx);
+            }
+          }
         }
-        // Finally replace CD
-        oldSd.setCD(newSd.getCD());
+        pm.makePersistentAll(mConstraintsList);
+        query.closeAll();
       }
+      // Finally replace CD
+      oldSd.setCD(newSd.getCD());
     }
 
     oldSd.setBucketCols(newSd.getBucketCols());
@@ -8072,9 +8088,8 @@ public class ObjectStore implements RawStore, Configurable {
           dbName, tableName, partNames, MPartitionColumnPrivilege.class,
           "partition.table.tableName", "partition.table.database.name", "partition.partitionName",
           "partition.table.database.catalogName");
-    try (QueryWrapper wrapper = new QueryWrapper(queryWithParams.getLeft())) {
-      wrapper.deletePersistentAll(queryWithParams.getRight());
-    }
+    queryWithParams.getLeft().deletePersistentAll(queryWithParams.getRight());
+    queryWithParams.getLeft().closeAll();
   }
 
   private List<MDBPrivilege> listDatabaseGrants(String catName, String dbName, String authorizer) throws Exception {
@@ -8098,8 +8113,8 @@ public class ObjectStore implements RawStore, Configurable {
       args = new String[] { dbName, catName };
     }
 
-    try (QueryWrapper q = new QueryWrapper(query)) {
-      final List<MDBPrivilege> mSecurityDBList = (List<MDBPrivilege>) q.executeWithArray(args);
+    try (Query q = query) {
+      final List<MDBPrivilege> mSecurityDBList = (List<MDBPrivilege>) query.executeWithArray(args);
       pm.retrieveAll(mSecurityDBList);
       LOG.debug("Done retrieving all objects for listDatabaseGrants: {}", mSecurityDBList);
       return Collections.unmodifiableList(new ArrayList<>(mSecurityDBList));
@@ -8114,27 +8129,22 @@ public class ObjectStore implements RawStore, Configurable {
     dcName = normalizeIdentifier(dcName);
 
     final Query query;
-    String[] args = null;
+    final String[] args;
     final List<MDCPrivilege> mSecurityDCList;
 
     if (authorizer != null) {
       query = pm.newQuery(MDCPrivilege.class, "dataConnector.name == t1 && authorizer == t2");
       query.declareParameters("java.lang.String t1, java.lang.String t2");
       args = new String[] { dcName, authorizer };
+      mSecurityDCList = (List<MDCPrivilege>) query.executeWithArray(args);
     } else {
       query = pm.newQuery(MDCPrivilege.class, "dataConnector.name == t1");
       query.declareParameters("java.lang.String t1");
+      mSecurityDCList = (List<MDCPrivilege>) query.execute(dcName);
     }
-    try (QueryWrapper wrapper = new QueryWrapper(query)) {
-      if (args != null) {
-        mSecurityDCList = (List<MDCPrivilege>) wrapper.executeWithArray(args);
-      } else {
-        mSecurityDCList = (List<MDCPrivilege>) wrapper.execute(dcName);
-      }
-      pm.retrieveAll(mSecurityDCList);
-      LOG.debug("Done retrieving all objects for listDataConnectorGrants: {}", mSecurityDCList);
-      return Collections.unmodifiableList(new ArrayList<>(mSecurityDCList));
-    }
+    pm.retrieveAll(mSecurityDCList);
+    LOG.debug("Done retrieving all objects for listDataConnectorGrants: {}", mSecurityDCList);
+    return Collections.unmodifiableList(new ArrayList<>(mSecurityDCList));
   }
 
   private List<MPartitionPrivilege> listPartitionGrants(String catName, String dbName, String tableName,
@@ -8169,9 +8179,8 @@ public class ObjectStore implements RawStore, Configurable {
           dbName, tableName, partNames,MPartitionPrivilege.class, "partition.table.tableName",
           "partition.table.database.name", "partition.partitionName",
           "partition.table.database.catalogName");
-    try (QueryWrapper wrapper = new QueryWrapper(queryWithParams.getLeft())) {
-      wrapper.deletePersistentAll(queryWithParams.getRight());
-    }
+    queryWithParams.getLeft().deletePersistentAll(queryWithParams.getRight());
+    queryWithParams.getLeft().closeAll();
   }
 
   private <T> List<T> queryByPartitionNames(String catName, String dbName, String tableName,
@@ -8179,11 +8188,10 @@ public class ObjectStore implements RawStore, Configurable {
       String catCol) {
     Pair<Query, Object[]> queryAndParams = makeQueryByPartitionNames(catName,
         dbName, tableName, partNames, clazz, tbCol, dbCol, partCol, catCol);
-    try (QueryWrapper wrapper = new QueryWrapper(queryAndParams.getLeft())) {
-      List<T> results = new ArrayList<T>(
-          (List) wrapper.executeWithArray(queryAndParams.getRight()));
-      return results;
-    }
+    List<T> results = new ArrayList<T>(
+        (List)queryAndParams.getLeft().executeWithArray(queryAndParams.getRight()));
+    queryAndParams.getLeft().closeAll();
+    return results;
   }
 
   private Pair<Query, Object[]> makeQueryByPartitionNames(
@@ -10242,9 +10250,8 @@ public class ObjectStore implements RawStore, Configurable {
     Pair<Query, Object[]> queryWithParams = makeQueryByPartitionNames(
         catName, dbName, tableName, partNames, MPartitionColumnStatistics.class,
         "tableName", "dbName", "partition.partitionName", "catName");
-    try (QueryWrapper wrapper = new QueryWrapper(queryWithParams.getLeft())) {
-      wrapper.deletePersistentAll(queryWithParams.getRight());
-    }
+    queryWithParams.getLeft().deletePersistentAll(queryWithParams.getRight());
+    queryWithParams.getLeft().closeAll();
   }
 
   @Override
@@ -10414,6 +10421,9 @@ public class ObjectStore implements RawStore, Configurable {
         }
       }
       ret = commitTransaction();
+    } catch (NoSuchObjectException e) {
+      rollbackTransaction();
+      throw e;
     } finally {
       rollbackAndCleanup(ret, query);
     }
@@ -10504,6 +10514,9 @@ public class ObjectStore implements RawStore, Configurable {
         }
       }
       ret = commitTransaction();
+    } catch (NoSuchObjectException e) {
+      rollbackTransaction();
+      throw e;
     } finally {
       rollbackAndCleanup(ret, query);
     }
@@ -10533,12 +10546,12 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private MDelegationToken getTokenFrom(String tokenId) {
-    try (QueryWrapper query = new QueryWrapper(pm.newQuery(MDelegationToken.class, "tokenIdentifier == tokenId"))) {
-      query.declareParameters("java.lang.String tokenId");
-      query.setUnique(true);
-      MDelegationToken delegationToken = (MDelegationToken) query.execute(tokenId);
-      return delegationToken;
-    }
+    Query query = pm.newQuery(MDelegationToken.class, "tokenIdentifier == tokenId");
+    query.declareParameters("java.lang.String tokenId");
+    query.setUnique(true);
+    MDelegationToken delegationToken = (MDelegationToken) query.execute(tokenId);
+    query.closeAll();
+    return delegationToken;
   }
 
   @Override
@@ -11502,10 +11515,13 @@ public class ObjectStore implements RawStore, Configurable {
       String lockingQuery = sqlGenerator.addForUpdateClause(selectQuery);
       new RetryingExecutor(conf, () -> {
         prepareQuotes();
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", lockingQuery))) {
+        Query query = pm.newQuery("javax.jdo.query.SQL", lockingQuery);
+        try {
           query.setUnique(true);
           // only need to execute it to get db Lock
           query.execute();
+        } finally {
+          query.closeAll();
         }
       }).run();
     }
@@ -12266,7 +12282,12 @@ public class ObjectStore implements RawStore, Configurable {
       }
       commited = commitTransaction();
     } finally {
-      rollbackAndCleanup(commited, query);
+      if (!commited) {
+        rollbackTransaction();
+      }
+      if (query != null) {
+        query.closeAll();
+      }
     }
     return checkConstraints;
   }
@@ -12300,7 +12321,12 @@ public class ObjectStore implements RawStore, Configurable {
       }
       commited = commitTransaction();
     } finally {
-      rollbackAndCleanup(commited, query);
+      if (!commited) {
+        rollbackTransaction();
+      }
+      if (query != null) {
+        query.closeAll();
+      }
     }
     return defaultConstraints;
   }
@@ -12492,17 +12518,23 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private MISchema getMISchema(String catName, String dbName, String name) {
-    try (QueryWrapper query = new QueryWrapper(pm.newQuery(MISchema.class,
-        "name == schemaName && db.name == dbname && db.catalogName == cat"))) {
+    Query query = null;
+    try {
       name = normalizeIdentifier(name);
       dbName = normalizeIdentifier(dbName);
       catName = normalizeIdentifier(catName);
+      query = pm.newQuery(MISchema.class,
+          "name == schemaName && db.name == dbname && db.catalogName == cat");
       query.declareParameters(
           "java.lang.String schemaName, java.lang.String dbname, java.lang.String cat");
       query.setUnique(true);
       MISchema mSchema = (MISchema)query.execute(name, dbName, catName);
       pm.retrieve(mSchema);
       return mSchema;
+    } finally {
+      if (query != null) {
+        query.closeAll();
+      }
     }
   }
 
@@ -12597,11 +12629,13 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private MSchemaVersion getMSchemaVersion(String catName, String dbName, String schemaName, int version) {
-    try (QueryWrapper query = new QueryWrapper(pm.newQuery(MSchemaVersion.class,
-        "iSchema.name == schemaName && iSchema.db.name == dbName &&" +
-            "iSchema.db.catalogName == cat && version == schemaVersion"))) {
+    Query query = null;
+    try {
       dbName = normalizeIdentifier(dbName);
       schemaName = normalizeIdentifier(schemaName);
+      query = pm.newQuery(MSchemaVersion.class,
+          "iSchema.name == schemaName && iSchema.db.name == dbName &&" +
+              "iSchema.db.catalogName == cat && version == schemaVersion");
       query.declareParameters( "java.lang.String schemaName, java.lang.String dbName," +
           "java.lang.String cat, java.lang.Integer schemaVersion");
       query.setUnique(true);
@@ -12615,6 +12649,10 @@ public class ObjectStore implements RawStore, Configurable {
         }
       }
       return mSchemaVersion;
+    } finally {
+      if (query != null) {
+        query.closeAll();
+      }
     }
   }
 
@@ -12789,12 +12827,18 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private MSerDeInfo getMSerDeInfo(String serDeName) {
-    try (QueryWrapper query = new QueryWrapper(pm.newQuery(MSerDeInfo.class, "name == serDeName"))) {
+    Query query = null;
+    try {
+      query = pm.newQuery(MSerDeInfo.class, "name == serDeName");
       query.declareParameters("java.lang.String serDeName");
       query.setUnique(true);
-      MSerDeInfo mSerDeInfo = (MSerDeInfo) query.execute(serDeName);
+      MSerDeInfo mSerDeInfo = (MSerDeInfo)query.execute(serDeName);
       pm.retrieve(mSerDeInfo);
       return mSerDeInfo;
+    } finally {
+      if (query != null) {
+        query.closeAll();
+      }
     }
   }
 
@@ -14064,27 +14108,27 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private List<RuntimeStat> getMRuntimeStats(int maxEntries, int maxCreateTime) {
-    try (QueryWrapper query = new QueryWrapper(pm.newQuery(MRuntimeStat.class))) {
-      query.setOrdering("createTime descending");
-      if (maxCreateTime > 0) {
-        query.setFilter("createTime < " + maxCreateTime);
-      }
-      if (maxEntries < 0) {
-        maxEntries = Integer.MAX_VALUE;
-      }
-      List<RuntimeStat> ret = new ArrayList<>();
-      List<MRuntimeStat> res = (List<MRuntimeStat>) query.execute();
-      int totalEntries = 0;
-      for (MRuntimeStat mRuntimeStat : res) {
-        pm.retrieve(mRuntimeStat);
-        totalEntries += mRuntimeStat.getWeight();
-        ret.add(MRuntimeStat.toThrift(mRuntimeStat));
-        if (totalEntries >= maxEntries) {
-          break;
-        }
-      }
-      return ret;
+    Query<MRuntimeStat> query = pm.newQuery(MRuntimeStat.class);
+    query.setOrdering("createTime descending");
+    if (maxCreateTime > 0) {
+      query.setFilter("createTime < "+maxCreateTime);
     }
+    if (maxEntries < 0) {
+      maxEntries = Integer.MAX_VALUE;
+    }
+    List<RuntimeStat> ret = new ArrayList<>();
+    List<MRuntimeStat> res = (List<MRuntimeStat>) query.execute();
+    int totalEntries = 0;
+    for (MRuntimeStat mRuntimeStat : res) {
+      pm.retrieve(mRuntimeStat);
+      totalEntries += mRuntimeStat.getWeight();
+      ret.add(MRuntimeStat.toThrift(mRuntimeStat));
+      if (totalEntries >= maxEntries) {
+        break;
+      }
+    }
+    query.closeAll();
+    return ret;
   }
 
   /**
@@ -14175,9 +14219,11 @@ public class ObjectStore implements RawStore, Configurable {
     String namespace = request.getClusterNamespace();
     boolean commited = false;
     ScheduledQueryPollResponse ret = new ScheduledQueryPollResponse();
-    try (QueryWrapper q = new QueryWrapper(pm.newQuery(MScheduledQuery.class,
-        "nextExecution <= now && enabled && clusterNamespace == ns && activeExecution == null"))) {
+    Query q = null;
+    try {
       openTransaction();
+      q = pm.newQuery(MScheduledQuery.class,
+          "nextExecution <= now && enabled && clusterNamespace == ns && activeExecution == null");
       q.setSerializeRead(true);
       q.declareParameters("java.lang.Integer now, java.lang.String ns");
       q.setOrdering("nextExecution");
@@ -14209,6 +14255,9 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Caught jdo exception; exclusive", e);
       commited = false;
     } finally {
+      if (q != null) {
+        q.closeAll();
+      }
       if (commited) {
         return ret;
       } else {
@@ -14277,14 +14326,13 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     boolean commited = false;
-    Query query = null;
     try {
       openTransaction();
 
       MScheduledExecution lastExecution = pm.getObjectById(MScheduledExecution.class, info.getScheduledExecutionId());
       MScheduledQuery schq = lastExecution.getScheduledQuery();
 
-      query = pm.newQuery(MScheduledExecution.class);
+      Query query = pm.newQuery(MScheduledExecution.class);
       query.setFilter("scheduledQuery == currentSchedule");
       query.setOrdering("scheduledExecutionId descending");
       query.declareParameters("MScheduledQuery currentSchedule");
@@ -14328,7 +14376,9 @@ public class ObjectStore implements RawStore, Configurable {
     } catch (InvalidInputException e) {
       throw new MetaException("Unexpected InvalidInputException: " + e.getMessage());
     } finally {
-      rollbackAndCleanup(commited, query);
+      if (!commited) {
+        rollbackTransaction();
+      }
     }
   }
 
@@ -14433,18 +14483,17 @@ public class ObjectStore implements RawStore, Configurable {
     if (StringUtils.isEmpty(policy)) {
       return ret;
     }
-    try (QueryWrapper query = new QueryWrapper(pm.newQuery(MReplicationMetrics.class, "policy == policyParam"))) {
-      query.declareParameters("java.lang.String policyParam");
-      query.setOrdering("scheduledExecutionId descending");
-      List<MReplicationMetrics> list = (List<MReplicationMetrics>) query.execute(policy);
-      List<ReplicationMetrics> returnList = new ArrayList<>();
-      for (MReplicationMetrics mReplicationMetric : list) {
-        pm.retrieve(mReplicationMetric);
-        returnList.add(MReplicationMetrics.toThrift(mReplicationMetric));
-      }
-      ret.setReplicationMetricList(returnList);
-      return ret;
+    Query<MReplicationMetrics> query = pm.newQuery(MReplicationMetrics.class, "policy == policyParam");
+    query.declareParameters("java.lang.String policyParam");
+    query.setOrdering("scheduledExecutionId descending");
+    List<MReplicationMetrics> list = (List<MReplicationMetrics>) query.execute(policy);
+    List<ReplicationMetrics> returnList = new ArrayList<>();
+    for (MReplicationMetrics mReplicationMetric : list) {
+      pm.retrieve(mReplicationMetric);
+      returnList.add(MReplicationMetrics.toThrift(mReplicationMetric));
     }
+    ret.setReplicationMetricList(returnList);
+    return ret;
   }
 
   private ReplicationMetricList getMReplicationMetrics(long scheduledExecutionId) {
@@ -14452,19 +14501,18 @@ public class ObjectStore implements RawStore, Configurable {
     if (scheduledExecutionId < 0) {
       return ret;
     }
-    try (QueryWrapper query = new QueryWrapper(pm.newQuery(MReplicationMetrics.class,
-        "scheduledExecutionId == scheduledExecutionIdParam"))) {
-      query.declareParameters("java.lang.Long scheduledExecutionIdParam");
-      query.setOrdering("scheduledExecutionId descending");
-      List<MReplicationMetrics> list = (List<MReplicationMetrics>) query.execute(scheduledExecutionId);
-      List<ReplicationMetrics> returnList = new ArrayList<>();
-      for (MReplicationMetrics mReplicationMetric : list) {
-        pm.retrieve(mReplicationMetric);
-        returnList.add(MReplicationMetrics.toThrift(mReplicationMetric));
-      }
-      ret.setReplicationMetricList(returnList);
-      return ret;
+    Query<MReplicationMetrics> query = pm.newQuery(MReplicationMetrics.class,
+        "scheduledExecutionId == scheduledExecutionIdParam");
+    query.declareParameters("java.lang.Long scheduledExecutionIdParam");
+    query.setOrdering("scheduledExecutionId descending");
+    List<MReplicationMetrics> list = (List<MReplicationMetrics>) query.execute(scheduledExecutionId);
+    List<ReplicationMetrics> returnList = new ArrayList<>();
+    for (MReplicationMetrics mReplicationMetric : list) {
+      pm.retrieve(mReplicationMetric);
+      returnList.add(MReplicationMetrics.toThrift(mReplicationMetric));
     }
+    ret.setReplicationMetricList(returnList);
+    return ret;
   }
 
   private void ensureScheduledQueriesEnabled() throws MetaException {
@@ -14701,19 +14749,19 @@ public class ObjectStore implements RawStore, Configurable {
 
   private void recoverInvalidScheduledQueryState(int timeoutSecs) {
     int maxLastUpdateTime = (int) (System.currentTimeMillis() / 1000) - timeoutSecs;
-    try (QueryWrapper q = new QueryWrapper(pm.newQuery(MScheduledQuery.class))) {
-      q.setFilter("activeExecution != null");
+    Query q = pm.newQuery(MScheduledQuery.class);
+    q.setFilter("activeExecution != null");
 
-      List<MScheduledQuery> results = (List<MScheduledQuery>) q.execute();
-      for (MScheduledQuery e : results) {
-        Integer lastUpdateTime = e.getActiveExecution().getLastUpdateTime();
-        if (lastUpdateTime == null || lastUpdateTime < maxLastUpdateTime) {
-          LOG.error("Scheduled query: {} stuck with an activeExecution - clearing",
-              scheduledQueryKeyRef(e.getScheduleKey()));
-          e.setActiveExecution(null);
-          pm.makePersistent(e);
-        }
+    List<MScheduledQuery> results = (List<MScheduledQuery>) q.execute();
+    for (MScheduledQuery e : results) {
+      Integer lastUpdateTime = e.getActiveExecution().getLastUpdateTime();
+      if (lastUpdateTime == null || lastUpdateTime < maxLastUpdateTime) {
+        LOG.error("Scheduled query: {} stuck with an activeExecution - clearing",
+            scheduledQueryKeyRef(e.getScheduleKey()));
+        e.setActiveExecution(null);
+        pm.makePersistent(e);
       }
     }
+    q.closeAll();
   }
 }
