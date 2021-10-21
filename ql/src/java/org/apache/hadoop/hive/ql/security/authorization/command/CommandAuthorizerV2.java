@@ -228,11 +228,6 @@ final class CommandAuthorizerV2 {
     case LOCAL_DIR:
       hivePrivObject = new HivePrivilegeObject(privObjType, null, privObject.getD().toString(), null, null,
           actionType, null, null, null, null);
-      if(privObject.getD().toString().startsWith("sfs+")) {
-        String uri = privObject.getD().toString().replaceAll("^sfs.", "").replaceAll("/+#SINGLEFILE#.*", "");
-        hivePrivObjs.add(new HivePrivilegeObject(privObjType, null, uri, null, null,
-            actionType, null, null, null, null));
-      }
       break;
     case FUNCTION:
       String dbName = privObject.getDatabase() != null ? privObject.getDatabase().getName() : null;
