@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.qoption;
 
+import org.apache.hadoop.hive.ql.QTestContext;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.externalDB.AbstractExternalDB;
 import org.apache.hadoop.hive.ql.externalDB.MySQLExternalDB;
@@ -48,7 +49,7 @@ public class QTestExternalDBHandler implements QTestOptionHandler {
   private String initScript;
 
   @Override
-  public void processArguments(String arguments) {
+  public void processArguments(QTestContext qt, String arguments) {
     String[] args = arguments.split(":");
     dbType = args[0].toLowerCase();
     initScript = args[1];
@@ -64,11 +65,12 @@ public class QTestExternalDBHandler implements QTestOptionHandler {
   }
 
   @Override
-  public void beforeTest(QTestUtil qt) throws Exception {
+  public void beforeTest(QTestContext qt) throws Exception {
     if(dbType == null) {
       return;
     }
-    Path externalDBScript = Paths.get(qt.getScriptsDir(), dbType, initScript);
+    String scriptsDir = QTestUtil.getScriptsDir(qt.getConf());
+    Path externalDBScript = Paths.get(scriptsDir, dbType, initScript);
 
     AbstractExternalDB abstractExternalDB = createDB(dbType);
     abstractExternalDB.launchDockerContainer();
@@ -78,7 +80,7 @@ public class QTestExternalDBHandler implements QTestOptionHandler {
   }
 
   @Override
-  public void afterTest(QTestUtil qt) throws Exception {
+  public void afterTest(QTestContext qt) throws Exception {
     if(dbType == null) {
       return;
     }

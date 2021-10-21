@@ -26,6 +26,7 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QTestContext;
 import org.apache.hadoop.hive.ql.QTestSystemProperties;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
@@ -150,7 +151,7 @@ public class QTestDatasetHandler implements QTestOptionHandler {
   }
 
   @Override
-  public void processArguments(String arguments) {
+  public void processArguments(QTestContext qt, String arguments) {
     String[] args = arguments.split(":");
     Set<String> tableNames = getTableNames(args[0]);
     synchronized (QTestUtil.class) {
@@ -180,7 +181,7 @@ public class QTestDatasetHandler implements QTestOptionHandler {
   }
 
   @Override
-  public void beforeTest(QTestUtil qt) throws Exception {
+  public void beforeTest(QTestContext qt) throws Exception {
     if (missingTables.isEmpty() && tablesToUnload.isEmpty()) {
       return;
     }
@@ -202,7 +203,7 @@ public class QTestDatasetHandler implements QTestOptionHandler {
   }
 
   @Override
-  public void afterTest(QTestUtil qt) throws Exception {
+  public void afterTest(QTestContext qt) throws Exception {
   }
 
   public DatasetCollection getDatasets() {

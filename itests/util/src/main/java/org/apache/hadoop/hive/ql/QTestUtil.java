@@ -100,7 +100,7 @@ import com.google.common.base.Throwables;
 /**
  * QTestUtil.
  */
-public class QTestUtil {
+public class QTestUtil implements QTestContext {
   private static final Logger LOG = LoggerFactory.getLogger("QTestUtil");
 
   public static final String QTEST_LEAVE_FILES = "QTEST_LEAVE_FILES";
@@ -216,7 +216,8 @@ public class QTestUtil {
     conf = new HiveConf(IDriver.class);
     setMetaStoreProperties();
 
-    this.miniClusters.setup(testArgs, conf, getScriptsDir(), logDir);
+    final String scriptsDir = getScriptsDir(conf);
+    this.miniClusters.setup(testArgs, conf, scriptsDir, logDir);
 
     initConf();
 
@@ -234,8 +235,6 @@ public class QTestUtil {
     dispatcher.register("authorizer", new QTestAuthorizerHandler());
     dispatcher.register("disabled", new QTestDisabledHandler());
     dispatcher.register("database", new QTestExternalDBHandler());
-
-    String scriptsDir = getScriptsDir();
 
     this.initScript = scriptsDir + File.separator + testArgs.getInitScript();
     this.cleanupScript = scriptsDir + File.separator + testArgs.getCleanupScript();
@@ -268,7 +267,7 @@ public class QTestUtil {
     }
   }
 
-  public String getScriptsDir() {
+  public static String getScriptsDir(HiveConf conf) {
     // Use the current directory if it is not specified
     String scriptsDir = conf.get("test.data.scripts");
     if (scriptsDir == null) {
@@ -597,7 +596,7 @@ public class QTestUtil {
     File file = Objects.requireNonNull(inputFile);
     String fileName = inputFile.getName();
 
-    dispatcher.process(file);
+    dispatcher.process(this);
     dispatcher.beforeTest(this);
 
     if (!qTestResultProcessor.canReuseSession()) {

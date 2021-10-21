@@ -15,40 +15,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.qoption;
+package org.apache.hadoop.hive.ql;
 
-import org.apache.hadoop.hive.ql.QTestContext;
-import org.junit.Assume;
+import org.apache.hadoop.hive.cli.CliDriver;
+import org.apache.hadoop.hive.conf.HiveConf;
 
-import com.google.common.base.Strings;
+import java.io.File;
 
-/**
- * QTest disabled directive handler
- *
- * Example:
- * --! qt:disabled:reason
- *
- */
-public class QTestDisabledHandler implements QTestOptionHandler {
-
-  private String message;
-
-  @Override
-  public void processArguments(QTestContext qt, String arguments) {
-    message = arguments;
-    if (Strings.isNullOrEmpty(message)) {
-      throw new RuntimeException("you have to give a reason why it was ignored");
-    }
+public interface QTestContext {
+  default void newSession(boolean reuse) throws Exception {
   }
-
-  @Override
-  public void beforeTest(QTestContext qt) throws Exception {
-    Assume.assumeTrue(message, (message == null));
+  
+  default HiveConf getConf() {
+    return new HiveConf();
   }
-
-  @Override
-  public void afterTest(QTestContext qt) throws Exception {
-    message = null;
-  }
-
+  
+  CliDriver getCliDriver();
+  File getInputFile();
 }

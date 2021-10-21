@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequest;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType;
+import org.apache.hadoop.hive.ql.QTestContext;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.hooks.ScheduledQueryCreationRegistryHook;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -40,21 +41,21 @@ public class QTestScheduledQueryCleaner implements QTestOptionHandler {
   private static final Logger LOG = LoggerFactory.getLogger(QTestScheduledQueryCleaner.class);
 
   @Override
-  public void processArguments(String arguments) {
+  public void processArguments(QTestContext qt, String arguments) {
   }
 
   @Override
-  public void beforeTest(QTestUtil qt) throws Exception {
+  public void beforeTest(QTestContext qt) throws Exception {
 
   }
 
   @Override
-  public void afterTest(QTestUtil qt) throws Exception {
-    clearScheduledQueries(qt);
+  public void afterTest(QTestContext qt) throws Exception {
+    clearScheduledQueries(qt.getConf());
 
   }
 
-  public void clearScheduledQueries(QTestUtil qt) {
+  private void clearScheduledQueries(HiveConf conf) {
     if (System.getenv(QTestUtil.QTEST_LEAVE_FILES) != null) {
       return;
     }
@@ -63,10 +64,9 @@ public class QTestScheduledQueryCleaner implements QTestOptionHandler {
       ScheduledQueryMaintenanceRequest request = new ScheduledQueryMaintenanceRequest();
       request.setType(ScheduledQueryMaintenanceRequestType.DROP);
       ScheduledQuery schq = new ScheduledQuery();
-      schq.setScheduleKey(new ScheduledQueryKey(name, qt.getConf().getVar(ConfVars.HIVE_SCHEDULED_QUERIES_NAMESPACE)));
+      schq.setScheduleKey(new ScheduledQueryKey(name, conf.getVar(ConfVars.HIVE_SCHEDULED_QUERIES_NAMESPACE)));
       request.setScheduledQuery(schq);
       try {
-        HiveConf conf = qt.getConf();
         Hive db = Hive.get(conf); // propagate new conf to meta store
 
         db.getMSC().scheduledQueryMaintenance(request);
