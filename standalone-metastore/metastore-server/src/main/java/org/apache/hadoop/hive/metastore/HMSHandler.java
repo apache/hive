@@ -2336,6 +2336,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw new MetaException("Create table in REMOTE database " + db.getName() + " is not allowed");
     }
 
+    if (is_table_exists(ms, tbl.getCatName(), tbl.getDbName(), tbl.getTableName())) {
+      throw new AlreadyExistsException("Table " + getCatalogQualifiedTableName(tbl)
+          + " already exists");
+    }
+
     if (transformer != null) {
       tbl = transformer.transformCreateTable(tbl, processorCapabilities, processorId);
     }

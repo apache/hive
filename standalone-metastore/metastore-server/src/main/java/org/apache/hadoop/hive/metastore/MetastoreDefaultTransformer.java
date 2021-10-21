@@ -593,6 +593,13 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
         }
         throw new MetaException("Default location is not available for table: " + p);
       }
+    },
+    force {
+      @Override
+      Path getLocation(IHMSHandler hmsHandler, Database db, Table table, int idx) throws MetaException {
+        Path p = getDefaultPath(hmsHandler, db, table.getTableName());
+        return p;
+      }
 
     };
 
@@ -701,7 +708,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     Path location = null;
     while (true) {
       location = strategy.getLocation(hmsHandler, db, table, idx++);
-      if (!hmsHandler.getWh().isDir(location)) {
+      if (strategy == TableLocationStrategy.force || !hmsHandler.getWh().isDir(location)) {
         break;
       }
     }
