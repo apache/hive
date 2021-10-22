@@ -83,6 +83,7 @@ import org.apache.hadoop.hive.metastore.LockTypeComparator;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
+import org.apache.hadoop.hive.metastore.api.AffectedRowsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
@@ -1540,10 +1541,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         if (txnType.get() != TxnType.READ_ONLY && !isReplayedReplTxn) {
-          moveTxnComponentsToCompleted(stmt, txnid, isUpdateDelete);
-          if (rqst.isSetRowsAffected() && rqst.getRowsAffectedSize() > 0) {
-            
-          }
+          moveTxnComponentsToCompleted(stmt, txnid, isUpdateDelete, rqst.getRowsAffected());
         } else if (isReplayedReplTxn) {
           if (rqst.isSetWriteEventInfos()) {
             String sql = String.format(COMPL_TXN_COMPONENTS_INSERT_QUERY, txnid, quoteChar(isUpdateDelete));
@@ -1700,7 +1698,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     return stmt.executeQuery(writeConflictQuery);
   }
 
-  private void moveTxnComponentsToCompleted(Statement stmt, long txnid, char isUpdateDelete) throws SQLException {
+  private void moveTxnComponentsToCompleted(Statement stmt, long txnid, char isUpdateDelete,
+                                            Set<AffectedRowsRequest> affectedRowsRequests) throws SQLException {
     // Move the record from txn_components into completed_txn_components so that the compactor
     // knows where to look to compact.
     String s = "INSERT INTO \"COMPLETED_TXN_COMPONENTS\" (\"CTC_TXNID\", \"CTC_DATABASE\", " +
@@ -1710,13 +1709,31 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         //we only track compactor activity in TXN_COMPONENTS to handle the case where the
         //compactor txn aborts - so don't bother copying it to COMPLETED_TXN_COMPONENTS
         " AND \"TC_OPERATION_TYPE\" <> " + OperationType.COMPACT;
-    LOG.debug("Going to execute insert <" + s + ">");
 
-    if ((stmt.executeUpdate(s)) < 1) {
-      //this can be reasonable for an empty txn START/COMMIT or read-only txn
-      //also an IUD with DP that didn't match any rows.
-      LOG.info("Expected to move at least one record from txn_components to " +
-              "completed_txn_components when committing txn! " + JavaUtils.txnIdToString(txnid));
+    try {
+      stmt.addBatch(s);
+
+      if (isUpdateDelete == 'Y') {
+        stmt.addBatch("UPDATE \"MV_TABLES_USED\" SET \"MVTU_UPDATE_DELETE\" = 'y' WHERE \"TBL_ID\" IN ( " +
+            "SELECT t.\"TBL_ID\" FROM \"TBLS\" t " +
+            "JOIN \"DBS\" d ON d.\"DB_ID\" = t.\"DB_ID\" " +
+            "JOIN \"TXN_COMPONENTS\" tc ON tc.\"TC_DATABASE\" = d.\"NAME\" AND tc.\"TC_TABLE\" = t.\"TBL_NAME\" " +
+            "WHERE tc.\"TC_TXNID\" = 1\n" +
+            "AND (tc.\"TC_OPERATION_TYPE\" = " + OperationType.UPDATE + " OR tc.\"TC_OPERATION_TYPE\" = " + OperationType.DELETE + ") " +
+            ")");
+      }
+
+      LOG.debug("Going to execute insert <" + s + ">");
+      int[] results = stmt.executeBatch();
+
+      if (results[0] < 1) {
+        //this can be reasonable for an empty txn START/COMMIT or read-only txn
+        //also an IUD with DP that didn't match any rows.
+        LOG.info("Expected to move at least one record from txn_components to " +
+            "completed_txn_components when committing txn! " + JavaUtils.txnIdToString(txnid));
+      }
+    } finally {
+      stmt.clearBatch();
     }
   }
 

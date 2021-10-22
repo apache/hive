@@ -269,8 +269,14 @@
       <field name="table" primary-key="true">
         <column name="TBL_ID"/>
       </field>
-      <field name="wasUpdated">
-        <column name="WAS_UPDATED"/>
+      <field name="updateDelete">
+        <column name="MVTU_UPDATE_DELETE"/>
+      </field>
+      <field name="insertedCount">
+        <column name="MVTU_INSERTED_COUNT"/>
+      </field>
+      <field name="deletedCount">
+        <column name="MVTU_DELETED_COUNT"/>
       </field>
     </class>
 
