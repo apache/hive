@@ -1094,7 +1094,9 @@ struct AffectedRowsRequest {
     1: required string dbName,
     2: required string tableName,
     3: optional string partName,
-    4: required i64 rowsAffected,
+    4: required i64 insertCount,
+    5: required i64 updatedCount,
+    6: required i64 deletedCount,
 }
 
 struct CommitTxnRequest {

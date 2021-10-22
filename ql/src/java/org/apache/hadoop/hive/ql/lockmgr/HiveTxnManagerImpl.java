@@ -56,7 +56,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
 
   protected HiveConf conf;
-  protected Set<AffectedRowsRequest> rowsAffected = new HashSet<>();
+  protected Map<String, AffectedRowsRequest> rowsAffected = new HashMap<>();
 
   void setHiveConf(HiveConf c) {
     setConf(c);
@@ -259,14 +259,7 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
   }
 
   @Override
-  public void setRowsAffected(String dbName, String tableName, String partitionName, long numRows) {
-    AffectedRowsRequest affectedRowsRequest = new AffectedRowsRequest();
-    affectedRowsRequest.setDbName(dbName);
-    affectedRowsRequest.setTableName(tableName);
-    if (isNotBlank(partitionName)) {
-      affectedRowsRequest.setPartName(partitionName);
-    }
-    affectedRowsRequest.setRowsAffected(numRows);
-    rowsAffected.add(affectedRowsRequest);
+  public void setRowsAffected(String dbName, String tableName, String partitionName, AffectedRowsRequest affectedRowsRequest) {
+    rowsAffected.put(dbName + tableName + partitionName, affectedRowsRequest);
   }
 }

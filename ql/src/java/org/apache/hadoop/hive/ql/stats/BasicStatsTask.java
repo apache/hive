@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.AffectedRowsRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -63,6 +64,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.hadoop.hive.common.StatsSetupConst.INSERT_COUNT;
 import static org.apache.hadoop.hive.common.StatsSetupConst.ROW_COUNT;
 
 /**
@@ -229,6 +232,14 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       this.partish = partish;
     }
 
+    private long toLong(String value) {
+      if (value == null || value.isEmpty()) {
+        return 0;
+      }
+
+      return Long.parseLong(value);
+    }
+
     public void process(StatsAggregator statsAggregator) throws HiveException, MetaException {
       if (statsAggregator == null) {
         return;
@@ -236,14 +247,26 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
       if (partish.isTransactionalTable()) {
         String prefix = getAggregationPrefix(partish.getTable(), partish.getPartition());
-        String value = statsAggregator.aggregateStats(prefix, ROW_COUNT);
-        if (value != null && !value.isEmpty()) {
-          long longValue = Long.parseLong(value);
+        long insertCount = toLong(statsAggregator.aggregateStats(prefix, INSERT_COUNT));
+        long updateCount = toLong(statsAggregator.aggregateStats(prefix, INSERT_COUNT));
+        long deleteCount = toLong(statsAggregator.aggregateStats(prefix, INSERT_COUNT));
+
+        if (insertCount > 0 || updateCount > 0 || deleteCount > 0) {
+          AffectedRowsRequest affectedRowsRequest = new AffectedRowsRequest();
+          affectedRowsRequest.setDbName(partish.getTable().getDbName());
+          affectedRowsRequest.setTableName(partish.getTable().getTableName());
+          if (partish.getPartition() != null) {
+            affectedRowsRequest.setPartName(partish.getPartition().getName());
+          }
+          affectedRowsRequest.setInsertCount(insertCount);
+          affectedRowsRequest.setUpdatedCount(updateCount);
+          affectedRowsRequest.setDeletedCount(deleteCount);
+
           txnManager.setRowsAffected(
               partish.getTable().getDbName(),
               partish.getTable().getTableName(),
               partish.getPartition() == null ? null : partish.getPartition().getName(),
-              longValue);
+              affectedRowsRequest);
         }
       }
     }

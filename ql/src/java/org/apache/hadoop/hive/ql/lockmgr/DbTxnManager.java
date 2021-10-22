@@ -67,6 +67,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -540,7 +541,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       }
       if (!rowsAffected.isEmpty()) {
         commitTxnRequest.setRowsAffectedIsSet(true);
-        commitTxnRequest.setRowsAffected(rowsAffected);
+        commitTxnRequest.setRowsAffected(new HashSet<>(rowsAffected.values()));
       }
       getMS().commitTxn(commitTxnRequest);
     } catch (NoSuchTxnException e) {
