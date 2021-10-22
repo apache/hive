@@ -80,7 +80,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.processors.HiveCommand;
 import org.apache.hadoop.hive.ql.qoption.QTestAuthorizerHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestDisabledHandler;
-import org.apache.hadoop.hive.ql.qoption.QTestExternalDBHandler;
+import org.apache.hadoop.hive.ql.qoption.QTestDatabaseHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
 import org.apache.hadoop.hive.ql.qoption.QTestReplaceHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestSysDbHandler;
@@ -234,7 +234,7 @@ public class QTestUtil implements QTestContext {
     dispatcher.register("timezone", new QTestTimezoneHandler());
     dispatcher.register("authorizer", new QTestAuthorizerHandler());
     dispatcher.register("disabled", new QTestDisabledHandler());
-    dispatcher.register("database", new QTestExternalDBHandler());
+    dispatcher.register("database", new QTestDatabaseHandler());
 
     this.initScript = scriptsDir + File.separator + testArgs.getInitScript();
     this.cleanupScript = scriptsDir + File.separator + testArgs.getCleanupScript();
