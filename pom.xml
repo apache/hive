@@ -179,7 +179,7 @@
     <kudu.version>1.12.0</kudu.version>
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
     <libfb303.version>0.9.3</libfb303.version>
-    <libthrift.version>0.14.1</libthrift.version>
+    <libthrift.version>0.15.0</libthrift.version>
     <log4j2.version>2.13.2</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
     <postgres.version>42.2.14</postgres.version>
