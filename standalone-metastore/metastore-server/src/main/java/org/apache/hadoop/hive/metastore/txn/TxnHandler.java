@@ -250,7 +250,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private static final int ALLOWED_REPEATED_DEADLOCKS = 10;
   private static final Logger LOG = LoggerFactory.getLogger(TxnHandler.class.getName());
 
-  private static boolean initialized = false;
+
   private static DataSource connPool;
   private static DataSource connPoolMutex;
 
@@ -361,42 +361,45 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   public TxnHandler() {
   }
 
-  public synchronized static void init(Configuration conf) throws SQLException {
-    if (!initialized) {
-      Connection dbConn = null;
-      // Set up the JDBC connection pool
-      try {
-        int maxPoolSize = MetastoreConf.getIntVar(conf, ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
-        long getConnectionTimeoutMs = 30000;
-        connPool = setupJdbcConnectionPool(conf, maxPoolSize, getConnectionTimeoutMs);
-        /*the mutex pools should ideally be somewhat larger since some operations require 1
-        connection from each pool and we want to avoid taking a connection from primary pool
-        and then blocking because mutex pool is empty.  There is only 1 thread in any HMS trying
-        to mutex on each MUTEX_KEY except MUTEX_KEY.CheckLock.  The CheckLock operation gets a
-        connection from connPool first, then connPoolMutex.  All others, go in the opposite
-        order (not very elegant...).  So number of connection requests for connPoolMutex cannot
-        exceed (size of connPool + MUTEX_KEY.values().length - 1).*/
-        connPoolMutex = setupJdbcConnectionPool(conf, maxPoolSize + MUTEX_KEY.values().length, getConnectionTimeoutMs);
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        determineDatabaseProduct(dbConn, conf);
-        sqlGenerator = new SQLGenerator(dbProduct, conf);
-      } catch (SQLException e) {
-        String msg = "Unable to instantiate JDBC connection pooling, " + e.getMessage();
-        LOG.error(msg);
-        throw e;
-      } finally {
-        closeDbConn(dbConn);
-      }
-    }
-    initialized = true;
-  }
-
   /**
    * This is logically part of c'tor and must be called prior to any other method.
    * Not physically part of c'tor due to use of reflection
    */
   public void setConf(Configuration conf){
     this.conf = conf;
+
+    int maxPoolSize = MetastoreConf.getIntVar(conf, ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
+    long getConnectionTimeoutMs = 30000;
+    synchronized (TxnHandler.class) {
+      if (connPool == null) {
+        connPool = setupJdbcConnectionPool(conf, maxPoolSize, getConnectionTimeoutMs);
+      }
+
+      if (connPoolMutex == null) {
+        /*the mutex pools should ideally be somewhat larger since some operations require 1
+           connection from each pool and we want to avoid taking a connection from primary pool
+           and then blocking because mutex pool is empty.  There is only 1 thread in any HMS trying
+           to mutex on each MUTEX_KEY except MUTEX_KEY.CheckLock.  The CheckLock operation gets a
+           connection from connPool first, then connPoolMutex.  All others, go in the opposite
+           order (not very elegant...).  So number of connection requests for connPoolMutex cannot
+           exceed (size of connPool + MUTEX_KEY.values().length - 1).*/
+        connPoolMutex = setupJdbcConnectionPool(conf, maxPoolSize + MUTEX_KEY.values().length, getConnectionTimeoutMs);
+      }
+
+      if (dbProduct == null) {
+        try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED)) {
+          determineDatabaseProduct(dbConn);
+        } catch (SQLException e) {
+          String msg = "Unable to determine database product, " + e.getMessage();
+          LOG.error(msg);
+          throw new RuntimeException(msg, e);
+        }
+      }
+
+      if (sqlGenerator == null) {
+        sqlGenerator = new SQLGenerator(dbProduct, conf);
+      }
+    }
 
     numOpenTxns = Metrics.getOrCreateGauge(MetricsConstants.NUM_OPEN_TXNS);
 
@@ -4401,11 +4404,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   }
 
-  static Connection getDbConn(int isolationLevel) throws SQLException {
+  Connection getDbConn(int isolationLevel) throws SQLException {
     return getDbConn(isolationLevel, connPool);
   }
 
-  private static Connection getDbConn(int isolationLevel, DataSource connPool) throws SQLException {
+  private Connection getDbConn(int isolationLevel, DataSource connPool) throws SQLException {
     Connection dbConn = null;
     try {
       dbConn = connPool.getConnection();
@@ -4602,8 +4605,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
 
-  private static void determineDatabaseProduct(Connection conn, Configuration conf) {
-    if (dbProduct != null) return;
+  private void determineDatabaseProduct(Connection conn) {
     try {
       String s = conn.getMetaData().getDatabaseProductName();
       dbProduct = DatabaseProduct.determineDatabaseProduct(s, conf);
@@ -5568,10 +5570,16 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private static synchronized DataSource setupJdbcConnectionPool(Configuration conf, int maxPoolSize, long getConnectionTimeoutMs) throws SQLException {
+  private static DataSource setupJdbcConnectionPool(Configuration conf, int maxPoolSize, long getConnectionTimeoutMs) {
     DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     if (dsp != null) {
-      return dsp.create(conf);
+      try {
+        return dsp.create(conf);
+      } catch (SQLException e) {
+        String msg = "Unable to instantiate JDBC connection pooling, " + e.getMessage();
+        LOG.error(msg);
+        throw new RuntimeException(e);
+      }
     } else {
       String connectionPooler = MetastoreConf.getVar(conf, ConfVars.CONNECTION_POOLING_TYPE).toLowerCase();
       if ("none".equals(connectionPooler)) {

@@ -433,7 +433,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         addAdminUsers();
         currentUrl = MetaStoreInit.getConnectionURL(conf);
       }
-      TxnUtils.initializeTxnStore(conf); // Must be before Metric services start
     }
 
     //Start Metrics

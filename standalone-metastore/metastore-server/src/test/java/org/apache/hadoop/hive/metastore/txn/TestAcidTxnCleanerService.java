@@ -55,7 +55,6 @@ public class TestAcidTxnCleanerService {
   @Before
   public void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
-    TxnUtils.initializeTxnStore(conf);
     underTest = new AcidTxnCleanerService();
     underTest.setConf(conf);
     txnHandler = TxnUtils.getTxnStore(conf);

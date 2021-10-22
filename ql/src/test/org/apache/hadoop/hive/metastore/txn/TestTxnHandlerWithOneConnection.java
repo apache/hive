@@ -67,7 +67,6 @@ public class TestTxnHandlerWithOneConnection {
     // set the connection timeout to the minimum accepted value
     String CONNECTION_TIMEOUT_PROPERTY = "hikaricp.connectionTimeout";
     conf.setLong(CONNECTION_TIMEOUT_PROPERTY, 250L);
-    TxnUtils.initializeTxnStore(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
   }
 
