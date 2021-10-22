@@ -17,12 +17,11 @@
  * under the License.
  */
 
-package org.apache.iceberg.hive;
+package org.apache.iceberg;
 
 import java.io.Closeable;
 import java.util.ArrayDeque;
 import java.util.Deque;
-import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,25 +33,32 @@ public abstract class ClientPoolImpl<C, E extends Exception> implements Closeabl
   private final Deque<C> clients;
   private final Class<? extends E> reconnectExc;
   private final Object signal = new Object();
+  private final boolean retryByDefault;
   private volatile int currentSize;
   private boolean closed;
 
-  ClientPoolImpl(int poolSize, Class<? extends E> reconnectExc) {
+  public ClientPoolImpl(int poolSize, Class<? extends E> reconnectExc, boolean retryByDefault) {
     this.poolSize = poolSize;
     this.reconnectExc = reconnectExc;
     this.clients = new ArrayDeque<>(poolSize);
     this.currentSize = 0;
     this.closed = false;
+    this.retryByDefault = retryByDefault;
   }
 
   @Override
   public <R> R run(Action<R, C, E> action) throws E, InterruptedException {
+    return run(action, retryByDefault);
+  }
+
+  @Override
+  public <R> R run(Action<R, C, E> action, boolean retry) throws E, InterruptedException {
     C client = get();
     try {
       return action.run(client);
 
     } catch (Exception exc) {
-      if (isConnectionException(exc)) {
+      if (retry && isConnectionException(exc)) {
         try {
           client = reconnect(client);
         } catch (Exception ignored) {
@@ -138,8 +144,7 @@ public abstract class ClientPoolImpl<C, E extends Exception> implements Closeabl
     }
   }
 
-  @VisibleForTesting
-  int poolSize() {
+  public int poolSize() {
     return poolSize;
   }
 }
