@@ -477,6 +477,8 @@ class WriteEventInfo; end
 
 class ReplLastIdInfo; end
 
+class AffectedRowsRequest; end
+
 class CommitTxnRequest; end
 
 class ReplTblWriteIdStateRequest; end
@@ -3801,6 +3803,37 @@ class ReplLastIdInfo
   ::Thrift::Struct.generate_accessors self
 end
 
+class AffectedRowsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DBNAME = 1
+  TABLENAME = 2
+  PARTNAME = 3
+  INSERTCOUNT = 4
+  UPDATEDCOUNT = 5
+  DELETEDCOUNT = 6
+
+  FIELDS = {
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+    PARTNAME => {:type => ::Thrift::Types::STRING, :name => 'partName', :optional => true},
+    INSERTCOUNT => {:type => ::Thrift::Types::I64, :name => 'insertCount'},
+    UPDATEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'updatedCount'},
+    DELETEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'deletedCount'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field insertCount is unset!') unless @insertCount
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field updatedCount is unset!') unless @updatedCount
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field deletedCount is unset!') unless @deletedCount
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class CommitTxnRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TXNID = 1
@@ -3810,6 +3843,7 @@ class CommitTxnRequest
   KEYVALUE = 5
   EXCLWRITEENABLED = 6
   TXN_TYPE = 7
+  ROWSAFFECTED = 8
 
   FIELDS = {
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'},
@@ -3818,7 +3852,8 @@ class CommitTxnRequest
     REPLLASTIDINFO => {:type => ::Thrift::Types::STRUCT, :name => 'replLastIdInfo', :class => ::ReplLastIdInfo, :optional => true},
     KEYVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'keyValue', :class => ::CommitTxnKeyValue, :optional => true},
     EXCLWRITEENABLED => {:type => ::Thrift::Types::BOOL, :name => 'exclWriteEnabled', :default => true, :optional => true},
-    TXN_TYPE => {:type => ::Thrift::Types::I32, :name => 'txn_type', :optional => true, :enum_class => ::TxnType}
+    TXN_TYPE => {:type => ::Thrift::Types::I32, :name => 'txn_type', :optional => true, :enum_class => ::TxnType},
+    ROWSAFFECTED => {:type => ::Thrift::Types::SET, :name => 'rowsAffected', :element => {:type => ::Thrift::Types::STRUCT, :class => ::AffectedRowsRequest}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
