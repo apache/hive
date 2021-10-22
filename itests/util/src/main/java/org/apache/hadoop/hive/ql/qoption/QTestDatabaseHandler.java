@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.qoption;
 
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.externalDB.AbstractExternalDB;
+import org.apache.hadoop.hive.ql.externalDB.MSSQLServer;
 import org.apache.hadoop.hive.ql.externalDB.MariaDB;
 import org.apache.hadoop.hive.ql.externalDB.MySQLExternalDB;
 import org.apache.hadoop.hive.ql.externalDB.PostgresExternalDB;
@@ -64,6 +65,11 @@ public class QTestDatabaseHandler implements QTestOptionHandler {
       @Override
       AbstractExternalDB create() {
         return new MariaDB();
+      }
+    }, MSSQL {
+      @Override
+      AbstractExternalDB create() {
+        return new MSSQLServer();
       }
     };
 

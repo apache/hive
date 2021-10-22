@@ -44,8 +44,8 @@ public class PostgresExternalDB extends AbstractExternalDB {
 
     public String[] getDockerAdditionalArgs() {
         return new String[] {"-p", "5432:5432",
-            "-e", "POSTGRES_PASSWORD=" + password,
-            "-e", "POSTGRES_USER=" + userName,
+            "-e", "POSTGRES_PASSWORD=" + getPassword(),
+            "-e", "POSTGRES_USER=" + getUser(),
             "-e", "POSTGRES_DB=" + dbName,
             "-d"
         };

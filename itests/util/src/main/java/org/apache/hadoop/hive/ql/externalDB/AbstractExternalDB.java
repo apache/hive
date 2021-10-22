@@ -43,8 +43,6 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractExternalDB {
     protected static final Logger LOG = LoggerFactory.getLogger("AbstractExternalDB");
 
-    protected static final String userName = "qtestuser";
-    protected static final String password = "qtestpassword";
     protected static final String dbName = "qtestDB";
 
     private static final int MAX_STARTUP_WAIT = 5 * 60 * 1000;
@@ -154,6 +152,14 @@ public abstract class AbstractExternalDB {
         }
     }
 
+    public String getUser() {
+        return "qtestuser";
+    }
+    
+    public String getPassword() {
+        return  "qtestpassword";
+    }
+    
     public abstract String getJdbcUrl();
 
     public abstract String getJdbcDriver();
@@ -167,8 +173,8 @@ public abstract class AbstractExternalDB {
     protected String[] SQLLineCmdBuild(String sqlScriptFile) {
         return new String[] {"-u", getJdbcUrl(),
                             "-d", getJdbcDriver(),
-                            "-n", userName,
-                            "-p", password,
+                            "-n", getUser(),
+                            "-p", getPassword(),
                             "--isolation=TRANSACTION_READ_COMMITTED",
                             "-f", sqlScriptFile};
 
@@ -200,8 +206,8 @@ public abstract class AbstractExternalDB {
     public void execute(String script) throws IOException, SQLException, ClassNotFoundException {
         // Test we can connect to database
         Class.forName(getJdbcDriver());
-        try (Connection ignored = DriverManager.getConnection(getJdbcUrl(), userName, password)) {
-            LOG.info("Successfully connected to {} with user {} and password {}", getJdbcUrl(), userName, password);
+        try (Connection ignored = DriverManager.getConnection(getJdbcUrl(), getUser(), getPassword())) {
+            LOG.info("Successfully connected to {} with user {} and password {}", getJdbcUrl(), getUser(), getPassword());
         }
         LOG.info("Starting {} initialization", getClass().getSimpleName());
         execSql(script);

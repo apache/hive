@@ -42,8 +42,8 @@ public class MySQLExternalDB extends AbstractExternalDB {
     public String[] getDockerAdditionalArgs() {
         return new String[] {"-p", "3306:3306",
                           "-e", "MYSQL_ROOT_PASSWORD=its-a-secret",
-                          "-e", "MYSQL_USER=" + userName,
-                          "-e", "MYSQL_PASSWORD=" + password,
+                          "-e", "MYSQL_USER=" + getUser(),
+                          "-e", "MYSQL_PASSWORD=" + getPassword(),
                           "-e", "MYSQL_DATABASE=" + dbName,
                           "-d"
         };
