@@ -25,10 +25,8 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -47,44 +45,42 @@ import org.apache.hive.common.util.StreamPrinter;
  *
  */
 public class QTestResultProcessor {
-  private static final Pattern SORT_BEFORE_DIFF = Pattern.compile("-- SORT_BEFORE_DIFF");
-  private static final Pattern SORT_QUERY_RESULTS = Pattern.compile("-- SORT_QUERY_RESULTS");
-  private static final Pattern HASH_QUERY_RESULTS = Pattern.compile("-- HASH_QUERY_RESULTS");
-  private static final Pattern SORT_AND_HASH_QUERY_RESULTS =
-      Pattern.compile("-- SORT_AND_HASH_QUERY_RESULTS");
-  private static final Pattern NO_SESSION_REUSE = Pattern.compile("-- NO_SESSION_REUSE");
-
   private static final String SORT_SUFFIX = ".sorted";
 
   private enum Operation {
-    PRESORT, SORT, HASH, REUSE_SESSION
+    /***/
+    PRESORT("-- SORT_BEFORE_DIFF"),
+    /***/
+    SORT("-- SORT_QUERY_RESULTS"),
+    /***/
+    HASH("-- HASH_QUERY_RESULTS"),
+    /***/
+    SORT_N_HASH("-- SORT_AND_HASH_QUERY_RESULTS"),
+    /***/
+    NEW_SESSION("-- NO_SESSION_REUSE");
+    private final Pattern pattern;
+
+    Operation(String pattern) {
+      this.pattern = Pattern.compile(pattern);
+    }
+
+    boolean existsIn(String query) {
+      return pattern.matcher(query).find();
+    }
   }
+
+  /**
+   * Operations present in a given file/test.
+   */
   private final Set<Operation> operations = new HashSet<>();
 
   public void init(String query) {
     operations.clear();
-    if (matches(SORT_BEFORE_DIFF, query)) {
-      operations.add(Operation.PRESORT);
-    } else if (matches(SORT_QUERY_RESULTS, query)) {
-      operations.add(Operation.SORT);
-    } else if (matches(HASH_QUERY_RESULTS, query)) {
-      operations.add(Operation.HASH);
-    } else if (matches(SORT_AND_HASH_QUERY_RESULTS, query)) {
-      operations.add(Operation.SORT);
-      operations.add(Operation.HASH);
+    for (Operation op : Operation.values()) {
+      if (op.existsIn(query)) {
+        operations.add(op);
+      }
     }
-
-    if (!matches(NO_SESSION_REUSE, query)) {
-      operations.add(Operation.REUSE_SESSION);
-    }
-  }
-
-  private boolean matches(Pattern pattern, String query) {
-    Matcher matcher = pattern.matcher(query);
-    if (matcher.find()) {
-      return true;
-    }
-    return false;
   }
 
   private boolean shouldSort() {
@@ -92,19 +88,25 @@ public class QTestResultProcessor {
   }
 
   public void setOutputs(CliSessionState ss, OutputStream fo) throws Exception {
-    if (operations.containsAll(EnumSet.of(Operation.HASH, Operation.SORT))) {
-      ss.out = new SortAndDigestPrintStream(fo, "UTF-8");
-    } else if (operations.contains(Operation.SORT)) {
+    // Normally, only one of PRESORT, SORT, HASH, SORT_N_HASH, should be present
+    // in a file. If there are multiple then the code will pick one in the order
+    // specified below. This ensures the behavior remains the same as before this
+    // refactoring.
+    // It would be better to throw an error than silently pick one and ignore the
+    // rest but it is out of the scope of the current change. 
+    if (operations.contains(Operation.SORT)) {
       ss.out = new SortPrintStream(fo, "UTF-8");
     } else if (operations.contains(Operation.HASH)) {
       ss.out = new DigestPrintStream(fo, "UTF-8");
+    } else if (operations.contains(Operation.SORT_N_HASH)) {
+      ss.out = new SortAndDigestPrintStream(fo, "UTF-8");
     } else {
       ss.out = new SessionStream(fo, true, "UTF-8");
     }
   }
 
   public boolean canReuseSession() {
-    return operations.contains(Operation.REUSE_SESSION);
+    return !operations.contains(Operation.NEW_SESSION);
   }
 
   public QTestProcessExecResult executeDiffCommand(String inFileName, String outFileName, boolean ignoreWhiteSpace) throws Exception {
