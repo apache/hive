@@ -64,10 +64,6 @@ public class QOutProcessor {
       Pattern.compile("POSTHOOK: Lineage: .*"),
       "POSTHOOK: Lineage: ###Masked###");
 
-  private static final Pattern PATTERN_MASK_STATS = Pattern.compile("-- MASK_STATS");
-  private static final Pattern PATTERN_MASK_DATA_SIZE = Pattern.compile("-- MASK_DATA_SIZE");
-  private static final Pattern PATTERN_MASK_LINEAGE = Pattern.compile("-- MASK_LINEAGE");
-
   private FsType fsType = FsType.LOCAL;
 
   public static class LineProcessingResult {
@@ -147,9 +143,16 @@ public class QOutProcessor {
   };
 
   private enum Mask {
-    STATS,
-    DATASIZE,
-    LINEAGE
+    STATS("-- MASK_STATS"), DATASIZE("-- MASK_DATA_SIZE"), LINEAGE("-- MASK_LINEAGE");
+    private Pattern pattern;
+
+    Mask(String pattern) {
+      this.pattern = Pattern.compile(pattern);
+    }
+
+    boolean existsIn(String query) {
+      return pattern.matcher(query).find();
+    }
   }
 
   private final QTestReplaceHandler replaceHandler;
@@ -374,23 +377,11 @@ public class QOutProcessor {
 
   public void initMasks(String query) {
     queryMasks.clear();
-    if (matches(PATTERN_MASK_STATS, query)) {
-      queryMasks.add(Mask.STATS);
+    for (Mask m : Mask.values()) {
+      if (m.existsIn(query)) {
+        queryMasks.add(m);
+      }
     }
-    if (matches(PATTERN_MASK_DATA_SIZE, query)) {
-      queryMasks.add(Mask.DATASIZE);
-    }
-    if (matches(PATTERN_MASK_LINEAGE, query)) {
-      queryMasks.add(Mask.LINEAGE);
-    }
-  }
-
-  private boolean matches(Pattern pattern, String query) {
-    Matcher matcher = pattern.matcher(query);
-    if (matcher.find()) {
-      return true;
-    }
-    return false;
   }
 
   public void resetPatternwithMaskComments() {
