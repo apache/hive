@@ -187,3 +187,49 @@ POSTHOOK: Input: default@author
 #### A masked pattern was here ####
 1	Victor	Hugo
 2	Alexandre	Dumas
+PREHOOK: query: CREATE EXTERNAL TABLE book
+(
+    id int,
+    title varchar(100),
+    author int
+)
+    STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+    TBLPROPERTIES (
+        "hive.sql.database.type" = "ORACLE",
+        "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
+        "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/xe",
+        "hive.sql.dbcp.username" = "SYS as SYSDBA",
+        "hive.sql.dbcp.password" = "oracle",
+        "hive.sql.table" = "BOOK"
+        )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@book
+POSTHOOK: query: CREATE EXTERNAL TABLE book
+(
+    id int,
+    title varchar(100),
+    author int
+)
+    STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+    TBLPROPERTIES (
+        "hive.sql.database.type" = "ORACLE",
+        "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
+        "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/xe",
+        "hive.sql.dbcp.username" = "SYS as SYSDBA",
+        "hive.sql.dbcp.password" = "oracle",
+        "hive.sql.table" = "BOOK"
+        )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@book
+PREHOOK: query: SELECT * FROM book
+PREHOOK: type: QUERY
+PREHOOK: Input: default@book
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM book
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@book
+#### A masked pattern was here ####
+1	Les Miserables	1
+2	The Count Of Monte Cristo	2

@@ -2,6 +2,7 @@
 --!qt:database:mysql:q_test_state_table.sql
 --!qt:database:mariadb:q_test_city_table.sql
 --!qt:database:mssql:q_test_author_table.sql
+--!qt:database:oracle:q_test_book_table.sql
 CREATE EXTERNAL TABLE country
 (
     id int,
@@ -66,3 +67,20 @@ TBLPROPERTIES (
     "hive.sql.table" = "author"
     );
 SELECT * FROM author;
+
+CREATE EXTERNAL TABLE book
+(
+    id int,
+    title varchar(100),
+    author int
+)
+    STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+    TBLPROPERTIES (
+        "hive.sql.database.type" = "ORACLE",
+        "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
+        "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/xe",
+        "hive.sql.dbcp.username" = "SYS as SYSDBA",
+        "hive.sql.dbcp.password" = "oracle",
+        "hive.sql.table" = "BOOK"
+        );
+SELECT * FROM book;

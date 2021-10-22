@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.externalDB.AbstractExternalDB;
 import org.apache.hadoop.hive.ql.externalDB.MSSQLServer;
 import org.apache.hadoop.hive.ql.externalDB.MariaDB;
 import org.apache.hadoop.hive.ql.externalDB.MySQLExternalDB;
+import org.apache.hadoop.hive.ql.externalDB.Oracle;
 import org.apache.hadoop.hive.ql.externalDB.PostgresExternalDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +71,11 @@ public class QTestDatabaseHandler implements QTestOptionHandler {
       @Override
       AbstractExternalDB create() {
         return new MSSQLServer();
+      }
+    }, ORACLE {
+      @Override
+      AbstractExternalDB create() {
+        return new Oracle();
       }
     };
 
