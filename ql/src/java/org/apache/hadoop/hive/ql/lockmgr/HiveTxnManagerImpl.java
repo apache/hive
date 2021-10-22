@@ -260,6 +260,14 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
 
   @Override
   public void setRowsAffected(String dbName, String tableName, String partitionName, AffectedRowsRequest affectedRowsRequest) {
-    rowsAffected.put(dbName + tableName + partitionName, affectedRowsRequest);
+    String key = dbName + tableName + partitionName;
+    if (!rowsAffected.containsKey(key)) {
+      rowsAffected.put(key, affectedRowsRequest);
+      return;
+    }
+    AffectedRowsRequest stored = rowsAffected.get(key);
+    rowsAffected.get(key).setInsertCount(stored.getInsertCount() + affectedRowsRequest.getInsertCount());
+    rowsAffected.get(key).setUpdatedCount(stored.getUpdatedCount() + affectedRowsRequest.getUpdatedCount());
+    rowsAffected.get(key).setDeletedCount(stored.getDeletedCount() + affectedRowsRequest.getDeletedCount());
   }
 }

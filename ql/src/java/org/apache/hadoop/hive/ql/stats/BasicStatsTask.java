@@ -64,9 +64,9 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.hadoop.hive.common.StatsSetupConst.DELETE_COUNT;
 import static org.apache.hadoop.hive.common.StatsSetupConst.INSERT_COUNT;
-import static org.apache.hadoop.hive.common.StatsSetupConst.ROW_COUNT;
+import static org.apache.hadoop.hive.common.StatsSetupConst.UPDATE_COUNT;
 
 /**
  * StatsTask implementation. StatsTask mainly deals with "collectable" stats. These are
@@ -248,8 +248,8 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       if (partish.isTransactionalTable()) {
         String prefix = getAggregationPrefix(partish.getTable(), partish.getPartition());
         long insertCount = toLong(statsAggregator.aggregateStats(prefix, INSERT_COUNT));
-        long updateCount = toLong(statsAggregator.aggregateStats(prefix, INSERT_COUNT));
-        long deleteCount = toLong(statsAggregator.aggregateStats(prefix, INSERT_COUNT));
+        long updateCount = toLong(statsAggregator.aggregateStats(prefix, UPDATE_COUNT));
+        long deleteCount = toLong(statsAggregator.aggregateStats(prefix, DELETE_COUNT));
 
         if (insertCount > 0 || updateCount > 0 || deleteCount > 0) {
           AffectedRowsRequest affectedRowsRequest = new AffectedRowsRequest();
