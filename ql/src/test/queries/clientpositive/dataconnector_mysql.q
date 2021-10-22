@@ -1,4 +1,4 @@
---!qt:database:mysql:q_test_extDB_init.mysql.sql
+--!qt:database:mysql:q_test_country_state_city_tables.sql
 -- CREATE with comment
 CREATE CONNECTOR mysql_qtest
 TYPE 'mysql'
