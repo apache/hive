@@ -21,7 +21,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * MySQLExternalDB is a extension of abstractExternalDB
  * Designed for MySQL external database connection
  */
 public class MySQLExternalDB extends AbstractExternalDB {
@@ -35,10 +34,10 @@ public class MySQLExternalDB extends AbstractExternalDB {
     }
 
     public String getJdbcDriver() {
-        return "org.mariadb.jdbc.Driver";
+        return "com.mysql.jdbc.Driver";
     }
 
-    public String getDockerImageName() { return "mariadb:5.5"; }
+    public String getDockerImageName() { return "mysql:5.7"; }
 
     public String[] getDockerAdditionalArgs() {
         return new String[] {"-p", "3306:3306",
