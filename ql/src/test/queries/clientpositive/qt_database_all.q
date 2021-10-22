@@ -1,5 +1,6 @@
 --!qt:database:postgres:q_test_country_table.sql
 --!qt:database:mysql:q_test_state_table.sql
+--!qt:database:mariadb:q_test_city_table.sql
 CREATE EXTERNAL TABLE country
 (
     id int,
@@ -31,3 +32,19 @@ TBLPROPERTIES (
     "hive.sql.table" = "state"
     );
 SELECT * FROM state;
+
+CREATE EXTERNAL TABLE city
+(
+    name       varchar(255),
+    state int
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "MYSQL",
+    "hive.sql.jdbc.driver" = "org.mariadb.jdbc.Driver",
+    "hive.sql.jdbc.url" = "jdbc:mariadb://localhost:3309/qtestDB",
+    "hive.sql.dbcp.username" = "qtestuser",
+    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.table" = "city"
+);
+SELECT * FROM city;
