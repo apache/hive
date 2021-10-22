@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.metastore.api.ScheduledQuery;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryKey;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequest;
 import org.apache.hadoop.hive.metastore.api.ScheduledQueryMaintenanceRequestType;
-import org.apache.hadoop.hive.ql.QTestContext;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.hooks.ScheduledQueryCreationRegistryHook;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -41,16 +40,16 @@ public class QTestScheduledQueryCleaner implements QTestOptionHandler {
   private static final Logger LOG = LoggerFactory.getLogger(QTestScheduledQueryCleaner.class);
 
   @Override
-  public void processArguments(QTestContext qt, String arguments) {
+  public void processArguments(String arguments) {
   }
 
   @Override
-  public void beforeTest(QTestContext qt) throws Exception {
+  public void beforeTest(QTestUtil qt) throws Exception {
 
   }
 
   @Override
-  public void afterTest(QTestContext qt) throws Exception {
+  public void afterTest(QTestUtil qt) throws Exception {
     clearScheduledQueries(qt.getConf());
 
   }

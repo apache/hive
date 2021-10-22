@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.scheduled;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.QTestContext;
+import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.qoption.QTestOptionHandler;
 
 /**
@@ -35,19 +35,19 @@ public class QTestScheduledQueryServiceProvider implements QTestOptionHandler {
   }
 
   @Override
-  public void processArguments(QTestContext qt, String arguments) {
+  public void processArguments(String arguments) {
     enabled = true;
   }
 
   @Override
-  public void beforeTest(QTestContext qt) throws Exception {
+  public void beforeTest(QTestUtil qt) throws Exception {
     if (enabled) {
       service = ScheduledQueryExecutionService.startScheduledQueryExecutorService(qt.getConf());
     }
   }
 
   @Override
-  public void afterTest(QTestContext qt) throws Exception {
+  public void afterTest(QTestUtil qt) throws Exception {
     if(service != null) {
       service.close();
     }

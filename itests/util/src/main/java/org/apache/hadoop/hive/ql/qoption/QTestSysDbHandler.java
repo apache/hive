@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.qoption;
 
-import org.apache.hadoop.hive.ql.QTestContext;
+import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,12 +37,12 @@ public class QTestSysDbHandler implements QTestOptionHandler {
   private boolean enabled;
 
   @Override
-  public void processArguments(QTestContext qt, String arguments) {
+  public void processArguments(String arguments) {
     enabled = true;
   }
 
   @Override
-  public void beforeTest(QTestContext qt) throws Exception {
+  public void beforeTest(QTestUtil qt) throws Exception {
     if (enabled) {
       String stsdbPath = HiveTestEnvSetup.HIVE_ROOT + "/metastore/scripts/upgrade/hive/hive-schema-4.0.0.hive.sql";
       qt.getCliDriver().processLine("source " + stsdbPath);
@@ -51,7 +51,7 @@ public class QTestSysDbHandler implements QTestOptionHandler {
   }
 
   @Override
-  public void afterTest(QTestContext qt) throws Exception {
+  public void afterTest(QTestUtil qt) throws Exception {
     enabled = false;
   }
 

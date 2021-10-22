@@ -34,10 +34,8 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
-import org.apache.hadoop.hive.ql.QTestContext;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.dataset.Dataset;
@@ -282,22 +280,7 @@ public class CoreBeeLineDriver extends CliAdapter {
     QTestOptionDispatcher dispatcher = new QTestOptionDispatcher();
     QTestDatasetHandler datasetHandler = new QTestDatasetHandler(miniHS2.getHiveConf());
     dispatcher.register("dataset", datasetHandler);
-    dispatcher.process(new QTestContext() {
-      @Override
-      public HiveConf getConf() {
-        return miniHS2.getServerConf();
-      }
-
-      @Override
-      public CliDriver getCliDriver() {
-        return new CliDriver();
-      }
-
-      @Override
-      public File getInputFile() {
-        return qFile.getInputFile();
-      }
-    });
+    dispatcher.process(qFile.getInputFile());
 
     List<Callable<Void>> commands = new ArrayList<>();
 

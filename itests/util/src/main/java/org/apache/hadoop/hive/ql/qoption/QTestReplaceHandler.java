@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.hadoop.hive.ql.QTestContext;
+import org.apache.hadoop.hive.ql.QTestUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +49,7 @@ public class QTestReplaceHandler implements QTestOptionHandler {
   Map<Pattern, String> replacements = new HashMap<Pattern, String>();
 
   @Override
-  public void processArguments(QTestContext qt, String arguments) {
+  public void processArguments(String arguments) {
     arguments=arguments.trim();
     if (arguments.length() < 2) {
       throw new RuntimeException("illegal replacement expr: " + arguments + " ; expected something like /this/that/");
@@ -65,11 +65,11 @@ public class QTestReplaceHandler implements QTestOptionHandler {
   }
 
   @Override
-  public void beforeTest(QTestContext qt) throws Exception {
+  public void beforeTest(QTestUtil qt) throws Exception {
   }
 
   @Override
-  public void afterTest(QTestContext qt) throws Exception {
+  public void afterTest(QTestUtil qt) throws Exception {
     replacements.clear();
   }
 

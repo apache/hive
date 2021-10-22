@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.qoption;
 
-import org.apache.hadoop.hive.ql.QTestContext;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.externalDB.AbstractExternalDB;
 import org.apache.hadoop.hive.ql.externalDB.MySQLExternalDB;
@@ -68,7 +67,7 @@ public class QTestDatabaseHandler implements QTestOptionHandler {
   private final Map<DatabaseType, String> databaseToScript = new EnumMap<>(DatabaseType.class);
 
   @Override
-  public void processArguments(QTestContext qt, String arguments) {
+  public void processArguments(String arguments) {
     String[] args = arguments.split(":");
     if (args.length == 0) {
       throw new IllegalArgumentException("No arguments provided");
@@ -86,7 +85,7 @@ public class QTestDatabaseHandler implements QTestOptionHandler {
   }
 
   @Override
-  public void beforeTest(QTestContext qt) throws Exception {
+  public void beforeTest(QTestUtil qt) throws Exception {
     if (databaseToScript.isEmpty()) {
       return;
     }
@@ -104,7 +103,7 @@ public class QTestDatabaseHandler implements QTestOptionHandler {
   }
 
   @Override
-  public void afterTest(QTestContext qt) throws Exception {
+  public void afterTest(QTestUtil qt) throws Exception {
     if (databaseToScript.isEmpty()) {
       return;
     }

@@ -100,7 +100,7 @@ import com.google.common.base.Throwables;
 /**
  * QTestUtil.
  */
-public class QTestUtil implements QTestContext {
+public class QTestUtil {
   private static final Logger LOG = LoggerFactory.getLogger("QTestUtil");
 
   public static final String QTEST_LEAVE_FILES = "QTEST_LEAVE_FILES";
@@ -596,7 +596,7 @@ public class QTestUtil implements QTestContext {
     File file = Objects.requireNonNull(inputFile);
     String fileName = inputFile.getName();
 
-    dispatcher.process(this);
+    dispatcher.process(file);
     dispatcher.beforeTest(this);
 
     if (!qTestResultProcessor.canReuseSession()) {

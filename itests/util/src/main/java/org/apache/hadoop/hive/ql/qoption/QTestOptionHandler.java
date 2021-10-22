@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.qoption;
 
-import org.apache.hadoop.hive.ql.QTestContext;
+import org.apache.hadoop.hive.ql.QTestUtil;
 
 /**
  * Qtest options might be usefull to prepare the test environment or do some extra checks/cleanup.
@@ -27,20 +27,20 @@ public interface QTestOptionHandler {
   /**
    * For a matching option; the arguments are supplied to the handler by this method. 
    */
-  void processArguments(QTestContext qt, String arguments);
+  void processArguments(String arguments);
 
   /**
    * Invoked before the actual test is executed.
    * 
    * At the time of this call all the options for the actual test is already processed.
    */
-  void beforeTest(QTestContext qt) throws Exception;
+  void beforeTest(QTestUtil qt) throws Exception;
 
   /**
    * Invoked right after the test is executed.
    * 
    * Can be used to cleanup things and/or clear internal state of the handler.
    */
-  void afterTest(QTestContext qt) throws Exception;
+  void afterTest(QTestUtil qt) throws Exception;
 
 }

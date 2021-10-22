@@ -19,8 +19,7 @@ package org.apache.hadoop.hive.ql.qoption;
 
 import com.google.common.base.Strings;
 import java.util.TimeZone;
-
-import org.apache.hadoop.hive.ql.QTestContext;
+import org.apache.hadoop.hive.ql.QTestUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +40,7 @@ public class QTestTimezoneHandler implements QTestOptionHandler {
   private TimeZone newTimeZone;
 
   @Override
-  public void processArguments(QTestContext qt, String arguments) {
+  public void processArguments(String arguments) {
     if (Strings.isNullOrEmpty(arguments)) {
       throw new RuntimeException("illegal timezone arg: " + arguments);
     }
@@ -52,14 +51,14 @@ public class QTestTimezoneHandler implements QTestOptionHandler {
   }
 
   @Override
-  public void beforeTest(QTestContext qt) throws Exception {
+  public void beforeTest(QTestUtil qt) throws Exception {
     if (enabled) {
       TimeZone.setDefault(newTimeZone);
     }
   }
 
   @Override
-  public void afterTest(QTestContext qt) throws Exception {
+  public void afterTest(QTestUtil qt) throws Exception {
     if (enabled) {
       TimeZone.setDefault(originalTimeZone);
       enabled = false;

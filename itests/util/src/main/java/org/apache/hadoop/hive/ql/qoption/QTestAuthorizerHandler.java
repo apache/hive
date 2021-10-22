@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.qoption;
 
-import org.apache.hadoop.hive.ql.QTestContext;
+import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -33,12 +33,12 @@ public class QTestAuthorizerHandler implements QTestOptionHandler {
   private boolean enabled;
 
   @Override
-  public void processArguments(QTestContext qt, String arguments) {
+  public void processArguments(String arguments) {
     enabled = true;
   }
 
   @Override
-  public void beforeTest(QTestContext qt) throws Exception {
+  public void beforeTest(QTestUtil qt) throws Exception {
     if (enabled) {
       qt.getConf().set("hive.test.authz.sstd.hs2.mode", "true");
       qt.getConf().set("hive.security.authorization.manager",
@@ -52,7 +52,7 @@ public class QTestAuthorizerHandler implements QTestOptionHandler {
   }
 
   @Override
-  public void afterTest(QTestContext qt) throws Exception {
+  public void afterTest(QTestUtil qt) throws Exception {
     enabled = false;
   }
 

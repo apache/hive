@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.hadoop.hive.cli.CliDriver;
-import org.apache.hadoop.hive.ql.QTestContext;
 import org.apache.hadoop.hive.ql.QTestUtil;
 
 /**
@@ -49,15 +47,15 @@ public class QTestOptionDispatcher {
     handlers.put(prefix, datasetHandler);
   }
 
-  public void process(QTestContext ctx) {
+  public void process(File file) {
     synchronized (QTestUtil.class) {
-      parse(ctx);
+      parse(file);
     }
   }
 
-  private void parse(QTestContext ctx) {
+  public void parse(File file) {
     Pattern p = Pattern.compile(" *--! ?qt:([a-z]+):?(.*)");
-    File file = ctx.getInputFile();
+
     try (BufferedReader br = new BufferedReader(new FileReader(file))) {
       for (String line = br.readLine(); line != null; line = br.readLine()) {
         String l = line.trim();
@@ -68,7 +66,7 @@ public class QTestOptionDispatcher {
           if (!handlers.containsKey(sub)) {
             throw new IOException("Don't know how to handle " + sub + "  line: " + l);
           }
-          handlers.get(sub).processArguments(ctx, arguments);
+          handlers.get(sub).processArguments(arguments);
         }
       }
     } catch (IOException e) {
