@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
 import java.util.ArrayList;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
@@ -113,8 +116,13 @@ public class TestMetastoreTransformer {
     client.createTable(tbl);
     tbl = client.getTable(tbl.getDbName(), tbl.getTableName());
     tbl.setTableName(tblName.toUpperCase());
-    client.alter_table(tbl.getDbName(), tbl.getTableName().toUpperCase(), tbl);
+
     // expected to execute the operation without any exceptions
+    client.alter_table(tbl.getDbName(), tbl.getTableName().toUpperCase(), tbl);
+
+    Table tbl2 = client.getTable(tbl.getDbName(), tbl.getTableName().toLowerCase());
+    assertEquals(tbl.getTableName().toLowerCase(), tbl2.getTableName());
+
   }
 
   @Test
@@ -122,8 +130,12 @@ public class TestMetastoreTransformer {
     Table tbl =
         new TableBuilder().setTableName("locationBlank").setCols(new ArrayList<FieldSchema>()).setLocation("")
             .build(conf);
-    client.createTable(tbl);
+
     // expected to execute the operation without any exceptions
+    client.createTable(tbl);
+
+    Table tbl2 = client.getTable(tbl.getDbName(), tbl.getTableName().toLowerCase());
+    assertEquals("locationblank", new File(tbl2.getSd().getLocation()).getName());
   }
 
 }
