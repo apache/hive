@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -717,7 +718,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
   }
 
   private Path getLocation(Table table) {
-    if (table.isSetSd() && table.getSd().getLocation() != null) {
+    if (table.isSetSd() && StringUtils.isNotBlank(table.getSd().getLocation())) {
       return new Path(table.getSd().getLocation());
     }
     return null;

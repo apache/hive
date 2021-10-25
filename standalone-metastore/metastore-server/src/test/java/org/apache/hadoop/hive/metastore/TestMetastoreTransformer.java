@@ -117,4 +117,14 @@ public class TestMetastoreTransformer {
 
   }
 
+  @Test
+  public void testLocationBlank() throws Exception {
+    Table tbl =
+        new TableBuilder().setTableName("locationBlank").setCols(new ArrayList<FieldSchema>()).setLocation("")
+            .build(conf);
+
+    client.createTable(tbl);
+
+  }
+
 }
