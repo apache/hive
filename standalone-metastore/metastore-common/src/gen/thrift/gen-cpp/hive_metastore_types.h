@@ -8579,34 +8579,22 @@ void swap(ReplLastIdInfo &a, ReplLastIdInfo &b);
 
 std::ostream& operator<<(std::ostream& out, const ReplLastIdInfo& obj);
 
-typedef struct _AffectedRowsRequest__isset {
-  _AffectedRowsRequest__isset() : partName(false) {}
-  bool partName :1;
-} _AffectedRowsRequest__isset;
 
 class AffectedRowsRequest : public virtual ::apache::thrift::TBase {
  public:
 
   AffectedRowsRequest(const AffectedRowsRequest&);
   AffectedRowsRequest& operator=(const AffectedRowsRequest&);
-  AffectedRowsRequest() : dbName(), tableName(), partName(), insertCount(0), updatedCount(0), deletedCount(0) {
+  AffectedRowsRequest() : tableId(0), insertCount(0), updatedCount(0), deletedCount(0) {
   }
 
   virtual ~AffectedRowsRequest() noexcept;
-  std::string dbName;
-  std::string tableName;
-  std::string partName;
+  int64_t tableId;
   int64_t insertCount;
   int64_t updatedCount;
   int64_t deletedCount;
 
-  _AffectedRowsRequest__isset __isset;
-
-  void __set_dbName(const std::string& val);
-
-  void __set_tableName(const std::string& val);
-
-  void __set_partName(const std::string& val);
+  void __set_tableId(const int64_t val);
 
   void __set_insertCount(const int64_t val);
 
@@ -8616,13 +8604,7 @@ class AffectedRowsRequest : public virtual ::apache::thrift::TBase {
 
   bool operator == (const AffectedRowsRequest & rhs) const
   {
-    if (!(dbName == rhs.dbName))
-      return false;
-    if (!(tableName == rhs.tableName))
-      return false;
-    if (__isset.partName != rhs.__isset.partName)
-      return false;
-    else if (__isset.partName && !(partName == rhs.partName))
+    if (!(tableId == rhs.tableId))
       return false;
     if (!(insertCount == rhs.insertCount))
       return false;

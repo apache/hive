@@ -23,8 +23,8 @@ import java.io.Serializable;
 public class MMVSource {
   private MCreationMetadata creationMetadata;
   private MTable table;
-  private boolean updateDelete;
   private long insertedCount;
+  private long updatedCount;
   private long deletedCount;
 
   public static class PK implements Serializable {
@@ -69,20 +69,20 @@ public class MMVSource {
     this.table = table;
   }
 
-  public boolean isUpdateDelete() {
-    return updateDelete;
-  }
-
-  public void setUpdateDelete(boolean updateDelete) {
-    this.updateDelete = updateDelete;
-  }
-
   public long getInsertedCount() {
     return insertedCount;
   }
 
   public void setInsertedCount(long insertedCount) {
     this.insertedCount = insertedCount;
+  }
+
+  public long getUpdatedCount() {
+    return updatedCount;
+  }
+
+  public void setUpdatedCount(long updatedCount) {
+    this.updatedCount = updatedCount;
   }
 
   public long getDeletedCount() {

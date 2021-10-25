@@ -56,7 +56,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
 
   protected HiveConf conf;
-  protected Map<String, AffectedRowsRequest> rowsAffected = new HashMap<>();
+  protected Map<Long, AffectedRowsRequest> rowsAffected = new HashMap<>();
 
   void setHiveConf(HiveConf c) {
     setConf(c);
@@ -259,13 +259,13 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
   }
 
   @Override
-  public void setRowsAffected(String dbName, String tableName, String partitionName, AffectedRowsRequest affectedRowsRequest) {
-    String key = dbName + tableName + partitionName;
+  public void setRowsAffected(AffectedRowsRequest affectedRowsRequest) {
+    Long key = affectedRowsRequest.getTableId();
     if (!rowsAffected.containsKey(key)) {
       rowsAffected.put(key, affectedRowsRequest);
       return;
     }
-    AffectedRowsRequest stored = rowsAffected.get(key);
+    AffectedRowsRequest stored = rowsAffected.get(affectedRowsRequest.getTableId());
     rowsAffected.get(key).setInsertCount(stored.getInsertCount() + affectedRowsRequest.getInsertCount());
     rowsAffected.get(key).setUpdatedCount(stored.getUpdatedCount() + affectedRowsRequest.getUpdatedCount());
     rowsAffected.get(key).setDeletedCount(stored.getDeletedCount() + affectedRowsRequest.getDeletedCount());

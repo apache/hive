@@ -22338,17 +22338,8 @@ AffectedRowsRequest::~AffectedRowsRequest() noexcept {
 }
 
 
-void AffectedRowsRequest::__set_dbName(const std::string& val) {
-  this->dbName = val;
-}
-
-void AffectedRowsRequest::__set_tableName(const std::string& val) {
-  this->tableName = val;
-}
-
-void AffectedRowsRequest::__set_partName(const std::string& val) {
-  this->partName = val;
-__isset.partName = true;
+void AffectedRowsRequest::__set_tableId(const int64_t val) {
+  this->tableId = val;
 }
 
 void AffectedRowsRequest::__set_insertCount(const int64_t val) {
@@ -22381,8 +22372,7 @@ uint32_t AffectedRowsRequest::read(::apache::thrift::protocol::TProtocol* iprot)
 
   using ::apache::thrift::protocol::TProtocolException;
 
-  bool isset_dbName = false;
-  bool isset_tableName = false;
+  bool isset_tableId = false;
   bool isset_insertCount = false;
   bool isset_updatedCount = false;
   bool isset_deletedCount = false;
@@ -22396,30 +22386,14 @@ uint32_t AffectedRowsRequest::read(::apache::thrift::protocol::TProtocol* iprot)
     switch (fid)
     {
       case 1:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->dbName);
-          isset_dbName = true;
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->tableId);
+          isset_tableId = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 2:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->tableName);
-          isset_tableName = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 3:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->partName);
-          this->__isset.partName = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 4:
         if (ftype == ::apache::thrift::protocol::T_I64) {
           xfer += iprot->readI64(this->insertCount);
           isset_insertCount = true;
@@ -22427,7 +22401,7 @@ uint32_t AffectedRowsRequest::read(::apache::thrift::protocol::TProtocol* iprot)
           xfer += iprot->skip(ftype);
         }
         break;
-      case 5:
+      case 3:
         if (ftype == ::apache::thrift::protocol::T_I64) {
           xfer += iprot->readI64(this->updatedCount);
           isset_updatedCount = true;
@@ -22435,7 +22409,7 @@ uint32_t AffectedRowsRequest::read(::apache::thrift::protocol::TProtocol* iprot)
           xfer += iprot->skip(ftype);
         }
         break;
-      case 6:
+      case 4:
         if (ftype == ::apache::thrift::protocol::T_I64) {
           xfer += iprot->readI64(this->deletedCount);
           isset_deletedCount = true;
@@ -22452,9 +22426,7 @@ uint32_t AffectedRowsRequest::read(::apache::thrift::protocol::TProtocol* iprot)
 
   xfer += iprot->readStructEnd();
 
-  if (!isset_dbName)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
-  if (!isset_tableName)
+  if (!isset_tableId)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   if (!isset_insertCount)
     throw TProtocolException(TProtocolException::INVALID_DATA);
@@ -22470,28 +22442,19 @@ uint32_t AffectedRowsRequest::write(::apache::thrift::protocol::TProtocol* oprot
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("AffectedRowsRequest");
 
-  xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 1);
-  xfer += oprot->writeString(this->dbName);
+  xfer += oprot->writeFieldBegin("tableId", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->tableId);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("tableName", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->tableName);
-  xfer += oprot->writeFieldEnd();
-
-  if (this->__isset.partName) {
-    xfer += oprot->writeFieldBegin("partName", ::apache::thrift::protocol::T_STRING, 3);
-    xfer += oprot->writeString(this->partName);
-    xfer += oprot->writeFieldEnd();
-  }
-  xfer += oprot->writeFieldBegin("insertCount", ::apache::thrift::protocol::T_I64, 4);
+  xfer += oprot->writeFieldBegin("insertCount", ::apache::thrift::protocol::T_I64, 2);
   xfer += oprot->writeI64(this->insertCount);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("updatedCount", ::apache::thrift::protocol::T_I64, 5);
+  xfer += oprot->writeFieldBegin("updatedCount", ::apache::thrift::protocol::T_I64, 3);
   xfer += oprot->writeI64(this->updatedCount);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("deletedCount", ::apache::thrift::protocol::T_I64, 6);
+  xfer += oprot->writeFieldBegin("deletedCount", ::apache::thrift::protocol::T_I64, 4);
   xfer += oprot->writeI64(this->deletedCount);
   xfer += oprot->writeFieldEnd();
 
@@ -22502,40 +22465,29 @@ uint32_t AffectedRowsRequest::write(::apache::thrift::protocol::TProtocol* oprot
 
 void swap(AffectedRowsRequest &a, AffectedRowsRequest &b) {
   using ::std::swap;
-  swap(a.dbName, b.dbName);
-  swap(a.tableName, b.tableName);
-  swap(a.partName, b.partName);
+  swap(a.tableId, b.tableId);
   swap(a.insertCount, b.insertCount);
   swap(a.updatedCount, b.updatedCount);
   swap(a.deletedCount, b.deletedCount);
-  swap(a.__isset, b.__isset);
 }
 
 AffectedRowsRequest::AffectedRowsRequest(const AffectedRowsRequest& other832) {
-  dbName = other832.dbName;
-  tableName = other832.tableName;
-  partName = other832.partName;
+  tableId = other832.tableId;
   insertCount = other832.insertCount;
   updatedCount = other832.updatedCount;
   deletedCount = other832.deletedCount;
-  __isset = other832.__isset;
 }
 AffectedRowsRequest& AffectedRowsRequest::operator=(const AffectedRowsRequest& other833) {
-  dbName = other833.dbName;
-  tableName = other833.tableName;
-  partName = other833.partName;
+  tableId = other833.tableId;
   insertCount = other833.insertCount;
   updatedCount = other833.updatedCount;
   deletedCount = other833.deletedCount;
-  __isset = other833.__isset;
   return *this;
 }
 void AffectedRowsRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "AffectedRowsRequest(";
-  out << "dbName=" << to_string(dbName);
-  out << ", " << "tableName=" << to_string(tableName);
-  out << ", " << "partName="; (__isset.partName ? (out << to_string(partName)) : (out << "<null>"));
+  out << "tableId=" << to_string(tableId);
   out << ", " << "insertCount=" << to_string(insertCount);
   out << ", " << "updatedCount=" << to_string(updatedCount);
   out << ", " << "deletedCount=" << to_string(deletedCount);

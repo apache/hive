@@ -1713,14 +1713,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     try {
       stmt.addBatch(s);
 
-      if (isUpdateDelete == 'Y') {
-        stmt.addBatch("UPDATE \"MV_TABLES_USED\" SET \"MVTU_UPDATE_DELETE\" = 'y' WHERE \"TBL_ID\" IN ( " +
-            "SELECT t.\"TBL_ID\" FROM \"TBLS\" t " +
-            "JOIN \"DBS\" d ON d.\"DB_ID\" = t.\"DB_ID\" " +
-            "JOIN \"TXN_COMPONENTS\" tc ON tc.\"TC_DATABASE\" = d.\"NAME\" AND tc.\"TC_TABLE\" = t.\"TBL_NAME\" " +
-            "WHERE tc.\"TC_TXNID\" = 1\n" +
-            "AND (tc.\"TC_OPERATION_TYPE\" = " + OperationType.UPDATE + " OR tc.\"TC_OPERATION_TYPE\" = " + OperationType.DELETE + ") " +
-            ")");
+      if (affectedRowsRequests != null) {
+        for (AffectedRowsRequest affectedRowsRequest : affectedRowsRequests) {
+          stmt.addBatch("UPDATE \"MV_TABLES_USED\" " +
+              "SET \"MVTU_INSERTED_COUNT\"=" + affectedRowsRequest.getInsertCount() +
+              ",\"MVTU_UPDATED_COUNT\"=" + affectedRowsRequest.getUpdatedCount() +
+              ",\"MVTU_DELETED_COUNT\"=" + affectedRowsRequest.getDeletedCount() +
+              "WHERE \"TBL_ID\"=" + affectedRowsRequest.getTableId());
+        }
       }
 
       LOG.debug("Going to execute insert <" + s + ">");

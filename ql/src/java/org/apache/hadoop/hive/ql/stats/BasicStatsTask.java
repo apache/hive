@@ -253,20 +253,12 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
 
         if (insertCount > 0 || updateCount > 0 || deleteCount > 0) {
           AffectedRowsRequest affectedRowsRequest = new AffectedRowsRequest();
-          affectedRowsRequest.setDbName(partish.getTable().getDbName());
-          affectedRowsRequest.setTableName(partish.getTable().getTableName());
-          if (partish.getPartition() != null) {
-            affectedRowsRequest.setPartName(partish.getPartition().getName());
-          }
+          affectedRowsRequest.setTableId(partish.getTable().getTTable().getId());
           affectedRowsRequest.setInsertCount(insertCount);
           affectedRowsRequest.setUpdatedCount(updateCount);
           affectedRowsRequest.setDeletedCount(deleteCount);
 
-          txnManager.setRowsAffected(
-              partish.getTable().getDbName(),
-              partish.getTable().getTableName(),
-              partish.getPartition() == null ? null : partish.getPartition().getName(),
-              affectedRowsRequest);
+          txnManager.setRowsAffected(affectedRowsRequest);
         }
       }
     }

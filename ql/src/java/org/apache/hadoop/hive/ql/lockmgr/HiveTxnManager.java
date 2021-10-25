@@ -358,5 +358,5 @@ public interface HiveTxnManager {
   */
  String getQueryid();
 
- void setRowsAffected(String dbName, String tableName, String partitionName, AffectedRowsRequest affectedRowsRequest);
+ void setRowsAffected(AffectedRowsRequest affectedRowsRequest);
 }

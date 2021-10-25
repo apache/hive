@@ -12785,9 +12785,7 @@ class ReplLastIdInfo(object):
 class AffectedRowsRequest(object):
     """
     Attributes:
-     - dbName
-     - tableName
-     - partName
+     - tableId
      - insertCount
      - updatedCount
      - deletedCount
@@ -12795,10 +12793,8 @@ class AffectedRowsRequest(object):
     """
 
 
-    def __init__(self, dbName=None, tableName=None, partName=None, insertCount=None, updatedCount=None, deletedCount=None,):
-        self.dbName = dbName
-        self.tableName = tableName
-        self.partName = partName
+    def __init__(self, tableId=None, insertCount=None, updatedCount=None, deletedCount=None,):
+        self.tableId = tableId
         self.insertCount = insertCount
         self.updatedCount = updatedCount
         self.deletedCount = deletedCount
@@ -12813,31 +12809,21 @@ class AffectedRowsRequest(object):
             if ftype == TType.STOP:
                 break
             if fid == 1:
-                if ftype == TType.STRING:
-                    self.dbName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                if ftype == TType.I64:
+                    self.tableId = iprot.readI64()
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
-                if ftype == TType.STRING:
-                    self.tableName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 3:
-                if ftype == TType.STRING:
-                    self.partName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 4:
                 if ftype == TType.I64:
                     self.insertCount = iprot.readI64()
                 else:
                     iprot.skip(ftype)
-            elif fid == 5:
+            elif fid == 3:
                 if ftype == TType.I64:
                     self.updatedCount = iprot.readI64()
                 else:
                     iprot.skip(ftype)
-            elif fid == 6:
+            elif fid == 4:
                 if ftype == TType.I64:
                     self.deletedCount = iprot.readI64()
                 else:
@@ -12852,38 +12838,28 @@ class AffectedRowsRequest(object):
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
         oprot.writeStructBegin('AffectedRowsRequest')
-        if self.dbName is not None:
-            oprot.writeFieldBegin('dbName', TType.STRING, 1)
-            oprot.writeString(self.dbName.encode('utf-8') if sys.version_info[0] == 2 else self.dbName)
-            oprot.writeFieldEnd()
-        if self.tableName is not None:
-            oprot.writeFieldBegin('tableName', TType.STRING, 2)
-            oprot.writeString(self.tableName.encode('utf-8') if sys.version_info[0] == 2 else self.tableName)
-            oprot.writeFieldEnd()
-        if self.partName is not None:
-            oprot.writeFieldBegin('partName', TType.STRING, 3)
-            oprot.writeString(self.partName.encode('utf-8') if sys.version_info[0] == 2 else self.partName)
+        if self.tableId is not None:
+            oprot.writeFieldBegin('tableId', TType.I64, 1)
+            oprot.writeI64(self.tableId)
             oprot.writeFieldEnd()
         if self.insertCount is not None:
-            oprot.writeFieldBegin('insertCount', TType.I64, 4)
+            oprot.writeFieldBegin('insertCount', TType.I64, 2)
             oprot.writeI64(self.insertCount)
             oprot.writeFieldEnd()
         if self.updatedCount is not None:
-            oprot.writeFieldBegin('updatedCount', TType.I64, 5)
+            oprot.writeFieldBegin('updatedCount', TType.I64, 3)
             oprot.writeI64(self.updatedCount)
             oprot.writeFieldEnd()
         if self.deletedCount is not None:
-            oprot.writeFieldBegin('deletedCount', TType.I64, 6)
+            oprot.writeFieldBegin('deletedCount', TType.I64, 4)
             oprot.writeI64(self.deletedCount)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
     def validate(self):
-        if self.dbName is None:
-            raise TProtocolException(message='Required field dbName is unset!')
-        if self.tableName is None:
-            raise TProtocolException(message='Required field tableName is unset!')
+        if self.tableId is None:
+            raise TProtocolException(message='Required field tableId is unset!')
         if self.insertCount is None:
             raise TProtocolException(message='Required field insertCount is unset!')
         if self.updatedCount is None:
@@ -30111,12 +30087,10 @@ ReplLastIdInfo.thrift_spec = (
 all_structs.append(AffectedRowsRequest)
 AffectedRowsRequest.thrift_spec = (
     None,  # 0
-    (1, TType.STRING, 'dbName', 'UTF8', None, ),  # 1
-    (2, TType.STRING, 'tableName', 'UTF8', None, ),  # 2
-    (3, TType.STRING, 'partName', 'UTF8', None, ),  # 3
-    (4, TType.I64, 'insertCount', None, None, ),  # 4
-    (5, TType.I64, 'updatedCount', None, None, ),  # 5
-    (6, TType.I64, 'deletedCount', None, None, ),  # 6
+    (1, TType.I64, 'tableId', None, None, ),  # 1
+    (2, TType.I64, 'insertCount', None, None, ),  # 2
+    (3, TType.I64, 'updatedCount', None, None, ),  # 3
+    (4, TType.I64, 'deletedCount', None, None, ),  # 4
 )
 all_structs.append(CommitTxnRequest)
 CommitTxnRequest.thrift_spec = (

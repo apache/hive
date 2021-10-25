@@ -1091,12 +1091,10 @@ struct ReplLastIdInfo {
 }
 
 struct AffectedRowsRequest {
-    1: required string dbName,
-    2: required string tableName,
-    3: optional string partName,
-    4: required i64 insertCount,
-    5: required i64 updatedCount,
-    6: required i64 deletedCount,
+    1: required i64 tableId,
+    2: required i64 insertCount,
+    3: required i64 updatedCount,
+    4: required i64 deletedCount,
 }
 
 struct CommitTxnRequest {

@@ -2516,8 +2516,8 @@ public class ObjectStore implements RawStore, Configurable {
       MTable mtbl = getMTable(m.getCatName(), names[0], names[1], false).mtbl;
       MMVSource source = new MMVSource();
       source.setTable(mtbl);
-      source.setUpdateDelete(false);
       source.setInsertedCount(0);
+      source.setUpdatedCount(0);
       source.setDeletedCount(0);
       tablesUsed.add(source);
     }
