@@ -4614,17 +4614,17 @@ class SourceTable(object):
     Attributes:
      - tableName
      - tableId
-     - insertCount
+     - insertedCount
      - updatedCount
      - deletedCount
 
     """
 
 
-    def __init__(self, tableName=None, tableId=None, insertCount=None, updatedCount=None, deletedCount=None,):
+    def __init__(self, tableName=None, tableId=None, insertedCount=None, updatedCount=None, deletedCount=None,):
         self.tableName = tableName
         self.tableId = tableId
-        self.insertCount = insertCount
+        self.insertedCount = insertedCount
         self.updatedCount = updatedCount
         self.deletedCount = deletedCount
 
@@ -4649,7 +4649,7 @@ class SourceTable(object):
                     iprot.skip(ftype)
             elif fid == 3:
                 if ftype == TType.I64:
-                    self.insertCount = iprot.readI64()
+                    self.insertedCount = iprot.readI64()
                 else:
                     iprot.skip(ftype)
             elif fid == 4:
@@ -4680,9 +4680,9 @@ class SourceTable(object):
             oprot.writeFieldBegin('tableId', TType.I64, 2)
             oprot.writeI64(self.tableId)
             oprot.writeFieldEnd()
-        if self.insertCount is not None:
-            oprot.writeFieldBegin('insertCount', TType.I64, 3)
-            oprot.writeI64(self.insertCount)
+        if self.insertedCount is not None:
+            oprot.writeFieldBegin('insertedCount', TType.I64, 3)
+            oprot.writeI64(self.insertedCount)
             oprot.writeFieldEnd()
         if self.updatedCount is not None:
             oprot.writeFieldBegin('updatedCount', TType.I64, 4)
@@ -4700,8 +4700,8 @@ class SourceTable(object):
             raise TProtocolException(message='Required field tableName is unset!')
         if self.tableId is None:
             raise TProtocolException(message='Required field tableId is unset!')
-        if self.insertCount is None:
-            raise TProtocolException(message='Required field insertCount is unset!')
+        if self.insertedCount is None:
+            raise TProtocolException(message='Required field insertedCount is unset!')
         if self.updatedCount is None:
             raise TProtocolException(message='Required field updatedCount is unset!')
         if self.deletedCount is None:
@@ -29546,7 +29546,7 @@ SourceTable.thrift_spec = (
     None,  # 0
     (1, TType.STRING, 'tableName', 'UTF8', None, ),  # 1
     (2, TType.I64, 'tableId', None, None, ),  # 2
-    (3, TType.I64, 'insertCount', None, None, ),  # 3
+    (3, TType.I64, 'insertedCount', None, None, ),  # 3
     (4, TType.I64, 'updatedCount', None, None, ),  # 4
     (5, TType.I64, 'deletedCount', None, None, ),  # 5
 )

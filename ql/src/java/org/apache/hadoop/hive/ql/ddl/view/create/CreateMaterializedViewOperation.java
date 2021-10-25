@@ -69,7 +69,7 @@ public class CreateMaterializedViewOperation extends DDLOperation<CreateMaterial
         for (String tableName : desc.getTablesUsed()) {
           SourceTable sourceTable = new SourceTable();
           sourceTable.setTableName(tableName);
-          sourceTable.setInsertCount(0L);
+          sourceTable.setInsertedCount(0L);
           sourceTable.setUpdatedCount(0L);
           sourceTable.setDeletedCount(0L);
           tablesUsed.add(sourceTable);

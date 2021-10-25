@@ -266,8 +266,8 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
       return;
     }
     AffectedRowsRequest stored = rowsAffected.get(affectedRowsRequest.getTableId());
-    rowsAffected.get(key).setInsertCount(stored.getInsertCount() + affectedRowsRequest.getInsertCount());
-    rowsAffected.get(key).setUpdatedCount(stored.getUpdatedCount() + affectedRowsRequest.getUpdatedCount());
-    rowsAffected.get(key).setDeletedCount(stored.getDeletedCount() + affectedRowsRequest.getDeletedCount());
+    stored.setInsertCount(stored.getInsertCount() + affectedRowsRequest.getInsertCount());
+    stored.setUpdatedCount(stored.getUpdatedCount() + affectedRowsRequest.getUpdatedCount());
+    stored.setDeletedCount(stored.getDeletedCount() + affectedRowsRequest.getDeletedCount());
   }
 }

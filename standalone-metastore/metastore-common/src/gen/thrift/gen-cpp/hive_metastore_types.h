@@ -3637,13 +3637,13 @@ class SourceTable : public virtual ::apache::thrift::TBase {
 
   SourceTable(const SourceTable&);
   SourceTable& operator=(const SourceTable&);
-  SourceTable() : tableName(), tableId(0), insertCount(0), updatedCount(0), deletedCount(0) {
+  SourceTable() : tableName(), tableId(0), insertedCount(0), updatedCount(0), deletedCount(0) {
   }
 
   virtual ~SourceTable() noexcept;
   std::string tableName;
   int64_t tableId;
-  int64_t insertCount;
+  int64_t insertedCount;
   int64_t updatedCount;
   int64_t deletedCount;
 
@@ -3651,7 +3651,7 @@ class SourceTable : public virtual ::apache::thrift::TBase {
 
   void __set_tableId(const int64_t val);
 
-  void __set_insertCount(const int64_t val);
+  void __set_insertedCount(const int64_t val);
 
   void __set_updatedCount(const int64_t val);
 
@@ -3663,7 +3663,7 @@ class SourceTable : public virtual ::apache::thrift::TBase {
       return false;
     if (!(tableId == rhs.tableId))
       return false;
-    if (!(insertCount == rhs.insertCount))
+    if (!(insertedCount == rhs.insertedCount))
       return false;
     if (!(updatedCount == rhs.updatedCount))
       return false;

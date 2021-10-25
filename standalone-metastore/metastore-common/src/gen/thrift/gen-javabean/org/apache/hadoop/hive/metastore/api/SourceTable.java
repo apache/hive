@@ -13,7 +13,7 @@ package org.apache.hadoop.hive.metastore.api;
 
   private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tableName", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField TABLE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("tableId", org.apache.thrift.protocol.TType.I64, (short)2);
-  private static final org.apache.thrift.protocol.TField INSERT_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("insertCount", org.apache.thrift.protocol.TType.I64, (short)3);
+  private static final org.apache.thrift.protocol.TField INSERTED_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("insertedCount", org.apache.thrift.protocol.TType.I64, (short)3);
   private static final org.apache.thrift.protocol.TField UPDATED_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("updatedCount", org.apache.thrift.protocol.TType.I64, (short)4);
   private static final org.apache.thrift.protocol.TField DELETED_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("deletedCount", org.apache.thrift.protocol.TType.I64, (short)5);
 
@@ -22,7 +22,7 @@ package org.apache.hadoop.hive.metastore.api;
 
   private @org.apache.thrift.annotation.Nullable java.lang.String tableName; // required
   private long tableId; // required
-  private long insertCount; // required
+  private long insertedCount; // required
   private long updatedCount; // required
   private long deletedCount; // required
 
@@ -30,7 +30,7 @@ package org.apache.hadoop.hive.metastore.api;
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     TABLE_NAME((short)1, "tableName"),
     TABLE_ID((short)2, "tableId"),
-    INSERT_COUNT((short)3, "insertCount"),
+    INSERTED_COUNT((short)3, "insertedCount"),
     UPDATED_COUNT((short)4, "updatedCount"),
     DELETED_COUNT((short)5, "deletedCount");
 
@@ -52,8 +52,8 @@ package org.apache.hadoop.hive.metastore.api;
           return TABLE_NAME;
         case 2: // TABLE_ID
           return TABLE_ID;
-        case 3: // INSERT_COUNT
-          return INSERT_COUNT;
+        case 3: // INSERTED_COUNT
+          return INSERTED_COUNT;
         case 4: // UPDATED_COUNT
           return UPDATED_COUNT;
         case 5: // DELETED_COUNT
@@ -100,7 +100,7 @@ package org.apache.hadoop.hive.metastore.api;
 
   // isset id assignments
   private static final int __TABLEID_ISSET_ID = 0;
-  private static final int __INSERTCOUNT_ISSET_ID = 1;
+  private static final int __INSERTEDCOUNT_ISSET_ID = 1;
   private static final int __UPDATEDCOUNT_ISSET_ID = 2;
   private static final int __DELETEDCOUNT_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
@@ -111,7 +111,7 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TABLE_ID, new org.apache.thrift.meta_data.FieldMetaData("tableId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.INSERT_COUNT, new org.apache.thrift.meta_data.FieldMetaData("insertCount", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.INSERTED_COUNT, new org.apache.thrift.meta_data.FieldMetaData("insertedCount", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.UPDATED_COUNT, new org.apache.thrift.meta_data.FieldMetaData("updatedCount", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
@@ -127,7 +127,7 @@ package org.apache.hadoop.hive.metastore.api;
   public SourceTable(
     java.lang.String tableName,
     long tableId,
-    long insertCount,
+    long insertedCount,
     long updatedCount,
     long deletedCount)
   {
@@ -135,8 +135,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.tableName = tableName;
     this.tableId = tableId;
     setTableIdIsSet(true);
-    this.insertCount = insertCount;
-    setInsertCountIsSet(true);
+    this.insertedCount = insertedCount;
+    setInsertedCountIsSet(true);
     this.updatedCount = updatedCount;
     setUpdatedCountIsSet(true);
     this.deletedCount = deletedCount;
@@ -152,7 +152,7 @@ package org.apache.hadoop.hive.metastore.api;
       this.tableName = other.tableName;
     }
     this.tableId = other.tableId;
-    this.insertCount = other.insertCount;
+    this.insertedCount = other.insertedCount;
     this.updatedCount = other.updatedCount;
     this.deletedCount = other.deletedCount;
   }
@@ -166,8 +166,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.tableName = null;
     setTableIdIsSet(false);
     this.tableId = 0;
-    setInsertCountIsSet(false);
-    this.insertCount = 0;
+    setInsertedCountIsSet(false);
+    this.insertedCount = 0;
     setUpdatedCountIsSet(false);
     this.updatedCount = 0;
     setDeletedCountIsSet(false);
@@ -220,26 +220,26 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TABLEID_ISSET_ID, value);
   }
 
-  public long getInsertCount() {
-    return this.insertCount;
+  public long getInsertedCount() {
+    return this.insertedCount;
   }
 
-  public void setInsertCount(long insertCount) {
-    this.insertCount = insertCount;
-    setInsertCountIsSet(true);
+  public void setInsertedCount(long insertedCount) {
+    this.insertedCount = insertedCount;
+    setInsertedCountIsSet(true);
   }
 
-  public void unsetInsertCount() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __INSERTCOUNT_ISSET_ID);
+  public void unsetInsertedCount() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __INSERTEDCOUNT_ISSET_ID);
   }
 
-  /** Returns true if field insertCount is set (has been assigned a value) and false otherwise */
-  public boolean isSetInsertCount() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __INSERTCOUNT_ISSET_ID);
+  /** Returns true if field insertedCount is set (has been assigned a value) and false otherwise */
+  public boolean isSetInsertedCount() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __INSERTEDCOUNT_ISSET_ID);
   }
 
-  public void setInsertCountIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __INSERTCOUNT_ISSET_ID, value);
+  public void setInsertedCountIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __INSERTEDCOUNT_ISSET_ID, value);
   }
 
   public long getUpdatedCount() {
@@ -304,11 +304,11 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
-    case INSERT_COUNT:
+    case INSERTED_COUNT:
       if (value == null) {
-        unsetInsertCount();
+        unsetInsertedCount();
       } else {
-        setInsertCount((java.lang.Long)value);
+        setInsertedCount((java.lang.Long)value);
       }
       break;
 
@@ -340,8 +340,8 @@ package org.apache.hadoop.hive.metastore.api;
     case TABLE_ID:
       return getTableId();
 
-    case INSERT_COUNT:
-      return getInsertCount();
+    case INSERTED_COUNT:
+      return getInsertedCount();
 
     case UPDATED_COUNT:
       return getUpdatedCount();
@@ -364,8 +364,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetTableName();
     case TABLE_ID:
       return isSetTableId();
-    case INSERT_COUNT:
-      return isSetInsertCount();
+    case INSERTED_COUNT:
+      return isSetInsertedCount();
     case UPDATED_COUNT:
       return isSetUpdatedCount();
     case DELETED_COUNT:
@@ -405,12 +405,12 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
-    boolean this_present_insertCount = true;
-    boolean that_present_insertCount = true;
-    if (this_present_insertCount || that_present_insertCount) {
-      if (!(this_present_insertCount && that_present_insertCount))
+    boolean this_present_insertedCount = true;
+    boolean that_present_insertedCount = true;
+    if (this_present_insertedCount || that_present_insertedCount) {
+      if (!(this_present_insertedCount && that_present_insertedCount))
         return false;
-      if (this.insertCount != that.insertCount)
+      if (this.insertedCount != that.insertedCount)
         return false;
     }
 
@@ -445,7 +445,7 @@ package org.apache.hadoop.hive.metastore.api;
 
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(tableId);
 
-    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(insertCount);
+    hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(insertedCount);
 
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(updatedCount);
 
@@ -482,12 +482,12 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetInsertCount(), other.isSetInsertCount());
+    lastComparison = java.lang.Boolean.compare(isSetInsertedCount(), other.isSetInsertedCount());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetInsertCount()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.insertCount, other.insertCount);
+    if (isSetInsertedCount()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.insertedCount, other.insertedCount);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -545,8 +545,8 @@ package org.apache.hadoop.hive.metastore.api;
     sb.append(this.tableId);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("insertCount:");
-    sb.append(this.insertCount);
+    sb.append("insertedCount:");
+    sb.append(this.insertedCount);
     first = false;
     if (!first) sb.append(", ");
     sb.append("updatedCount:");
@@ -570,8 +570,8 @@ package org.apache.hadoop.hive.metastore.api;
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'tableId' is unset! Struct:" + toString());
     }
 
-    if (!isSetInsertCount()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'insertCount' is unset! Struct:" + toString());
+    if (!isSetInsertedCount()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'insertedCount' is unset! Struct:" + toString());
     }
 
     if (!isSetUpdatedCount()) {
@@ -637,10 +637,10 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // INSERT_COUNT
+          case 3: // INSERTED_COUNT
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.insertCount = iprot.readI64();
-              struct.setInsertCountIsSet(true);
+              struct.insertedCount = iprot.readI64();
+              struct.setInsertedCountIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -682,8 +682,8 @@ package org.apache.hadoop.hive.metastore.api;
       oprot.writeFieldBegin(TABLE_ID_FIELD_DESC);
       oprot.writeI64(struct.tableId);
       oprot.writeFieldEnd();
-      oprot.writeFieldBegin(INSERT_COUNT_FIELD_DESC);
-      oprot.writeI64(struct.insertCount);
+      oprot.writeFieldBegin(INSERTED_COUNT_FIELD_DESC);
+      oprot.writeI64(struct.insertedCount);
       oprot.writeFieldEnd();
       oprot.writeFieldBegin(UPDATED_COUNT_FIELD_DESC);
       oprot.writeI64(struct.updatedCount);
@@ -710,7 +710,7 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       oprot.writeString(struct.tableName);
       oprot.writeI64(struct.tableId);
-      oprot.writeI64(struct.insertCount);
+      oprot.writeI64(struct.insertedCount);
       oprot.writeI64(struct.updatedCount);
       oprot.writeI64(struct.deletedCount);
     }
@@ -722,8 +722,8 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setTableNameIsSet(true);
       struct.tableId = iprot.readI64();
       struct.setTableIdIsSet(true);
-      struct.insertCount = iprot.readI64();
-      struct.setInsertCountIsSet(true);
+      struct.insertedCount = iprot.readI64();
+      struct.setInsertedCountIsSet(true);
       struct.updatedCount = iprot.readI64();
       struct.setUpdatedCountIsSet(true);
       struct.deletedCount = iprot.readI64();

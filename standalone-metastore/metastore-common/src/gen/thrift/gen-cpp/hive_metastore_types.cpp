@@ -8065,8 +8065,8 @@ void SourceTable::__set_tableId(const int64_t val) {
   this->tableId = val;
 }
 
-void SourceTable::__set_insertCount(const int64_t val) {
-  this->insertCount = val;
+void SourceTable::__set_insertedCount(const int64_t val) {
+  this->insertedCount = val;
 }
 
 void SourceTable::__set_updatedCount(const int64_t val) {
@@ -8097,7 +8097,7 @@ uint32_t SourceTable::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   bool isset_tableName = false;
   bool isset_tableId = false;
-  bool isset_insertCount = false;
+  bool isset_insertedCount = false;
   bool isset_updatedCount = false;
   bool isset_deletedCount = false;
 
@@ -8127,8 +8127,8 @@ uint32_t SourceTable::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 3:
         if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->insertCount);
-          isset_insertCount = true;
+          xfer += iprot->readI64(this->insertedCount);
+          isset_insertedCount = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -8162,7 +8162,7 @@ uint32_t SourceTable::read(::apache::thrift::protocol::TProtocol* iprot) {
     throw TProtocolException(TProtocolException::INVALID_DATA);
   if (!isset_tableId)
     throw TProtocolException(TProtocolException::INVALID_DATA);
-  if (!isset_insertCount)
+  if (!isset_insertedCount)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   if (!isset_updatedCount)
     throw TProtocolException(TProtocolException::INVALID_DATA);
@@ -8184,8 +8184,8 @@ uint32_t SourceTable::write(::apache::thrift::protocol::TProtocol* oprot) const 
   xfer += oprot->writeI64(this->tableId);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("insertCount", ::apache::thrift::protocol::T_I64, 3);
-  xfer += oprot->writeI64(this->insertCount);
+  xfer += oprot->writeFieldBegin("insertedCount", ::apache::thrift::protocol::T_I64, 3);
+  xfer += oprot->writeI64(this->insertedCount);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("updatedCount", ::apache::thrift::protocol::T_I64, 4);
@@ -8205,7 +8205,7 @@ void swap(SourceTable &a, SourceTable &b) {
   using ::std::swap;
   swap(a.tableName, b.tableName);
   swap(a.tableId, b.tableId);
-  swap(a.insertCount, b.insertCount);
+  swap(a.insertedCount, b.insertedCount);
   swap(a.updatedCount, b.updatedCount);
   swap(a.deletedCount, b.deletedCount);
 }
@@ -8213,14 +8213,14 @@ void swap(SourceTable &a, SourceTable &b) {
 SourceTable::SourceTable(const SourceTable& other295) {
   tableName = other295.tableName;
   tableId = other295.tableId;
-  insertCount = other295.insertCount;
+  insertedCount = other295.insertedCount;
   updatedCount = other295.updatedCount;
   deletedCount = other295.deletedCount;
 }
 SourceTable& SourceTable::operator=(const SourceTable& other296) {
   tableName = other296.tableName;
   tableId = other296.tableId;
-  insertCount = other296.insertCount;
+  insertedCount = other296.insertedCount;
   updatedCount = other296.updatedCount;
   deletedCount = other296.deletedCount;
   return *this;
@@ -8230,7 +8230,7 @@ void SourceTable::printTo(std::ostream& out) const {
   out << "SourceTable(";
   out << "tableName=" << to_string(tableName);
   out << ", " << "tableId=" << to_string(tableId);
-  out << ", " << "insertCount=" << to_string(insertCount);
+  out << ", " << "insertedCount=" << to_string(insertedCount);
   out << ", " << "updatedCount=" << to_string(updatedCount);
   out << ", " << "deletedCount=" << to_string(deletedCount);
   out << ")";

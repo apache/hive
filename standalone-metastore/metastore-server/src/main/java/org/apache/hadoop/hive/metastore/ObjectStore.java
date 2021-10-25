@@ -2549,7 +2549,7 @@ public class ObjectStore implements RawStore, Configurable {
     MTable mTable = mmvSource.getTable();
     sourceTable.setTableId(mTable.getId());
     sourceTable.setTableName(Warehouse.getQualifiedName(mTable.getDatabase().getName(), mTable.getTableName()));
-    sourceTable.setInsertCount(mmvSource.getInsertedCount());
+    sourceTable.setInsertedCount(mmvSource.getInsertedCount());
     sourceTable.setUpdatedCount(mmvSource.getUpdatedCount());
     sourceTable.setDeletedCount(mmvSource.getDeletedCount());
     return sourceTable;
