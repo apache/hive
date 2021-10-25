@@ -297,7 +297,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
     if (table.isMaterializedView()) {
       table.setOutdatedForRewriting(context.getDb().isOutdatedMaterializedView(
               table,
-              new ArrayList<>(table.getCreationMetadata().getTablesUsed()),
+              table.getCreationMetadata().getTablesUsed(),
               false,
               SessionState.get().getTxnMgr()));
     }

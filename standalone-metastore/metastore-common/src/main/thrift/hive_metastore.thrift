@@ -457,11 +457,19 @@ struct StorageDescriptor {
   12: optional bool   storedAsSubDirectories       // stored as subdirectories or not
 }
 
+struct SourceTable {
+    1: required string tableName,
+    2: required i64 tableId,
+    3: required i64 insertCount,
+    4: required i64 updatedCount,
+    5: required i64 deletedCount
+}
+
 struct CreationMetadata {
     1: required string catName
     2: required string dbName,
     3: required string tblName,
-    4: required set<string> tablesUsed,
+    4: required set<SourceTable> tablesUsed,
     5: optional string validTxnList,
     6: optional i64 materializationTime
 }

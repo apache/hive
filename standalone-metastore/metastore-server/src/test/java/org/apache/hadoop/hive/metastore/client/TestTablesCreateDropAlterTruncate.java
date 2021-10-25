@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
@@ -1284,7 +1285,9 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
 
     // Update the metadata for the materialized view
     CreationMetadata cm = client.getTable(catName, dbName, tableNames[3]).getCreationMetadata();
-    cm.addToTablesUsed(dbName + "." + tableNames[1]);
+    SourceTable sourceTable = new SourceTable();
+    sourceTable.setTableName(dbName + "." + tableNames[1]);
+    cm.addToTablesUsed(sourceTable);
     cm.unsetMaterializationTime();
     client.updateCreationMetadata(catName, dbName, tableNames[3], cm);
 

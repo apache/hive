@@ -136,6 +136,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -1969,7 +1970,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       final boolean useMaterializedViewsRegistry = !conf.get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname)
               .equals("DUMMY");
       final RelNode calcitePreMVRewritingPlan = basePlan;
-      final List<String> tablesUsedQuery = getTablesUsed(basePlan);
+      final Set<SourceTable> tablesUsedQuery = getTablesUsed(basePlan);
 
       // Add views to planner
       List<HiveRelOptMaterialization> materializations = new ArrayList<>();
@@ -2117,10 +2118,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
           try {
             Table hiveTableMD = extractTable(relOptMaterialization);
             if (HiveMaterializedViewUtils.checkPrivilegeForMaterializedViews(singletonList(hiveTableMD))) {
+              Set<SourceTable> sourceTables = new HashSet<>(1);
+              sourceTables.add(hiveTableMD.asSourceTable());
               if (db.validateMaterializedViewsFromRegistry(
-                      singletonList(hiveTableMD),
-                      singletonList(hiveTableMD.getFullyQualifiedName()),
-                      getTxnMgr())) {
+                      singletonList(hiveTableMD), sourceTables, getTxnMgr())) {
                 return relOptMaterialization.copyToNewCluster(optCluster).tableRel;
               }
             } else {
@@ -2342,14 +2343,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return basePlan;
     }
 
-    protected List<String> getTablesUsed(RelNode plan) {
-      List<String> tablesUsed = new ArrayList<>();
+    protected Set<SourceTable> getTablesUsed(RelNode plan) {
+      Set<SourceTable> tablesUsed = new HashSet<>();
       new RelVisitor() {
         @Override
         public void visit(RelNode node, int ordinal, RelNode parent) {
           if (node instanceof TableScan) {
             TableScan ts = (TableScan) node;
-            tablesUsed.add(((RelOptHiveTable) ts.getTable()).getHiveTableMD().getFullyQualifiedName());
+            Table hiveTableMD = ((RelOptHiveTable) ts.getTable()).getHiveTableMD();
+            tablesUsed.add(hiveTableMD.asSourceTable());
           }
           super.visit(node, ordinal, parent);
         }

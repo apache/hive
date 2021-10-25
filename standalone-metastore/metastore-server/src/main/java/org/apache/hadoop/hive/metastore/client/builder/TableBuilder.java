@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
@@ -53,7 +54,7 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
   private int createTime, lastAccessTime, retention;
   private Map<String, String> tableParams;
   private boolean rewriteEnabled, temporary;
-  private Set<String> mvReferencedTables;
+  private Set<SourceTable> mvReferencedTables;
   private PrincipalType ownerType;
 
   public TableBuilder() {
@@ -173,12 +174,16 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
   }
 
   public TableBuilder addMaterializedViewReferencedTable(String tableName) {
-    mvReferencedTables.add(tableName);
+    SourceTable sourceTable = new SourceTable();
+    sourceTable.setTableName(tableName);
+    mvReferencedTables.add(sourceTable);
     return this;
   }
 
   public TableBuilder addMaterializedViewReferencedTables(Set<String> tableNames) {
-    mvReferencedTables.addAll(tableNames);
+    for (String tableName : tableNames) {
+      addMaterializedViewReferencedTable(tableName);
+    }
     return this;
   }
 

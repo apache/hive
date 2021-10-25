@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -1312,5 +1313,12 @@ public class Table implements Serializable {
 
   public void setMetaTable(String metaTable) {
     this.metaTable = metaTable;
+  }
+
+  public SourceTable asSourceTable() {
+    SourceTable sourceTable = new SourceTable();
+    sourceTable.setTableId(getTTable().getId());
+    sourceTable.setTableName(getFullyQualifiedName());
+    return sourceTable;
   }
 };

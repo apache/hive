@@ -499,6 +499,8 @@ class SkewedInfo;
 
 class StorageDescriptor;
 
+class SourceTable;
+
 class CreationMetadata;
 
 class BooleanColumnStatsData;
@@ -3629,6 +3631,62 @@ void swap(StorageDescriptor &a, StorageDescriptor &b);
 
 std::ostream& operator<<(std::ostream& out, const StorageDescriptor& obj);
 
+
+class SourceTable : public virtual ::apache::thrift::TBase {
+ public:
+
+  SourceTable(const SourceTable&);
+  SourceTable& operator=(const SourceTable&);
+  SourceTable() : tableName(), tableId(0), insertCount(0), updatedCount(0), deletedCount(0) {
+  }
+
+  virtual ~SourceTable() noexcept;
+  std::string tableName;
+  int64_t tableId;
+  int64_t insertCount;
+  int64_t updatedCount;
+  int64_t deletedCount;
+
+  void __set_tableName(const std::string& val);
+
+  void __set_tableId(const int64_t val);
+
+  void __set_insertCount(const int64_t val);
+
+  void __set_updatedCount(const int64_t val);
+
+  void __set_deletedCount(const int64_t val);
+
+  bool operator == (const SourceTable & rhs) const
+  {
+    if (!(tableName == rhs.tableName))
+      return false;
+    if (!(tableId == rhs.tableId))
+      return false;
+    if (!(insertCount == rhs.insertCount))
+      return false;
+    if (!(updatedCount == rhs.updatedCount))
+      return false;
+    if (!(deletedCount == rhs.deletedCount))
+      return false;
+    return true;
+  }
+  bool operator != (const SourceTable &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SourceTable & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SourceTable &a, SourceTable &b);
+
+std::ostream& operator<<(std::ostream& out, const SourceTable& obj);
+
 typedef struct _CreationMetadata__isset {
   _CreationMetadata__isset() : validTxnList(false), materializationTime(false) {}
   bool validTxnList :1;
@@ -3647,7 +3705,7 @@ class CreationMetadata : public virtual ::apache::thrift::TBase {
   std::string catName;
   std::string dbName;
   std::string tblName;
-  std::set<std::string>  tablesUsed;
+  std::set<SourceTable>  tablesUsed;
   std::string validTxnList;
   int64_t materializationTime;
 
@@ -3659,7 +3717,7 @@ class CreationMetadata : public virtual ::apache::thrift::TBase {
 
   void __set_tblName(const std::string& val);
 
-  void __set_tablesUsed(const std::set<std::string> & val);
+  void __set_tablesUsed(const std::set<SourceTable> & val);
 
   void __set_validTxnList(const std::string& val);
 

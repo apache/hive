@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
@@ -33,7 +34,11 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.metastore.Warehouse;
+
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 
 /**
@@ -60,9 +65,19 @@ public class CreateMaterializedViewOperation extends DDLOperation<CreateMaterial
       Table tbl = desc.toTable(context.getConf());
       // We set the signature for the view if it is a materialized view
       if (tbl.isMaterializedView()) {
+        Set<SourceTable> tablesUsed = new HashSet(desc.getTablesUsed().size());
+        for (String tableName : desc.getTablesUsed()) {
+          SourceTable sourceTable = new SourceTable();
+          sourceTable.setTableName(tableName);
+          sourceTable.setInsertCount(0L);
+          sourceTable.setUpdatedCount(0L);
+          sourceTable.setDeletedCount(0L);
+          tablesUsed.add(sourceTable);
+        }
+
         CreationMetadata cm =
             new CreationMetadata(MetaStoreUtils.getDefaultCatalog(context.getConf()), tbl.getDbName(),
-                tbl.getTableName(), ImmutableSet.copyOf(desc.getTablesUsed()));
+                tbl.getTableName(), ImmutableSet.copyOf(tablesUsed));
         cm.setValidTxnList(context.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
         tbl.getTTable().setCreationMetadata(cm);
       }

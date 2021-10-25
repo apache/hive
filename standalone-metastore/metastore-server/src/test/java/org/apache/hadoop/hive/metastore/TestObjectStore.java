@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -1311,7 +1312,11 @@ public class TestObjectStore {
     creationMetadata.setCatName(db1.getCatalogName());
     creationMetadata.setDbName(matView1.getDbName());
     creationMetadata.setTblName(matView1.getTableName());
-    creationMetadata.setTablesUsed(Collections.singleton(tbl1.getDbName() + "." + tbl1.getTableName()));
+    creationMetadata.setTablesUsed(new HashSet<SourceTable>() {{
+      SourceTable sourceTable = new SourceTable();
+      sourceTable.setTableId(tbl1.getId());
+      sourceTable.setTableName(tbl1.getDbName() + "." + tbl1.getTableName());
+      add(sourceTable); }});
     matView1.setCreationMetadata(creationMetadata);
     objectStore.createTable(matView1);
 

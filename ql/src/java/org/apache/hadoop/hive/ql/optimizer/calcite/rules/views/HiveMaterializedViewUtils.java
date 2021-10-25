@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
@@ -49,6 +50,7 @@ import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -96,9 +98,10 @@ public class HiveMaterializedViewUtils {
    * materialized view definition uses external tables.
    */
   public static Boolean isOutdatedMaterializedView(
-          String validTxnsList, HiveTxnManager txnMgr,
-          List<String> tablesUsed, Table materializedViewTable) throws LockException {
-    ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tablesUsed, validTxnsList);
+      String validTxnsList, HiveTxnManager txnMgr,
+      Set<SourceTable> tablesUsed, Table materializedViewTable) throws LockException {
+    List<String> tables = tablesUsed.stream().map(SourceTable::getTableName).collect(Collectors.toList());
+    ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tables, validTxnsList);
     if (currentTxnWriteIds == null) {
       LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
               " ignored for rewriting as we could not obtain current txn ids");
@@ -106,6 +109,8 @@ public class HiveMaterializedViewUtils {
     }
 
     CreationMetadata creationMetadata = materializedViewTable.getCreationMetadata();
+    Set<String> storedTablesUsed =
+        creationMetadata.getTablesUsed().stream().map(SourceTable::getTableName).collect(Collectors.toSet());
     if (creationMetadata.getValidTxnList() == null ||
             creationMetadata.getValidTxnList().isEmpty()) {
       LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
@@ -115,28 +120,28 @@ public class HiveMaterializedViewUtils {
     boolean ignore = false;
     ValidTxnWriteIdList mvTxnWriteIds = new ValidTxnWriteIdList(
             creationMetadata.getValidTxnList());
-    for (String qName : tablesUsed) {
+    for (SourceTable sourceTable : tablesUsed) {
       // Note. If the materialized view does not contain a table that is contained in the query,
       // we do not need to check whether that specific table is outdated or not. If a rewriting
       // is produced in those cases, it is because that additional table is joined with the
       // existing tables with an append-columns only join, i.e., PK-FK + not null.
-      if (!creationMetadata.getTablesUsed().contains(qName)) {
+      if (!storedTablesUsed.contains(sourceTable.getTableName())) {
         continue;
       }
-      ValidWriteIdList tableCurrentWriteIds = currentTxnWriteIds.getTableValidWriteIdList(qName);
+      ValidWriteIdList tableCurrentWriteIds = currentTxnWriteIds.getTableValidWriteIdList(sourceTable.getTableName());
       if (tableCurrentWriteIds == null) {
         // Uses non-transactional table, cannot be considered
         LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
                 " ignored for rewriting as it is outdated and cannot be considered for " +
-                " rewriting because it uses non-transactional table " + qName);
+                " rewriting because it uses non-transactional table " + sourceTable.getTableName());
         ignore = true;
         break;
       }
-      ValidWriteIdList tableWriteIds = mvTxnWriteIds.getTableValidWriteIdList(qName);
+      ValidWriteIdList tableWriteIds = mvTxnWriteIds.getTableValidWriteIdList(sourceTable.getTableName());
       if (tableWriteIds == null) {
         // This should not happen, but we ignore for safety
         LOG.warn("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                " ignored for rewriting as details about txn ids for table " + qName +
+                " ignored for rewriting as details about txn ids for table " + sourceTable +
                 " could not be found in " + mvTxnWriteIds);
         ignore = true;
         break;

@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
@@ -1900,10 +1901,12 @@ public class TestTxnHandler {
       validTxnWriteIdList.addTableValidWriteIdList(tableWriteId);
     }
 
+    SourceTable sourceTable = new SourceTable();
+    sourceTable.setTableName("default.t1");
     CreationMetadata creationMetadata = new CreationMetadata();
     creationMetadata.setDbName("default");
     creationMetadata.setTblName("mat1");
-    creationMetadata.setTablesUsed(new HashSet<String>() {{ add("default.t1"); }});
+    creationMetadata.setTablesUsed(new HashSet<SourceTable>() {{ add(sourceTable); }});
     creationMetadata.setValidTxnList(validTxnWriteIdList.toString());
 
     Materialization materialization = txnHandler.getMaterializationInvalidationInfo(
