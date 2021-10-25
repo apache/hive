@@ -124,13 +124,68 @@ public abstract class SingleFileSystem extends FileSystem {
     SfsInfo info = new SfsInfo(upperPath);
     switch (info.type) {
     case LEAF_FILE:
-      return info.getTargetFileStatus();
+      return makeFileStatus(info.upperTargetPath, info.lowerTargetPath);
     case DIR_MODE:
     case SINGLEFILE_DIR:
       return makeDirFileStatus(upperPath, info.lowerTargetPath);
     default:
       throw unsupported("fileStatus:" + upperPath);
     }
+  }
+
+  @Override
+  public FileStatus[] listStatus(Path upperPath) throws FileNotFoundException, IOException {
+    SfsInfo info = new SfsInfo(upperPath);
+    switch (info.type) {
+    case DIR_MODE:
+      return dirModeListStatus(upperPath);
+    case LEAF_FILE:
+    case SINGLEFILE_DIR:
+      return new FileStatus[] { makeFileStatus(info.upperTargetPath, info.lowerTargetPath) };
+    default:
+      throw unsupported("listStatus: " + upperPath);
+    }
+  }
+
+  @Override
+  public void setWorkingDirectory(Path new_dir) {
+    workDir = new_dir;
+  }
+
+  @Override
+  public Path getWorkingDirectory() {
+    return workDir;
+  }
+
+  @Override
+  public FSDataOutputStream create(Path f, FsPermission permission, boolean overwrite, int bufferSize,
+      short replication, long blockSize, Progressable progress) throws IOException {
+    throw unsupported("create: " + f);
+  }
+
+  @Override
+  public FSDataOutputStream append(Path f, int bufferSize, Progressable progress) throws IOException {
+    throw unsupported("append: " + f);
+
+  }
+
+  @Override
+  public boolean rename(Path src, Path dst) throws IOException {
+    throw unsupported("rename: " + src + " to " + dst);
+  }
+
+  @Override
+  public boolean delete(Path f, boolean recursive) throws IOException {
+    throw unsupported("delete: " + f);
+  }
+
+  @Override
+  public boolean mkdirs(Path f, FsPermission permission) throws IOException {
+    throw unsupported("mkdirs: " + f);
+  }
+
+  public String getCanonicalServiceName() {
+    return null;
   }
 
   /**
@@ -171,6 +226,11 @@ public abstract class SingleFileSystem extends FileSystem {
     NONEXISTENT,
   }
 
+  /**
+   * Identifies and collects basic infos about the current path.
+   *
+   * TargetPath is also identified for both lower/upper if its available.
+   */
   class SfsInfo {
 
     final private URI uri;
@@ -205,26 +265,6 @@ public abstract class SingleFileSystem extends FileSystem {
         }
       }
     }
-
-    public FileStatus getTargetFileStatus() throws IOException {
-      return makeFileStatus(upperTargetPath, lowerTargetPath);
-    }
-
-  }
-
-  private Path removeSfsScheme(Path lowerTargetPath0) {
-    URI u = lowerTargetPath0.toUri();
-    return new Path(removeSfsScheme(u.getScheme()), u.getAuthority(), u.getPath());
-  }
-
-  private String removeSfsScheme(String scheme) {
-    if (scheme.startsWith("sfs+")) {
-      return scheme.substring(4);
-    }
-    if (scheme.equals("sfs")) {
-      return null;
-    }
-    throw new RuntimeException("Unexpected scheme: " + scheme);
   }
 
   /**
@@ -247,30 +287,6 @@ public abstract class SingleFileSystem extends FileSystem {
     return ret.toArray(new FileStatus[0]);
   }
 
-  @Override
-  public FileStatus[] listStatus(Path upperPath) throws FileNotFoundException, IOException {
-    SfsInfo info = new SfsInfo(upperPath);
-    switch (info.type) {
-    case DIR_MODE:
-      return dirModeListStatus(upperPath);
-    case LEAF_FILE:
-    case SINGLEFILE_DIR:
-      return new FileStatus[] { info.getTargetFileStatus() };
-    default:
-      throw unsupported("listStatus: " + upperPath);
-    }
-  }
-
-  @Override
-  public void setWorkingDirectory(Path new_dir) {
-    workDir = new_dir;
-  }
-
-  @Override
-  public Path getWorkingDirectory() {
-    return workDir;
-  }
-
   public FileStatus makeFileStatus(Path upperPath, Path lowerPath) throws IOException {
     FileStatus status = lowerPath.getFileSystem(conf).getFileStatus(lowerPath);
     status = new FileStatus(status);
@@ -280,6 +296,21 @@ public abstract class SingleFileSystem extends FileSystem {
 
   private static FileStatus makeDirFileStatus(FileStatus lowerStatus) throws IOException {
     return makeDirFileStatus(makeSfsPath(lowerStatus.getPath()), lowerStatus);
+  }
+
+  private Path removeSfsScheme(Path lowerTargetPath0) {
+    URI u = lowerTargetPath0.toUri();
+    return new Path(removeSfsScheme(u.getScheme()), u.getAuthority(), u.getPath());
+  }
+
+  private String removeSfsScheme(String scheme) {
+    if (scheme.startsWith("sfs+")) {
+      return scheme.substring(4);
+    }
+    if (scheme.equals("sfs")) {
+      return null;
+    }
+    throw new RuntimeException("Unexpected scheme: " + scheme);
   }
 
   private static Path makeSfsPath(Path path) throws IOException {
@@ -307,40 +338,7 @@ public abstract class SingleFileSystem extends FileSystem {
     return new FsPermission(permission.toShort() | 1 | (1 << 3) | (1 << 6));
   }
 
-  @Override
-  public FSDataOutputStream create(Path f, FsPermission permission, boolean overwrite, int bufferSize,
-      short replication, long blockSize, Progressable progress) throws IOException {
-    throw unsupported("create: " + f);
-  }
-
-  @Override
-  public FSDataOutputStream append(Path f, int bufferSize, Progressable progress) throws IOException {
-    throw unsupported("append: " + f);
-
-  }
-
-  @Override
-  public boolean rename(Path src, Path dst) throws IOException {
-    throw unsupported("rename: " + src + " to " + dst);
-  }
-
-  @Override
-  public boolean delete(Path f, boolean recursive) throws IOException {
-    throw unsupported("delete: " + f);
-
-  }
-
-  @Override
-  public boolean mkdirs(Path f, FsPermission permission) throws IOException {
-    throw unsupported("mkdirs: " + f);
-  }
-
   private IOException unsupported(String str) {
     return new IOException("Unsupported SFS filesystem operation! (" + str + ")");
   }
-
-  public String getCanonicalServiceName() {
-    return null;
-  }
-
 }
