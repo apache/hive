@@ -173,68 +173,78 @@ public abstract class SingleFileSystem extends FileSystem {
 
   class SfsInfo {
 
-    private String[] parts;
-    private URI uri;
-    private SfsInodeType type;
-    private Path lowerTargetPath;
-    private Path upperTargetPath;
+    final private URI uri;
+    final private SfsInodeType type;
+    final private Path lowerTargetPath;
+    final private Path upperTargetPath;
 
     public SfsInfo(Path upperPath) {
       uri = upperPath.toUri();
-      parts = uri.getPath().split(Path.SEPARATOR);
-      type = SfsInodeType.DIR_MODE;
-      lowerTargetPath = upperPath;
+      String[] parts = uri.getPath().split(Path.SEPARATOR);
 
       int n = parts.length;
       if (n >= 1 && parts[n - 1].equals(SINGLEFILE)) {
         type = SfsInodeType.SINGLEFILE_DIR;
-        lowerTargetPath = upperPath.getParent();
+        lowerTargetPath = removeSfsScheme(upperPath.getParent());
         upperTargetPath = new Path(uri.getScheme(), uri.getAuthority(), uri.getPath() + "/" + parts[n - 2]);
-      }
-      if (n >= 2 && parts[n - 2].equals(SINGLEFILE)) {
-        if (n >= 3 && !parts[n - 3].equals(parts[n - 1])) {
-          type = SfsInodeType.NONEXISTENT;
+      } else {
+        if (n >= 2 && parts[n - 2].equals(SINGLEFILE)) {
+          if (n >= 3 && !parts[n - 3].equals(parts[n - 1])) {
+            type = SfsInodeType.NONEXISTENT;
+            lowerTargetPath = null;
+            upperTargetPath = null;
+          } else {
+            type = SfsInodeType.LEAF_FILE;
+            lowerTargetPath = removeSfsScheme(upperPath.getParent().getParent());
+            upperTargetPath = upperPath;
+          }
         } else {
-          type = SfsInodeType.LEAF_FILE;
-          lowerTargetPath = upperPath.getParent().getParent();
-          upperTargetPath = upperPath;
+          type = SfsInodeType.DIR_MODE;
+          lowerTargetPath = null;
+          upperTargetPath = null;
         }
       }
-      if (lowerTargetPath != null) {
-        URI u = lowerTargetPath.toUri();
-        lowerTargetPath = new Path(removeSfsScheme(u.getScheme()), u.getAuthority(), u.getPath());
-      }
-    }
-
-    private String removeSfsScheme(String scheme) {
-      if (scheme.startsWith("sfs+")) {
-        return scheme.substring(4);
-      }
-      if (scheme.equals("sfs")) {
-        return null;
-      }
-      throw new RuntimeException("Unexpected scheme: " + scheme);
     }
 
     public FileStatus getTargetFileStatus() throws IOException {
       return makeFileStatus(upperTargetPath, lowerTargetPath);
     }
 
-    public FileStatus[] listStatus(Path upperPath, Path lowerPath) throws IOException {
-      FileSystem fs = lowerPath.getFileSystem(conf);
-      FileStatus status = fs.getFileStatus(lowerPath);
-      List<FileStatus> ret = new ArrayList<>();
-      if (status.isDirectory()) {
-        FileStatus[] statusList = fs.listStatus(lowerTargetPath);
-        for (FileStatus fileStatus : statusList) {
-          ret.add(makeDirFileStatus(fileStatus));
-        }
-      } else {
-        FileStatus dirStat = makeDirFileStatus(new Path(upperPath, SINGLEFILE), lowerPath);
-        ret.add(dirStat);
-      }
-      return ret.toArray(new FileStatus[0]);
+  }
+
+  private Path removeSfsScheme(Path lowerTargetPath0) {
+    URI u = lowerTargetPath0.toUri();
+    return new Path(removeSfsScheme(u.getScheme()), u.getAuthority(), u.getPath());
+  }
+
+  private String removeSfsScheme(String scheme) {
+    if (scheme.startsWith("sfs+")) {
+      return scheme.substring(4);
     }
+    if (scheme.equals("sfs")) {
+      return null;
+    }
+    throw new RuntimeException("Unexpected scheme: " + scheme);
+  }
+
+  /**
+   * Implements listing for {@link SfsInodeType#DIR_MODE}.
+   */
+  public FileStatus[] dirModeListStatus(Path upperPath) throws IOException {
+    Path lowerPath = removeSfsScheme(upperPath);
+    FileSystem fs = lowerPath.getFileSystem(conf);
+    FileStatus status = fs.getFileStatus(lowerPath);
+    List<FileStatus> ret = new ArrayList<>();
+    if (status.isDirectory()) {
+      FileStatus[] statusList = fs.listStatus(lowerPath);
+      for (FileStatus fileStatus : statusList) {
+        ret.add(makeDirFileStatus(fileStatus));
+      }
+    } else {
+      FileStatus dirStat = makeDirFileStatus(new Path(upperPath, SINGLEFILE), lowerPath);
+      ret.add(dirStat);
+    }
+    return ret.toArray(new FileStatus[0]);
   }
 
   @Override
@@ -242,7 +252,7 @@ public abstract class SingleFileSystem extends FileSystem {
     SfsInfo info = new SfsInfo(upperPath);
     switch (info.type) {
     case DIR_MODE:
-      return info.listStatus(upperPath, info.lowerTargetPath);
+      return dirModeListStatus(upperPath);
     case LEAF_FILE:
     case SINGLEFILE_DIR:
       return new FileStatus[] { info.getTargetFileStatus() };
