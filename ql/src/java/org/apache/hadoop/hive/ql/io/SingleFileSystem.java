@@ -124,8 +124,42 @@ public abstract class SingleFileSystem extends FileSystem {
     }
   }
 
+  /**
+   * Represents what kind of path we are at.
+   *
+   * For every state I will give the path for the following path:
+   *
+   * sfs+file:///foo/bar/#SINGLEFILE#/bar
+   */
   enum SfsInodeType {
-    LEAF_FILE, SINGLEFILE_DIR, DIR_MODE, NONEXISTENT,
+    /**
+     * Represents the final leaf file.
+     *
+     * sfs+file:///foo/bar/#SINGLEFILE#/bar
+     */
+    LEAF_FILE,
+    /**
+     * We are at a SINGLEFILE directory node.
+     *
+     * sfs+file:///foo/bar/#SINGLEFILE#
+     */
+    SINGLEFILE_DIR,
+    /**
+     * We are on the covered filesystem in directory mode.
+     *
+     * In this mode all files and directories of the underlying fs is shown as directories.
+     *
+     * sfs+file:///foo/bar
+     * sfs+file:///foo/
+     * 
+     */
+    DIR_MODE,
+    /**
+     * We are at a path which doesnt exists.
+     * 
+     * sfs+file:///foo/bar/#SINGLEFILE#/invalid
+     */
+    NONEXISTENT,
   }
 
   class SfsInfo {
