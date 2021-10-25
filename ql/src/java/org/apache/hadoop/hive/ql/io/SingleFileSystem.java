@@ -184,6 +184,7 @@ public abstract class SingleFileSystem extends FileSystem {
     throw unsupported("mkdirs: " + f);
   }
 
+  @Override
   public String getCanonicalServiceName() {
     return null;
   }
