@@ -208,9 +208,11 @@ public class DagUtils {
   class CollectFileSinkUrisNodeProcessor implements SemanticNodeProcessor {
 
     private final Set<URI> uris;
+    private final Set<TableDesc> tableDescs;
 
-    public CollectFileSinkUrisNodeProcessor(Set<URI> uris) {
+    public CollectFileSinkUrisNodeProcessor(Set<URI> uris, Set<TableDesc> tableDescs) {
       this.uris = uris;
+      this.tableDescs = tableDescs;
     }
 
     @Override
@@ -221,6 +223,8 @@ public class DagUtils {
         OperatorDesc desc = op.getConf();
         if (desc instanceof FileSinkDesc) {
           FileSinkDesc fileSinkDesc = (FileSinkDesc) desc;
+          tableDescs.add(fileSinkDesc.getTableInfo());
+
           Path dirName = fileSinkDesc.getDirName();
           if (dirName != null) {
             uris.add(dirName.toUri());
@@ -239,9 +243,9 @@ public class DagUtils {
     opRules.put(new RuleRegExp("R1", FileSinkOperator.getOperatorName() + ".*"), np);
   }
 
-  private void collectFileSinkUris(List<Node> topNodes, Set<URI> uris) {
+  private void collectFileSinkUris(List<Node> topNodes, Set<URI> uris, Set<TableDesc> tableDescs) {
 
-    CollectFileSinkUrisNodeProcessor np = new CollectFileSinkUrisNodeProcessor(uris);
+    CollectFileSinkUrisNodeProcessor np = new CollectFileSinkUrisNodeProcessor(uris, tableDescs);
 
     Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     addCollectFileSinkUrisRules(opRules, np);
@@ -256,11 +260,14 @@ public class DagUtils {
     }
   }
 
-
   /**
    * Set up credentials for the base work on secure clusters
    */
   public void addCredentials(BaseWork work, DAG dag, JobConf conf) {
+    Set<URI> fileSinkUris = new HashSet<URI>();
+    Set<TableDesc> fileSinkTableDescs = new HashSet<TableDesc>();
+    collectNeededFileSinkData(work, fileSinkUris, fileSinkTableDescs);
+
     if (work instanceof MapWork){
       Set<Path> paths = ((MapWork)work).getPathToAliases().keySet();
       if (!paths.isEmpty()) {
@@ -281,12 +288,18 @@ public class DagUtils {
         }
         dag.addURIsForCredentials(uris);
       }
-      getKafkaCredentials((MapWork)work, dag, conf);
+      getKafkaCredentials((MapWork)work, fileSinkTableDescs, dag, conf);
     }
-    getCredentialsForFileSinks(work, dag);
+    getCredentialsForFileSinks(work, fileSinkUris, dag);
   }
 
-  private void getKafkaCredentials(MapWork work, DAG dag, JobConf conf) {
+  private void collectNeededFileSinkData(BaseWork work, Set<URI> fileSinkUris, Set<TableDesc> fileSinkTableDescs) {
+    List<Node> topNodes = getTopNodes(work);
+    LOG.debug("Collecting file sink uris for {} topnodes: {}", work.getClass(), topNodes);
+    collectFileSinkUris(topNodes, fileSinkUris, fileSinkTableDescs);
+  }
+
+  private void getKafkaCredentials(MapWork work, Set<TableDesc> fileSinkTableDescs, DAG dag, JobConf conf) {
     if (!UserGroupInformation.isSecurityEnabled()){
       return;
     }
@@ -295,26 +308,53 @@ public class DagUtils {
       LOG.debug("Kafka credentials already added, skipping...");
       return;
     }
-    LOG.info("Getting kafka credentials for mapwork: " + work.getName());
+    LOG.debug("Getting kafka credentials for mapwork (if needed): " + work.getName());
 
-    String kafkaBrokers = null;
     Map<String, PartitionDesc> partitions = work.getAliasToPartnInfo();
+
     for (PartitionDesc partition : partitions.values()) {
       TableDesc tableDesc = partition.getTableDesc();
-      kafkaBrokers = (String) tableDesc.getProperties().get("kafka.bootstrap.servers"); //FIXME: KafkaTableProperties
-      if (kafkaBrokers != null && !kafkaBrokers.isEmpty()) {
-        getKafkaDelegationTokenForBrokers(dag, conf, kafkaBrokers);
+      boolean tokenCollected = collectKafkaDelegationTokenForTableDesc(dag, conf, tableDesc);
+      if (tokenCollected) {
+        // don't collect delegation token again, if it was already successful
         return;
       } else {
-        // we don't need to iterate on all partitions, and checking the same TableDesc
-        // if partitions[0].getTableDesc() doesn't show kafka table, let's return quickly
+        /*
+         * We don't need to iterate on all partitions, and check the same TableDesc:
+         * if partitions[0].getTableDesc() doesn't show a kafka table, let's break the loop quickly.
+         * Note: at this point we cannot return from this method, as fileSinkTableDescs should
+         * be checked too.
+         */
         break;
+      }
+    }
+
+    for (TableDesc tableDesc : fileSinkTableDescs) {
+      if (collectKafkaDelegationTokenForTableDesc(dag, conf, tableDesc)) {
+        // don't collect delegation token again, if it was already successful
+        return;
       }
     }
   }
 
+  /**
+   * Tries to collect delegation tokens for kafka in the scope of a TableDesc.
+   * @param dag
+   * @param conf
+   * @param tableDesc
+   * @return a boolean, telling whether the token collection was successful
+   */
+  private boolean collectKafkaDelegationTokenForTableDesc(DAG dag, JobConf conf, TableDesc tableDesc) {
+    String kafkaBrokers = (String) tableDesc.getProperties().get("kafka.bootstrap.servers"); //FIXME: KafkaTableProperties
+    if (kafkaBrokers != null && !kafkaBrokers.isEmpty()) {
+      getKafkaDelegationTokenForBrokers(dag, conf, kafkaBrokers);
+      return true;
+    }
+    return false;
+  }
+
   private void getKafkaDelegationTokenForBrokers(DAG dag, JobConf conf, String kafkaBrokers) {
-    LOG.debug("Getting kafka credentials for brokers: {}", kafkaBrokers);
+    LOG.info("Getting kafka credentials for brokers: {}", kafkaBrokers);
 
     String keytab = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
     String principal = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL);
@@ -352,14 +392,7 @@ public class DagUtils {
         new Token<>(token.tokenInfo().tokenId().getBytes(), token.hmac(), null, new Text("kafka")));
   }
 
-  private void getCredentialsForFileSinks(BaseWork baseWork, DAG dag) {
-    Set<URI> fileSinkUris = new HashSet<URI>();
-
-    List<Node> topNodes = getTopNodes(baseWork);
-
-    LOG.debug("Collecting file sink uris for {} topnodes: {}", baseWork.getClass(), topNodes);
-    collectFileSinkUris(topNodes, fileSinkUris);
-
+  private void getCredentialsForFileSinks(BaseWork baseWork, Set<URI> fileSinkUris, DAG dag) {
     if (LOG.isDebugEnabled()) {
       for (URI fileSinkUri : fileSinkUris) {
         LOG.debug("Marking {} output URI as needing credentials (filesink): {}",
