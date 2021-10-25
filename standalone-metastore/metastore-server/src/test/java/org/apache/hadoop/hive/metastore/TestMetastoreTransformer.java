@@ -114,7 +114,7 @@ public class TestMetastoreTransformer {
     tbl = client.getTable(tbl.getDbName(), tbl.getTableName());
     tbl.setTableName(tblName.toUpperCase());
     client.alter_table(tbl.getDbName(), tbl.getTableName().toUpperCase(), tbl);
-
+    // expected to execute the operation without any exceptions
   }
 
   @Test
@@ -122,9 +122,8 @@ public class TestMetastoreTransformer {
     Table tbl =
         new TableBuilder().setTableName("locationBlank").setCols(new ArrayList<FieldSchema>()).setLocation("")
             .build(conf);
-
     client.createTable(tbl);
-
+    // expected to execute the operation without any exceptions
   }
 
 }
