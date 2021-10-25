@@ -26,6 +26,7 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -45,9 +46,10 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
 
     shell.executeStatement(String.format(
-        "CREATE TABLE target STORED BY ICEBERG %s TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
+        "CREATE TABLE target STORED BY ICEBERG %s %s AS SELECT * FROM source",
         testTables.locationForCreateTableSQL(TableIdentifier.of("default", "target")),
-        TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
+        testTables.propertiesForCreateTableSQL(
+            ImmutableMap.of(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.toString()))));
 
     List<Object[]> objects = shell.executeStatement("SELECT * FROM target ORDER BY id");
     HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
@@ -64,8 +66,9 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
     shell.executeStatement(String.format(
         "CREATE TABLE target PARTITIONED BY (dept, name) " +
-            "STORED BY ICEBERG TBLPROPERTIES ('%s'='%s') AS SELECT * FROM source",
-        TableProperties.DEFAULT_FILE_FORMAT, fileFormat));
+            "STORED BY ICEBERG %s AS SELECT * FROM source",
+        testTables.propertiesForCreateTableSQL(
+            ImmutableMap.of(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.toString()))));
 
     // check table can be read back correctly
     List<Object[]> objects = shell.executeStatement("SELECT id, name, dept FROM target ORDER BY id");

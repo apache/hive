@@ -20,9 +20,7 @@ package org.apache.hadoop.hive.cli.control;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.util.Set;
-import java.util.LinkedHashSet;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -137,18 +135,18 @@ public class CoreCliDriver extends CliAdapter {
       LOG.info("Begin query: " + fname);
       System.err.println("Begin query: " + fname);
 
-      qt.addFile(fpath);
-      qt.cliInit(new File(fpath));
+      qt.setInputFile(fpath);
+      qt.cliInit();
 
       try {
-        qt.executeClient(fname);
+        qt.executeClient();
       } catch (CommandProcessorException e) {
         failed = true;
         qt.failedQuery(e.getCause(), e.getResponseCode(), fname, QTestUtil.DEBUG_HINT);
       }
 
       setupAdditionalPartialMasks();
-      QTestProcessExecResult result = qt.checkCliDriverResults(fname);
+      QTestProcessExecResult result = qt.checkCliDriverResults();
       resetAdditionalPartialMasks();
       if (result.getReturnCode() != 0) {
         failed = true;

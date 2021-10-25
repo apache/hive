@@ -24,8 +24,12 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -47,11 +51,18 @@ public class AlterTableDropConstraintAnalyzer extends AbstractAlterTableAnalyzer
     String constraintName = unescapeIdentifier(command.getChild(0).getText());
 
     AlterTableDropConstraintDesc desc = new AlterTableDropConstraintDesc(tableName, null, constraintName);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 
     Table table = getTable(tableName);
+    WriteEntity.WriteType writeType = null;
     if (AcidUtils.isTransactionalTable(table)) {
       setAcidDdlDesc(desc);
+      writeType = WriteType.DDL_EXCLUSIVE;
+    } else {
+      writeType = WriteEntity.determineAlterTableWriteType(AlterTableType.DROP_CONSTRAINT);
     }
+    inputs.add(new ReadEntity(table));
+    WriteEntity alterTableOutput = new WriteEntity(table, writeType);
+    outputs.add(alterTableOutput);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 }

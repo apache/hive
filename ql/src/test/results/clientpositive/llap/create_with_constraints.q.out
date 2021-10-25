@@ -1430,32 +1430,60 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: ALTER TABLE table2_n8 DROP CONSTRAINT pk1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@table2_n8
+PREHOOK: Output: default@table2_n8
 POSTHOOK: query: ALTER TABLE table2_n8 DROP CONSTRAINT pk1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@table2_n8
+POSTHOOK: Output: default@table2_n8
 PREHOOK: query: ALTER TABLE table3_n1 DROP CONSTRAINT fk1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@table3_n1
+PREHOOK: Output: default@table3_n1
 POSTHOOK: query: ALTER TABLE table3_n1 DROP CONSTRAINT fk1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@table3_n1
+POSTHOOK: Output: default@table3_n1
 PREHOOK: query: ALTER TABLE table4_n0 DROP CONSTRAINT nn4_1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@table4_n0
+PREHOOK: Output: default@table4_n0
 POSTHOOK: query: ALTER TABLE table4_n0 DROP CONSTRAINT nn4_1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@table4_n0
+POSTHOOK: Output: default@table4_n0
 PREHOOK: query: ALTER TABLE table6_n3 DROP CONSTRAINT fk4
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@table6_n3
+PREHOOK: Output: default@table6_n3
 POSTHOOK: query: ALTER TABLE table6_n3 DROP CONSTRAINT fk4
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@table6_n3
+POSTHOOK: Output: default@table6_n3
 PREHOOK: query: ALTER TABLE table8 DROP CONSTRAINT pk8
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@table8
+PREHOOK: Output: default@table8
 POSTHOOK: query: ALTER TABLE table8 DROP CONSTRAINT pk8
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@table8
+POSTHOOK: Output: default@table8
 PREHOOK: query: ALTER TABLE table16 DROP CONSTRAINT nn16_1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@table16
+PREHOOK: Output: default@table16
 POSTHOOK: query: ALTER TABLE table16 DROP CONSTRAINT nn16_1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@table16
+POSTHOOK: Output: default@table16
 PREHOOK: query: ALTER TABLE table18 DROP CONSTRAINT uk18_1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@table18
+PREHOOK: Output: default@table18
 POSTHOOK: query: ALTER TABLE table18 DROP CONSTRAINT uk18_1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@table18
+POSTHOOK: Output: default@table18
 PREHOOK: query: DESCRIBE EXTENDED table2_n8
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table2_n8
@@ -1818,20 +1846,36 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: ALTER TABLE table2_n8 ADD CONSTRAINT pkt2 PRIMARY KEY (a) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@table2_n8
+PREHOOK: Output: default@table2_n8
 POSTHOOK: query: ALTER TABLE table2_n8 ADD CONSTRAINT pkt2 PRIMARY KEY (a) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@table2_n8
+POSTHOOK: Output: default@table2_n8
 PREHOOK: query: ALTER TABLE table3_n1 ADD CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE NOVALIDATE RELY
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@table3_n1
+PREHOOK: Output: default@table3_n1
 POSTHOOK: query: ALTER TABLE table3_n1 ADD CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES table2_n8(a) DISABLE NOVALIDATE RELY
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@table3_n1
+POSTHOOK: Output: default@table3_n1
 PREHOOK: query: ALTER TABLE table6_n3 ADD CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1_n13(a) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@table6_n3
+PREHOOK: Output: default@table6_n3
 POSTHOOK: query: ALTER TABLE table6_n3 ADD CONSTRAINT fk4 FOREIGN KEY (y) REFERENCES table1_n13(a) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@table6_n3
+POSTHOOK: Output: default@table6_n3
 PREHOOK: query: ALTER TABLE table8 ADD CONSTRAINT pk8_2 PRIMARY KEY (a, b) DISABLE NOVALIDATE RELY
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@table8
+PREHOOK: Output: default@table8
 POSTHOOK: query: ALTER TABLE table8 ADD CONSTRAINT pk8_2 PRIMARY KEY (a, b) DISABLE NOVALIDATE RELY
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@table8
+POSTHOOK: Output: default@table8
 PREHOOK: query: ALTER TABLE table16 CHANGE a a STRING REFERENCES table4_n0(x) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@table16
@@ -1842,8 +1886,12 @@ POSTHOOK: Input: default@table16
 POSTHOOK: Output: default@table16
 PREHOOK: query: ALTER TABLE table18 ADD CONSTRAINT uk18_2 UNIQUE (a, b) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@table18
+PREHOOK: Output: default@table18
 POSTHOOK: query: ALTER TABLE table18 ADD CONSTRAINT uk18_2 UNIQUE (a, b) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@table18
+POSTHOOK: Output: default@table18
 PREHOOK: query: DESCRIBE FORMATTED table2_n8
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table2_n8
@@ -2233,8 +2281,12 @@ Column Name:        	b
 	 	 
 PREHOOK: query: ALTER TABLE table12 DROP CONSTRAINT nn12_2
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@table12
+PREHOOK: Output: default@table12
 POSTHOOK: query: ALTER TABLE table12 DROP CONSTRAINT nn12_2
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@table12
+POSTHOOK: Output: default@table12
 PREHOOK: query: DESCRIBE FORMATTED table12
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table12
@@ -2367,8 +2419,12 @@ Column Name:        	b
 	 	 
 PREHOOK: query: ALTER TABLE DbConstraint.Table2 DROP CONSTRAINT Pk1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: dbconstraint@table2
+PREHOOK: Output: dbconstraint@table2
 POSTHOOK: query: ALTER TABLE DbConstraint.Table2 DROP CONSTRAINT Pk1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: dbconstraint@table2
+POSTHOOK: Output: dbconstraint@table2
 PREHOOK: query: DESCRIBE EXTENDED DbConstraint.Table2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: dbconstraint@table2
@@ -2425,8 +2481,12 @@ Column Name:        	b
 	 	 
 PREHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT Pk1 PRIMARY KEY (a) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: dbconstraint@table2
+PREHOOK: Output: dbconstraint@table2
 POSTHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT Pk1 PRIMARY KEY (a) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: dbconstraint@table2
+POSTHOOK: Output: dbconstraint@table2
 PREHOOK: query: DESCRIBE FORMATTED DbConstraint.Table2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: dbconstraint@table2
@@ -2477,8 +2537,12 @@ Column Name:        	b
 	 	 
 PREHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1_n13(a) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: dbconstraint@table2
+PREHOOK: Output: dbconstraint@table2
 POSTHOOK: query: ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1_n13(a) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: dbconstraint@table2
+POSTHOOK: Output: dbconstraint@table2
 PREHOOK: query: DESCRIBE FORMATTED DbConstraint.Table2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: dbconstraint@table2
@@ -2543,12 +2607,20 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table23
 PREHOOK: query: ALTER TABLE table23 ADD CONSTRAINT fk23_1 FOREIGN KEY (a,b) REFERENCES table21(a,b) DISABLE NOVALIDATE RELY
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@table23
+PREHOOK: Output: default@table23
 POSTHOOK: query: ALTER TABLE table23 ADD CONSTRAINT fk23_1 FOREIGN KEY (a,b) REFERENCES table21(a,b) DISABLE NOVALIDATE RELY
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@table23
+POSTHOOK: Output: default@table23
 PREHOOK: query: ALTER TABLE table23 ADD CONSTRAINT pk23_1 PRIMARY KEY (b) DISABLE RELY
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@table23
+PREHOOK: Output: default@table23
 POSTHOOK: query: ALTER TABLE table23 ADD CONSTRAINT pk23_1 PRIMARY KEY (b) DISABLE RELY
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@table23
+POSTHOOK: Output: default@table23
 PREHOOK: query: DESCRIBE FORMATTED table23
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@table23
@@ -2621,8 +2693,12 @@ POSTHOOK: Lineage: numericdatatype_n0.e SCRIPT []
 POSTHOOK: Lineage: numericdatatype_n0.f SCRIPT []
 PREHOOK: query: ALTER TABLE numericDataType_n0 ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@numericdatatype_n0
+PREHOOK: Output: default@numericdatatype_n0
 POSTHOOK: query: ALTER TABLE numericDataType_n0 ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@numericdatatype_n0
+POSTHOOK: Output: default@numericdatatype_n0
 PREHOOK: query: DESC FORMATTED numericDataType_n0
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@numericdatatype_n0

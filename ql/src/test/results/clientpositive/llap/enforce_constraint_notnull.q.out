@@ -3513,8 +3513,12 @@ POSTHOOK: Input: default@acid_uami_n1
 POSTHOOK: Output: default@acid_uami_n1
 PREHOOK: query: ALTER table acid_uami_n1 drop constraint nn1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@acid_uami_n1
+PREHOOK: Output: default@acid_uami_n1
 POSTHOOK: query: ALTER table acid_uami_n1 drop constraint nn1
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@acid_uami_n1
+POSTHOOK: Output: default@acid_uami_n1
 PREHOOK: query: ALTER table acid_uami_n1 CHANGE i i int constraint nn0 not null enforced
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@acid_uami_n1
@@ -5941,8 +5945,12 @@ STAGE PLANS:
 
 PREHOOK: query: alter table table2_n3 drop constraint nn5
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@table2_n3
+PREHOOK: Output: default@table2_n3
 POSTHOOK: query: alter table table2_n3 drop constraint nn5
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@table2_n3
+POSTHOOK: Output: default@table2_n3
 PREHOOK: query: explain insert into table2_n3 values(2, 3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

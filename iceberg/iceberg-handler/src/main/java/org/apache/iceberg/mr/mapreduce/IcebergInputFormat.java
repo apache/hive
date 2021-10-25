@@ -43,6 +43,7 @@ import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
+import org.apache.iceberg.SerializableTable;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -66,6 +67,7 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.InputFile;
+import org.apache.iceberg.mapping.NameMappingParser;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveIcebergStorageHandler;
@@ -136,13 +138,14 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     InputFormatConfig.InMemoryDataModel model = conf.getEnum(InputFormatConfig.IN_MEMORY_DATA_MODEL,
         InputFormatConfig.InMemoryDataModel.GENERIC);
     try (CloseableIterable<CombinedScanTask> tasksIterable = scan.planTasks()) {
+      Table serializableTable = SerializableTable.copyOf(table);
       tasksIterable.forEach(task -> {
         if (applyResidual && (model == InputFormatConfig.InMemoryDataModel.HIVE ||
             model == InputFormatConfig.InMemoryDataModel.PIG)) {
           // TODO: We do not support residual evaluation for HIVE and PIG in memory data model yet
           checkResiduals(task);
         }
-        splits.add(new IcebergSplit(conf, task, table.io(), table.encryption()));
+        splits.add(new IcebergSplit(serializableTable, conf, task));
       });
     } catch (IOException e) {
       throw new UncheckedIOException(String.format("Failed to close table scan: %s", scan), e);
@@ -190,6 +193,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     private TaskAttemptContext context;
     private Schema tableSchema;
     private Schema expectedSchema;
+    private String nameMapping;
     private boolean reuseContainers;
     private boolean caseSensitive;
     private InputFormatConfig.InMemoryDataModel inMemoryDataModel;
@@ -205,10 +209,12 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       // For now IcebergInputFormat does its own split planning and does not accept FileSplit instances
       CombinedScanTask task = ((IcebergSplit) split).task();
       this.context = newContext;
-      this.io = ((IcebergSplit) split).io();
-      this.encryptionManager = ((IcebergSplit) split).encryptionManager();
+      Table table = ((IcebergSplit) split).table();
+      this.io = table.io();
+      this.encryptionManager = table.encryption();
       this.tasks = task.files().iterator();
       this.tableSchema = InputFormatConfig.tableSchema(conf);
+      this.nameMapping = table.properties().get(TableProperties.DEFAULT_NAME_MAPPING);
       this.caseSensitive = conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT);
       this.expectedSchema = readSchema(conf, tableSchema, caseSensitive);
       this.reuseContainers = conf.getBoolean(InputFormatConfig.REUSE_CONTAINERS, false);
@@ -333,6 +339,9 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       if (reuseContainers) {
         avroReadBuilder.reuseContainers();
       }
+      if (nameMapping != null) {
+        avroReadBuilder.withNameMapping(NameMappingParser.fromJson(nameMapping));
+      }
 
       switch (inMemoryDataModel) {
         case PIG:
@@ -357,6 +366,9 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       if (reuseContainers) {
         parquetReadBuilder.reuseContainers();
       }
+      if (nameMapping != null) {
+        parquetReadBuilder.withNameMapping(NameMappingParser.fromJson(nameMapping));
+      }
 
       switch (inMemoryDataModel) {
         case PIG:
@@ -380,8 +392,8 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       // ORC does not support reuse containers yet
       switch (inMemoryDataModel) {
         case PIG:
-          // TODO: implement value readers for Pig and Hive
-          throw new UnsupportedOperationException("ORC support not yet supported for Pig and Hive");
+          // TODO: implement value readers for Pig
+          throw new UnsupportedOperationException("ORC support not yet supported for Pig");
         case HIVE:
           if (MetastoreUtil.hive3PresentOnClasspath()) {
             orcIterator = HIVE_VECTORIZED_READER_BUILDER.invoke(inputFile, task, idToConstant, context);
@@ -398,6 +410,10 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
           orcReadBuilder.createReaderFunc(
               fileSchema -> GenericOrcReader.buildReader(
                   readSchema, fileSchema, idToConstant));
+
+          if (nameMapping != null) {
+            orcReadBuilder.withNameMapping(NameMappingParser.fromJson(nameMapping));
+          }
           orcIterator = orcReadBuilder.build();
       }
 

@@ -30,6 +30,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
@@ -305,10 +306,11 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
 
     // create Iceberg table without specifying a write format in the tbl properties
     // it should fall back to using the default file format
-    shell.executeStatement(String.format("CREATE EXTERNAL TABLE %s (id bigint, name string) STORED BY '%s' %s",
+    shell.executeStatement(String.format("CREATE EXTERNAL TABLE %s (id bigint, name string) STORED BY '%s' %s %s",
         identifier,
         HiveIcebergStorageHandler.class.getName(),
-        testTables.locationForCreateTableSQL(identifier)));
+        testTables.locationForCreateTableSQL(identifier),
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of())));
 
     shell.executeStatement(String.format("INSERT INTO %s VALUES (10, 'Linda')", identifier));
     List<Object[]> results = shell.executeStatement(String.format("SELECT * FROM %s", identifier));
