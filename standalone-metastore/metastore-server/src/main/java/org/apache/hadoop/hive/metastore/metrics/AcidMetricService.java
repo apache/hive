@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.metrics;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -32,8 +33,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -66,7 +69,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getThreadIdF
 /**
  * Collect and publish ACID and compaction related metrics.
  */
-public class AcidMetricService  implements MetastoreTaskThread {
+public class AcidMetricService implements MetastoreTaskThread {
 
   private static final Logger LOG = LoggerFactory.getLogger(AcidMetricService.class);
 
@@ -90,8 +93,11 @@ public class AcidMetricService  implements MetastoreTaskThread {
         if (!metricsEnabled) {
           return;
         }
+
         try {
-          collectMetrics();
+          ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
+          detectMultipleWorkerVersions(currentCompactions);
+          updateMetrics(currentCompactions);
         } catch (Exception ex) {
          LOG.error("Caught exception in AcidMetricService loop", ex);
         }
@@ -104,10 +110,41 @@ public class AcidMetricService  implements MetastoreTaskThread {
     }
   }
 
-  private void collectMetrics() throws MetaException {
-    ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
+  private void detectMultipleWorkerVersions(ShowCompactResponse currentCompactions) {
+    long workerVersionThresholdInHours = MetastoreConf.getLongVar(conf,
+        MetastoreConf.ConfVars.COMPACTOR_WORKER_DETECT_MULTIPLE_VERSION_THRESHOLD);
+    long since = System.currentTimeMillis() - hoursInMillis(workerVersionThresholdInHours);
+
+    List<String> versions = collectWorkerVersions(currentCompactions.getCompacts(), since);
+    if (versions.size() > 1) {
+      LOG.warn("Multiple Compaction Worker versions detected: {}", versions);
+    }
+  }
+
+  private void updateMetrics(ShowCompactResponse currentCompactions) throws MetaException {
     updateMetricsFromShowCompact(currentCompactions, conf);
     updateDBMetrics();
+  }
+
+  @VisibleForTesting
+  public static long hoursInMillis(long hours) {
+    return hours * 60 * 60 * 1000;
+  }
+
+  @VisibleForTesting
+  public static List<String> collectWorkerVersions(List<ShowCompactResponseElement> currentCompacts, long since) {
+    return Optional.ofNullable(currentCompacts)
+      .orElseGet(ImmutableList::of)
+      .stream()
+      .filter(comp -> (comp.isSetEnqueueTime() && (comp.getEnqueueTime() >= since))
+        || (comp.isSetStart() && (comp.getStart() >= since))
+        || (comp.isSetEndTime() && (comp.getEndTime() >= since)))
+      .filter(comp -> !TxnStore.DID_NOT_INITIATE_RESPONSE.equals(comp.getState()))
+      .map(ShowCompactResponseElement::getWorkerVersion)
+      .filter(Objects::nonNull)
+      .distinct()
+      .sorted()
+      .collect(Collectors.toList());
   }
 
   private void updateDBMetrics() throws MetaException {
@@ -326,5 +363,4 @@ public class AcidMetricService  implements MetastoreTaskThread {
     }
     return input.replaceAll("\\s+", "_");
   }
-
 }
