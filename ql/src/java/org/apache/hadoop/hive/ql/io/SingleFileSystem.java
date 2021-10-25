@@ -48,6 +48,15 @@ import org.apache.hadoop.util.Progressable;
  * This will be a directory containing only the f1.txt and nothing else.
  *
  */
+/*
+ * Thru out this file there are paths of both the overlay filesystem and the underlying fs.
+ * To avoid confusion between these path types - all paths which are in the overlay fs are refered
+ * with the upper keyword - and paths on the underlying fs are identified with the lower keyword.
+ *
+ *  For example:
+ *    'sfs+file:///foo/bar/#SINGLEFILE#/bar' is an upper path
+ *    'file:///foo/bar' is a lower path
+ */
 public abstract class SingleFileSystem extends FileSystem {
 
   public static class HDFS extends SingleFileSystem {
@@ -151,12 +160,12 @@ public abstract class SingleFileSystem extends FileSystem {
      *
      * sfs+file:///foo/bar
      * sfs+file:///foo/
-     * 
+     *
      */
     DIR_MODE,
     /**
      * We are at a path which doesnt exists.
-     * 
+     *
      * sfs+file:///foo/bar/#SINGLEFILE#/invalid
      */
     NONEXISTENT,
