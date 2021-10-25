@@ -126,6 +126,7 @@ public abstract class SingleFileSystem extends FileSystem {
     case LEAF_FILE:
       return makeFileStatus(info.upperTargetPath, info.lowerTargetPath);
     case DIR_MODE:
+      return makeDirFileStatus(upperPath, removeSfsScheme(upperPath));
     case SINGLEFILE_DIR:
       return makeDirFileStatus(upperPath, info.lowerTargetPath);
     default:
