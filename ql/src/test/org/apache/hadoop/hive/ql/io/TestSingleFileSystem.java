@@ -52,7 +52,6 @@ public class TestSingleFileSystem {
 
   @Test
   public void testAllRegistered() {
-    Class<SingleFileSystem> c = SingleFileSystem.class;
     ServiceLoader<FileSystem> fs = ServiceLoader.load(FileSystem.class);
     Set<Class<?>> knownFileSystems = new HashSet<>();
 
@@ -60,8 +59,8 @@ public class TestSingleFileSystem {
       knownFileSystems.add(fileSystem.getClass());
     }
 
-    for (Class<?> sfsClass : c.getDeclaredClasses()) {
-      if (c.isAssignableFrom(sfsClass)) {
+    for (Class<?> sfsClass : SingleFileSystem.class.getDeclaredClasses()) {
+      if (SingleFileSystem.class.isAssignableFrom(sfsClass)) {
         if (!knownFileSystems.contains(sfsClass)) {
           fail(sfsClass + " is not registered!");
         }
@@ -95,7 +94,7 @@ public class TestSingleFileSystem {
   }
 
   @Test
-  public void testListStatusSingleFileDir2() throws Exception {
+  public void testListStatusSingleFileDirEndingInSlash() throws Exception {
     String targetSfsPath = "sfs+" + f1path + "/#SINGLEFILE#/";
     FileStatus[] list = fs.listStatus(new Path(targetSfsPath));
     assertEquals(1, list.length);
