@@ -29,6 +29,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.llap.LlapHiveUtils;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.Job;
@@ -97,15 +99,9 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     return new InputFormatConfig.ConfigBuilder(job.getConfiguration());
   }
 
-  @Override
-  public List<InputSplit> getSplits(JobContext context) {
-    Configuration conf = context.getConfiguration();
-    Table table = Optional
-        .ofNullable(HiveIcebergStorageHandler.table(conf, conf.get(InputFormatConfig.TABLE_IDENTIFIER)))
-        .orElseGet(() -> Catalogs.loadTable(conf));
-
+  private static TableScan createTableScan(Table table, Configuration conf) {
     TableScan scan = table.newScan()
-            .caseSensitive(conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT));
+        .caseSensitive(conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT));
     long snapshotId = conf.getLong(InputFormatConfig.SNAPSHOT_ID, -1);
     if (snapshotId != -1) {
       scan = scan.useSnapshot(snapshotId);
@@ -117,6 +113,12 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     long splitSize = conf.getLong(InputFormatConfig.SPLIT_SIZE, 0);
     if (splitSize > 0) {
       scan = scan.option(TableProperties.SPLIT_SIZE, String.valueOf(splitSize));
+    }
+    // In case of LLAP-based execution we ask Iceberg not to combine multiple fileScanTasks into one split.
+    // This is so that cache affinity can work, and each file(split) is executed/cached on always the same LLAP daemon.
+    if (LlapHiveUtils.findMapWork((JobConf) conf).getCacheAffinity()) {
+      Long openFileCost = splitSize > 0 ? splitSize : TableProperties.SPLIT_SIZE_DEFAULT;
+      scan = scan.option(TableProperties.SPLIT_OPEN_FILE_COST, String.valueOf(openFileCost));
     }
     String schemaStr = conf.get(InputFormatConfig.READ_SCHEMA);
     if (schemaStr != null) {
@@ -132,6 +134,17 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     if (filter != null) {
       scan = scan.filter(filter);
     }
+    return scan;
+  }
+
+  @Override
+  public List<InputSplit> getSplits(JobContext context) {
+    Configuration conf = context.getConfiguration();
+    Table table = Optional
+        .ofNullable(HiveIcebergStorageHandler.table(conf, conf.get(InputFormatConfig.TABLE_IDENTIFIER)))
+        .orElseGet(() -> Catalogs.loadTable(conf));
+
+    TableScan scan = createTableScan(table, conf);
 
     List<InputSplit> splits = Lists.newArrayList();
     boolean applyResidual = !conf.getBoolean(InputFormatConfig.SKIP_RESIDUAL_FILTERING, false);

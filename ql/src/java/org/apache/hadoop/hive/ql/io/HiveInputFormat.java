@@ -337,7 +337,10 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         (!checkVector || BatchToRowInputFormat.class.isAssignableFrom(clazz));
   }
 
-  public static boolean canInjectCaches(Class<? extends InputFormat> clazz) {
+  public static boolean canInjectCaches(Class<? extends InputFormat> clazz, boolean isVectorized) {
+    if (LlapCacheOnlyInputFormatInterface.VectorizedOnly.class.isAssignableFrom(clazz)) {
+      return isVectorized;
+    }
     return LlapCacheOnlyInputFormatInterface.class.isAssignableFrom(clazz);
   }
 
@@ -407,7 +410,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     Path splitPath = hsplit.getPath();
-    pushProjectionsAndFiltersAndAsOf(job, inputFormatClass, splitPath, nonNative);
+    pushProjectionsAndFiltersAndAsOf(job, splitPath);
 
     InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
     if (HiveConf.getBoolVar(job, ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon())) {
@@ -953,13 +956,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
   }
 
-  protected void pushProjectionsAndFiltersAndAsOf(JobConf jobConf, Class inputFormatClass,
-      Path splitPath) {
-    pushProjectionsAndFiltersAndAsOf(jobConf, inputFormatClass, splitPath, false);
-  }
-
-  protected void pushProjectionsAndFiltersAndAsOf(JobConf jobConf, Class inputFormatClass,
-      Path splitPath, boolean nonNative) {
+  protected void pushProjectionsAndFiltersAndAsOf(JobConf jobConf, Path splitPath) {
     Path splitPathWithNoSchema = Path.getPathWithoutSchemeAndAuthority(splitPath);
     if (this.mrwork == null) {
       init(job);
@@ -977,32 +974,23 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     while (iterator.hasNext()) {
       Entry<Path, List<String>> entry = iterator.next();
       Path key = entry.getKey();
+      // Note for HIVE-1903: for non-native tables we might only see a table location provided as path in splitPath.
+      // In this case the code part below should still work, as the "key" will be an exact match for splitPath.
+      // Also: we should not anticipate table paths to be under other tables' locations.
       boolean match;
-      if (nonNative) {
-        // For non-native tables, we need to do an exact match to avoid
-        // HIVE-1903.  (The table location contains no files, and the string
-        // representation of its path does not have a trailing slash.)
-        match =
-          splitPath.equals(key) || splitPathWithNoSchema.equals(key);
-      } else {
-        // But for native tables, we need to do a prefix match for
-        // subdirectories.  (Unlike non-native tables, prefix mixups don't seem
-        // to be a potential problem here since we are always dealing with the
-        // path to something deeper than the table location.)
-        if (pathsSize > 1) {
-          // Comparing paths multiple times creates lots of objects &
-          // creates GC pressure for tables having large number of partitions.
-          // In such cases, use pre-computed paths for comparison
-          if (splitParentPaths == null) {
-            splitParentPaths = new HashSet<>();
-            FileUtils.populateParentPaths(splitParentPaths, splitPath);
-            FileUtils.populateParentPaths(splitParentPaths, splitPathWithNoSchema);
-          }
-          match = splitParentPaths.contains(key);
-        } else {
-          match = FileUtils.isPathWithinSubtree(splitPath, key)
-              || FileUtils.isPathWithinSubtree(splitPathWithNoSchema, key);
+      if (pathsSize > 1) {
+        // Comparing paths multiple times creates lots of objects &
+        // creates GC pressure for tables having large number of partitions.
+        // In such cases, use pre-computed paths for comparison
+        if (splitParentPaths == null) {
+          splitParentPaths = new HashSet<>();
+          FileUtils.populateParentPaths(splitParentPaths, splitPath);
+          FileUtils.populateParentPaths(splitParentPaths, splitPathWithNoSchema);
         }
+        match = splitParentPaths.contains(key);
+      } else {
+        match = FileUtils.isPathWithinSubtree(splitPath, key)
+            || FileUtils.isPathWithinSubtree(splitPathWithNoSchema, key);
       }
       if (match) {
         List<String> list = entry.getValue();

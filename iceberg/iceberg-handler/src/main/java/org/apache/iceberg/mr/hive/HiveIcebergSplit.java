@@ -22,10 +22,13 @@ package org.apache.iceberg.mr.hive;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collection;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.FileSplit;
+import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.mr.mapreduce.IcebergSplit;
 import org.apache.iceberg.mr.mapreduce.IcebergSplitContainer;
+import org.apache.iceberg.relocated.com.google.common.collect.Iterators;
 import org.apache.iceberg.util.SerializationUtil;
 
 // Hive requires file formats to return splits that are instances of `FileSplit`.
@@ -65,7 +68,12 @@ public class HiveIcebergSplit extends FileSplit implements IcebergSplitContainer
 
   @Override
   public Path getPath() {
-    return new Path(tableLocation);
+    Collection<FileScanTask> fileScanTasks = innerSplit.task().files();
+    if (fileScanTasks.size() == 1) {
+      return new Path(Iterators.getOnlyElement(fileScanTasks.iterator()).file().path().toString());
+    } else {
+      return new Path(tableLocation);
+    }
   }
 
   @Override
