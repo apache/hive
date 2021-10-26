@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
@@ -1319,6 +1320,7 @@ public class Table implements Serializable {
     SourceTable sourceTable = new SourceTable();
     sourceTable.setTableId(getTTable().getId());
     sourceTable.setTableName(getFullyQualifiedName());
+    sourceTable.setInsertOnly(AcidUtils.isInsertOnlyTable(this));
     return sourceTable;
   }
 };

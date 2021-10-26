@@ -4614,6 +4614,7 @@ class SourceTable(object):
     Attributes:
      - tableName
      - tableId
+     - insertOnly
      - insertedCount
      - updatedCount
      - deletedCount
@@ -4621,9 +4622,10 @@ class SourceTable(object):
     """
 
 
-    def __init__(self, tableName=None, tableId=None, insertedCount=None, updatedCount=None, deletedCount=None,):
+    def __init__(self, tableName=None, tableId=None, insertOnly=None, insertedCount=None, updatedCount=None, deletedCount=None,):
         self.tableName = tableName
         self.tableId = tableId
+        self.insertOnly = insertOnly
         self.insertedCount = insertedCount
         self.updatedCount = updatedCount
         self.deletedCount = deletedCount
@@ -4648,16 +4650,21 @@ class SourceTable(object):
                 else:
                     iprot.skip(ftype)
             elif fid == 3:
-                if ftype == TType.I64:
-                    self.insertedCount = iprot.readI64()
+                if ftype == TType.BOOL:
+                    self.insertOnly = iprot.readBool()
                 else:
                     iprot.skip(ftype)
             elif fid == 4:
                 if ftype == TType.I64:
-                    self.updatedCount = iprot.readI64()
+                    self.insertedCount = iprot.readI64()
                 else:
                     iprot.skip(ftype)
             elif fid == 5:
+                if ftype == TType.I64:
+                    self.updatedCount = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
                 if ftype == TType.I64:
                     self.deletedCount = iprot.readI64()
                 else:
@@ -4680,16 +4687,20 @@ class SourceTable(object):
             oprot.writeFieldBegin('tableId', TType.I64, 2)
             oprot.writeI64(self.tableId)
             oprot.writeFieldEnd()
+        if self.insertOnly is not None:
+            oprot.writeFieldBegin('insertOnly', TType.BOOL, 3)
+            oprot.writeBool(self.insertOnly)
+            oprot.writeFieldEnd()
         if self.insertedCount is not None:
-            oprot.writeFieldBegin('insertedCount', TType.I64, 3)
+            oprot.writeFieldBegin('insertedCount', TType.I64, 4)
             oprot.writeI64(self.insertedCount)
             oprot.writeFieldEnd()
         if self.updatedCount is not None:
-            oprot.writeFieldBegin('updatedCount', TType.I64, 4)
+            oprot.writeFieldBegin('updatedCount', TType.I64, 5)
             oprot.writeI64(self.updatedCount)
             oprot.writeFieldEnd()
         if self.deletedCount is not None:
-            oprot.writeFieldBegin('deletedCount', TType.I64, 5)
+            oprot.writeFieldBegin('deletedCount', TType.I64, 6)
             oprot.writeI64(self.deletedCount)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -4700,6 +4711,8 @@ class SourceTable(object):
             raise TProtocolException(message='Required field tableName is unset!')
         if self.tableId is None:
             raise TProtocolException(message='Required field tableId is unset!')
+        if self.insertOnly is None:
+            raise TProtocolException(message='Required field insertOnly is unset!')
         if self.insertedCount is None:
             raise TProtocolException(message='Required field insertedCount is unset!')
         if self.updatedCount is None:
@@ -29546,9 +29559,10 @@ SourceTable.thrift_spec = (
     None,  # 0
     (1, TType.STRING, 'tableName', 'UTF8', None, ),  # 1
     (2, TType.I64, 'tableId', None, None, ),  # 2
-    (3, TType.I64, 'insertedCount', None, None, ),  # 3
-    (4, TType.I64, 'updatedCount', None, None, ),  # 4
-    (5, TType.I64, 'deletedCount', None, None, ),  # 5
+    (3, TType.BOOL, 'insertOnly', None, None, ),  # 3
+    (4, TType.I64, 'insertedCount', None, None, ),  # 4
+    (5, TType.I64, 'updatedCount', None, None, ),  # 5
+    (6, TType.I64, 'deletedCount', None, None, ),  # 6
 )
 all_structs.append(CreationMetadata)
 CreationMetadata.thrift_spec = (

@@ -187,6 +187,7 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -2549,6 +2550,8 @@ public class ObjectStore implements RawStore, Configurable {
     MTable mTable = mmvSource.getTable();
     sourceTable.setTableId(mTable.getId());
     sourceTable.setTableName(Warehouse.getQualifiedName(mTable.getDatabase().getName(), mTable.getTableName()));
+    String transactionalProp = mTable.getParameters().get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    sourceTable.setInsertOnly("insert_only".equalsIgnoreCase(transactionalProp));
     sourceTable.setInsertedCount(mmvSource.getInsertedCount());
     sourceTable.setUpdatedCount(mmvSource.getUpdatedCount());
     sourceTable.setDeletedCount(mmvSource.getDeletedCount());

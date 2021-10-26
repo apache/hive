@@ -1818,13 +1818,15 @@ class SourceTable
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TABLENAME = 1
   TABLEID = 2
-  INSERTEDCOUNT = 3
-  UPDATEDCOUNT = 4
-  DELETEDCOUNT = 5
+  INSERTONLY = 3
+  INSERTEDCOUNT = 4
+  UPDATEDCOUNT = 5
+  DELETEDCOUNT = 6
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     TABLEID => {:type => ::Thrift::Types::I64, :name => 'tableId'},
+    INSERTONLY => {:type => ::Thrift::Types::BOOL, :name => 'insertOnly'},
     INSERTEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'insertedCount'},
     UPDATEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'updatedCount'},
     DELETEDCOUNT => {:type => ::Thrift::Types::I64, :name => 'deletedCount'}
@@ -1835,6 +1837,7 @@ class SourceTable
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableId is unset!') unless @tableId
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field insertOnly is unset!') if @insertOnly.nil?
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field insertedCount is unset!') unless @insertedCount
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field updatedCount is unset!') unless @updatedCount
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field deletedCount is unset!') unless @deletedCount
