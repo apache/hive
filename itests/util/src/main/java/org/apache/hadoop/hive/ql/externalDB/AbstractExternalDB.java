@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.externalDB;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sqlline.SqlLine;
@@ -84,7 +83,7 @@ public abstract class AbstractExternalDB {
 
     private ProcessResults runCmd(String[] cmd, long secondsToWait)
             throws IOException, InterruptedException {
-        LOG.info("Going to run: " + StringUtils.join(cmd, " "));
+        LOG.info("Going to run: " + String.join(" ", cmd));
         Process proc = Runtime.getRuntime().exec(cmd);
         if (!proc.waitFor(secondsToWait, TimeUnit.SECONDS)) {
             throw new RuntimeException(
