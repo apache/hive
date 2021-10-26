@@ -176,7 +176,9 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.SafeToRetry
   public CompactionInfo findNextToCompact(String workerId) throws MetaException {
-    return findNextToCompact(new FindNextCompactRequest(workerId, null));
+    FindNextCompactRequest findNextCompactRequest = new FindNextCompactRequest();
+    findNextCompactRequest.setWorkerId(workerId);
+    return findNextToCompact(findNextCompactRequest);
   }
 
   /**
@@ -191,6 +193,12 @@ class CompactionTxnHandler extends TxnHandler {
       if (rqst == null) {
         throw new MetaException("FindNextCompactRequest is null");
       }
+
+      if (rqst.getWorkerId() == null) {
+        LOG.warn("Unable to find the next compaction due to the worker id is null");
+        return null;
+      }
+
       Connection dbConn = null;
       Statement stmt = null;
       //need a separate stmt for executeUpdate() otherwise it will close the ResultSet(HIVE-12725)

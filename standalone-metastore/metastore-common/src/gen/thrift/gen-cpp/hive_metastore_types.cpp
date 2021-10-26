@@ -28000,10 +28000,12 @@ FindNextCompactRequest::~FindNextCompactRequest() noexcept {
 
 void FindNextCompactRequest::__set_workerId(const std::string& val) {
   this->workerId = val;
+__isset.workerId = true;
 }
 
 void FindNextCompactRequest::__set_workerVersion(const std::string& val) {
   this->workerVersion = val;
+__isset.workerVersion = true;
 }
 std::ostream& operator<<(std::ostream& out, const FindNextCompactRequest& obj)
 {
@@ -28024,8 +28026,6 @@ uint32_t FindNextCompactRequest::read(::apache::thrift::protocol::TProtocol* ipr
 
   using ::apache::thrift::protocol::TProtocolException;
 
-  bool isset_workerId = false;
-  bool isset_workerVersion = false;
 
   while (true)
   {
@@ -28038,7 +28038,7 @@ uint32_t FindNextCompactRequest::read(::apache::thrift::protocol::TProtocol* ipr
       case 1:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->workerId);
-          isset_workerId = true;
+          this->__isset.workerId = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -28046,7 +28046,7 @@ uint32_t FindNextCompactRequest::read(::apache::thrift::protocol::TProtocol* ipr
       case 2:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->workerVersion);
-          isset_workerVersion = true;
+          this->__isset.workerVersion = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -28060,10 +28060,6 @@ uint32_t FindNextCompactRequest::read(::apache::thrift::protocol::TProtocol* ipr
 
   xfer += iprot->readStructEnd();
 
-  if (!isset_workerId)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
-  if (!isset_workerVersion)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
 
@@ -28072,14 +28068,16 @@ uint32_t FindNextCompactRequest::write(::apache::thrift::protocol::TProtocol* op
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("FindNextCompactRequest");
 
-  xfer += oprot->writeFieldBegin("workerId", ::apache::thrift::protocol::T_STRING, 1);
-  xfer += oprot->writeString(this->workerId);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("workerVersion", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->workerVersion);
-  xfer += oprot->writeFieldEnd();
-
+  if (this->__isset.workerId) {
+    xfer += oprot->writeFieldBegin("workerId", ::apache::thrift::protocol::T_STRING, 1);
+    xfer += oprot->writeString(this->workerId);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.workerVersion) {
+    xfer += oprot->writeFieldBegin("workerVersion", ::apache::thrift::protocol::T_STRING, 2);
+    xfer += oprot->writeString(this->workerVersion);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -28089,22 +28087,25 @@ void swap(FindNextCompactRequest &a, FindNextCompactRequest &b) {
   using ::std::swap;
   swap(a.workerId, b.workerId);
   swap(a.workerVersion, b.workerVersion);
+  swap(a.__isset, b.__isset);
 }
 
 FindNextCompactRequest::FindNextCompactRequest(const FindNextCompactRequest& other1006) {
   workerId = other1006.workerId;
   workerVersion = other1006.workerVersion;
+  __isset = other1006.__isset;
 }
 FindNextCompactRequest& FindNextCompactRequest::operator=(const FindNextCompactRequest& other1007) {
   workerId = other1007.workerId;
   workerVersion = other1007.workerVersion;
+  __isset = other1007.__isset;
   return *this;
 }
 void FindNextCompactRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "FindNextCompactRequest(";
-  out << "workerId=" << to_string(workerId);
-  out << ", " << "workerVersion=" << to_string(workerVersion);
+  out << "workerId="; (__isset.workerId ? (out << to_string(workerId)) : (out << "<null>"));
+  out << ", " << "workerVersion="; (__isset.workerVersion ? (out << to_string(workerVersion)) : (out << "<null>"));
   out << ")";
 }
 

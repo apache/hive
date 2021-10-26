@@ -16065,10 +16065,6 @@ class FindNextCompactRequest(object):
         oprot.writeStructEnd()
 
     def validate(self):
-        if self.workerId is None:
-            raise TProtocolException(message='Required field workerId is unset!')
-        if self.workerVersion is None:
-            raise TProtocolException(message='Required field workerVersion is unset!')
         return
 
     def __repr__(self):

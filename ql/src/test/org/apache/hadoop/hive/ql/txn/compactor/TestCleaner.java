@@ -102,7 +102,11 @@ public class TestCleaner extends CompactorTest {
 
     CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
     txnHandler.compact(rqst);
-    CompactionInfo ci = txnHandler.findNextToCompact(new FindNextCompactRequest("fred", "4.0.0"));
+
+    FindNextCompactRequest findNextCompactRequest = new FindNextCompactRequest();
+    findNextCompactRequest.setWorkerId("fred");
+    findNextCompactRequest.setWorkerVersion("4.0.0");
+    CompactionInfo ci = txnHandler.findNextToCompact(findNextCompactRequest);
     ci.runAs = System.getProperty("user.name");
     long compactTxn = openTxn(TxnType.COMPACTION);
 

@@ -419,7 +419,9 @@ public class TestHiveMetaStoreTxns {
     tbl = client.getTable(dbName, tblName);
 
     client.compact2(tbl.getDbName(), tbl.getTableName(), null, CompactionType.MINOR, new HashMap<>());
-    OptionalCompactionInfoStruct optionalCi = client.findNextCompact(new FindNextCompactRequest("myworker", null));
+    FindNextCompactRequest compactRequest = new FindNextCompactRequest();
+    compactRequest.setWorkerId("myworker");
+    OptionalCompactionInfoStruct optionalCi = client.findNextCompact(compactRequest);
     client.markCleaned(optionalCi.getCi());
 
     GetLatestCommittedCompactionInfoRequest rqst = new GetLatestCommittedCompactionInfoRequest();
