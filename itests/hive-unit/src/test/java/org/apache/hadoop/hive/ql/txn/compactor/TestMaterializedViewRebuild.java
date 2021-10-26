@@ -23,6 +23,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -78,13 +80,15 @@ public class TestMaterializedViewRebuild extends CompactorOnTezTest {
   }
 
   @Test
-  public void testWhenMajorCompactionThenIncrementalMVRebuildNotUsed() throws Exception {
+  public void testWhenMajorCompactionThenIncrementalMVRebuildIsStillAvailable() throws Exception {
 
     executeStatementOnDriver("insert into " + TABLE1 + "(a,b,c) values (3, 'three', 3.3)", driver);
 
     CompactorTestUtil.runCompaction(conf, "default",  TABLE1 , CompactionType.MAJOR, true);
     CompactorTestUtil.runCleaner(conf);
     verifySuccessfulCompaction(1);
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    txnHandler.cleanTxnToWriteIdTable();
 
     List<String> result = execSelectAndDumpData("explain cbo alter materialized view " + MV1 + " rebuild", driver, "");
     Assert.assertEquals(FULL_REBUILD_PLAN, result);
