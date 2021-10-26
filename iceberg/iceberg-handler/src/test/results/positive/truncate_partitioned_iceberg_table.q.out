@@ -93,6 +93,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
 	external.table.purge	true                
@@ -178,6 +179,7 @@ Table Type:         	EXTERNAL_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
 	external.table.purge	true                
