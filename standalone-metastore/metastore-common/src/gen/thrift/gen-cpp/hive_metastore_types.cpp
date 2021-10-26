@@ -46768,6 +46768,11 @@ void ReplicationMetrics::__set_progress(const std::string& val) {
   this->progress = val;
 __isset.progress = true;
 }
+
+void ReplicationMetrics::__set_messageFormat(const std::string& val) {
+  this->messageFormat = val;
+__isset.messageFormat = true;
+}
 std::ostream& operator<<(std::ostream& out, const ReplicationMetrics& obj)
 {
   obj.printTo(out);
@@ -46839,6 +46844,14 @@ uint32_t ReplicationMetrics::read(::apache::thrift::protocol::TProtocol* iprot) 
           xfer += iprot->skip(ftype);
         }
         break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->messageFormat);
+          this->__isset.messageFormat = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -46884,6 +46897,11 @@ uint32_t ReplicationMetrics::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeString(this->progress);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.messageFormat) {
+    xfer += oprot->writeFieldBegin("messageFormat", ::apache::thrift::protocol::T_STRING, 6);
+    xfer += oprot->writeString(this->messageFormat);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -46896,6 +46914,7 @@ void swap(ReplicationMetrics &a, ReplicationMetrics &b) {
   swap(a.dumpExecutionId, b.dumpExecutionId);
   swap(a.metadata, b.metadata);
   swap(a.progress, b.progress);
+  swap(a.messageFormat, b.messageFormat);
   swap(a.__isset, b.__isset);
 }
 
@@ -46905,6 +46924,7 @@ ReplicationMetrics::ReplicationMetrics(const ReplicationMetrics& other1665) {
   dumpExecutionId = other1665.dumpExecutionId;
   metadata = other1665.metadata;
   progress = other1665.progress;
+  messageFormat = other1665.messageFormat;
   __isset = other1665.__isset;
 }
 ReplicationMetrics& ReplicationMetrics::operator=(const ReplicationMetrics& other1666) {
@@ -46913,6 +46933,7 @@ ReplicationMetrics& ReplicationMetrics::operator=(const ReplicationMetrics& othe
   dumpExecutionId = other1666.dumpExecutionId;
   metadata = other1666.metadata;
   progress = other1666.progress;
+  messageFormat = other1666.messageFormat;
   __isset = other1666.__isset;
   return *this;
 }
@@ -46924,6 +46945,7 @@ void ReplicationMetrics::printTo(std::ostream& out) const {
   out << ", " << "dumpExecutionId=" << to_string(dumpExecutionId);
   out << ", " << "metadata="; (__isset.metadata ? (out << to_string(metadata)) : (out << "<null>"));
   out << ", " << "progress="; (__isset.progress ? (out << to_string(progress)) : (out << "<null>"));
+  out << ", " << "messageFormat="; (__isset.messageFormat ? (out << to_string(messageFormat)) : (out << "<null>"));
   out << ")";
 }
 

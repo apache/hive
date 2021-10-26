@@ -14375,6 +14375,7 @@ public class ObjectStore implements RawStore, Configurable {
             mReplicationMetrics.setProgress(replicationMetric.getProgress());
           }
         }
+        mReplicationMetrics.setMessageFormat(replicationMetric.getMessageFormat());
         mReplicationMetricsList.add(mReplicationMetrics);
       }
       pm.makePersistentAll(mReplicationMetricsList);

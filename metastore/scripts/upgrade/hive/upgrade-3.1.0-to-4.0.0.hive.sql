@@ -527,7 +527,8 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `REPLICATION_METRICS` (
     `POLICY_NAME` string,
     `DUMP_EXECUTION_ID` bigint,
     `METADATA` string,
-    `PROGRESS` string
+    `PROGRESS` string,
+    `MESSAGE_FORMAT` varchar(16)
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
@@ -538,7 +539,8 @@ TBLPROPERTIES (
     \"RM_POLICY\",
     \"RM_DUMP_EXECUTION_ID\",
     \"RM_METADATA\",
-    \"RM_PROGRESS\"
+    \"RM_PROGRESS\",
+    \"MESSAGE_FORMAT\"
 FROM \"REPLICATION_METRICS\""
 );
 
@@ -553,8 +555,8 @@ SELECT DISTINCT
     RM.`SCHEDULED_EXECUTION_ID`,
     RM.`POLICY_NAME`,
     RM.`DUMP_EXECUTION_ID`,
-    gzip_json_deserialize(RM.`METADATA`),
-    gzip_json_deserialize(RM.`PROGRESS`)
+    gzip_json_deserialize(RM.`METADATA`, RM.`MESSAGE_FORMAT`),
+    gzip_json_deserialize(RM.`PROGRESS`, RM.`MESSAGE_FORMAT`)
 FROM SYS.`REPLICATION_METRICS` AS RM;
 
 CREATE EXTERNAL TABLE IF NOT EXISTS `NOTIFICATION_LOG` (

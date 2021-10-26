@@ -1561,6 +1561,9 @@
       <field name="startTime">
          <column name="RM_START_TIME" jdbc-type="integer" allows-null="false"/>
       </field>
+      <field name="messageFormat">
+              <column name="MESSAGE_FORMAT" length="16" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
       <index name="PolicyIndex">
         <column name="RM_POLICY"/>
       </index>

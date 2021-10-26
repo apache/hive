@@ -22,16 +22,15 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetrics;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.messaging.MessageEncoder;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.messaging.MessageSerializer;
-import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
-import org.apache.hadoop.hive.metastore.utils.Retry;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -118,7 +117,8 @@ public final class MetricSink {
           int totalMetricsSize = metrics.size();
           List<ReplicationMetrics> replicationMetricsList = new ArrayList<>(totalMetricsSize);
           ObjectMapper mapper = new ObjectMapper();
-          MessageSerializer serializer = GzipJSONMessageEncoder.getInstance().getSerializer();
+          MessageEncoder encoder = MessageFactory.getDefaultInstance(conf);
+          MessageSerializer serializer = encoder.getSerializer();
           for (int index = 0; index < totalMetricsSize; index++) {
             ReplicationMetric metric = metrics.removeFirst();
             ReplicationMetrics persistentMetric = new ReplicationMetrics();
@@ -127,6 +127,7 @@ public final class MetricSink {
             persistentMetric.setPolicy(metric.getPolicy());
             persistentMetric.setProgress(serializer.serialize(mapper.writeValueAsString(metric.getProgress())));
             persistentMetric.setMetadata(serializer.serialize(mapper.writeValueAsString(metric.getMetadata())));
+            persistentMetric.setMessageFormat(encoder.getMessageFormat());
             LOG.debug("Metric to be persisted {} ", persistentMetric);
             replicationMetricsList.add(persistentMetric);
           }

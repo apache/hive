@@ -26,7 +26,8 @@ import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetrics;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
-import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import org.apache.hadoop.hive.metastore.messaging.MessageEncoder;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
@@ -67,7 +68,8 @@ import static org.junit.Assert.assertTrue;
 @RunWith(MockitoJUnitRunner.class)
 public class TestReplicationMetricSink {
 
-  MessageDeserializer deserializer = GzipJSONMessageEncoder.getInstance().getDeserializer();
+  MessageEncoder encoder;
+  MessageDeserializer deserializer;
   HiveConf conf;
 
   @Mock
@@ -81,6 +83,8 @@ public class TestReplicationMetricSink {
     MetricSink metricSinkSpy = Mockito.spy(MetricSink.getInstance());
     Mockito.doReturn(1L).when(metricSinkSpy).getFrequencyInSecs();
     metricSinkSpy.init(conf);
+    encoder = MessageFactory.getDefaultInstance(conf);
+    deserializer = encoder.getDeserializer();
   }
 
   private String deSerialize(String msg) {
@@ -133,6 +137,7 @@ public class TestReplicationMetricSink {
     ReplicationMetric actualMetric = new ReplicationMetric(actualThriftMetric.getScheduledExecutionId(),
         actualThriftMetric.getPolicy(), actualThriftMetric.getDumpExecutionId(),
         mapper.readValue(deSerialize(actualThriftMetric.getMetadata()), Metadata.class));
+    actualMetric.setMessageFormat(actualThriftMetric.getMessageFormat());
     ProgressMapper progressMapper = mapper.readValue(deSerialize(actualThriftMetric.getProgress()), ProgressMapper.class);
     Progress progress = new Progress();
     progress.setStatus(progressMapper.getStatus());
@@ -191,6 +196,7 @@ public class TestReplicationMetricSink {
     actualMetric = new ReplicationMetric(actualThriftMetric.getScheduledExecutionId(),
       actualThriftMetric.getPolicy(), actualThriftMetric.getDumpExecutionId(),
       mapper.readValue(deSerialize(actualThriftMetric.getMetadata()), Metadata.class));
+    actualMetric.setMessageFormat(actualThriftMetric.getMessageFormat());
     progressMapper = mapper.readValue(deSerialize(actualThriftMetric.getProgress()), ProgressMapper.class);
     progress = new Progress();
     progress.setStatus(progressMapper.getStatus());
@@ -252,6 +258,7 @@ public class TestReplicationMetricSink {
     actualMetric = new ReplicationMetric(actualThriftMetric.getScheduledExecutionId(),
             actualThriftMetric.getPolicy(), actualThriftMetric.getDumpExecutionId(),
             mapper.readValue(deSerialize(actualThriftMetric.getMetadata()), Metadata.class));
+    actualMetric.setMessageFormat(actualThriftMetric.getMessageFormat());
     progressMapper = mapper.readValue(deSerialize(actualThriftMetric.getProgress()), ProgressMapper.class);
     progress = new Progress();
     progress.setStatus(progressMapper.getStatus());

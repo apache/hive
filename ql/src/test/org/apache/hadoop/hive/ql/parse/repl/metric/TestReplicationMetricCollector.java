@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.parse.repl.metric;
 
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.messaging.MessageSerializer;
-import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
@@ -464,7 +464,7 @@ public class TestReplicationMetricCollector {
 
   @Test
   public void testReplStatsTrackerLimit() {
-    MessageSerializer serializer = GzipJSONMessageEncoder.getInstance().getSerializer();
+    MessageSerializer serializer = MessageFactory.getDefaultInstance(conf).getSerializer();
     ReplStatsTracker repl = new ReplStatsTracker(10);
     // Check for k=10
     generateStatsString(10, repl);

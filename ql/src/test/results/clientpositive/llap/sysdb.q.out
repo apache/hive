@@ -716,6 +716,7 @@ partitions	part_name
 partitions	sd_id
 partitions	tbl_id
 replication_metrics	dump_execution_id
+replication_metrics	message_format
 replication_metrics	metadata
 replication_metrics	policy_name
 replication_metrics	progress

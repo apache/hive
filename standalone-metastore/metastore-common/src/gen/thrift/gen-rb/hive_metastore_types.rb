@@ -7354,13 +7354,15 @@ class ReplicationMetrics
   DUMPEXECUTIONID = 3
   METADATA = 4
   PROGRESS = 5
+  MESSAGEFORMAT = 6
 
   FIELDS = {
     SCHEDULEDEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'scheduledExecutionId'},
     POLICY => {:type => ::Thrift::Types::STRING, :name => 'policy'},
     DUMPEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'dumpExecutionId'},
     METADATA => {:type => ::Thrift::Types::STRING, :name => 'metadata', :optional => true},
-    PROGRESS => {:type => ::Thrift::Types::STRING, :name => 'progress', :optional => true}
+    PROGRESS => {:type => ::Thrift::Types::STRING, :name => 'progress', :optional => true},
+    MESSAGEFORMAT => {:type => ::Thrift::Types::STRING, :name => 'messageFormat', :optional => true}
   }
 
   def struct_fields; FIELDS; end

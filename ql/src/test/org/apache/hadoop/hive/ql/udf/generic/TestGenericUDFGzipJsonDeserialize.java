@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.messaging.MessageEncoder;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.io.Text;
@@ -29,7 +31,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 /**
- * TestGenericUDFDeserialize.
+ * TestGenericUDFGzipJsonDeserialize.
  */
 public class TestGenericUDFGzipJsonDeserialize {
 
@@ -40,29 +42,52 @@ public class TestGenericUDFGzipJsonDeserialize {
         ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
         UDFArgumentException ex = null;
         try {
-            udf.initialize(new ObjectInspector[]{valueOI2, valueOI1});
-        } catch (UDFArgumentException e) {
-            ex = e;
-        }
-        assertNotNull("The function gzip_json_deserialize() accepts 1 argument.", ex);
-        ex = null;
-        try {
             udf.initialize(new ObjectInspector[]{valueOI1});
         } catch (UDFArgumentException e) {
             ex = e;
         }
-        assertNull("The function gzip_json_deserialize() accepts 1 argument.", ex);
+        assertNotNull("The function gzip_json_deserialize() accepts 2 argument.", ex);
+        ex = null;
+        try {
+            udf.initialize(new ObjectInspector[]{valueOI2, valueOI1});
+        } catch (UDFArgumentException e) {
+            ex = e;
+        }
+        assertNull("The function gzip_json_deserialize() accepts 2 argument.", ex);
     }
 
     @Test
-    public void testDeserializeString() throws HiveException {
+    public void testGZIPJsonDeserializeString() throws HiveException {
         GenericUDFGzipJsonDeserialize udf = new GenericUDFGzipJsonDeserialize();
-        udf.initialize(new ObjectInspector[]{PrimitiveObjectInspectorFactory.writableStringObjectInspector});
-        GenericUDF.DeferredObject[] args = new GenericUDF.DeferredObject[1];
+        udf.initialize(new ObjectInspector[]{PrimitiveObjectInspectorFactory.writableStringObjectInspector,
+                PrimitiveObjectInspectorFactory.writableStringObjectInspector});
+        GenericUDF.DeferredObject[] args = new GenericUDF.DeferredObject[2];
         String expectedOutput = "test";
-        String serializedMsg = GzipJSONMessageEncoder.getInstance().getSerializer().serialize(expectedOutput);
+        MessageEncoder encoder = MessageFactory.getDefaultInstance(new HiveConf());
+        String serializedMsg = encoder.getSerializer().serialize(expectedOutput);
         args[0] = new GenericUDF.DeferredJavaObject(new Text(serializedMsg));
+        args[1] = new GenericUDF.DeferredJavaObject(new Text(encoder.getMessageFormat()));
         Object actualOutput = udf.evaluate(args).toString();
         assertEquals("gzip_json_deserialize() test", expectedOutput, actualOutput != null ? actualOutput : null);
+    }
+
+    @Test
+    public void testInvalidMessageString() throws HiveException {
+        GenericUDFGzipJsonDeserialize udf = new GenericUDFGzipJsonDeserialize();
+        udf.initialize(new ObjectInspector[]{PrimitiveObjectInspectorFactory.writableStringObjectInspector,
+                PrimitiveObjectInspectorFactory.writableStringObjectInspector});
+        GenericUDF.DeferredObject[] args = new GenericUDF.DeferredObject[2];
+        String expectedOutput = "test";
+        MessageEncoder encoder = MessageFactory.getDefaultInstance(new HiveConf());
+        String serializedMsg = encoder.getSerializer().serialize(expectedOutput);
+        args[0] = new GenericUDF.DeferredJavaObject(new Text(serializedMsg));
+        args[1] = new GenericUDF.DeferredJavaObject(new Text("randomSerialization"));
+        HiveException ex = null;
+        try {
+            Object actualOutput = udf.evaluate(args).toString();
+        } catch (HiveException e) {
+            ex = e;
+        }
+        assertNotNull("Invalid message format provided.", ex);
     }
 }

@@ -17629,9 +17629,10 @@ void swap(GetPartitionsPsWithAuthResponse &a, GetPartitionsPsWithAuthResponse &b
 std::ostream& operator<<(std::ostream& out, const GetPartitionsPsWithAuthResponse& obj);
 
 typedef struct _ReplicationMetrics__isset {
-  _ReplicationMetrics__isset() : metadata(false), progress(false) {}
+  _ReplicationMetrics__isset() : metadata(false), progress(false), messageFormat(false) {}
   bool metadata :1;
   bool progress :1;
+  bool messageFormat :1;
 } _ReplicationMetrics__isset;
 
 class ReplicationMetrics : public virtual ::apache::thrift::TBase {
@@ -17639,7 +17640,7 @@ class ReplicationMetrics : public virtual ::apache::thrift::TBase {
 
   ReplicationMetrics(const ReplicationMetrics&);
   ReplicationMetrics& operator=(const ReplicationMetrics&);
-  ReplicationMetrics() : scheduledExecutionId(0), policy(), dumpExecutionId(0), metadata(), progress() {
+  ReplicationMetrics() : scheduledExecutionId(0), policy(), dumpExecutionId(0), metadata(), progress(), messageFormat() {
   }
 
   virtual ~ReplicationMetrics() noexcept;
@@ -17648,6 +17649,7 @@ class ReplicationMetrics : public virtual ::apache::thrift::TBase {
   int64_t dumpExecutionId;
   std::string metadata;
   std::string progress;
+  std::string messageFormat;
 
   _ReplicationMetrics__isset __isset;
 
@@ -17660,6 +17662,8 @@ class ReplicationMetrics : public virtual ::apache::thrift::TBase {
   void __set_metadata(const std::string& val);
 
   void __set_progress(const std::string& val);
+
+  void __set_messageFormat(const std::string& val);
 
   bool operator == (const ReplicationMetrics & rhs) const
   {
@@ -17676,6 +17680,10 @@ class ReplicationMetrics : public virtual ::apache::thrift::TBase {
     if (__isset.progress != rhs.__isset.progress)
       return false;
     else if (__isset.progress && !(progress == rhs.progress))
+      return false;
+    if (__isset.messageFormat != rhs.__isset.messageFormat)
+      return false;
+    else if (__isset.messageFormat && !(messageFormat == rhs.messageFormat))
       return false;
     return true;
   }

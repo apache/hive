@@ -41,7 +41,7 @@ alter scheduled query repl2 disabled;
 
 show databases;
 
-select policy_name, dump_execution_id from sys.replication_metrics;
+select policy_name, dump_execution_id, message_format from sys.replication_metrics;
 
 select policy_name, dump_execution_id from sys.replication_metrics_view;
 

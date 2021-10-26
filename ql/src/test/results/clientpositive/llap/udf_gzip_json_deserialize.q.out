@@ -2,22 +2,22 @@ PREHOOK: query: DESCRIBE FUNCTION gzip_json_deserialize
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION gzip_json_deserialize
 POSTHOOK: type: DESCFUNCTION
-gzip_json_deserialize(message) - Returns deserialized string of gzip compressed + base64 encoded message.
+gzip_json_deserialize(message, encodingFormat) - Returns deserialized string of encoded message.
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED gzip_json_deserialize
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED gzip_json_deserialize
 POSTHOOK: type: DESCFUNCTION
-gzip_json_deserialize(message) - Returns deserialized string of gzip compressed + base64 encoded message.
+gzip_json_deserialize(message, encodingFormat) - Returns deserialized string of encoded message.
 Example:
-  > SELECT gzip_json_deserialize('H4sIAAAAAAAA/ytJLS4BAAx+f9gEAAAA') FROM src LIMIT 1;
+  > SELECT gzip_json_deserialize('H4sIAAAAAAAA/ytJLS4BAAx+f9gEAAAA', 'gzip(json-2.0)') FROM src LIMIT 1;
   test
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFGzipJsonDeserialize
 Function type:BUILTIN
-PREHOOK: query: SELECT gzip_json_deserialize("H4sIAAAAAAAA/ytJLS4BAAx+f9gEAAAA")
+PREHOOK: query: SELECT gzip_json_deserialize("H4sIAAAAAAAA/ytJLS4BAAx+f9gEAAAA", "gzip(json-2.0)")
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT gzip_json_deserialize("H4sIAAAAAAAA/ytJLS4BAAx+f9gEAAAA")
+POSTHOOK: query: SELECT gzip_json_deserialize("H4sIAAAAAAAA/ytJLS4BAAx+f9gEAAAA", "gzip(json-2.0)")
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####

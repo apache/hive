@@ -17,8 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -28,24 +27,23 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.io.Text;
 
 /**
  * GenericUDFDeserializeString.
  *
  */
 @Description(name = "gzip_json_deserialize",
-        value="_FUNC_(message) - Returns deserialized string of gzip compressed + base64 encoded message.",
+        value="_FUNC_(message, encodingFormat) - Returns deserialized string of encoded message.",
         extended="Example:\n"
-                + "  > SELECT _FUNC_('H4sIAAAAAAAA/ytJLS4BAAx+f9gEAAAA') FROM src LIMIT 1;\n"
+                + "  > SELECT _FUNC_('H4sIAAAAAAAA/ytJLS4BAAx+f9gEAAAA', 'gzip(json-2.0)') FROM src LIMIT 1;\n"
                 + "  test")
 public class GenericUDFGzipJsonDeserialize extends GenericUDF {
 
-    private static final int STRING_IDX = 0;
-    private static final int ARG_COUNT = 1; // Number of arguments to this UDF
+    private static final int ARG_COUNT = 2; // Number of arguments to this UDF
     private static final String FUNC_NAME = "gzip_json_deserialize"; // External Name
 
     private transient PrimitiveObjectInspector stringOI = null;
+    private transient PrimitiveObjectInspector encodingFormat = null;
 
     @Override
     public ObjectInspector initialize(ObjectInspector[] arguments)
@@ -53,23 +51,33 @@ public class GenericUDFGzipJsonDeserialize extends GenericUDF {
         if (arguments.length != ARG_COUNT) {
             throw new UDFArgumentException("The function " + FUNC_NAME + " accepts " + ARG_COUNT + " arguments.");
         }
-        if (arguments[0].getCategory() != ObjectInspector.Category.PRIMITIVE ||
-                PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP != PrimitiveObjectInspectorUtils.getPrimitiveGrouping(
-                        ((PrimitiveObjectInspector)arguments[0]).getPrimitiveCategory())){
-            throw new UDFArgumentTypeException(0, "The first argument to " + FUNC_NAME + " must be a string/varchar");
+        for (ObjectInspector arg: arguments) {
+            if (arg.getCategory() != ObjectInspector.Category.PRIMITIVE ||
+                    PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP != PrimitiveObjectInspectorUtils.getPrimitiveGrouping(
+                            ((PrimitiveObjectInspector)arg).getPrimitiveCategory())){
+                throw new UDFArgumentTypeException(0, "The arguments to " + FUNC_NAME + " must be a string/varchar");
+            }
         }
-        stringOI = (PrimitiveObjectInspector) arguments[STRING_IDX];
+        stringOI = (PrimitiveObjectInspector) arguments[0];
+        encodingFormat = (PrimitiveObjectInspector) arguments[1];
         return PrimitiveObjectInspectorFactory.javaStringObjectInspector;
     }
 
     @Override
     public Object evaluate(DeferredObject[] arguments) throws HiveException {
         String value = PrimitiveObjectInspectorUtils.getString(arguments[0].get(), stringOI);
+        String messageFormat = PrimitiveObjectInspectorUtils.getString(arguments[1].get(), encodingFormat);
         if (value == null) {
             return null;
+        } else if (messageFormat == null || messageFormat.isEmpty()) {
+            return value;
+        } else if (GzipJSONMessageEncoder.FORMAT.equalsIgnoreCase(messageFormat)) {
+            return GzipJSONMessageEncoder.getInstance().getDeserializer().deSerializeGenericString(value);
+        } else if (JSONMessageEncoder.FORMAT.equalsIgnoreCase(value)) {
+            return JSONMessageEncoder.getInstance().getDeserializer().deSerializeGenericString(value);
+        } else {
+            throw new HiveException("Invalid message format provided: " + messageFormat + " for message: " + value);
         }
-        MessageDeserializer deserializer = GzipJSONMessageEncoder.getInstance().getDeserializer();
-        return deserializer.deSerializeGenericString(value);
     }
 
     @Override
