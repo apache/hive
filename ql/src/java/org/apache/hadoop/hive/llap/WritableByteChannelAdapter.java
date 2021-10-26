@@ -93,7 +93,7 @@ public class WritableByteChannelAdapter implements WritableByteChannel {
     int size = src.remaining();
     //Down the semaphore or block until available
     takeWriteResources(1);
-    ByteBuf buf = allocator.getAsByteBufAllocator().buffer(size);
+    ByteBuf buf = allocator.buffer(size);
     buf.writeBytes(src);
     chc.writeAndFlush(buf).addListener(writeListener);
     return size;
