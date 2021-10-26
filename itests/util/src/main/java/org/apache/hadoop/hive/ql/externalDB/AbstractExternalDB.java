@@ -181,7 +181,6 @@ public abstract class AbstractExternalDB {
     }
 
     protected void execSql(String sqlScriptFile) throws IOException {
-        // run the script using SqlLine
         SqlLine sqlLine = new SqlLine();
         ByteArrayOutputStream outputForLog = null;
         OutputStream out;
