@@ -188,7 +188,7 @@ public abstract class AbstractExternalDB {
         LOG.debug("Printing output from SQLLine:");
         LOG.debug(out.toString());
         if (status != SqlLine.Status.OK) {
-            throw new IOException("Database script "+sqlScriptFile+" failed with status " + status);
+            throw new RuntimeException("Database script " + sqlScriptFile + " failed with status " + status);
         }
     }
 
