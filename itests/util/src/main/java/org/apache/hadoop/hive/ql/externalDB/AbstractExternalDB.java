@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.externalDB;
 
-import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +26,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -182,21 +180,13 @@ public abstract class AbstractExternalDB {
 
     protected void execSql(String sqlScriptFile) throws IOException {
         SqlLine sqlLine = new SqlLine();
-        ByteArrayOutputStream outputForLog = null;
-        OutputStream out;
-        if (LOG.isDebugEnabled()) {
-            out = outputForLog = new ByteArrayOutputStream();
-        } else {
-            out = new NullOutputStream();
-        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
         sqlLine.setOutputStream(new PrintStream(out));
+        sqlLine.setErrorStream(new PrintStream(out));
         System.setProperty("sqlline.silent", "true");
-
         SqlLine.Status status = sqlLine.begin(SQLLineCmdBuild(sqlScriptFile), null, false);
-        if (LOG.isDebugEnabled() && outputForLog != null) {
-            LOG.debug("Received following output from Sqlline:");
-            LOG.debug(outputForLog.toString("UTF-8"));
-        }
+        LOG.debug("Printing output from SQLLine:");
+        LOG.debug(out.toString());
         if (status != SqlLine.Status.OK) {
             throw new IOException("external database script failed, errorcode " + status);
         }
