@@ -571,8 +571,8 @@ public class MetastoreConf {
             "tables or partitions to be compacted once they are determined to need compaction.\n" +
             "It will also increase the background load on the Hadoop cluster as more MapReduce jobs\n" +
             "will be running in the background."),
-    COMPACTOR_WORKER_DETECT_MULTIPLE_VERSION_THRESHOLD("metastore.compactor.worker.detect_multiple_versions.threshold",
-      "hive.metastore.compactor.worker.detect_versions.threshold", 24,
+    COMPACTOR_WORKER_DETECT_MULTIPLE_VERSION_THRESHOLD("metastore.compactor.worker.detect.multiple.versions.threshold",
+      "hive.metastore.compactor.worker.detect.multiple.versions.threshold", 24, TimeUnit.HOURS,
       "Defines a time-window in hours from the current time backwards\n," +
             "in which a warning is being raised if multiple worker version are detected.\n" +
             "The setting has no effect if the metastore.metrics.enabled is disabled \n" +

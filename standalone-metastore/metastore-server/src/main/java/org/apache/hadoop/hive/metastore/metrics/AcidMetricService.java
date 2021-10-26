@@ -111,9 +111,9 @@ public class AcidMetricService implements MetastoreTaskThread {
   }
 
   private void detectMultipleWorkerVersions(ShowCompactResponse currentCompactions) {
-    long workerVersionThresholdInHours = MetastoreConf.getLongVar(conf,
-        MetastoreConf.ConfVars.COMPACTOR_WORKER_DETECT_MULTIPLE_VERSION_THRESHOLD);
-    long since = System.currentTimeMillis() - hoursInMillis(workerVersionThresholdInHours);
+    long workerVersionThresholdInMillis = MetastoreConf.getTimeVar(conf,
+        MetastoreConf.ConfVars.COMPACTOR_WORKER_DETECT_MULTIPLE_VERSION_THRESHOLD, TimeUnit.MILLISECONDS);
+    long since = System.currentTimeMillis() - workerVersionThresholdInMillis;
 
     List<String> versions = collectWorkerVersions(currentCompactions.getCompacts(), since);
     if (versions.size() > 1) {
@@ -124,11 +124,6 @@ public class AcidMetricService implements MetastoreTaskThread {
   private void updateMetrics(ShowCompactResponse currentCompactions) throws MetaException {
     updateMetricsFromShowCompact(currentCompactions, conf);
     updateDBMetrics();
-  }
-
-  @VisibleForTesting
-  public static long hoursInMillis(long hours) {
-    return hours * 60 * 60 * 1000;
   }
 
   @VisibleForTesting

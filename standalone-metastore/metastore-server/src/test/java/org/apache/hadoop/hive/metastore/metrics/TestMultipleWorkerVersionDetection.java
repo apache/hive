@@ -35,17 +35,6 @@ public class TestMultipleWorkerVersionDetection {
   private final long SINCE_EPOCH = 0L;
 
   @Test
-  public void testHoursInMillis() {
-    assertThat(AcidMetricService.hoursInMillis(-123), CoreMatchers.is(-442_800_000L));
-    assertThat(AcidMetricService.hoursInMillis(-10), CoreMatchers.is(-36_000_000L));
-    assertThat(AcidMetricService.hoursInMillis(-1), CoreMatchers.is(-3_600_000L));
-    assertThat(AcidMetricService.hoursInMillis(0), CoreMatchers.is(0L));
-    assertThat(AcidMetricService.hoursInMillis(1), CoreMatchers.is(3_600_000L));
-    assertThat(AcidMetricService.hoursInMillis(10), CoreMatchers.is(36_000_000L));
-    assertThat(AcidMetricService.hoursInMillis(456), CoreMatchers.is(1_641_600_000L));
-  }
-
-  @Test
   public void testCollectWorkerVersionsEmptyLists() {
     assertThat(AcidMetricService.collectWorkerVersions(null, SINCE_EPOCH), CoreMatchers.is(Collections.emptyList()));
     assertThat(AcidMetricService.collectWorkerVersions(Collections.emptyList(), SINCE_EPOCH),
@@ -114,7 +103,7 @@ public class TestMultipleWorkerVersionDetection {
   private static ShowCompactResponseElement showCompactResponse(String workerVersion, String state,
       Long enqueuedTime, Long startTime, Long endTime) {
 
-    ShowCompactResponseElement e = new ShowCompactResponseElement("db0bane", "table-name", CompactionType.MINOR, state);
+    ShowCompactResponseElement e = new ShowCompactResponseElement("db_name", "table_name", CompactionType.MINOR, state);
     e.setWorkerVersion(workerVersion);
 
     if (enqueuedTime != null) {
