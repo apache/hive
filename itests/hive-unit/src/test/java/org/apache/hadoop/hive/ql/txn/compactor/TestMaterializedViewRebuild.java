@@ -64,10 +64,15 @@ public class TestMaterializedViewRebuild extends CompactorOnTezTest {
   @Override
   public void setup() throws Exception {
     super.setup();
+  }
 
-    executeStatementOnDriver("create table " + TABLE1 + "(a int, b varchar(128), c float) stored as orc TBLPROPERTIES ('transactional'='true')", driver);
-    executeStatementOnDriver("insert into " + TABLE1 + "(a,b, c) values (1, 'one', 1.1), (2, 'two', 2.2), (NULL, NULL, NULL)", driver);
-    executeStatementOnDriver("create materialized view " + MV1 + " stored as orc TBLPROPERTIES ('transactional'='true') as " +
+  private void createTestSchema(String tblproperties) throws Exception {
+    executeStatementOnDriver("create table " + TABLE1 + "(a int, b varchar(128), c float) stored as orc " +
+        "TBLPROPERTIES ('transactional'='true'" + tblproperties + ")", driver);
+    executeStatementOnDriver("insert into " + TABLE1 + "(a,b, c) values " +
+        "(1, 'one', 1.1), (2, 'two', 2.2), (NULL, NULL, NULL)", driver);
+    executeStatementOnDriver("create materialized view " + MV1 + " stored as orc " +
+        "TBLPROPERTIES ('transactional'='true') as " +
         "select a,b,c from " + TABLE1 + " where a > 0 or a is null", driver);
   }
 
@@ -81,6 +86,7 @@ public class TestMaterializedViewRebuild extends CompactorOnTezTest {
 
   @Test
   public void testWhenMajorCompactionThenIncrementalMVRebuildIsStillAvailable() throws Exception {
+    createTestSchema("");
 
     executeStatementOnDriver("insert into " + TABLE1 + "(a,b,c) values (3, 'three', 3.3)", driver);
 
@@ -92,6 +98,29 @@ public class TestMaterializedViewRebuild extends CompactorOnTezTest {
 
     List<String> result = execSelectAndDumpData("explain cbo alter materialized view " + MV1 + " rebuild", driver, "");
     Assert.assertEquals(INCREMENTAL_REBUILD_PLAN, result);
+    executeStatementOnDriver("alter materialized view " + MV1 + " rebuild", driver);
+
+    result = execSelectAndDumpData("select * from " + MV1 , driver, "");
+    assertResult(EXPECTED_RESULT, result);
+
+    result = execSelectAndDumpData("explain cbo select a,b,c from " + TABLE1 + " where a > 0 or a is null", driver, "");
+    Assert.assertEquals(Arrays.asList("CBO PLAN:", "HiveTableScan(table=[[default, " + MV1 + "]], table:alias=[default." + MV1 + "])", ""), result);
+  }
+
+  @Test
+  public void testWhenCompactInsertOnlySourceTableThenIncrementalMVRebuildIsNotAvailable() throws Exception {
+    createTestSchema(", 'transactional_properties'='insert_only'");
+
+    executeStatementOnDriver("insert into " + TABLE1 + "(a,b,c) values (3, 'three', 3.3)", driver);
+
+    CompactorTestUtil.runCompaction(conf, "default",  TABLE1 , CompactionType.MAJOR, true);
+    CompactorTestUtil.runCleaner(conf);
+    verifySuccessfulCompaction(1);
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    txnHandler.cleanTxnToWriteIdTable();
+
+    List<String> result = execSelectAndDumpData("explain cbo alter materialized view " + MV1 + " rebuild", driver, "");
+    Assert.assertEquals(FULL_REBUILD_PLAN, result);
     executeStatementOnDriver("alter materialized view " + MV1 + " rebuild", driver);
 
     result = execSelectAndDumpData("select * from " + MV1 , driver, "");
