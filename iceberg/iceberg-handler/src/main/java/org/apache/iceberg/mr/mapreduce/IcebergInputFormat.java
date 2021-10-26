@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -116,7 +117,8 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     }
     // In case of LLAP-based execution we ask Iceberg not to combine multiple fileScanTasks into one split.
     // This is so that cache affinity can work, and each file(split) is executed/cached on always the same LLAP daemon.
-    if (LlapHiveUtils.findMapWork((JobConf) conf).getCacheAffinity()) {
+    MapWork mapWork = LlapHiveUtils.findMapWork((JobConf) conf);
+    if (mapWork != null && mapWork.getCacheAffinity()) {
       Long openFileCost = splitSize > 0 ? splitSize : TableProperties.SPLIT_SIZE_DEFAULT;
       scan = scan.option(TableProperties.SPLIT_OPEN_FILE_COST, String.valueOf(openFileCost));
     }
