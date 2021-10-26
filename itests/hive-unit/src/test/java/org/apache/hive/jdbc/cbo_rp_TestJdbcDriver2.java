@@ -817,15 +817,15 @@ public class cbo_rp_TestJdbcDriver2 {
     assertEquals(-1.1d, res.getDouble(3), floatCompareDelta);
     assertEquals("", res.getString(4));
     assertEquals("[]", res.getString(5));
-    assertEquals("{}", res.getString(6));
-    assertEquals("{}", res.getString(7));
+    assertEquals("{1:null}", res.getString(6));
+    assertEquals("{\"a\":\"b\"}", res.getString(7));
     assertEquals("{\"r\":null,\"s\":null,\"t\":null}", res.getString(8));
     assertEquals(-1, res.getByte(9));
     assertEquals(-1, res.getShort(10));
     assertEquals(-1.0f, res.getFloat(11), floatCompareDelta);
     assertEquals(-1, res.getLong(12));
     assertEquals("[]", res.getString(13));
-    assertEquals("{}", res.getString(14));
+    assertEquals("{1:{10:100}}", res.getString(14));
     assertEquals("{\"r\":null,\"s\":null}", res.getString(15));
     assertEquals("[]", res.getString(16));
     assertEquals(null, res.getString(17));
@@ -846,7 +846,7 @@ public class cbo_rp_TestJdbcDriver2 {
     assertEquals("1", res.getString(4));
     assertEquals("[1,2]", res.getString(5));
     assertEquals("{1:\"x\",2:\"y\"}", res.getString(6));
-    assertEquals("{\"k\":\"v\"}", res.getString(7));
+    assertEquals("{\"k\":\"v\",\"b\":\"c\"}", res.getString(7));
     assertEquals("{\"r\":\"a\",\"s\":9,\"t\":2.2}", res.getString(8));
     assertEquals(1, res.getByte(9));
     assertEquals(1, res.getShort(10));

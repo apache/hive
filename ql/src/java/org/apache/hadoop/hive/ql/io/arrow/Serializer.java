@@ -274,7 +274,7 @@ public class Serializer {
       case STRUCT:
         return ArrowType.Struct.INSTANCE;
       case MAP:
-        return ArrowType.List.INSTANCE;
+        return new ArrowType.Map(false);
       case UNION:
       default:
         throw new IllegalArgumentException();
@@ -288,10 +288,14 @@ public class Serializer {
         writePrimitive(arrowVector, hiveVector, typeInfo, size, vectorizedRowBatch, isNative);
         break;
       case LIST:
-        writeList((ListVector) arrowVector, (ListColumnVector) hiveVector, (ListTypeInfo) typeInfo, size, vectorizedRowBatch, isNative);
+        // the flag 'isMapDataType'=false, for all the list types except for the case when map is converted
+        // as a list of structs.
+        writeList((ListVector) arrowVector, (ListColumnVector) hiveVector, (ListTypeInfo) typeInfo, size, vectorizedRowBatch, isNative, false);
         break;
       case STRUCT:
-        writeStruct((NonNullableStructVector) arrowVector, (StructColumnVector) hiveVector, (StructTypeInfo) typeInfo, size, vectorizedRowBatch, isNative);
+        // the flag 'isMapDataType'=false, for all the struct types except for the case when map is converted
+        // as a list of structs.
+        writeStruct((NonNullableStructVector) arrowVector, (StructColumnVector) hiveVector, (StructTypeInfo) typeInfo, size, vectorizedRowBatch, isNative, false);
         break;
       case UNION:
         writeUnion(arrowVector, hiveVector, typeInfo, size, vectorizedRowBatch, isNative);
@@ -309,7 +313,8 @@ public class Serializer {
     final ListTypeInfo structListTypeInfo = toStructListTypeInfo(typeInfo);
     final ListColumnVector structListVector = toStructListVector(hiveVector);
 
-    write(arrowVector, structListVector, structListTypeInfo, size, vectorizedRowBatch, isNative);
+    // Map is converted as a list of structs and thus we call the writeList() method with the flag 'isMapDataType'=true
+    writeList(arrowVector, structListVector, structListTypeInfo, size, vectorizedRowBatch, isNative, true);
 
     final ArrowBuf validityBuffer = arrowVector.getValidityBuffer();
     for (int rowIndex = 0; rowIndex < size; rowIndex++) {
@@ -340,7 +345,7 @@ public class Serializer {
   }
 
   private void writeStruct(NonNullableStructVector arrowVector, StructColumnVector hiveVector,
-      StructTypeInfo typeInfo, int size, VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
+      StructTypeInfo typeInfo, int size, VectorizedRowBatch vectorizedRowBatch, boolean isNative, boolean isMapDataType) {
     final List<String> fieldNames = typeInfo.getAllStructFieldNames();
     final List<TypeInfo> fieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
     final ColumnVector[] hiveFieldVectors = hiveVector.fields;
@@ -365,9 +370,12 @@ public class Serializer {
       final TypeInfo fieldTypeInfo = fieldTypeInfos.get(fieldIndex);
       final ColumnVector hiveFieldVector = hiveFieldVectors[fieldIndex];
       final String fieldName = fieldNames.get(fieldIndex);
+
+      // If the call is coming from writeMap(), then the structs within the list type should be non-nullable.
+      FieldType elementFieldType = (isMapDataType) ? (new FieldType(false, toArrowType(fieldTypeInfo), null))
+                                                    : (toFieldType(fieldTypeInfos.get(fieldIndex)));
       final FieldVector arrowFieldVector =
-          arrowVector.addOrGet(fieldName,
-              toFieldType(fieldTypeInfos.get(fieldIndex)), FieldVector.class);
+          arrowVector.addOrGet(fieldName, elementFieldType, FieldVector.class);
       arrowFieldVector.setInitialCapacity(size);
       arrowFieldVector.allocateNew();
       write(arrowFieldVector, hiveFieldVector, fieldTypeInfo, size, vectorizedRowBatch, isNative);
@@ -421,12 +429,17 @@ public class Serializer {
   }
 
   private void writeList(ListVector arrowVector, ListColumnVector hiveVector, ListTypeInfo typeInfo, int size,
-      VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
+      VectorizedRowBatch vectorizedRowBatch, boolean isNative, boolean isMapDataType) {
     final int OFFSET_WIDTH = 4;
     final TypeInfo elementTypeInfo = typeInfo.getListElementTypeInfo();
     final ColumnVector hiveElementVector = hiveVector.child;
+
+    // If the call is coming from writeMap(), then the List type should be non-nullable.
+    FieldType elementFieldType = (isMapDataType) ? (new FieldType(false, toArrowType(elementTypeInfo), null))
+                                                  : (toFieldType(elementTypeInfo));
+
     final FieldVector arrowElementVector =
-            (FieldVector) arrowVector.addOrGetVector(toFieldType(elementTypeInfo)).getVector();
+            (FieldVector) arrowVector.addOrGetVector(elementFieldType).getVector();
 
     VectorizedRowBatch correctedVrb = vectorizedRowBatch;
     int correctedSize = hiveVector.childCount;
@@ -437,7 +450,13 @@ public class Serializer {
     arrowElementVector.setInitialCapacity(correctedSize);
     arrowElementVector.allocateNew();
 
-    write(arrowElementVector, hiveElementVector, elementTypeInfo, correctedSize, correctedVrb, isNative);
+    // If the flag 'isMapDataType' is set to True, it means that the call is coming from writeMap() and it has to call
+    // writeStruct() with the same flag value, as the map is converted as a list of structs.
+    if (isMapDataType) {
+      writeStruct((NonNullableStructVector) arrowElementVector, (StructColumnVector) hiveElementVector, (StructTypeInfo) elementTypeInfo, correctedSize, correctedVrb, isNative, isMapDataType);
+    } else {
+      write(arrowElementVector, hiveElementVector, elementTypeInfo, correctedSize, correctedVrb, isNative);
+    }
 
     final ArrowBuf offsetBuffer = arrowVector.getOffsetBuffer();
     int nextOffset = 0;
