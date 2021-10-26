@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
  * The class is in charge of connecting and populating dockerized databases for qtest.
  */
 public abstract class AbstractExternalDB {
-    protected static final Logger LOG = LoggerFactory.getLogger("AbstractExternalDB");
+    protected static final Logger LOG = LoggerFactory.getLogger(AbstractExternalDB.class);
 
     protected static final String dbName = "qtestDB";
 
