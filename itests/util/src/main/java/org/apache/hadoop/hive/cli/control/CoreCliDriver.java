@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
-import org.apache.hadoop.hive.util.ElapsedTimeLoggingWrapper;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -65,60 +64,36 @@ public class CoreCliDriver extends CliAdapter {
     String cleanupScript = cliConfig.getCleanupScript();
     Set<QTestExternalDB> externalDBs = cliConfig.getExternalDBs();
 
-    qt = new ElapsedTimeLoggingWrapper<QTestUtil>() {
-      @Override
-      public QTestUtil invokeInternal() throws Exception {
-        return new QTestUtil(
-            QTestArguments.QTestArgumentsBuilder.instance()
-              .withOutDir(cliConfig.getResultsDir())
-              .withLogDir(cliConfig.getLogDir())
-              .withClusterType(miniMR)
-              .withConfDir(hiveConfDir)
-              .withInitScript(initScript)
-              .withCleanupScript(cleanupScript)
-              .withExternalDBs(externalDBs)
-              .withLlapIo(true)
-              .withFsType(cliConfig.getFsType())
-              .build());
-      }
-    }.invoke("QtestUtil instance created", LOG, true);
+    qt = new QTestUtil(QTestArguments.QTestArgumentsBuilder.instance()
+            .withOutDir(cliConfig.getResultsDir())
+            .withLogDir(cliConfig.getLogDir())
+            .withClusterType(miniMR)
+            .withConfDir(hiveConfDir)
+            .withInitScript(initScript)
+            .withCleanupScript(cleanupScript)
+            .withExternalDBs(externalDBs)
+            .withLlapIo(true)
+            .withFsType(cliConfig.getFsType())
+            .build());
   }
 
   @Override
   @Before
   public void setUp() throws Exception {
-    new ElapsedTimeLoggingWrapper<Void>() {
-      @Override
-      public Void invokeInternal() throws Exception {
-        qt.newSession();
-        return null;
-      }
-    }.invoke("PerTestSetup done.", LOG, false);
+    qt.newSession();
   }
 
   @Override
   @After
   public void tearDown() throws Exception {
-    new ElapsedTimeLoggingWrapper<Void>() {
-      @Override
-      public Void invokeInternal() throws Exception {
-        qt.clearPostTestEffects();
-        qt.clearTestSideEffects();
-        return null;
-      }
-    }.invoke("PerTestTearDown done.", LOG, false);
+    qt.clearPostTestEffects();
+    qt.clearTestSideEffects();
   }
 
   @Override
   @AfterClass
   public void shutdown() throws Exception {
-    new ElapsedTimeLoggingWrapper<Void>() {
-      @Override
-      public Void invokeInternal() throws Exception {
-        qt.shutdown();
-        return null;
-      }
-    }.invoke("Teardown done.", LOG, false);
+    qt.shutdown();
   }
 
   @Override
