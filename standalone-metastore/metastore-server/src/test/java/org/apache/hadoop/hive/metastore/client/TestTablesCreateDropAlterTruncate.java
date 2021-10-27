@@ -411,6 +411,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
   @Test(expected = MetaException.class)
   public void testCreateTableNullStorageDescriptor() throws Exception {
     Table table = testTables[0];
+    table.setTableName("NullStorageT");
     table.setSd(null);
 
     client.createTable(table);
