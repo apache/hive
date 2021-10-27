@@ -157,7 +157,7 @@ public abstract class AbstractExternalDB {
      * 
      * Override the method if the name of the root user must be different than the default.
      */
-    public String getRootUser() {
+    protected String getRootUser() {
         return "qtestuser";
     }
 
@@ -166,21 +166,21 @@ public abstract class AbstractExternalDB {
      * 
      * Override the method if the password must be different than the default.
      */
-    public String getRootPassword() {
+    protected String getRootPassword() {
         return  "qtestpassword";
     }
     
-    public abstract String getJdbcUrl();
+    protected abstract String getJdbcUrl();
 
-    public abstract String getJdbcDriver();
+    protected abstract String getJdbcDriver();
 
     protected abstract String getDockerImageName();
 
     protected abstract String[] getDockerAdditionalArgs();
 
-    public abstract boolean isContainerReady(ProcessResults pr);
+    protected abstract boolean isContainerReady(ProcessResults pr);
 
-    protected String[] SQLLineCmdBuild(String sqlScriptFile) {
+    private String[] SQLLineCmdBuild(String sqlScriptFile) {
         return new String[] {"-u", getJdbcUrl(),
                             "-d", getJdbcDriver(),
                             "-n", getRootUser(),
