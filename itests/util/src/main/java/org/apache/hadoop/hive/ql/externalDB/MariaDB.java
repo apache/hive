@@ -23,6 +23,11 @@ import java.util.regex.Pattern;
 public class MariaDB extends AbstractExternalDB {
 
   @Override
+  public String getRootUser() {
+    return "root";
+  }
+
+  @Override
   public String getJdbcUrl() {
     return "jdbc:mariadb://" + getContainerHostAddress() + ":3309/" + dbName;
   }
@@ -35,9 +40,7 @@ public class MariaDB extends AbstractExternalDB {
 
   public String[] getDockerAdditionalArgs() {
     return new String[] {"-p", "3309:3306",
-        "-e", "MARIADB_ROOT_PASSWORD=its-a-secret",
-        "-e", "MARIADB_USER=" + getUser(),
-        "-e", "MARIADB_PASSWORD=" + getPassword(),
+        "-e", "MARIADB_ROOT_PASSWORD=" + getRootPassword(),
         "-e", "MARIADB_DATABASE=" + dbName,
         "-d"
     };

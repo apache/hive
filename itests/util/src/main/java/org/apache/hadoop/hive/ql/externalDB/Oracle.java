@@ -19,12 +19,12 @@ package org.apache.hadoop.hive.ql.externalDB;
 
 public class Oracle extends AbstractExternalDB {
   @Override
-  public String getUser() {
+  public String getRootUser() {
     return "SYS as SYSDBA";
   }
 
   @Override
-  public String getPassword() {
+  public String getRootPassword() {
     return "oracle";
   }
 

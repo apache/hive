@@ -36,6 +36,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * The class is in charge of connecting and populating dockerized databases for qtest.
+ * 
+ * The database should have at least one root user (admin/superuser) able to modify every aspect of the system. The user
+ * either exists by default when the database starts or must created right after startup.
  */
 public abstract class AbstractExternalDB {
     protected static final Logger LOG = LoggerFactory.getLogger(AbstractExternalDB.class);
@@ -149,11 +152,21 @@ public abstract class AbstractExternalDB {
         }
     }
 
-    public String getUser() {
+    /**
+     * Return the name of the root user.
+     * 
+     * Override the method if the name of the root user must be different than the default.
+     */
+    public String getRootUser() {
         return "qtestuser";
     }
-    
-    public String getPassword() {
+
+    /**
+     * Return the password of the root user.
+     * 
+     * Override the method if the password must be different than the default.
+     */
+    public String getRootPassword() {
         return  "qtestpassword";
     }
     
@@ -170,8 +183,8 @@ public abstract class AbstractExternalDB {
     protected String[] SQLLineCmdBuild(String sqlScriptFile) {
         return new String[] {"-u", getJdbcUrl(),
                             "-d", getJdbcDriver(),
-                            "-n", getUser(),
-                            "-p", getPassword(),
+                            "-n", getRootUser(),
+                            "-p", getRootPassword(),
                             "--isolation=TRANSACTION_READ_COMMITTED",
                             "-f", sqlScriptFile};
 
@@ -194,8 +207,8 @@ public abstract class AbstractExternalDB {
     public void execute(String script) throws IOException, SQLException, ClassNotFoundException {
         // Test we can connect to database
         Class.forName(getJdbcDriver());
-        try (Connection ignored = DriverManager.getConnection(getJdbcUrl(), getUser(), getPassword())) {
-            LOG.info("Successfully connected to {} with user {} and password {}", getJdbcUrl(), getUser(), getPassword());
+        try (Connection ignored = DriverManager.getConnection(getJdbcUrl(), getRootUser(), getRootPassword())) {
+            LOG.info("Successfully connected to {} with user {} and password {}", getJdbcUrl(), getRootUser(), getRootPassword());
         }
         LOG.info("Starting {} initialization", getClass().getSimpleName());
         execSql(script);

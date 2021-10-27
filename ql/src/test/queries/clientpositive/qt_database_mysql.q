@@ -9,7 +9,7 @@ TBLPROPERTIES (
     "hive.sql.database.type" = "MYSQL",
     "hive.sql.jdbc.driver" = "com.mysql.jdbc.Driver",
     "hive.sql.jdbc.url" = "jdbc:mysql://localhost:3306/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
+    "hive.sql.dbcp.username" = "root",
     "hive.sql.dbcp.password" = "qtestpassword",
     "hive.sql.table" = "country"
     );

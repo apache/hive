@@ -20,12 +20,12 @@ package org.apache.hadoop.hive.ql.externalDB;
 public class MSSQLServer extends AbstractExternalDB {
 
   @Override
-  public String getUser() {
+  public String getRootUser() {
     return "sa";
   }
 
   @Override
-  public String getPassword() {
+  public String getRootPassword() {
     return "Its-a-s3cret";
   }
 
@@ -46,7 +46,7 @@ public class MSSQLServer extends AbstractExternalDB {
 
   @Override
   public String[] getDockerAdditionalArgs() {
-    return new String[] { "-p", "1433:1433", "-e", "ACCEPT_EULA=Y", "-e", "SA_PASSWORD=" + getPassword(), "-d" };
+    return new String[] { "-p", "1433:1433", "-e", "ACCEPT_EULA=Y", "-e", "SA_PASSWORD=" + getRootPassword(), "-d" };
   }
 
   @Override

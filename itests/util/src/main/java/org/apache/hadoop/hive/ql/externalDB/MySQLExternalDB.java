@@ -29,6 +29,11 @@ public class MySQLExternalDB extends AbstractExternalDB {
     }
 
     @Override
+    public String getRootUser() {
+        return "root";
+    }
+
+    @Override
     public String getJdbcUrl() {
         return "jdbc:mysql://" + getContainerHostAddress() + ":3306/" + dbName;
     }
@@ -41,9 +46,7 @@ public class MySQLExternalDB extends AbstractExternalDB {
 
     public String[] getDockerAdditionalArgs() {
         return new String[] {"-p", "3306:3306",
-                          "-e", "MYSQL_ROOT_PASSWORD=its-a-secret",
-                          "-e", "MYSQL_USER=" + getUser(),
-                          "-e", "MYSQL_PASSWORD=" + getPassword(),
+                          "-e", "MYSQL_ROOT_PASSWORD=" + getRootPassword(),
                           "-e", "MYSQL_DATABASE=" + dbName,
                           "-d"
         };
