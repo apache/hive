@@ -131,14 +131,10 @@ public abstract class AbstractExternalDB {
         }
     }
 
-    public void cleanupDockerContainer() {
-        try {
-            if (runCmdAndPrintStreams(buildRmCmd(), 600) != 0) {
-                LOG.info("Unable to remove docker container");
-                throw new RuntimeException("Unable to remove docker container");
-            }
-        } catch (InterruptedException | IOException e) {
-            e.printStackTrace();
+    public void cleanupDockerContainer() throws IOException, InterruptedException {
+        if (runCmdAndPrintStreams(buildRmCmd(), 600) != 0) {
+            LOG.info("Unable to remove docker container");
+            throw new RuntimeException("Unable to remove docker container");
         }
     }
 
