@@ -190,20 +190,6 @@ public abstract class AbstractExternalDB {
 
     }
 
-    protected void execSql(String sqlScriptFile) throws IOException {
-        SqlLine sqlLine = new SqlLine();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        sqlLine.setOutputStream(new PrintStream(out));
-        sqlLine.setErrorStream(new PrintStream(out));
-        System.setProperty("sqlline.silent", "true");
-        SqlLine.Status status = sqlLine.begin(SQLLineCmdBuild(sqlScriptFile), null, false);
-        LOG.debug("Printing output from SQLLine:");
-        LOG.debug(out.toString());
-        if (status != SqlLine.Status.OK) {
-            throw new RuntimeException("Database script " + sqlScriptFile + " failed with status " + status);
-        }
-    }
-
     public void execute(String script) throws IOException, SQLException, ClassNotFoundException {
         // Test we can connect to database
         Class.forName(getJdbcDriver());
@@ -211,7 +197,17 @@ public abstract class AbstractExternalDB {
             LOG.info("Successfully connected to {} with user {} and password {}", getJdbcUrl(), getRootUser(), getRootPassword());
         }
         LOG.info("Starting {} initialization", getClass().getSimpleName());
-        execSql(script);
+        SqlLine sqlLine = new SqlLine();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        sqlLine.setOutputStream(new PrintStream(out));
+        sqlLine.setErrorStream(new PrintStream(out));
+        System.setProperty("sqlline.silent", "true");
+        SqlLine.Status status = sqlLine.begin(SQLLineCmdBuild(script), null, false);
+        LOG.debug("Printing output from SQLLine:");
+        LOG.debug(out.toString());
+        if (status != SqlLine.Status.OK) {
+            throw new RuntimeException("Database script " + script + " failed with status " + status);
+        }
         LOG.info("Completed {} initialization", getClass().getSimpleName());
     }
 }
