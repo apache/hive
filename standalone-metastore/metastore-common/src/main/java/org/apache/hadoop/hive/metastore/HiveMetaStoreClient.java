@@ -2633,9 +2633,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
+  public Materialization getMaterializationInvalidationInfo(CreationMetadata cm)
       throws MetaException, InvalidOperationException, UnknownDBException, TException {
-    return client.get_materialization_invalidation_info(cm, validTxnList);
+    return client.get_materialization_invalidation_info(cm);
   }
 
   @Override

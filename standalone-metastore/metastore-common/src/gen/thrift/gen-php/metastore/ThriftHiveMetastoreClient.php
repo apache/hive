@@ -3643,17 +3643,16 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         throw new \Exception("get_table_objects_by_name_req failed: unknown result");
     }
 
-    public function get_materialization_invalidation_info(\metastore\CreationMetadata $creation_metadata, $validTxnList)
+    public function get_materialization_invalidation_info(\metastore\CreationMetadata $creation_metadata)
     {
-        $this->send_get_materialization_invalidation_info($creation_metadata, $validTxnList);
+        $this->send_get_materialization_invalidation_info($creation_metadata);
         return $this->recv_get_materialization_invalidation_info();
     }
 
-    public function send_get_materialization_invalidation_info(\metastore\CreationMetadata $creation_metadata, $validTxnList)
+    public function send_get_materialization_invalidation_info(\metastore\CreationMetadata $creation_metadata)
     {
         $args = new \metastore\ThriftHiveMetastore_get_materialization_invalidation_info_args();
         $args->creation_metadata = $creation_metadata;
-        $args->validTxnList = $validTxnList;
         $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
         if ($bin_accel) {
             thrift_protocol_write_binary(

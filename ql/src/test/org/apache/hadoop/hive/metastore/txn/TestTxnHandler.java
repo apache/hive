@@ -1909,8 +1909,7 @@ public class TestTxnHandler {
     creationMetadata.setTablesUsed(new HashSet<SourceTable>() {{ add(sourceTable); }});
     creationMetadata.setValidTxnList(validTxnWriteIdList.toString());
 
-    Materialization materialization = txnHandler.getMaterializationInvalidationInfo(
-            creationMetadata, currentValidTxnList.toString());
+    Materialization materialization = txnHandler.getMaterializationInvalidationInfo(creationMetadata);
     assertFalse(materialization.isSourceTablesUpdateDeleteModified());
   }
 

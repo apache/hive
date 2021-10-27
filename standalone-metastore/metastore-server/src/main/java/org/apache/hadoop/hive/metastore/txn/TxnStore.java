@@ -150,14 +150,14 @@ public interface TxnStore extends Configurable {
   /**
    * Get invalidation info for the materialization. Currently, the materialization information
    * only contains information about whether there was update/delete operations on the source
-   * tables used by the materialization since it was created.
+   * tables and were any of the insert-only source tables compacted used by the materialization
+   * since it was created.
    * @param cm creation metadata for the materialization
-   * @param validTxnList valid transaction list for snapshot taken for current query
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
   Materialization getMaterializationInvalidationInfo(
-      final CreationMetadata cm, final String validTxnList)
+      final CreationMetadata cm)
           throws MetaException;
 
   @RetrySemantics.ReadOnly

@@ -13645,14 +13645,6 @@ uint32_t ThriftHiveMetastore_get_materialization_invalidation_info_args::read(::
           xfer += iprot->skip(ftype);
         }
         break;
-      case 2:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->validTxnList);
-          this->__isset.validTxnList = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -13674,10 +13666,6 @@ uint32_t ThriftHiveMetastore_get_materialization_invalidation_info_args::write(:
   xfer += this->creation_metadata.write(oprot);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("validTxnList", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->validTxnList);
-  xfer += oprot->writeFieldEnd();
-
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -13695,10 +13683,6 @@ uint32_t ThriftHiveMetastore_get_materialization_invalidation_info_pargs::write(
 
   xfer += oprot->writeFieldBegin("creation_metadata", ::apache::thrift::protocol::T_STRUCT, 1);
   xfer += (*(this->creation_metadata)).write(oprot);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("validTxnList", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString((*(this->validTxnList)));
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
@@ -66350,20 +66334,19 @@ void ThriftHiveMetastoreClient::recv_get_table_objects_by_name_req(GetTablesResu
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_table_objects_by_name_req failed: unknown result");
 }
 
-void ThriftHiveMetastoreClient::get_materialization_invalidation_info(Materialization& _return, const CreationMetadata& creation_metadata, const std::string& validTxnList)
+void ThriftHiveMetastoreClient::get_materialization_invalidation_info(Materialization& _return, const CreationMetadata& creation_metadata)
 {
-  send_get_materialization_invalidation_info(creation_metadata, validTxnList);
+  send_get_materialization_invalidation_info(creation_metadata);
   recv_get_materialization_invalidation_info(_return);
 }
 
-void ThriftHiveMetastoreClient::send_get_materialization_invalidation_info(const CreationMetadata& creation_metadata, const std::string& validTxnList)
+void ThriftHiveMetastoreClient::send_get_materialization_invalidation_info(const CreationMetadata& creation_metadata)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("get_materialization_invalidation_info", ::apache::thrift::protocol::T_CALL, cseqid);
 
   ThriftHiveMetastore_get_materialization_invalidation_info_pargs args;
   args.creation_metadata = &creation_metadata;
-  args.validTxnList = &validTxnList;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -82864,7 +82847,7 @@ void ThriftHiveMetastoreProcessor::process_get_materialization_invalidation_info
 
   ThriftHiveMetastore_get_materialization_invalidation_info_result result;
   try {
-    iface_->get_materialization_invalidation_info(result.success, args.creation_metadata, args.validTxnList);
+    iface_->get_materialization_invalidation_info(result.success, args.creation_metadata);
     result.__isset.success = true;
   } catch (MetaException &o1) {
     result.o1 = o1;
@@ -100251,13 +100234,13 @@ void ThriftHiveMetastoreConcurrentClient::recv_get_table_objects_by_name_req(Get
   } // end while(true)
 }
 
-void ThriftHiveMetastoreConcurrentClient::get_materialization_invalidation_info(Materialization& _return, const CreationMetadata& creation_metadata, const std::string& validTxnList)
+void ThriftHiveMetastoreConcurrentClient::get_materialization_invalidation_info(Materialization& _return, const CreationMetadata& creation_metadata)
 {
-  int32_t seqid = send_get_materialization_invalidation_info(creation_metadata, validTxnList);
+  int32_t seqid = send_get_materialization_invalidation_info(creation_metadata);
   recv_get_materialization_invalidation_info(_return, seqid);
 }
 
-int32_t ThriftHiveMetastoreConcurrentClient::send_get_materialization_invalidation_info(const CreationMetadata& creation_metadata, const std::string& validTxnList)
+int32_t ThriftHiveMetastoreConcurrentClient::send_get_materialization_invalidation_info(const CreationMetadata& creation_metadata)
 {
   int32_t cseqid = this->sync_->generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(this->sync_.get());
@@ -100265,7 +100248,6 @@ int32_t ThriftHiveMetastoreConcurrentClient::send_get_materialization_invalidati
 
   ThriftHiveMetastore_get_materialization_invalidation_info_pargs args;
   args.creation_metadata = &creation_metadata;
-  args.validTxnList = &validTxnList;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();

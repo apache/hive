@@ -2505,7 +2505,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.ReadOnly
   public Materialization getMaterializationInvalidationInfo(
-      CreationMetadata creationMetadata, String validTxnListStr) throws MetaException {
+      CreationMetadata creationMetadata) throws MetaException {
     if (creationMetadata.getTablesUsed().isEmpty()) {
       // Bail out
       LOG.warn("Materialization creation metadata does not contain any table");
@@ -2520,27 +2520,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
     }
 
-    Boolean sourceTablesCompacted = wasCompacted(creationMetadata, validTxnListStr);
+    Boolean sourceTablesCompacted = wasCompacted(creationMetadata);
     if (sourceTablesCompacted == null) {
       return null;
     }
     return new Materialization(sourceTablesUpdateDeleteModified, sourceTablesCompacted);
   }
 
-  private Boolean wasCompacted(CreationMetadata creationMetadata, String validTxnListStr) throws MetaException {
+  private Boolean wasCompacted(CreationMetadata creationMetadata) throws MetaException {
 
-    // We are composing a query that returns a single row if a compaction happened after
-    // the materialization was created. Otherwise, query returns 0 rows.
-
-    // Parse validReaderWriteIdList from creation metadata
-    final ValidTxnWriteIdList validReaderWriteIdList =
-        new ValidTxnWriteIdList(creationMetadata.getValidTxnList());
-
-    // Parse validTxnList
-    final ValidReadTxnList currentValidTxnList = new ValidReadTxnList(validTxnListStr);
-    // Get the valid write id list for the tables in current state
-    final List<TableValidWriteIds> currentTblValidWriteIdsList = new ArrayList<>();
-    Connection dbConn = null;
     Set<String> insertOnlyTables = creationMetadata.getTablesUsed().stream()
         .filter(SourceTable::isInsertOnly)
         .map(SourceTable::getTableName).collect(Collectors.toSet());
@@ -2549,21 +2537,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       return false;
     }
 
-    for (String fullyQualifiedName : insertOnlyTables) {
-      try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        currentTblValidWriteIdsList.add(
-            getValidWriteIdsForTable(dbConn, fullyQualifiedName, currentValidTxnList));
-      } catch (SQLException ex) {
-        String errorMsg = "Unable to query Valid writeIds of table " + fullyQualifiedName;
-        LOG.warn(errorMsg, ex);
-        throw new MetaException(errorMsg + " " + StringUtils.stringifyException(ex));
-      } finally {
-        closeDbConn(dbConn);
-      }
-    }
-    final ValidTxnWriteIdList currentValidReaderWriteIdList = TxnCommonUtils.createValidTxnWriteIdList(
-        currentValidTxnList.getHighWatermark(), currentTblValidWriteIdsList);
+    // We are composing a query that returns a single row if a compaction happened after
+    // the materialization was created. Otherwise, query returns 0 rows.
+
+    // Parse validReaderWriteIdList from creation metadata
+    final ValidTxnWriteIdList validReaderWriteIdList =
+        new ValidTxnWriteIdList(creationMetadata.getValidTxnList());
+
 
     List<String> params = new ArrayList<>();
     StringBuilder queryCompletedCompactions = new StringBuilder();
@@ -2580,20 +2560,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         return null;
       }
 
-      // First, we check whether the low watermark has moved for any of the tables.
-      // If it has, we return true, since it is not incrementally refreshable, e.g.,
-      // one of the commits that are not available may be an update/delete.
-      ValidWriteIdList currentTblValidWriteIdList =
-          currentValidReaderWriteIdList.getTableValidWriteIdList(fullyQualifiedName);
-      if (currentTblValidWriteIdList == null) {
-        LOG.warn("Current ValidWriteIdList for table {} not present in creation metadata, this should not happen", fullyQualifiedName);
-        return null;
-      }
-      if (!Objects.equals(currentTblValidWriteIdList.getMinOpenWriteId(), tblValidWriteIdList.getMinOpenWriteId())) {
-        LOG.debug("Minimum open write id do not match for table {}", fullyQualifiedName);
-        return null;
-      }
-
       // ...for each of the tables that are part of the materialized view,
       // where the transaction had to be committed after the materialization was created...
       if (i != 0) {
@@ -2606,7 +2572,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       queryCompactionQueue.append(" (\"CQ_DATABASE\"=? AND \"CQ_TABLE\"=?");
       params.add(names[0]);
       params.add(names[1]);
-      queryCompletedCompactions.append(" AND (\"CC_HIGHEST_WRITE_ID\" > " + tblValidWriteIdList.getHighWatermark());;
+      queryCompletedCompactions.append(" AND (\"CC_HIGHEST_WRITE_ID\" > ");
+      queryCompletedCompactions.append(tblValidWriteIdList.getHighWatermark());
       queryCompletedCompactions.append(tblValidWriteIdList.getInvalidWriteIds().length == 0 ? ") " :
           " OR \"CC_HIGHEST_WRITE_ID\" IN(" + StringUtils.join(",",
               Arrays.asList(ArrayUtils.toObject(tblValidWriteIdList.getInvalidWriteIds()))) + ") ) ");

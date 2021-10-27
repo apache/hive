@@ -486,11 +486,10 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
-    def get_materialization_invalidation_info(self, creation_metadata, validTxnList):
+    def get_materialization_invalidation_info(self, creation_metadata):
         """
         Parameters:
          - creation_metadata
-         - validTxnList
 
         """
         pass
@@ -4296,21 +4295,19 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o3
         raise TApplicationException(TApplicationException.MISSING_RESULT, "get_table_objects_by_name_req failed: unknown result")
 
-    def get_materialization_invalidation_info(self, creation_metadata, validTxnList):
+    def get_materialization_invalidation_info(self, creation_metadata):
         """
         Parameters:
          - creation_metadata
-         - validTxnList
 
         """
-        self.send_get_materialization_invalidation_info(creation_metadata, validTxnList)
+        self.send_get_materialization_invalidation_info(creation_metadata)
         return self.recv_get_materialization_invalidation_info()
 
-    def send_get_materialization_invalidation_info(self, creation_metadata, validTxnList):
+    def send_get_materialization_invalidation_info(self, creation_metadata):
         self._oprot.writeMessageBegin('get_materialization_invalidation_info', TMessageType.CALL, self._seqid)
         args = get_materialization_invalidation_info_args()
         args.creation_metadata = creation_metadata
-        args.validTxnList = validTxnList
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
@@ -13806,7 +13803,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         iprot.readMessageEnd()
         result = get_materialization_invalidation_info_result()
         try:
-            result.success = self._handler.get_materialization_invalidation_info(args.creation_metadata, args.validTxnList)
+            result.success = self._handler.get_materialization_invalidation_info(args.creation_metadata)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -28354,14 +28351,12 @@ class get_materialization_invalidation_info_args(object):
     """
     Attributes:
      - creation_metadata
-     - validTxnList
 
     """
 
 
-    def __init__(self, creation_metadata=None, validTxnList=None,):
+    def __init__(self, creation_metadata=None,):
         self.creation_metadata = creation_metadata
-        self.validTxnList = validTxnList
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -28378,11 +28373,6 @@ class get_materialization_invalidation_info_args(object):
                     self.creation_metadata.read(iprot)
                 else:
                     iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.STRING:
-                    self.validTxnList = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -28396,10 +28386,6 @@ class get_materialization_invalidation_info_args(object):
         if self.creation_metadata is not None:
             oprot.writeFieldBegin('creation_metadata', TType.STRUCT, 1)
             self.creation_metadata.write(oprot)
-            oprot.writeFieldEnd()
-        if self.validTxnList is not None:
-            oprot.writeFieldBegin('validTxnList', TType.STRING, 2)
-            oprot.writeString(self.validTxnList.encode('utf-8') if sys.version_info[0] == 2 else self.validTxnList)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -28421,7 +28407,6 @@ all_structs.append(get_materialization_invalidation_info_args)
 get_materialization_invalidation_info_args.thrift_spec = (
     None,  # 0
     (1, TType.STRUCT, 'creation_metadata', [CreationMetadata, None], None, ),  # 1
-    (2, TType.STRING, 'validTxnList', 'UTF8', None, ),  # 2
 )
 
 

@@ -3872,8 +3872,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public Materialization get_materialization_invalidation_info(final CreationMetadata cm, final String validTxnList) throws MetaException {
-    return getTxnHandler().getMaterializationInvalidationInfo(cm, validTxnList);
+  public Materialization get_materialization_invalidation_info(final CreationMetadata cm) throws MetaException {
+    return getTxnHandler().getMaterializationInvalidationInfo(cm);
   }
 
   @Override

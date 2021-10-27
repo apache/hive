@@ -2471,7 +2471,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   GetTableResult get_table_req(1:GetTableRequest req) throws (1:MetaException o1, 2:NoSuchObjectException o2)
   GetTablesResult get_table_objects_by_name_req(1:GetTablesRequest req)
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
-  Materialization get_materialization_invalidation_info(1:CreationMetadata creation_metadata, 2:string validTxnList)
+  Materialization get_materialization_invalidation_info(1:CreationMetadata creation_metadata)
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
   void update_creation_metadata(1: string catName, 2:string dbname, 3:string tbl_name, 4:CreationMetadata creation_metadata)
                    throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)

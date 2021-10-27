@@ -947,13 +947,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_table_objects_by_name_req failed: unknown result')
     end
 
-    def get_materialization_invalidation_info(creation_metadata, validTxnList)
-      send_get_materialization_invalidation_info(creation_metadata, validTxnList)
+    def get_materialization_invalidation_info(creation_metadata)
+      send_get_materialization_invalidation_info(creation_metadata)
       return recv_get_materialization_invalidation_info()
     end
 
-    def send_get_materialization_invalidation_info(creation_metadata, validTxnList)
-      send_message('get_materialization_invalidation_info', Get_materialization_invalidation_info_args, :creation_metadata => creation_metadata, :validTxnList => validTxnList)
+    def send_get_materialization_invalidation_info(creation_metadata)
+      send_message('get_materialization_invalidation_info', Get_materialization_invalidation_info_args, :creation_metadata => creation_metadata)
     end
 
     def recv_get_materialization_invalidation_info()
@@ -5150,7 +5150,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Get_materialization_invalidation_info_args)
       result = Get_materialization_invalidation_info_result.new()
       begin
-        result.success = @handler.get_materialization_invalidation_info(args.creation_metadata, args.validTxnList)
+        result.success = @handler.get_materialization_invalidation_info(args.creation_metadata)
       rescue ::MetaException => o1
         result.o1 = o1
       rescue ::InvalidOperationException => o2
@@ -9744,11 +9744,9 @@ module ThriftHiveMetastore
   class Get_materialization_invalidation_info_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     CREATION_METADATA = 1
-    VALIDTXNLIST = 2
 
     FIELDS = {
-      CREATION_METADATA => {:type => ::Thrift::Types::STRUCT, :name => 'creation_metadata', :class => ::CreationMetadata},
-      VALIDTXNLIST => {:type => ::Thrift::Types::STRING, :name => 'validTxnList'}
+      CREATION_METADATA => {:type => ::Thrift::Types::STRUCT, :name => 'creation_metadata', :class => ::CreationMetadata}
     }
 
     def struct_fields; FIELDS; end
