@@ -39,6 +39,8 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -67,6 +69,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hive.common.util.HiveStringUtils;
+import org.apache.thrift.TException;
 import org.stringtemplate.v4.ST;
 
 import java.nio.ByteBuffer;
@@ -81,6 +84,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 
@@ -770,7 +774,7 @@ public class DDLPlanUtils {
   }
 
 
-  public String getCreateTableCommand(Table table, boolean isRelative) {
+  public String getCreateTableCommand(Table table, boolean isRelative) throws HiveException{
     ST command = new ST(CREATE_TABLE_TEMPLATE);
 
     if (!isRelative) {
@@ -800,15 +804,43 @@ public class DDLPlanUtils {
     return table.getTableType() == TableType.EXTERNAL_TABLE ? "EXTERNAL " : "";
   }
 
-  private String getColumns(Table table) {
-    List<String> columnDescs = new ArrayList<String>();
+  private String getColumns(Table table) throws HiveException{
+    List<String> columnDescs = new ArrayList<>();
+    Set<String> notNullColumns = null;
+    if (NotNullConstraint.isNotNullConstraintNotEmpty(table.getNotNullConstraint())) {
+      notNullColumns = new HashSet<>(table.getNotNullConstraint().getNotNullConstraints().values());
+    }
+
+    Map<String, String> columnDefaultValueMap = null;
+    if (DefaultConstraint.isCheckConstraintNotEmpty(table.getDefaultConstraint())) {
+      columnDefaultValueMap = table.getDefaultConstraint().getColNameToDefaultValueMap();
+    }
     for (FieldSchema column : table.getCols()) {
       String columnType = formatType(TypeInfoUtils.getTypeInfoFromTypeString(column.getType()));
-      String columnDesc = "  `" + column.getName() + "` " + columnType;
-      if (column.getComment() != null) {
-        columnDesc += " COMMENT '" + HiveStringUtils.escapeHiveCommand(column.getComment()) + "'";
+      String columnName = column.getName();
+      StringBuilder columnDesc = new StringBuilder();
+      columnDesc.append("  `").append(columnName).append("` ").append(columnType);
+      if (notNullColumns != null && notNullColumns.contains(columnName)) {
+        columnDesc.append(" NOT NULL");
       }
-      columnDescs.add(columnDesc);
+      if (columnDefaultValueMap != null && columnDefaultValueMap.containsKey(columnName)) {
+        columnDesc.append(" DEFAULT ").append(columnDefaultValueMap.get(columnName));
+      }
+      if (column.getComment() != null) {
+        columnDesc.append(" COMMENT '").append(HiveStringUtils.escapeHiveCommand(column.getComment())).append("'");
+      }
+      columnDescs.add(columnDesc.toString());
+    }
+    try {
+      List<String> primaryKeys = Hive.get().getMSC()
+        .getPrimaryKeys(new PrimaryKeysRequest(table.getDbName(), table.getTableName()))
+        .stream().map(pk -> "`" + pk.getColumn_name() + "`")
+        .collect(Collectors.toList());
+      if (!primaryKeys.isEmpty()) {
+        columnDescs.add("  primary key(" + String.join(", ", primaryKeys) + ")" );
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
     }
     return StringUtils.join(columnDescs, ", \n");
   }

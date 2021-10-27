@@ -1,0 +1,56 @@
+PREHOOK: query: CREATE TABLE TEST(
+  col1 varchar(100) NOT NULL COMMENT "comment for column 1",
+  col2 timestamp DEFAULT CURRENT_TIMESTAMP() COMMENT "comment for column 2",
+  col3 decimal,
+  col4 varchar(512) NOT NULL,
+  col5 varchar(100),
+  primary key(col1, col2) disable novalidate)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TEST
+POSTHOOK: query: CREATE TABLE TEST(
+  col1 varchar(100) NOT NULL COMMENT "comment for column 1",
+  col2 timestamp DEFAULT CURRENT_TIMESTAMP() COMMENT "comment for column 2",
+  col3 decimal,
+  col4 varchar(512) NOT NULL,
+  col5 varchar(100),
+  primary key(col1, col2) disable novalidate)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TEST
+PREHOOK: query: SHOW CREATE TABLE TEST
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@test
+POSTHOOK: query: SHOW CREATE TABLE TEST
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@test
+CREATE TABLE `test`(
+  `col1` varchar(100) NOT NULL COMMENT 'comment for column 1', 
+  `col2` timestamp DEFAULT CURRENT_TIMESTAMP() COMMENT 'comment for column 2', 
+  `col3` decimal(10,0), 
+  `col4` varchar(512) NOT NULL, 
+  `col5` varchar(100), 
+  primary key(`col1`, `col2`))
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
