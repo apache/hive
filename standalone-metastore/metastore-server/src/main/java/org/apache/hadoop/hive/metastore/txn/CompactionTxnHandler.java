@@ -194,11 +194,6 @@ class CompactionTxnHandler extends TxnHandler {
         throw new MetaException("FindNextCompactRequest is null");
       }
 
-      if (rqst.getWorkerId() == null) {
-        LOG.warn("Unable to find the next compaction due to the worker id is null");
-        return null;
-      }
-
       Connection dbConn = null;
       Statement stmt = null;
       //need a separate stmt for executeUpdate() otherwise it will close the ResultSet(HIVE-12725)
@@ -207,10 +202,10 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        String s = "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
+        String query = "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
           "\"CQ_TYPE\", \"CQ_TBLPROPERTIES\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = '" + INITIATED_STATE + "'";
-        LOG.debug("Going to execute query <" + s + ">");
-        rs = stmt.executeQuery(s);
+        LOG.debug("Going to execute query <" + query + ">");
+        rs = stmt.executeQuery(query);
         if (!rs.next()) {
           LOG.debug("No compactions found ready to compact");
           dbConn.rollback();
@@ -225,25 +220,37 @@ class CompactionTxnHandler extends TxnHandler {
           info.partName = rs.getString(4);
           info.type = dbCompactionType2ThriftType(rs.getString(5).charAt(0));
           info.properties = rs.getString(6);
+
+          String workerId = rqst.getWorkerId();
+          String workerVersion = rqst.getWorkerVersion();
+          String workerIdSqlValue = (workerId == null) ? "NULL" : ("'" + workerId + "'");
+
           // Now, update this record as being worked on by this worker.
           long now = getDbTime(dbConn);
-          s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = '" + rqst.getWorkerId() + "', " +
-            "\"CQ_WORKER_VERSION\" = '" + rqst.getWorkerVersion() + "', " +
-            "\"CQ_START\" = " + now + ", \"CQ_STATE\" = '" + WORKING_STATE + "' WHERE \"CQ_ID\" = " + info.id +
-            " AND \"CQ_STATE\"='" + INITIATED_STATE + "'";
-          LOG.debug("Going to execute update <" + s + ">");
-          int updCount = updStmt.executeUpdate(s);
+          query = "" +
+              "UPDATE " +
+              "  \"COMPACTION_QUEUE\" " +
+              "SET " +
+              " \"CQ_WORKER_ID\" = " + workerIdSqlValue + ", " +
+              " \"CQ_WORKER_VERSION\" = '" + workerVersion + "', " +
+              " \"CQ_START\" = " + now + ", " +
+              " \"CQ_STATE\" = '" + WORKING_STATE + "' " +
+              "WHERE \"CQ_ID\" = " + info.id +
+              "  AND \"CQ_STATE\"='" + INITIATED_STATE + "'";
+
+          LOG.debug("Going to execute update <" + query + ">");
+          int updCount = updStmt.executeUpdate(query);
           if(updCount == 1) {
             dbConn.commit();
             return info;
           }
           if(updCount == 0) {
-            LOG.debug("Worker {} (version: {}) picked up {}", rqst.getWorkerId(), rqst.getWorkerVersion(), info);
+            LOG.debug("Worker {} (version: {}) picked up {}", workerId, workerVersion, info);
             continue;
           }
           LOG.error("Unable to set to cq_state=" + WORKING_STATE + " for compaction record: " +
-            info + ". updCnt=" + updCount + ". workerId=" + rqst.getWorkerId() +
-            ". workerVersion=" + rqst.getWorkerVersion());
+            info + ". updCnt=" + updCount + ". workerId=" + workerId +
+            ". workerVersion=" + workerVersion);
           dbConn.rollback();
           return null;
         } while( rs.next());
