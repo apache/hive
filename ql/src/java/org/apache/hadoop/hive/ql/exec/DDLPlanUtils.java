@@ -831,18 +831,30 @@ public class DDLPlanUtils {
       }
       columnDescs.add(columnDesc.toString());
     }
+    String pkDesc = getPrimaryKeyDesc(table);
+    if (pkDesc != null) {
+      columnDescs.add(pkDesc);
+    }
+    return StringUtils.join(columnDescs, ", \n");
+  }
+
+  private String getPrimaryKeyDesc(Table table) throws HiveException {
     try {
-      List<String> primaryKeys = Hive.get().getMSC()
-        .getPrimaryKeys(new PrimaryKeysRequest(table.getDbName(), table.getTableName()))
+      List<SQLPrimaryKey> sqlPrimaryKeys = Hive.get().getMSC()
+        .getPrimaryKeys(new PrimaryKeysRequest(table.getDbName(), table.getTableName()));
+      List<String> primaryKeys = sqlPrimaryKeys
         .stream().map(pk -> "`" + pk.getColumn_name() + "`")
         .collect(Collectors.toList());
       if (!primaryKeys.isEmpty()) {
-        columnDescs.add("  primary key(" + String.join(", ", primaryKeys) + ")" );
+        String enable = sqlPrimaryKeys.get(0).isEnable_cstr()? " enable": " disable";
+        String validate = sqlPrimaryKeys.get(0).isValidate_cstr()? " validate": " novalidate";
+        String rely = sqlPrimaryKeys.get(0).isRely_cstr()? " rely": " norely";
+        return "  primary key(" + String.join(", ", primaryKeys) + ")" + enable + validate + rely;
       }
     } catch (Exception e) {
       throw new HiveException(e);
     }
-    return StringUtils.join(columnDescs, ", \n");
+    return null;
   }
 
   /** Struct fields are identifiers, need to be put between ``. */

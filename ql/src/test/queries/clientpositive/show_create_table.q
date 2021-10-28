@@ -14,3 +14,16 @@ OUTPUTFORMAT
   'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat';
 
 SHOW CREATE TABLE TEST;
+
+
+CREATE TABLE TEST2(
+  col1 varchar(100) COMMENT "comment"
+)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat';
+
+SHOW CREATE TABLE TEST2;
