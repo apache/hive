@@ -12195,11 +12195,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // When we are querying a materialized view directly, we check whether the source tables
           // do not apply any policies.
           for (SourceTable sourceTable : table.getCreationMetadata().getTablesUsed()) {
+            String qualifiedTableName = TableName.getDbTable(sourceTable.getDbName(), sourceTable.getTableName());
             try {
-              table = getTableObjectByName(sourceTable.getTableName(), true);
+              table = getTableObjectByName(qualifiedTableName, true);
             } catch (HiveException e) {
               // This should not happen.
-              throw new SemanticException("Table " + sourceTable.getTableName() +
+              throw new SemanticException("Table " + qualifiedTableName +
                   " not found when trying to obtain it to check masking/filtering policies");
             }
 
@@ -12848,13 +12849,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     createVwDesc.setViewExpandedText(expandedText);
   }
 
-  private Set<String> getTablesUsed(ParseContext parseCtx) {
-    Set<String> tablesUsed = new HashSet<>();
+  private Set<SourceTable> getTablesUsed(ParseContext parseCtx) {
+    Set<SourceTable> tablesUsed = new HashSet<>();
     for (TableScanOperator topOp : parseCtx.getTopOps().values()) {
       Table table = topOp.getConf().getTableMetadata();
       if (!table.isMaterializedTable() && !table.isView()) {
         // Add to signature
-        tablesUsed.add(table.getFullyQualifiedName());
+        SourceTable sourceTable = new SourceTable();
+        sourceTable.setDbName(table.getDbName());
+        sourceTable.setTableName(table.getTableName());
+        sourceTable.setTableId(table.getTTable().getId());
+        sourceTable.setInsertedCount(0L);
+        sourceTable.setUpdatedCount(0L);
+        sourceTable.setDeletedCount(0L);
+        tablesUsed.add(sourceTable);
       }
     }
     return tablesUsed;

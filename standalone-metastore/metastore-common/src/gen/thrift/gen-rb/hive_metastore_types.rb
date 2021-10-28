@@ -1816,14 +1816,16 @@ end
 
 class SourceTable
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  TABLENAME = 1
-  TABLEID = 2
-  INSERTONLY = 3
-  INSERTEDCOUNT = 4
-  UPDATEDCOUNT = 5
-  DELETEDCOUNT = 6
+  DBNAME = 1
+  TABLENAME = 2
+  TABLEID = 3
+  INSERTONLY = 4
+  INSERTEDCOUNT = 5
+  UPDATEDCOUNT = 6
+  DELETEDCOUNT = 7
 
   FIELDS = {
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     TABLEID => {:type => ::Thrift::Types::I64, :name => 'tableId'},
     INSERTONLY => {:type => ::Thrift::Types::BOOL, :name => 'insertOnly'},
@@ -1835,6 +1837,7 @@ class SourceTable
   def struct_fields; FIELDS; end
 
   def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableId is unset!') unless @tableId
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field insertOnly is unset!') if @insertOnly.nil?

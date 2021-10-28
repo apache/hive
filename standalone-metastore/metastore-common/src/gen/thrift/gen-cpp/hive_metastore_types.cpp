@@ -8057,6 +8057,10 @@ SourceTable::~SourceTable() noexcept {
 }
 
 
+void SourceTable::__set_dbName(const std::string& val) {
+  this->dbName = val;
+}
+
 void SourceTable::__set_tableName(const std::string& val) {
   this->tableName = val;
 }
@@ -8099,6 +8103,7 @@ uint32_t SourceTable::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   using ::apache::thrift::protocol::TProtocolException;
 
+  bool isset_dbName = false;
   bool isset_tableName = false;
   bool isset_tableId = false;
   bool isset_insertOnly = false;
@@ -8116,13 +8121,21 @@ uint32_t SourceTable::read(::apache::thrift::protocol::TProtocol* iprot) {
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->dbName);
+          isset_dbName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->tableName);
           isset_tableName = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 2:
+      case 3:
         if (ftype == ::apache::thrift::protocol::T_I64) {
           xfer += iprot->readI64(this->tableId);
           isset_tableId = true;
@@ -8130,7 +8143,7 @@ uint32_t SourceTable::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 3:
+      case 4:
         if (ftype == ::apache::thrift::protocol::T_BOOL) {
           xfer += iprot->readBool(this->insertOnly);
           isset_insertOnly = true;
@@ -8138,7 +8151,7 @@ uint32_t SourceTable::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 4:
+      case 5:
         if (ftype == ::apache::thrift::protocol::T_I64) {
           xfer += iprot->readI64(this->insertedCount);
           isset_insertedCount = true;
@@ -8146,7 +8159,7 @@ uint32_t SourceTable::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 5:
+      case 6:
         if (ftype == ::apache::thrift::protocol::T_I64) {
           xfer += iprot->readI64(this->updatedCount);
           isset_updatedCount = true;
@@ -8154,7 +8167,7 @@ uint32_t SourceTable::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-      case 6:
+      case 7:
         if (ftype == ::apache::thrift::protocol::T_I64) {
           xfer += iprot->readI64(this->deletedCount);
           isset_deletedCount = true;
@@ -8171,6 +8184,8 @@ uint32_t SourceTable::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   xfer += iprot->readStructEnd();
 
+  if (!isset_dbName)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
   if (!isset_tableName)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   if (!isset_tableId)
@@ -8191,27 +8206,31 @@ uint32_t SourceTable::write(::apache::thrift::protocol::TProtocol* oprot) const 
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("SourceTable");
 
-  xfer += oprot->writeFieldBegin("tableName", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->dbName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tableName", ::apache::thrift::protocol::T_STRING, 2);
   xfer += oprot->writeString(this->tableName);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("tableId", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeFieldBegin("tableId", ::apache::thrift::protocol::T_I64, 3);
   xfer += oprot->writeI64(this->tableId);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("insertOnly", ::apache::thrift::protocol::T_BOOL, 3);
+  xfer += oprot->writeFieldBegin("insertOnly", ::apache::thrift::protocol::T_BOOL, 4);
   xfer += oprot->writeBool(this->insertOnly);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("insertedCount", ::apache::thrift::protocol::T_I64, 4);
+  xfer += oprot->writeFieldBegin("insertedCount", ::apache::thrift::protocol::T_I64, 5);
   xfer += oprot->writeI64(this->insertedCount);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("updatedCount", ::apache::thrift::protocol::T_I64, 5);
+  xfer += oprot->writeFieldBegin("updatedCount", ::apache::thrift::protocol::T_I64, 6);
   xfer += oprot->writeI64(this->updatedCount);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("deletedCount", ::apache::thrift::protocol::T_I64, 6);
+  xfer += oprot->writeFieldBegin("deletedCount", ::apache::thrift::protocol::T_I64, 7);
   xfer += oprot->writeI64(this->deletedCount);
   xfer += oprot->writeFieldEnd();
 
@@ -8222,6 +8241,7 @@ uint32_t SourceTable::write(::apache::thrift::protocol::TProtocol* oprot) const 
 
 void swap(SourceTable &a, SourceTable &b) {
   using ::std::swap;
+  swap(a.dbName, b.dbName);
   swap(a.tableName, b.tableName);
   swap(a.tableId, b.tableId);
   swap(a.insertOnly, b.insertOnly);
@@ -8231,6 +8251,7 @@ void swap(SourceTable &a, SourceTable &b) {
 }
 
 SourceTable::SourceTable(const SourceTable& other295) {
+  dbName = other295.dbName;
   tableName = other295.tableName;
   tableId = other295.tableId;
   insertOnly = other295.insertOnly;
@@ -8239,6 +8260,7 @@ SourceTable::SourceTable(const SourceTable& other295) {
   deletedCount = other295.deletedCount;
 }
 SourceTable& SourceTable::operator=(const SourceTable& other296) {
+  dbName = other296.dbName;
   tableName = other296.tableName;
   tableId = other296.tableId;
   insertOnly = other296.insertOnly;
@@ -8250,7 +8272,8 @@ SourceTable& SourceTable::operator=(const SourceTable& other296) {
 void SourceTable::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "SourceTable(";
-  out << "tableName=" << to_string(tableName);
+  out << "dbName=" << to_string(dbName);
+  out << ", " << "tableName=" << to_string(tableName);
   out << ", " << "tableId=" << to_string(tableId);
   out << ", " << "insertOnly=" << to_string(insertOnly);
   out << ", " << "insertedCount=" << to_string(insertedCount);

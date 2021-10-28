@@ -458,12 +458,13 @@ struct StorageDescriptor {
 }
 
 struct SourceTable {
-    1: required string tableName,
-    2: required i64 tableId,
-    3: required bool insertOnly,
-    4: required i64 insertedCount,
-    5: required i64 updatedCount,
-    6: required i64 deletedCount
+    1: required string dbName,
+    2: required string tableName,
+    3: required i64 tableId,
+    4: required bool insertOnly,
+    5: required i64 insertedCount,
+    6: required i64 updatedCount,
+    7: required i64 deletedCount
 }
 
 struct CreationMetadata {

@@ -65,19 +65,9 @@ public class CreateMaterializedViewOperation extends DDLOperation<CreateMaterial
       Table tbl = desc.toTable(context.getConf());
       // We set the signature for the view if it is a materialized view
       if (tbl.isMaterializedView()) {
-        Set<SourceTable> tablesUsed = new HashSet(desc.getTablesUsed().size());
-        for (String tableName : desc.getTablesUsed()) {
-          SourceTable sourceTable = new SourceTable();
-          sourceTable.setTableName(tableName);
-          sourceTable.setInsertedCount(0L);
-          sourceTable.setUpdatedCount(0L);
-          sourceTable.setDeletedCount(0L);
-          tablesUsed.add(sourceTable);
-        }
-
         CreationMetadata cm =
             new CreationMetadata(MetaStoreUtils.getDefaultCatalog(context.getConf()), tbl.getDbName(),
-                tbl.getTableName(), ImmutableSet.copyOf(tablesUsed));
+                tbl.getTableName(), ImmutableSet.copyOf(desc.getTablesUsed()));
         cm.setValidTxnList(context.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
         tbl.getTTable().setCreationMetadata(cm);
       }

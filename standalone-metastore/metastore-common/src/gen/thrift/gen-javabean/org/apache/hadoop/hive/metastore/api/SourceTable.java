@@ -11,16 +11,18 @@ package org.apache.hadoop.hive.metastore.api;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class SourceTable implements org.apache.thrift.TBase<SourceTable, SourceTable._Fields>, java.io.Serializable, Cloneable, Comparable<SourceTable> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SourceTable");
 
-  private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tableName", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField TABLE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("tableId", org.apache.thrift.protocol.TType.I64, (short)2);
-  private static final org.apache.thrift.protocol.TField INSERT_ONLY_FIELD_DESC = new org.apache.thrift.protocol.TField("insertOnly", org.apache.thrift.protocol.TType.BOOL, (short)3);
-  private static final org.apache.thrift.protocol.TField INSERTED_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("insertedCount", org.apache.thrift.protocol.TType.I64, (short)4);
-  private static final org.apache.thrift.protocol.TField UPDATED_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("updatedCount", org.apache.thrift.protocol.TType.I64, (short)5);
-  private static final org.apache.thrift.protocol.TField DELETED_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("deletedCount", org.apache.thrift.protocol.TType.I64, (short)6);
+  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tableName", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField TABLE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("tableId", org.apache.thrift.protocol.TType.I64, (short)3);
+  private static final org.apache.thrift.protocol.TField INSERT_ONLY_FIELD_DESC = new org.apache.thrift.protocol.TField("insertOnly", org.apache.thrift.protocol.TType.BOOL, (short)4);
+  private static final org.apache.thrift.protocol.TField INSERTED_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("insertedCount", org.apache.thrift.protocol.TType.I64, (short)5);
+  private static final org.apache.thrift.protocol.TField UPDATED_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("updatedCount", org.apache.thrift.protocol.TType.I64, (short)6);
+  private static final org.apache.thrift.protocol.TField DELETED_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("deletedCount", org.apache.thrift.protocol.TType.I64, (short)7);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new SourceTableStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new SourceTableTupleSchemeFactory();
 
+  private @org.apache.thrift.annotation.Nullable java.lang.String dbName; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String tableName; // required
   private long tableId; // required
   private boolean insertOnly; // required
@@ -30,12 +32,13 @@ package org.apache.hadoop.hive.metastore.api;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    TABLE_NAME((short)1, "tableName"),
-    TABLE_ID((short)2, "tableId"),
-    INSERT_ONLY((short)3, "insertOnly"),
-    INSERTED_COUNT((short)4, "insertedCount"),
-    UPDATED_COUNT((short)5, "updatedCount"),
-    DELETED_COUNT((short)6, "deletedCount");
+    DB_NAME((short)1, "dbName"),
+    TABLE_NAME((short)2, "tableName"),
+    TABLE_ID((short)3, "tableId"),
+    INSERT_ONLY((short)4, "insertOnly"),
+    INSERTED_COUNT((short)5, "insertedCount"),
+    UPDATED_COUNT((short)6, "updatedCount"),
+    DELETED_COUNT((short)7, "deletedCount");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -51,17 +54,19 @@ package org.apache.hadoop.hive.metastore.api;
     @org.apache.thrift.annotation.Nullable
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // TABLE_NAME
+        case 1: // DB_NAME
+          return DB_NAME;
+        case 2: // TABLE_NAME
           return TABLE_NAME;
-        case 2: // TABLE_ID
+        case 3: // TABLE_ID
           return TABLE_ID;
-        case 3: // INSERT_ONLY
+        case 4: // INSERT_ONLY
           return INSERT_ONLY;
-        case 4: // INSERTED_COUNT
+        case 5: // INSERTED_COUNT
           return INSERTED_COUNT;
-        case 5: // UPDATED_COUNT
+        case 6: // UPDATED_COUNT
           return UPDATED_COUNT;
-        case 6: // DELETED_COUNT
+        case 7: // DELETED_COUNT
           return DELETED_COUNT;
         default:
           return null;
@@ -113,6 +118,8 @@ package org.apache.hadoop.hive.metastore.api;
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("tableName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TABLE_ID, new org.apache.thrift.meta_data.FieldMetaData("tableId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
@@ -133,6 +140,7 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   public SourceTable(
+    java.lang.String dbName,
     java.lang.String tableName,
     long tableId,
     boolean insertOnly,
@@ -141,6 +149,7 @@ package org.apache.hadoop.hive.metastore.api;
     long deletedCount)
   {
     this();
+    this.dbName = dbName;
     this.tableName = tableName;
     this.tableId = tableId;
     setTableIdIsSet(true);
@@ -159,6 +168,9 @@ package org.apache.hadoop.hive.metastore.api;
    */
   public SourceTable(SourceTable other) {
     __isset_bitfield = other.__isset_bitfield;
+    if (other.isSetDbName()) {
+      this.dbName = other.dbName;
+    }
     if (other.isSetTableName()) {
       this.tableName = other.tableName;
     }
@@ -175,6 +187,7 @@ package org.apache.hadoop.hive.metastore.api;
 
   @Override
   public void clear() {
+    this.dbName = null;
     this.tableName = null;
     setTableIdIsSet(false);
     this.tableId = 0;
@@ -186,6 +199,30 @@ package org.apache.hadoop.hive.metastore.api;
     this.updatedCount = 0;
     setDeletedCountIsSet(false);
     this.deletedCount = 0;
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getDbName() {
+    return this.dbName;
+  }
+
+  public void setDbName(@org.apache.thrift.annotation.Nullable java.lang.String dbName) {
+    this.dbName = dbName;
+  }
+
+  public void unsetDbName() {
+    this.dbName = null;
+  }
+
+  /** Returns true if field dbName is set (has been assigned a value) and false otherwise */
+  public boolean isSetDbName() {
+    return this.dbName != null;
+  }
+
+  public void setDbNameIsSet(boolean value) {
+    if (!value) {
+      this.dbName = null;
+    }
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -324,6 +361,14 @@ package org.apache.hadoop.hive.metastore.api;
 
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
+    case DB_NAME:
+      if (value == null) {
+        unsetDbName();
+      } else {
+        setDbName((java.lang.String)value);
+      }
+      break;
+
     case TABLE_NAME:
       if (value == null) {
         unsetTableName();
@@ -378,6 +423,9 @@ package org.apache.hadoop.hive.metastore.api;
   @org.apache.thrift.annotation.Nullable
   public java.lang.Object getFieldValue(_Fields field) {
     switch (field) {
+    case DB_NAME:
+      return getDbName();
+
     case TABLE_NAME:
       return getTableName();
 
@@ -407,6 +455,8 @@ package org.apache.hadoop.hive.metastore.api;
     }
 
     switch (field) {
+    case DB_NAME:
+      return isSetDbName();
     case TABLE_NAME:
       return isSetTableName();
     case TABLE_ID:
@@ -435,6 +485,15 @@ package org.apache.hadoop.hive.metastore.api;
       return false;
     if (this == that)
       return true;
+
+    boolean this_present_dbName = true && this.isSetDbName();
+    boolean that_present_dbName = true && that.isSetDbName();
+    if (this_present_dbName || that_present_dbName) {
+      if (!(this_present_dbName && that_present_dbName))
+        return false;
+      if (!this.dbName.equals(that.dbName))
+        return false;
+    }
 
     boolean this_present_tableName = true && this.isSetTableName();
     boolean that_present_tableName = true && that.isSetTableName();
@@ -497,6 +556,10 @@ package org.apache.hadoop.hive.metastore.api;
   public int hashCode() {
     int hashCode = 1;
 
+    hashCode = hashCode * 8191 + ((isSetDbName()) ? 131071 : 524287);
+    if (isSetDbName())
+      hashCode = hashCode * 8191 + dbName.hashCode();
+
     hashCode = hashCode * 8191 + ((isSetTableName()) ? 131071 : 524287);
     if (isSetTableName())
       hashCode = hashCode * 8191 + tableName.hashCode();
@@ -522,6 +585,16 @@ package org.apache.hadoop.hive.metastore.api;
 
     int lastComparison = 0;
 
+    lastComparison = java.lang.Boolean.compare(isSetDbName(), other.isSetDbName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetDbName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.dbName, other.dbName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = java.lang.Boolean.compare(isSetTableName(), other.isSetTableName());
     if (lastComparison != 0) {
       return lastComparison;
@@ -603,6 +676,14 @@ package org.apache.hadoop.hive.metastore.api;
     java.lang.StringBuilder sb = new java.lang.StringBuilder("SourceTable(");
     boolean first = true;
 
+    sb.append("dbName:");
+    if (this.dbName == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.dbName);
+    }
+    first = false;
+    if (!first) sb.append(", ");
     sb.append("tableName:");
     if (this.tableName == null) {
       sb.append("null");
@@ -636,6 +717,10 @@ package org.apache.hadoop.hive.metastore.api;
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
+    if (!isSetDbName()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'dbName' is unset! Struct:" + toString());
+    }
+
     if (!isSetTableName()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'tableName' is unset! Struct:" + toString());
     }
@@ -699,7 +784,15 @@ package org.apache.hadoop.hive.metastore.api;
           break;
         }
         switch (schemeField.id) {
-          case 1: // TABLE_NAME
+          case 1: // DB_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.dbName = iprot.readString();
+              struct.setDbNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // TABLE_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.tableName = iprot.readString();
               struct.setTableNameIsSet(true);
@@ -707,7 +800,7 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // TABLE_ID
+          case 3: // TABLE_ID
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.tableId = iprot.readI64();
               struct.setTableIdIsSet(true);
@@ -715,7 +808,7 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // INSERT_ONLY
+          case 4: // INSERT_ONLY
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
               struct.insertOnly = iprot.readBool();
               struct.setInsertOnlyIsSet(true);
@@ -723,7 +816,7 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // INSERTED_COUNT
+          case 5: // INSERTED_COUNT
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.insertedCount = iprot.readI64();
               struct.setInsertedCountIsSet(true);
@@ -731,7 +824,7 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // UPDATED_COUNT
+          case 6: // UPDATED_COUNT
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.updatedCount = iprot.readI64();
               struct.setUpdatedCountIsSet(true);
@@ -739,7 +832,7 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 6: // DELETED_COUNT
+          case 7: // DELETED_COUNT
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.deletedCount = iprot.readI64();
               struct.setDeletedCountIsSet(true);
@@ -760,6 +853,11 @@ package org.apache.hadoop.hive.metastore.api;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (struct.dbName != null) {
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(struct.dbName);
+        oprot.writeFieldEnd();
+      }
       if (struct.tableName != null) {
         oprot.writeFieldBegin(TABLE_NAME_FIELD_DESC);
         oprot.writeString(struct.tableName);
@@ -797,6 +895,7 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, SourceTable struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+      oprot.writeString(struct.dbName);
       oprot.writeString(struct.tableName);
       oprot.writeI64(struct.tableId);
       oprot.writeBool(struct.insertOnly);
@@ -808,6 +907,8 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, SourceTable struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+      struct.dbName = iprot.readString();
+      struct.setDbNameIsSet(true);
       struct.tableName = iprot.readString();
       struct.setTableNameIsSet(true);
       struct.tableId = iprot.readI64();

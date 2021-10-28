@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -68,7 +69,7 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
   private String serde;
   private String storageHandler;
   private Map<String, String> serdeProps;
-  private Set<String> tablesUsed;
+  private Set<SourceTable> tablesUsed;
   private List<String> sortColNames;
   private List<FieldSchema> sortCols;
   private List<String> distributeColNames;
@@ -249,11 +250,11 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
     this.ifNotExists = ifNotExists;
   }
 
-  public Set<String> getTablesUsed() {
+  public Set<SourceTable> getTablesUsed() {
     return tablesUsed;
   }
 
-  public void setTablesUsed(Set<String> tablesUsed) {
+  public void setTablesUsed(Set<SourceTable> tablesUsed) {
     this.tablesUsed = tablesUsed;
   }
 

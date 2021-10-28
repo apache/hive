@@ -4612,6 +4612,7 @@ class StorageDescriptor(object):
 class SourceTable(object):
     """
     Attributes:
+     - dbName
      - tableName
      - tableId
      - insertOnly
@@ -4622,7 +4623,8 @@ class SourceTable(object):
     """
 
 
-    def __init__(self, tableName=None, tableId=None, insertOnly=None, insertedCount=None, updatedCount=None, deletedCount=None,):
+    def __init__(self, dbName=None, tableName=None, tableId=None, insertOnly=None, insertedCount=None, updatedCount=None, deletedCount=None,):
+        self.dbName = dbName
         self.tableName = tableName
         self.tableId = tableId
         self.insertOnly = insertOnly
@@ -4641,30 +4643,35 @@ class SourceTable(object):
                 break
             if fid == 1:
                 if ftype == TType.STRING:
-                    self.tableName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                    self.dbName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
+                if ftype == TType.STRING:
+                    self.tableName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
                 if ftype == TType.I64:
                     self.tableId = iprot.readI64()
                 else:
                     iprot.skip(ftype)
-            elif fid == 3:
+            elif fid == 4:
                 if ftype == TType.BOOL:
                     self.insertOnly = iprot.readBool()
                 else:
                     iprot.skip(ftype)
-            elif fid == 4:
+            elif fid == 5:
                 if ftype == TType.I64:
                     self.insertedCount = iprot.readI64()
                 else:
                     iprot.skip(ftype)
-            elif fid == 5:
+            elif fid == 6:
                 if ftype == TType.I64:
                     self.updatedCount = iprot.readI64()
                 else:
                     iprot.skip(ftype)
-            elif fid == 6:
+            elif fid == 7:
                 if ftype == TType.I64:
                     self.deletedCount = iprot.readI64()
                 else:
@@ -4679,34 +4686,40 @@ class SourceTable(object):
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
         oprot.writeStructBegin('SourceTable')
+        if self.dbName is not None:
+            oprot.writeFieldBegin('dbName', TType.STRING, 1)
+            oprot.writeString(self.dbName.encode('utf-8') if sys.version_info[0] == 2 else self.dbName)
+            oprot.writeFieldEnd()
         if self.tableName is not None:
-            oprot.writeFieldBegin('tableName', TType.STRING, 1)
+            oprot.writeFieldBegin('tableName', TType.STRING, 2)
             oprot.writeString(self.tableName.encode('utf-8') if sys.version_info[0] == 2 else self.tableName)
             oprot.writeFieldEnd()
         if self.tableId is not None:
-            oprot.writeFieldBegin('tableId', TType.I64, 2)
+            oprot.writeFieldBegin('tableId', TType.I64, 3)
             oprot.writeI64(self.tableId)
             oprot.writeFieldEnd()
         if self.insertOnly is not None:
-            oprot.writeFieldBegin('insertOnly', TType.BOOL, 3)
+            oprot.writeFieldBegin('insertOnly', TType.BOOL, 4)
             oprot.writeBool(self.insertOnly)
             oprot.writeFieldEnd()
         if self.insertedCount is not None:
-            oprot.writeFieldBegin('insertedCount', TType.I64, 4)
+            oprot.writeFieldBegin('insertedCount', TType.I64, 5)
             oprot.writeI64(self.insertedCount)
             oprot.writeFieldEnd()
         if self.updatedCount is not None:
-            oprot.writeFieldBegin('updatedCount', TType.I64, 5)
+            oprot.writeFieldBegin('updatedCount', TType.I64, 6)
             oprot.writeI64(self.updatedCount)
             oprot.writeFieldEnd()
         if self.deletedCount is not None:
-            oprot.writeFieldBegin('deletedCount', TType.I64, 6)
+            oprot.writeFieldBegin('deletedCount', TType.I64, 7)
             oprot.writeI64(self.deletedCount)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
     def validate(self):
+        if self.dbName is None:
+            raise TProtocolException(message='Required field dbName is unset!')
         if self.tableName is None:
             raise TProtocolException(message='Required field tableName is unset!')
         if self.tableId is None:
@@ -29557,12 +29570,13 @@ StorageDescriptor.thrift_spec = (
 all_structs.append(SourceTable)
 SourceTable.thrift_spec = (
     None,  # 0
-    (1, TType.STRING, 'tableName', 'UTF8', None, ),  # 1
-    (2, TType.I64, 'tableId', None, None, ),  # 2
-    (3, TType.BOOL, 'insertOnly', None, None, ),  # 3
-    (4, TType.I64, 'insertedCount', None, None, ),  # 4
-    (5, TType.I64, 'updatedCount', None, None, ),  # 5
-    (6, TType.I64, 'deletedCount', None, None, ),  # 6
+    (1, TType.STRING, 'dbName', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'tableName', 'UTF8', None, ),  # 2
+    (3, TType.I64, 'tableId', None, None, ),  # 3
+    (4, TType.BOOL, 'insertOnly', None, None, ),  # 4
+    (5, TType.I64, 'insertedCount', None, None, ),  # 5
+    (6, TType.I64, 'updatedCount', None, None, ),  # 6
+    (7, TType.I64, 'deletedCount', None, None, ),  # 7
 )
 all_structs.append(CreationMetadata)
 CreationMetadata.thrift_spec = (

@@ -3637,16 +3637,19 @@ class SourceTable : public virtual ::apache::thrift::TBase {
 
   SourceTable(const SourceTable&);
   SourceTable& operator=(const SourceTable&);
-  SourceTable() : tableName(), tableId(0), insertOnly(0), insertedCount(0), updatedCount(0), deletedCount(0) {
+  SourceTable() : dbName(), tableName(), tableId(0), insertOnly(0), insertedCount(0), updatedCount(0), deletedCount(0) {
   }
 
   virtual ~SourceTable() noexcept;
+  std::string dbName;
   std::string tableName;
   int64_t tableId;
   bool insertOnly;
   int64_t insertedCount;
   int64_t updatedCount;
   int64_t deletedCount;
+
+  void __set_dbName(const std::string& val);
 
   void __set_tableName(const std::string& val);
 
@@ -3662,6 +3665,8 @@ class SourceTable : public virtual ::apache::thrift::TBase {
 
   bool operator == (const SourceTable & rhs) const
   {
+    if (!(dbName == rhs.dbName))
+      return false;
     if (!(tableName == rhs.tableName))
       return false;
     if (!(tableId == rhs.tableId))

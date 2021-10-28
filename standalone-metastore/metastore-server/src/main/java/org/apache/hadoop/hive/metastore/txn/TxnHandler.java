@@ -2531,7 +2531,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
     Set<String> insertOnlyTables = creationMetadata.getTablesUsed().stream()
         .filter(SourceTable::isInsertOnly)
-        .map(SourceTable::getTableName).collect(Collectors.toSet());
+        .map(sourceTable -> TableName.getDbTable(sourceTable.getDbName(), sourceTable.getTableName()))
+        .collect(Collectors.toSet());
 
     if (insertOnlyTables.isEmpty()) {
       return false;

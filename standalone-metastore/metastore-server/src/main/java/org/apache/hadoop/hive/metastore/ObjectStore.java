@@ -2514,8 +2514,7 @@ public class ObjectStore implements RawStore, Configurable {
     assert !m.isSetMaterializationTime();
     Set<MMVSource> tablesUsed = new HashSet<>();
     for (SourceTable sourceTable : m.getTablesUsed()) {
-      String[] names = sourceTable.getTableName().split("\\.");
-      MTable mtbl = getMTable(m.getCatName(), names[0], names[1], false).mtbl;
+      MTable mtbl = getMTable(m.getCatName(), sourceTable.getDbName(), sourceTable.getTableName(), false).mtbl;
       MMVSource source = new MMVSource();
       source.setTable(mtbl);
       source.setInsertedCount(sourceTable.getInsertedCount());
@@ -2549,7 +2548,8 @@ public class ObjectStore implements RawStore, Configurable {
     SourceTable sourceTable = new SourceTable();
     MTable mTable = mmvSource.getTable();
     sourceTable.setTableId(mTable.getId());
-    sourceTable.setTableName(Warehouse.getQualifiedName(mTable.getDatabase().getName(), mTable.getTableName()));
+    sourceTable.setDbName(mTable.getDatabase().getName());
+    sourceTable.setTableName(mTable.getTableName());
     String transactionalProp = mTable.getParameters().get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
     sourceTable.setInsertOnly("insert_only".equalsIgnoreCase(transactionalProp));
     sourceTable.setInsertedCount(mmvSource.getInsertedCount());
