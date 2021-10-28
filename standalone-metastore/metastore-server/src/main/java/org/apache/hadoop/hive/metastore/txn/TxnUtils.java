@@ -265,6 +265,7 @@ public class TxnUtils {
     // Get configuration parameters
     int maxQueryLength = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH);
     int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE);
+    int maxParameters = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_PARAMETERS);
 
     // Check parameter set validity as a public method.
     if (inList == null || inList.size() == 0 || maxQueryLength <= 0 || batchSize <= 0) {
@@ -316,7 +317,7 @@ public class TxnUtils {
       // Compute the size of a query when the 'nextValue' is added to the current query.
       int querySize = querySizeExpected(buf.length(), nextValue.length(), suffix.length(), addParens);
 
-      if (querySize > maxQueryLength * 1024) {
+      if (querySize > maxQueryLength * 1024 || currentCount >= maxParameters) {
         // Check an edge case where the DIRECT_SQL_MAX_QUERY_LENGTH does not allow one 'IN' clause with single value.
         if (cursor4queryOfInClauses == 1 && cursor4InClauseElements == 0) {
           throw new IllegalArgumentException("The current " + ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH.getVarname() + " is set too small to have one IN clause with single value!");
@@ -351,9 +352,8 @@ public class TxnUtils {
         continue;
       } else if (cursor4InClauseElements >= batchSize-1 && cursor4InClauseElements != 0) {
         // Finish the current 'IN'/'NOT IN' clause and start a new clause.
-        buf.setCharAt(buf.length() - 1, ')'); // replace the "commar".
+        buf.setCharAt(buf.length() - 1, ')'); // replace the "comma".
         buf.append(newInclausePrefix.toString());
-
         newInclausePrefixJustAppended = true;
 
         // increment cursor for per-query IN-clause list
