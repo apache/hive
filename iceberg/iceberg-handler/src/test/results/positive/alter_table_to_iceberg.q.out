@@ -108,7 +108,7 @@ Table Parameters:
 	rawDataSize         	455                 
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	322                 
+	totalSize           	#Masked#                 
 #### A masked pattern was here ####
 	write.format.default	orc                 
 	 	 
@@ -251,7 +251,7 @@ Table Parameters:
 	rawDataSize         	116                 
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	607                 
+	totalSize           	#Masked#                 
 #### A masked pattern was here ####
 	write.format.default	parquet             
 	 	 
@@ -394,7 +394,7 @@ Table Parameters:
 	rawDataSize         	0                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	351                 
+	totalSize           	#Masked#                 
 #### A masked pattern was here ####
 	write.format.default	avro                
 	 	 

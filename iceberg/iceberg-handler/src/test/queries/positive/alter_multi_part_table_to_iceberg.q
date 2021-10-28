@@ -1,5 +1,5 @@
--- Mask the totalSize value as it can change whenever the file format (e.g. ORC) version changes
---! qt:replace:/(\s+totalSize\s+)[\S+](\s+)/$1#Masked#$2/
+-- Mask the totalSize value as it can have slight variability, causing test flakiness
+--! qt:replace:/(\s+totalSize\s+)\S+(\s+)/$1#Masked#$2/
 
 set hive.vectorized.execution.enabled=false;
 
