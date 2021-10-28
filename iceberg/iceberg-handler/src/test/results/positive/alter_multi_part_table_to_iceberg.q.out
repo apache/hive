@@ -194,7 +194,7 @@ Table Parameters:
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	1329                
+	totalSize           	#Masked#                
 #### A masked pattern was here ####
 	write.format.default	orc                 
 	 	 
@@ -433,7 +433,7 @@ Table Parameters:
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	2899                
+	totalSize           	#Masked#                
 #### A masked pattern was here ####
 	write.format.default	parquet             
 	 	 
@@ -672,7 +672,7 @@ Table Parameters:
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	1843                
+	totalSize           	#Masked#                
 #### A masked pattern was here ####
 	write.format.default	avro                
 	 	 
