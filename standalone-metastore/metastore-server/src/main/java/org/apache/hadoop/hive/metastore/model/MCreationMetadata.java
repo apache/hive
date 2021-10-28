@@ -80,7 +80,8 @@ public class MCreationMetadata {
   }
 
   public void setTables(Set<MMVSource> tables) {
-    this.tables = tables;
+    this.tables.clear();
+    this.tables.addAll(tables);
   }
 
   public String getTxnList() {

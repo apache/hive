@@ -4980,7 +4980,7 @@ public class ObjectStore implements RawStore, Configurable {
       // Update creation metadata
       MCreationMetadata newMcm = convertToMCreationMetadata(cm);
       MCreationMetadata mcm = getCreationMetadata(catName, dbname, tablename);
-//      mcm.setTables(newMcm.getTables());
+      mcm.setTables(newMcm.getTables());
       mcm.setMaterializationTime(newMcm.getMaterializationTime());
       mcm.setTxnList(newMcm.getTxnList());
       // commit the changes
