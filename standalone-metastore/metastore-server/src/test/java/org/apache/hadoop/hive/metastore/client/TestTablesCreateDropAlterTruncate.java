@@ -74,6 +74,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.hadoop.hive.metastore.TestHiveMetaStore.createSourceTable;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
@@ -1176,6 +1177,13 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
         .setCatalogName(catName)
         .create(client, metaStore.getConf());
 
+    Table table = new TableBuilder()
+        .inDb(db)
+        .setTableName("mvSource")
+        .addCol("col1_1", ColumnType.STRING_TYPE_NAME)
+        .addCol("col2_2", ColumnType.INT_TYPE_NAME).build(metaStore.getConf());
+    SourceTable sourceTable = createSourceTable(table);
+
     String[] tableNames = new String[4];
     for (int i = 0; i < tableNames.length; i++) {
       tableNames[i] = "table_in_other_catalog_" + i;
@@ -1196,7 +1204,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
       if (i == 3) {
         builder.setType(TableType.MATERIALIZED_VIEW.name())
             .setRewriteEnabled(true)
-            .addMaterializedViewReferencedTable(dbName + "." + tableNames[0]);
+            .addMaterializedViewReferencedTable(sourceTable);
       }
       client.createTable(builder.build(metaStore.getConf()));
     }
@@ -1285,8 +1293,8 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
 
     // Update the metadata for the materialized view
     CreationMetadata cm = client.getTable(catName, dbName, tableNames[3]).getCreationMetadata();
-    SourceTable sourceTable = new SourceTable();
-    sourceTable.setTableName(dbName + "." + tableNames[1]);
+    Table table1 = client.getTable(dbName, tableNames[1]);
+    sourceTable = createSourceTable(table1);
     cm.addToTablesUsed(sourceTable);
     cm.unsetMaterializationTime();
     client.updateCreationMetadata(catName, dbName, tableNames[3], cm);

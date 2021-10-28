@@ -28503,6 +28503,7 @@ void swap(FindNextCompactRequest &a, FindNextCompactRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 FindNextCompactRequest::FindNextCompactRequest(const FindNextCompactRequest& other1006) {
   workerId = other1006.workerId;
   workerVersion = other1006.workerVersion;
@@ -28525,11 +28526,21 @@ FindNextCompactRequest& FindNextCompactRequest::operator=(const FindNextCompactR
 FindNextCompactRequest::FindNextCompactRequest(const FindNextCompactRequest& other1017) {
   workerId = other1017.workerId;
   workerVersion = other1017.workerVersion;
+=======
+FindNextCompactRequest::FindNextCompactRequest(const FindNextCompactRequest& other1017) {
+  workerId = other1017.workerId;
+  workerVersion = other1017.workerVersion;
+  __isset = other1017.__isset;
+>>>>>>> 4c720f2333 (fix MV SourceTable usage in UTs)
 }
 FindNextCompactRequest& FindNextCompactRequest::operator=(const FindNextCompactRequest& other1018) {
   workerId = other1018.workerId;
   workerVersion = other1018.workerVersion;
+<<<<<<< HEAD
 >>>>>>> 086dfc11bc (use SourceTable instances instead of String)
+=======
+  __isset = other1018.__isset;
+>>>>>>> 4c720f2333 (fix MV SourceTable usage in UTs)
   return *this;
 }
 void FindNextCompactRequest::printTo(std::ostream& out) const {

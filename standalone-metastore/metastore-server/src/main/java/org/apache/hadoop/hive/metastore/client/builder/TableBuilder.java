@@ -173,15 +173,13 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
     return this;
   }
 
-  public TableBuilder addMaterializedViewReferencedTable(String tableName) {
-    SourceTable sourceTable = new SourceTable();
-    sourceTable.setTableName(tableName);
+  public TableBuilder addMaterializedViewReferencedTable(SourceTable sourceTable) {
     mvReferencedTables.add(sourceTable);
     return this;
   }
 
-  public TableBuilder addMaterializedViewReferencedTables(Set<String> tableNames) {
-    for (String tableName : tableNames) {
+  public TableBuilder addMaterializedViewReferencedTables(Set<SourceTable> tableNames) {
+    for (SourceTable tableName : tableNames) {
       addMaterializedViewReferencedTable(tableName);
     }
     return this;

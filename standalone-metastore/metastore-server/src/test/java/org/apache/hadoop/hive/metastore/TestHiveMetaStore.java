@@ -49,15 +49,18 @@ import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.PartitionSpecWithSharedSD;
 import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
+import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.dataconnector.jdbc.AbstractJDBCConnectorProvider;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.orc.impl.OrcAcidUtils;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.junit.Assert;
@@ -3013,8 +3016,8 @@ public abstract class TestHiveMetaStore {
    * @param tableName the table name to be created
    */
 
-  private void createTable(String dbName, String tableName) throws TException {
-    new TableBuilder()
+  private Table createTable(String dbName, String tableName) throws TException {
+    return new TableBuilder()
         .setDbName(dbName)
         .setTableName(tableName)
         .addCol("foo", "string")
@@ -3022,13 +3025,30 @@ public abstract class TestHiveMetaStore {
         .create(client, conf);
   }
 
-  private void createMaterializedView(String dbName, String tableName, Set<String> tablesUsed)
+  public static SourceTable createSourceTable(Table table) {
+    SourceTable sourceTable = new SourceTable();
+    sourceTable.setTableId(table.getId());
+    sourceTable.setTableName(table.getDbName() + "." + table.getTableName());
+    sourceTable.setInsertOnly(
+        TxnUtils.isTransactionalTable(table.getParameters()) && !TxnUtils.isAcidTable(table.getParameters()));
+    sourceTable.setInsertedCount(0L);
+    sourceTable.setUpdatedCount(0L);
+    sourceTable.setDeletedCount(0L);
+    return sourceTable;
+  }
+
+  private void createMaterializedView(String dbName, String tableName, Set<Table> tablesUsed)
       throws TException {
+    Set<SourceTable> sourceTables = new HashSet<>(tablesUsed.size());
+    for (Table table : tablesUsed) {
+      sourceTables.add(createSourceTable(table));
+    }
+
     Table t = new TableBuilder()
         .setDbName(dbName)
         .setTableName(tableName)
         .setType(TableType.MATERIALIZED_VIEW.name())
-        .addMaterializedViewReferencedTables(tablesUsed)
+        .addMaterializedViewReferencedTables(sourceTables)
         .addCol("foo", "string")
         .addCol("bar", "string")
         .create(client, conf);
@@ -3139,13 +3159,14 @@ public abstract class TestHiveMetaStore {
     // Setup
     silentDropDatabase(dbName);
 
+    Set<Table> tablesUsed = new HashSet<>();
     new DatabaseBuilder()
         .setName(dbName)
         .create(client, conf);
     for (String tableName : tableNames) {
-      createTable(dbName, tableName);
+      tablesUsed.add(createTable(dbName, tableName));
     }
-    createMaterializedView(dbName, "mv1", Sets.newHashSet("db.table1", "db.table2"));
+    createMaterializedView(dbName, "mv1", tablesUsed);
 
     // Test
     List<Table> tableObjs = client.getTableObjectsByName(dbName, tableNames);
@@ -3175,13 +3196,13 @@ public abstract class TestHiveMetaStore {
     Database db1 = new Database();
     db1.setName(dbName1);
     client.createDatabase(db1);
-    createTable(dbName1, tableName1);
+    Table table1 = createTable(dbName1, tableName1);
     Database db2 = new Database();
     db2.setName(dbName2);
     client.createDatabase(db2);
-    createTable(dbName2, tableName2);
+    Table table2 = createTable(dbName2, tableName2);
 
-    createMaterializedView(dbName2, mvName, Sets.newHashSet("db1.table1", "db2.table2"));
+    createMaterializedView(dbName2, mvName, Sets.newHashSet(table1, table2));
 
     boolean exceptionFound = false;
     try {
