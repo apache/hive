@@ -3014,14 +3014,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
             final String driver = tabMetaData.getProperty(Constants.JDBC_DRIVER);
             final String user = tabMetaData.getProperty(Constants.JDBC_USERNAME);
             String pswd = tabMetaData.getProperty(Constants.JDBC_PASSWORD);
-            if (pswd == null) {
-              if(!(tabMetaData.getProperty(Constants.JDBC_PASSWORD_URI) == null)) {
-                  pswd = Utilities.getPasswdFromUri(tabMetaData.getProperty(Constants.JDBC_PASSWORD_URI));
-              }
-              else {
-                String keystore = tabMetaData.getProperty(Constants.JDBC_KEYSTORE);
-                String key = tabMetaData.getProperty(Constants.JDBC_KEY);
-                pswd = Utilities.getPasswdFromKeystore(keystore, key);
+            if (tabMetaData.getProperty(Constants.JDBC_PASSWORD_URI) != null) {
+                pswd = Utilities.getPasswdFromUri(tabMetaData.getProperty(Constants.JDBC_PASSWORD_URI));
+            }
+            else if (tabMetaData.getProperty(Constants.JDBC_KEYSTORE) != null) {
+              String keystore = tabMetaData.getProperty(Constants.JDBC_KEYSTORE);
+              String key = tabMetaData.getProperty(Constants.JDBC_KEY);
+              pswd = Utilities.getPasswdFromKeystore(keystore, key);
+            }
+            else {
+              if (pswd == null) {
+                LOG.warn("No password found to connect to database. Skipping CBO...");
               }
             }
             final String catalogName = tabMetaData.getProperty(Constants.JDBC_CATALOG);
