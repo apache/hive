@@ -1331,8 +1331,8 @@ struct GetLatestCommittedCompactionInfoResponse {
 }
 
 struct FindNextCompactRequest {
-    1: required string workerId,
-    2: required string workerVersion
+    1: optional string workerId,
+    2: optional string workerVersion
 }
 
 struct AddDynamicPartitions {

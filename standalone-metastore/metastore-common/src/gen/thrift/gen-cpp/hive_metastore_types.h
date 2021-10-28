@@ -10598,6 +10598,11 @@ void swap(GetLatestCommittedCompactionInfoResponse &a, GetLatestCommittedCompact
 
 std::ostream& operator<<(std::ostream& out, const GetLatestCommittedCompactionInfoResponse& obj);
 
+typedef struct _FindNextCompactRequest__isset {
+  _FindNextCompactRequest__isset() : workerId(false), workerVersion(false) {}
+  bool workerId :1;
+  bool workerVersion :1;
+} _FindNextCompactRequest__isset;
 
 class FindNextCompactRequest : public virtual ::apache::thrift::TBase {
  public:
@@ -10611,15 +10616,21 @@ class FindNextCompactRequest : public virtual ::apache::thrift::TBase {
   std::string workerId;
   std::string workerVersion;
 
+  _FindNextCompactRequest__isset __isset;
+
   void __set_workerId(const std::string& val);
 
   void __set_workerVersion(const std::string& val);
 
   bool operator == (const FindNextCompactRequest & rhs) const
   {
-    if (!(workerId == rhs.workerId))
+    if (__isset.workerId != rhs.__isset.workerId)
       return false;
-    if (!(workerVersion == rhs.workerVersion))
+    else if (__isset.workerId && !(workerId == rhs.workerId))
+      return false;
+    if (__isset.workerVersion != rhs.__isset.workerVersion)
+      return false;
+    else if (__isset.workerVersion && !(workerVersion == rhs.workerVersion))
       return false;
     return true;
   }

@@ -371,8 +371,11 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           return false;
         }
       }
-      ci = CompactionInfo.optionalCompactionInfoStructToInfo(
-              msc.findNextCompact(new FindNextCompactRequest(workerName, runtimeVersion)));
+
+      FindNextCompactRequest findNextCompactRequest = new FindNextCompactRequest();
+      findNextCompactRequest.setWorkerId(workerName);
+      findNextCompactRequest.setWorkerVersion(runtimeVersion);
+      ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(findNextCompactRequest));
       LOG.debug("Processing compaction request " + ci);
 
       if (ci == null) {

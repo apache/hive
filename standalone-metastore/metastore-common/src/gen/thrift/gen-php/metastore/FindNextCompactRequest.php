@@ -23,12 +23,12 @@ class FindNextCompactRequest
     static public $_TSPEC = array(
         1 => array(
             'var' => 'workerId',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::STRING,
         ),
         2 => array(
             'var' => 'workerVersion',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::STRING,
         ),
     );
