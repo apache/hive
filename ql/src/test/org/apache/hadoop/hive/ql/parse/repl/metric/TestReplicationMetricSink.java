@@ -83,7 +83,7 @@ public class TestReplicationMetricSink {
     MetricSink metricSinkSpy = Mockito.spy(MetricSink.getInstance());
     Mockito.doReturn(1L).when(metricSinkSpy).getFrequencyInSecs();
     metricSinkSpy.init(conf);
-    encoder = MessageFactory.getDefaultInstance(conf);
+    encoder = MessageFactory.getDefaultInstanceForReplMetrics(conf);
     deserializer = encoder.getDeserializer();
   }
 
@@ -110,9 +110,7 @@ public class TestReplicationMetricSink {
     bootstrapDumpMetricCollector.reportEnd(Status.SUCCESS);
 
     Metadata expectedMetadata = new Metadata("testAcidTablesReplLoadBootstrapIncr_1592205875387",
-      Metadata.ReplicationType.BOOTSTRAP, "hdfs://localhost:65158/tmp/org_apache_hadoop_hive_ql_"
-      + "parse_TestReplicationScenarios_245261428230295/hrepl0/dGVzdGFjaWR0YWJsZXNyZXBsbG9hZGJvb3RzdHJhcGlu"
-      + "Y3JfMTU5MjIwNTg3NTM4Nw==/0/hive");
+      Metadata.ReplicationType.BOOTSTRAP, "dummyDir");
     expectedMetadata.setLastReplId(10);
     Progress expectedProgress = new Progress();
     expectedProgress.setStatus(Status.SUCCESS);
@@ -171,9 +169,7 @@ public class TestReplicationMetricSink {
     incrementDumpMetricCollector.reportEnd(Status.SUCCESS);
 
     expectedMetadata = new Metadata("testAcidTablesReplLoadBootstrapIncr_1592205875387",
-      Metadata.ReplicationType.INCREMENTAL, "hdfs://localhost:65158/tmp/org_apache_hadoop_hive_ql_"
-      + "parse_TestReplicationScenarios_245261428230295/hrepl0/dGVzdGFjaWR0YWJsZXNyZXBsbG9hZGJvb3RzdHJhcGlu"
-      + "Y3JfMTU5MjIwNTg3NTM4Nw==/0/hive");
+      Metadata.ReplicationType.INCREMENTAL, "dummyDir");
     expectedMetadata.setLastReplId(10);
     expectedProgress = new Progress();
     expectedProgress.setStatus(Status.SUCCESS);
@@ -233,7 +229,7 @@ public class TestReplicationMetricSink {
     failoverDumpMetricCollector.reportEnd(Status.FAILOVER_READY);
 
     expectedMetadata = new Metadata("testAcidTablesReplLoadBootstrapIncr_1592205875387",
-            Metadata.ReplicationType.INCREMENTAL, stagingDir);
+            Metadata.ReplicationType.INCREMENTAL, "dummyDir");
     expectedMetadata.setLastReplId(10);
     expectedMetadata.setFailoverEventId(100);
     expectedMetadata.setFailoverMetadataLoc(stagingDir + FailoverMetaData.FAILOVER_METADATA);

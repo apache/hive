@@ -33,11 +33,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 /**
  * TestGenericUDFGzipJsonDeserialize.
  */
-public class TestGenericUDFGzipJsonDeserialize {
+public class TestGenericUDFDeserialize {
 
     @Test
     public void testOneArg() throws HiveException {
-        GenericUDFGzipJsonDeserialize udf = new GenericUDFGzipJsonDeserialize();
+        GenericUDFDeserialize udf = new GenericUDFDeserialize();
         ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
         ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
         UDFArgumentException ex = null;
@@ -46,39 +46,39 @@ public class TestGenericUDFGzipJsonDeserialize {
         } catch (UDFArgumentException e) {
             ex = e;
         }
-        assertNotNull("The function gzip_json_deserialize() accepts 2 argument.", ex);
+        assertNotNull("The function deserialize() accepts 2 argument.", ex);
         ex = null;
         try {
             udf.initialize(new ObjectInspector[]{valueOI2, valueOI1});
         } catch (UDFArgumentException e) {
             ex = e;
         }
-        assertNull("The function gzip_json_deserialize() accepts 2 argument.", ex);
+        assertNull("The function deserialize() accepts 2 argument.", ex);
     }
 
     @Test
     public void testGZIPJsonDeserializeString() throws HiveException {
-        GenericUDFGzipJsonDeserialize udf = new GenericUDFGzipJsonDeserialize();
+        GenericUDFDeserialize udf = new GenericUDFDeserialize();
         udf.initialize(new ObjectInspector[]{PrimitiveObjectInspectorFactory.writableStringObjectInspector,
                 PrimitiveObjectInspectorFactory.writableStringObjectInspector});
         GenericUDF.DeferredObject[] args = new GenericUDF.DeferredObject[2];
         String expectedOutput = "test";
-        MessageEncoder encoder = MessageFactory.getDefaultInstance(new HiveConf());
+        MessageEncoder encoder = MessageFactory.getDefaultInstanceForReplMetrics(new HiveConf());
         String serializedMsg = encoder.getSerializer().serialize(expectedOutput);
         args[0] = new GenericUDF.DeferredJavaObject(new Text(serializedMsg));
         args[1] = new GenericUDF.DeferredJavaObject(new Text(encoder.getMessageFormat()));
         Object actualOutput = udf.evaluate(args).toString();
-        assertEquals("gzip_json_deserialize() test", expectedOutput, actualOutput != null ? actualOutput : null);
+        assertEquals("deserialize() test", expectedOutput, actualOutput != null ? actualOutput : null);
     }
 
     @Test
     public void testInvalidMessageString() throws HiveException {
-        GenericUDFGzipJsonDeserialize udf = new GenericUDFGzipJsonDeserialize();
+        GenericUDFDeserialize udf = new GenericUDFDeserialize();
         udf.initialize(new ObjectInspector[]{PrimitiveObjectInspectorFactory.writableStringObjectInspector,
                 PrimitiveObjectInspectorFactory.writableStringObjectInspector});
         GenericUDF.DeferredObject[] args = new GenericUDF.DeferredObject[2];
         String expectedOutput = "test";
-        MessageEncoder encoder = MessageFactory.getDefaultInstance(new HiveConf());
+        MessageEncoder encoder = MessageFactory.getDefaultInstanceForReplMetrics(new HiveConf());
         String serializedMsg = encoder.getSerializer().serialize(expectedOutput);
         args[0] = new GenericUDF.DeferredJavaObject(new Text(serializedMsg));
         args[1] = new GenericUDF.DeferredJavaObject(new Text("randomSerialization"));

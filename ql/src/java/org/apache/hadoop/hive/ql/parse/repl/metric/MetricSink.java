@@ -117,7 +117,7 @@ public final class MetricSink {
           int totalMetricsSize = metrics.size();
           List<ReplicationMetrics> replicationMetricsList = new ArrayList<>(totalMetricsSize);
           ObjectMapper mapper = new ObjectMapper();
-          MessageEncoder encoder = MessageFactory.getDefaultInstance(conf);
+          MessageEncoder encoder = MessageFactory.getDefaultInstanceForReplMetrics(conf);
           MessageSerializer serializer = encoder.getSerializer();
           for (int index = 0; index < totalMetricsSize; index++) {
             ReplicationMetric metric = metrics.removeFirst();

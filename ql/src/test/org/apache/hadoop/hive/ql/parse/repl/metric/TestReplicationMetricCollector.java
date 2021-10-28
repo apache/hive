@@ -74,7 +74,7 @@ public class TestReplicationMetricCollector {
     conf.set(Constants.SCHEDULED_QUERY_EXECUTIONID, "1");
     MetricCollector.getInstance().init(conf);
     Mockito.when(fmd.getFailoverEventId()).thenReturn(10L);
-    Mockito.when(fmd.getFilePath()).thenReturn("staging");
+    Mockito.when(fmd.getFilePath()).thenReturn("dummyDir");
   }
 
   @After
@@ -107,7 +107,7 @@ public class TestReplicationMetricCollector {
     conf = new HiveConf();
     MetricCollector.getInstance().init(conf);
     ReplicationMetricCollector bootstrapDumpMetricCollector = new BootstrapDumpMetricCollector("db",
-        "staging", conf);
+        "dummyDir", conf);
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
     metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 1);
@@ -122,7 +122,7 @@ public class TestReplicationMetricCollector {
     conf = new HiveConf();
     MetricCollector.getInstance().init(conf);
     ReplicationMetricCollector bootstrapDumpMetricCollector = new BootstrapDumpMetricCollector("db",
-        "staging", conf);
+        "dummyDir", conf);
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
     metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 1);
@@ -134,7 +134,7 @@ public class TestReplicationMetricCollector {
   @Test
   public void testSuccessBootstrapDumpMetrics() throws Exception {
     ReplicationMetricCollector bootstrapDumpMetricCollector = new BootstrapDumpMetricCollector("db",
-        "staging", conf);
+        "dummyDir", conf);
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
     metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 1);
@@ -154,7 +154,7 @@ public class TestReplicationMetricCollector {
     actualMetrics = MetricCollector.getInstance().getMetrics();
     Assert.assertEquals(1, actualMetrics.size());
 
-    Metadata expectedMetadata = new Metadata("db", Metadata.ReplicationType.BOOTSTRAP, "staging");
+    Metadata expectedMetadata = new Metadata("db", Metadata.ReplicationType.BOOTSTRAP, "dummyDir");
     expectedMetadata.setLastReplId(10);
     Progress expectedProgress = new Progress();
     expectedProgress.setStatus(Status.SUCCESS);
@@ -176,7 +176,7 @@ public class TestReplicationMetricCollector {
   @Test
   public void testSuccessIncrDumpMetrics() throws Exception {
     ReplicationMetricCollector incrDumpMetricCollector = new IncrementalDumpMetricCollector("db",
-        "staging", conf);
+        "dummyDir", conf);
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
     metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 1);
@@ -196,7 +196,7 @@ public class TestReplicationMetricCollector {
     actualMetrics = MetricCollector.getInstance().getMetrics();
     Assert.assertEquals(1, actualMetrics.size());
 
-    Metadata expectedMetadata = new Metadata("db", Metadata.ReplicationType.INCREMENTAL, "staging");
+    Metadata expectedMetadata = new Metadata("db", Metadata.ReplicationType.INCREMENTAL, "dummyDir");
     expectedMetadata.setLastReplId(10);
     Progress expectedProgress = new Progress();
     expectedProgress.setStatus(Status.SUCCESS);
@@ -219,7 +219,7 @@ public class TestReplicationMetricCollector {
   @Test
   public void testFailoverReadyDumpMetrics() throws Exception {
     ReplicationMetricCollector incrDumpMetricCollector = new IncrementalDumpMetricCollector("db",
-            "staging", conf);
+            "dummyDir", conf);
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) 10);
     incrDumpMetricCollector.reportFailoverStart("dump", metricMap, fmd);
@@ -233,10 +233,10 @@ public class TestReplicationMetricCollector {
     actualMetrics = MetricCollector.getInstance().getMetrics();
     Assert.assertEquals(1, actualMetrics.size());
 
-    Metadata expectedMetadata = new Metadata("db", Metadata.ReplicationType.INCREMENTAL, "staging");
+    Metadata expectedMetadata = new Metadata("db", Metadata.ReplicationType.INCREMENTAL, "dummyDir");
     expectedMetadata.setLastReplId(10);
     expectedMetadata.setFailoverEventId(10);
-    expectedMetadata.setFailoverMetadataLoc("staging");
+    expectedMetadata.setFailoverMetadataLoc("dummyDir");
     Progress expectedProgress = new Progress();
     expectedProgress.setStatus(Status.FAILOVER_READY);
     Stage dumpStage = new Stage("dump", Status.SUCCESS, 0);
@@ -255,7 +255,7 @@ public class TestReplicationMetricCollector {
   @Test
   public void testSuccessBootstrapLoadMetrics() throws Exception {
     ReplicationMetricCollector bootstrapLoadMetricCollector = new BootstrapLoadMetricCollector("db",
-        "staging", 1, conf);
+        "dummyDir", 1, conf);
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
     metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 1);
@@ -276,7 +276,7 @@ public class TestReplicationMetricCollector {
     actualMetrics = MetricCollector.getInstance().getMetrics();
     Assert.assertEquals(1, actualMetrics.size());
 
-    Metadata expectedMetadata = new Metadata("db", Metadata.ReplicationType.BOOTSTRAP, "staging");
+    Metadata expectedMetadata = new Metadata("db", Metadata.ReplicationType.BOOTSTRAP, "dummyDir");
     expectedMetadata.setLastReplId(10);
     Progress expectedProgress = new Progress();
     expectedProgress.setStatus(Status.SUCCESS);
@@ -299,7 +299,7 @@ public class TestReplicationMetricCollector {
   @Test
   public void testSuccessIncrLoadMetrics() throws Exception {
     ReplicationMetricCollector incrLoadMetricCollector = new IncrementalLoadMetricCollector("db",
-        "staging", 1, conf);
+        "dummyDir", 1, conf);
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
     metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 1);
@@ -319,7 +319,7 @@ public class TestReplicationMetricCollector {
     actualMetrics = MetricCollector.getInstance().getMetrics();
     Assert.assertEquals(1, actualMetrics.size());
 
-    Metadata expectedMetadata = new Metadata("db", Metadata.ReplicationType.INCREMENTAL, "staging");
+    Metadata expectedMetadata = new Metadata("db", Metadata.ReplicationType.INCREMENTAL, "dummyDir");
     expectedMetadata.setLastReplId(10);
     Progress expectedProgress = new Progress();
     expectedProgress.setStatus(Status.SUCCESS);
@@ -363,7 +363,7 @@ public class TestReplicationMetricCollector {
   @Test
   public void testSuccessStageFailure() throws Exception {
     ReplicationMetricCollector bootstrapDumpMetricCollector = new BootstrapDumpMetricCollector("db",
-      "staging", conf);
+      "dummyDir", conf);
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
     metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 1);
@@ -378,7 +378,7 @@ public class TestReplicationMetricCollector {
   @Test
   public void testSuccessStageFailedAdmin() throws Exception {
     ReplicationMetricCollector bootstrapDumpMetricCollector = new BootstrapDumpMetricCollector("db",
-      "staging", conf);
+      "dummyDir", conf);
     Map<String, Long> metricMap = new HashMap<>();
     metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
     metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 1);
@@ -464,7 +464,7 @@ public class TestReplicationMetricCollector {
 
   @Test
   public void testReplStatsTrackerLimit() {
-    MessageSerializer serializer = MessageFactory.getDefaultInstance(conf).getSerializer();
+    MessageSerializer serializer = MessageFactory.getDefaultInstanceForReplMetrics(conf).getSerializer();
     ReplStatsTracker repl = new ReplStatsTracker(10);
     // Check for k=10
     generateStatsString(10, repl);

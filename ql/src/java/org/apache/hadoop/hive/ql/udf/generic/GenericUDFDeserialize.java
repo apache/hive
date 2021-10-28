@@ -32,15 +32,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  * GenericUDFDeserializeString.
  *
  */
-@Description(name = "gzip_json_deserialize",
+@Description(name = "deserialize",
         value="_FUNC_(message, encodingFormat) - Returns deserialized string of encoded message.",
         extended="Example:\n"
                 + "  > SELECT _FUNC_('H4sIAAAAAAAA/ytJLS4BAAx+f9gEAAAA', 'gzip(json-2.0)') FROM src LIMIT 1;\n"
                 + "  test")
-public class GenericUDFGzipJsonDeserialize extends GenericUDF {
+public class GenericUDFDeserialize extends GenericUDF {
 
     private static final int ARG_COUNT = 2; // Number of arguments to this UDF
-    private static final String FUNC_NAME = "gzip_json_deserialize"; // External Name
+    private static final String FUNC_NAME = "deserialize"; // External Name
 
     private transient PrimitiveObjectInspector stringOI = null;
     private transient PrimitiveObjectInspector encodingFormat = null;
@@ -69,12 +69,10 @@ public class GenericUDFGzipJsonDeserialize extends GenericUDF {
         String messageFormat = PrimitiveObjectInspectorUtils.getString(arguments[1].get(), encodingFormat);
         if (value == null) {
             return null;
-        } else if (messageFormat == null || messageFormat.isEmpty()) {
+        } else if (messageFormat == null || messageFormat.isEmpty() || JSONMessageEncoder.FORMAT.equalsIgnoreCase(value)) {
             return value;
         } else if (GzipJSONMessageEncoder.FORMAT.equalsIgnoreCase(messageFormat)) {
             return GzipJSONMessageEncoder.getInstance().getDeserializer().deSerializeGenericString(value);
-        } else if (JSONMessageEncoder.FORMAT.equalsIgnoreCase(value)) {
-            return JSONMessageEncoder.getInstance().getDeserializer().deSerializeGenericString(value);
         } else {
             throw new HiveException("Invalid message format provided: " + messageFormat + " for message: " + value);
         }

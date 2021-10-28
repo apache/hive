@@ -90,9 +90,17 @@ public abstract class MessageFactory {
     return (MessageEncoder) methodInstance.invoke(null);
   }
 
+  public static MessageEncoder getDefaultInstanceForReplMetrics(Configuration conf) {
+    return getInstance(conf, MetastoreConf.ConfVars.REPL_MESSAGE_FACTORY.getVarname());
+  }
+
   public static MessageEncoder getDefaultInstance(Configuration conf) {
+    return getInstance(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getVarname());
+  }
+
+  public static MessageEncoder getInstance(Configuration conf, String config) {
     String clazz =
-        MetastoreConf.get(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getVarname());
+            MetastoreConf.get(conf, config);
     try {
       Class<?> clazzObject = MessageFactory.class.getClassLoader().loadClass(clazz);
       return (MessageEncoder) requiredMethod(clazzObject).invoke(null);

@@ -510,7 +510,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("sort_array", GenericUDFSortArray.class);
     system.registerGenericUDF("sort_array_by", GenericUDFSortArrayByField.class);
     system.registerGenericUDF("array_contains", GenericUDFArrayContains.class);
-    system.registerGenericUDF("gzip_json_deserialize", GenericUDFGzipJsonDeserialize.class);
+    system.registerGenericUDF("deserialize", GenericUDFDeserialize.class);
     system.registerGenericUDF("sentences", GenericUDFSentences.class);
     system.registerGenericUDF("map_keys", GenericUDFMapKeys.class);
     system.registerGenericUDF("map_values", GenericUDFMapValues.class);
