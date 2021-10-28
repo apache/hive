@@ -116,8 +116,8 @@ public class HiveVectorizedReader {
           // and Iceberg will make a mapping between the file schema and the current reading schema.
           job.setBoolean(OrcConf.FORCE_POSITIONAL_EVOLUTION.getHiveConfName(), false);
 
-          // Iceberg currently does not track the last modification time of a file. Until that's added, we need to set
-          // Long.MIN_VALUE as last modification time in the fileId triplet.
+          // TODO: Iceberg currently does not track the last modification time of a file. Until that's added,
+          // we need to set Long.MIN_VALUE as last modification time in the fileId triplet.
           SyntheticFileId fileId = new SyntheticFileId(path, task.file().fileSizeInBytes(), Long.MIN_VALUE);
 
           VectorizedReadUtils.handleIcebergProjection(inputFile, task, job, fileId);

@@ -72,22 +72,22 @@ public class VectorizedReadUtils {
           LlapHiveUtils.getDbAndTableNameForMetrics(path, true, partitionDesc) : null;
 
       try {
-        // Schema has to be serialized and deserialized as it is passed between different packages of TypeDescription..
+        // Schema has to be serialized and deserialized as it is passed between different packages of TypeDescription:
+        // Iceberg expects org.apache.hive.iceberg.org.apache.orc.TypeDescription as it shades ORC, while LLAP provides
+        // the unshaded org.apache.orc.TypeDescription type.
         BufferChunk tailBuffer = LlapProxy.getIo().getOrcTailFromCache(path, job, cacheTag, fileId).getTailBuffer();
         schema = ReaderImpl.extractFileTail(tailBuffer.getData()).getSchema();
       } catch (IOException ioe) {
-        LOG.warn("LLAP is turned on but was unable to get file metadata information through its cache.", ioe);
+        LOG.warn("LLAP is turned on but was unable to get file metadata information through its cache for {}",
+            path, ioe);
       }
 
     }
 
     // Fallback to simple ORC reader file opening method in lack of or failure of LLAP.
     if (schema == null) {
-      Reader orcFileReader = ORC.newFileReader(inputFile, job);
-      try {
+      try (Reader orcFileReader = ORC.newFileReader(inputFile, job)) {
         schema = orcFileReader.getSchema();
-      } finally {
-        orcFileReader.close();
       }
     }
 
@@ -101,6 +101,7 @@ public class VectorizedReadUtils {
    * @param inputFile - the original ORC file - this needs to be accessed to retrieve the original schema for mapping
    * @param task - Iceberg task - required for
    * @param job - JobConf instance to adjust
+   * @param fileId - FileID for the input file, serves as cache key in an LLAP setup
    * @throws IOException - errors relating to accessing the ORC file
    */
   public static void handleIcebergProjection(InputFile inputFile, FileScanTask task, JobConf job,
