@@ -1182,6 +1182,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
         .setTableName("mvSource")
         .addCol("col1_1", ColumnType.STRING_TYPE_NAME)
         .addCol("col2_2", ColumnType.INT_TYPE_NAME).build(metaStore.getConf());
+    client.createTable(table);
     SourceTable sourceTable = createSourceTable(table);
 
     String[] tableNames = new String[4];
@@ -1246,7 +1247,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
 
     // test getAllTables
     Set<String> fetchedNames = new HashSet<>(client.getAllTables(catName, dbName));
-    Assert.assertEquals(tableNames.length, fetchedNames.size());
+    Assert.assertEquals(tableNames.length + 1, fetchedNames.size());
     for (String tableName : tableNames) {
       Assert.assertTrue(fetchedNames.contains(tableName));
     }
@@ -1293,7 +1294,12 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
 
     // Update the metadata for the materialized view
     CreationMetadata cm = client.getTable(catName, dbName, tableNames[3]).getCreationMetadata();
-    Table table1 = client.getTable(dbName, tableNames[1]);
+    Table table1 = new TableBuilder()
+        .inDb(db)
+        .setTableName("mvSource2")
+        .addCol("col1_1", ColumnType.STRING_TYPE_NAME)
+        .addCol("col2_2", ColumnType.INT_TYPE_NAME).build(metaStore.getConf());
+    client.createTable(table1);
     sourceTable = createSourceTable(table1);
     cm.addToTablesUsed(sourceTable);
     cm.unsetMaterializationTime();
@@ -1339,6 +1345,10 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
         Assert.assertFalse(tableDir.exists());
       }
     }
+
+    client.dropTable(table.getCatName(), table.getDbName(), table.getTableName());
+    client.dropTable(table1.getCatName(), table1.getDbName(), table1.getTableName());
+
     Assert.assertEquals(0, client.getAllTables(catName, dbName).size());
   }
 

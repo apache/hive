@@ -115,6 +115,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
+import static org.apache.hadoop.hive.metastore.TestHiveMetaStore.createSourceTable;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -1312,11 +1313,7 @@ public class TestObjectStore {
     creationMetadata.setCatName(db1.getCatalogName());
     creationMetadata.setDbName(matView1.getDbName());
     creationMetadata.setTblName(matView1.getTableName());
-    creationMetadata.setTablesUsed(new HashSet<SourceTable>() {{
-      SourceTable sourceTable = new SourceTable();
-      sourceTable.setTableId(tbl1.getId());
-      sourceTable.setTableName(tbl1.getDbName() + "." + tbl1.getTableName());
-      add(sourceTable); }});
+    creationMetadata.setTablesUsed(new HashSet<SourceTable>() {{ add(createSourceTable(tbl1)); }});
     matView1.setCreationMetadata(creationMetadata);
     objectStore.createTable(matView1);
 
