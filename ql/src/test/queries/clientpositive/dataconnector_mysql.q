@@ -5,7 +5,7 @@ TYPE 'mysql'
 URL 'jdbc:mysql://localhost:3306/qtestDB'
 COMMENT 'test connector'
 WITH DCPROPERTIES (
-"hive.sql.dbcp.username"="qtestuser",
+"hive.sql.dbcp.username"="root",
 "hive.sql.dbcp.password"="qtestpassword");
 SHOW CONNECTORS;
 
