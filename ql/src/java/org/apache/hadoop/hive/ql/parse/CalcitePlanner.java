@@ -3013,19 +3013,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
             final String url = tabMetaData.getProperty(Constants.JDBC_URL);
             final String driver = tabMetaData.getProperty(Constants.JDBC_DRIVER);
             final String user = tabMetaData.getProperty(Constants.JDBC_USERNAME);
-            String pswd = tabMetaData.getProperty(Constants.JDBC_PASSWORD);
-            if (tabMetaData.getProperty(Constants.JDBC_PASSWORD_URI) != null) {
-                pswd = Utilities.getPasswdFromUri(tabMetaData.getProperty(Constants.JDBC_PASSWORD_URI));
-            }
-            else if (tabMetaData.getProperty(Constants.JDBC_KEYSTORE) != null) {
+            final String pswd;
+            if (tabMetaData.getProperty(Constants.JDBC_PASSWORD) != null) {
+              pswd = tabMetaData.getProperty(Constants.JDBC_PASSWORD);
+            } else if (tabMetaData.getProperty(Constants.JDBC_KEYSTORE) != null) {
               String keystore = tabMetaData.getProperty(Constants.JDBC_KEYSTORE);
               String key = tabMetaData.getProperty(Constants.JDBC_KEY);
               pswd = Utilities.getPasswdFromKeystore(keystore, key);
-            }
-            else {
-              if (pswd == null) {
-                LOG.warn("No password found to connect to database. Skipping CBO...");
-              }
+            } else if (tabMetaData.getProperty(Constants.JDBC_PASSWORD_URI) != null) {
+              pswd = Utilities.getPasswdFromUri(tabMetaData.getProperty(Constants.JDBC_PASSWORD_URI));
+            } else {
+              pswd = null;
+              LOG.warn("No password found for accessing {} table via JDBC", fullyQualifiedTabName);
             }
             final String catalogName = tabMetaData.getProperty(Constants.JDBC_CATALOG);
             final String schemaName = tabMetaData.getProperty(Constants.JDBC_SCHEMA);
