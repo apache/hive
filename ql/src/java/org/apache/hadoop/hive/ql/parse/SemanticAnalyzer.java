@@ -12859,6 +12859,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         sourceTable.setDbName(table.getDbName());
         sourceTable.setTableName(table.getTableName());
         sourceTable.setTableId(table.getTTable().getId());
+        sourceTable.setInsertOnly(AcidUtils.isInsertOnlyTable(table));
         sourceTable.setInsertedCount(0L);
         sourceTable.setUpdatedCount(0L);
         sourceTable.setDeletedCount(0L);
