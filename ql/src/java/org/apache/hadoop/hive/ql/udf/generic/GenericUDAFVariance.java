@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -113,7 +114,7 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
     bvalue = new BigDecimal(value);
     bcount = new BigDecimal(count);
     BigDecimal t = bcount.multiply(bvalue).subtract(bsum);
-    bvariance = bvariance.add(t.multiply(t).divide(bcount.multiply(bcount.subtract(BigDecimal.ONE))));
+    bvariance = bvariance.add(t.multiply(t).divide(bcount.multiply(bcount.subtract(BigDecimal.ONE)),MathContext.DECIMAL128));
     return bvariance.doubleValue();
   }
 
@@ -131,9 +132,10 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
     BigDecimal bmergeVariance = new BigDecimal(mergeVariance);
 
     BigDecimal t =
-        (bPartialCount.divide(bMergeCount).multiply(new BigDecimal(mergeSum).subtract(new BigDecimal(partialSum))));
+        bPartialCount.divide(bMergeCount, MathContext.DECIMAL128).multiply(new BigDecimal(mergeSum)).subtract(new BigDecimal(partialSum));
+
     bmergeVariance = bmergeVariance.add(new BigDecimal(partialVariance).add(
-        (bMergeCount.divide(bPartialCount).divide(bMergeCount.add(bPartialCount))).multiply(t).multiply(t)));
+        (bMergeCount.divide(bPartialCount,MathContext.DECIMAL128).divide(bMergeCount.add(bPartialCount),MathContext.DECIMAL128)).multiply(t).multiply(t)));
     return bmergeVariance.doubleValue();
   }
 
