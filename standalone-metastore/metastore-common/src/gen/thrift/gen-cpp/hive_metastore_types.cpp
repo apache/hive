@@ -28524,46 +28524,15 @@ void swap(FindNextCompactRequest &a, FindNextCompactRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-FindNextCompactRequest::FindNextCompactRequest(const FindNextCompactRequest& other1006) {
-  workerId = other1006.workerId;
-  workerVersion = other1006.workerVersion;
-  __isset = other1006.__isset;
-}
-FindNextCompactRequest& FindNextCompactRequest::operator=(const FindNextCompactRequest& other1007) {
-  workerId = other1007.workerId;
-  workerVersion = other1007.workerVersion;
-  __isset = other1007.__isset;
-=======
-FindNextCompactRequest::FindNextCompactRequest(const FindNextCompactRequest& other1015) {
-  workerId = other1015.workerId;
-  workerVersion = other1015.workerVersion;
-}
-FindNextCompactRequest& FindNextCompactRequest::operator=(const FindNextCompactRequest& other1016) {
-  workerId = other1016.workerId;
-  workerVersion = other1016.workerVersion;
->>>>>>> 63430f0162 (to 0.14.1 thrift)
-=======
-FindNextCompactRequest::FindNextCompactRequest(const FindNextCompactRequest& other1017) {
-  workerId = other1017.workerId;
-  workerVersion = other1017.workerVersion;
-=======
 FindNextCompactRequest::FindNextCompactRequest(const FindNextCompactRequest& other1017) {
   workerId = other1017.workerId;
   workerVersion = other1017.workerVersion;
   __isset = other1017.__isset;
->>>>>>> 4c720f2333 (fix MV SourceTable usage in UTs)
 }
 FindNextCompactRequest& FindNextCompactRequest::operator=(const FindNextCompactRequest& other1018) {
   workerId = other1018.workerId;
   workerVersion = other1018.workerVersion;
-<<<<<<< HEAD
->>>>>>> 086dfc11bc (use SourceTable instances instead of String)
-=======
   __isset = other1018.__isset;
->>>>>>> 4c720f2333 (fix MV SourceTable usage in UTs)
   return *this;
 }
 void FindNextCompactRequest::printTo(std::ostream& out) const {
