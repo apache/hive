@@ -390,9 +390,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED)) {
           determineDatabaseProduct(dbConn);
         } catch (SQLException e) {
-          String msg = "Unable to determine database product, " + e.getMessage();
-          LOG.error(msg);
-          throw new RuntimeException(msg, e);
+          LOG.error("Unable to determine database product", e);
+          throw new RuntimeException(e);
         }
       }
 
@@ -5570,14 +5569,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private static DataSource setupJdbcConnectionPool(Configuration conf, int maxPoolSize, long getConnectionTimeoutMs) {
+  private synchronized static DataSource setupJdbcConnectionPool(Configuration conf, int maxPoolSize, long getConnectionTimeoutMs) {
     DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     if (dsp != null) {
       try {
         return dsp.create(conf);
       } catch (SQLException e) {
-        String msg = "Unable to instantiate JDBC connection pooling, " + e.getMessage();
-        LOG.error(msg);
+        LOG.error("Unable to instantiate JDBC connection pooling", e);
         throw new RuntimeException(e);
       }
     } else {
