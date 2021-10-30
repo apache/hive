@@ -83,7 +83,7 @@ public class NotNullConstraint implements Serializable {
     return sb.toString();
   }
 
-  public static boolean isNotNullConstraintNotEmpty(NotNullConstraint info) {
+  public static boolean isNotEmpty(NotNullConstraint info) {
     return info != null && !info.getNotNullConstraints().isEmpty();
   }
 }

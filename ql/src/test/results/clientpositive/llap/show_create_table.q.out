@@ -1,10 +1,11 @@
 PREHOOK: query: CREATE TABLE TEST(
   col1 varchar(100) NOT NULL COMMENT "comment for column 1",
   col2 timestamp DEFAULT CURRENT_TIMESTAMP() COMMENT "comment for column 2",
-  col3 decimal,
-  col4 varchar(512) NOT NULL,
+  col3 decimal CHECK (col3 > 1) enable novalidate rely,
+  col4 decimal NOT NULL,
   col5 varchar(100),
-  primary key(col1, col2) disable novalidate)
+  primary key(col1, col2) disable novalidate,
+  constraint c3_c4_check CHECK(col3 + col4 > 3))
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
 STORED AS INPUTFORMAT
@@ -17,10 +18,11 @@ PREHOOK: Output: default@TEST
 POSTHOOK: query: CREATE TABLE TEST(
   col1 varchar(100) NOT NULL COMMENT "comment for column 1",
   col2 timestamp DEFAULT CURRENT_TIMESTAMP() COMMENT "comment for column 2",
-  col3 decimal,
-  col4 varchar(512) NOT NULL,
+  col3 decimal CHECK (col3 > 1) enable novalidate rely,
+  col4 decimal NOT NULL,
   col5 varchar(100),
-  primary key(col1, col2) disable novalidate)
+  primary key(col1, col2) disable novalidate,
+  constraint c3_c4_check CHECK(col3 + col4 > 3))
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
 STORED AS INPUTFORMAT
@@ -30,6 +32,60 @@ OUTPUTFORMAT
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@TEST
+PREHOOK: query: CREATE TABLE TEST2(
+ col varchar(100),
+ primary key(col) disable novalidate)
+ROW FORMAT SERDE
+'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+STORED AS INPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+OUTPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TEST2
+POSTHOOK: query: CREATE TABLE TEST2(
+ col varchar(100),
+ primary key(col) disable novalidate)
+ROW FORMAT SERDE
+'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+STORED AS INPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+OUTPUTFORMAT
+'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TEST2
+PREHOOK: query: CREATE TABLE TEST3(
+  col1 varchar(100) COMMENT "comment",
+  col2 timestamp,
+  col3 varchar(100),
+  foreign key(col1, col2) references TEST(col1, col2) disable novalidate rely,
+  foreign key(col3) references TEST2(col) disable novalidate)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TEST3
+POSTHOOK: query: CREATE TABLE TEST3(
+  col1 varchar(100) COMMENT "comment",
+  col2 timestamp,
+  col3 varchar(100),
+  foreign key(col1, col2) references TEST(col1, col2) disable novalidate rely,
+  foreign key(col3) references TEST2(col) disable novalidate)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TEST3
 PREHOOK: query: SHOW CREATE TABLE TEST
 PREHOOK: type: SHOW_CREATETABLE
 PREHOOK: Input: default@test
@@ -39,10 +95,11 @@ POSTHOOK: Input: default@test
 CREATE TABLE `test`(
   `col1` varchar(100) NOT NULL COMMENT 'comment for column 1', 
   `col2` timestamp DEFAULT CURRENT_TIMESTAMP() COMMENT 'comment for column 2', 
-  `col3` decimal(10,0), 
-  `col4` varchar(512) NOT NULL, 
+  `col3` decimal(10,0) CHECK (col3 > 1) enable novalidate rely, 
+  `col4` decimal(10,0) NOT NULL, 
   `col5` varchar(100), 
-  primary key(`col1`, `col2`) disable novalidate norely)
+  primary key(`col1`, `col2`) disable novalidate norely, 
+  constraint c3_c4_check CHECK(col3 + col4 > 3) enable novalidate rely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
 STORED AS INPUTFORMAT 
@@ -54,30 +111,6 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-PREHOOK: query: CREATE TABLE TEST2(
-  col1 varchar(100) COMMENT "comment"
-)
-ROW FORMAT SERDE
-  'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
-STORED AS INPUTFORMAT
-  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
-OUTPUTFORMAT
-  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@TEST2
-POSTHOOK: query: CREATE TABLE TEST2(
-  col1 varchar(100) COMMENT "comment"
-)
-ROW FORMAT SERDE
-  'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
-STORED AS INPUTFORMAT
-  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
-OUTPUTFORMAT
-  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@TEST2
 PREHOOK: query: SHOW CREATE TABLE TEST2
 PREHOOK: type: SHOW_CREATETABLE
 PREHOOK: Input: default@test2
@@ -85,7 +118,31 @@ POSTHOOK: query: SHOW CREATE TABLE TEST2
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@test2
 CREATE TABLE `test2`(
-  `col1` varchar(100) COMMENT 'comment')
+  `col` varchar(100), 
+  primary key(`col`) disable novalidate norely)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: SHOW CREATE TABLE TEST3
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@test3
+POSTHOOK: query: SHOW CREATE TABLE TEST3
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@test3
+CREATE TABLE `test3`(
+  `col1` varchar(100) COMMENT 'comment', 
+  `col2` timestamp, 
+  `col3` varchar(100), 
+  foreign key(`col1`, `col2`) references test(`col1`, `col2`) disable novalidate rely, 
+  foreign key(`col3`) references test2(`col`) disable novalidate norely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
 STORED AS INPUTFORMAT 

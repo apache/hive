@@ -22,6 +22,7 @@ import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.CTAS_LEGACY_CONFIG;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
@@ -38,8 +39,11 @@ import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
+import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
@@ -69,21 +73,21 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hive.common.util.HiveStringUtils;
-import org.apache.thrift.TException;
 import org.stringtemplate.v4.ST;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
@@ -616,7 +620,7 @@ public class DDLPlanUtils {
   }
 
   public String getAlterTableStmtPrimaryKeyConstraint(PrimaryKeyInfo pr) {
-    if (!PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(pr)) {
+    if (!PrimaryKeyInfo.isNotEmpty(pr)) {
       return null;
     }
     ST command = new ST(ALTER_TABLE_ADD_PRIMARY_KEY);
@@ -628,7 +632,7 @@ public class DDLPlanUtils {
   }
 
   public void getAlterTableStmtForeignKeyConstraint(ForeignKeyInfo fr, List<String> constraints, Set<String> allTableNames) {
-    if (!ForeignKeyInfo.isForeignKeyInfoNotEmpty(fr)) {
+    if (!ForeignKeyInfo.isNotEmpty(fr)) {
       return;
     }
     Map<String, List<ForeignKeyInfo.ForeignKeyCol>> all = fr.getForeignKeys();
@@ -651,7 +655,7 @@ public class DDLPlanUtils {
   }
 
   public void getAlterTableStmtUniqueConstraint(UniqueConstraint uq, List<String> constraints) {
-    if (!UniqueConstraint.isUniqueConstraintNotEmpty(uq)) {
+    if (!UniqueConstraint.isNotEmpty(uq)) {
       return;
     }
     Map<String, List<UniqueConstraint.UniqueConstraintCol>> uniqueConstraints = uq.getUniqueConstraints();
@@ -670,7 +674,7 @@ public class DDLPlanUtils {
   }
 
   public void getAlterTableStmtDefaultConstraint(DefaultConstraint dc, Table tb, List<String> constraints) {
-    if (!DefaultConstraint.isCheckConstraintNotEmpty(dc)) {
+    if (!DefaultConstraint.isNotEmpty(dc)) {
       return;
     }
     Map<String, String> colType = getTableColumnsToType(tb);
@@ -690,7 +694,7 @@ public class DDLPlanUtils {
   }
 
   public void getAlterTableStmtCheckConstraint(CheckConstraint ck, List<String> constraints) {
-    if (!CheckConstraint.isCheckConstraintNotEmpty(ck)) {
+    if (!CheckConstraint.isNotEmpty(ck)) {
       return;
     }
     Map<String, List<CheckConstraint.CheckConstraintCol>> checkConstraints = ck.getCheckConstraints();
@@ -711,7 +715,7 @@ public class DDLPlanUtils {
 
 
   public void getAlterTableStmtNotNullConstraint(NotNullConstraint nc, Table tb, List<String> constraints) {
-    if (!NotNullConstraint.isNotNullConstraintNotEmpty(nc)) {
+    if (!NotNullConstraint.isNotEmpty(nc)) {
       return;
     }
     Map<String, String> colType = getTableColumnsToType(tb);
@@ -806,25 +810,42 @@ public class DDLPlanUtils {
 
   private String getColumns(Table table) throws HiveException{
     List<String> columnDescs = new ArrayList<>();
-    Set<String> notNullColumns = null;
-    if (NotNullConstraint.isNotNullConstraintNotEmpty(table.getNotNullConstraint())) {
+    Set<String> notNullColumns = Collections.emptySet();
+    if (NotNullConstraint.isNotEmpty(table.getNotNullConstraint())) {
       notNullColumns = new HashSet<>(table.getNotNullConstraint().getNotNullConstraints().values());
     }
 
-    Map<String, String> columnDefaultValueMap = null;
-    if (DefaultConstraint.isCheckConstraintNotEmpty(table.getDefaultConstraint())) {
+    Map<String, String> columnDefaultValueMap = Collections.emptyMap();
+    if (DefaultConstraint.isNotEmpty(table.getDefaultConstraint())) {
       columnDefaultValueMap = table.getDefaultConstraint().getColNameToDefaultValueMap();
     }
+
+    List<SQLCheckConstraint> sqlCheckConstraints;
+    try {
+      sqlCheckConstraints = Hive.get().getCheckConstraintList(table.getDbName(), table.getTableName());
+    } catch (NoSuchObjectException e) {
+      throw new HiveException(e);
+    }
+    Map<String, SQLCheckConstraint> columnCheckConstraintsMap = sqlCheckConstraints.stream()
+      .filter(SQLCheckConstraint::isSetColumn_name)
+      .collect(Collectors.toMap(SQLCheckConstraint::getColumn_name, Function.identity()));
+    List<SQLCheckConstraint> tableCheckConstraints = sqlCheckConstraints.stream()
+      .filter(cc -> !cc.isSetColumn_name())
+      .collect(Collectors.toList());
+
     for (FieldSchema column : table.getCols()) {
       String columnType = formatType(TypeInfoUtils.getTypeInfoFromTypeString(column.getType()));
       String columnName = column.getName();
       StringBuilder columnDesc = new StringBuilder();
       columnDesc.append("  `").append(columnName).append("` ").append(columnType);
-      if (notNullColumns != null && notNullColumns.contains(columnName)) {
+      if (notNullColumns.contains(columnName)) {
         columnDesc.append(" NOT NULL");
       }
-      if (columnDefaultValueMap != null && columnDefaultValueMap.containsKey(columnName)) {
+      if (columnDefaultValueMap.containsKey(columnName)) {
         columnDesc.append(" DEFAULT ").append(columnDefaultValueMap.get(columnName));
+      }
+      if (columnCheckConstraintsMap.containsKey(columnName)) {
+        columnDesc.append(getColumnCheckConstraintDesc(columnCheckConstraintsMap.get(columnName)));
       }
       if (column.getComment() != null) {
         columnDesc.append(" COMMENT '").append(HiveStringUtils.escapeHiveCommand(column.getComment())).append("'");
@@ -835,7 +856,28 @@ public class DDLPlanUtils {
     if (pkDesc != null) {
       columnDescs.add(pkDesc);
     }
+    columnDescs.addAll(getForeignKeyDesc(table));
+    columnDescs.addAll(getTableCheckConstraintDesc(tableCheckConstraints));
     return StringUtils.join(columnDescs, ", \n");
+  }
+
+  private List<String> getTableCheckConstraintDesc(List<SQLCheckConstraint> tableCheckConstraints) {
+    List<String> ccDescs = new ArrayList<>();
+    for (SQLCheckConstraint constraint: tableCheckConstraints) {
+      String enable = constraint.isEnable_cstr()? " enable": " disable";
+      String validate = constraint.isValidate_cstr()? " validate": " novalidate";
+      String rely = constraint.isRely_cstr()? " rely": " norely";
+      ccDescs.add("  constraint " + constraint.getDc_name() + " CHECK(" + constraint.getCheck_expression() +
+        ")" + enable + validate + rely);
+    }
+    return ccDescs;
+  }
+
+  private String getColumnCheckConstraintDesc(SQLCheckConstraint constraint) {
+    String enable = constraint.isEnable_cstr()? " enable": " disable";
+    String validate = constraint.isValidate_cstr()? " validate": " novalidate";
+    String rely = constraint.isRely_cstr()? " rely": " norely";
+    return " CHECK (" + constraint.getCheck_expression() + ")" + enable + validate + rely;
   }
 
   private String getPrimaryKeyDesc(Table table) throws HiveException {
@@ -855,6 +897,40 @@ public class DDLPlanUtils {
       throw new HiveException(e);
     }
     return null;
+  }
+
+  private List<String> getForeignKeyDesc(Table table) throws HiveException {
+    List<String> fkDescs = new ArrayList<>();
+    try {
+      List<SQLForeignKey> sqlForeignKeys = Hive.get()
+        .getForeignKeyList(table.getDbName(), table.getTableName());
+      // {[pk_table, enable, validate, rely] -> [<fk_col1, pk_col1>, <fk_col2, pk_col2>, ...]}
+      Map<List<String>, List<List<String>>> fkMap = new HashMap<>();
+
+      // populate map
+      for (SQLForeignKey fk: sqlForeignKeys) {
+        List<String> fkKey = ImmutableList.of(fk.getPktable_name(),
+          fk.isEnable_cstr()? " enable": " disable",
+          fk.isValidate_cstr()? " validate": " novalidate",
+          fk.isRely_cstr()? " rely": " norely");
+        List<String> fkValue = ImmutableList.of(fk.getFkcolumn_name(), fk.getPkcolumn_name());
+        if (!fkMap.containsKey(fkKey)) {
+          fkMap.put(fkKey, new ArrayList<>());
+        }
+        fkMap.get(fkKey).add(fkValue);
+      }
+      // compute foreign key descriptions
+      for (List<String> fkKey: fkMap.keySet()) {
+        List<List<String>> fkValue = fkMap.get(fkKey);
+        List<String> fkCols = fkValue.stream().map(li -> "`" + li.get(0) + "`").collect(Collectors.toList());
+        List<String> pkCols = fkValue.stream().map(li -> "`" + li.get(1) + "`").collect(Collectors.toList());
+        fkDescs.add("  foreign key(" + String.join(", ", fkCols) + ") references " + fkKey.get(0) +
+          "(" + String.join(", ", pkCols) + ")" + fkKey.get(1) + fkKey.get(2) + fkKey.get(3));
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+    return fkDescs;
   }
 
   /** Struct fields are identifiers, need to be put between ``. */
