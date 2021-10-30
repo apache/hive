@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.parquet.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,6 +136,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       Partish p = partish;
       Map<String, String> parameters = p.getPartParameters();
       if (work.isTargetRewritten()) {
+        LOG.warn("First.");
         StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
       }
 
@@ -143,11 +145,13 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       // column stats
       // FIXME: move this to ColStat related part
       if (!work.isExplicitAnalyze() && !followedColStats1) {
+        LOG.warn("Second.");
         StatsSetupConst.clearColumnStatsState(parameters);
       }
 
       if (partfileStatus == null && providedBasicStats == null) {
         // This may happen if ACID state is absent from config.
+        LOG.warn("Third.");
         String spec =  partish.getPartition() == null ? partish.getTable().getTableName()
             :  partish.getPartition().getSpec().toString();
         LOG.warn("Partition/partfiles is null for: " + spec);
@@ -162,22 +166,27 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       // For eg. if a file is being loaded, the old number of rows are not valid
       // XXX: makes no sense for me... possibly not needed anymore
       if (work.isClearAggregatorStats()) {
+        LOG.warn("Fourth.");
         // we choose to keep the invalid stats and only change the setting.
         StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.FALSE);
       }
 
       if (providedBasicStats == null) {
+        LOG.warn("Fifth.");
         MetaStoreServerUtils.populateQuickStats(partfileStatus, parameters);
 
         if (statsAggregator != null) {
+          LOG.warn("Fifth0.");
           // Update stats for transactional tables (MM, or full ACID with overwrite), even
           // though we are marking stats as not being accurate.
           if (StatsSetupConst.areBasicStatsUptoDate(parameters) || p.isTransactionalTable()) {
+            LOG.warn("Fifth1.");
             String prefix = getAggregationPrefix(p.getTable(), p.getPartition());
             updateStats(statsAggregator, parameters, prefix);
           }
         }
       } else {
+        LOG.warn("Sixth.");
         parameters.putAll(providedBasicStats);
       }
 
@@ -187,8 +196,10 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     public void collectFileStatus(Warehouse wh, HiveConf conf) throws MetaException, IOException {
       if (providedBasicStats == null) {
         if (!partish.isTransactionalTable()) {
+          LOG.warn("In the first condition.");
           partfileStatus = wh.getFileStatusesForSD(partish.getPartSd());
         } else {
+          LOG.warn("In the second condition.");
           Path path = new Path(partish.getPartSd().getLocation());
           partfileStatus = AcidUtils.getAcidFilesForStats(partish.getTable(), path, conf, null);
           isMissingAcidState = true;
@@ -269,19 +280,28 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       if (partitions == null) {
         Partish p;
         partishes.add(p = new Partish.PTable(table));
-
+        LOG.warn(p.getPartParameters().toString());
         BasicStatsProcessor basicStatsProcessor = new BasicStatsProcessor(p, work, conf, followedColStats);
+        LOG.warn("After zero:"+p.getPartParameters().toString());
         basicStatsProcessor.collectFileStatus(wh, conf);
+        LOG.warn("After first:"+p.getPartParameters().toString());
+        LOG.warn(basicStatsProcessor.partfileStatus.toString());
         Table res = (Table) basicStatsProcessor.process(statsAggregator);
+        LOG.warn("After second:"+res.getParameters().toString());
+        LOG.warn(p.getPartParameters().toString());
         if (res == null) {
           return 0;
         }
         db.alterTable(tableFullName, res, environmentContext, true);
-
+        LOG.warn("After HMS Call:", res.getParameters().toString());
+        LOG.warn(p.getPartParameters().toString());
         if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {
           console.printInfo("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
         }
         LOG.info("Table " + tableFullName + " stats: [" + toString(p.getPartParameters()) + ']');
+        for(StackTraceElement st : Thread.currentThread().getStackTrace()){
+          LOG.warn(st.toString());
+        }
 
       } else {
         // Partitioned table:

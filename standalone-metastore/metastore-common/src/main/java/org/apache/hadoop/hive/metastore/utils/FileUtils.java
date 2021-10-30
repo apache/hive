@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
@@ -375,6 +376,25 @@ public class FileUtils {
     }
   }
 
+  public static List<FileStatus> getFileStatusLatestOnly(Path base, FileSystem fs){
+    try{
+      List<FileStatus> results = new ArrayList<>();
+      FileStatus stat = getLatestFileWritten(fs, fs.getFileStatus(base));
+      LOG.warn(stat.toString());
+      base = stat.getPath();
+      if(isS3a(fs)){
+        listS3FilesRecursive(base, fs, results);
+      }
+      else {
+        listStatusRecursively(fs, stat, results);
+      }
+      return results;
+    } catch (IOException e) {
+      LOG.warn(e.getMessage());
+      return Collections.emptyList();
+    }
+  }
+
   /**
    * Recursively lists status for all files starting from a particular directory (or individual file
    * as base case).
@@ -399,6 +419,22 @@ public class FileUtils {
       results.add(fileStatus);
     }
   }
+
+  private static FileStatus getLatestFileWritten(FileSystem fs, FileStatus fileStatus) throws  IOException {
+    if(!fileStatus.isDir()){
+      return fileStatus;
+    }
+    long curmax = -1;
+    FileStatus curfile = null;
+    for(FileStatus stat : fs.listStatus(fileStatus.getPath(), HIDDEN_FILES_PATH_FILTER)){
+      if(stat.getModificationTime() > curmax){
+        curfile = stat;
+        curmax = stat.getModificationTime();
+      }
+    }
+    return curfile;
+  }
+
 
   private static void listS3FilesRecursive(Path base, FileSystem fs, List<FileStatus> results) throws IOException {
     RemoteIterator<LocatedFileStatus> remoteIterator = fs.listFiles(base, true);

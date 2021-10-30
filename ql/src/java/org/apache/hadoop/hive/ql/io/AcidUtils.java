@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -1401,11 +1402,15 @@ public class AcidUtils {
     //so now, 'current directories' should be sorted like delta_5_20 delta_5_10 delta_11_20 delta_51_60 for example
     //and we want to end up with the best set containing all relevant data: delta_5_20 delta_51_60,
     //subject to list of 'exceptions' in 'writeIdList' (not show in above example).
+    LOG.warn("This is the valid writeidList:"+writeIdList);
     List<ParsedDelta> deltas = new ArrayList<>();
     long current = directory.getBase() == null ? 0 : directory.getBase().getWriteId();
     int lastStmtId = -1;
     ParsedDelta prev = null;
     for(ParsedDelta next: directory.getCurrentDirectories()) {
+      LOG.warn("New File");
+      LOG.warn(String.valueOf(next.maxWriteId)+" " + next.visibilityTxnId);
+      LOG.warn(next.getPath().toString());
       if (next.maxWriteId > current) {
         // are any of the new transactions ones that we care about?
         if (writeIdList.isWriteIdRangeValid(current+1, next.maxWriteId) !=
@@ -2571,6 +2576,7 @@ public class AcidUtils {
     List<FileStatus> fileList = new ArrayList<>();
     ValidWriteIdList idList = AcidUtils.getTableValidWriteIdList(jc,
         AcidUtils.getFullTableName(table.getDbName(), table.getTableName()));
+    LOG.warn(idList.toString());
     if (idList == null) {
       LOG.warn("Cannot get ACID state for " + table.getDbName() + "." + table.getTableName()
           + " from " + jc.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
@@ -2582,6 +2588,7 @@ public class AcidUtils {
     // Collect the all of the files/dirs
     Map<Path, HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, dir);
     AcidDirectory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false, hdfsDirSnapshots);
+    AcidUtils.findBestWorkingDeltas(idList, acidInfo);
     // Assume that for an MM table, or if there's only the base directory, we are good.
     if (!acidInfo.getCurrentDirectories().isEmpty() && AcidUtils.isFullAcidTable(table)) {
       Utilities.FILE_OP_LOGGER.warn(
@@ -2596,6 +2603,8 @@ public class AcidUtils {
     if (acidInfo.getBaseDirectory() != null) {
       fileList.addAll(hdfsDirSnapshots.get(acidInfo.getBaseDirectory()).getFiles());
     }
+    LOG.warn("List of files from AcidUtils::");
+    LOG.warn(fileList.toString());
     return fileList;
   }
 

@@ -49,6 +49,7 @@ public class FSStatsPublisher implements StatsPublisher {
       for (String tmpDir : context.getStatsTmpDirs()) {
         Path statsDir = new Path(tmpDir);
         LOG.debug("Initing FSStatsPublisher with : " + statsDir);
+        LOG.info(new RuntimeException().getStackTrace().toString());
         statsDir.getFileSystem(context.getHiveConf()).mkdirs(statsDir);
         LOG.info("created : " + statsDir);
       }
