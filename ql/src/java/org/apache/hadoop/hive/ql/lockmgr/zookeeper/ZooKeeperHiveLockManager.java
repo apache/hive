@@ -319,11 +319,10 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
             LOG.debug("Possibly transient ZooKeeper exception: ", e);
             break;
           default:
-            LOG.error("Serious Zookeeper exception: ", e);
             break;
           }
         } else {
-          LOG.error("Other unexpected exception: ", e1);
+          break; // stops retry for unexpected exceptions
         }
       }
     } while (tryNum < numRetriesForLock);
@@ -334,7 +333,11 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
           + tryNum + " attempts.");
       printConflictingLocks(key,mode,conflictingLocks);
       if (lastException != null) {
-        LOG.error("Exceeds maximum retries with errors: ", lastException);
+        if (tryNum == numRetriesForLock) {
+          LOG.error("Exceeds maximum retries with errors: ", lastException);
+        } else {
+          LOG.error("Retry stopped with error: ", lastException);
+        }
         throw new LockException(lastException);
       }
     }
