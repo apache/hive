@@ -77,6 +77,7 @@ import org.stringtemplate.v4.ST;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
@@ -810,6 +811,7 @@ public class DDLPlanUtils {
 
   private String getColumns(Table table) throws HiveException{
     List<String> columnDescs = new ArrayList<>();
+    List<String> columns = table.getCols().stream().map(FieldSchema::getName).collect(Collectors.toList());
     Set<String> notNullColumns = Collections.emptySet();
     if (NotNullConstraint.isNotEmpty(table.getNotNullConstraint())) {
       notNullColumns = new HashSet<>(table.getNotNullConstraint().getNotNullConstraints().values());
@@ -845,7 +847,7 @@ public class DDLPlanUtils {
         columnDesc.append(" DEFAULT ").append(columnDefaultValueMap.get(columnName));
       }
       if (columnCheckConstraintsMap.containsKey(columnName)) {
-        columnDesc.append(getColumnCheckConstraintDesc(columnCheckConstraintsMap.get(columnName)));
+        columnDesc.append(getColumnCheckConstraintDesc(columnCheckConstraintsMap.get(columnName), columns));
       }
       if (column.getComment() != null) {
         columnDesc.append(" COMMENT '").append(HiveStringUtils.escapeHiveCommand(column.getComment())).append("'");
@@ -857,27 +859,61 @@ public class DDLPlanUtils {
       columnDescs.add(pkDesc);
     }
     columnDescs.addAll(getForeignKeyDesc(table));
-    columnDescs.addAll(getTableCheckConstraintDesc(tableCheckConstraints));
+    columnDescs.addAll(getTableCheckConstraintDesc(tableCheckConstraints, columns));
     return StringUtils.join(columnDescs, ", \n");
   }
 
-  private List<String> getTableCheckConstraintDesc(List<SQLCheckConstraint> tableCheckConstraints) {
+  private List<String> getTableCheckConstraintDesc(List<SQLCheckConstraint> tableCheckConstraints,
+                                                   List<String> columns) {
     List<String> ccDescs = new ArrayList<>();
     for (SQLCheckConstraint constraint: tableCheckConstraints) {
       String enable = constraint.isEnable_cstr()? " enable": " disable";
       String validate = constraint.isValidate_cstr()? " validate": " novalidate";
       String rely = constraint.isRely_cstr()? " rely": " norely";
-      ccDescs.add("  constraint " + constraint.getDc_name() + " CHECK(" + constraint.getCheck_expression() +
+      String expression = getCheckExpressionWithBackticks(columns, constraint);
+      ccDescs.add("  constraint " + constraint.getDc_name() + " CHECK(" + expression +
         ")" + enable + validate + rely);
     }
     return ccDescs;
   }
 
-  private String getColumnCheckConstraintDesc(SQLCheckConstraint constraint) {
+  private String getCheckExpressionWithBackticks(List<String> columns, SQLCheckConstraint constraint) {
+    TreeMap<Integer, String> indexToCols = new TreeMap<>();
+    String expression = constraint.getCheck_expression();
+    for (String col: columns) {
+      int idx = expression.indexOf(col);
+      if (idx == -1) {
+        continue;
+      }
+      indexToCols.put(idx, col);
+      while (idx + col.length() < expression.length()) {
+        idx = expression.indexOf(col, idx + col.length());
+        if (idx == -1) {
+          break;
+        }
+        indexToCols.put(idx, col);
+      }
+    }
+    int prev = 0;
+    StringBuilder newExpression = new StringBuilder();
+    while (!indexToCols.isEmpty()) {
+      Map.Entry<Integer, String> entry = indexToCols.pollFirstEntry();
+      int colIdx = entry.getKey();
+      String col = entry.getValue();
+      newExpression.append(expression, prev, colIdx).append("`").append(col).append("`");
+      prev = colIdx + col.length();
+    }
+    newExpression.append(expression, prev, expression.length());
+
+    return newExpression.toString();
+  }
+
+  private String getColumnCheckConstraintDesc(SQLCheckConstraint constraint, List<String> columns) {
     String enable = constraint.isEnable_cstr()? " enable": " disable";
     String validate = constraint.isValidate_cstr()? " validate": " novalidate";
     String rely = constraint.isRely_cstr()? " rely": " norely";
-    return " CHECK (" + constraint.getCheck_expression() + ")" + enable + validate + rely;
+    String expression = getCheckExpressionWithBackticks(columns, constraint);
+    return " CHECK (" + expression + ")" + enable + validate + rely;
   }
 
   private String getPrimaryKeyDesc(Table table) throws HiveException {

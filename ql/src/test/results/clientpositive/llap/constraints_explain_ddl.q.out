@@ -3669,7 +3669,8 @@ CREATE TABLE `default`.`store_sales`(
   `ss_net_paid` decimal(7,2), 
   `ss_net_paid_inc_tax` decimal(7,2), 
   `ss_net_profit` decimal(7,2), 
-  primary key(`ss_item_sk`, `ss_ticket_number`) disable novalidate rely)
+  primary key(`ss_item_sk`, `ss_ticket_number`) disable novalidate rely, 
+  foreign key(`ss_customer_sk`) references customer(`c_customer_sk`) disable novalidate rely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -3955,7 +3956,8 @@ CREATE TABLE `default`.`store_sales`(
   `ss_net_paid` decimal(7,2), 
   `ss_net_paid_inc_tax` decimal(7,2), 
   `ss_net_profit` decimal(7,2), 
-  primary key(`ss_item_sk`, `ss_ticket_number`) disable novalidate rely)
+  primary key(`ss_item_sk`, `ss_ticket_number`) disable novalidate rely, 
+  foreign key(`ss_customer_sk`) references customer(`c_customer_sk`) disable novalidate rely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -4271,7 +4273,8 @@ CREATE TABLE `default`.`store_sales`(
   `ss_net_paid` decimal(7,2), 
   `ss_net_paid_inc_tax` decimal(7,2), 
   `ss_net_profit` decimal(7,2), 
-  primary key(`ss_item_sk`, `ss_ticket_number`) disable novalidate rely)
+  primary key(`ss_item_sk`, `ss_ticket_number`) disable novalidate rely, 
+  foreign key(`ss_customer_sk`) references customer(`c_customer_sk`) disable novalidate rely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -4668,7 +4671,8 @@ CREATE TABLE `default`.`store_sales`(
   `ss_net_paid` decimal(7,2), 
   `ss_net_paid_inc_tax` decimal(7,2), 
   `ss_net_profit` decimal(7,2), 
-  primary key(`ss_item_sk`, `ss_ticket_number`) disable novalidate rely)
+  primary key(`ss_item_sk`, `ss_ticket_number`) disable novalidate rely, 
+  foreign key(`ss_customer_sk`) references customer(`c_customer_sk`) disable novalidate rely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -5152,7 +5156,8 @@ CREATE TABLE `default`.`store_sales`(
   `ss_net_paid` decimal(7,2), 
   `ss_net_paid_inc_tax` decimal(7,2), 
   `ss_net_profit` decimal(7,2), 
-  primary key(`ss_item_sk`, `ss_ticket_number`) disable novalidate rely)
+  primary key(`ss_item_sk`, `ss_ticket_number`) disable novalidate rely, 
+  foreign key(`ss_customer_sk`) references customer(`c_customer_sk`) disable novalidate rely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -5806,7 +5811,8 @@ CREATE TABLE `default`.`store_sales`(
   `ss_net_paid` decimal(7,2), 
   `ss_net_paid_inc_tax` decimal(7,2), 
   `ss_net_profit` decimal(7,2), 
-  primary key(`ss_item_sk`, `ss_ticket_number`) disable novalidate rely)
+  primary key(`ss_item_sk`, `ss_ticket_number`) disable novalidate rely, 
+  foreign key(`ss_customer_sk`) references customer(`c_customer_sk`) disable novalidate rely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -6100,7 +6106,8 @@ CREATE TABLE `default`.`store_sales`(
   `ss_net_paid` decimal(7,2), 
   `ss_net_paid_inc_tax` decimal(7,2), 
   `ss_net_profit` decimal(7,2), 
-  primary key(`ss_item_sk`, `ss_ticket_number`) disable novalidate rely)
+  primary key(`ss_item_sk`, `ss_ticket_number`) disable novalidate rely, 
+  foreign key(`ss_customer_sk`) references customer(`c_customer_sk`) disable novalidate rely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -6429,7 +6436,8 @@ CREATE TABLE `default`.`store_sales`(
   `ss_net_paid` decimal(7,2), 
   `ss_net_paid_inc_tax` decimal(7,2), 
   `ss_net_profit` decimal(7,2), 
-  primary key(`ss_item_sk`, `ss_ticket_number`) disable novalidate rely)
+  primary key(`ss_item_sk`, `ss_ticket_number`) disable novalidate rely, 
+  foreign key(`ss_customer_sk`) references customer(`c_customer_sk`) disable novalidate rely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -6755,7 +6763,8 @@ CREATE TABLE `default`.`store_sales`(
   `ss_net_paid` decimal(7,2), 
   `ss_net_paid_inc_tax` decimal(7,2), 
   `ss_net_profit` decimal(7,2), 
-  primary key(`ss_item_sk`, `ss_ticket_number`) disable novalidate rely)
+  primary key(`ss_item_sk`, `ss_ticket_number`) disable novalidate rely, 
+  foreign key(`ss_customer_sk`) references customer(`c_customer_sk`) disable novalidate rely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -7500,7 +7509,8 @@ POSTHOOK: Input: default@table3_n1
 
 CREATE TABLE `default`.`table3_n1`(
   `x` string, 
-  primary key(`x`) disable novalidate norely)
+  primary key(`x`) disable novalidate norely, 
+  foreign key(`x`) references table2_n8(`a`) disable novalidate norely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -7554,7 +7564,8 @@ POSTHOOK: Input: default@table4_n0
 
 CREATE TABLE `default`.`table4_n0`(
   `x` string, 
-  `y` string)
+  `y` string, 
+  foreign key(`x`, `y`) references table2_n8(`a`, `a`) disable novalidate norely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -7608,7 +7619,8 @@ POSTHOOK: Input: default@table5_n4
 
 CREATE TABLE `default`.`table5_n4`(
   `x` string, 
-  primary key(`x`) disable novalidate norely)
+  primary key(`x`) disable novalidate norely, 
+  foreign key(`x`) references table2_n8(`a`) disable novalidate norely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -7663,7 +7675,9 @@ POSTHOOK: Input: default@table6_n3
 CREATE TABLE `default`.`table6_n3`(
   `x` string, 
   `y` string, 
-  primary key(`x`) disable novalidate norely)
+  primary key(`x`) disable novalidate norely, 
+  foreign key(`x`) references table2_n8(`a`) disable novalidate norely, 
+  foreign key(`y`) references table1_n13(`a`) disable novalidate norely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -7885,7 +7899,8 @@ POSTHOOK: Input: default@table10
 CREATE TABLE `default`.`table10`(
   `a` string, 
   `b` string, 
-  primary key(`a`) disable novalidate norely)
+  primary key(`a`) disable novalidate norely, 
+  foreign key(`a`, `b`) references table9(`a`, `b`) disable novalidate norely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -7941,7 +7956,8 @@ CREATE TABLE `default`.`table11`(
   `a` string, 
   `b` string, 
   `c` string, 
-  primary key(`a`) disable novalidate rely)
+  primary key(`a`) disable novalidate rely, 
+  foreign key(`a`, `b`) references table9(`a`, `b`) disable novalidate norely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -8377,7 +8393,8 @@ POSTHOOK: Input: default@table19
 CREATE TABLE `default`.`table19`(
   `a` string, 
   `b` string, 
-  primary key(`b`) disable novalidate rely)
+  primary key(`b`) disable novalidate rely, 
+  foreign key(`a`) references table19(`b`) disable novalidate rely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -8708,7 +8725,8 @@ POSTHOOK: Input: default@table3_n1
 
 CREATE TABLE `default`.`table3_n1`(
   `x` string, 
-  primary key(`x`) disable novalidate norely)
+  primary key(`x`) disable novalidate norely, 
+  foreign key(`x`) references table2_n8(`a`) disable novalidate norely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -8762,7 +8780,8 @@ POSTHOOK: Input: default@table4_n0
 
 CREATE TABLE `default`.`table4_n0`(
   `x` string, 
-  `y` string)
+  `y` string, 
+  foreign key(`x`, `y`) references table2_n8(`a`, `a`) disable novalidate norely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -8816,7 +8835,8 @@ POSTHOOK: Input: default@table5_n4
 
 CREATE TABLE `default`.`table5_n4`(
   `x` string, 
-  primary key(`x`) disable novalidate norely)
+  primary key(`x`) disable novalidate norely, 
+  foreign key(`x`) references table2_n8(`a`) disable novalidate norely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -8871,7 +8891,9 @@ POSTHOOK: Input: default@table6_n3
 CREATE TABLE `default`.`table6_n3`(
   `x` string, 
   `y` string, 
-  primary key(`x`) disable novalidate norely)
+  primary key(`x`) disable novalidate norely, 
+  foreign key(`x`) references table2_n8(`a`) disable novalidate norely, 
+  foreign key(`y`) references table1_n13(`a`) disable novalidate norely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -9093,7 +9115,8 @@ POSTHOOK: Input: default@table10
 CREATE TABLE `default`.`table10`(
   `a` string, 
   `b` string, 
-  primary key(`a`) disable novalidate norely)
+  primary key(`a`) disable novalidate norely, 
+  foreign key(`a`, `b`) references table9(`a`, `b`) disable novalidate norely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -9149,7 +9172,8 @@ CREATE TABLE `default`.`table11`(
   `a` string, 
   `b` string, 
   `c` string, 
-  primary key(`a`) disable novalidate rely)
+  primary key(`a`) disable novalidate rely, 
+  foreign key(`a`, `b`) references table9(`a`, `b`) disable novalidate norely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -9585,7 +9609,8 @@ POSTHOOK: Input: default@table19
 CREATE TABLE `default`.`table19`(
   `a` string, 
   `b` string, 
-  primary key(`b`) disable novalidate rely)
+  primary key(`b`) disable novalidate rely, 
+  foreign key(`a`) references table19(`b`) disable novalidate rely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -10731,7 +10756,8 @@ POSTHOOK: Input: default@table3_n1
 
 CREATE TABLE `default`.`table3_n1`(
   `x` string, 
-  primary key(`x`) disable novalidate norely)
+  primary key(`x`) disable novalidate norely, 
+  foreign key(`x`) references table2_n8(`a`) disable novalidate rely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -10786,7 +10812,9 @@ POSTHOOK: Input: default@table6_n3
 CREATE TABLE `default`.`table6_n3`(
   `x` string, 
   `y` string, 
-  primary key(`x`) disable novalidate norely)
+  primary key(`x`) disable novalidate norely, 
+  foreign key(`x`) references table2_n8(`a`) disable novalidate norely, 
+  foreign key(`y`) references table1_n13(`a`) disable novalidate norely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -11528,7 +11556,8 @@ CREATE DATABASE IF NOT EXISTS dbconstraint;
 CREATE TABLE `dbconstraint`.`table2`(
   `a` string, 
   `b` string, 
-  primary key(`a`) disable novalidate norely)
+  primary key(`a`) disable novalidate norely, 
+  foreign key(`b`) references table1_n13(`a`) disable novalidate norely)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
