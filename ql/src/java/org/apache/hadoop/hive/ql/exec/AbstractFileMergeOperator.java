@@ -110,9 +110,8 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
 
   // sets up temp and task temp path
   private void updatePaths(Path tp, Path ttp) {
-    if (taskId == null) {
-      taskId = Utilities.getTaskId(jc);
-    }
+    taskId = Utilities.getTaskId(jc);
+    LOG.debug("The new taskId is " + taskId);
     tmpPath = tp;
     if (isMmTable) {
       taskTmpPath = null;
