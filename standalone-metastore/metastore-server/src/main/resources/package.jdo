@@ -270,13 +270,13 @@
         <column name="TBL_ID"/>
       </field>
       <field name="insertedCount">
-        <column name="MVTU_INSERTED_COUNT"/>
+        <column name="INSERTED_COUNT"/>
       </field>
       <field name="updatedCount">
-        <column name="MVTU_UPDATED_COUNT"/>
+        <column name="UPDATED_COUNT"/>
       </field>
       <field name="deletedCount">
-        <column name="MVTU_DELETED_COUNT"/>
+        <column name="DELETED_COUNT"/>
       </field>
     </class>
 
