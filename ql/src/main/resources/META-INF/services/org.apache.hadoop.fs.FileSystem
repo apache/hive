@@ -14,3 +14,12 @@
 org.apache.hadoop.hive.ql.io.NullScanFileSystem
 org.apache.hadoop.fs.LocalFileSystem
 org.apache.hadoop.hive.ql.io.ProxyLocalFileSystem
+org.apache.hadoop.hive.ql.io.SingleFileSystem$ABFS
+org.apache.hadoop.hive.ql.io.SingleFileSystem$ABFSS
+org.apache.hadoop.hive.ql.io.SingleFileSystem$ADL
+org.apache.hadoop.hive.ql.io.SingleFileSystem$HDFS
+org.apache.hadoop.hive.ql.io.SingleFileSystem$S3A
+org.apache.hadoop.hive.ql.io.SingleFileSystem$FILE
+org.apache.hadoop.hive.ql.io.SingleFileSystem$PFILE
+org.apache.hadoop.hive.ql.io.SingleFileSystem$GS
+org.apache.hadoop.hive.ql.io.SingleFileSystem$O3FS
