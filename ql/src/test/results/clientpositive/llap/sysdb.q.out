@@ -1023,10 +1023,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@columns_v2
 #### A masked pattern was here ####
 a	decimal(10,2)	0
-a	int	1
-a	int	1
-a	int	1
-a	int	1
+acquired_at	string	9
+action_expression	string	4
+active_execution_id	bigint	8
+active_execution_id	bigint	8
 PREHOOK: query: select param_key, param_value from database_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@database_params
