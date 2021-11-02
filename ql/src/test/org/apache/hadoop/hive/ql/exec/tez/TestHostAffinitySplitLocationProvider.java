@@ -215,8 +215,7 @@ public class TestHostAffinitySplitLocationProvider {
     int[] hitCounts = new int[locs];
     for (int splitIx = 0; splitIx < splits.length; ++splitIx) {
       state.set(0);
-      int index = HostAffinitySplitLocationProvider.determineLocation(partLocs,
-          splits[splitIx].getPath().toString(), splits[splitIx].getStart(), null);
+      int index = HostAffinitySplitLocationProvider.determineLocation(partLocs, splits[splitIx]);
       ++hitCounts[index];
     }
     SummaryStatistics ss = new SummaryStatistics();

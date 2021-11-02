@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.HashableInputSplit;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -55,6 +56,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.metrics.DeltaFilesMetricReporter;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
@@ -141,7 +143,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
    * "map.input.file" in MapTask.
    */
   public static class HiveInputSplit extends FileSplit implements InputSplit,
-      Configurable {
+      Configurable, HashableInputSplit {
 
 
     InputSplit inputSplit;
@@ -237,6 +239,24 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     @Override
     public void setConf(Configuration conf) {
       this.conf = conf;
+    }
+
+    @Override
+    public byte[] getBytesForHash() {
+      if (inputSplit instanceof HashableInputSplit) {
+        return ((HashableInputSplit)inputSplit).getBytesForHash();
+      } else {
+        // Explicitly using only the start offset of a split, and not the length. Splits generated on
+        // block boundaries and stripe boundaries can vary slightly. Try hashing both to the same node.
+        // There is the drawback of potentially hashing the same data on multiple nodes though, when a
+        // large split is sent to 1 node, and a second invocation uses smaller chunks of the previous
+        // large split and send them to different nodes.
+        byte[] pathBytes = getPath().toString().getBytes();
+        byte[] allBytes = new byte[pathBytes.length + 8];
+        System.arraycopy(pathBytes, 0, allBytes, 0, pathBytes.length);
+        SerDeUtils.writeLong(allBytes, pathBytes.length, getStart() >> 3);
+        return allBytes;
+      }
     }
   }
 
