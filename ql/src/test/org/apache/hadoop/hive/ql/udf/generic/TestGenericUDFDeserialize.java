@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 /**
- * TestGenericUDFGzipJsonDeserialize.
+ * TestGenericUDFDeserialize.
  */
 public class TestGenericUDFDeserialize {
 
@@ -57,7 +57,7 @@ public class TestGenericUDFDeserialize {
     }
 
     @Test
-    public void testGZIPJsonDeserializeString() throws HiveException {
+    public void testGZIPBase64Compression() throws HiveException {
         GenericUDFDeserialize udf = new GenericUDFDeserialize();
         udf.initialize(new ObjectInspector[]{PrimitiveObjectInspectorFactory.writableStringObjectInspector,
                 PrimitiveObjectInspectorFactory.writableStringObjectInspector});
@@ -72,7 +72,7 @@ public class TestGenericUDFDeserialize {
     }
 
     @Test
-    public void testInvalidMessageString() throws HiveException {
+    public void testInvalidCompressionFormat() throws HiveException {
         GenericUDFDeserialize udf = new GenericUDFDeserialize();
         udf.initialize(new ObjectInspector[]{PrimitiveObjectInspectorFactory.writableStringObjectInspector,
                 PrimitiveObjectInspectorFactory.writableStringObjectInspector});
@@ -80,14 +80,17 @@ public class TestGenericUDFDeserialize {
         String expectedOutput = "test";
         MessageEncoder encoder = MessageFactory.getDefaultInstanceForReplMetrics(new HiveConf());
         String serializedMsg = encoder.getSerializer().serialize(expectedOutput);
+        String compressionFormat = "randomSerialization";
         args[0] = new GenericUDF.DeferredJavaObject(new Text(serializedMsg));
-        args[1] = new GenericUDF.DeferredJavaObject(new Text("randomSerialization"));
+        args[1] = new GenericUDF.DeferredJavaObject(new Text(compressionFormat));
         HiveException ex = null;
         try {
-            Object actualOutput = udf.evaluate(args).toString();
+            udf.evaluate(args).toString();
         } catch (HiveException e) {
             ex = e;
         }
         assertNotNull("Invalid message format provided.", ex);
+        assertEquals("Invalid message format provided: " + compressionFormat + " for message: "
+                + serializedMsg, ex.getMessage());
     }
 }

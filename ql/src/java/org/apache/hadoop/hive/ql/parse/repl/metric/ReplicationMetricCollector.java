@@ -17,9 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.metric;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.MessageSerializer;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.exec.repl.NoOpReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
@@ -67,7 +70,7 @@ public abstract class ReplicationMetricCollector {
       isEnabled = true;
       metricCollector = MetricCollector.getInstance().init(conf);
       MetricSink.getInstance().init(conf);
-      Metadata metadata = new Metadata(dbName, replicationType, testingModeEnabled() ? "dummyDir" :stagingDir);
+      Metadata metadata = new Metadata(dbName, replicationType, getStagingDir(stagingDir));
       replicationMetric = new ReplicationMetric(executionId, policy, dumpExecutionId, metadata);
     }
   }
@@ -107,6 +110,21 @@ public abstract class ReplicationMetricCollector {
     }
   }
 
+  private void checkRMProgressLimit(Progress progress, Stage stage) throws SemanticException {
+    MessageSerializer serializer = MessageFactory.getDefaultInstanceForReplMetrics(conf).getSerializer();
+    ObjectMapper mapper = new ObjectMapper();
+    String serializedProgress = null;
+    try {
+      serializedProgress = serializer.serialize(mapper.writeValueAsString(progress));
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+    if (serializedProgress.length() > ReplStatsTracker.RM_PROGRESS_LENGTH) {
+      stage.setReplStats("RM_PROGRESS LIMIT EXCEEDED TO " + serializedProgress.length());
+      progress.addStage(stage);
+    }
+  }
+
   public void reportStageEnd(String stageName, Status status, long lastReplId,
       SnapshotUtils.ReplSnapshotCount replSnapshotCount, ReplStatsTracker replStatsTracker) throws SemanticException {
     unRegisterMBeanSafe();
@@ -126,6 +144,8 @@ public abstract class ReplicationMetricCollector {
         stage.setReplStats(replStatString);
       }
       progress.addStage(stage);
+      // Check the progress string doesn't surpass the RM_PROGRESS column width.
+      checkRMProgressLimit(progress, stage);
       replicationMetric.setProgress(progress);
       Metadata metadata = replicationMetric.getMetadata();
       metadata.setLastReplId(lastReplId);
@@ -233,5 +253,9 @@ public abstract class ReplicationMetricCollector {
 
   private long getCurrentTimeInMillis() {
     return testingModeEnabled() ? 0L : System.currentTimeMillis();
+  }
+
+  private String getStagingDir(String stagingDir) {
+    return testingModeEnabled() ? "dummyDir" : stagingDir;
   }
 }

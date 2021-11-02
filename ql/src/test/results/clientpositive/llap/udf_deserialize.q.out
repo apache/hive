@@ -2,12 +2,15 @@ PREHOOK: query: DESCRIBE FUNCTION deserialize
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION deserialize
 POSTHOOK: type: DESCFUNCTION
-deserialize(message, encodingFormat) - Returns deserialized string of encoded message.
+deserialize(message, compressionFormat) - Returns decoded and decompressed string of serialized message.
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED deserialize
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED deserialize
 POSTHOOK: type: DESCFUNCTION
-deserialize(message, encodingFormat) - Returns deserialized string of encoded message.
+deserialize(message, compressionFormat) - Returns decoded and decompressed string of serialized message.
+Currently, Supports only following compression formats:
+1.'gzip(json-2.0)' for Gzip compressed and base 64 encoded strings.
+2.'json-0.2' or null/empty string for plain text.
 Example:
   > SELECT deserialize('H4sIAAAAAAAA/ytJLS4BAAx+f9gEAAAA', 'gzip(json-2.0)') FROM src LIMIT 1;
   test

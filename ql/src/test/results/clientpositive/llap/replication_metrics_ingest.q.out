@@ -80,8 +80,8 @@ POSTHOOK: query: select * from sys.replication_metrics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@replication_metrics
 #### A masked pattern was here ####
-1	repl1	0	H4sIAAAAAAAAAEXLsQ7CMAwE0H/xnIE5GwgGJKCo5AfcxFSWnKRK3EoV4t+bsrCd7t19IAwPjAQWavFgoNAk7FE5J7dOe3/qOvdy/fHZtCqOnMYzlwZhjnHdowHBqn17XgPYg4E3suSFyp0UAyresgebZpE/XRZK+pt/NxtmSf+EAAAA	H4sIAAAAAAAAAG2PwQ6CMBBE/2XPHOTKTSsmJojEwskQ02gDJKUl2+2J9N8tEohEb7sz83ayI1gS5CwkwCvGUs4hmqRGBuk+gha9DN4tLbLHsboUs/sHQCq7KbqLQOrXOveSsHtubp2qnJXnaz6BT4coNTHjNH3yZEioZfXRCpX7Q5b+EvGWiH0d6hENZqYpBLWQaKdUBCgHxbUYbGsW9MsID9lZ8LV/A7NIwGISAQAA	gzip(json-2.0)
-2	repl2	1	H4sIAAAAAAAAAEWLMQ7CMAxF7+I5A3M2EAyVgKI2F3AbU1lKnCpxK1WIu9N0Yftf770P+OGJkcCCp6IsqJwEDGSaA4/Hc9tc+aVtXe+682unRXFima6ca7jEuNVpIGDRbi8bD/Zk4I0c0kr5QYoeFe9pBCtLCH90W0n00L8/rdDQRowAAAA=	H4sIAAAAAAAAAG2PwQqDMBBE/yVnD/XqzUYLBbFS9VSkBF1UiImsm5Pk3xu1CtLedmb3zbAzm0iQmVjA8pLzOM+Zt1gtOOs1MyUGcLtnnCXv5BFG2/YPgFT0y+nFY6CaYx6AsK9PWbcy5cX9kS5gbRBBEddG0XpPmoTcpfUOqAivSfxL+GfCt5WrR9SY6DYT1LFAGSk9hjDKXIlx6vSOumgzcARB0KzVTkYgYZP2y7hfpy3EVvYDvpfiNy0BAAA=	gzip(json-2.0)
+1	repl1	0	{"dbName":"src","replicationType":"BOOTSTRAP","stagingDir":"dummyDir","lastReplId":0,"failoverMetadataLoc":null,"failoverEventId":0}	H4sIAAAAAAAAAG2PwQ6CMBBE/2XPHOTKTSsmJojEwskQ02gDJKUl2+2J9N8tEohEb7sz83ayI1gS5CwkwCvGUs4hmqRGBuk+gha9DN4tLbLHsboUs/sHQCq7KbqLQOrXOveSsHtubp2qnJXnaz6BT4coNTHjNH3yZEioZfXRCpX7Q5b+EvGWiH0d6hENZqYpBLWQaKdUBCgHxbUYbGsW9MsID9lZ8LV/A7NIwGISAQAA	gzip(json-2.0)
+2	repl2	1	{"dbName":"destination","replicationType":"BOOTSTRAP","stagingDir":"dummyDir","lastReplId":0,"failoverMetadataLoc":null,"failoverEventId":0}	H4sIAAAAAAAAAG2PwQqDMBBE/yVnD/XqzUYLBbFS9VSkBF1UiImsm5Pk3xu1CtLedmb3zbAzm0iQmVjA8pLzOM+Zt1gtOOs1MyUGcLtnnCXv5BFG2/YPgFT0y+nFY6CaYx6AsK9PWbcy5cX9kS5gbRBBEddG0XpPmoTcpfUOqAivSfxL+GfCt5WrR9SY6DYT1LFAGSk9hjDKXIlx6vSOumgzcARB0KzVTkYgYZP2y7hfpy3EVvYDvpfiNy0BAAA=	gzip(json-2.0)
 PREHOOK: query: select * from sys.replication_metrics_view order by dump_execution_id
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@replication_metrics
