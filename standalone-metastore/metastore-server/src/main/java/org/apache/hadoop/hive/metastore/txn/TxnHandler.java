@@ -1717,9 +1717,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       if (affectedRowsRequests != null) {
         for (AffectedRowsRequest affectedRowsRequest : affectedRowsRequests) {
           stmt.addBatch("UPDATE \"MV_TABLES_USED\" " +
-              "SET \"MVTU_INSERTED_COUNT\"=\"MVTU_INSERTED_COUNT\"+" + affectedRowsRequest.getInsertCount() +
-              ",\"MVTU_UPDATED_COUNT\"=\"MVTU_UPDATED_COUNT\"+" + affectedRowsRequest.getUpdatedCount() +
-              ",\"MVTU_DELETED_COUNT\"=\"MVTU_DELETED_COUNT\"+" + affectedRowsRequest.getDeletedCount() +
+              "SET \"INSERTED_COUNT\"=\"INSERTED_COUNT\"+" + affectedRowsRequest.getInsertCount() +
+              ",\"UPDATED_COUNT\"=\"UPDATED_COUNT\"+" + affectedRowsRequest.getUpdatedCount() +
+              ",\"DELETED_COUNT\"=\"DELETED_COUNT\"+" + affectedRowsRequest.getDeletedCount() +
               "WHERE \"TBL_ID\"=" + affectedRowsRequest.getTableId());
         }
       }
