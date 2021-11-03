@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -88,11 +89,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.Integer.min;
 
@@ -106,7 +109,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     implements InputFormat<K, V>, JobConfigurable {
   private static final String CLASS_NAME = HiveInputFormat.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
-
+  private static String TEZ_VERTEX_NAME = "tez.io.vertex.name";
   /**
    * A cache of InputFormat instances.
    */
@@ -422,12 +425,39 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       // Handle the special header/footer skipping cases here.
       innerReader = RecordReaderWrapper.create(inputFormat, hsplit, part.getTableDesc(), job, reporter);
     } catch (Exception e) {
+      if(isLimitReached()){
+        LOG.warn("Interrupted during the creation, will try for a smooth bailout now.");
+        return null;
+      }
       innerReader = HiveIOExceptionHandlerUtil
           .handleRecordReaderCreationException(e, job);
     }
     HiveRecordReader<K,V> rr = new HiveRecordReader(innerReader, job);
     rr.initIOContext(hsplit, job, inputFormatClass, innerReader);
     return rr;
+  }
+
+  private boolean isLimitReached(){
+    String queryId = HiveConf.getVar(job, HiveConf.ConfVars.HIVEQUERYID);
+    String limitReachedKey = getLimitReachedKey(job);
+    LOG.warn(queryId);
+    LOG.warn(limitReachedKey);
+    LOG.warn(job.toString());
+    try {
+      return ObjectCacheFactory.getCache(job, queryId, false, true)
+          .retrieve(limitReachedKey, new Callable<AtomicBoolean>() {
+            @Override
+            public AtomicBoolean call() {
+              return new AtomicBoolean(false);
+            }
+          }).get();
+    } catch (HiveException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static String getLimitReachedKey(Configuration conf) {
+    return conf.get(TEZ_VERTEX_NAME) + "_limit_reached";
   }
 
   protected void init(JobConf job) {
