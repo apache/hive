@@ -3075,7 +3075,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   || qb.getAliasInsideView().contains(tableAlias.toLowerCase()), tableScanTrait);
         }
 
-        if (!optTable.getReferentialConstraints().isEmpty()) {
+        if (optTable.hasReferentialConstraints()) {
           profilesCBO.add(ExtendedCBOProfile.REFERENTIAL_CONSTRAINTS);
         }
 
