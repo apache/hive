@@ -68,7 +68,7 @@ STAGE PLANS:
                       Statistics: Num rows: 5 Data size: 460 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: int)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs (cache only)
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -185,7 +185,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col9 (type: float)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs (cache only)
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
