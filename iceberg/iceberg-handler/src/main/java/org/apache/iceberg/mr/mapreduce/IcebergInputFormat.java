@@ -107,25 +107,33 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     if (snapshotId != -1) {
       scan = scan.useSnapshot(snapshotId);
     }
+
     long asOfTime = conf.getLong(InputFormatConfig.AS_OF_TIMESTAMP, -1);
     if (asOfTime != -1) {
       scan = scan.asOfTime(asOfTime);
     }
+
     long splitSize = conf.getLong(InputFormatConfig.SPLIT_SIZE, 0);
     if (splitSize > 0) {
       scan = scan.option(TableProperties.SPLIT_SIZE, String.valueOf(splitSize));
     }
+
     // In case of LLAP-based execution we ask Iceberg not to combine multiple fileScanTasks into one split.
     // This is so that cache affinity can work, and each file(split) is executed/cached on always the same LLAP daemon.
     MapWork mapWork = LlapHiveUtils.findMapWork((JobConf) conf);
     if (mapWork != null && mapWork.getCacheAffinity()) {
+      // Iceberg splits logically consist of buckets, where the bucket size equals to openFileCost setting if the files
+      // assigned to such bucket are smaller. This is how Iceberg would combine multiple files into one split, so here
+      // we need to enforce the bucket size to be equal to split size to avoid file combination.
       Long openFileCost = splitSize > 0 ? splitSize : TableProperties.SPLIT_SIZE_DEFAULT;
       scan = scan.option(TableProperties.SPLIT_OPEN_FILE_COST, String.valueOf(openFileCost));
     }
+
     String schemaStr = conf.get(InputFormatConfig.READ_SCHEMA);
     if (schemaStr != null) {
       scan.project(SchemaParser.fromJson(schemaStr));
     }
+
     String[] selectedColumns = conf.getStrings(InputFormatConfig.SELECTED_COLUMNS);
     if (selectedColumns != null) {
       scan.select(selectedColumns);
@@ -136,6 +144,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     if (filter != null) {
       scan = scan.filter(filter);
     }
+
     return scan;
   }
 

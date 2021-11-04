@@ -26,11 +26,11 @@ import java.io.IOException;
 import java.util.Collection;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.tez.HashableInputSplit;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.mr.mapreduce.IcebergSplit;
 import org.apache.iceberg.mr.mapreduce.IcebergSplitContainer;
+import org.apache.iceberg.relocated.com.google.common.primitives.Longs;
 import org.apache.iceberg.util.SerializationUtil;
 
 // Hive requires file formats to return splits that are instances of `FileSplit`.
@@ -80,9 +80,7 @@ public class HiveIcebergSplit extends FileSplit implements IcebergSplitContainer
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
       for (FileScanTask task : fileScanTasks) {
         baos.write(task.file().path().toString().getBytes());
-        byte[] startBytes = new byte[Long.BYTES];
-        SerDeUtils.writeLong(startBytes, 0, task.start());
-        baos.write(startBytes);
+        baos.write(Longs.toByteArray(task.start()));
       }
       return baos.toByteArray();
     } catch (IOException ioe) {
@@ -113,5 +111,4 @@ public class HiveIcebergSplit extends FileSplit implements IcebergSplitContainer
     innerSplit = new IcebergSplit();
     innerSplit.readFields(in);
   }
-
 }
