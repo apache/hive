@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetrics;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
-import org.apache.hadoop.hive.metastore.messaging.MessageEncoder;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
@@ -341,6 +340,6 @@ public class TestReplicationMetricSink {
 
     //Testing K_MAX
     repl = new ReplStatsTracker(15);
-    Assert.assertEquals(ReplStatsTracker.K_MAX, repl.getK());
+    Assert.assertEquals(ReplStatsTracker.TOP_K_MAX, repl.getK());
   }
 }

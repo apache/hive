@@ -17,8 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.metastore.messaging.MessageEncoder;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -33,12 +36,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  *
  */
 @Description(name = "deserialize",
-        value="_FUNC_(message, compressionFormat) - Returns decoded and decompressed string of serialized message.",
-        extended="Currently, Supports only following compression formats:\n" +
-                "1.'gzip(json-2.0)' for Gzip compressed and base 64 encoded strings.\n" +
-                "2.'json-0.2' or null/empty string for plain text.\n" +
+        value="_FUNC_(base64 encoded message, compressionFormat) - Returns plain text string of given message which " +
+                "was compressed in compressionFormat and base64 encoded.",
+        extended="Currently, Supports only 'gzip' for Gzip compressed and base 64 encoded strings.\n" +
                 "Example:\n"
-                + "  > SELECT _FUNC_('H4sIAAAAAAAA/ytJLS4BAAx+f9gEAAAA', 'gzip(json-2.0)') FROM src LIMIT 1;\n"
+                + "  > SELECT _FUNC_('H4sIAAAAAAAA/ytJLS4BAAx+f9gEAAAA', 'gzip') FROM src LIMIT 1;\n"
                 + "  test")
 public class GenericUDFDeserialize extends GenericUDF {
 
@@ -69,16 +71,17 @@ public class GenericUDFDeserialize extends GenericUDF {
     @Override
     public Object evaluate(DeferredObject[] arguments) throws HiveException {
         String value = PrimitiveObjectInspectorUtils.getString(arguments[0].get(), stringOI);
-        String messageFormat = PrimitiveObjectInspectorUtils.getString(arguments[1].get(), compressionFormat);
-        if (value == null) {
-            return null;
-        } else if (messageFormat == null || messageFormat.isEmpty() || JSONMessageEncoder.FORMAT.equalsIgnoreCase(value)) {
+        String compressionFormat = PrimitiveObjectInspectorUtils.getString(arguments[1].get(), this.compressionFormat);
+        if (value == null || StringUtils.isEmpty(compressionFormat)) {
             return value;
-        } else if (GzipJSONMessageEncoder.FORMAT.equalsIgnoreCase(messageFormat)) {
-            return GzipJSONMessageEncoder.getInstance().getDeserializer().deSerializeGenericString(value);
-        } else {
-            throw new HiveException("Invalid message format provided: " + messageFormat + " for message: " + value);
         }
+        MessageEncoder encoder;
+        try {
+            encoder = MessageFactory.getInstance(compressionFormat);
+        } catch (Exception e) {
+            throw new HiveException(e);
+        }
+        return encoder.getDeserializer().deSerializeGenericString(value);
     }
 
     @Override

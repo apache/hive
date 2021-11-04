@@ -330,9 +330,4 @@ public class JSONMessageDeserializer extends MessageDeserializer {
       throw new IllegalArgumentException("Could not construct UpdatePartitionColumnStatMessage", e);
     }
   }
-
-  @Override
-  public String deSerializeGenericString(String messageBody) {
-    return messageBody;
-  }
 }

@@ -27,6 +27,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
@@ -90,7 +91,6 @@ public class TestGenericUDFDeserialize {
             ex = e;
         }
         assertNotNull("Invalid message format provided.", ex);
-        assertEquals("Invalid message format provided: " + compressionFormat + " for message: "
-                + serializedMsg, ex.getMessage());
+        assertTrue(ex.getMessage().contains("compressionFormat: " + compressionFormat + " is not supported."));
     }
 }

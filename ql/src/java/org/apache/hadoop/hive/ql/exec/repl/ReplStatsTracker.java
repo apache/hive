@@ -39,7 +39,7 @@ public class ReplStatsTracker {
   private static final Logger LOG = LoggerFactory.getLogger(ReplStatsTracker.class);
   // Maintains the length of the RM_Progress column in the RDBMS, which stores the ReplStats
   public static int RM_PROGRESS_LENGTH = 10000;
-  public static int K_MAX = 10;
+  public static int TOP_K_MAX = 10;
 
   // Maintains the descriptive statistics per event type.
   private ConcurrentHashMap<String, DescriptiveStatistics> descMap;
@@ -52,10 +52,10 @@ public class ReplStatsTracker {
   private String lastEventId;
 
   public ReplStatsTracker(int k) {
-    if (k > K_MAX) {
+    if (k > TOP_K_MAX) {
       LOG.warn("Value for {} exceeded maximum permissible limit. Using Maximum of {}", REPL_STATS_TOP_EVENTS_COUNTS,
-              ReplStatsTracker.K_MAX);
-      k = ReplStatsTracker.K_MAX;
+              TOP_K_MAX);
+      k = TOP_K_MAX;
     }
     this.k = k;
     descMap = new ConcurrentHashMap<>();
@@ -129,6 +129,7 @@ public class ReplStatsTracker {
   public String getLastEventId() {
     return lastEventId;
   }
+
   public int getK() {
     return k;
   }

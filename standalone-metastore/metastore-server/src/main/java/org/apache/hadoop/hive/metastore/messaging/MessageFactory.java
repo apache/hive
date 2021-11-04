@@ -30,6 +30,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -50,6 +51,7 @@ public abstract class MessageFactory {
   static {
     register(GzipJSONMessageEncoder.FORMAT, GzipJSONMessageEncoder.class);
     register(JSONMessageEncoder.FORMAT, JSONMessageEncoder.class);
+    register(supportedCompressionFormats.GZIP.toString().toLowerCase(), GzipJSONMessageEncoder.class);
   }
 
   private static Method requiredMethod(Class clazz) {
@@ -80,12 +82,12 @@ public abstract class MessageFactory {
     throw new IllegalArgumentException(message);
   }
 
-  public static MessageEncoder getInstance(String messageFormat)
+  public static MessageEncoder getInstance(String compressionFormat)
       throws InvocationTargetException, IllegalAccessException {
-    Method methodInstance = registry.get(messageFormat);
+    Method methodInstance = registry.get(compressionFormat.toLowerCase());
     if (methodInstance == null) {
-      LOG.error("received incorrect MessageFormat " + messageFormat);
-      throw new RuntimeException("messageFormat: " + messageFormat + " is not supported ");
+      LOG.error("received incorrect CompressionFormat " + compressionFormat);
+      throw new RuntimeException("compressionFormat: " + compressionFormat + " is not supported.");
     }
     return (MessageEncoder) methodInstance.invoke(null);
   }
@@ -109,5 +111,12 @@ public abstract class MessageFactory {
       LOG.error(message, e);
       throw new IllegalStateException(message, e);
     }
+  }
+
+  public enum supportedCompressionFormats {
+    /**
+     * Currently supported compressionFormats for encoding and decoding the messages in backend RDBMS.
+     */
+    GZIP
   }
 }

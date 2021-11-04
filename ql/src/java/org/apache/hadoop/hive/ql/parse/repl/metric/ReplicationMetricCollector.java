@@ -110,7 +110,7 @@ public abstract class ReplicationMetricCollector {
     }
   }
 
-  private void checkRMProgressLimit(Progress progress, Stage stage) throws SemanticException {
+  private void updateRMProgressIfLimitExceeds(Progress progress, Stage stage) throws SemanticException {
     MessageSerializer serializer = MessageFactory.getDefaultInstanceForReplMetrics(conf).getSerializer();
     ObjectMapper mapper = new ObjectMapper();
     String serializedProgress = null;
@@ -120,7 +120,7 @@ public abstract class ReplicationMetricCollector {
       throw new SemanticException(e);
     }
     if (serializedProgress.length() > ReplStatsTracker.RM_PROGRESS_LENGTH) {
-      stage.setReplStats("RM_PROGRESS LIMIT EXCEEDED TO " + serializedProgress.length());
+      stage.setReplStats("Error: RM_PROGRESS limit exceeded to " + serializedProgress.length());
       progress.addStage(stage);
     }
   }
@@ -145,7 +145,7 @@ public abstract class ReplicationMetricCollector {
       }
       progress.addStage(stage);
       // Check the progress string doesn't surpass the RM_PROGRESS column width.
-      checkRMProgressLimit(progress, stage);
+      updateRMProgressIfLimitExceeds(progress, stage);
       replicationMetric.setProgress(progress);
       Metadata metadata = replicationMetric.getMetadata();
       metadata.setLastReplId(lastReplId);
