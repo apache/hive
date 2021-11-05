@@ -54,4 +54,4 @@ SELECT COUNT(*) FROM country_2;
 
 -- Test DML statements are working fine when accessing table in non-default schema
 INSERT INTO country_2 VALUES (8, 'Hungary');
-SELECT * FROM country_2;
+SELECT * FROM country_2 ORDER BY id;

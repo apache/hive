@@ -102,11 +102,11 @@ POSTHOOK: query: INSERT INTO country_1 VALUES (8, 'Hungary')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@country_1
-PREHOOK: query: SELECT * FROM country_1
+PREHOOK: query: SELECT * FROM country_1 ORDER BY id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@country_1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM country_1
+POSTHOOK: query: SELECT * FROM country_1 ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@country_1
 #### A masked pattern was here ####

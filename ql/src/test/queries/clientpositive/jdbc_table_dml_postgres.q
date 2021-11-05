@@ -10,8 +10,8 @@ TBLPROPERTIES (
     "hive.sql.dbcp.password" = "qtestpassword",
     "hive.sql.table" = "country");
 
-SELECT * FROM country;
+SELECT * FROM country ORDER BY id;
 EXPLAIN CBO INSERT INTO country VALUES (8, 'Hungary');
 EXPLAIN INSERT INTO country VALUES (8, 'Hungary');
 INSERT INTO country VALUES (8, 'Hungary');
-SELECT * FROM country;
+SELECT * FROM country ORDER BY id;

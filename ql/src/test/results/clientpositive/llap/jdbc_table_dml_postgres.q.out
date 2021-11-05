@@ -22,11 +22,11 @@ TBLPROPERTIES (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@country
-PREHOOK: query: SELECT * FROM country
+PREHOOK: query: SELECT * FROM country ORDER BY id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@country
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM country
+POSTHOOK: query: SELECT * FROM country ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@country
 #### A masked pattern was here ####
@@ -112,11 +112,11 @@ POSTHOOK: query: INSERT INTO country VALUES (8, 'Hungary')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@country
-PREHOOK: query: SELECT * FROM country
+PREHOOK: query: SELECT * FROM country ORDER BY id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@country
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM country
+POSTHOOK: query: SELECT * FROM country ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@country
 #### A masked pattern was here ####

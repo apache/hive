@@ -36,7 +36,7 @@ SELECT COUNT(*) FROM country_1;
 
 -- Test DML statements are working fine when accessing table in non-default schema
 INSERT INTO country_1 VALUES (8, 'Hungary');
-SELECT * FROM country_1;
+SELECT * FROM country_1 ORDER BY id;
 
 -- A user in Postgres can be assigned a default schema (aka. search_path). In that case specifying the
 -- hive.sql.schema property is redundant.
