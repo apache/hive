@@ -24,6 +24,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test
 #### A masked pattern was here ####
 0.0	0.0	0.0	0.0	0.0	0.0
+PREHOOK: query: drop table test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test
+PREHOOK: Output: default@test
+POSTHOOK: query: drop table test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test
+POSTHOOK: Output: default@test
 PREHOOK: query: create table testpoint ( col1 decimal(10,3))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -50,6 +58,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testpoint
 #### A masked pattern was here ####
 0.33922629053550113	0.31406251814905023	0.31406251814905023	0.0986352653061225	0.0986352653061225	0.11507447619047624
+PREHOOK: query: drop table testpoint
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testpoint
+PREHOOK: Output: default@testpoint
+POSTHOOK: query: drop table testpoint
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testpoint
+POSTHOOK: Output: default@testpoint
 PREHOOK: query: create table testint(col1 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -76,3 +92,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testint
 #### A masked pattern was here ####
 9.003702941938208	8.698403429493386	8.698403429493386	75.66222222222228	75.66222222222228	81.06666666666673
+PREHOOK: query: drop table testint
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testint
+PREHOOK: Output: default@testint
+POSTHOOK: query: drop table testint
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testint
+POSTHOOK: Output: default@testint
