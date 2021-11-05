@@ -17,10 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.externalDB;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-
 /**
  * MySQLExternalDB is a extension of abstractExternalDB
  * Designed for MySQL external database connection
@@ -52,16 +48,8 @@ public class PostgresExternalDB extends AbstractExternalDB {
     }
 
     public boolean isContainerReady(ProcessResults pr) {
-        if (pr.stdout.contains("PostgreSQL init process complete; ready for start up")) {
-            try (Socket socket = new Socket()) {
-                socket.connect(new InetSocketAddress(getContainerHostAddress(), 5432), 1000);
-                return true;
-            } catch (IOException e) {
-                LOG.info("cant connect to postgres; {}", e.getMessage());
-                return false;
-            }
-        }
-        return false;
+        return pr.stdout.contains("database system is ready to accept connections") &&
+            pr.stderr.contains("database system is ready to accept connections");
     }
 
 }
