@@ -104,9 +104,6 @@ public class QTestDatabaseHandler implements QTestOptionHandler {
 
   @Override
   public void beforeTest(QTestUtil qt) throws Exception {
-    if (databaseToScript.isEmpty()) {
-      return;
-    }
     for (Map.Entry<DatabaseType, String> dbEntry : databaseToScript.entrySet()) {
       String scriptsDir = QTestUtil.getScriptsDir(qt.getConf());
       Path dbScript = Paths.get(scriptsDir, dbEntry.getValue());
@@ -122,12 +119,13 @@ public class QTestDatabaseHandler implements QTestOptionHandler {
 
   @Override
   public void afterTest(QTestUtil qt) throws Exception {
-    if (databaseToScript.isEmpty()) {
-      return;
-    }
     for (Map.Entry<DatabaseType, String> dbEntry : databaseToScript.entrySet()) {
       AbstractExternalDB db = dbEntry.getKey().create();
-      db.cleanupDockerContainer();
+      try {
+        db.cleanupDockerContainer();
+      } catch (Exception e) {
+        LOG.error("Failed to cleanup database {}", dbEntry.getKey(), e);
+      }
     }
     databaseToScript.clear();
   }
