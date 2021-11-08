@@ -21,8 +21,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
-import org.apache.hadoop.hive.metastore.messaging.MessageSerializer;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.exec.repl.NoOpReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.ReplLoadWork;
@@ -110,21 +108,6 @@ public abstract class ReplicationMetricCollector {
     }
   }
 
-  private void updateRMProgressIfLimitExceeds(Progress progress, Stage stage) throws SemanticException {
-    MessageSerializer serializer = MessageFactory.getDefaultInstanceForReplMetrics(conf).getSerializer();
-    ObjectMapper mapper = new ObjectMapper();
-    String serializedProgress = null;
-    try {
-      serializedProgress = serializer.serialize(mapper.writeValueAsString(progress));
-    } catch (Exception e) {
-      throw new SemanticException(e);
-    }
-    if (serializedProgress.length() > ReplStatsTracker.RM_PROGRESS_LENGTH) {
-      stage.setReplStats("Error: RM_PROGRESS limit exceeded to " + serializedProgress.length());
-      progress.addStage(stage);
-    }
-  }
-
   public void reportStageEnd(String stageName, Status status, long lastReplId,
       SnapshotUtils.ReplSnapshotCount replSnapshotCount, ReplStatsTracker replStatsTracker) throws SemanticException {
     unRegisterMBeanSafe();
@@ -144,8 +127,6 @@ public abstract class ReplicationMetricCollector {
         stage.setReplStats(replStatString);
       }
       progress.addStage(stage);
-      // Check the progress string doesn't surpass the RM_PROGRESS column width.
-      updateRMProgressIfLimitExceeds(progress, stage);
       replicationMetric.setProgress(progress);
       Metadata metadata = replicationMetric.getMetadata();
       metadata.setLastReplId(lastReplId);

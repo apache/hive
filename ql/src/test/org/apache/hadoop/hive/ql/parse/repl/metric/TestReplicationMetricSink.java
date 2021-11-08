@@ -335,7 +335,7 @@ public class TestReplicationMetricSink {
     metricsRequest.setPolicy("repl");
     ReplicationMetricList actualReplicationMetrics = Hive.get(conf).getMSC().getReplicationMetrics(metricsRequest);
     String progress = deSerialize(actualReplicationMetrics.getReplicationMetricList().get(0).getProgress());
-    assertTrue(progress, progress.contains("RM_PROGRESS LIMIT EXCEEDED"));
+    assertTrue(progress, progress.contains("ERROR: RM_PROGRESS LIMIT EXCEEDED."));
     ReplStatsTracker.RM_PROGRESS_LENGTH = origRMProgress;
 
     //Testing K_MAX

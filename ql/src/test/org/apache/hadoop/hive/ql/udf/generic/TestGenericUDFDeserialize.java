@@ -32,7 +32,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 /**
- * TestGenericUDFDeserialize.
+ * TestGenericUDFDeserialize:
+ * Utility to test the behaviour of GenericUDFDeserialize.
  */
 public class TestGenericUDFDeserialize {
 
@@ -47,6 +48,7 @@ public class TestGenericUDFDeserialize {
         } catch (UDFArgumentException e) {
             ex = e;
         }
+        assertTrue(ex.getMessage().contains("The function deserialize accepts 2 arguments."));
         assertNotNull("The function deserialize() accepts 2 argument.", ex);
         ex = null;
         try {
