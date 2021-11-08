@@ -29,6 +29,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TaskAttemptID;
@@ -52,6 +56,7 @@ import org.apache.iceberg.data.Record;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.hadoop.HadoopTables;
+import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
 import org.apache.iceberg.mr.mapreduce.IcebergInputFormat;
@@ -70,6 +75,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import static org.apache.iceberg.types.Types.NestedField.required;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class TestIcebergInputFormats {
@@ -369,6 +376,29 @@ public class TestIcebergInputFormats {
     builder.readFrom(identifier);
 
     testInputFormat.create(builder.conf()).validate(expectedRecords);
+  }
+
+  @Test
+  public void testDeriveLlapSetsCacheAffinityForIcebergInputFormat() {
+    MapWork mapWork = new MapWork();
+    PartitionDesc partitionDesc = new PartitionDesc();
+    partitionDesc.setInputFileFormatClass(HiveIcebergInputFormat.class);
+    mapWork.addPathToPartitionInfo(new Path("/tmp"), partitionDesc);
+    Configuration job = new Configuration(false);
+    HiveConf.setVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, "true");
+    HiveConf.setBoolVar(job, HiveConf.ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED, true);
+
+    mapWork.setVectorMode(true);
+    mapWork.deriveLlap(job, false);
+
+    assertTrue("Cache affinity should be set for HiveIcebergInputFormat when LLAP and vectorization is enabled",
+        mapWork.getCacheAffinity());
+
+    mapWork.setVectorMode(false);
+    mapWork.deriveLlap(job, false);
+
+    assertFalse("Cache affinity should be disabled for HiveIcebergInputFormat when LLAP is on, but vectorization not",
+        mapWork.getCacheAffinity());
   }
 
   // TODO - Capture template type T in toString method: https://github.com/apache/iceberg/issues/1542
