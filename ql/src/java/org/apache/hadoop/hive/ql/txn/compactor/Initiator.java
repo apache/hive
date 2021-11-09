@@ -503,11 +503,10 @@ public class Initiator extends MetaStoreCompactorThread {
 
       LOG.info("Checking to see if we should compact " + ci.getFullPartitionName());
 
-      // Check if we already have initiated or are working on a compaction for this partition
-      // or table. If so, skip it. If we are just waiting on cleaning we can still check,
-      // as it may be time to compact again even though we haven't cleaned.
-      // todo: this is not robust. You can easily run `alter table` to start a compaction between
-      // the time currentCompactions is generated and now
+      // Check if we have already initiated or are working on a compaction for this table/partition.
+      // Also make sure we haven't exceeded configured number of consecutive failures.
+      // If any of the above applies, skip it.
+      // Note: if we are just waiting on cleaning we can still check, as it may be time to compact again even though we haven't cleaned.
       if (foundCurrentOrFailedCompactions(currentCompactions, ci)) {
         return false;
       }
