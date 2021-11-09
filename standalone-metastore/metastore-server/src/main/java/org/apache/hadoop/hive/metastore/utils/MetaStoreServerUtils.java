@@ -499,6 +499,33 @@ public class MetaStoreServerUtils {
     params.put(StatsSetupConst.NUM_ERASURE_CODED_FILES, Integer.toString(numErasureCodedFiles));
   }
 
+  public static void populateQuickStatsWithPrevStats(List<FileStatus> fileStatus, Map<String,String> params){
+    int numFiles = 0;
+    if(params.containsKey(StatsSetupConst.NUM_FILES)) {
+      numFiles = Integer.parseInt(params.get(StatsSetupConst.NUM_FILES));
+    }
+    long tableSize = 0l;
+    if(params.containsKey(StatsSetupConst.TOTAL_SIZE)){
+      Long.parseLong(params.get(StatsSetupConst.TOTAL_SIZE));
+    }
+    int numErasureCodedFiles = 0;
+    if(params.containsKey(StatsSetupConst.NUM_ERASURE_CODED_FILES)){
+      numErasureCodedFiles = Integer.parseInt(params.get(StatsSetupConst.NUM_ERASURE_CODED_FILES));
+    }
+    for (FileStatus status : fileStatus) {
+      if (!status.isDir()) {
+        tableSize += status.getLen();
+        numFiles += 1;
+        if (status.isErasureCoded()) {
+          numErasureCodedFiles++;
+        }
+      }
+    }
+    params.put(StatsSetupConst.NUM_FILES, Integer.toString(numFiles));
+    params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tableSize));
+    params.put(StatsSetupConst.NUM_ERASURE_CODED_FILES, Integer.toString(numErasureCodedFiles));
+  }
+
   public static void clearQuickStats(Map<String, String> params) {
     params.remove(StatsSetupConst.NUM_FILES);
     params.remove(StatsSetupConst.TOTAL_SIZE);

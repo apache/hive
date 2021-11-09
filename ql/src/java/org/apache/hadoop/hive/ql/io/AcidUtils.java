@@ -66,6 +66,7 @@ import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidWriteIdList.RangeResponse;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
@@ -1397,6 +1398,21 @@ public class AcidUtils {
     return directory;
   }
 
+  private static void trimDirectoryforUpdates(ValidWriteIdList writeIdList, AcidDirectory directory){
+    LOG.warn("Trimming:");
+    LOG.warn(writeIdList.writeToString());
+    List<ParsedDelta> trimmed = new ArrayList<>();
+    for(ParsedDelta next : directory.getCurrentDirectories()){
+      if(next.minWriteId >= writeIdList.getHighWatermark() ){
+        LOG.warn("Added:"+next.toString());
+        LOG.warn(next.minWriteId + " " + next.maxWriteId);
+        trimmed.add(next);
+      }
+    }
+    directory.getCurrentDirectories().clear();
+    directory.getCurrentDirectories().addAll(trimmed);
+  }
+
   private static void findBestWorkingDeltas(ValidWriteIdList writeIdList, AcidDirectory directory) {
     Collections.sort(directory.getCurrentDirectories());
     //so now, 'current directories' should be sorted like delta_5_20 delta_5_10 delta_11_20 delta_51_60 for example
@@ -2588,7 +2604,7 @@ public class AcidUtils {
     // Collect the all of the files/dirs
     Map<Path, HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, dir);
     AcidDirectory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false, hdfsDirSnapshots);
-    AcidUtils.findBestWorkingDeltas(idList, acidInfo);
+    AcidUtils.trimDirectoryforUpdates(idList, acidInfo);
     // Assume that for an MM table, or if there's only the base directory, we are good.
     if (!acidInfo.getCurrentDirectories().isEmpty() && AcidUtils.isFullAcidTable(table)) {
       Utilities.FILE_OP_LOGGER.warn(
@@ -2604,7 +2620,9 @@ public class AcidUtils {
       fileList.addAll(hdfsDirSnapshots.get(acidInfo.getBaseDirectory()).getFiles());
     }
     LOG.warn("List of files from AcidUtils::");
-    LOG.warn(fileList.toString());
+    for(FileStatus ftemp : fileList){
+      LOG.warn(ftemp.toString());
+    }
     return fileList;
   }
 
