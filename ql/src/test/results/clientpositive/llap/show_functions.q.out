@@ -106,6 +106,7 @@ dayofweek
 decode
 degrees
 dense_rank
+deserialize
 div
 ds_cpc_estimate
 ds_cpc_estimate_bounds
@@ -464,6 +465,7 @@ coalesce
 current_database
 current_date
 decode
+deserialize
 ds_cpc_estimate
 ds_hll_estimate
 ds_kll_quantile
@@ -623,6 +625,7 @@ dayofweek
 decode
 degrees
 dense_rank
+deserialize
 div
 ds_cpc_estimate
 ds_cpc_estimate_bounds

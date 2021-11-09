@@ -237,6 +237,13 @@ public abstract class MessageDeserializer {
    */
   public abstract DeletePartitionColumnStatMessage getDeletePartitionColumnStatMessage(String messageBody);
 
+  /**
+   * Method to de-serialize any string passed. Need to be over-ridden by specific serialization subclasses.
+   */
+  public String deSerializeGenericString(String messageBody) {
+    return messageBody;
+  }
+
   // Protection against construction.
   protected MessageDeserializer() {}
 }
