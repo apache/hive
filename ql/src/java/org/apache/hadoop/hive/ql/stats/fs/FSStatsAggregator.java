@@ -56,7 +56,7 @@ public class FSStatsAggregator implements StatsAggregator {
     List<String> statsDirs = scc.getStatsTmpDirs();
     assert statsDirs.size() == 1 : "Found multiple stats dirs: " + statsDirs;
     Path statsDir = new Path(statsDirs.get(0));
-    Utilities.FILE_OP_LOGGER.debug("About to read stats from {}", statsDir);
+    Utilities.FILE_OP_LOGGER.trace("About to read stats from {}", statsDir);
     int poolSize = HiveConf.getIntVar(scc.getHiveConf(), HiveConf.ConfVars.HIVE_MOVE_FILES_THREAD_COUNT);
     // In case thread count is set to 0, use single thread.
     poolSize = Math.max(poolSize, 1);
@@ -76,7 +76,6 @@ public class FSStatsAggregator implements StatsAggregator {
           return file.getName().startsWith(StatsSetupConst.STATS_FILE_PREFIX);
         }
       });
-      LOG.warn(status.toString());
       Map<String, Map<String,String>> statsMap  = new HashMap<>();
       for (final FileStatus file : status) {
         futureList.add(pool.submit(() -> {
@@ -84,7 +83,7 @@ public class FSStatsAggregator implements StatsAggregator {
             try (Input in = new Input(fs.open(file.getPath()))) {
               kryo = SerializationUtilities.borrowKryo();
               Map<String, Map<String,String>> stats = kryo.readObject(in, statsMap.getClass());
-              Utilities.FILE_OP_LOGGER.debug("Read stats {}", stats);
+              Utilities.FILE_OP_LOGGER.trace("Read stats {}", stats);
               return stats;
             } finally {
               SerializationUtilities.releaseKryo(kryo);
