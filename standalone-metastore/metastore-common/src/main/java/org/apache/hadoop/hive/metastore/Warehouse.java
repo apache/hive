@@ -834,7 +834,7 @@ public class Warehouse {
     try {
       Path path = new Path(location);
       FileSystem fileSys = path.getFileSystem(conf);
-      return FileUtils.getFileStatusLatestOnly(path, fileSys);
+      return FileUtils.getFileStatusRecurse(path, fileSys);
     } catch (IOException ioe) {
       MetaStoreUtils.throwMetaException(ioe);
     }
