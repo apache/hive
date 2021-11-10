@@ -168,8 +168,11 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       }
 
       if (providedBasicStats == null) {
-        MetaStoreServerUtils.populateQuickStatsWithPrevStats(partfileStatus, parameters);
-
+        if(work.isTargetRewritten()){
+          MetaStoreServerUtils.populateQuickStats(partfileStatus, parameters);
+        }else {
+          MetaStoreServerUtils.populateQuickStatsWithPrevStats(partfileStatus, parameters);
+        }
         if (statsAggregator != null) {
           // Update stats for transactional tables (MM, or full ACID with overwrite), even
           // though we are marking stats as not being accurate.

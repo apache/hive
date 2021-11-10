@@ -1404,7 +1404,7 @@ public class AcidUtils {
     List<ParsedDelta> trimmed = new ArrayList<>();
     for(ParsedDelta next : directory.getCurrentDirectories()){
       if(next.minWriteId >= writeIdList.getHighWatermark() ){
-        LOG.warn("Added:"+next.toString());
+        LOG.warn("Added:"+next.getPath().toString());
         LOG.warn(next.minWriteId + " " + next.maxWriteId);
         trimmed.add(next);
       }
@@ -1424,9 +1424,6 @@ public class AcidUtils {
     int lastStmtId = -1;
     ParsedDelta prev = null;
     for(ParsedDelta next: directory.getCurrentDirectories()) {
-      LOG.warn("New File");
-      LOG.warn(String.valueOf(next.maxWriteId)+" " + next.visibilityTxnId);
-      LOG.warn(next.getPath().toString());
       if (next.maxWriteId > current) {
         // are any of the new transactions ones that we care about?
         if (writeIdList.isWriteIdRangeValid(current+1, next.maxWriteId) !=
