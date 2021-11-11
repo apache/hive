@@ -574,7 +574,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       schemaDifference.getMissingFromFirst().forEach(icebergCols::remove);
     }
 
-    Pair<String, Optional<String>> outOfOrder = HiveSchemaUtil.getFirstOutOfOrderColumn(
+    Pair<String, Optional<String>> outOfOrder = HiveSchemaUtil.getReorderedColumn(
         hmsCols, icebergCols, ImmutableMap.of());
 
     // limit the scope of this operation to only dropping columns
@@ -612,8 +612,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
           schemaDifference.getMissingFromSecond().get(0).getName(),
           schemaDifference.getMissingFromFirst().get(0).getName());
     }
-    Pair<String, Optional<String>> outOfOrder = HiveSchemaUtil.getFirstOutOfOrderColumn(hmsCols, icebergCols,
-        renameMapping);
+    Pair<String, Optional<String>> outOfOrder = HiveSchemaUtil.getReorderedColumn(hmsCols, icebergCols, renameMapping);
 
     if (!schemaDifference.isEmpty() || outOfOrder != null) {
       transaction = icebergTable.newTransaction();

@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.Pair;
@@ -178,28 +179,57 @@ public final class HiveSchemaUtil {
   }
 
   /**
-   * Compares a list of columns to another list, by name, to find an out of order column.
-   * It iterates through updated one by one, and compares the name of the column to the name of the column in the old
-   * list, in the same position. It returns the first mismatch it finds in updated, if any.
+   * Compares two lists of columns to each other, by name and index, to find the column that was moved by the
+   * schema evolution update (i.e. a column which was either moved to the first position, or moved after some specified
+   * column).
    *
-   * @param updated The list of the columns after some updates have taken place
+   * @param updated The list of the columns after some updates have taken place (if any)
    * @param old The list of the original columns
    * @param renameMapping A map of name aliases for the updated columns (e.g. if a column rename occurred)
-   * @return A pair consisting of the first out of order column name, and its preceding column name (if any).
+   * @return A pair consisting of the reordered column's name, and its preceding column's name (if any).
    *         Returns a null in case there are no out of order columns.
    */
-  public static Pair<String, Optional<String>> getFirstOutOfOrderColumn(List<FieldSchema> updated,
+  public static Pair<String, Optional<String>> getReorderedColumn(List<FieldSchema> updated,
                                                                         List<FieldSchema> old,
                                                                         Map<String, String> renameMapping) {
-    for (int i = 0; i < updated.size() && i < old.size(); ++i) {
+    // first collect the updated index for each column
+    Map<String, Integer> nameToNewIndex = Maps.newHashMap();
+    for (int i = 0; i < updated.size(); ++i) {
       String updatedCol = renameMapping.getOrDefault(updated.get(i).getName(), updated.get(i).getName());
-      String oldCol = old.get(i).getName();
-      if (!oldCol.equals(updatedCol)) {
-        Optional<String> previousCol = i > 0 ? Optional.of(updated.get(i - 1).getName()) : Optional.empty();
-        return Pair.of(updatedCol, previousCol);
+      nameToNewIndex.put(updatedCol, i);
+    }
+
+    // find the column which has the highest index difference between its position in the old vs the updated list
+    String reorderedColName = null;
+    int maxIndexDiff = -1;
+    for (int oldIndex = 0; oldIndex < old.size(); ++oldIndex) {
+      String oldName = old.get(oldIndex).getName();
+      Integer newIndex = nameToNewIndex.get(oldName);
+      if (newIndex != null) {
+        if (maxIndexDiff < 0 || maxIndexDiff < Math.abs(newIndex - oldIndex)) {
+          maxIndexDiff = Math.abs(newIndex - oldIndex);
+          reorderedColName = oldName;
+        }
       }
     }
-    return null;
+
+    if (maxIndexDiff == 0) {
+      // if there are no changes in index, there were no reorders
+      return null;
+    } else {
+      int newIndex = nameToNewIndex.get(reorderedColName);
+      if (newIndex > 0) {
+        // if the newIndex > 0, that means the column was moved after another column:
+        // ALTER TABLE tbl CHANGE COLUMN reorderedColName reorderedColName type AFTER previousColName;
+        String previousColName = renameMapping.getOrDefault(
+            updated.get(newIndex - 1).getName(), updated.get(newIndex - 1).getName());
+        return Pair.of(reorderedColName, Optional.of(previousColName));
+      } else {
+        // if the newIndex is 0, that means the column was moved to the first position:
+        // ALTER TABLE tbl CHANGE COLUMN reorderedColName reorderedColName type FIRST;
+        return Pair.of(reorderedColName, Optional.empty());
+      }
+    }
   }
 
   public static class SchemaDifference {

@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -90,6 +91,53 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
     Assert.assertArrayEquals(new Object[]{1L, "Green"}, result.get(1));
     Assert.assertArrayEquals(new Object[]{2L, "Pink"}, result.get(2));
 
+  }
+
+  @Test
+  public void testColumnReorders() throws IOException {
+    Schema schema = new Schema(
+        required(1, "a", Types.LongType.get()),
+        required(2, "b", Types.StringType.get()),
+        required(3, "c", Types.StringType.get()),
+        required(4, "d", Types.IntegerType.get()),
+        required(5, "e", Types.IntegerType.get()),
+        required(6, "f", Types.StringType.get())
+    );
+    testTables.createTable(shell, "customers", schema, fileFormat, ImmutableList.of());
+    shell.executeStatement("INSERT INTO customers VALUES (1, 'foo', 'bar', 33, 44, 'baz'), " +
+        "(2, 'foo2', 'bar2', 55, 66, 'baz2')");
+
+    // move one position to the right
+    // a,b,c,d,e,f -> b,a,c,d,e,f
+    shell.executeStatement("ALTER TABLE customers CHANGE COLUMN a a bigint AFTER b");
+    List<Object[]> result = shell.executeStatement("SELECT * FROM customers ORDER BY a");
+    Assert.assertEquals(2, result.size());
+    Assert.assertArrayEquals(new Object[]{"foo", 1L, "bar", 33, 44, "baz"}, result.get(0));
+    Assert.assertArrayEquals(new Object[]{"foo2", 2L, "bar2", 55, 66, "baz2"}, result.get(1));
+
+    // move first to the last
+    // b,a,c,d,e,f -> a,c,d,e,f,b
+    shell.executeStatement("ALTER TABLE customers CHANGE COLUMN b b string AFTER f");
+    result = shell.executeStatement("SELECT * FROM customers ORDER BY a");
+    Assert.assertEquals(2, result.size());
+    Assert.assertArrayEquals(new Object[]{1L, "bar", 33, 44, "baz", "foo"}, result.get(0));
+    Assert.assertArrayEquals(new Object[]{2L, "bar2", 55, 66, "baz2", "foo2"}, result.get(1));
+
+    // move middle to the first
+    // a,c,d,e,f,b -> e,a,c,d,f,b
+    shell.executeStatement("ALTER TABLE customers CHANGE COLUMN e e int FIRST");
+    result = shell.executeStatement("SELECT * FROM customers ORDER BY a");
+    Assert.assertEquals(2, result.size());
+    Assert.assertArrayEquals(new Object[]{44, 1L, "bar", 33, "baz", "foo"}, result.get(0));
+    Assert.assertArrayEquals(new Object[]{66, 2L, "bar2", 55, "baz2", "foo2"}, result.get(1));
+
+    // move one position to the left
+    // e,a,c,d,f,b -> e,a,d,c,f,b
+    shell.executeStatement("ALTER TABLE customers CHANGE COLUMN d d int AFTER a");
+    result = shell.executeStatement("SELECT * FROM customers ORDER BY a");
+    Assert.assertEquals(2, result.size());
+    Assert.assertArrayEquals(new Object[]{44, 1L, 33, "bar", "baz", "foo"}, result.get(0));
+    Assert.assertArrayEquals(new Object[]{66, 2L, 55, "bar2", "baz2", "foo2"}, result.get(1));
   }
 
   // Tests CHANGE COLUMN feature similarly like above, but with a more complex schema, aimed to verify vectorized
