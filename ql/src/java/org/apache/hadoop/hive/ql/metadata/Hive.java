@@ -6056,33 +6056,33 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (fetchReliable && tableConstraints != null) {
         if (CollectionUtils.isNotEmpty(tableConstraints.getPrimaryKeys())) {
           tableConstraints.setPrimaryKeys(
-              tableConstraints.getPrimaryKeys().stream().filter(primaryKey -> primaryKey.isRely_cstr())
+              tableConstraints.getPrimaryKeys().stream().filter(SQLPrimaryKey::isRely_cstr)
                   .collect(Collectors.toList()));
         }
         if (CollectionUtils.isNotEmpty(tableConstraints.getForeignKeys())) {
           tableConstraints.setForeignKeys(
-              tableConstraints.getForeignKeys().stream().filter(foreignKey -> foreignKey.isRely_cstr())
+              tableConstraints.getForeignKeys().stream().filter(SQLForeignKey::isRely_cstr)
                   .collect(Collectors.toList()));
         }
         if (CollectionUtils.isNotEmpty(tableConstraints.getUniqueConstraints())) {
           tableConstraints.setUniqueConstraints(tableConstraints.getUniqueConstraints().stream()
-              .filter(uniqueConstraint -> uniqueConstraint.isRely_cstr()).collect(Collectors.toList()));
+              .filter(SQLUniqueConstraint::isRely_cstr).collect(Collectors.toList()));
         }
         if (CollectionUtils.isNotEmpty(tableConstraints.getNotNullConstraints())) {
           tableConstraints.setNotNullConstraints(tableConstraints.getNotNullConstraints().stream()
-              .filter(notNullConstraint -> notNullConstraint.isRely_cstr()).collect(Collectors.toList()));
+              .filter(SQLNotNullConstraint::isRely_cstr).collect(Collectors.toList()));
         }
       }
 
       if (fetchEnabled && tableConstraints != null) {
         if (CollectionUtils.isNotEmpty(tableConstraints.getCheckConstraints())) {
           tableConstraints.setCheckConstraints(
-              tableConstraints.getCheckConstraints().stream().filter(checkConstraint -> checkConstraint.isEnable_cstr())
+              tableConstraints.getCheckConstraints().stream().filter(SQLCheckConstraint::isEnable_cstr)
                   .collect(Collectors.toList()));
         }
         if (CollectionUtils.isNotEmpty(tableConstraints.getDefaultConstraints())) {
           tableConstraints.setDefaultConstraints(tableConstraints.getDefaultConstraints().stream()
-              .filter(defaultConstraint -> defaultConstraint.isEnable_cstr()).collect(Collectors.toList()));
+              .filter(SQLDefaultConstraint::isEnable_cstr).collect(Collectors.toList()));
         }
       }
       return new TableConstraintsInfo(new PrimaryKeyInfo(tableConstraints.getPrimaryKeys(), tblName, dbName),

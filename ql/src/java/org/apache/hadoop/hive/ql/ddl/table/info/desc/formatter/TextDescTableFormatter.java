@@ -529,8 +529,8 @@ class TextDescTableFormatter extends DescTableFormatter {
     if (CollectionUtils.isNotEmpty(columns)) {
       for (CheckConstraintCol column : columns) {
         String[] fields = new String[2];
-        fields[0] = "Column Name:" + column.colName;
-        fields[1] = "Check Value:" + column.checkExpression;
+        fields[0] = "Column Name:" + column.getColName();
+        fields[1] = "Check Value:" + column.getCheckExpression();
         formatOutput(fields, constraintsInfo);
       }
     }
