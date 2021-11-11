@@ -1648,6 +1648,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       try {
         calcitePlan = genLogicalPlan(getQB(), true, null, null);
+        // freeze the names in the hash map for objects that are only interested
+        // in the parsed tables in the original query.
+        tabNameToTabObject.markParsingCompleted();
         // if it is to create view, we do not use table alias
         resultSchema = convertRowSchemaToResultSetSchema(relToHiveRR.get(calcitePlan),
             (forViewCreation || getQB().isMaterializedView()) ? false : HiveConf.getBoolVar(conf,
