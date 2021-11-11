@@ -47353,49 +47353,13 @@ void swap(ReplicationMetrics &a, ReplicationMetrics &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-ReplicationMetrics::ReplicationMetrics(const ReplicationMetrics& other1665) {
-  scheduledExecutionId = other1665.scheduledExecutionId;
-  policy = other1665.policy;
-  dumpExecutionId = other1665.dumpExecutionId;
-  metadata = other1665.metadata;
-  progress = other1665.progress;
-  messageFormat = other1665.messageFormat;
-  __isset = other1665.__isset;
-}
-ReplicationMetrics& ReplicationMetrics::operator=(const ReplicationMetrics& other1666) {
-  scheduledExecutionId = other1666.scheduledExecutionId;
-  policy = other1666.policy;
-  dumpExecutionId = other1666.dumpExecutionId;
-  metadata = other1666.metadata;
-  progress = other1666.progress;
-  messageFormat = other1666.messageFormat;
-  __isset = other1666.__isset;
-=======
-ReplicationMetrics::ReplicationMetrics(const ReplicationMetrics& other1674) {
-  scheduledExecutionId = other1674.scheduledExecutionId;
-  policy = other1674.policy;
-  dumpExecutionId = other1674.dumpExecutionId;
-  metadata = other1674.metadata;
-  progress = other1674.progress;
-  __isset = other1674.__isset;
-}
-ReplicationMetrics& ReplicationMetrics::operator=(const ReplicationMetrics& other1675) {
-  scheduledExecutionId = other1675.scheduledExecutionId;
-  policy = other1675.policy;
-  dumpExecutionId = other1675.dumpExecutionId;
-  metadata = other1675.metadata;
-  progress = other1675.progress;
-  __isset = other1675.__isset;
->>>>>>> to 0.14.1 thrift
-=======
 ReplicationMetrics::ReplicationMetrics(const ReplicationMetrics& other1676) {
   scheduledExecutionId = other1676.scheduledExecutionId;
   policy = other1676.policy;
   dumpExecutionId = other1676.dumpExecutionId;
   metadata = other1676.metadata;
   progress = other1676.progress;
+  messageFormat = other1676.messageFormat;
   __isset = other1676.__isset;
 }
 ReplicationMetrics& ReplicationMetrics::operator=(const ReplicationMetrics& other1677) {
@@ -47404,8 +47368,8 @@ ReplicationMetrics& ReplicationMetrics::operator=(const ReplicationMetrics& othe
   dumpExecutionId = other1677.dumpExecutionId;
   metadata = other1677.metadata;
   progress = other1677.progress;
+  messageFormat = other1677.messageFormat;
   __isset = other1677.__isset;
->>>>>>> use SourceTable instances instead of String
   return *this;
 }
 void ReplicationMetrics::printTo(std::ostream& out) const {
