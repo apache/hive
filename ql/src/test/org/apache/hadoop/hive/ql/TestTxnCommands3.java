@@ -346,7 +346,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
      ├── delta_0000001_0000001_0000
      │   ├── _orc_acid_version
      │   └── bucket_00000
-     ├── delta_0000001_0000002_v0000018
+     ├── delta_0000001_0000002_v0000020
      │   ├── _orc_acid_version
      │   └── bucket_00000
      └── delta_0000002_0000002_0000
@@ -358,7 +358,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
         FileUtils.HIDDEN_FILES_PATH_FILTER);
 
     String[] expectedList = new String[] {
-        "/t/delta_0000001_0000002_v0000018",
+        "/t/delta_0000001_0000002_v0000020",
         "/t/delta_0000001_0000001_0000",
         "/t/delta_0000002_0000002_0000",
     };
@@ -385,14 +385,14 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table T compact 'minor'");
     runWorker(hiveConf);
     /*
-    at this point delta_0000001_0000003_v0000020 is visible to everyone
+    at this point delta_0000001_0000003_v0000022 is visible to everyone
     so cleaner removes all files shadowed by it (which is everything in this case)
     */
     runCleaner(hiveConf);
     runCleaner(hiveConf);
 
     expectedList = new String[] {
-        "/t/delta_0000001_0000003_v0000020"
+        "/t/delta_0000001_0000003_v0000022"
     };
     actualList = fs.listStatus(new Path(warehousePath + "/t"),
         FileUtils.HIDDEN_FILES_PATH_FILTER);

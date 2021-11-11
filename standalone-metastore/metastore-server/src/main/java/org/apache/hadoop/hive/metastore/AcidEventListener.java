@@ -19,7 +19,10 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -34,6 +37,9 @@ import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+
+import java.util.Iterator;
+import java.util.List;
 
 
 /**
@@ -72,6 +78,22 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
       txnHandler = getTxnHandler();
       txnHandler.cleanupRecords(HiveObjectType.PARTITION, null, partitionEvent.getTable(),
           partitionEvent.getPartitionIterator());
+      
+      if (!partitionEvent.getDeleteData()) {
+        CompactionRequest rqst = new CompactionRequest(
+            partitionEvent.getTable().getDbName(), partitionEvent.getTable().getTableName(), CompactionType.MAJOR);
+        
+        Iterator<Partition> partitionIterator = partitionEvent.getPartitionIterator();
+        while (partitionIterator.hasNext()) {
+          Partition p = partitionIterator.next();
+          
+          List<FieldSchema> partCols = partitionEvent.getTable().getPartitionKeys();  // partition columns
+          List<String> partVals = p.getValues();
+          
+          rqst.setPartitionname(Warehouse.makePartName(partCols, partVals));
+          txnHandler.compact(rqst);
+        }
+      }
     }
   }
 

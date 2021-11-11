@@ -107,6 +107,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     //TestTxnCommandsWithSplitUpdateAndVectorization has the vectorized version
     //of these tests.
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE, false);
   }
 
@@ -975,7 +976,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       }
     }
     Assert.assertNotNull(txnInfo);
-    Assert.assertEquals(14, txnInfo.getId());
+    Assert.assertEquals(16, txnInfo.getId());
     Assert.assertEquals(TxnState.OPEN, txnInfo.getState());
     String s = TestTxnDbUtil
         .queryToString(hiveConf, "select TXN_STARTED, TXN_LAST_HEARTBEAT from TXNS where TXN_ID = " + txnInfo.getId(), false);
@@ -1402,10 +1403,10 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     query = "select ROW__ID, a, b" + (isVectorized ? "" : ", INPUT__FILE__NAME") + " from "
         + Table.NONACIDORCTBL + " order by ROW__ID";
     String[][] expected2 = new String[][] {
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/base_10000001_v0000019/bucket_00001"},
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t0\t12", "nonacidorctbl/base_10000001_v0000019/bucket_00001"},
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5", "nonacidorctbl/base_10000001_v0000019/bucket_00001"},
-        {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/base_10000001_v0000019/bucket_00001"}
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/base_10000001_v0000021/bucket_00001"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t0\t12", "nonacidorctbl/base_10000001_v0000021/bucket_00001"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5", "nonacidorctbl/base_10000001_v0000021/bucket_00001"},
+        {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/base_10000001_v0000021/bucket_00001"}
     };
     checkResult(expected2, query, isVectorized, "after major compact", LOG);
     //make sure they are the same before and after compaction
@@ -1532,7 +1533,9 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
     FileSystem fs = FileSystem.get(hiveConf);
     FileStatus[] stat =
-        fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBL.toString().toLowerCase()), AcidUtils.baseFileFilter);
+        fs.listStatus(new Path(getWarehouseDir(),
+            Table.ACIDTBL.toString().toLowerCase()),
+          AcidUtils.baseFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
     }
@@ -1553,7 +1556,9 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
     FileSystem fs = FileSystem.get(hiveConf);
     FileStatus[] stat =
-        fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=a"), AcidUtils.baseFileFilter);
+        fs.listStatus(new Path(getWarehouseDir(),
+            Table.ACIDTBLPART.toString().toLowerCase() + "/p=a"),
+          AcidUtils.baseFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
     }
@@ -1574,19 +1579,91 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
     FileSystem fs = FileSystem.get(hiveConf);
     FileStatus[] stat =
-        fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=b"), AcidUtils.baseFileFilter);
+        fs.listStatus(new Path(getWarehouseDir(),
+            Table.ACIDTBLPART.toString().toLowerCase() + "/p=b"),
+          AcidUtils.baseFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
     }
     String name = stat[0].getPath().getName();
     Assert.assertEquals("base_0000003", name);
     stat =
-        fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=a"), AcidUtils.deltaFileFilter);
+        fs.listStatus(new Path(getWarehouseDir(),
+            Table.ACIDTBLPART.toString().toLowerCase() + "/p=a"),
+          AcidUtils.deltaFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 delta and found " + stat.length + " files " + Arrays.toString(stat));
     }
 
     List<String> r = runStatementOnDriver("select * from " + Table.ACIDTBLPART);
+    Assert.assertEquals(2, r.size());
+  }
+
+  @Test
+  public void testDropWithBaseOnePartition() throws Exception {
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE, true);
+
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition (p='a') values (1,2),(3,4)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition (p='b') values (5,5),(4,4)");
+    runStatementOnDriver("alter table " + Table.ACIDTBLPART + " drop partition (p='a')");
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] stat =
+      fs.listStatus(new Path(getWarehouseDir(),
+          Table.ACIDTBLPART.toString().toLowerCase() + "/p=a"),
+        AcidUtils.baseFileFilter);
+    if (1 != stat.length) {
+      Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
+    }
+    String name = stat[0].getPath().getName();
+    Assert.assertEquals("base_0000003", name);
+    stat =
+      fs.listStatus(new Path(getWarehouseDir(),
+          Table.ACIDTBLPART.toString().toLowerCase() + "/p=b"),
+        AcidUtils.baseFileFilter);
+    if (0 != stat.length) {
+      Assert.fail("Expecting no base and found " + stat.length + " files " + Arrays.toString(stat));
+    }
+    
+    List<String> r = runStatementOnDriver("select * from " + Table.ACIDTBLPART);
+    Assert.assertEquals(2, r.size());
+  }
+
+  @Test
+  public void testDropWithBaseMultiplePartitions() throws Exception {
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE, true);
+
+    runStatementOnDriver("insert into " + Table.ACIDTBLNESTEDPART
+      + " partition (p1='a', p2='a', p3='a') values (1,1),(2,2)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLNESTEDPART
+      + " partition (p1='a', p2='a', p3='b') values (3,3),(4,4)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLNESTEDPART
+      + " partition (p1='a', p2='b', p3='c') values (7,7),(8,8)");
+    runStatementOnDriver("alter table " + Table.ACIDTBLNESTEDPART + " drop partition (p2='a')");
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] stat;
+
+    for (char p : Arrays.asList('a', 'b')) {
+      stat =
+        fs.listStatus(new Path(getWarehouseDir(),
+            Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/p1=a/p2=a/p3=" + p),
+          AcidUtils.baseFileFilter);
+      if (1 != stat.length) {
+        Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
+      }
+      String name = stat[0].getPath().getName();
+      Assert.assertEquals("base_0000004", name);
+    }
+    stat =
+      fs.listStatus(new Path(getWarehouseDir(),
+          Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/p1=a/p2=b/p3=c"),
+        AcidUtils.baseFileFilter);
+    if (0 != stat.length) {
+      Assert.fail("Expecting no base and found " + stat.length + " files " + Arrays.toString(stat));
+    }
+    
+    List<String> r = runStatementOnDriver("select * from " + Table.ACIDTBLNESTEDPART);
     Assert.assertEquals(2, r.size());
   }
 }
