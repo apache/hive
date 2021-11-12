@@ -107,7 +107,6 @@
     <cron-utils.version>8.1.1</cron-utils.version>
     <spotbugs.version>4.0.3</spotbugs.version>
     <caffeine.version>2.8.4</caffeine.version>
-    <fastutil.version>8.3.1</fastutil.version>
 
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
@@ -317,11 +316,6 @@
         <groupId>com.github.ben-manes.caffeine</groupId>
         <artifactId>caffeine</artifactId>
         <version>${caffeine.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>it.unimi.dsi</groupId>
-        <artifactId>fastutil</artifactId>
-        <version>${fastutil.version}</version>
       </dependency>
 
       <!-- test scope dependencies -->
