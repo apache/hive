@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
-import org.apache.hadoop.hive.metastore.api.AffectedRowsRequest;
+import org.apache.hadoop.hive.metastore.api.AffectedRowCount;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
@@ -358,5 +358,5 @@ public interface HiveTxnManager {
   */
  String getQueryid();
 
- void setRowsAffected(AffectedRowsRequest affectedRowsRequest);
+ void setRowsAffected(AffectedRowCount affectedRowsRequest);
 }

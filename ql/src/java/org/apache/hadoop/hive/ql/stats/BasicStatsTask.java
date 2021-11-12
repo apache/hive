@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.AffectedRowsRequest;
+import org.apache.hadoop.hive.metastore.api.AffectedRowCount;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -252,7 +252,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         long deleteCount = toLong(statsAggregator.aggregateStats(prefix, DELETE_COUNT));
 
         if (insertCount > 0 || updateCount > 0 || deleteCount > 0) {
-          AffectedRowsRequest affectedRowsRequest = new AffectedRowsRequest();
+          AffectedRowCount affectedRowsRequest = new AffectedRowCount();
           affectedRowsRequest.setTableId(partish.getTable().getTTable().getId());
           affectedRowsRequest.setInsertCount(insertCount);
           affectedRowsRequest.setUpdatedCount(updateCount);

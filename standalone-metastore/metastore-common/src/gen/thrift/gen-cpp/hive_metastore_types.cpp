@@ -22564,33 +22564,33 @@ void ReplLastIdInfo::printTo(std::ostream& out) const {
 }
 
 
-AffectedRowsRequest::~AffectedRowsRequest() noexcept {
+AffectedRowCount::~AffectedRowCount() noexcept {
 }
 
 
-void AffectedRowsRequest::__set_tableId(const int64_t val) {
+void AffectedRowCount::__set_tableId(const int64_t val) {
   this->tableId = val;
 }
 
-void AffectedRowsRequest::__set_insertCount(const int64_t val) {
+void AffectedRowCount::__set_insertCount(const int64_t val) {
   this->insertCount = val;
 }
 
-void AffectedRowsRequest::__set_updatedCount(const int64_t val) {
+void AffectedRowCount::__set_updatedCount(const int64_t val) {
   this->updatedCount = val;
 }
 
-void AffectedRowsRequest::__set_deletedCount(const int64_t val) {
+void AffectedRowCount::__set_deletedCount(const int64_t val) {
   this->deletedCount = val;
 }
-std::ostream& operator<<(std::ostream& out, const AffectedRowsRequest& obj)
+std::ostream& operator<<(std::ostream& out, const AffectedRowCount& obj)
 {
   obj.printTo(out);
   return out;
 }
 
 
-uint32_t AffectedRowsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t AffectedRowCount::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -22667,10 +22667,10 @@ uint32_t AffectedRowsRequest::read(::apache::thrift::protocol::TProtocol* iprot)
   return xfer;
 }
 
-uint32_t AffectedRowsRequest::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t AffectedRowCount::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("AffectedRowsRequest");
+  xfer += oprot->writeStructBegin("AffectedRowCount");
 
   xfer += oprot->writeFieldBegin("tableId", ::apache::thrift::protocol::T_I64, 1);
   xfer += oprot->writeI64(this->tableId);
@@ -22693,7 +22693,7 @@ uint32_t AffectedRowsRequest::write(::apache::thrift::protocol::TProtocol* oprot
   return xfer;
 }
 
-void swap(AffectedRowsRequest &a, AffectedRowsRequest &b) {
+void swap(AffectedRowCount &a, AffectedRowCount &b) {
   using ::std::swap;
   swap(a.tableId, b.tableId);
   swap(a.insertCount, b.insertCount);
@@ -22701,22 +22701,22 @@ void swap(AffectedRowsRequest &a, AffectedRowsRequest &b) {
   swap(a.deletedCount, b.deletedCount);
 }
 
-AffectedRowsRequest::AffectedRowsRequest(const AffectedRowsRequest& other834) {
+AffectedRowCount::AffectedRowCount(const AffectedRowCount& other834) {
   tableId = other834.tableId;
   insertCount = other834.insertCount;
   updatedCount = other834.updatedCount;
   deletedCount = other834.deletedCount;
 }
-AffectedRowsRequest& AffectedRowsRequest::operator=(const AffectedRowsRequest& other835) {
+AffectedRowCount& AffectedRowCount::operator=(const AffectedRowCount& other835) {
   tableId = other835.tableId;
   insertCount = other835.insertCount;
   updatedCount = other835.updatedCount;
   deletedCount = other835.deletedCount;
   return *this;
 }
-void AffectedRowsRequest::printTo(std::ostream& out) const {
+void AffectedRowCount::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
-  out << "AffectedRowsRequest(";
+  out << "AffectedRowCount(";
   out << "tableId=" << to_string(tableId);
   out << ", " << "insertCount=" << to_string(insertCount);
   out << ", " << "updatedCount=" << to_string(updatedCount);
@@ -22763,7 +22763,7 @@ void CommitTxnRequest::__set_txn_type(const TxnType::type val) {
 __isset.txn_type = true;
 }
 
-void CommitTxnRequest::__set_rowsAffected(const std::set<AffectedRowsRequest> & val) {
+void CommitTxnRequest::__set_rowsAffected(const std::set<AffectedRowCount> & val) {
   this->rowsAffected = val;
 __isset.rowsAffected = true;
 }
@@ -22876,7 +22876,7 @@ uint32_t CommitTxnRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
             uint32_t _i846;
             for (_i846 = 0; _i846 < _size842; ++_i846)
             {
-              AffectedRowsRequest _elem847;
+              AffectedRowCount _elem847;
               xfer += _elem847.read(iprot);
               this->rowsAffected.insert(_elem847);
             }
@@ -22952,7 +22952,7 @@ uint32_t CommitTxnRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
     xfer += oprot->writeFieldBegin("rowsAffected", ::apache::thrift::protocol::T_SET, 8);
     {
       xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->rowsAffected.size()));
-      std::set<AffectedRowsRequest> ::const_iterator _iter849;
+      std::set<AffectedRowCount> ::const_iterator _iter849;
       for (_iter849 = this->rowsAffected.begin(); _iter849 != this->rowsAffected.end(); ++_iter849)
       {
         xfer += (*_iter849).write(oprot);

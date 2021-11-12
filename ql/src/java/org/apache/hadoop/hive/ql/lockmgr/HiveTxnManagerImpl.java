@@ -18,16 +18,14 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.AffectedRowsRequest;
+import org.apache.hadoop.hive.metastore.api.AffectedRowCount;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.TxnType;
@@ -56,7 +54,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
 
   protected HiveConf conf;
-  protected Map<Long, AffectedRowsRequest> rowsAffected = new HashMap<>();
+  protected Map<Long, AffectedRowCount> rowsAffected = new HashMap<>();
 
   void setHiveConf(HiveConf c) {
     setConf(c);
@@ -259,13 +257,13 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
   }
 
   @Override
-  public void setRowsAffected(AffectedRowsRequest affectedRowsRequest) {
+  public void setRowsAffected(AffectedRowCount affectedRowsRequest) {
     Long key = affectedRowsRequest.getTableId();
     if (!rowsAffected.containsKey(key)) {
       rowsAffected.put(key, affectedRowsRequest);
       return;
     }
-    AffectedRowsRequest stored = rowsAffected.get(affectedRowsRequest.getTableId());
+    AffectedRowCount stored = rowsAffected.get(affectedRowsRequest.getTableId());
     stored.setInsertCount(stored.getInsertCount() + affectedRowsRequest.getInsertCount());
     stored.setUpdatedCount(stored.getUpdatedCount() + affectedRowsRequest.getUpdatedCount());
     stored.setDeletedCount(stored.getDeletedCount() + affectedRowsRequest.getDeletedCount());

@@ -30,7 +30,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable CommitTxnKeyValue keyValue; // optional
   private boolean exclWriteEnabled; // optional
   private @org.apache.thrift.annotation.Nullable TxnType txn_type; // optional
-  private @org.apache.thrift.annotation.Nullable java.util.Set<AffectedRowsRequest> rowsAffected; // optional
+  private @org.apache.thrift.annotation.Nullable java.util.Set<AffectedRowCount> rowsAffected; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -142,7 +142,7 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, TxnType.class)));
     tmpMap.put(_Fields.ROWS_AFFECTED, new org.apache.thrift.meta_data.FieldMetaData("rowsAffected", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, AffectedRowsRequest.class))));
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, AffectedRowCount.class))));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CommitTxnRequest.class, metaDataMap);
   }
@@ -187,9 +187,9 @@ package org.apache.hadoop.hive.metastore.api;
       this.txn_type = other.txn_type;
     }
     if (other.isSetRowsAffected()) {
-      java.util.Set<AffectedRowsRequest> __this__rowsAffected = new java.util.HashSet<AffectedRowsRequest>(other.rowsAffected.size());
-      for (AffectedRowsRequest other_element : other.rowsAffected) {
-        __this__rowsAffected.add(new AffectedRowsRequest(other_element));
+      java.util.Set<AffectedRowCount> __this__rowsAffected = new java.util.HashSet<AffectedRowCount>(other.rowsAffected.size());
+      for (AffectedRowCount other_element : other.rowsAffected) {
+        __this__rowsAffected.add(new AffectedRowCount(other_element));
       }
       this.rowsAffected = __this__rowsAffected;
     }
@@ -406,23 +406,23 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   @org.apache.thrift.annotation.Nullable
-  public java.util.Iterator<AffectedRowsRequest> getRowsAffectedIterator() {
+  public java.util.Iterator<AffectedRowCount> getRowsAffectedIterator() {
     return (this.rowsAffected == null) ? null : this.rowsAffected.iterator();
   }
 
-  public void addToRowsAffected(AffectedRowsRequest elem) {
+  public void addToRowsAffected(AffectedRowCount elem) {
     if (this.rowsAffected == null) {
-      this.rowsAffected = new java.util.HashSet<AffectedRowsRequest>();
+      this.rowsAffected = new java.util.HashSet<AffectedRowCount>();
     }
     this.rowsAffected.add(elem);
   }
 
   @org.apache.thrift.annotation.Nullable
-  public java.util.Set<AffectedRowsRequest> getRowsAffected() {
+  public java.util.Set<AffectedRowCount> getRowsAffected() {
     return this.rowsAffected;
   }
 
-  public void setRowsAffected(@org.apache.thrift.annotation.Nullable java.util.Set<AffectedRowsRequest> rowsAffected) {
+  public void setRowsAffected(@org.apache.thrift.annotation.Nullable java.util.Set<AffectedRowCount> rowsAffected) {
     this.rowsAffected = rowsAffected;
   }
 
@@ -503,7 +503,7 @@ package org.apache.hadoop.hive.metastore.api;
       if (value == null) {
         unsetRowsAffected();
       } else {
-        setRowsAffected((java.util.Set<AffectedRowsRequest>)value);
+        setRowsAffected((java.util.Set<AffectedRowCount>)value);
       }
       break;
 
@@ -999,11 +999,11 @@ package org.apache.hadoop.hive.metastore.api;
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
                 org.apache.thrift.protocol.TSet _set753 = iprot.readSetBegin();
-                struct.rowsAffected = new java.util.HashSet<AffectedRowsRequest>(2*_set753.size);
-                @org.apache.thrift.annotation.Nullable AffectedRowsRequest _elem754;
+                struct.rowsAffected = new java.util.HashSet<AffectedRowCount>(2*_set753.size);
+                @org.apache.thrift.annotation.Nullable AffectedRowCount _elem754;
                 for (int _i755 = 0; _i755 < _set753.size; ++_i755)
                 {
-                  _elem754 = new AffectedRowsRequest();
+                  _elem754 = new AffectedRowCount();
                   _elem754.read(iprot);
                   struct.rowsAffected.add(_elem754);
                 }
@@ -1082,7 +1082,7 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(ROWS_AFFECTED_FIELD_DESC);
           {
             oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, struct.rowsAffected.size()));
-            for (AffectedRowsRequest _iter757 : struct.rowsAffected)
+            for (AffectedRowCount _iter757 : struct.rowsAffected)
             {
               _iter757.write(oprot);
             }
@@ -1159,7 +1159,7 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetRowsAffected()) {
         {
           oprot.writeI32(struct.rowsAffected.size());
-          for (AffectedRowsRequest _iter759 : struct.rowsAffected)
+          for (AffectedRowCount _iter759 : struct.rowsAffected)
           {
             _iter759.write(oprot);
           }
@@ -1212,11 +1212,11 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(6)) {
         {
           org.apache.thrift.protocol.TSet _set763 = iprot.readSetBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.rowsAffected = new java.util.HashSet<AffectedRowsRequest>(2*_set763.size);
-          @org.apache.thrift.annotation.Nullable AffectedRowsRequest _elem764;
+          struct.rowsAffected = new java.util.HashSet<AffectedRowCount>(2*_set763.size);
+          @org.apache.thrift.annotation.Nullable AffectedRowCount _elem764;
           for (int _i765 = 0; _i765 < _set763.size; ++_i765)
           {
-            _elem764 = new AffectedRowsRequest();
+            _elem764 = new AffectedRowCount();
             _elem764.read(iprot);
             struct.rowsAffected.add(_elem764);
           }

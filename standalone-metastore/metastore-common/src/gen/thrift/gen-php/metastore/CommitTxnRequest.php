@@ -71,7 +71,7 @@ class CommitTxnRequest
             'etype' => TType::STRUCT,
             'elem' => array(
                 'type' => TType::STRUCT,
-                'class' => '\metastore\AffectedRowsRequest',
+                'class' => '\metastore\AffectedRowCount',
                 ),
         ),
     );
@@ -105,7 +105,7 @@ class CommitTxnRequest
      */
     public $txn_type = null;
     /**
-     * @var \metastore\AffectedRowsRequest[]
+     * @var \metastore\AffectedRowCount[]
      */
     public $rowsAffected = null;
 
@@ -227,7 +227,7 @@ class CommitTxnRequest
                         $xfer += $input->readSetBegin($_etype670, $_size667);
                         for ($_i671 = 0; $_i671 < $_size667; ++$_i671) {
                             $elem672 = null;
-                            $elem672 = new \metastore\AffectedRowsRequest();
+                            $elem672 = new \metastore\AffectedRowCount();
                             $xfer += $elem672->read($input);
                             $this->rowsAffected[] = $elem672;
                         }

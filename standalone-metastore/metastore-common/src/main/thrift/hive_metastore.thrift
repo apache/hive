@@ -1100,7 +1100,7 @@ struct ReplLastIdInfo {
     5: optional list<string> partitionList,
 }
 
-struct AffectedRowsRequest {
+struct AffectedRowCount {
     1: required i64 tableId,
     2: required i64 insertCount,
     3: required i64 updatedCount,
@@ -1118,7 +1118,7 @@ struct CommitTxnRequest {
     5: optional CommitTxnKeyValue keyValue,
     6: optional bool exclWriteEnabled = true,
     7: optional TxnType txn_type,
-    8: optional set<AffectedRowsRequest> rowsAffected,
+    8: optional set<AffectedRowCount> rowsAffected,
 }
 
 struct ReplTblWriteIdStateRequest {

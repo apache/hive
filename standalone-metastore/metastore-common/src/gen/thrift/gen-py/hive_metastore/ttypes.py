@@ -12920,7 +12920,7 @@ class ReplLastIdInfo(object):
         return not (self == other)
 
 
-class AffectedRowsRequest(object):
+class AffectedRowCount(object):
     """
     Attributes:
      - tableId
@@ -12975,7 +12975,7 @@ class AffectedRowsRequest(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('AffectedRowsRequest')
+        oprot.writeStructBegin('AffectedRowCount')
         if self.tableId is not None:
             oprot.writeFieldBegin('tableId', TType.I64, 1)
             oprot.writeI64(self.tableId)
@@ -13100,7 +13100,7 @@ class CommitTxnRequest(object):
                     self.rowsAffected = set()
                     (_etype669, _size666) = iprot.readSetBegin()
                     for _i670 in range(_size666):
-                        _elem671 = AffectedRowsRequest()
+                        _elem671 = AffectedRowCount()
                         _elem671.read(iprot)
                         self.rowsAffected.add(_elem671)
                     iprot.readSetEnd()
@@ -30233,8 +30233,8 @@ ReplLastIdInfo.thrift_spec = (
     (4, TType.STRING, 'catalog', 'UTF8', None, ),  # 4
     (5, TType.LIST, 'partitionList', (TType.STRING, 'UTF8', False), None, ),  # 5
 )
-all_structs.append(AffectedRowsRequest)
-AffectedRowsRequest.thrift_spec = (
+all_structs.append(AffectedRowCount)
+AffectedRowCount.thrift_spec = (
     None,  # 0
     (1, TType.I64, 'tableId', None, None, ),  # 1
     (2, TType.I64, 'insertCount', None, None, ),  # 2
@@ -30251,7 +30251,7 @@ CommitTxnRequest.thrift_spec = (
     (5, TType.STRUCT, 'keyValue', [CommitTxnKeyValue, None], None, ),  # 5
     (6, TType.BOOL, 'exclWriteEnabled', None, True, ),  # 6
     (7, TType.I32, 'txn_type', None, None, ),  # 7
-    (8, TType.SET, 'rowsAffected', (TType.STRUCT, [AffectedRowsRequest, None], False), None, ),  # 8
+    (8, TType.SET, 'rowsAffected', (TType.STRUCT, [AffectedRowCount, None], False), None, ),  # 8
 )
 all_structs.append(ReplTblWriteIdStateRequest)
 ReplTblWriteIdStateRequest.thrift_spec = (

@@ -479,7 +479,7 @@ class WriteEventInfo; end
 
 class ReplLastIdInfo; end
 
-class AffectedRowsRequest; end
+class AffectedRowCount; end
 
 class CommitTxnRequest; end
 
@@ -3840,7 +3840,7 @@ class ReplLastIdInfo
   ::Thrift::Struct.generate_accessors self
 end
 
-class AffectedRowsRequest
+class AffectedRowCount
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TABLEID = 1
   INSERTCOUNT = 2
@@ -3885,7 +3885,7 @@ class CommitTxnRequest
     KEYVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'keyValue', :class => ::CommitTxnKeyValue, :optional => true},
     EXCLWRITEENABLED => {:type => ::Thrift::Types::BOOL, :name => 'exclWriteEnabled', :default => true, :optional => true},
     TXN_TYPE => {:type => ::Thrift::Types::I32, :name => 'txn_type', :optional => true, :enum_class => ::TxnType},
-    ROWSAFFECTED => {:type => ::Thrift::Types::SET, :name => 'rowsAffected', :element => {:type => ::Thrift::Types::STRUCT, :class => ::AffectedRowsRequest}, :optional => true}
+    ROWSAFFECTED => {:type => ::Thrift::Types::SET, :name => 'rowsAffected', :element => {:type => ::Thrift::Types::STRUCT, :class => ::AffectedRowCount}, :optional => true}
   }
 
   def struct_fields; FIELDS; end

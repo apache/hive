@@ -83,7 +83,7 @@ import org.apache.hadoop.hive.metastore.LockTypeComparator;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
-import org.apache.hadoop.hive.metastore.api.AffectedRowsRequest;
+import org.apache.hadoop.hive.metastore.api.AffectedRowCount;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
@@ -1700,7 +1700,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   private void moveTxnComponentsToCompleted(Statement stmt, long txnid, char isUpdateDelete,
-                                            Set<AffectedRowsRequest> affectedRowsRequests) throws SQLException {
+                                            Set<AffectedRowCount> affectedRowsRequests) throws SQLException {
     // Move the record from txn_components into completed_txn_components so that the compactor
     // knows where to look to compact.
     String s = "INSERT INTO \"COMPLETED_TXN_COMPONENTS\" (\"CTC_TXNID\", \"CTC_DATABASE\", " +
@@ -1715,7 +1715,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       stmt.addBatch(s);
 
       if (affectedRowsRequests != null) {
-        for (AffectedRowsRequest affectedRowsRequest : affectedRowsRequests) {
+        for (AffectedRowCount affectedRowsRequest : affectedRowsRequests) {
           stmt.addBatch("UPDATE \"MV_TABLES_USED\" " +
               "SET \"INSERTED_COUNT\"=\"INSERTED_COUNT\"+" + affectedRowsRequest.getInsertCount() +
               ",\"UPDATED_COUNT\"=\"UPDATED_COUNT\"+" + affectedRowsRequest.getUpdatedCount() +
