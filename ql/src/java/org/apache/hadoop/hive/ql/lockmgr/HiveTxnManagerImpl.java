@@ -257,15 +257,15 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
   }
 
   @Override
-  public void setRowsAffected(AffectedRowCount affectedRowsRequest) {
-    Long key = affectedRowsRequest.getTableId();
+  public void addAffectedRowCount(AffectedRowCount affectedRowCount) {
+    Long key = affectedRowCount.getTableId();
     if (!rowsAffected.containsKey(key)) {
-      rowsAffected.put(key, affectedRowsRequest);
+      rowsAffected.put(key, affectedRowCount);
       return;
     }
-    AffectedRowCount stored = rowsAffected.get(affectedRowsRequest.getTableId());
-    stored.setInsertCount(stored.getInsertCount() + affectedRowsRequest.getInsertCount());
-    stored.setUpdatedCount(stored.getUpdatedCount() + affectedRowsRequest.getUpdatedCount());
-    stored.setDeletedCount(stored.getDeletedCount() + affectedRowsRequest.getDeletedCount());
+    AffectedRowCount stored = rowsAffected.get(affectedRowCount.getTableId());
+    stored.setInsertCount(stored.getInsertCount() + affectedRowCount.getInsertCount());
+    stored.setUpdatedCount(stored.getUpdatedCount() + affectedRowCount.getUpdatedCount());
+    stored.setDeletedCount(stored.getDeletedCount() + affectedRowCount.getDeletedCount());
   }
 }

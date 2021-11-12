@@ -252,13 +252,13 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         long deleteCount = toLong(statsAggregator.aggregateStats(prefix, DELETE_COUNT));
 
         if (insertCount > 0 || updateCount > 0 || deleteCount > 0) {
-          AffectedRowCount affectedRowsRequest = new AffectedRowCount();
-          affectedRowsRequest.setTableId(partish.getTable().getTTable().getId());
-          affectedRowsRequest.setInsertCount(insertCount);
-          affectedRowsRequest.setUpdatedCount(updateCount);
-          affectedRowsRequest.setDeletedCount(deleteCount);
+          AffectedRowCount affectedRowCount = new AffectedRowCount();
+          affectedRowCount.setTableId(partish.getTable().getTTable().getId());
+          affectedRowCount.setInsertCount(insertCount);
+          affectedRowCount.setUpdatedCount(updateCount);
+          affectedRowCount.setDeletedCount(deleteCount);
 
-          txnManager.setRowsAffected(affectedRowsRequest);
+          txnManager.addAffectedRowCount(affectedRowCount);
         }
       }
     }
