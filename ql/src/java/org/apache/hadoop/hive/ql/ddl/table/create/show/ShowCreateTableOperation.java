@@ -61,7 +61,6 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
         if (primaryKeyStmt != null) {
           commands.add(primaryKeyStmt);
         }
-        commands.add(ddlObj.getAlterTableStmtTableStatsBasic(table));
         commands.addAll(ddlObj.populateConstraints(table,
           new HashSet<>(Collections.singletonList(table.getTableName()))));
         command = String.join("\n", commands);
