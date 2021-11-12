@@ -3245,7 +3245,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   private void drop_table_with_environment_context(final String dbname, final String name, final boolean deleteData,
-      final EnvironmentContext envContext, boolean dropPartitions) throws MetaException {
+      final EnvironmentContext envContext, boolean dropPartitions) throws MetaException, NoSuchObjectException {
     String[] parsedDbName = parseDbName(dbname, conf);
     startTableFunction("drop_table", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name);
 
@@ -5190,8 +5190,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
       PathAndDepth that = (PathAndDepth) o;
       return depth == that.depth && Objects.equals(path, that.path);
     }
