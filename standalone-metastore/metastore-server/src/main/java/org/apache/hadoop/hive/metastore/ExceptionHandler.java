@@ -55,13 +55,33 @@ public final class ExceptionHandler {
   /**
    * Throws if the input exception is the instance of the one in the input classes
    */
-  public <T extends Exception> ExceptionHandler
-      throwIfInstance(Class ...te) throws T {
-    if (te != null) {
-      for (Class t : te) {
-        throwIfInstance(t);
-      }
-    }
+  public <T1 extends Exception, T2 extends Exception> ExceptionHandler throwIfInstance(Class<T1> te1, Class<T2> te2)
+      throws T1, T2 {
+    throwIfInstance(te1);
+    throwIfInstance(te2);
+    return this;
+  }
+
+  /**
+   * Throws if the input exception is the instance of the one in the input classes
+   */
+  public <T1 extends Exception, T2 extends Exception, T3 extends Exception> ExceptionHandler throwIfInstance(
+      Class<T1> te1, Class<T2> te2, Class<T3> te3) throws T1, T2, T3 {
+    throwIfInstance(te1);
+    throwIfInstance(te2);
+    throwIfInstance(te3);
+    return this;
+  }
+
+  /**
+   * Throws if the input exception is the instance of the one in the input classes
+   */
+  public <T1 extends Exception, T2 extends Exception, T3 extends Exception, T4 extends Exception> ExceptionHandler throwIfInstance(
+      Class<T1> te1, Class<T2> te2, Class<T3> te3, Class<T4> te4) throws T1, T2, T3, T4 {
+    throwIfInstance(te1);
+    throwIfInstance(te2);
+    throwIfInstance(te3);
+    throwIfInstance(te4);
     return this;
   }
 
