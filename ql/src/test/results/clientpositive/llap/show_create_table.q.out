@@ -112,7 +112,6 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
 ALTER TABLE default.test ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (col1,col2) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.test UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 ALTER TABLE default.test ADD CONSTRAINT c4_unique UNIQUE (col4) DISABLE NOVALIDATE RELY;
 ALTER TABLE test.test CHANGE COLUMN col2 col2 timestamp CONSTRAINT  DEFAULT CURRENT_TIMESTAMP() ENABLE NOVALIDATE RELY;
 ALTER TABLE default.test ADD CONSTRAINT c3_c4_check CHECK ((col3 + col4)/(col3 - col4) > 3) ENABLE NOVALIDATE RELY;
@@ -139,7 +138,6 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
 ALTER TABLE default.test2 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (col) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.test2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 PREHOOK: query: SHOW CREATE TABLE TEST3
 PREHOOK: type: SHOW_CREATETABLE
 PREHOOK: Input: default@test3
@@ -161,4 +159,3 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.test3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
