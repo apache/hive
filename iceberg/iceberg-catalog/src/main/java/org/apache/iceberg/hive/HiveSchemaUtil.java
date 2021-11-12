@@ -201,12 +201,12 @@ public final class HiveSchemaUtil {
 
     // find the column which has the highest index difference between its position in the old vs the updated list
     String reorderedColName = null;
-    int maxIndexDiff = -1;
+    int maxIndexDiff = 0;
     for (int oldIndex = 0; oldIndex < old.size(); ++oldIndex) {
       String oldName = old.get(oldIndex).getName();
       Integer newIndex = nameToNewIndex.get(oldName);
       if (newIndex != null) {
-        if (maxIndexDiff < 0 || maxIndexDiff < Math.abs(newIndex - oldIndex)) {
+        if (maxIndexDiff < Math.abs(newIndex - oldIndex)) {
           maxIndexDiff = Math.abs(newIndex - oldIndex);
           reorderedColName = oldName;
         }
