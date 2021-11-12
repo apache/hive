@@ -33,9 +33,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.metastore.Warehouse;
-
 import java.util.Map;
-
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 
 /**
