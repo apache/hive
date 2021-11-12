@@ -262,6 +262,10 @@
       <groupId>com.cronutils</groupId>
       <artifactId>cron-utils</artifactId>
     </dependency>
+    <dependency>
+      <groupId>it.unimi.dsi</groupId>
+      <artifactId>fastutil</artifactId>
+    </dependency>
     <!-- test scope dependencies -->
     <dependency>
       <groupId>com.microsoft.sqlserver</groupId>
