@@ -14175,12 +14175,13 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request) throws MetaException {
     ensureScheduledQueriesEnabled();
-    String namespace = request.getClusterNamespace();
     boolean commited = false;
     ScheduledQueryPollResponse ret = new ScheduledQueryPollResponse();
-    try (QueryWrapper q = new QueryWrapper(pm.newQuery(MScheduledQuery.class,
-        "nextExecution <= now && enabled && clusterNamespace == ns && activeExecution == null"))) {
+    Query q = null;
+    try {
       openTransaction();
+      q = pm.newQuery(MScheduledQuery.class,
+          "nextExecution <= now && enabled && clusterNamespace == ns && activeExecution == null");
       q.setSerializeRead(true);
       q.declareParameters("java.lang.Integer now, java.lang.String ns");
       q.setOrdering("nextExecution");
@@ -14190,7 +14191,6 @@ public class ObjectStore implements RawStore, Configurable {
         return new ScheduledQueryPollResponse();
       }
       MScheduledQuery schq = results.get(0);
-      Integer plannedExecutionTime = schq.getNextExecution();
       schq.setNextExecution(computeNextExecutionTime(schq.getSchedule()));
 
       MScheduledExecution execution = new MScheduledExecution();
@@ -14212,12 +14212,8 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Caught jdo exception; exclusive", e);
       commited = false;
     } finally {
-      if (commited) {
-        return ret;
-      } else {
-        rollbackTransaction();
-        return new ScheduledQueryPollResponse();
-      }
+      rollbackAndCleanup(commited, q);
+      return commited ? ret : new ScheduledQueryPollResponse();
     }
   }
 
