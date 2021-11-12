@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,7 +60,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
       private static final long serialVersionUID = 1L;
 
-      transient private double sum;
+      transient private BigDecimal sum;
       transient private long count;
       transient private double variance;
 
@@ -69,24 +71,24 @@ public class <ClassName> extends VectorAggregateExpression {
 
       public void init() {
         isNull = false;
-        sum = 0;
+        sum = BigDecimal.valueOf(0);
         count = 0;
         variance = 0;
       }
 
      public void varianceValue(double value) {
         if (isNull) {
-          sum = value;
+          sum = BigDecimal.valueOf(value);
           count = 1;
           variance = 0;
           isNull = false;
         } else {
-          sum += value;
+          sum = sum.add(BigDecimal.valueOf(value));
           count++;
           if (count > 1) {
             variance =
                 GenericUDAFVariance.calculateIntermediate(
-                    count, sum, value, variance);
+                    count, sum.doubleValue(), value, variance);
           }
         }
       }
@@ -99,7 +101,7 @@ public class <ClassName> extends VectorAggregateExpression {
       @Override
       public void reset () {
         isNull = true;
-        sum = 0;
+        sum = BigDecimal.valueOf(0);
         count = 0;
         variance = 0;
       }
@@ -342,10 +344,12 @@ public class <ClassName> extends VectorAggregateExpression {
 
       // We pulled out i=0 so we can remove the count > 1 check in the loop
       for (int i=1; i<batchSize; ++i) {
-        myagg.sum += value;
+        myagg.sum = myagg.sum.add(BigDecimal.valueOf(value));
         myagg.count += 1;
-        double t = myagg.count*value - myagg.sum;
-        myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
+        BigDecimal t = BigDecimal.valueOf(myagg.count).multiply(BigDecimal.valueOf(value)).subtract(myagg.sum);
+        myagg.variance = BigDecimal.valueOf(myagg.variance).add(
+                  (t.multiply(t)).divide(BigDecimal.valueOf(myagg.count).multiply(BigDecimal.valueOf(myagg.count - 1)),
+                   MathContext.DECIMAL64)).doubleValue();
       }
     }
 
@@ -385,10 +389,12 @@ public class <ClassName> extends VectorAggregateExpression {
       //
       for (int i=1; i< batchSize; ++i) {
         value = vector[selected[i]];
-        myagg.sum += value;
+        myagg.sum = myagg.sum.add(BigDecimal.valueOf(value));
         myagg.count += 1;
-        double t = myagg.count*value - myagg.sum;
-        myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
+        BigDecimal t = BigDecimal.valueOf(myagg.count).multiply(BigDecimal.valueOf(value)).subtract(myagg.sum);
+        myagg.variance = BigDecimal.valueOf(myagg.variance).add(
+           (t.multiply(t)).divide(BigDecimal.valueOf(myagg.count).multiply(BigDecimal.valueOf(myagg.count - 1)),
+             MathContext.DECIMAL64)).doubleValue();
       }
     }
 
@@ -424,10 +430,12 @@ public class <ClassName> extends VectorAggregateExpression {
       // i=0 was pulled out to remove count > 1 check
       for (int i=1; i<batchSize; ++i) {
         value = vector[i];
-        myagg.sum += value;
+        myagg.sum = myagg.sum.add(BigDecimal.valueOf(value));
         myagg.count += 1;
-        double t = myagg.count*value - myagg.sum;
-        myagg.variance += (t*t) / ((double)myagg.count*(myagg.count-1));
+        BigDecimal t = BigDecimal.valueOf(myagg.count).multiply(BigDecimal.valueOf(value)).subtract(myagg.sum);
+        myagg.variance = BigDecimal.valueOf(myagg.variance).add(
+            (t.multiply(t)).divide(BigDecimal.valueOf(myagg.count).multiply(BigDecimal.valueOf(myagg.count - 1)),
+                MathContext.DECIMAL64)).doubleValue();
       }
     }
 
@@ -496,7 +504,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
     ColumnVector[] fields = outputColVector.fields;
     ((LongColumnVector) fields[VARIANCE_COUNT_FIELD_INDEX]).vector[batchIndex] = myagg.count;
-    ((DoubleColumnVector) fields[VARIANCE_SUM_FIELD_INDEX]).vector[batchIndex] = myagg.sum;
+    ((DoubleColumnVector) fields[VARIANCE_SUM_FIELD_INDEX]).vector[batchIndex] = myagg.sum.doubleValue();
     ((DoubleColumnVector) fields[VARIANCE_VARIANCE_FIELD_INDEX]).vector[batchIndex] = myagg.variance;
 #ENDIF PARTIAL1
 #IF COMPLETE

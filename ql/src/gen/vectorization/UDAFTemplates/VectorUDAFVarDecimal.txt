@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,7 +62,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
       private static final long serialVersionUID = 1L;
 
-      transient private double sum;
+      transient private BigDecimal sum;
       transient private long count;
       transient private double variance;
 
@@ -75,24 +76,24 @@ public class <ClassName> extends VectorAggregateExpression {
 
       public void init() {
         isNull = false;
-        sum = 0.0;
+        sum = BigDecimal.valueOf(0.0);
         count = 0;
         variance = 0.0;
       }
 
      public void varianceValue(double value) {
         if (isNull) {
-          sum = value;
+          sum = BigDecimal.valueOf(value);
           count = 1;
           variance = 0;
           isNull = false;
         } else {
-          sum += value;
+          sum = sum.add(BigDecimal.valueOf(value));
           count++;
           if (count > 1) {
             variance =
                 GenericUDAFVariance.calculateIntermediate(
-                    count, sum, value, variance);
+                    count, sum.doubleValue(), value, variance);
           }
         }
       }
@@ -109,7 +110,7 @@ public class <ClassName> extends VectorAggregateExpression {
       @Override
       public void reset () {
         isNull = true;
-        sum = 0.0;
+        sum = BigDecimal.valueOf(0.0);
         count = 0;
         variance = 0.0;
       }
@@ -460,7 +461,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
     ColumnVector[] fields = outputColVector.fields;
     ((LongColumnVector) fields[VARIANCE_COUNT_FIELD_INDEX]).vector[batchIndex] = myagg.count;
-    ((DoubleColumnVector) fields[VARIANCE_SUM_FIELD_INDEX]).vector[batchIndex] = myagg.sum;
+    ((DoubleColumnVector) fields[VARIANCE_SUM_FIELD_INDEX]).vector[batchIndex] = myagg.sum.doubleValue();
     ((DoubleColumnVector) fields[VARIANCE_VARIANCE_FIELD_INDEX]).vector[batchIndex] = myagg.variance;
 #ENDIF PARTIAL1
 #IF COMPLETE

@@ -108,13 +108,11 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
    */
   public static double calculateIntermediate(
       long count, double sum, double value, double variance) {
-    BigDecimal bcount,bsum,bvalue,bvariance;
-    bvariance = new BigDecimal(variance);
-    bsum = new BigDecimal(sum);
-    bvalue = new BigDecimal(value);
-    bcount = new BigDecimal(count);
-    BigDecimal t = bcount.multiply(bvalue).subtract(bsum);
-    bvariance = bvariance.add(t.multiply(t).divide(bcount.multiply(bcount.subtract(BigDecimal.ONE)),MathContext.DECIMAL128));
+    BigDecimal bcount,bvariance;
+    bvariance = BigDecimal.valueOf(variance);
+    bcount = BigDecimal.valueOf(count);
+    BigDecimal t = bcount.multiply(BigDecimal.valueOf(value)).subtract(BigDecimal.valueOf(sum));
+    bvariance = bvariance.add(t.multiply(t).divide(bcount.multiply(bcount.subtract(BigDecimal.ONE)),MathContext.DECIMAL64));
     return bvariance.doubleValue();
   }
 
@@ -127,15 +125,15 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
       long partialCount, long mergeCount, double partialSum, double mergeSum,
       double partialVariance, double mergeVariance) {
 
-    final BigDecimal bPartialCount = new BigDecimal(partialCount);
-    final BigDecimal bMergeCount = new BigDecimal(mergeCount);
-    BigDecimal bmergeVariance = new BigDecimal(mergeVariance);
+    final BigDecimal bPartialCount = BigDecimal.valueOf(partialCount);
+    final BigDecimal bMergeCount = BigDecimal.valueOf(mergeCount);
+    BigDecimal bmergeVariance = BigDecimal.valueOf(mergeVariance);
 
     BigDecimal t =
-        bPartialCount.divide(bMergeCount, MathContext.DECIMAL128).multiply(new BigDecimal(mergeSum)).subtract(new BigDecimal(partialSum));
+        bPartialCount.divide(bMergeCount, MathContext.DECIMAL64).multiply(new BigDecimal(mergeSum)).subtract(new BigDecimal(partialSum));
 
     bmergeVariance = bmergeVariance.add(new BigDecimal(partialVariance).add(
-        (bMergeCount.divide(bPartialCount,MathContext.DECIMAL128).divide(bMergeCount.add(bPartialCount),MathContext.DECIMAL128)).multiply(t).multiply(t)));
+        (bMergeCount.divide(bPartialCount,MathContext.DECIMAL64).divide(bMergeCount.add(bPartialCount),MathContext.DECIMAL64)).multiply(t).multiply(t)));
     return bmergeVariance.doubleValue();
   }
 
@@ -295,7 +293,7 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
     @AggregationType(estimable = true)
     static class StdAgg extends AbstractAggregationBuffer {
       long count; // number of elements
-      double sum; // sum of elements
+      BigDecimal sum; // sum of elements
       double variance; // sum[x-avg^2] (this is actually n times the variance)
       @Override
       public int estimate() { return JavaDataModel.PRIMITIVES2 * 3; }
@@ -312,7 +310,7 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
     public void reset(AggregationBuffer agg) throws HiveException {
       StdAgg myagg = (StdAgg) agg;
       myagg.count = 0;
-      myagg.sum = 0;
+      myagg.sum = BigDecimal.valueOf(0);
       myagg.variance = 0;
     }
 
@@ -326,12 +324,12 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
       if (p != null) {
         StdAgg myagg = (StdAgg) agg;
         try {
-          double v = PrimitiveObjectInspectorUtils.getDouble(p, inputOI);
+          BigDecimal v = BigDecimal.valueOf(PrimitiveObjectInspectorUtils.getDouble(p, inputOI));
           myagg.count++;
-          myagg.sum += v;
+          myagg.sum = myagg.sum.add(v);
           if(myagg.count > 1) {
             myagg.variance = calculateIntermediate(
-                myagg.count, myagg.sum, v, myagg.variance);
+                myagg.count, myagg.sum.doubleValue(), v.doubleValue(), myagg.variance);
           }
         } catch (NumberFormatException e) {
           if (!warned) {
@@ -349,7 +347,7 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
     public Object terminatePartial(AggregationBuffer agg) throws HiveException {
       StdAgg myagg = (StdAgg) agg;
       ((LongWritable) partialResult[0]).set(myagg.count);
-      ((DoubleWritable) partialResult[1]).set(myagg.sum);
+      ((DoubleWritable) partialResult[1]).set(myagg.sum.doubleValue());
       ((DoubleWritable) partialResult[2]).set(myagg.variance);
       return partialResult;
     }
@@ -370,14 +368,14 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
           // Just copy the information since there is nothing so far
           myagg.variance = sumFieldOI.get(partialVariance);
           myagg.count = countFieldOI.get(partialCount);
-          myagg.sum = sumFieldOI.get(partialSum);
+          myagg.sum = BigDecimal.valueOf(sumFieldOI.get(partialSum));
           return;
         }
 
         if (m != 0 && n != 0) {
           // Merge the two partials
 
-          double a = myagg.sum;
+          double a = myagg.sum.doubleValue();
           double b = sumFieldOI.get(partialSum);
 
           myagg.variance =
@@ -387,7 +385,7 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
                   sumFieldOI.get(partialVariance), myagg.variance);
 
           myagg.count += m;
-          myagg.sum += b;
+          myagg.sum = myagg.sum.add(BigDecimal.valueOf(b));
         }
       }
     }
@@ -396,8 +394,7 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
      * Calculate the variance result when count > 1.  Public so vectorization code can use it, etc.
      */
     public static double calculateVarianceResult(double variance, long count) {
-      final double result = variance / count;
-      return result;
+      return BigDecimal.valueOf(variance).divide(BigDecimal.valueOf(count),MathContext.DECIMAL64).doubleValue();
     }
 
     @Override

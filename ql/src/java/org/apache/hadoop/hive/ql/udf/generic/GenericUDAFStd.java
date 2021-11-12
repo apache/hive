@@ -94,9 +94,7 @@ public class GenericUDAFStd extends GenericUDAFVariance {
      */
     public static double calculateStdResult(double variance, long count) {
       // TODO: BigDecimal.sqrt() is introduced in java 9. So change the below calculation once hive upgraded to java 9 or above.
-      BigDecimal bvariance = new BigDecimal(variance);
-      BigDecimal result = bvariance.divide(new BigDecimal(count), MathContext.DECIMAL128);
-      return Math.sqrt(result.doubleValue());
+      return Math.sqrt(BigDecimal.valueOf(variance).divide(BigDecimal.valueOf(count), MathContext.DECIMAL64).doubleValue());
     }
 
     @Override

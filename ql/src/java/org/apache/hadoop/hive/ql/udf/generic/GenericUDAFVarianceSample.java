@@ -27,6 +27,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+
 /**
  * Compute the sample variance by extending GenericUDAFVariance and overriding
  * the terminate() method of the evaluator.
@@ -90,7 +93,7 @@ public class GenericUDAFVarianceSample extends GenericUDAFVariance {
      * use it, etc.
      */
     public static double calculateVarianceSampleResult(double variance, long count) {
-      return variance / (count - 1);
+      return BigDecimal.valueOf(variance).divide(BigDecimal.valueOf(count - 1), MathContext.DECIMAL64).doubleValue();
     }
 
     @Override

@@ -27,6 +27,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+
 /**
  * Compute the sample standard deviation by extending GenericUDAFVariance and
  * overriding the terminate() method of the evaluator.
@@ -91,7 +94,7 @@ public class GenericUDAFStdSample extends GenericUDAFVariance {
      * use it, etc.
      */
     public static double calculateStdSampleResult(double variance, long count) {
-      return Math.sqrt(variance / (count - 1));
+      return Math.sqrt(BigDecimal.valueOf(variance).divide(BigDecimal.valueOf(count - 1), MathContext.DECIMAL64).doubleValue());
     }
 
     @Override
