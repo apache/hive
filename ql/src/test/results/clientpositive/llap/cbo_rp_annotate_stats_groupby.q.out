@@ -954,13 +954,13 @@ STAGE PLANS:
                       minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 4 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 6 Data size: 564 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: bigint)
                         null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
-                        Statistics: Num rows: 4 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 6 Data size: 564 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -970,10 +970,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: bigint)
                 mode: mergepartial
                 outputColumnNames: state, zip
-                Statistics: Num rows: 4 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 6 Data size: 564 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 4 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 6 Data size: 564 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1009,24 +1009,24 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: loc_orc_n1
-                  Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: state (type: string), locid (type: int)
                     outputColumnNames: state, locid
-                    Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: state (type: string), locid (type: int), '0L' (type: string)
                       grouping sets: 0, 1, 2, 3
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 32 Data size: 3312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                         null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
-                        Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 32 Data size: 3312 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1036,10 +1036,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: state, locid
-                Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 16 Data size: 1656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 16 Data size: 1656 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1075,24 +1075,24 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: loc_orc_n1
-                  Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: state (type: string), locid (type: int)
                     outputColumnNames: state, locid
-                    Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: state (type: string), locid (type: int), '0L' (type: string)
                       grouping sets: 0, 1, 3
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 24 Data size: 2388 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 24 Data size: 2484 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                         null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
-                        Statistics: Num rows: 24 Data size: 2388 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 24 Data size: 2484 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1102,10 +1102,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: state, locid
-                Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12 Data size: 1242 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12 Data size: 1242 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1141,24 +1141,24 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: loc_orc_n1
-                  Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: state (type: string), locid (type: int)
                     outputColumnNames: state, locid
-                    Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: state (type: string), locid (type: int), '0L' (type: string)
                       grouping sets: 0, 1, 3
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 24 Data size: 2388 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 24 Data size: 2484 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                         null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
-                        Statistics: Num rows: 24 Data size: 2388 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 24 Data size: 2484 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1168,10 +1168,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: state, locid
-                Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12 Data size: 1242 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12 Data size: 1242 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1207,24 +1207,24 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: loc_orc_n1
-                  Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: state (type: string), locid (type: int)
                     outputColumnNames: state, locid
-                    Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: state (type: string), locid (type: int), '0L' (type: string)
                       grouping sets: 1
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                         null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
-                        Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1234,10 +1234,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: state, locid
-                Statistics: Num rows: 4 Data size: 398 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 414 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 4 Data size: 398 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 414 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1273,24 +1273,24 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: loc_orc_n1
-                  Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: state (type: string), locid (type: int)
                     outputColumnNames: state, locid
-                    Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: state (type: string), locid (type: int), '0L' (type: string)
                       grouping sets: 1, 2
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 16 Data size: 1656 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                         null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
-                        Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 16 Data size: 1656 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1300,10 +1300,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: state, locid
-                Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1339,24 +1339,24 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: loc_orc_n1
-                  Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: state (type: string), locid (type: int)
                     outputColumnNames: state, locid
-                    Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: state (type: string), locid (type: int), '0L' (type: string)
                       grouping sets: 0, 1, 2
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 24 Data size: 2388 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 24 Data size: 2484 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                         null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
-                        Statistics: Num rows: 24 Data size: 2388 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 24 Data size: 2484 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1366,10 +1366,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: state, locid
-                Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12 Data size: 1242 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 12 Data size: 1194 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12 Data size: 1242 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1405,24 +1405,24 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: loc_orc_n1
-                  Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: state (type: string), locid (type: int)
                     outputColumnNames: state, locid
-                    Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: state (type: string), locid (type: int), '0L' (type: string)
                       grouping sets: 0, 1, 2, 3
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 32 Data size: 3312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                         null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
-                        Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 32 Data size: 3312 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1432,10 +1432,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: state, locid
-                Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 16 Data size: 1656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 16 Data size: 1656 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1471,23 +1471,23 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: loc_orc_n1
-                  Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: year (type: int)
                     outputColumnNames: year
-                    Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: year (type: int)
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1497,10 +1497,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: year
-                Statistics: Num rows: 4 Data size: 398 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 414 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 4 Data size: 398 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 414 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1536,24 +1536,24 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: loc_orc_n1
-                  Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: state (type: string), locid (type: int)
                     outputColumnNames: state, locid
-                    Statistics: Num rows: 8 Data size: 796 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 8 Data size: 828 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       keys: state (type: string), locid (type: int), '0L' (type: string)
                       grouping sets: 0, 1, 2, 3
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 32 Data size: 3312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
                         null sort order: zzz
                         sort order: +++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
-                        Statistics: Num rows: 32 Data size: 3184 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 32 Data size: 3312 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1563,10 +1563,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string), KEY._col1 (type: int)
                 mode: mergepartial
                 outputColumnNames: state, locid
-                Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 16 Data size: 1656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 16 Data size: 1592 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 16 Data size: 1656 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

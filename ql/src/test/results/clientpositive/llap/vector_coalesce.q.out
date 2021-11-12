@@ -38,13 +38,13 @@ STAGE PLANS:
                         predicateExpression: SelectColumnIsNull(col 5:double)
                       Top N Key Vectorization:
                           className: VectorTopNKeyOperator
-                          keyExpressions: col 6:string, col 2:int, col 4:float, col 1:smallint, IfExprColumnCondExpr(col 13:boolean, col 6:stringcol 20:string)(children: IsNotNull(col 6:string) -> 13:boolean, col 6:string, IfExprCondExprCondExpr(col 14:boolean, col 15:stringcol 19:string)(children: IsNotNull(col 2:int) -> 14:boolean, CastLongToString(col 2:int) -> 15:string, IfExprCondExprCondExpr(col 16:boolean, col 17:stringcol 18:string)(children: IsNotNull(col 4:float) -> 16:boolean, CastFloatToString(col 4:float) -> 17:string, CastLongToString(col 1:smallint) -> 18:string) -> 19:string) -> 20:string) -> 21:string
+                          keyExpressions: col 6:string, col 2:int, col 4:float, col 1:smallint, IfExprColumnCondExpr(col 14:boolean, col 6:stringcol 21:string)(children: IsNotNull(col 6:string) -> 14:boolean, col 6:string, IfExprCondExprCondExpr(col 15:boolean, col 16:stringcol 20:string)(children: IsNotNull(col 2:int) -> 15:boolean, CastLongToString(col 2:int) -> 16:string, IfExprCondExprCondExpr(col 17:boolean, col 18:stringcol 19:string)(children: IsNotNull(col 4:float) -> 17:boolean, CastFloatToString(col 4:float) -> 18:string, CastLongToString(col 1:smallint) -> 19:string) -> 20:string) -> 21:string) -> 22:string
                           native: true
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [6, 2, 4, 1, 30]
-                            selectExpressions: IfExprColumnCondExpr(col 22:boolean, col 6:stringcol 29:string)(children: IsNotNull(col 6:string) -> 22:boolean, col 6:string, IfExprCondExprCondExpr(col 23:boolean, col 24:stringcol 28:string)(children: IsNotNull(col 2:int) -> 23:boolean, CastLongToString(col 2:int) -> 24:string, IfExprCondExprCondExpr(col 25:boolean, col 26:stringcol 27:string)(children: IsNotNull(col 4:float) -> 25:boolean, CastFloatToString(col 4:float) -> 26:string, CastLongToString(col 1:smallint) -> 27:string) -> 28:string) -> 29:string) -> 30:string
+                            projectedOutputColumnNums: [6, 2, 4, 1, 31]
+                            selectExpressions: IfExprColumnCondExpr(col 23:boolean, col 6:stringcol 30:string)(children: IsNotNull(col 6:string) -> 23:boolean, col 6:string, IfExprCondExprCondExpr(col 24:boolean, col 25:stringcol 29:string)(children: IsNotNull(col 2:int) -> 24:boolean, CastLongToString(col 2:int) -> 25:string, IfExprCondExprCondExpr(col 26:boolean, col 27:stringcol 28:string)(children: IsNotNull(col 4:float) -> 26:boolean, CastFloatToString(col 4:float) -> 27:string, CastLongToString(col 1:smallint) -> 28:string) -> 29:string) -> 30:string) -> 31:string
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
                               native: true
@@ -154,13 +154,13 @@ STAGE PLANS:
                         predicateExpression: SelectColumnIsNull(col 0:tinyint)
                       Top N Key Vectorization:
                           className: VectorTopNKeyOperator
-                          keyExpressions: col 5:double, col 2:int, IfExprCondExprColumn(col 16:boolean, col 18:double, col 19:double)(children: ColAndCol(col 13:boolean, col 15:boolean)(children: IsNotNull(col 5:double) -> 13:boolean, IsNotNull(col 14:double)(children: FuncLog2LongToDouble(col 2:int) -> 14:double) -> 15:boolean) -> 16:boolean, DoubleColAddDoubleColumn(col 5:double, col 17:double)(children: FuncLog2LongToDouble(col 2:int) -> 17:double) -> 18:double, ConstantVectorExpression(val 0.0) -> 19:double) -> 20:double
+                          keyExpressions: col 5:double, col 2:int, IfExprCondExprColumn(col 17:boolean, col 19:double, col 20:double)(children: ColAndCol(col 14:boolean, col 16:boolean)(children: IsNotNull(col 5:double) -> 14:boolean, IsNotNull(col 15:double)(children: FuncLog2LongToDouble(col 2:int) -> 15:double) -> 16:boolean) -> 17:boolean, DoubleColAddDoubleColumn(col 5:double, col 18:double)(children: FuncLog2LongToDouble(col 2:int) -> 18:double) -> 19:double, ConstantVectorExpression(val 0.0) -> 20:double) -> 21:double
                           native: true
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [5, 2, 22]
-                            selectExpressions: IfExprCondExprColumn(col 21:boolean, col 17:double, col 14:double)(children: ColAndCol(col 13:boolean, col 15:boolean)(children: IsNotNull(col 5:double) -> 13:boolean, IsNotNull(col 14:double)(children: FuncLog2LongToDouble(col 2:int) -> 14:double) -> 15:boolean) -> 21:boolean, DoubleColAddDoubleColumn(col 5:double, col 14:double)(children: FuncLog2LongToDouble(col 2:int) -> 14:double) -> 17:double, ConstantVectorExpression(val 0.0) -> 14:double) -> 22:double
+                            projectedOutputColumnNums: [5, 2, 23]
+                            selectExpressions: IfExprCondExprColumn(col 22:boolean, col 18:double, col 15:double)(children: ColAndCol(col 14:boolean, col 16:boolean)(children: IsNotNull(col 5:double) -> 14:boolean, IsNotNull(col 15:double)(children: FuncLog2LongToDouble(col 2:int) -> 15:double) -> 16:boolean) -> 22:boolean, DoubleColAddDoubleColumn(col 5:double, col 15:double)(children: FuncLog2LongToDouble(col 2:int) -> 15:double) -> 18:double, ConstantVectorExpression(val 0.0) -> 15:double) -> 23:double
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
                               native: true
@@ -257,6 +257,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -272,11 +274,11 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [13, 14, 15]
-                            selectExpressions: ConstantVectorExpression(val null) -> 13:float, ConstantVectorExpression(val null) -> 14:bigint, ConstantVectorExpression(val 0.0) -> 15:float
-                          File Sink Vectorization:
-                              className: VectorFileSinkOperator
-                              native: false
+                            projectedOutputColumnNums: []
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkEmptyKeyOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -285,9 +287,29 @@ STAGE PLANS:
                 inputFormatFeatureSupport: [DECIMAL_64]
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
+            Reduce Operator Tree:
+                Limit Vectorization:
+                    className: VectorLimitOperator
+                    native: true
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [0, 1, 2]
+                      selectExpressions: ConstantVectorExpression(val null) -> 0:float, ConstantVectorExpression(val null) -> 1:bigint, ConstantVectorExpression(val 0.0) -> 2:float
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
 
   Stage: Stage-0
     Fetch Operator
@@ -358,13 +380,13 @@ STAGE PLANS:
                         predicateExpression: FilterExprOrExpr(children: SelectColumnIsNotNull(col 9:timestamp), SelectColumnIsNotNull(col 8:timestamp))
                       Top N Key Vectorization:
                           className: VectorTopNKeyOperator
-                          keyExpressions: col 8:timestamp, col 9:timestamp, IfExprTimestampColumnColumn(col 13:boolean, col 8:timestampcol 9:timestamp)(children: IsNotNull(col 8:timestamp) -> 13:boolean) -> 14:timestamp
+                          keyExpressions: col 8:timestamp, col 9:timestamp, IfExprTimestampColumnColumn(col 14:boolean, col 8:timestampcol 9:timestamp)(children: IsNotNull(col 8:timestamp) -> 14:boolean) -> 15:timestamp
                           native: true
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [8, 9, 15]
-                            selectExpressions: IfExprTimestampColumnColumn(col 13:boolean, col 8:timestampcol 9:timestamp)(children: IsNotNull(col 8:timestamp) -> 13:boolean) -> 15:timestamp
+                            projectedOutputColumnNums: [8, 9, 16]
+                            selectExpressions: IfExprTimestampColumnColumn(col 14:boolean, col 8:timestampcol 9:timestamp)(children: IsNotNull(col 8:timestamp) -> 14:boolean) -> 16:timestamp
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
                               native: true
@@ -456,6 +478,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-1
     Tez
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -471,11 +495,11 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [13, 14, 15]
-                            selectExpressions: ConstantVectorExpression(val null) -> 13:float, ConstantVectorExpression(val null) -> 14:bigint, ConstantVectorExpression(val null) -> 15:float
-                          File Sink Vectorization:
-                              className: VectorFileSinkOperator
-                              native: false
+                            projectedOutputColumnNums: []
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkEmptyKeyOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -484,9 +508,29 @@ STAGE PLANS:
                 inputFormatFeatureSupport: [DECIMAL_64]
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
+            Reduce Operator Tree:
+                Limit Vectorization:
+                    className: VectorLimitOperator
+                    native: true
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [0, 1, 2]
+                      selectExpressions: ConstantVectorExpression(val null) -> 0:float, ConstantVectorExpression(val null) -> 1:bigint, ConstantVectorExpression(val null) -> 2:float
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
 
   Stage: Stage-0
     Fetch Operator
@@ -557,8 +601,8 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [13, 0, 0]
-                            selectExpressions: ConstantVectorExpression(val null) -> 13:bigint
+                            projectedOutputColumnNums: [14, 0, 0]
+                            selectExpressions: ConstantVectorExpression(val null) -> 14:bigint
                           File Sink Vectorization:
                               className: VectorFileSinkOperator
                               native: false

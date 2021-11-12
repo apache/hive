@@ -20,9 +20,17 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.apache.calcite.util.Pair;
 import org.apache.commons.collections4.ListValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
@@ -30,12 +38,14 @@ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.Cluster;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -86,8 +96,73 @@ public class ParallelEdgeFixer extends Transform {
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     OperatorGraph og = new OperatorGraph(pctx);
-    fixParallelEdges(og);
+    try (AutoCloseable ac = new MaterializeSemiJoinEdges(pctx)) {
+      fixParallelEdges(og);
+    } catch (Exception e) {
+      if (e instanceof SemanticException) {
+        throw (SemanticException) e;
+      }
+      throw new SemanticException(e);
+
+    }
     return pctx;
+  }
+
+  /**
+   * This {@link AutoCloseable} class makes it possible to show SemiJoin edges as normal operator edges temporarily.
+   */
+  static class MaterializeSemiJoinEdges implements AutoCloseable {
+
+    private ParseContext pctx;
+
+    public MaterializeSemiJoinEdges(ParseContext pctx) {
+      this.pctx = pctx;
+
+      addSJEdges();
+
+    }
+
+    private void addSJEdges() {
+      LinkedHashMap<ReduceSinkOperator, SemiJoinBranchInfo> rs2sj = pctx.getRsToSemiJoinBranchInfo();
+      for (Entry<ReduceSinkOperator, SemiJoinBranchInfo> e : rs2sj.entrySet()) {
+        ReduceSinkOperator rs = e.getKey();
+        SemiJoinBranchInfo sji = e.getValue();
+        TableScanOperator ts = sji.getTsOp();
+
+        rs.getChildOperators().add(ts);
+        ts.getParentOperators().add(rs);
+      }
+    }
+
+    private void removeSJEdges() throws SemanticException {
+      LinkedHashMap<ReduceSinkOperator, SemiJoinBranchInfo> rs2sj = new LinkedHashMap<>();
+      for (Entry<ReduceSinkOperator, SemiJoinBranchInfo> e : pctx.getRsToSemiJoinBranchInfo().entrySet()) {
+        Operator<?> rs = e.getKey();
+        SemiJoinBranchInfo sji = e.getValue();
+        TableScanOperator ts = sji.getTsOp();
+
+        while (true) {
+          if (rs.getChildOperators().size() != 1) {
+            throw new SemanticException("Unexpected number of children");
+          }
+          Operator<?> child = rs.getChildOperators().get(0);
+          if (child == ts) {
+            break;
+          }
+          rs = child;
+        }
+
+        rs.getChildOperators().clear();
+        ts.getParentOperators().remove(rs);
+        rs2sj.put((ReduceSinkOperator) rs, sji);
+      }
+      pctx.setRsToSemiJoinBranchInfo(rs2sj);
+    }
+
+    @Override
+    public void close() throws Exception {
+      removeSJEdges();
+    }
   }
 
   /**
@@ -104,7 +179,7 @@ public class ParallelEdgeFixer extends Transform {
     }
   }
 
-  private void fixParallelEdges(OperatorGraph og) {
+  private void fixParallelEdges(OperatorGraph og) throws SemanticException {
 
     // Identify edge operators
     ListValuedMap<Pair<Cluster, Cluster>, Pair<Operator<?>, Operator<?>>> edgeOperators =
@@ -157,7 +232,13 @@ public class ParallelEdgeFixer extends Transform {
     values.remove(toKeep);
   }
 
-  private boolean isParallelEdgeSupported(Pair<Operator<?>, Operator<?>> pair) {
+  public boolean isParallelEdgeSupported(Pair<Operator<?>, Operator<?>> pair) {
+
+    Operator<?> rs = pair.left;
+    if (rs instanceof ReduceSinkOperator && !colMappingInverseKeys((ReduceSinkOperator) rs).isPresent()) {
+      return false;
+    }
+
     Operator<?> child = pair.right;
     if (child instanceof MapJoinOperator) {
       return true;
@@ -171,7 +252,7 @@ public class ParallelEdgeFixer extends Transform {
   /**
    * Fixes a parallel edge going into a mapjoin by introducing a concentrator RS.
    */
-  private void fixParallelEdge(Operator<? extends OperatorDesc> p, Operator<?> o) {
+  private void fixParallelEdge(Operator<? extends OperatorDesc> p, Operator<?> o) throws SemanticException {
     LOG.info("Fixing parallel by adding a concentrator RS between {} -> {}", p, o);
 
     ReduceSinkDesc conf = (ReduceSinkDesc) p.getConf();
@@ -199,16 +280,16 @@ public class ParallelEdgeFixer extends Transform {
 
   }
 
-  private Operator<SelectDesc> buildSEL(Operator<? extends OperatorDesc> p, ReduceSinkDesc conf) {
+  private Operator<SelectDesc> buildSEL(Operator<? extends OperatorDesc> p, ReduceSinkDesc conf)
+      throws SemanticException {
     List<ExprNodeDesc> colList = new ArrayList<>();
     List<String> outputColumnNames = new ArrayList<>();
     List<ColumnInfo> newColumns = new ArrayList<>();
 
-    for (Entry<String, ExprNodeDesc> e : conf.getColumnExprMap().entrySet()) {
+    Set<String> inverseKeys = colMappingInverseKeys((ReduceSinkOperator) p).get();
+    for (String colName : inverseKeys) {
 
-      String colName = e.getKey();
-      ExprNodeDesc expr = e.getValue();
-
+      ExprNodeDesc expr = conf.getColumnExprMap().get(colName);
       ExprNodeDesc colRef = new ExprNodeColumnDesc(expr.getTypeInfo(), colName, colName, false);
 
       colList.add(colRef);
@@ -227,7 +308,7 @@ public class ParallelEdgeFixer extends Transform {
     return newSEL;
   }
 
-  private String extractColumnName(ExprNodeDesc expr) {
+  private static String extractColumnName(ExprNodeDesc expr) throws SemanticException {
     if (expr instanceof ExprNodeColumnDesc) {
       ExprNodeColumnDesc exprNodeColumnDesc = (ExprNodeColumnDesc) expr;
       return exprNodeColumnDesc.getColumn();
@@ -237,6 +318,32 @@ public class ParallelEdgeFixer extends Transform {
       ExprNodeConstantDesc exprNodeConstantDesc = (ExprNodeConstantDesc) expr;
       return exprNodeConstantDesc.getFoldedFromCol();
     }
-    throw new RuntimeException("unexpected mapping expression!");
+    throw new SemanticException("unexpected mapping expression!");
+  }
+
+  public static Optional<Set<String>> colMappingInverseKeys(ReduceSinkOperator rs) {
+    Map<String, String> ret = new HashMap<String, String>();
+    Map<String, ExprNodeDesc> exprMap = rs.getColumnExprMap();
+    Set<String> neededColumns = new HashSet<String>();
+    try {
+      for (Entry<String, ExprNodeDesc> e : exprMap.entrySet()) {
+        String columnName = extractColumnName(e.getValue());
+        if (rs.getSchema().getColumnInfo(e.getKey()) == null) {
+          // ignore incorrectly mapped columns (if there's any) - but require its input to be present
+          neededColumns.add(columnName);
+        } else {
+          ret.put(columnName, e.getKey());
+        }
+      }
+      neededColumns.removeAll(ret.keySet());
+      if (!neededColumns.isEmpty()) {
+        // There is no way to compute all parts of neededColumns
+        return Optional.empty();
+      }
+      return Optional.of(new TreeSet<>(ret.values()));
+    } catch (SemanticException e) {
+      return Optional.empty();
+    }
+
   }
 }

@@ -58,6 +58,7 @@ import java.util.stream.IntStream;
 /**
  * Test Transactional Writer.
  */
+@org.junit.Ignore("HIVE-24771")
 public class TransactionalKafkaWriterTest {
 
   private static final String TOPIC = "TOPIC_TEST";

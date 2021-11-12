@@ -1,0 +1,68 @@
+PREHOOK: query: CREATE CONNECTOR mysql_qtest
+TYPE 'mysql'
+URL 'jdbc:mysql://localhost:3306/qtestDB'
+COMMENT 'test connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="root",
+"hive.sql.dbcp.password"="qtestpassword")
+PREHOOK: type: CREATEDATACONNECTOR
+PREHOOK: Output: connector:mysql_qtest
+POSTHOOK: query: CREATE CONNECTOR mysql_qtest
+TYPE 'mysql'
+URL 'jdbc:mysql://localhost:3306/qtestDB'
+COMMENT 'test connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="root",
+"hive.sql.dbcp.password"="qtestpassword")
+POSTHOOK: type: CREATEDATACONNECTOR
+POSTHOOK: Output: connector:mysql_qtest
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS
+mysql_qtest
+PREHOOK: query: CREATE REMOTE DATABASE db_mysql USING mysql_qtest with DBPROPERTIES("connector.remoteDbName"="qtestDB")
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Input: connector:mysql_qtest
+PREHOOK: Output: database:db_mysql
+POSTHOOK: query: CREATE REMOTE DATABASE db_mysql USING mysql_qtest with DBPROPERTIES("connector.remoteDbName"="qtestDB")
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Input: connector:mysql_qtest
+POSTHOOK: Output: database:db_mysql
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+db_mysql
+default
+PREHOOK: query: USE db_mysql
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db_mysql
+POSTHOOK: query: USE db_mysql
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db_mysql
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:db_mysql
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:db_mysql
+city
+country
+state
+PREHOOK: query: DROP DATABASE db_mysql
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:db_mysql
+PREHOOK: Output: database:db_mysql
+POSTHOOK: query: DROP DATABASE db_mysql
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:db_mysql
+POSTHOOK: Output: database:db_mysql
+PREHOOK: query: DROP CONNECTOR mysql_qtest
+PREHOOK: type: DROPDATACONNECTOR
+PREHOOK: Input: connector:mysql_qtest
+PREHOOK: Output: connector:mysql_qtest
+POSTHOOK: query: DROP CONNECTOR mysql_qtest
+POSTHOOK: type: DROPDATACONNECTOR
+POSTHOOK: Input: connector:mysql_qtest
+POSTHOOK: Output: connector:mysql_qtest

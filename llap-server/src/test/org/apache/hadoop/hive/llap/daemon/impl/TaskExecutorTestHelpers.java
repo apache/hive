@@ -59,6 +59,13 @@ public class TaskExecutorTestHelpers {
     return createMockRequest(canFinish, canFinish, workTime, request, isGuaranteed);
   }
 
+  public static MockRequest createMockRequest(int fragmentNum, int parallelism, long firstAttemptStartTime,
+      long currentAttemptStartTime, boolean canFinish, long workTime, boolean isGuaranteed, int dagId) {
+    SubmitWorkRequestProto request = createSubmitWorkRequestProto(fragmentNum, parallelism, 0,
+        firstAttemptStartTime, currentAttemptStartTime, 1, "MockDag", dagId, isGuaranteed);
+    return createMockRequest(canFinish, canFinish, workTime, request, isGuaranteed);
+  }
+
   public static MockRequest createMockRequest(int fragmentNum, int parallelism,
                                               int withinDagPriority,
                                               long firstAttemptStartTime,
@@ -144,14 +151,21 @@ public class TaskExecutorTestHelpers {
         currentAttemptStartTime, withinDagPriority, "MockDag", isGuaranteed);
   }
 
+  private static SubmitWorkRequestProto createSubmitWorkRequestProto(
+      int fragmentNumber, int selfAndUpstreamParallelism, int selfAndUpstreamComplete, long firstAttemptStartTime,
+      long currentAttemptStartTime, int withinDagPriority, String mockDag, boolean isGuaranteed) {
+    return createSubmitWorkRequestProto(fragmentNumber, selfAndUpstreamParallelism, selfAndUpstreamComplete, firstAttemptStartTime,
+        currentAttemptStartTime, withinDagPriority, mockDag, 35, isGuaranteed);
+  }
+
   public static SubmitWorkRequestProto createSubmitWorkRequestProto(
       int fragmentNumber, int selfAndUpstreamParallelism,
       int selfAndUpstreamComplete, long firstAttemptStartTime,
-      long currentAttemptStartTime, int withinDagPriority, String dagName,
+      long currentAttemptStartTime, int withinDagPriority, String dagName, int dagId,
       boolean isGuaranteed) {
     ApplicationId appId = ApplicationId.newInstance(9999, 72);
-    TezDAGID dagId = TezDAGID.getInstance(appId, 1);
-    TezVertexID vId = TezVertexID.getInstance(dagId, 35);
+    TezDAGID dag = TezDAGID.getInstance(appId, 1);
+    TezVertexID vId = TezVertexID.getInstance(dag, dagId);
     return SubmitWorkRequestProto
         .newBuilder()
         .setAttemptNumber(0)
@@ -167,7 +181,7 @@ public class TaskExecutorTestHelpers {
                     QueryIdentifierProto.newBuilder()
                         .setApplicationIdString(appId.toString())
                         .setAppAttemptNumber(0)
-                        .setDagIndex(dagId.getId())
+                        .setDagIndex(dag.getId())
                         .build())
                 .setVertexIndex(vId.getId())
                 .setVertexName("MockVertex")

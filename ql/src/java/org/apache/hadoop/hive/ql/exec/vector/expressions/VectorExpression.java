@@ -98,16 +98,20 @@ public abstract class VectorExpression implements Serializable {
   /**
    * Output column number and type information of the vector expression.
    */
-  protected final int outputColumnNum;
+  public int outputColumnNum;
 
   protected TypeInfo outputTypeInfo;
   protected DataTypePhysicalVariation outputDataTypePhysicalVariation;
+
+  /**
+   * Input column numbers of the vector expression, which should be reused by vector expressions.
+   */
+  public int inputColumnNum[] = {-1, -1, -1};
 
   /*
    * Use this constructor when there is NO output column.
    */
   public VectorExpression() {
-
     // Initially, no children or inputs; set later with setInput* methods.
     childExpressions = null;
     inputTypeInfos = null;
@@ -119,16 +123,46 @@ public abstract class VectorExpression implements Serializable {
     outputDataTypePhysicalVariation = null;
   }
 
-  /*
-   * Use this constructor when there is an output column.
+  /**
+   * Constructor for 1 input column and 1 output column.
+   *
+   * @param inputColumnNum
+   * @param outputColumnNum
    */
-  public VectorExpression(int outputColumnNum) {
+  public VectorExpression(int inputColumnNum, int outputColumnNum) {
+    this(inputColumnNum, -1, -1, outputColumnNum);
+  }
 
+  /**
+   * Constructor for 2 input columns and 1 output column.
+   *
+   * @param inputColumnNum
+   * @param inputColumnNum2
+   * @param outputColumnNum
+   */
+  public VectorExpression(int inputColumnNum, int inputColumnNum2, int outputColumnNum) {
+    this(inputColumnNum, inputColumnNum2, -1, outputColumnNum);
+  }
+
+  /**
+   * Constructor for 3 input columns and 1 output column. Currently, VectorExpression is initialized
+   * for a maximum of 3 input columns. In case an expression with more than 3 columns wants to reuse
+   * logic here, inputColumnNum* fields should be extended.
+   *
+   * @param inputColumnNum
+   * @param inputColumnNum2
+   * @param inputColumnNum3
+   * @param outputColumnNum
+   */
+  public VectorExpression(int inputColumnNum, int inputColumnNum2, int inputColumnNum3, int outputColumnNum) {
     // By default, no children or inputs.
     childExpressions = null;
     inputTypeInfos = null;
     inputDataTypePhysicalVariations = null;
 
+    this.inputColumnNum[0] = inputColumnNum;
+    this.inputColumnNum[1] = inputColumnNum2;
+    this.inputColumnNum[2] = inputColumnNum3;
     this.outputColumnNum = outputColumnNum;
 
     // Set later with setOutput* methods.
@@ -136,7 +170,24 @@ public abstract class VectorExpression implements Serializable {
     outputDataTypePhysicalVariation = null;
   }
 
-  //------------------------------------------------------------------------------------------------
+  /**
+   * Convenience method for expressions that uses arbitrary number of input columns in an array.
+   * @param inputColumnNum
+   * @param outputColumnNum
+   */
+  public VectorExpression(int inputColumnNum[], int outputColumnNum) {
+    // By default, no children or inputs.
+    childExpressions = null;
+    inputTypeInfos = null;
+    inputDataTypePhysicalVariations = null;
+
+    this.inputColumnNum = inputColumnNum;
+    this.outputColumnNum = outputColumnNum;
+
+    // Set later with setOutput* methods.
+    outputTypeInfo = null;
+    outputDataTypePhysicalVariation = null;
+  }
 
   /**
    * Initialize the child expressions.

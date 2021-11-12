@@ -1,1 +1,1 @@
-FAILED: SemanticException [Error 10249]: org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException: Line 5:7 Unsupported SubQuery Expression 'key': SubQuery on left hand side is not supported.
+FAILED: CalciteSubquerySemanticException [Error 10249]: Line 5:7 Unsupported SubQuery Expression 'key': SubQuery on left hand side is not supported.

@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.metastore.events;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import javax.annotation.concurrent.NotThreadSafe;
@@ -104,8 +104,8 @@ public abstract class ListenerEvent {
    * @return handler.
    */
   @Deprecated
-  public HiveMetaStore.HMSHandler getHandler() {
-    return (HiveMetaStore.HMSHandler)handler;
+  public HMSHandler getHandler() {
+    return (HMSHandler)handler;
   }
 
   /**

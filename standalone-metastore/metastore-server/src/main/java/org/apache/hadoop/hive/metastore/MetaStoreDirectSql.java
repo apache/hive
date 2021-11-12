@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.commons.lang3.StringUtils.normalizeSpace;
 import static org.apache.commons.lang3.StringUtils.repeat;
+import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.throwMetaOrRuntimeException;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -51,6 +53,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -139,6 +142,7 @@ class MetaStoreDirectSql {
   private final boolean isAggregateStatsCacheEnabled;
   private final ImmutableMap<String, String> fieldnameToTableName;
   private AggregateStatsCache aggrStatsCache;
+  private DirectSqlUpdateStat updateStat;
 
   /**
    * This method returns a comma separated string consisting of String values of a given list.
@@ -179,6 +183,7 @@ class MetaStoreDirectSql {
       batchSize = dbType.needsInBatching() ? 1000 : NO_BATCHING;
     }
     this.batchSize = batchSize;
+    this.updateStat = new DirectSqlUpdateStat(pm, conf, dbType, batchSize);
     ImmutableMap.Builder<String, String> fieldNameToTableNameBuilder =
         new ImmutableMap.Builder<>();
 
@@ -314,12 +319,10 @@ class MetaStoreDirectSql {
       tx.begin();
       doCommit = true;
     }
-    Query query = null;
     // Run a self-test query. If it doesn't work, we will self-disable. What a PITA...
     String selfTestQuery = "select \"DB_ID\" from " + DBS + "";
-    try {
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", selfTestQuery))) {
       prepareTxn();
-      query = pm.newQuery("javax.jdo.query.SQL", selfTestQuery);
       query.execute();
       return true;
     } catch (Throwable t) {
@@ -330,9 +333,6 @@ class MetaStoreDirectSql {
     } finally {
       if (doCommit) {
         tx.commit();
-      }
-      if (query != null) {
-        query.closeAll();
       }
     }
   }
@@ -363,19 +363,22 @@ class MetaStoreDirectSql {
   }
 
   public Database getDatabase(String catName, String dbName) throws MetaException{
-    Query queryDbSelector = null;
-    Query queryDbParams = null;
-    try {
+    String queryTextDbSelector= "select "
+        + "\"DB_ID\", \"NAME\", \"DB_LOCATION_URI\", \"DESC\", "
+        + "\"OWNER_NAME\", \"OWNER_TYPE\", \"CTLG_NAME\" , \"CREATE_TIME\", \"DB_MANAGED_LOCATION_URI\", "
+        + "\"TYPE\", \"DATACONNECTOR_NAME\", \"REMOTE_DBNAME\""
+        + "FROM "+ DBS
+        + " where \"NAME\" = ? and \"CTLG_NAME\" = ? ";
+    String queryTextDbParams = "select \"PARAM_KEY\", \"PARAM_VALUE\" "
+        + " from " + DATABASE_PARAMS + " "
+        + " WHERE \"DB_ID\" = ? "
+        + " AND \"PARAM_KEY\" IS NOT NULL";
+
+    try (QueryWrapper queryDbSelector = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryTextDbSelector));
+         QueryWrapper queryDbParams = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryTextDbParams))) {
       dbName = dbName.toLowerCase();
       catName = catName.toLowerCase();
-
-      String queryTextDbSelector= "select "
-          + "\"DB_ID\", \"NAME\", \"DB_LOCATION_URI\", \"DESC\", "
-          + "\"OWNER_NAME\", \"OWNER_TYPE\", \"CTLG_NAME\" , \"CREATE_TIME\", \"DB_MANAGED_LOCATION_URI\""
-          + " FROM "+ DBS
-          + " where \"NAME\" = ? and \"CTLG_NAME\" = ? ";
       Object[] params = new Object[] { dbName, catName };
-      queryDbSelector = pm.newQuery("javax.jdo.query.SQL", queryTextDbSelector);
 
       if (LOG.isTraceEnabled()) {
         LOG.trace("getDatabase:query instantiated : " + queryTextDbSelector
@@ -396,12 +399,7 @@ class MetaStoreDirectSql {
       Object[] dbline = sqlResult.get(0);
       Long dbid = MetastoreDirectSqlUtils.extractSqlLong(dbline[0]);
 
-      String queryTextDbParams = "select \"PARAM_KEY\", \"PARAM_VALUE\" "
-          + " from " + DATABASE_PARAMS + " "
-          + " WHERE \"DB_ID\" = ? "
-          + " AND \"PARAM_KEY\" IS NOT NULL";
       params[0] = dbid;
-      queryDbParams = pm.newQuery("javax.jdo.query.SQL", queryTextDbParams);
       if (LOG.isTraceEnabled()) {
         LOG.trace("getDatabase:query2 instantiated : " + queryTextDbParams
             + " with param [" + params[0] + "]");
@@ -429,6 +427,14 @@ class MetaStoreDirectSql {
         db.setCreateTime(MetastoreDirectSqlUtils.extractSqlInt(dbline[7]));
       }
       db.setManagedLocationUri(MetastoreDirectSqlUtils.extractSqlString(dbline[8]));
+      String dbType = MetastoreDirectSqlUtils.extractSqlString(dbline[9]);
+      if (dbType != null && dbType.equalsIgnoreCase(DatabaseType.REMOTE.name())) {
+        db.setType(DatabaseType.REMOTE);
+        db.setConnector_name(MetastoreDirectSqlUtils.extractSqlString(dbline[10]));
+        db.setRemote_dbname(MetastoreDirectSqlUtils.extractSqlString(dbline[11]));
+      } else {
+        db.setType(DatabaseType.NATIVE);
+      }
       db.setParameters(MetaStoreServerUtils.trimMapNulls(dbParams,convertMapNullsToEmptyStrings));
       if (LOG.isDebugEnabled()){
         LOG.debug("getDatabase: directsql returning db " + db.getName()
@@ -436,13 +442,6 @@ class MetaStoreDirectSql {
             + "] owner [" + db.getOwnerName() + "] ownertype ["+ db.getOwnerType() +"]");
       }
       return db;
-    } finally {
-      if (queryDbSelector != null){
-        queryDbSelector.closeAll();
-      }
-      if (queryDbParams != null){
-        queryDbParams.closeAll();
-      }
     }
   }
 
@@ -469,12 +468,12 @@ class MetaStoreDirectSql {
       pms.add(tableType.toString());
     }
 
-    Query<?> queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
-    List<String> tableNames = executeWithArray(
-        queryParams, pms.toArray(), queryText, limit);
-    List<String> results = new ArrayList<String>(tableNames);
-    queryParams.closeAll();
-    return results;
+    try (QueryWrapper queryParams = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      List<String> tableNames = executeWithArray(
+          queryParams, pms.toArray(), queryText, limit);
+      List<String> results = new ArrayList<String>(tableNames);
+      return results;
+    }
   }
 
   /**
@@ -493,12 +492,12 @@ class MetaStoreDirectSql {
     pms.add(dbName);
     pms.add(TableType.MATERIALIZED_VIEW.toString());
 
-    Query<?> queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
-    List<String> mvs = executeWithArray(
-        queryParams, pms.toArray(), queryText);
-    List<String> results = new ArrayList<String>(mvs);
-    queryParams.closeAll();
-    return results;
+    try (QueryWrapper queryParams = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      List<String> mvs = executeWithArray(
+          queryParams, pms.toArray(), queryText);
+      List<String> results = new ArrayList<String>(mvs);
+      return results;
+    }
   }
 
   /**
@@ -605,10 +604,9 @@ class MetaStoreDirectSql {
       params[i + j + 3] = paramsForFilter.get(j);
     }
 
-    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
     List<String> partNames = new LinkedList<String>();
     int limit = (max == null ? -1 : max);
-    try {
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
       long start = doTrace ? System.nanoTime() : 0;
       List<Object> sqlResult = executeWithArray(query, params, queryText, limit);
       long queryTime = doTrace ? System.nanoTime() : 0;
@@ -617,8 +615,6 @@ class MetaStoreDirectSql {
         Object obj = !columns.isEmpty() ? ((Object[]) result)[0] : result;
         partNames.add((String)obj);
       }
-    } finally {
-      query.closeAll();
     }
     return partNames;
   }
@@ -837,20 +833,14 @@ class MetaStoreDirectSql {
   }
 
   private boolean isViewTable(String catName, String dbName, String tblName) throws MetaException {
-    Query query = null;
-    try {
-      String queryText = "select \"TBL_TYPE\" from " + TBLS + "" +
-          " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" " +
-          " where " + TBLS + ".\"TBL_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + DBS + ".\"CTLG_NAME\" = ?";
+    String queryText = "select \"TBL_TYPE\" from " + TBLS + "" +
+        " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" " +
+        " where " + TBLS + ".\"TBL_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + DBS + ".\"CTLG_NAME\" = ?";
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
       Object[] params = new Object[] { tblName, dbName, catName };
-      query = pm.newQuery("javax.jdo.query.SQL", queryText);
       query.setUnique(true);
       Object result = executeWithArray(query, params, queryText);
       return (result != null) && result.toString().equals(TableType.VIRTUAL_VIEW.toString());
-    } finally {
-      if (query != null) {
-        query.closeAll();
-      }
     }
   }
 
@@ -897,20 +887,21 @@ class MetaStoreDirectSql {
     }
 
     long start = doTrace ? System.nanoTime() : 0;
-    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    List<Object> sqlResult = executeWithArray(query, params, queryText, ((max == null)  ? -1 : max.intValue()));
-    long queryTime = doTrace ? System.nanoTime() : 0;
-    MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
-    if (sqlResult.isEmpty()) {
-      return Collections.emptyList(); // no partitions, bail early.
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      List<Object> sqlResult = executeWithArray(query, params, queryText, ((max == null) ? -1 : max.intValue()));
+      long queryTime = doTrace ? System.nanoTime() : 0;
+      MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
+      final List<Long> result;
+      if (sqlResult.isEmpty()) {
+        result = Collections.emptyList(); // no partitions, bail early.
+      } else {
+        result = new ArrayList<>(sqlResult.size());
+        for (Object fields : sqlResult) {
+          result.add(MetastoreDirectSqlUtils.extractSqlLong(fields));
+        }
+      }
+      return result;
     }
-
-    List<Long> result = new ArrayList<>(sqlResult.size());
-    for (Object fields : sqlResult) {
-      result.add(MetastoreDirectSqlUtils.extractSqlLong(fields));
-    }
-    query.closeAll();
-    return result;
   }
 
   /** Should be called with the list short enough to not trip up Oracle/etc. */
@@ -943,12 +934,6 @@ class MetaStoreDirectSql {
             + SERDES + ".\"SERDE_ID\" " + "where \"PART_ID\" in (" + partIds
             + ") order by \"PART_NAME\" asc";
 
-    long start = doTrace ? System.nanoTime() : 0;
-    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    List<Object[]> sqlResult = executeWithArray(query, null, queryText);
-    long queryTime = doTrace ? System.nanoTime() : 0;
-    Deadline.checkTimeout();
-
     // Read all the fields and create partitions, SDs and serdes.
     TreeMap<Long, Partition> partitions = new TreeMap<Long, Partition>();
     TreeMap<Long, StorageDescriptor> sds = new TreeMap<Long, StorageDescriptor>();
@@ -964,98 +949,104 @@ class MetaStoreDirectSql {
     dbName = dbName.toLowerCase();
     catName = normalizeSpace(catName).toLowerCase();
     partitions.navigableKeySet();
-    for (Object[] fields : sqlResult) {
-      // Here comes the ugly part...
-      long partitionId = MetastoreDirectSqlUtils.extractSqlLong(fields[0]);
-      Long sdId = MetastoreDirectSqlUtils.extractSqlLong(fields[1]);
-      Long colId = MetastoreDirectSqlUtils.extractSqlLong(fields[2]);
-      Long serdeId = MetastoreDirectSqlUtils.extractSqlLong(fields[3]);
 
-      Partition part = new Partition();
-      orderedResult.add(part);
-      // Set the collection fields; some code might not check presence before accessing them.
-      part.setParameters(new HashMap<>());
-      part.setValues(new ArrayList<String>());
-      part.setCatName(catName);
-      part.setDbName(dbName);
-      part.setTableName(tblName);
-      if (fields[4] != null) {
-        part.setCreateTime(MetastoreDirectSqlUtils.extractSqlInt(fields[4]));
-      }
-      if (fields[5] != null) {
-        part.setLastAccessTime(MetastoreDirectSqlUtils.extractSqlInt(fields[5]));
-      }
-      Long writeId = MetastoreDirectSqlUtils.extractSqlLong(fields[14]);
-      if (writeId != null && writeId>0) {
-        part.setWriteId(writeId);
-      } else {
-        part.setWriteId(-1L);
-      }
-      partitions.put(partitionId, part);
-
-
-      if (sdId == null) {
-        continue; // Probably a view.
-      }
-      assert serdeId != null;
-
-      // We assume each partition has an unique SD.
-      StorageDescriptor sd = new StorageDescriptor();
-      StorageDescriptor oldSd = sds.put(sdId, sd);
-      if (oldSd != null) {
-        throw new MetaException("Partitions reuse SDs; we don't expect that");
-      }
-      // Set the collection fields; some code might not check presence before accessing them.
-      sd.setSortCols(new ArrayList<Order>());
-      sd.setBucketCols(new ArrayList<String>());
-      sd.setParameters(new HashMap<String, String>());
-      sd.setSkewedInfo(new SkewedInfo(new ArrayList<String>(),
-          new ArrayList<List<String>>(), new HashMap<List<String>, String>()));
-      sd.setInputFormat((String)fields[6]);
-      Boolean tmpBoolean = MetastoreDirectSqlUtils.extractSqlBoolean(fields[7]);
-      if (tmpBoolean != null) {
-        sd.setCompressed(tmpBoolean);
-      }
-      tmpBoolean = MetastoreDirectSqlUtils.extractSqlBoolean(fields[8]);
-      if (tmpBoolean != null) {
-        sd.setStoredAsSubDirectories(tmpBoolean);
-      }
-      sd.setLocation((String)fields[9]);
-      if (fields[10] != null) {
-        sd.setNumBuckets(MetastoreDirectSqlUtils.extractSqlInt(fields[10]));
-      }
-      sd.setOutputFormat((String)fields[11]);
-      sdSb.append(sdId).append(",");
-      part.setSd(sd);
-
-      if (colId != null) {
-        List<FieldSchema> cols = colss.get(colId);
-        // We expect that colId will be the same for all (or many) SDs.
-        if (cols == null) {
-          cols = new ArrayList<FieldSchema>();
-          colss.put(colId, cols);
-          colsSb.append(colId).append(",");
-        }
-        sd.setCols(cols);
-      }
-
-      // We assume each SD has an unique serde.
-      SerDeInfo serde = new SerDeInfo();
-      SerDeInfo oldSerde = serdes.put(serdeId, serde);
-      if (oldSerde != null) {
-        throw new MetaException("SDs reuse serdes; we don't expect that");
-      }
-      serde.setParameters(new HashMap<String, String>());
-      serde.setName((String)fields[12]);
-      serde.setSerializationLib((String)fields[13]);
-      serdeSb.append(serdeId).append(",");
-      sd.setSerdeInfo(serde);
-
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      long start = doTrace ? System.nanoTime() : 0;
+      List<Object[]> sqlResult = executeWithArray(query, null, queryText);
+      long queryTime = doTrace ? System.nanoTime() : 0;
       Deadline.checkTimeout();
-    }
-    query.closeAll();
-    MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
 
+      for (Object[] fields : sqlResult) {
+        // Here comes the ugly part...
+        long partitionId = MetastoreDirectSqlUtils.extractSqlLong(fields[0]);
+        Long sdId = MetastoreDirectSqlUtils.extractSqlLong(fields[1]);
+        Long colId = MetastoreDirectSqlUtils.extractSqlLong(fields[2]);
+        Long serdeId = MetastoreDirectSqlUtils.extractSqlLong(fields[3]);
+
+        Partition part = new Partition();
+        orderedResult.add(part);
+        // Set the collection fields; some code might not check presence before accessing them.
+        part.setParameters(new HashMap<>());
+        part.setValues(new ArrayList<String>());
+        part.setCatName(catName);
+        part.setDbName(dbName);
+        part.setTableName(tblName);
+        if (fields[4] != null) {
+          part.setCreateTime(MetastoreDirectSqlUtils.extractSqlInt(fields[4]));
+        }
+        if (fields[5] != null) {
+          part.setLastAccessTime(MetastoreDirectSqlUtils.extractSqlInt(fields[5]));
+        }
+        Long writeId = MetastoreDirectSqlUtils.extractSqlLong(fields[14]);
+        if (writeId != null && writeId > 0) {
+          part.setWriteId(writeId);
+        } else {
+          part.setWriteId(-1L);
+        }
+        partitions.put(partitionId, part);
+
+
+        if (sdId == null) {
+          continue; // Probably a view.
+        }
+        assert serdeId != null;
+
+        // We assume each partition has an unique SD.
+        StorageDescriptor sd = new StorageDescriptor();
+        StorageDescriptor oldSd = sds.put(sdId, sd);
+        if (oldSd != null) {
+          throw new MetaException("Partitions reuse SDs; we don't expect that");
+        }
+        // Set the collection fields; some code might not check presence before accessing them.
+        sd.setSortCols(new ArrayList<Order>());
+        sd.setBucketCols(new ArrayList<String>());
+        sd.setParameters(new HashMap<String, String>());
+        sd.setSkewedInfo(new SkewedInfo(new ArrayList<String>(),
+            new ArrayList<List<String>>(), new HashMap<List<String>, String>()));
+        sd.setInputFormat((String) fields[6]);
+        Boolean tmpBoolean = MetastoreDirectSqlUtils.extractSqlBoolean(fields[7]);
+        if (tmpBoolean != null) {
+          sd.setCompressed(tmpBoolean);
+        }
+        tmpBoolean = MetastoreDirectSqlUtils.extractSqlBoolean(fields[8]);
+        if (tmpBoolean != null) {
+          sd.setStoredAsSubDirectories(tmpBoolean);
+        }
+        sd.setLocation((String) fields[9]);
+        if (fields[10] != null) {
+          sd.setNumBuckets(MetastoreDirectSqlUtils.extractSqlInt(fields[10]));
+        }
+        sd.setOutputFormat((String) fields[11]);
+        sdSb.append(sdId).append(",");
+        part.setSd(sd);
+
+        if (colId != null) {
+          List<FieldSchema> cols = colss.get(colId);
+          // We expect that colId will be the same for all (or many) SDs.
+          if (cols == null) {
+            cols = new ArrayList<FieldSchema>();
+            colss.put(colId, cols);
+            colsSb.append(colId).append(",");
+          }
+          sd.setCols(cols);
+        }
+
+        // We assume each SD has an unique serde.
+        SerDeInfo serde = new SerDeInfo();
+        SerDeInfo oldSerde = serdes.put(serdeId, serde);
+        if (oldSerde != null) {
+          throw new MetaException("SDs reuse serdes; we don't expect that");
+        }
+        serde.setParameters(new HashMap<String, String>());
+        serde.setName((String) fields[12]);
+        serde.setSerializationLib((String) fields[13]);
+        serdeSb.append(serdeId).append(",");
+        sd.setSerdeInfo(serde);
+
+        Deadline.checkTimeout();
+      }
+      MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
+    }
     // Now get all the one-to-many things. Start with partitions.
     MetastoreDirectSqlUtils
         .setPartitionParameters(PARTITION_PARAMS, convertMapNullsToEmptyStrings, pm, partIds, partitions);
@@ -1139,13 +1130,13 @@ class MetaStoreDirectSql {
     }
 
     long start = doTrace ? System.nanoTime() : 0;
-    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    query.setUnique(true);
-    int sqlResult = MetastoreDirectSqlUtils.extractSqlInt(query.executeWithArray(params));
-    long queryTime = doTrace ? System.nanoTime() : 0;
-    MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
-    query.closeAll();
-    return sqlResult;
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      query.setUnique(true);
+      int sqlResult = MetastoreDirectSqlUtils.extractSqlInt(query.executeWithArray(params));
+      long queryTime = doTrace ? System.nanoTime() : 0;
+      MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
+      return sqlResult;
+    }
   }
 
   private static String trimCommaList(StringBuilder sb) {
@@ -1429,31 +1420,39 @@ class MetaStoreDirectSql {
         }
         long start = doTrace ? System.nanoTime() : 0;
         Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-        Object qResult = executeWithArray(query, params, queryText);
-        MetastoreDirectSqlUtils.timingTrace(doTrace, queryText0 + "...)", start, (doTrace ? System.nanoTime() : 0));
-        if (qResult == null) {
-          query.closeAll();
-          return null;
+        try {
+          Object qResult = executeWithArray(query, params, queryText);
+          MetastoreDirectSqlUtils.timingTrace(doTrace, queryText0 + "...)", start, (doTrace ? System.nanoTime() : 0));
+          if (qResult == null) {
+            return null;
+          }
+          return MetastoreDirectSqlUtils.ensureList(qResult);
+        } finally {
+          addQueryAfterUse(query);
         }
-        addQueryAfterUse(query);
-        return MetastoreDirectSqlUtils.ensureList(qResult);
       }
     };
-    List<Object[]> list = Batchable.runBatched(batchSize, colNames, b);
-    if (list.isEmpty()) {
+    List<Object[]> list;
+    try {
+      list = Batchable.runBatched(batchSize, colNames, b);
+      if (list != null) {
+        list = new ArrayList<>(list);
+      }
+    } finally {
+      b.closeAllQueries();
+    }
+
+    if (list == null || list.isEmpty()) {
       return null;
     }
     ColumnStatisticsDesc csd = new ColumnStatisticsDesc(true, dbName, tableName);
     csd.setCatName(catName);
     ColumnStatistics result = makeColumnStats(list, csd, 0, engine);
-    b.closeAllQueries();
     return result;
   }
 
   public List<HiveObjectPrivilege> getTableAllColumnGrants(String catName, String dbName,
                                                            String tableName, String authorizer) throws MetaException {
-    Query query = null;
-
     // These constants should match the SELECT clause of the query.
     final int authorizerIndex = 0;
     final int columnNameIndex = 1;
@@ -1498,8 +1497,7 @@ class MetaStoreDirectSql {
     List<HiveObjectPrivilege> result = new ArrayList<>();
     final boolean doTrace = LOG.isDebugEnabled();
     long start = doTrace ? System.nanoTime() : 0;
-    query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    try {
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
       List<Object[]> queryResult = MetastoreDirectSqlUtils.ensureList(
               executeWithArray(query, params, queryText));
       long end = doTrace ? System.nanoTime() : 0;
@@ -1529,8 +1527,6 @@ class MetaStoreDirectSql {
         result.add(new HiveObjectPrivilege(objectRef, principalName, ptype, grantInfo,
                 privAuthorizer));
       }
-    } finally {
-      query.closeAll();
     }
 
     return result;
@@ -1623,8 +1619,7 @@ class MetaStoreDirectSql {
             String queryText = String.format(queryText0,
                 makeParams(inputColName.size()), makeParams(inputPartNames.size()));
             long start = doTrace ? System.nanoTime() : 0;
-            Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-            try {
+            try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
               Object qResult = executeWithArray(query, prepareParams(
                   catName, dbName, tableName, inputPartNames, inputColName, engine), queryText);
               long end = doTrace ? System.nanoTime() : 0;
@@ -1637,8 +1632,6 @@ class MetaStoreDirectSql {
                 }
               }
               return Lists.<Long>newArrayList(partsFound);
-            } finally {
-              query.closeAll();
             }
           }
         });
@@ -1676,16 +1669,13 @@ class MetaStoreDirectSql {
         + " from " + " " + PART_COL_STATS + " where \"DB_NAME\" = ? and \"CAT_NAME\" = ?";
     long start = 0;
     long end = 0;
-    Query query = null;
     boolean doTrace = LOG.isDebugEnabled();
     Object qResult = null;
     start = doTrace ? System.nanoTime() : 0;
     List<ColStatsObjWithSourceInfo> colStatsForDB = new ArrayList<ColStatsObjWithSourceInfo>();
-    try {
-      query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
       qResult = executeWithArray(query, new Object[] { dbName, catName }, queryText);
       if (qResult == null) {
-        query.closeAll();
         return colStatsForDB;
       }
       end = doTrace ? System.nanoTime() : 0;
@@ -1698,8 +1688,6 @@ class MetaStoreDirectSql {
         colStatsForDB.add(new ColStatsObjWithSourceInfo(colStatObj, catName, dbName, tblName, partName));
         Deadline.checkTimeout();
       }
-    } finally {
-      query.closeAll();
     }
     return colStatsForDB;
   }
@@ -1760,9 +1748,8 @@ class MetaStoreDirectSql {
     String queryText = null;
     long start = 0;
     long end = 0;
-    Query query = null;
+
     boolean doTrace = LOG.isDebugEnabled();
-    Object qResult = null;
     ForwardQueryResult<?> fqr = null;
     // Check if the status of all the columns of all the partitions exists
     // Extrapolation is not needed.
@@ -1772,23 +1759,25 @@ class MetaStoreDirectSql {
           + " and \"ENGINE\" = ? "
           + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
       start = doTrace ? System.nanoTime() : 0;
-      query = pm.newQuery("javax.jdo.query.SQL", queryText);
-      qResult = executeWithArray(query, prepareParams(catName, dbName, tableName, partNames, colNames, engine),
-          queryText);
-      if (qResult == null) {
-        query.closeAll();
-        return Collections.emptyList();
+      try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+        Object qResult = executeWithArray(query,
+            prepareParams(catName, dbName, tableName, partNames, colNames,
+                engine), queryText);
+        if (qResult == null) {
+          return Collections.emptyList();
+        }
+        end = doTrace ? System.nanoTime() : 0;
+        MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
+        List<Object[]> list = MetastoreDirectSqlUtils.ensureList(qResult);
+        List<ColumnStatisticsObj> colStats =
+            new ArrayList<ColumnStatisticsObj>(list.size());
+        for (Object[] row : list) {
+          colStats.add(prepareCSObjWithAdjustedNDV(row, 0,
+              useDensityFunctionForNDVEstimation, ndvTuner));
+          Deadline.checkTimeout();
+        }
+        return colStats;
       }
-      end = doTrace ? System.nanoTime() : 0;
-      MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
-      List<Object[]> list = MetastoreDirectSqlUtils.ensureList(qResult);
-      List<ColumnStatisticsObj> colStats = new ArrayList<ColumnStatisticsObj>(list.size());
-      for (Object[] row : list) {
-        colStats.add(prepareCSObjWithAdjustedNDV(row, 0, useDensityFunctionForNDVEstimation, ndvTuner));
-        Deadline.checkTimeout();
-      }
-      query.closeAll();
-      return colStats;
     } else {
       // Extrapolation is needed for some columns.
       // In this case, at least a column status for a partition is missing.
@@ -1802,35 +1791,37 @@ class MetaStoreDirectSql {
           + " and \"ENGINE\" = ? "
           + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
       start = doTrace ? System.nanoTime() : 0;
-      query = pm.newQuery("javax.jdo.query.SQL", queryText);
-      qResult = executeWithArray(query, prepareParams(catName, dbName, tableName, partNames, colNames, engine),
-          queryText);
-      end = doTrace ? System.nanoTime() : 0;
-      MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
-      if (qResult == null) {
-        query.closeAll();
-        return Collections.emptyList();
-      }
       List<String> noExtraColumnNames = new ArrayList<String>();
       Map<String, String[]> extraColumnNameTypeParts = new HashMap<String, String[]>();
-      List<Object[]> list = MetastoreDirectSqlUtils.ensureList(qResult);
-      for (Object[] row : list) {
-        String colName = (String) row[0];
-        String colType = (String) row[1];
-        // Extrapolation is not needed for this column if
-        // count(\"PARTITION_NAME\")==partNames.size()
-        // Or, extrapolation is not possible for this column if
-        // count(\"PARTITION_NAME\")<2
-        Long count = MetastoreDirectSqlUtils.extractSqlLong(row[2]);
-        if (count == partNames.size() || count < 2) {
-          noExtraColumnNames.add(colName);
-        } else {
-          extraColumnNameTypeParts.put(colName, new String[] { colType, String.valueOf(count) });
+      try(QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+        Object qResult = executeWithArray(query,
+            prepareParams(catName, dbName, tableName, partNames, colNames,
+                engine), queryText);
+        end = doTrace ? System.nanoTime() : 0;
+        MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
+        if (qResult == null) {
+          return Collections.emptyList();
         }
-        Deadline.checkTimeout();
+
+        List<Object[]> list = MetastoreDirectSqlUtils.ensureList(qResult);
+        for (Object[] row : list) {
+          String colName = (String) row[0];
+          String colType = (String) row[1];
+          // Extrapolation is not needed for this column if
+          // count(\"PARTITION_NAME\")==partNames.size()
+          // Or, extrapolation is not possible for this column if
+          // count(\"PARTITION_NAME\")<2
+          Long count = MetastoreDirectSqlUtils.extractSqlLong(row[2]);
+          if (count == partNames.size() || count < 2) {
+            noExtraColumnNames.add(colName);
+          } else {
+            extraColumnNameTypeParts.put(colName, new String[] {colType, String.valueOf(count)});
+          }
+          Deadline.checkTimeout();
+        }
       }
-      query.closeAll();
       // Extrapolation is not needed for columns noExtraColumnNames
+      List<Object[]> list;
       if (noExtraColumnNames.size() != 0) {
         queryText = commonPrefix + " and \"COLUMN_NAME\" in ("
             + makeParams(noExtraColumnNames.size()) + ")" + " and \"PARTITION_NAME\" in ("
@@ -1838,21 +1829,22 @@ class MetaStoreDirectSql {
             + " and \"ENGINE\" = ? "
             + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
         start = doTrace ? System.nanoTime() : 0;
-        query = pm.newQuery("javax.jdo.query.SQL", queryText);
-        qResult = executeWithArray(query,
-            prepareParams(catName, dbName, tableName, partNames, noExtraColumnNames, engine), queryText);
-        if (qResult == null) {
-          query.closeAll();
-          return Collections.emptyList();
+
+        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+          Object qResult = executeWithArray(query,
+              prepareParams(catName, dbName, tableName, partNames, noExtraColumnNames, engine), queryText);
+          if (qResult == null) {
+            return Collections.emptyList();
+          }
+          list = MetastoreDirectSqlUtils.ensureList(qResult);
+          for (Object[] row : list) {
+            colStats.add(prepareCSObjWithAdjustedNDV(row, 0,
+                useDensityFunctionForNDVEstimation, ndvTuner));
+            Deadline.checkTimeout();
+          }
+          end = doTrace ? System.nanoTime() : 0;
+          MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
         }
-        list = MetastoreDirectSqlUtils.ensureList(qResult);
-        for (Object[] row : list) {
-          colStats.add(prepareCSObjWithAdjustedNDV(row, 0, useDensityFunctionForNDVEstimation, ndvTuner));
-          Deadline.checkTimeout();
-        }
-        end = doTrace ? System.nanoTime() : 0;
-        MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
-        query.closeAll();
       }
       // Extrapolation is needed for extraColumnNames.
       // give a sequence number for all the partitions
@@ -1870,30 +1862,30 @@ class MetaStoreDirectSql {
             + " and \"ENGINE\" = ? "
             + " group by \"COLUMN_NAME\"";
         start = doTrace ? System.nanoTime() : 0;
-        query = pm.newQuery("javax.jdo.query.SQL", queryText);
-        List<String> extraColumnNames = new ArrayList<String>();
-        extraColumnNames.addAll(extraColumnNameTypeParts.keySet());
-        qResult = executeWithArray(query,
-            prepareParams(catName, dbName, tableName, partNames, extraColumnNames, engine), queryText);
-        if (qResult == null) {
-          query.closeAll();
-          return Collections.emptyList();
-        }
-        list = MetastoreDirectSqlUtils.ensureList(qResult);
-        // see the indexes for colstats in IExtrapolatePartStatus
-        Integer[] sumIndex = new Integer[] { 6, 10, 11, 15 };
-        for (Object[] row : list) {
-          Map<Integer, Object> indexToObject = new HashMap<Integer, Object>();
-          for (int ind = 1; ind < row.length; ind++) {
-            indexToObject.put(sumIndex[ind - 1], row[ind]);
+        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+          List<String> extraColumnNames = new ArrayList<String>();
+          extraColumnNames.addAll(extraColumnNameTypeParts.keySet());
+          Object qResult = executeWithArray(query,
+              prepareParams(catName, dbName, tableName, partNames,
+                  extraColumnNames, engine), queryText);
+          if (qResult == null) {
+            return Collections.emptyList();
           }
-          // row[0] is the column name
-          sumMap.put((String) row[0], indexToObject);
-          Deadline.checkTimeout();
+          list = MetastoreDirectSqlUtils.ensureList(qResult);
+          // see the indexes for colstats in IExtrapolatePartStatus
+          Integer[] sumIndex = new Integer[] {6, 10, 11, 15};
+          for (Object[] row : list) {
+            Map<Integer, Object> indexToObject = new HashMap<Integer, Object>();
+            for (int ind = 1; ind < row.length; ind++) {
+              indexToObject.put(sumIndex[ind - 1], row[ind]);
+            }
+            // row[0] is the column name
+            sumMap.put((String) row[0], indexToObject);
+            Deadline.checkTimeout();
+          }
+          end = doTrace ? System.nanoTime() : 0;
+          MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
         }
-        end = doTrace ? System.nanoTime() : 0;
-        MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
-        query.closeAll();
         for (Map.Entry<String, String[]> entry : extraColumnNameTypeParts.entrySet()) {
           Object[] row = new Object[IExtrapolatePartStatus.colStatNames.length + 2];
           String colName = entry.getKey();
@@ -1951,24 +1943,23 @@ class MetaStoreDirectSql {
                     + " order by cast(\"" + colStatName + "\" as decimal)";
               }
               start = doTrace ? System.nanoTime() : 0;
-              query = pm.newQuery("javax.jdo.query.SQL", queryText);
-              qResult = executeWithArray(query,
-                  prepareParams(catName, dbName, tableName, partNames, Arrays.asList(colName), engine), queryText);
-              if (qResult == null) {
-                query.closeAll();
-                return Collections.emptyList();
-              }
-              fqr = (ForwardQueryResult<?>) qResult;
-              Object[] min = (Object[]) (fqr.get(0));
-              Object[] max = (Object[]) (fqr.get(fqr.size() - 1));
-              end = doTrace ? System.nanoTime() : 0;
-              MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
-              query.closeAll();
-              if (min[0] == null || max[0] == null) {
-                row[2 + colStatIndex] = null;
-              } else {
-                row[2 + colStatIndex] = extrapolateMethod.extrapolate(min, max, colStatIndex,
-                    indexMap);
+              try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+                Object qResult = executeWithArray(query,
+                    prepareParams(catName, dbName, tableName, partNames, Arrays.asList(colName), engine), queryText);
+                if (qResult == null) {
+                  return Collections.emptyList();
+                }
+                fqr = (ForwardQueryResult<?>) qResult;
+                Object[] min = (Object[]) (fqr.get(0));
+                Object[] max = (Object[]) (fqr.get(fqr.size() - 1));
+                end = doTrace ? System.nanoTime() : 0;
+                MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
+                if (min[0] == null || max[0] == null) {
+                  row[2 + colStatIndex] = null;
+                } else {
+                  row[2 + colStatIndex] = extrapolateMethod
+                      .extrapolate(min, max, colStatIndex, indexMap);
+                }
               }
             } else {
               // if the aggregation type is avg, we use the average on the existing ones.
@@ -1982,21 +1973,20 @@ class MetaStoreDirectSql {
                   + " and \"ENGINE\" = ? "
                   + " group by \"COLUMN_NAME\"";
               start = doTrace ? System.nanoTime() : 0;
-              query = pm.newQuery("javax.jdo.query.SQL", queryText);
-              qResult = executeWithArray(query,
-                  prepareParams(catName, dbName, tableName, partNames, Arrays.asList(colName), engine), queryText);
-              if (qResult == null) {
-                query.closeAll();
-                return Collections.emptyList();
+              try(QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+                Object qResult = executeWithArray(query,
+                    prepareParams(catName, dbName, tableName, partNames, Arrays.asList(colName), engine), queryText);
+                if (qResult == null) {
+                  return Collections.emptyList();
+                }
+                fqr = (ForwardQueryResult<?>) qResult;
+                Object[] avg = (Object[]) (fqr.get(0));
+                // colStatIndex=12,13,14 respond to "AVG_LONG", "AVG_DOUBLE",
+                // "AVG_DECIMAL"
+                row[2 + colStatIndex] = avg[colStatIndex - 12];
+                end = doTrace ? System.nanoTime() : 0;
+                MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
               }
-              fqr = (ForwardQueryResult<?>) qResult;
-              Object[] avg = (Object[]) (fqr.get(0));
-              // colStatIndex=12,13,14 respond to "AVG_LONG", "AVG_DOUBLE",
-              // "AVG_DECIMAL"
-              row[2 + colStatIndex] = avg[colStatIndex - 12];
-              end = doTrace ? System.nanoTime() : 0;
-              MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, end);
-              query.closeAll();
             }
           }
           colStats.add(prepareCSObjWithAdjustedNDV(row, 0, useDensityFunctionForNDVEstimation, ndvTuner));
@@ -2070,15 +2060,17 @@ class MetaStoreDirectSql {
                 makeParams(inputColNames.size()), makeParams(inputPartNames.size()));
             long start = doTrace ? System.nanoTime() : 0;
             Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-            Object qResult = executeWithArray(query, prepareParams(
-                catName, dbName, tableName, inputPartNames, inputColNames, engine), queryText);
-            MetastoreDirectSqlUtils.timingTrace(doTrace, queryText0, start, (doTrace ? System.nanoTime() : 0));
-            if (qResult == null) {
-              query.closeAll();
-              return Collections.emptyList();
+            try {
+              Object qResult = executeWithArray(query, prepareParams(
+                  catName, dbName, tableName, inputPartNames, inputColNames, engine), queryText);
+              MetastoreDirectSqlUtils.timingTrace(doTrace, queryText0, start, (doTrace ? System.nanoTime() : 0));
+              if (qResult == null) {
+                return Collections.emptyList();
+              }
+              return MetastoreDirectSqlUtils.ensureList(qResult);
+            } finally {
+              addQueryAfterUse(query);
             }
-            addQueryAfterUse(query);
-            return MetastoreDirectSqlUtils.ensureList(qResult);
           }
         };
         try {
@@ -2088,28 +2080,31 @@ class MetaStoreDirectSql {
         }
       }
     };
-    List<Object[]> list = Batchable.runBatched(batchSize, colNames, b);
 
-    List<ColumnStatistics> result = new ArrayList<ColumnStatistics>(
-        Math.min(list.size(), partNames.size()));
+    List<ColumnStatistics> result = new ArrayList<ColumnStatistics>(partNames.size());
     String lastPartName = null;
     int from = 0;
-    for (int i = 0; i <= list.size(); ++i) {
-      boolean isLast = i == list.size();
-      String partName = isLast ? null : (String)list.get(i)[0];
-      if (!isLast && partName.equals(lastPartName)) {
-        continue;
-      } else if (from != i) {
-        ColumnStatisticsDesc csd = new ColumnStatisticsDesc(false, dbName, tableName);
-        csd.setCatName(catName);
-        csd.setPartName(lastPartName);
-        result.add(makeColumnStats(list.subList(from, i), csd, 1, engine));
+    try {
+      List<Object[]> list = Batchable.runBatched(batchSize, colNames, b);
+      for (int i = 0; i <= list.size(); ++i) {
+        boolean isLast = i == list.size();
+        String partName = isLast ? null : (String) list.get(i)[0];
+        if (!isLast && partName.equals(lastPartName)) {
+          continue;
+        } else if (from != i) {
+          ColumnStatisticsDesc csd =
+              new ColumnStatisticsDesc(false, dbName, tableName);
+          csd.setCatName(catName);
+          csd.setPartName(lastPartName);
+          result.add(makeColumnStats(list.subList(from, i), csd, 1, engine));
+        }
+        lastPartName = partName;
+        from = i;
+        Deadline.checkTimeout();
       }
-      lastPartName = partName;
-      from = i;
-      Deadline.checkTimeout();
+    } finally {
+      b.closeAllQueries();
     }
-    b.closeAllQueries();
     return result;
   }
 
@@ -2235,38 +2230,38 @@ class MetaStoreDirectSql {
       pms.add(parent_db_name);
     }
 
-    Query queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
-    List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
-        queryParams, pms.toArray(), queryText));
+    try (QueryWrapper queryParams = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
+          queryParams, pms.toArray(), queryText));
 
-    if (!sqlResult.isEmpty()) {
-      for (Object[] line : sqlResult) {
-        int enableValidateRely = MetastoreDirectSqlUtils.extractSqlInt(line[11]);
-        boolean enable = (enableValidateRely & 4) != 0;
-        boolean validate = (enableValidateRely & 2) != 0;
-        boolean rely = (enableValidateRely & 1) != 0;
-        SQLForeignKey currKey = new SQLForeignKey(
-          MetastoreDirectSqlUtils.extractSqlString(line[0]),
-          MetastoreDirectSqlUtils.extractSqlString(line[1]),
-          MetastoreDirectSqlUtils.extractSqlString(line[2]),
-          MetastoreDirectSqlUtils.extractSqlString(line[3]),
-          MetastoreDirectSqlUtils.extractSqlString(line[4]),
-          MetastoreDirectSqlUtils.extractSqlString(line[5]),
-          MetastoreDirectSqlUtils.extractSqlInt(line[6]),
-          MetastoreDirectSqlUtils.extractSqlInt(line[7]),
-          MetastoreDirectSqlUtils.extractSqlInt(line[8]),
-          MetastoreDirectSqlUtils.extractSqlString(line[9]),
-          MetastoreDirectSqlUtils.extractSqlString(line[10]),
-          enable,
-          validate,
-          rely
+      if (!sqlResult.isEmpty()) {
+        for (Object[] line : sqlResult) {
+          int enableValidateRely = MetastoreDirectSqlUtils.extractSqlInt(line[11]);
+          boolean enable = (enableValidateRely & 4) != 0;
+          boolean validate = (enableValidateRely & 2) != 0;
+          boolean rely = (enableValidateRely & 1) != 0;
+          SQLForeignKey currKey = new SQLForeignKey(
+              MetastoreDirectSqlUtils.extractSqlString(line[0]),
+              MetastoreDirectSqlUtils.extractSqlString(line[1]),
+              MetastoreDirectSqlUtils.extractSqlString(line[2]),
+              MetastoreDirectSqlUtils.extractSqlString(line[3]),
+              MetastoreDirectSqlUtils.extractSqlString(line[4]),
+              MetastoreDirectSqlUtils.extractSqlString(line[5]),
+              MetastoreDirectSqlUtils.extractSqlInt(line[6]),
+              MetastoreDirectSqlUtils.extractSqlInt(line[7]),
+              MetastoreDirectSqlUtils.extractSqlInt(line[8]),
+              MetastoreDirectSqlUtils.extractSqlString(line[9]),
+              MetastoreDirectSqlUtils.extractSqlString(line[10]),
+              enable,
+              validate,
+              rely
           );
-        currKey.setCatName(catName);
-        ret.add(currKey);
+          currKey.setCatName(catName);
+          ret.add(currKey);
+        }
       }
+      return ret;
     }
-    queryParams.closeAll();
-    return ret;
   }
 
   public List<SQLPrimaryKey> getPrimaryKeys(String catName, String db_name, String tbl_name)
@@ -2303,30 +2298,30 @@ class MetaStoreDirectSql {
       pms.add(tbl_name);
     }
 
-    Query queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
-    List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
-        queryParams, pms.toArray(), queryText));
+    try (QueryWrapper queryParams = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
+          queryParams, pms.toArray(), queryText));
 
-    if (!sqlResult.isEmpty()) {
-      for (Object[] line : sqlResult) {
+      if (!sqlResult.isEmpty()) {
+        for (Object[] line : sqlResult) {
           int enableValidateRely = MetastoreDirectSqlUtils.extractSqlInt(line[5]);
           boolean enable = (enableValidateRely & 4) != 0;
           boolean validate = (enableValidateRely & 2) != 0;
           boolean rely = (enableValidateRely & 1) != 0;
-        SQLPrimaryKey currKey = new SQLPrimaryKey(
-          MetastoreDirectSqlUtils.extractSqlString(line[0]),
-          MetastoreDirectSqlUtils.extractSqlString(line[1]),
-          MetastoreDirectSqlUtils.extractSqlString(line[2]),
-          MetastoreDirectSqlUtils.extractSqlInt(line[3]), MetastoreDirectSqlUtils.extractSqlString(line[4]),
-          enable,
-          validate,
-          rely);
-        currKey.setCatName(MetastoreDirectSqlUtils.extractSqlString(line[6]));
-        ret.add(currKey);
+          SQLPrimaryKey currKey = new SQLPrimaryKey(
+              MetastoreDirectSqlUtils.extractSqlString(line[0]),
+              MetastoreDirectSqlUtils.extractSqlString(line[1]),
+              MetastoreDirectSqlUtils.extractSqlString(line[2]),
+              MetastoreDirectSqlUtils.extractSqlInt(line[3]), MetastoreDirectSqlUtils.extractSqlString(line[4]),
+              enable,
+              validate,
+              rely);
+          currKey.setCatName(MetastoreDirectSqlUtils.extractSqlString(line[6]));
+          ret.add(currKey);
+        }
       }
+      return ret;
     }
-    queryParams.closeAll();
-    return ret;
   }
 
   public List<SQLUniqueConstraint> getUniqueConstraints(String catName, String db_name, String tbl_name)
@@ -2362,29 +2357,29 @@ class MetaStoreDirectSql {
       pms.add(tbl_name);
     }
 
-    Query queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
-    List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
-        queryParams, pms.toArray(), queryText));
+    try (QueryWrapper queryParams = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
+          queryParams, pms.toArray(), queryText));
 
-    if (!sqlResult.isEmpty()) {
-      for (Object[] line : sqlResult) {
+      if (!sqlResult.isEmpty()) {
+        for (Object[] line : sqlResult) {
           int enableValidateRely = MetastoreDirectSqlUtils.extractSqlInt(line[5]);
           boolean enable = (enableValidateRely & 4) != 0;
           boolean validate = (enableValidateRely & 2) != 0;
           boolean rely = (enableValidateRely & 1) != 0;
-        ret.add(new SQLUniqueConstraint(
-            catName,
-            MetastoreDirectSqlUtils.extractSqlString(line[0]),
-            MetastoreDirectSqlUtils.extractSqlString(line[1]),
-            MetastoreDirectSqlUtils.extractSqlString(line[2]),
-            MetastoreDirectSqlUtils.extractSqlInt(line[3]), MetastoreDirectSqlUtils.extractSqlString(line[4]),
-            enable,
-            validate,
-            rely));
+          ret.add(new SQLUniqueConstraint(
+              catName,
+              MetastoreDirectSqlUtils.extractSqlString(line[0]),
+              MetastoreDirectSqlUtils.extractSqlString(line[1]),
+              MetastoreDirectSqlUtils.extractSqlString(line[2]),
+              MetastoreDirectSqlUtils.extractSqlInt(line[3]), MetastoreDirectSqlUtils.extractSqlString(line[4]),
+              enable,
+              validate,
+              rely));
+        }
       }
+      return ret;
     }
-    queryParams.closeAll();
-    return ret;
   }
 
   public List<SQLNotNullConstraint> getNotNullConstraints(String catName, String db_name, String tbl_name)
@@ -2420,29 +2415,29 @@ class MetaStoreDirectSql {
       pms.add(tbl_name);
     }
 
-    Query queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
-    List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
-        queryParams, pms.toArray(), queryText));
+    try (QueryWrapper queryParams = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
+          queryParams, pms.toArray(), queryText));
 
-    if (!sqlResult.isEmpty()) {
-      for (Object[] line : sqlResult) {
+      if (!sqlResult.isEmpty()) {
+        for (Object[] line : sqlResult) {
           int enableValidateRely = MetastoreDirectSqlUtils.extractSqlInt(line[4]);
           boolean enable = (enableValidateRely & 4) != 0;
           boolean validate = (enableValidateRely & 2) != 0;
           boolean rely = (enableValidateRely & 1) != 0;
-        ret.add(new SQLNotNullConstraint(
-            catName,
-            MetastoreDirectSqlUtils.extractSqlString(line[0]),
-            MetastoreDirectSqlUtils.extractSqlString(line[1]),
-            MetastoreDirectSqlUtils.extractSqlString(line[2]),
-            MetastoreDirectSqlUtils.extractSqlString(line[3]),
-            enable,
-            validate,
-            rely));
+          ret.add(new SQLNotNullConstraint(
+              catName,
+              MetastoreDirectSqlUtils.extractSqlString(line[0]),
+              MetastoreDirectSqlUtils.extractSqlString(line[1]),
+              MetastoreDirectSqlUtils.extractSqlString(line[2]),
+              MetastoreDirectSqlUtils.extractSqlString(line[3]),
+              enable,
+              validate,
+              rely));
+        }
       }
+      return ret;
     }
-    queryParams.closeAll();
-    return ret;
   }
 
   public List<SQLDefaultConstraint> getDefaultConstraints(String catName, String db_name, String tbl_name)
@@ -2482,31 +2477,31 @@ class MetaStoreDirectSql {
       pms.add(tbl_name);
     }
 
-    Query queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
-    List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
-        queryParams, pms.toArray(), queryText));
+    try (QueryWrapper queryParams = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
+          queryParams, pms.toArray(), queryText));
 
-    if (!sqlResult.isEmpty()) {
-      for (Object[] line : sqlResult) {
-        int enableValidateRely = MetastoreDirectSqlUtils.extractSqlInt(line[4]);
-        boolean enable = (enableValidateRely & 4) != 0;
-        boolean validate = (enableValidateRely & 2) != 0;
-        boolean rely = (enableValidateRely & 1) != 0;
-        SQLDefaultConstraint currConstraint = new SQLDefaultConstraint(
-            catName,
-            MetastoreDirectSqlUtils.extractSqlString(line[0]),
-            MetastoreDirectSqlUtils.extractSqlString(line[1]),
-            MetastoreDirectSqlUtils.extractSqlString(line[2]),
-            MetastoreDirectSqlUtils.extractSqlString(line[5]),
-            MetastoreDirectSqlUtils.extractSqlString(line[3]),
-            enable,
-            validate,
-            rely);
-        ret.add(currConstraint);
+      if (!sqlResult.isEmpty()) {
+        for (Object[] line : sqlResult) {
+          int enableValidateRely = MetastoreDirectSqlUtils.extractSqlInt(line[4]);
+          boolean enable = (enableValidateRely & 4) != 0;
+          boolean validate = (enableValidateRely & 2) != 0;
+          boolean rely = (enableValidateRely & 1) != 0;
+          SQLDefaultConstraint currConstraint = new SQLDefaultConstraint(
+              catName,
+              MetastoreDirectSqlUtils.extractSqlString(line[0]),
+              MetastoreDirectSqlUtils.extractSqlString(line[1]),
+              MetastoreDirectSqlUtils.extractSqlString(line[2]),
+              MetastoreDirectSqlUtils.extractSqlString(line[5]),
+              MetastoreDirectSqlUtils.extractSqlString(line[3]),
+              enable,
+              validate,
+              rely);
+          ret.add(currConstraint);
+        }
       }
+      return ret;
     }
-    queryParams.closeAll();
-    return ret;
   }
 
   public List<SQLCheckConstraint> getCheckConstraints(String catName, String db_name, String tbl_name)
@@ -2546,31 +2541,31 @@ class MetaStoreDirectSql {
       pms.add(tbl_name);
     }
 
-    Query queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
-    List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
-        queryParams, pms.toArray(), queryText));
+    try (QueryWrapper queryParams = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
+          queryParams, pms.toArray(), queryText));
 
-    if (!sqlResult.isEmpty()) {
-      for (Object[] line : sqlResult) {
-        int enableValidateRely = MetastoreDirectSqlUtils.extractSqlInt(line[4]);
-        boolean enable = (enableValidateRely & 4) != 0;
-        boolean validate = (enableValidateRely & 2) != 0;
-        boolean rely = (enableValidateRely & 1) != 0;
-        SQLCheckConstraint currConstraint = new SQLCheckConstraint(
-            catName,
-            MetastoreDirectSqlUtils.extractSqlString(line[0]),
-            MetastoreDirectSqlUtils.extractSqlString(line[1]),
-            MetastoreDirectSqlUtils.extractSqlString(line[2]),
-            MetastoreDirectSqlUtils.extractSqlString(line[5]),
-            MetastoreDirectSqlUtils.extractSqlString(line[3]),
-            enable,
-            validate,
-            rely);
-        ret.add(currConstraint);
+      if (!sqlResult.isEmpty()) {
+        for (Object[] line : sqlResult) {
+          int enableValidateRely = MetastoreDirectSqlUtils.extractSqlInt(line[4]);
+          boolean enable = (enableValidateRely & 4) != 0;
+          boolean validate = (enableValidateRely & 2) != 0;
+          boolean rely = (enableValidateRely & 1) != 0;
+          SQLCheckConstraint currConstraint = new SQLCheckConstraint(
+              catName,
+              MetastoreDirectSqlUtils.extractSqlString(line[0]),
+              MetastoreDirectSqlUtils.extractSqlString(line[1]),
+              MetastoreDirectSqlUtils.extractSqlString(line[2]),
+              MetastoreDirectSqlUtils.extractSqlString(line[5]),
+              MetastoreDirectSqlUtils.extractSqlString(line[3]),
+              enable,
+              validate,
+              rely);
+          ret.add(currConstraint);
+        }
       }
+      return ret;
     }
-    queryParams.closeAll();
-    return ret;
   }
 
   /**
@@ -2626,26 +2621,24 @@ class MetaStoreDirectSql {
             + "INNER JOIN " + PARTITIONS + " ON " + PARTITIONS + ".\"SD_ID\" = " + SDS + ".\"SD_ID\" "
             + "WHERE " + PARTITIONS + ".\"PART_ID\" in (" + partitionIds + ")";
 
-    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    List<Object[]> sqlResult = MetastoreDirectSqlUtils
-        .ensureList(executeWithArray(query, null, queryText));
-
     List<Object> sdIdList = new ArrayList<>(partitionIdList.size());
     List<Object> columnDescriptorIdList = new ArrayList<>(1);
     List<Object> serdeIdList = new ArrayList<>(partitionIdList.size());
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      List<Object[]> sqlResult = MetastoreDirectSqlUtils
+          .ensureList(executeWithArray(query, null, queryText));
 
-    if (!sqlResult.isEmpty()) {
-      for (Object[] fields : sqlResult) {
-        sdIdList.add(MetastoreDirectSqlUtils.extractSqlLong(fields[0]));
-        Long colId = MetastoreDirectSqlUtils.extractSqlLong(fields[1]);
-        if (!columnDescriptorIdList.contains(colId)) {
-          columnDescriptorIdList.add(colId);
+      if (!sqlResult.isEmpty()) {
+        for (Object[] fields : sqlResult) {
+          sdIdList.add(MetastoreDirectSqlUtils.extractSqlLong(fields[0]));
+          Long colId = MetastoreDirectSqlUtils.extractSqlLong(fields[1]);
+          if (!columnDescriptorIdList.contains(colId)) {
+            columnDescriptorIdList.add(colId);
+          }
+          serdeIdList.add(MetastoreDirectSqlUtils.extractSqlLong(fields[2]));
         }
-        serdeIdList.add(MetastoreDirectSqlUtils.extractSqlLong(fields[2]));
       }
     }
-    query.closeAll();
-
     try {
       // Drop privileges
       queryText = "delete from " + PART_PRIVS + " where \"PART_ID\" in (" + partitionIds + ")";
@@ -2709,19 +2702,18 @@ class MetaStoreDirectSql {
         "select " + SKEWED_VALUES + ".\"STRING_LIST_ID_EID\" "
             + "from " + SKEWED_VALUES + " "
             + "WHERE " + SKEWED_VALUES + ".\"SD_ID_OID\" in  (" + sdIds + ")";
-
-    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    List<Object[]> sqlResult = MetastoreDirectSqlUtils
-        .ensureList(executeWithArray(query, null, queryText));
-
     List<Object> skewedStringListIdList = new ArrayList<>(0);
 
-    if (!sqlResult.isEmpty()) {
-      for (Object[] fields : sqlResult) {
-        skewedStringListIdList.add(MetastoreDirectSqlUtils.extractSqlLong(fields[0]));
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      List<Object[]> sqlResult = MetastoreDirectSqlUtils
+          .ensureList(executeWithArray(query, null, queryText));
+
+      if (!sqlResult.isEmpty()) {
+        for (Object[] fields : sqlResult) {
+          skewedStringListIdList.add(MetastoreDirectSqlUtils.extractSqlLong(fields[0]));
+        }
       }
     }
-    query.closeAll();
 
     String skewedStringListIds = getIdListForIn(skewedStringListIdList);
 
@@ -2830,20 +2822,19 @@ class MetaStoreDirectSql {
             + "from " + SDS + " "
             + "WHERE " + SDS + ".\"CD_ID\" in (" + colIds + ") "
             + "GROUP BY " + SDS + ".\"CD_ID\"";
-    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    List<Object[]> sqlResult = MetastoreDirectSqlUtils
-        .ensureList(executeWithArray(query, null, queryText));
-
     List<Object> danglingColumnDescriptorIdList = new ArrayList<>(columnDescriptorIdList.size());
-    if (!sqlResult.isEmpty()) {
-      for (Object[] fields : sqlResult) {
-        if (MetastoreDirectSqlUtils.extractSqlInt(fields[1]) == 0) {
-          danglingColumnDescriptorIdList.add(MetastoreDirectSqlUtils.extractSqlLong(fields[0]));
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      List<Object[]> sqlResult = MetastoreDirectSqlUtils
+          .ensureList(executeWithArray(query, null, queryText));
+
+      if (!sqlResult.isEmpty()) {
+        for (Object[] fields : sqlResult) {
+          if (MetastoreDirectSqlUtils.extractSqlInt(fields[1]) == 0) {
+            danglingColumnDescriptorIdList.add(MetastoreDirectSqlUtils.extractSqlLong(fields[0]));
+          }
         }
       }
     }
-    query.closeAll();
-
     if (!danglingColumnDescriptorIdList.isEmpty()) {
       try {
         String danglingCDIds = getIdListForIn(danglingColumnDescriptorIdList);
@@ -2901,8 +2892,7 @@ class MetaStoreDirectSql {
         + PARTITIONS + ".\"PART_NAME\"";
 
     LOG.debug("Running {}", queryText);
-    Query<?> query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    try {
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
       List<Object[]> sqlResult = MetastoreDirectSqlUtils.ensureList(executeWithArray(
           query, new Object[] { dbName, catName, tableName }, queryText));
       Map<String, List<String>> result = new HashMap<>();
@@ -2924,8 +2914,6 @@ class MetaStoreDirectSql {
         result.put(lastPartName, cols);
       }
       return result;
-    } finally {
-      query.closeAll();
     }
   }
 
@@ -2942,8 +2930,7 @@ class MetaStoreDirectSql {
   private void getStatsTableListResult(
       String queryText, List<org.apache.hadoop.hive.common.TableName> result) throws MetaException {
     LOG.debug("Running {}", queryText);
-    Query<?> query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    try {
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
       List<Object[]> sqlResult = MetastoreDirectSqlUtils
           .ensureList(executeWithArray(query, STATS_TABLE_TYPES, queryText));
       for (Object[] line : sqlResult) {
@@ -2951,8 +2938,6 @@ class MetaStoreDirectSql {
             MetastoreDirectSqlUtils.extractSqlString(line[2]), MetastoreDirectSqlUtils
             .extractSqlString(line[1]), MetastoreDirectSqlUtils.extractSqlString(line[0])));
       }
-    } finally {
-      query.closeAll();
     }
   }
 
@@ -2980,5 +2965,20 @@ class MetaStoreDirectSql {
     } catch (SQLException e) {
       throw new MetaException("Error removing column stat states:" + e.getMessage());
     }
+  }
+
+  public Map<String, Map<String, String>> updatePartitionColumnStatisticsBatch(
+                                                      Map<String, ColumnStatistics> partColStatsMap,
+                                                      Table tbl,
+                                                      List<TransactionalMetaStoreEventListener> listeners,
+                                                      String validWriteIds, long writeId)
+          throws MetaException {
+    long numStats = 0;
+    for (Map.Entry entry : partColStatsMap.entrySet()) {
+      ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
+      numStats += colStats.getStatsObjSize();
+    }
+    long csId = updateStat.getNextCSIdForMPartitionColumnStatistics(numStats);
+    return updateStat.updatePartitionColumnStatistics(partColStatsMap, tbl, csId, validWriteIds, writeId, listeners);
   }
 }

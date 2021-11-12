@@ -399,20 +399,14 @@ public class MapJoinProcessor extends Transform {
         // Verify we handle the key column types for an optimized table.  This is the effectively
         // the same check used in Tez HashTableLoader.
         if (!MapJoinKey.isSupportedField(typeInfo)) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("FULL OUTER MapJoin not enabled: " +
-                " key type " + typeInfo.toString() + " not supported");
-          }
+          LOG.debug("FULL OUTER MapJoin not enabled: key type {} not supported", typeInfo);
           return false;
         }
       }
     }
 
     if (onExpressionHasNullSafes(joinDesc)) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("FULL OUTER MapJoin not enabled: " +
-            "nullsafe not supported");
-      }
+      LOG.debug("FULL OUTER MapJoin not enabled: nullsafe not supported");
       return false;
     }
 
@@ -421,19 +415,13 @@ public class MapJoinProcessor extends Transform {
     boolean isHybridHashJoin = HiveConf.getBoolVar(hiveConf,
         HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN);
     if (isVectorizationMapJoinNativeEnabled && isHybridHashJoin) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("FULL OUTER MapJoin not enabled: " +
-            "Native Vector MapJoin and Hybrid Grace not supported");
-      }
+      LOG.debug("FULL OUTER MapJoin not enabled: Native Vector MapJoin and Hybrid Grace not supported");
       return false;
     }
 
     if (joinDesc.getResidualFilterExprs() != null &&
         joinDesc.getResidualFilterExprs().size() != 0) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("FULL OUTER MapJoin not enabled: " +
-            "non-equi joins not supported");
-      }
+      LOG.debug("FULL OUTER MapJoin not enabled: non-equi joins not supported");
       return false;
     }
 
@@ -462,9 +450,7 @@ public class MapJoinProcessor extends Transform {
     if (conds.length > 1) {
 
       // No multiple condition FULL OUTER MapJoin.
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("FULL OUTER MapJoin not enabled: multiple JOIN conditions not supported");
-      }
+      LOG.debug("FULL OUTER MapJoin not enabled: multiple JOIN conditions not supported");
       return false;
     }
 
@@ -488,10 +474,7 @@ public class MapJoinProcessor extends Transform {
     case NONE:
       {
         if (!isEnabled) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("FULL OUTER MapJoin not enabled: " +
-                HiveConf.ConfVars.HIVEMAPJOINFULLOUTER.varname + " is false");
-          }
+          LOG.debug("FULL OUTER MapJoin not enabled: {} is false", HiveConf.ConfVars.HIVEMAPJOINFULLOUTER.varname);
           return false;
         }
       }
@@ -527,9 +510,7 @@ public class MapJoinProcessor extends Transform {
     if (!isTezEngine) {
 
       // Only Tez for now.
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("FULL OUTER MapJoin not enabled: Only Tez engine supported");
-      }
+      LOG.debug("FULL OUTER MapJoin not enabled: Only Tez engine supported");
       return false;
     }
 
@@ -541,10 +522,7 @@ public class MapJoinProcessor extends Transform {
             hiveConf,
             HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
     if (!isOptimizedHashTableEnabled) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("FULL OUTER MapJoin not enabled: " +
-            HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE.varname + " is false");
-      }
+      LOG.debug("FULL OUTER MapJoin not enabled: {} is false", HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE.varname);
       return false;
     }
 
@@ -553,9 +531,7 @@ public class MapJoinProcessor extends Transform {
       return false;
     }
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("FULL OUTER MapJoin enabled");
-    }
+    LOG.debug("FULL OUTER MapJoin enabled");
     return true;
   }
 

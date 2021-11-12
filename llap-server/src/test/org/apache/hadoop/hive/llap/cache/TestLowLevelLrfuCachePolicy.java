@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.llap.cache;
 
 import static org.apache.hadoop.hive.llap.cache.TestProactiveEviction.closeSweeperExecutorForTest;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -41,7 +42,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
@@ -272,6 +272,43 @@ public class TestLowLevelLrfuCachePolicy {
   }
 
   @Test
+  public void testBPWrapperFlush() {
+    int heapSize = 20;
+    LOG.info("Testing bp wrapper flush logic");
+    ArrayList<LlapDataBuffer> inserted = new ArrayList<LlapDataBuffer>(heapSize);
+    EvictionTracker et = new EvictionTracker();
+    Configuration conf = new Configuration();
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 10);
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
+    LowLevelCacheMemoryManager mm = new LowLevelCacheMemoryManager(heapSize, lrfu,
+        LlapDaemonCacheMetrics.create("test", "1"));
+    lrfu.setEvictionListener(et);
+
+    // Test with 4 buffers: they should all remain in BP wrapper and not go to heap upon insertion.
+    // .. but after purging, they need to show up as 4 evicted bytes.
+    for (int i = 0; i < 4; ++i) {
+      LlapDataBuffer buffer = LowLevelCacheImpl.allocateFake();
+      assertTrue(cache(mm, lrfu, et, buffer));
+      inserted.add(buffer);
+    }
+    assertArrayEquals(new long[] {0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0}, lrfu.metrics.getUsageStats());
+    assertEquals(4, mm.purge());
+    assertArrayEquals(new long[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, lrfu.metrics.getUsageStats());
+
+    // Testing with 8 buffers: on the 6th buffer BP wrapper content should be flushed into heap, next 2 buffers won't
+    for (int i = 0; i < 8; ++i) {
+      LlapDataBuffer buffer = LowLevelCacheImpl.allocateFake();
+      assertTrue(cache(mm, lrfu, et, buffer));
+      inserted.add(buffer);
+    }
+    assertArrayEquals(new long[] {6, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0}, lrfu.metrics.getUsageStats());
+    assertEquals(8, mm.purge());
+    assertArrayEquals(new long[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, lrfu.metrics.getUsageStats());
+
+    assertTrue(et.evicted.containsAll(inserted));
+  }
+
+  @Test
   public void testProactiveEvictionLFU() throws Exception {
     testProactiveEviction(0.0f, false);
   }
@@ -289,6 +326,128 @@ public class TestLowLevelLrfuCachePolicy {
   @Test
   public void testProactiveEvictionLRUWithInstantDealloc() throws Exception {
     testProactiveEviction(1.0f, true);
+  }
+
+  @Test
+  public void testHotBuffers() {
+    int heapSize = 10;
+    int buffers = 20;
+    Configuration conf = new Configuration();
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
+    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_HOTBUFFERS_PERCENTAGE.varname, 0.1f);
+
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
+
+    LlapDataBuffer[] buffs = IntStream.range(0, buffers).
+        mapToObj(i -> LowLevelCacheImpl.allocateFake()).toArray(LlapDataBuffer[]::new);
+    Arrays.stream(buffs).forEach(b -> {
+      b.allocSize = 10;
+      lrfu.notifyUnlock(b);
+    });
+
+    // Access the first three again
+    lrfu.notifyUnlock(buffs[2]);
+    lrfu.notifyUnlock(buffs[1]);
+    lrfu.notifyUnlock(buffs[0]);
+
+    List<LlapCacheableBuffer> hotBuffers = lrfu.getHotBuffers();
+    // The first two are the hottest
+    assertEquals(hotBuffers.get(0), buffs[0]);
+    assertEquals(hotBuffers.get(1), buffs[1]);
+    assertEquals(2, hotBuffers.size());
+  }
+
+  @Test
+  public void testHotBuffersHeapAndList() {
+    int heapSize = 3;
+    int buffers = 20;
+    Configuration conf = new Configuration();
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
+    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_HOTBUFFERS_PERCENTAGE.varname, 0.2f);
+
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
+
+    LlapDataBuffer[] buffs = IntStream.range(0, buffers).
+        mapToObj(i -> LowLevelCacheImpl.allocateFake()).toArray(LlapDataBuffer[]::new);
+    Arrays.stream(buffs).forEach(b -> {
+      b.allocSize = 10;
+      lrfu.notifyUnlock(b);
+    });
+
+    // Access the first three again
+    lrfu.notifyUnlock(buffs[2]);
+    lrfu.notifyUnlock(buffs[1]);
+    lrfu.notifyUnlock(buffs[0]);
+
+    List<LlapCacheableBuffer> hotBuffers = lrfu.getHotBuffers();
+    // The first three are from the heap and the forth (19th) is from the list
+    assertEquals(hotBuffers.get(0), buffs[0]);
+    assertEquals(hotBuffers.get(1), buffs[1]);
+    assertEquals(hotBuffers.get(2), buffs[2]);
+    assertEquals(hotBuffers.get(3), buffs[19]);
+    assertEquals(4, hotBuffers.size());
+
+  }
+
+  @Test
+  public void testHotBuffersOnHalfFullHeap() {
+    int heapSize = 39;
+    int buffers = 20;
+    Configuration conf = new Configuration();
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
+    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_HOTBUFFERS_PERCENTAGE.varname, 0.2f);
+
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
+
+    LlapDataBuffer[] buffs = IntStream.range(0, buffers).
+        mapToObj(i -> LowLevelCacheImpl.allocateFake()).toArray(LlapDataBuffer[]::new);
+    Arrays.stream(buffs).forEach(b -> {
+      b.allocSize = 10;
+      lrfu.notifyUnlock(b);
+    });
+
+    // Access the first three again
+    lrfu.notifyUnlock(buffs[2]);
+    lrfu.notifyUnlock(buffs[1]);
+    lrfu.notifyUnlock(buffs[0]);
+
+    List<LlapCacheableBuffer> hotBuffers = lrfu.getHotBuffers();
+    // The first three are from the heap and the forth (19th) is from the list
+    assertEquals(hotBuffers.get(0), buffs[0]);
+    assertEquals(hotBuffers.get(1), buffs[1]);
+    assertEquals(hotBuffers.get(2), buffs[2]);
+    assertEquals(hotBuffers.get(3), buffs[19]);
+    assertEquals(4, hotBuffers.size());
+
+  }
+
+  @Test
+  public void testHotBuffersCutoff() {
+    int heapSize = 3;
+    int buffers = 20;
+    Configuration conf = new Configuration();
+    conf.setInt(HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE.varname, 1);
+    conf.setFloat(HiveConf.ConfVars.LLAP_LRFU_HOTBUFFERS_PERCENTAGE.varname, 0.2f);
+
+    LowLevelLrfuCachePolicy lrfu = new LowLevelLrfuCachePolicy(1, heapSize, conf);
+
+    LlapDataBuffer[] buffs = IntStream.range(0, buffers).
+        mapToObj(i -> LowLevelCacheImpl.allocateFake()).toArray(LlapDataBuffer[]::new);
+    Arrays.stream(buffs).forEach(b -> {
+      b.allocSize = 10;
+      lrfu.notifyUnlock(b);
+    });
+
+
+    buffs[5].allocSize = 40;
+    // Access the big one
+    lrfu.notifyUnlock(buffs[5]);
+
+
+    List<LlapCacheableBuffer> hotBuffers = lrfu.getHotBuffers();
+    // The big one
+    assertEquals(hotBuffers.get(0), buffs[5]);
+    assertEquals(1, hotBuffers.size());
   }
 
   private void testProactiveEviction(float lambda, boolean isInstantDealloc) throws Exception {

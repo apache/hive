@@ -41,6 +41,7 @@ import org.apache.spark.rdd.RDD;
 import org.apache.spark.rdd.ShuffledRDD;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import scala.Tuple2;
@@ -50,7 +51,7 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
 
-
+@Ignore("HIVE-22944: Kryo 5 upgrade conflicts with Spark, which is not supported anymore")
 public class TestSparkPlan {
 
   @Test

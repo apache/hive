@@ -54,17 +54,11 @@
           <groupId>org.apache.hive</groupId>
             <artifactId>hive-exec</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.pac4j</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-serde</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-metastore</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -106,7 +100,6 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
-      <version>${hadoop.version}</version>
        <exclusions>
         <exclusion>
           <groupId>commons-beanutils</groupId>

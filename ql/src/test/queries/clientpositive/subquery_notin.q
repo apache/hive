@@ -121,6 +121,7 @@ explain select * from part where (p_partkey*p_size) NOT IN (select min(p_partkey
 select * from part where (p_partkey*p_size) NOT IN (select min(p_partkey) from part group by p_type);
 
 --lhs contains non-simple expression, corr
+explain cbo select count(*) as c from part as e where p_size + 100 NOT IN (select p_partkey from part where p_name = e.p_name);
 explain select count(*) as c from part as e where p_size + 100 NOT IN (select p_partkey from part where p_name = e.p_name);
 select count(*) as c from part as e where p_size + 100 NOT IN (select p_partkey from part where p_name = e.p_name);
 
@@ -128,6 +129,7 @@ select count(*) as c from part as e where p_size + 100 NOT IN (select p_partkey 
 explain select * from part  where floor(p_retailprice) NOT IN (select floor(min(p_retailprice)) from part group by p_type);
 select * from part  where floor(p_retailprice) NOT IN (select floor(min(p_retailprice)) from part group by p_type);
 
+explain cbo select * from part where p_name NOT IN (select p_name from part p where p.p_size = part.p_size AND part.p_size + 121150 = p.p_partkey );
 explain select * from part where p_name NOT IN (select p_name from part p where p.p_size = part.p_size AND part.p_size + 121150 = p.p_partkey );
 select * from part where p_name NOT IN (select p_name from part p where p.p_size = part.p_size AND part.p_size + 121150 = p.p_partkey );
 
@@ -178,6 +180,7 @@ explain SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0);
 SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0);
 
 -- corr
+explain cbo SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c2=t2_n0.c1);
 explain SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c2=t2_n0.c1);
 SELECT c1 FROM t1_n0 WHERE c1 NOT IN (SELECT c1 FROM t2_n0 where t1_n0.c2=t2_n0.c1);
 

@@ -42,7 +42,7 @@ Stage-0
     Select Operator [SEL_6]
       Output:["_col0","_col1"]
       Lateral View Join Operator [LVJ_5]
-        Output:["_col0","_col1","_col7"]
+        Output:["_col0","_col1","_col8"]
         Select Operator [SEL_2]
           Output:["key","value"]
           Lateral View Forward [LVF_1]
@@ -51,7 +51,7 @@ Stage-0
     Select Operator [SEL_6]
       Output:["_col0","_col1"]
       Lateral View Join Operator [LVJ_5]
-        Output:["_col0","_col1","_col7"]
+        Output:["_col0","_col1","_col8"]
         UDTF Operator [UDTF_4]
           function name:explode
           Select Operator [SEL_3]
@@ -127,7 +127,7 @@ PREHOOK: Input: database:newdb
 POSTHOOK: query: describe database extended newDB
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:newdb
-newdb		location/in/test		hive_test_user	USER	
+newdb		location/in/test	hdfs://### HDFS PATH ###	hive_test_user	USER			
 PREHOOK: query: use newDB
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:newdb
@@ -711,7 +711,7 @@ Stage-0
       File Output Operator [FS_12]
         Limit [LIM_11] (rows=5/5 width=178)
           Number of rows:5
-          Select Operator [SEL_10] (rows=500/36 width=178)
+          Select Operator [SEL_10] (rows=500/8 width=178)
             Output:["_col0","_col1"]
           <-Map 1 [SIMPLE_EDGE] vectorized
             SHUFFLE [RS_9]

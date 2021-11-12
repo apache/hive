@@ -29,6 +29,7 @@ import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexFieldCollation;
@@ -41,6 +42,7 @@ import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.NlsString;
@@ -106,6 +108,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   private final RelDataTypeFactory dTFactory;
   protected final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());
   private static long uniqueCounter = 0;
+  private RexBuilder rexBuilder = null;
 
   public ExprNodeConverter(String tabAlias, RelDataType inputRowType,
       Set<Integer> vCols, RelDataTypeFactory dTFactory) {
@@ -120,6 +123,12 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   public ExprNodeConverter(String tabAlias, String columnAlias, RelDataType inputRowType,
           RelDataType outputRowType, Set<Integer> inputVCols, RelDataTypeFactory dTFactory) {
     this(tabAlias, columnAlias, inputRowType, outputRowType, inputVCols, dTFactory, false);
+  }
+
+  public ExprNodeConverter(String tabAlias, String columnAlias, RelDataType inputRowType,
+                           RelDataType outputRowType, Set<Integer> inputVCols, RexBuilder rexBuilder) {
+    this(tabAlias, columnAlias, inputRowType, outputRowType, inputVCols, rexBuilder.getTypeFactory(), false);
+    this.rexBuilder = rexBuilder;
   }
 
   public ExprNodeConverter(String tabAlias, String columnAlias, RelDataType inputRowType,
@@ -189,6 +198,11 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       // is implicit in the function name, thus translation will
       // proceed correctly if we just ignore the <time_unit>
       args.add(call.operands.get(0).accept(this));
+    } else if (call.getKind() == SqlKind.IS_DISTINCT_FROM) {
+      call = (RexCall) RexUtil.not(rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, call.operands));
+      for (RexNode operand : call.operands) {
+        args.add(operand.accept(this));
+      }
     } else {
       for (RexNode operand : call.operands) {
         args.add(operand.accept(this));

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import com.google.common.base.Preconditions;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -60,7 +61,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.math.IntMath;
+import com.google.common.math.LongMath;
 
 /**
  * Planner rule that expands distinct aggregates
@@ -111,7 +112,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
   public void onMatch(RelOptRuleCall call) {
     final Aggregate aggregate = call.rel(0);
     int numCountDistinct = getNumCountDistinctCall(aggregate);
-    if (numCountDistinct == 0 || aggregate.getGroupType() != Group.SIMPLE) {
+    if (numCountDistinct == 0 || numCountDistinct > 63 || aggregate.getGroupType() != Group.SIMPLE) {
       return;
     }
 
@@ -203,14 +204,14 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
     return createCount(groupingSets, argList, cleanArgList, map, aggregate.getGroupSet(), newGroupSet);
   }
 
-  private int getGroupingIdValue(List<Integer> list, ImmutableBitSet originalGroupSet, ImmutableBitSet newGroupSet,
+  private long getGroupingIdValue(List<Integer> list, ImmutableBitSet originalGroupSet, ImmutableBitSet newGroupSet,
           int groupCount) {
-    int ind = IntMath.pow(2, groupCount) - 1;
+    long ind = LongMath.pow(2, groupCount) - 1;
     for (int pos : originalGroupSet) {
-      ind &= ~(1 << groupCount - newGroupSet.indexOf(pos) - 1);
+      ind &= ~(1L << groupCount - newGroupSet.indexOf(pos) - 1);
     }
     for (int i : list) {
-      ind &= ~(1 << groupCount - newGroupSet.indexOf(i) - 1);
+      ind &= ~(1L << groupCount - newGroupSet.indexOf(i) - 1);
     }
     return ind;
   }
@@ -487,7 +488,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
       projects.add(RexInputRef.of2(arg, childFields));
     }
     final RelNode project =
-        projFactory.createProject(child, Pair.left(projects), Pair.right(projects));
+        projFactory.createProject(child, Collections.emptyList(), Pair.left(projects), Pair.right(projects));
 
     // Get the distinct values of the GROUP BY fields and the arguments
     // to the agg functions.

@@ -278,15 +278,18 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     // TODO Session re-use completely disabled for doAs=true. Always launches a new session.
     boolean nonDefaultUser = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
 
+    boolean jobNameSet = !HiveConf.getVar(conf, ConfVars.HIVETEZJOBNAME).equals("HIVE-%s");
+
     /*
-     * if the user has specified a queue name themselves, we create a new session.
-     * also a new session is created if the user tries to submit to a queue using
+     * if the user has specified a queue name themselves or job name is set, we create a new
+     * session. also a new session is created if the user tries to submit to a queue using
      * their own credentials. We expect that with the new security model, things will
      * run as user hive in most cases.
      */
-    if (nonDefaultUser || !hasInitialSessions || hasQueue) {
-      LOG.info("QueueName: {} nonDefaultUser: {} defaultQueuePool: {} hasInitialSessions: {}",
-              queueName, nonDefaultUser, defaultSessionPool, hasInitialSessions);
+    if (nonDefaultUser || !hasInitialSessions || hasQueue || jobNameSet) {
+      LOG.info("QueueName: {} nonDefaultUser: {} defaultQueuePool: {} hasInitialSessions: {}" +
+                      " jobNameSet: ", queueName, nonDefaultUser, defaultSessionPool,
+              hasInitialSessions, jobNameSet);
       return getNewSessionState(conf, queueName, doOpen);
     }
 
@@ -561,9 +564,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
   /** Called by TezSessionPoolSession when closed. */
   @Override
   public void unregisterOpenSession(TezSessionPoolSession session) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Closed a pool session [" + this + "]");
-    }
+    LOG.debug("Closed a pool session [{}]", this);
     synchronized (openSessions) {
       openSessions.remove(session);
       updateSessions();

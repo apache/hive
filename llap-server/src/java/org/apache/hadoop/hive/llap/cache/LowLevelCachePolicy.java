@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.llap.cache;
 
-
-import java.util.function.Predicate;
-
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Actor managing the eviction requests.
@@ -79,4 +79,10 @@ public interface LowLevelCachePolicy extends LlapIoDebugDump {
    */
   long purge();
 
+  /**
+   * Returns the collection of buffers which are considered the most important ones according to the given policy.
+   */
+  default List<LlapCacheableBuffer> getHotBuffers() {
+    return Collections.EMPTY_LIST;
+  }
 }

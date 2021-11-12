@@ -46,10 +46,11 @@ To run just one test, do
 mvn verify -DskipITests=false -Dit.test=ITestMysql -Dtest=nosuch
 
 Supported databases for testing:
+-Dit.test=ITestDerby
 -Dit.test=ITestMysql
 -Dit.test=ITestOracle
 -Dit.test=ITestPostgres
--Dit.test=ITestSqlServer
+-Dit.test=ITestMssql
 
 By adding -Dverbose.schematool the Schema Tool output becomes more detailed.
 

@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.metric.event;
 
+import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +34,8 @@ public class Stage {
   private long endTime;
   private Map<String, Metric> metrics = new HashMap<>();
   private String errorLogPath;
+  private SnapshotUtils.ReplSnapshotCount replSnapshotCount = new SnapshotUtils.ReplSnapshotCount();
+  private String replStats;
 
   public Stage() {
 
@@ -52,6 +56,8 @@ public class Stage {
       this.metrics.put(metric.getName(), new Metric(metric));
     }
     this.errorLogPath = stage.errorLogPath;
+    this.replSnapshotCount = stage.replSnapshotCount;
+    this.replStats = stage.replStats;
   }
 
   public String getName() {
@@ -106,4 +112,22 @@ public class Stage {
   public void setErrorLogPath(String errorLogPath) {
     this.errorLogPath = errorLogPath;
   }
+
+  public void setReplSnapshotsCount(SnapshotUtils.ReplSnapshotCount replSnapshotCount) {
+    this.replSnapshotCount = replSnapshotCount;
+  }
+
+  public SnapshotUtils.ReplSnapshotCount getReplSnapshotCount() {
+    return replSnapshotCount;
+  }
+
+
+  public String getReplStats() {
+    return replStats;
+  }
+
+  public void setReplStats(String replStats) {
+    this.replStats = replStats;
+  }
+
 }

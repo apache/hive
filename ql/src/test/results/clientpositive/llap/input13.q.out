@@ -33,7 +33,7 @@ PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n77
 PREHOOK: Output: default@dest2_n16
 PREHOOK: Output: default@dest3_n1@ds=2008-04-08/hr=12
-PREHOOK: Output: target/warehouse/dest4.out
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1_n77 SELECT src.* WHERE src.key < 100
@@ -45,7 +45,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n77
 POSTHOOK: Output: default@dest2_n16
 POSTHOOK: Output: default@dest3_n1@ds=2008-04-08/hr=12
-POSTHOOK: Output: target/warehouse/dest4.out
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
   Stage-5 depends on stages: Stage-4
@@ -150,7 +150,7 @@ STAGE PLANS:
                       Select Operator
                         expressions: _col0 (type: int)
                         outputColumnNames: key
-                        Statistics: Num rows: 55 Data size: 10120 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 55 Data size: 220 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(key), max(key), count(1), count(key), compute_bit_vector_hll(key)
                           keys: '2008-04-08' (type: string), '12' (type: string)
@@ -316,7 +316,7 @@ PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1_n77
 PREHOOK: Output: default@dest2_n16
 PREHOOK: Output: default@dest3_n1@ds=2008-04-08/hr=12
-PREHOOK: Output: target/warehouse/dest4.out
+#### A masked pattern was here ####
 POSTHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1_n77 SELECT src.* WHERE src.key < 100
 INSERT OVERWRITE TABLE dest2_n16 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
@@ -327,7 +327,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n77
 POSTHOOK: Output: default@dest2_n16
 POSTHOOK: Output: default@dest3_n1@ds=2008-04-08/hr=12
-POSTHOOK: Output: target/warehouse/dest4.out
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1_n77.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1_n77.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2_n16.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

@@ -243,7 +243,7 @@ public class TestOrcMetadataCache {
     final int MAX_ALLOC = 64;
     LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
     BuddyAllocator alloc = new BuddyAllocator(
-        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
+        false, false, 8, MAX_ALLOC, 1, 4 * 4096, 0, null, mm, metrics, null, true);
     MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
 
     Path path = new Path("../data/files/alltypesorc");
@@ -264,7 +264,7 @@ public class TestOrcMetadataCache {
     final int MAX_ALLOC = 64;
     LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
     BuddyAllocator alloc = new BuddyAllocator(
-        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
+        false, false, 8, MAX_ALLOC, 1, 4 * 4096, 0, null, mm, metrics, null, true);
     MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
 
     Path path = new Path("../data/files/alltypesorc");
@@ -288,7 +288,7 @@ public class TestOrcMetadataCache {
     final int MAX_ALLOC = 64;
     LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
     BuddyAllocator alloc = new BuddyAllocator(
-        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
+        false, false, 8, MAX_ALLOC, 1, 4 * 4096, 0, null, mm, metrics, null, true);
     MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
 
     Path path = new Path("../data/files/alltypesorc");

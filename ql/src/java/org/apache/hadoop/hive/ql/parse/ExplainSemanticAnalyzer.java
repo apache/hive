@@ -123,6 +123,10 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         config.setAst(true);
       } else if (explainOptions == HiveParser.KW_DEBUG) {
         config.setDebug(true);
+      } else if (explainOptions == HiveParser.KW_DDL) {
+        config.setDDL(true);
+        config.setCbo(true);
+        config.setVectorization(true);
       } else {
         // UNDONE: UNKNOWN OPTION?
       }
@@ -185,9 +189,8 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       fetchTask.getWork().initializeForFetch(ctx.getOpContext());
     }
 
-    ParseContext pCtx = null;
     if (sem instanceof SemanticAnalyzer) {
-      pCtx = ((SemanticAnalyzer)sem).getParseContext();
+      pCtx = sem.getParseContext();
     }
 
     config.setUserLevelExplain(!config.isExtended()
@@ -279,7 +282,10 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     List<Task<?>> rootTasks = getRootTasks();
     assert rootTasks != null && rootTasks.size() == 1;
     Task task = rootTasks.get(0);
-    return task instanceof ExplainTask && ((ExplainTask)task).getWork().isAuthorize();
+    if (task instanceof ExplainTask &&
+        ((ExplainTask)task).getWork().isAuthorize()) {
+      return true;
+    }
+    return super.skipAuthorization();
   }
-
 }

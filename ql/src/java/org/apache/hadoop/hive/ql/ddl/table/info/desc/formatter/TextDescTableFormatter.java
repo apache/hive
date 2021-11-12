@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
+import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.HiveStringUtils;
@@ -64,6 +65,7 @@ import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.ql.ddl.ShowUtils.ALIGNMENT;
 import static org.apache.hadoop.hive.ql.ddl.ShowUtils.DEFAULT_STRINGBUILDER_SIZE;
 import static org.apache.hadoop.hive.ql.ddl.ShowUtils.FIELD_DELIM;
@@ -82,7 +84,9 @@ class TextDescTableFormatter extends DescTableFormatter {
       addStatsData(out, columnPath, columns, isFormatted, columnStats, isOutputPadded);
       addPartitionData(out, conf, columnPath, table, isFormatted, isOutputPadded);
 
-      if (columnPath == null) {
+      boolean isIcebergMetaTable = table.getMetaTable() != null;
+      if (columnPath == null && !isIcebergMetaTable) {
+        addPartitionTransformData(out, table, isOutputPadded);
         if (isFormatted) {
           addFormattedTableData(out, table, partition, isOutputPadded);
         }
@@ -97,6 +101,32 @@ class TextDescTableFormatter extends DescTableFormatter {
     } catch (IOException e) {
       throw new HiveException(e);
     }
+  }
+
+  private void addPartitionTransformData(DataOutputStream out, Table table, boolean isOutputPadded) throws IOException {
+    String partitionTransformOutput = "";
+    if (table.isNonNative() && table.getStorageHandler() != null &&
+        table.getStorageHandler().supportsPartitionTransform()) {
+
+      List<PartitionTransformSpec> partSpecs = table.getStorageHandler().getPartitionTransformSpec(table);
+      if (partSpecs != null && !partSpecs.isEmpty()) {
+        TextMetaDataTable metaDataTable = new TextMetaDataTable();
+        partitionTransformOutput += LINE_DELIM + "# Partition Transform Information" + LINE_DELIM + "# ";
+        metaDataTable.addRow(DescTableDesc.PARTITION_TRANSFORM_SPEC_SCHEMA.split("#")[0].split(","));
+        for (PartitionTransformSpec spec : partSpecs) {
+          String[] row = new String[2];
+          row[0] = spec.getColumnName();
+          if (spec.getTransformType() != null) {
+            row[1] = spec.getTransformParam().isPresent() ?
+                spec.getTransformType().name() + "[" + spec.getTransformParam().get() + "]" :
+                spec.getTransformType().name();
+          }
+          metaDataTable.addRow(row);
+        }
+        partitionTransformOutput += metaDataTable.renderTable(isOutputPadded);
+      }
+    }
+    out.write(partitionTransformOutput.getBytes(StandardCharsets.UTF_8));
   }
 
   private void addStatsData(DataOutputStream out, String columnPath, List<FieldSchema> columns, boolean isFormatted,
@@ -341,6 +371,9 @@ class TextDescTableFormatter extends DescTableFormatter {
     Collections.sort(keys);
     for (String key : keys) {
       String value = params.get(key);
+      if (TABLE_IS_CTAS.equals(key)) {
+        continue;
+      }
       if (key.equals(StatsSetupConst.NUM_ERASURE_CODED_FILES)) {
         if ("0".equals(value)) {
           continue;

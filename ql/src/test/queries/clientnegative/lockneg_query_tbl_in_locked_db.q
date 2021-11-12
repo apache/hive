@@ -1,5 +1,6 @@
 --! qt:dataset:srcpart
 set hive.compute.query.using.stats=false;
+set hive.support.concurrency=true;
 create database lockneg1;
 use lockneg1;
 

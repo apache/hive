@@ -29,12 +29,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 
 import com.google.common.base.Preconditions;
 import org.apache.calcite.rel.metadata.RelMdUtil;
+import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
+import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
+import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -57,6 +61,7 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UDTFOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -111,11 +116,14 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSQCountCheck;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -534,10 +542,11 @@ public class StatsRulesProcFactory {
       }
       for (int i = 0; i < columnStats.size(); i++) {
         long dvs = columnStats.get(i) == null ? 0 : columnStats.get(i).getCountDistint();
+        long intersectionSize = estimateIntersectionSize(aspCtx.getConf(), columnStats.get(i), values.get(i));
         // (num of distinct vals for col in IN clause  / num of distinct vals for col )
         double columnFactor = dvs == 0 ? 0.5d : (1.0d / dvs);
         if (!multiColumn) {
-          columnFactor *=values.get(0).size();
+          columnFactor *= intersectionSize;
         }
         // max can be 1, even when ndv is larger in IN clause than in column stats
         factor *= columnFactor > 1d ? 1d : columnFactor;
@@ -550,6 +559,48 @@ public class StatsRulesProcFactory {
       }
       float inFactor = HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_IN_CLAUSE_FACTOR);
       return Math.round(numRows * factor * inFactor);
+    }
+
+    private long estimateIntersectionSize(HiveConf conf, ColStatistics colStatistics, Set<ExprNodeDescEqualityWrapper> values) {
+      try {
+        boolean useBitVectors = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_USE_BITVECTORS);
+        if (!useBitVectors){
+          return values.size();
+        }
+        if (colStatistics == null) {
+          return values.size();
+        }
+        byte[] bitVector = colStatistics.getBitVectors();
+        if (bitVector == null) {
+          return values.size();
+        }
+        NumDistinctValueEstimator sketch = NumDistinctValueEstimatorFactory.getNumDistinctValueEstimator(bitVector);
+        if (!(sketch instanceof HyperLogLog)) {
+          return values.size();
+        }
+        HyperLogLog hllCol = (HyperLogLog) sketch;
+        HyperLogLog hllVals = new HyperLogLog.HyperLogLogBuilder().build();
+
+        for (ExprNodeDescEqualityWrapper b : values) {
+          ObjectInspector oi = b.getExprNodeDesc().getWritableObjectInspector();
+          HiveMurmur3Adapter hma = new HiveMurmur3Adapter((PrimitiveObjectInspector) oi);
+          ExprNodeConstantDesc c = (ExprNodeConstantDesc) b.getExprNodeDesc();
+          hllVals.add(hma.murmur3(c.getWritableObjectInspector().getWritableConstantValue()));
+        }
+
+        long cntA = hllCol.count();
+        long cntB = hllVals.count();
+        hllCol.merge(hllVals);
+        long cntU = hllCol.count();
+
+        long cntI = cntA + cntB - cntU;
+        if (cntI < 0) {
+          return 0;
+        }
+        return cntI;
+      } catch (HiveException e) {
+        throw new RuntimeException("checking!", e);
+      }
     }
 
     static class RangeOps {
@@ -1297,6 +1348,8 @@ public class StatsRulesProcFactory {
             // Synthetic predicates from semijoin opt should not affect stats.
             return numRows;
           }
+        } else if (udf instanceof GenericUDFSQCountCheck) {
+          return numRows;
         }
       } else if (child instanceof ExprNodeConstantDesc) {
         if (Boolean.FALSE.equals(((ExprNodeConstantDesc) child).getValue())) {
@@ -1439,9 +1492,7 @@ public class StatsRulesProcFactory {
         // check if map side aggregation is possible or not based on column stats
         hashAgg = checkMapSideAggregation(gop, colStats, conf);
 
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("STATS-" + gop.toString() + " hashAgg: " + hashAgg);
-        }
+        LOG.debug("STATS-{} hashAgg: {}", gop, hashAgg);
 
         stats = parentStats.clone();
         stats.setColumnStats(colStats);
@@ -1460,7 +1511,11 @@ public class StatsRulesProcFactory {
                 " have stats. ndvProduct changed to: " + ndvProduct);
           }
         }
-
+        final long maxColumnNDV = colStats.stream()
+                .filter(Objects::nonNull)
+                .mapToLong(ColStatistics::getCountDistint)
+                .max()
+                .orElse(-1);
         if (interReduction) {
 
           if (hashAgg) {
@@ -1476,6 +1531,7 @@ public class StatsRulesProcFactory {
             } else {
               // Case 3: column stats, hash aggregation, NO grouping sets
               cardinality = Math.min(parentNumRows/2, StatsUtils.safeMult(ndvProduct, parallelism));
+              cardinality = Math.max(cardinality, maxColumnNDV);
               long orgParentNumRows = StatsUtils.safeMult(getParentNumRows(gop, gop.getConf().getKeys(), conf),
                                                           parallelism);
               cardinality = Math.min(cardinality, orgParentNumRows);
@@ -1521,6 +1577,7 @@ public class StatsRulesProcFactory {
           } else {
             // Case 9: column stats, NO grouping sets
             cardinality = Math.min(parentNumRows, ndvProduct);
+            cardinality = Math.max(cardinality, maxColumnNDV);
             // to get to the source number of rows we should be using original group by
             GroupByOperator gOpStats = mGop;
             if(gOpStats == null) {
@@ -1733,8 +1790,8 @@ public class StatsRulesProcFactory {
         float hashAggMem = conf.getFloatVar(HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
         float hashAggMaxThreshold = conf.getFloatVar(HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
 
-        // get available map memory
-        long totalMemory = StatsUtils.getAvailableMemory(conf) * 1000L * 1000L;
+        // get available map memory in bytes
+        long totalMemory = DagUtils.getContainerResource(conf).getMemorySize() * 1024L * 1024L;
         long maxMemHashAgg = Math.round(totalMemory * hashAggMem * hashAggMaxThreshold);
 
         // estimated number of rows will be product of NDVs

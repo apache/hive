@@ -2,7 +2,6 @@ SET hive.vectorized.execution.enabled=false;
 set hive.compute.query.using.stats=false;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
-set hive.optimize.sort.dynamic.partition=true;
 set hive.exec.dynamic.partition=true;
 set hive.exec.max.dynamic.partitions=1000;
 set hive.exec.max.dynamic.partitions.pernode=1000;
@@ -197,7 +196,6 @@ create table over1k_part3(
            b bigint,
            f float)
        partitioned by (s string, t tinyint, i int);
-set hive.optimize.sort.dynamic.partition=false;
 insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where s="foo";
 insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where t=27;
 insert overwrite table over1k_part3 partition(s,t,i) select si,b,f,s,t,i from over1k_n3 where i=100;

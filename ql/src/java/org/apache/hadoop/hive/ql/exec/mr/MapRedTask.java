@@ -522,7 +522,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
       try {
         queryDisplay.updateTaskStatistics(mapRedStats, rj, getId());
       } catch (IOException | JSONException e) {
-        LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e), e);
+        LOG.error("Failed to update web UI stats", e);
       }
     }
   }

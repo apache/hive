@@ -59,7 +59,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:val:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:val:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: string), val (type: string)
                     outputColumnNames: key, val
@@ -74,7 +74,7 @@ STAGE PLANS:
                           aggregators: VectorUDAFCountStar(*) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 3:bigint
+                          keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 4:bigint
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
@@ -328,7 +328,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:val:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:val:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: string), val (type: string)
                     outputColumnNames: key, val
@@ -343,7 +343,7 @@ STAGE PLANS:
                           aggregators: VectorUDAFCountStar(*) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 3:bigint
+                          keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 4:bigint
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
@@ -692,7 +692,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:string, 1:val:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:string, 1:val:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: string), val (type: string)
                     outputColumnNames: key, val
@@ -704,10 +704,10 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFCount(ConstantVectorExpression(val 1) -> 4:int) -> bigint
+                          aggregators: VectorUDAFCount(ConstantVectorExpression(val 1) -> 5:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 3:bigint
+                          keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 4:bigint
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
@@ -742,10 +742,10 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(ConstantVectorExpression(val 1) -> 6:int) -> bigint
+                          aggregators: VectorUDAFSumLong(ConstantVectorExpression(val 1) -> 7:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 5:bigint
+                          keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 6:bigint
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]

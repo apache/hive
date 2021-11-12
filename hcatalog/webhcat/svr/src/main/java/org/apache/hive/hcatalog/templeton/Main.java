@@ -18,6 +18,8 @@
  */
 package org.apache.hive.hcatalog.templeton;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Sets;
 import com.sun.jersey.api.core.PackagesResourceConfig;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 
@@ -27,6 +29,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Objects;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,13 +47,18 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.eclipse.jetty.rewrite.handler.RedirectPatternRule;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
+import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.LowResourceMonitor;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
@@ -74,6 +83,10 @@ public class Main {
   private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
   public static final int DEFAULT_PORT = 8080;
+  public static final String DEFAULT_HOST = "0.0.0.0";
+  public static final String DEFAULT_KEY_STORE_PATH = "";
+  public static final String DEFAULT_KEY_STORE_PASSWORD = "";
+  public static final String DEFAULT_SSL_PROTOCOL_BLACKLIST = "SSLv2,SSLv3";
   private Server server;
 
   private static volatile AppConfig conf;
@@ -231,6 +244,13 @@ public class Main {
     // Add any redirects
     addRedirects(server);
 
+    // Set handling for low resource conditions.
+    final LowResourceMonitor low = new LowResourceMonitor(server);
+    low.setLowResourcesIdleTimeout(10000);
+    server.addBean(low);
+
+    server.addConnector(createChannelConnector());
+
     // Start the server
     server.start();
     this.server = server;
@@ -250,6 +270,35 @@ public class Main {
     FilterHolder xsrfFilter = fHolder;
 
     return xsrfFilter;
+  }
+
+  /**
+   Create a channel connector for "http/https" requests.
+   */
+
+  private Connector createChannelConnector() {
+    ServerConnector connector;
+    final HttpConfiguration httpConf = new HttpConfiguration();
+    httpConf.setRequestHeaderSize(1024 * 64);
+    final HttpConnectionFactory http = new HttpConnectionFactory(httpConf);
+
+    if (conf.getBoolean(AppConfig.USE_SSL, false)) {
+      LOG.info("Using SSL for templeton.");
+      SslContextFactory sslContextFactory = new SslContextFactory();
+      sslContextFactory.setKeyStorePath(conf.get(AppConfig.KEY_STORE_PATH, DEFAULT_KEY_STORE_PATH));
+      sslContextFactory.setKeyStorePassword(conf.get(AppConfig.KEY_STORE_PASSWORD, DEFAULT_KEY_STORE_PASSWORD));
+      Set<String> excludedSSLProtocols = Sets.newHashSet(Splitter.on(",").trimResults().omitEmptyStrings()
+          .split(Objects.toString(conf.get(AppConfig.SSL_PROTOCOL_BLACKLIST, DEFAULT_SSL_PROTOCOL_BLACKLIST), "")));
+      sslContextFactory.addExcludeProtocols(excludedSSLProtocols.toArray(new String[excludedSSLProtocols.size()]));
+      connector = new ServerConnector(server, sslContextFactory, http);
+    } else {
+      connector = new ServerConnector(server, http);
+    }
+
+    connector.setReuseAddress(true);
+    connector.setHost(conf.get(AppConfig.HOST, DEFAULT_HOST));
+    connector.setPort(conf.getInt(AppConfig.PORT, DEFAULT_PORT));
+    return connector;
   }
 
   // Configure the AuthFilter with the Kerberos params iff security

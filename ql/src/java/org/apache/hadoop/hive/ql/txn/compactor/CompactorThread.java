@@ -17,11 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -58,6 +60,8 @@ public abstract class CompactorThread extends Thread implements Configurable {
   protected AtomicBoolean stop;
 
   protected int threadId;
+  protected String hostName;
+  protected String runtimeVersion;
 
   public void setThreadId(int threadId) {
     this.threadId = threadId;
@@ -82,6 +86,8 @@ public abstract class CompactorThread extends Thread implements Configurable {
     setPriority(MIN_PRIORITY);
     setDaemon(true); // this means the process will exit without waiting for this thread
     this.stop = stop;
+    this.hostName = ServerUtils.hostname();
+    this.runtimeVersion = getRuntimeVersion();
   }
 
   /**
@@ -109,7 +115,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
    * @throws Exception if underlying calls throw, or if the partition name resolves to more than
    * one partition.
    */
-  protected Partition resolvePartition(CompactionInfo ci) throws Exception {
+  protected Partition resolvePartition(CompactionInfo ci) throws MetaException {
     if (ci.partName != null) {
       List<Partition> parts;
       try {
@@ -144,8 +150,8 @@ public abstract class CompactorThread extends Thread implements Configurable {
   }
 
   /**
-   * Determine which user to run an operation as. If metastore.compactor.run.as.user is set, that user will be 
-   * returned; if not: the the owner of the directory to be compacted. 
+   * Determine which user to run an operation as. If metastore.compactor.run.as.user is set, that user will be
+   * returned; if not: the the owner of the directory to be compacted.
    * It is asserted that either the user running the hive metastore or the table
    * owner must be able to stat the directory and determine the owner.
    * @param location directory that will be read or written to.
@@ -238,5 +244,10 @@ public abstract class CompactorThread extends Thread implements Configurable {
       LOG.info("Compaction is disabled for table " + tbl.getTableName());
     }
     return isCompactDisabled;
+  }
+
+  @VisibleForTesting
+  protected String getRuntimeVersion() {
+    return this.getClass().getPackage().getImplementationVersion();
   }
 }

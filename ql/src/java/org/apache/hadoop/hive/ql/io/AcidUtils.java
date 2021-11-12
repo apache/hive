@@ -23,6 +23,7 @@ import static org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -31,6 +32,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -105,10 +107,10 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.Ref;
 import org.apache.orc.FileFormatException;
 import org.apache.orc.impl.OrcAcidUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 
 import javax.annotation.concurrent.Immutable;
@@ -181,9 +183,19 @@ public class AcidUtils {
   public static final int MAX_STATEMENTS_PER_TXN = 10000;
   public static final Pattern LEGACY_BUCKET_DIGIT_PATTERN = Pattern.compile("^[0-9]{6}");
   public static final Pattern BUCKET_PATTERN = Pattern.compile("bucket_([0-9]+)(_[0-9]+)?$");
+  private static final Set<Integer> READ_TXN_TOKENS = new HashSet<>();
 
   private static Cache<String, DirInfoValue> dirCache;
   private static AtomicBoolean dirCacheInited = new AtomicBoolean();
+
+  static {
+    READ_TXN_TOKENS.addAll(Arrays.asList(
+      HiveParser.TOK_DESCDATABASE,
+      HiveParser.TOK_DESCTABLE,
+      HiveParser.TOK_EXPLAIN,
+      HiveParser.TOK_EXPLAIN_SQ_REWRITE
+    ));
+  }
 
   /**
    * A write into a non-aicd table produces files like 0000_0 or 0000_0_copy_1
@@ -674,7 +686,11 @@ public class AcidUtils {
     public static final int HASH_BASED_MERGE_BIT = 0x02;
     public static final String HASH_BASED_MERGE_STRING = "hash_merge";
     public static final int INSERT_ONLY_BIT = 0x04;
+    public static final int INSERT_ONLY_FETCH_BUCKET_ID_BIT = 0x08;
+    public static final int FETCH_DELETED_ROWS_BIT = 0x10;
     public static final String INSERT_ONLY_STRING = "insert_only";
+    public static final String INSERT_ONLY_FETCH_BUCKET_ID_STRING = "insert_only_fetch_bucket_id";
+    public static final String FETCH_DELETED_ROWS_STRING = "fetch_deleted_rows";
     public static final String DEFAULT_VALUE_STRING = TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY;
     public static final String INSERTONLY_VALUE_STRING = TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY;
 
@@ -756,6 +772,12 @@ public class AcidUtils {
       if ((properties & INSERT_ONLY_BIT) > 0) {
         obj.setInsertOnly(true);
       }
+      if ((properties & INSERT_ONLY_FETCH_BUCKET_ID_BIT) > 0) {
+        obj.setInsertOnlyFetchBucketId(true);
+      }
+      if ((properties & FETCH_DELETED_ROWS_BIT) > 0) {
+        obj.setFetchDeletedRows(true);
+      }
       return obj;
     }
 
@@ -767,9 +789,7 @@ public class AcidUtils {
      * @return the acidOperationalProperties object.
      */
     public AcidOperationalProperties setSplitUpdate(boolean isSplitUpdate) {
-      description = (isSplitUpdate
-              ? (description | SPLIT_UPDATE_BIT) : (description & ~SPLIT_UPDATE_BIT));
-      return this;
+      return set(isSplitUpdate, SPLIT_UPDATE_BIT);
     }
 
     /**
@@ -779,14 +799,23 @@ public class AcidUtils {
      * @return the acidOperationalProperties object.
      */
     public AcidOperationalProperties setHashBasedMerge(boolean isHashBasedMerge) {
-      description = (isHashBasedMerge
-              ? (description | HASH_BASED_MERGE_BIT) : (description & ~HASH_BASED_MERGE_BIT));
-      return this;
+      return set(isHashBasedMerge, HASH_BASED_MERGE_BIT);
     }
 
     public AcidOperationalProperties setInsertOnly(boolean isInsertOnly) {
-      description = (isInsertOnly
-              ? (description | INSERT_ONLY_BIT) : (description & ~INSERT_ONLY_BIT));
+      return set(isInsertOnly, INSERT_ONLY_BIT);
+    }
+
+    public AcidOperationalProperties setInsertOnlyFetchBucketId(boolean fetchBucketId) {
+      return set(fetchBucketId, INSERT_ONLY_FETCH_BUCKET_ID_BIT);
+    }
+
+    public AcidOperationalProperties setFetchDeletedRows(boolean fetchDeletedRows) {
+      return set(fetchDeletedRows, FETCH_DELETED_ROWS_BIT);
+    }
+
+    private AcidOperationalProperties set(boolean value, int bit) {
+      description = (value ? (description | bit) : (description & ~bit));
       return this;
     }
 
@@ -800,6 +829,14 @@ public class AcidUtils {
 
     public boolean isInsertOnly() {
       return (description & INSERT_ONLY_BIT) > 0;
+    }
+
+    public boolean isFetchBucketId() {
+      return (description & INSERT_ONLY_FETCH_BUCKET_ID_BIT) > 0;
+    }
+
+    public boolean isFetchDeletedRows() {
+      return (description & FETCH_DELETED_ROWS_BIT) > 0;
     }
 
     public int toInt() {
@@ -817,6 +854,12 @@ public class AcidUtils {
       }
       if (isInsertOnly()) {
         str.append("|" + INSERT_ONLY_STRING);
+      }
+      if (isFetchBucketId()) {
+        str.append("|" + INSERT_ONLY_FETCH_BUCKET_ID_STRING);
+      }
+      if (isFetchBucketId()) {
+        str.append("|" + FETCH_DELETED_ROWS_STRING);
       }
       return str.toString();
     }
@@ -1470,16 +1513,15 @@ public class AcidUtils {
     return dirToSnapshots;
   }
 
-  private static boolean isChildOfDelta(Path childDir, Path rootPath) {
+  public static boolean isChildOfDelta(Path childDir, Path rootPath) {
     if (childDir.toUri().toString().length() <= rootPath.toUri().toString().length()) {
       return false;
     }
     // We do not want to look outside the original directory
     String fullName = childDir.toUri().toString().substring(rootPath.toUri().toString().length() + 1);
     String dirName = childDir.getName();
-    return (fullName.startsWith(BASE_PREFIX) && !dirName.startsWith(BASE_PREFIX)) ||
-        (fullName.startsWith(DELTA_PREFIX) && !dirName.startsWith(DELTA_PREFIX)) ||
-        (fullName.startsWith(DELETE_DELTA_PREFIX) && !dirName.startsWith(DELETE_DELTA_PREFIX));
+    return !dirName.startsWith(BASE_PREFIX) && !dirName.startsWith(DELTA_PREFIX) && !dirName.startsWith(DELETE_DELTA_PREFIX)
+          && (fullName.contains(BASE_PREFIX) || fullName.contains(DELTA_PREFIX) || fullName.contains(DELETE_DELTA_PREFIX));
   }
 
   /**
@@ -1937,6 +1979,21 @@ public class AcidUtils {
     return !props.isInsertOnly();
   }
 
+  public static boolean isInsertOnlyFetchBucketId(Configuration conf) {
+    if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN)) {
+      return false;
+    }
+    int propInt = conf.getInt(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname, -1);
+    if (propInt == -1) {
+      return false;
+    }
+    AcidOperationalProperties props = AcidOperationalProperties.parseInt(propInt);
+    if (!props.isInsertOnly()) {
+      return false;
+    }
+    return props.isFetchBucketId();
+  }
+
   /**
    * Sets the acidOperationalProperties in the configuration object argument.
    * @param conf Mutable configuration object
@@ -2348,7 +2405,7 @@ public class AcidUtils {
       }
       Path formatFile = new Path(baseOrDeltaDir, METADATA_FILE);
       try (FSDataInputStream strm = fs.open(formatFile)) {
-        Map<String, String> metaData = new ObjectMapper().readValue(strm, Map.class);
+        Map<String, String> metaData = new ObjectMapper().readValue((InputStream)strm, Map.class);
         if (!CURRENT_VERSION.equalsIgnoreCase(metaData.get(Field.VERSION.toString()))) {
           throw new IllegalStateException("Unexpected Meta Data version: " + metaData.get(Field.VERSION));
         }
@@ -2439,8 +2496,7 @@ public class AcidUtils {
     }
 
     public static boolean isRawFormatFile(Path dataFile, FileSystem fs) throws IOException {
-      try {
-        Reader reader = OrcFile.createReader(dataFile, OrcFile.readerOptions(fs.getConf()));
+      try (Reader reader = OrcFile.createReader(dataFile, OrcFile.readerOptions(fs.getConf()))) {
         /*
           acid file would have schema like <op, owid, writerId, rowid, cwid, <f1, ... fn>> so could
           check it this way once/if OrcRecordUpdater.ACID_KEY_INDEX_NAME is removed
@@ -2664,13 +2720,35 @@ public class AcidUtils {
         return (name.equals(baseDirName) && dpSpecs.contains(partitionSpec));
       }
       else {
-        return name.equals(baseDirName) 
+        return name.equals(baseDirName)
             || (isDeltaPrefix && (name.startsWith(deltaDirName) || name.startsWith(deleteDeltaDirName)))
             || (!isDeltaPrefix && (name.equals(deltaDirName) || name.equals(deleteDeltaDirName)));
       }
     }
   }
 
+  /**
+   * Full recursive PathFilter version of IdPathFilter (filtering files for a given writeId and stmtId).
+   * This can be used by recursive filelisting, when we want to match the delta / base pattern on the bucketFiles.
+   */
+  public static class IdFullPathFiler extends IdPathFilter {
+    private final Path basePath;
+
+    public IdFullPathFiler(long writeId, int stmtId, Path basePath) {
+      super(writeId, stmtId);
+      this.basePath = basePath;
+    }
+    @Override
+    public boolean accept(Path path) {
+      do {
+        if (super.accept(path)) {
+          return true;
+        }
+        path = path.getParent();
+      } while (path != null && !path.equals(basePath));
+      return false;
+    }
+  }
 
   public static Long extractWriteId(Path file) {
     String fileName = file.getName();
@@ -3019,15 +3097,8 @@ public class AcidUtils {
    * @param tree AST
    */
   public static TxnType getTxnType(Configuration conf, ASTNode tree) {
-    final ASTSearcher astSearcher = new ASTSearcher();
-
     // check if read-only txn
-    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_TXN_READONLY_ENABLED) &&
-        tree.getToken().getType() == HiveParser.TOK_QUERY &&
-        Stream.of(
-          new int[]{HiveParser.TOK_INSERT_INTO},
-          new int[]{HiveParser.TOK_INSERT, HiveParser.TOK_TAB})
-          .noneMatch(pattern -> astSearcher.simpleBreadthFirstSearch(tree, pattern) != null)) {
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_TXN_READONLY_ENABLED) && isReadOnlyTxn(tree)) {
       return TxnType.READ_ONLY;
     }
     // check if txn has a materialized view rebuild
@@ -3041,7 +3112,14 @@ public class AcidUtils {
     return TxnType.DEFAULT;
   }
 
-
+  public static boolean isReadOnlyTxn(ASTNode tree) {
+    final ASTSearcher astSearcher = new ASTSearcher();
+    return READ_TXN_TOKENS.contains(tree.getToken().getType())
+      || (tree.getToken().getType() == HiveParser.TOK_QUERY && Stream.of(
+          new int[]{HiveParser.TOK_INSERT_INTO},
+          new int[]{HiveParser.TOK_INSERT, HiveParser.TOK_TAB})
+      .noneMatch(pattern -> astSearcher.simpleBreadthFirstSearch(tree, pattern) != null));
+  }
 
   private static void initDirCache(int durationInMts) {
     if (dirCacheInited.get()) {

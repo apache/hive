@@ -1,10 +1,10 @@
-Warning: Map Join MAPJOIN[605][bigTable=?] in task 'Reducer 3' is a cross product
-Warning: Map Join MAPJOIN[604][bigTable=?] in task 'Reducer 3' is a cross product
-Warning: Map Join MAPJOIN[603][bigTable=?] in task 'Reducer 3' is a cross product
-Warning: Map Join MAPJOIN[602][bigTable=?] in task 'Reducer 3' is a cross product
-Warning: Map Join MAPJOIN[601][bigTable=?] in task 'Reducer 3' is a cross product
-Warning: Map Join MAPJOIN[600][bigTable=?] in task 'Reducer 3' is a cross product
-Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 3' is a cross product
+Warning: Map Join MAPJOIN[605][bigTable=?] in task 'Reducer 5' is a cross product
+Warning: Map Join MAPJOIN[604][bigTable=?] in task 'Reducer 5' is a cross product
+Warning: Map Join MAPJOIN[603][bigTable=?] in task 'Reducer 5' is a cross product
+Warning: Map Join MAPJOIN[602][bigTable=?] in task 'Reducer 5' is a cross product
+Warning: Map Join MAPJOIN[601][bigTable=?] in task 'Reducer 5' is a cross product
+Warning: Map Join MAPJOIN[600][bigTable=?] in task 'Reducer 5' is a cross product
+Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross product
 CBO PLAN:
 HiveProject($f0=[$0], $f00=[$7], $f01=[$6], $f02=[$5], $f03=[$4], $f04=[$3], $f05=[$2], $f06=[$1])
   HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])

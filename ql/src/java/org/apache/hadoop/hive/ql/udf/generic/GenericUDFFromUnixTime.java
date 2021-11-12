@@ -18,28 +18,26 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.ZoneId;
-import java.util.Date;
-import java.util.TimeZone;
-import org.apache.commons.lang3.StringUtils;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
 
 /**
  * GenericUDFFromUnixTime.
@@ -54,28 +52,19 @@ public class GenericUDFFromUnixTime extends GenericUDF {
 
   private transient IntObjectInspector inputIntOI;
   private transient LongObjectInspector inputLongOI;
-  private transient Converter inputTextConverter;
   private transient ZoneId timeZone;
   private transient final Text result = new Text();
-
-  private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-  private transient String lastFormat = null;
-
+  private transient String lastFormat ="uuuu-MM-dd HH:mm:ss";
+  private transient DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(lastFormat);
+  private transient Converter[] converters = new Converter[2];
+  private transient PrimitiveObjectInspector.PrimitiveCategory[] inputTypes = new PrimitiveObjectInspector.PrimitiveCategory[2];
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    if (arguments.length < 1) {
-      throw new UDFArgumentLengthException("The function " + getName().toUpperCase() +
-          "requires at least one argument");
-    }
-    if (arguments.length > 2) {
-      throw new UDFArgumentLengthException("Too many arguments for the function " + getName().toUpperCase());
-    }
-    for (ObjectInspector argument : arguments) {
-      if (argument.getCategory() != Category.PRIMITIVE) {
-        throw new UDFArgumentException(getName().toUpperCase() +
-            " only takes primitive types, got " + argument.getTypeName());
-      }
+    checkArgsSize(arguments, 1, 2);
+
+    for (int i = 0; i < arguments.length; i++) {
+      checkArgPrimitive(arguments, i);
     }
 
     PrimitiveObjectInspector arg0OI = (PrimitiveObjectInspector) arguments[0];
@@ -87,29 +76,19 @@ public class GenericUDFFromUnixTime extends GenericUDF {
         inputLongOI = (LongObjectInspector) arguments[0];
         break;
       default:
-        throw new UDFArgumentException("The function " + getName().toUpperCase()
-            + " takes only int/long types for first argument. Got Type:" + arg0OI.getPrimitiveCategory().name());
+        throw new UDFArgumentException("The function from_unixtime takes only int/long types for first argument. Got Type:"
+            + arg0OI.getPrimitiveCategory().name());
     }
 
     if (arguments.length == 2) {
-      PrimitiveObjectInspector arg1OI = (PrimitiveObjectInspector) arguments[1];
-      switch (arg1OI.getPrimitiveCategory()) {
-        case CHAR:
-        case VARCHAR:
-        case STRING:
-          inputTextConverter = ObjectInspectorConverters.getConverter(arg1OI,
-              PrimitiveObjectInspectorFactory.javaStringObjectInspector);
-          break;
-        default:
-          throw new UDFArgumentException("The function " + getName().toUpperCase()
-              + " takes only string type for second argument. Got Type:" + arg1OI.getPrimitiveCategory().name());
-      }
+      checkArgGroups(arguments, 1, inputTypes, STRING_GROUP);
+      obtainStringConverter(arguments, 1, inputTypes, converters);
     }
 
     if (timeZone == null) {
       timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
               .getLocalTimeZone();
-      formatter.setTimeZone(TimeZone.getTimeZone(timeZone));
+      FORMATTER.withZone(timeZone);
     }
 
     return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
@@ -120,7 +99,7 @@ public class GenericUDFFromUnixTime extends GenericUDF {
     if (context != null) {
       String timeZoneStr = HiveConf.getVar(context.getJobConf(), HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE);
       timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
-      formatter.setTimeZone(TimeZone.getTimeZone(timeZone));
+      FORMATTER.withZone(timeZone);
     }
   }
 
@@ -130,46 +109,27 @@ public class GenericUDFFromUnixTime extends GenericUDF {
       return null;
     }
 
-    if (inputTextConverter != null) {
-      if (arguments[1].get() == null) {
-        return null;
-      }
-      String format = (String) inputTextConverter.convert(arguments[1].get());
+    if(arguments.length == 2) {
+      String format = getStringValue(arguments, 1, converters);
       if (format == null) {
         return null;
       }
       if (!format.equals(lastFormat)) {
-        formatter = new SimpleDateFormat(format);
-        formatter.setTimeZone(TimeZone.getTimeZone(timeZone));
+        FORMATTER = DateTimeFormatter.ofPattern(format);
         lastFormat = format;
       }
     }
 
-    // convert seconds to milliseconds
-    long unixtime;
-    if (inputIntOI != null) {
-      unixtime = inputIntOI.get(arguments[0].get());
-    } else {
-      unixtime = inputLongOI.get(arguments[0].get());
-    }
-
-    Date date = new Date(unixtime * 1000L);
-    result.set(formatter.format(date));
+    long unixTime = (inputIntOI != null) ? inputIntOI.get(arguments[0].get()) : inputLongOI.get(arguments[0].get());
+    Instant instant = Instant.ofEpochSecond(unixTime);
+    ZonedDateTime zonedDT = ZonedDateTime.ofInstant(instant, timeZone);
+    result.set(zonedDT.format(FORMATTER));
     return result;
-  }
-
-  protected String getName() {
-    return "from_unixtime";
   }
 
   @Override
   public String getDisplayString(String[] children) {
-    StringBuilder sb = new StringBuilder(32);
-    sb.append(getName());
-    sb.append('(');
-    sb.append(StringUtils.join(children, ", "));
-    sb.append(')');
-    return sb.toString();
+    return getStandardDisplayString("from_unixtime", children, ", ");
   }
-
 }
+

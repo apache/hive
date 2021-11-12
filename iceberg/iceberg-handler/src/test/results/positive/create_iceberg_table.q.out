@@ -1,0 +1,58 @@
+PREHOOK: query: CREATE EXTERNAL TABLE ice_t (i int, s string, ts timestamp, d date) STORED BY ICEBERG
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_t
+POSTHOOK: query: CREATE EXTERNAL TABLE ice_t (i int, s string, ts timestamp, d date) STORED BY ICEBERG
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_t
+PREHOOK: query: DESCRIBE FORMATTED ice_t
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_t
+POSTHOOK: query: DESCRIBE FORMATTED ice_t
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_t
+# col_name            	data_type           	comment             
+i                   	int                 	from deserializer   
+s                   	string              	from deserializer   
+ts                  	timestamp           	from deserializer   
+d                   	date                	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d\":\"true\",\"i\":\"true\",\"s\":\"true\",\"ts\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	engine.hive.enabled 	true                
+	external.table.purge	TRUE                
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	serialization.format	1                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	0                   	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: DROP TABLE ice_t
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_t
+PREHOOK: Output: default@ice_t
+POSTHOOK: query: DROP TABLE ice_t
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_t
+POSTHOOK: Output: default@ice_t

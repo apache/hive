@@ -236,7 +236,7 @@ public class SqlFunctionConverter {
 
   // TODO: 1) handle Agg Func Name translation 2) is it correct to add func
   // args as child of func?
-  public static ASTNode buildAST(SqlOperator op, List<ASTNode> children) {
+  public static ASTNode buildAST(SqlOperator op, List<ASTNode> children, RelDataType type) {
     HiveToken hToken = calciteToHiveToken.get(op);
     ASTNode node;
     if (hToken != null) {
@@ -276,7 +276,7 @@ public class SqlFunctionConverter {
           // Handle COUNT/SUM/AVG function for the case of COUNT(*) and COUNT(DISTINCT)
           if (op instanceof HiveSqlCountAggFunction ||
               op instanceof HiveSqlSumAggFunction ||
-              (op instanceof CalciteUDAF && op.getName().equalsIgnoreCase(SqlStdOperatorTable.AVG.getName()))) {
+              op instanceof HiveSqlAverageAggFunction) {
             if (children.size() == 0) {
               node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTIONSTAR,
                 "TOK_FUNCTIONSTAR");
@@ -292,6 +292,8 @@ public class SqlFunctionConverter {
         }
       }
     }
+
+    node.setTypeInfo(TypeConverter.convert(type));
 
     for (ASTNode c : children) {
       ParseDriver.adaptor.addChild(node, c);
@@ -392,7 +394,8 @@ public class SqlFunctionConverter {
       registerFunction("istrue", SqlStdOperatorTable.IS_TRUE, hToken(HiveParser.Identifier, "istrue"));
       registerFunction("isnotfalse", SqlStdOperatorTable.IS_NOT_FALSE, hToken(HiveParser.Identifier, "isnotfalse"));
       registerFunction("isfalse", SqlStdOperatorTable.IS_FALSE, hToken(HiveParser.Identifier, "isfalse"));
-      registerFunction("<=>", SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, hToken(HiveParser.EQUAL_NS, "<=>"));
+      registerFunction("is_not_distinct_from", SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, hToken(HiveParser.EQUAL_NS, "<=>"));
+      registerDuplicateFunction("<=>", SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, hToken(HiveParser.EQUAL_NS, "<=>"));
       registerFunction("when", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
       registerDuplicateFunction("case", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
       registerFunction("coalesce", SqlStdOperatorTable.COALESCE, hToken(HiveParser.Identifier, "coalesce"));
@@ -562,16 +565,10 @@ public class SqlFunctionConverter {
   }
 
   public static SqlOperator getCalciteFn(String hiveUdfName,
-      ImmutableList<RelDataType> calciteArgTypes, RelDataType calciteRetType,
+      List<RelDataType> calciteArgTypes, RelDataType calciteRetType,
       boolean deterministic, boolean runtimeConstant)
       throws CalciteSemanticException {
 
-    if (hiveUdfName != null && hiveUdfName.trim().equals("<=>")) {
-      // We can create Calcite IS_DISTINCT_FROM operator for this. But since our
-      // join reordering algo cant handle this anyway there is no advantage of
-      // this.So, bail out for now.
-      throw new CalciteSemanticException("<=> is not yet supported for cbo.", UnsupportedFeature.Less_than_equal_greater_than);
-    }
     SqlOperator calciteOp;
     CalciteUDFInfo uInf = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
     switch (hiveUdfName) {
@@ -634,6 +631,7 @@ public class SqlFunctionConverter {
         break;
       case "avg":
         calciteAggFn = new HiveSqlAverageAggFunction(
+            isDistinct,
             udfInfo.returnTypeInference,
             udfInfo.operandTypeInference,
             udfInfo.operandTypeChecker);

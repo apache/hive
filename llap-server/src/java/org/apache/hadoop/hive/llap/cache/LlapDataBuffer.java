@@ -21,9 +21,23 @@ package org.apache.hadoop.hive.llap.cache;
 public final class LlapDataBuffer extends BaseLlapDataBuffer {
   public static final int UNKNOWN_CACHED_LENGTH = -1;
 
+  /**
+   * The starting position of the buffer in the compressed file. Required for cache hydration.
+   */
+  private long start;
+
   /** ORC cache uses this to store compressed length; buffer is cached uncompressed, but
    * the lookup is on compressed ranges, so we need to know this. */
   public int declaredCachedLength = UNKNOWN_CACHED_LENGTH;
+
+
+  public void setStart(long start){
+    this.start = start;
+  }
+
+  public long getStart() {
+    return start;
+  }
 
   @Override
   public void notifyEvicted(EvictionDispatcher evictionDispatcher, boolean isProactiveEviction) {

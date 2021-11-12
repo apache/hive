@@ -151,11 +151,11 @@ STAGE PLANS:
                   alias: y
                   Statistics: Num rows: 15 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
@@ -164,11 +164,11 @@ STAGE PLANS:
                   alias: x
                   Statistics: Num rows: 15 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 15 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 15 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 

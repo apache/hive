@@ -70,6 +70,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.BatchAcidWriteEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
@@ -265,6 +266,10 @@ public class TestDbNotificationListener {
 
     public void onAcidWrite(AcidWriteEvent acidWriteEvent) throws MetaException {
       pushEventId(EventType.ACID_WRITE, acidWriteEvent);
+    }
+
+    public void onBatchAcidWrite(BatchAcidWriteEvent batchAcidWriteEvent) throws MetaException {
+      pushEventId(EventType.BATCH_ACID_WRITE, batchAcidWriteEvent);
     }
   }
 

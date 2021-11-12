@@ -48,7 +48,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
-import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -509,14 +508,12 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
             .dump(replPolicy, dumpWithClause);
 
     String hiveDumpDir = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
-    Path metaDataPath = new Path(hiveDumpDir, EximUtil.METADATA_PATH_NAME);
-    // the _external_tables_file info should be created as external tables are to be replicated.
+    // the _file_list_external should be created as external tables are to be replicated.
     Assert.assertTrue(primary.miniDFSCluster.getFileSystem()
-            .exists(new Path(new Path(metaDataPath, primaryDbName.toLowerCase()), FILE_NAME)));
+            .exists(new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL)));
 
-    // Verify that the external table info contains only table "a2".
-    ReplicationTestUtils.assertExternalFileInfo(primary, Arrays.asList("a2"),
-            new Path(new Path(metaDataPath, primaryDbName.toLowerCase()), FILE_NAME));
+    // Verify that _file_list_external  contains only table "a2".
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("a2"), tuple.dumpLocation, primary);
 
     replica.load(replicatedDbName, replPolicy, loadWithClause)
             .run("use " + replicatedDbName)
@@ -550,13 +547,12 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     loadWithClause = ReplicationTestUtils.includeExternalTableClause(true);
 
     String hiveDumpDir = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
-    // the _external_tables_file info should be created as external tables are to be replicated.
+    // the _file_list_external should be created as external tables are to be replicated.
     Assert.assertTrue(primary.miniDFSCluster.getFileSystem()
-            .exists(new Path(hiveDumpDir, FILE_NAME)));
+            .exists(new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL)));
 
-    // Verify that the external table info contains only table "a2".
-    ReplicationTestUtils.assertExternalFileInfo(primary, Arrays.asList("a2"),
-            new Path(hiveDumpDir, FILE_NAME));
+    // Verify that _file_list_external contains only table "a2".
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("a2"), tuple.dumpLocation, primary);
 
     replica.load(replicatedDbName, replPolicy, loadWithClause)
             .run("use " + replicatedDbName)
@@ -699,13 +695,12 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     loadWithClause = ReplicationTestUtils.includeExternalTableClause(true);
 
     String hiveDumpDir = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
-    // the _external_tables_file info should be created as external tables are to be replicated.
+    // _file_list_external should be created as external tables are to be replicated.
     Assert.assertTrue(primary.miniDFSCluster.getFileSystem()
-            .exists(new Path(hiveDumpDir, FILE_NAME)));
+            .exists(new Path(hiveDumpDir, EximUtil.FILE_LIST_EXTERNAL)));
 
-    // Verify that the external table info contains table "a2" and "c2".
-    ReplicationTestUtils.assertExternalFileInfo(primary, Arrays.asList("a2", "c2"),
-            new Path(hiveDumpDir, FILE_NAME));
+    // Verify that _file_list_external contains table "a2" and "c2".
+    ReplicationTestUtils.assertExternalFileList(Arrays.asList("a2", "c2"), tuple.dumpLocation, primary);
 
     // Verify if the expected tables are bootstrapped.
     verifyBootstrapDirInIncrementalDump(tuple.dumpLocation, bootstrappedTables);
@@ -1376,6 +1371,4 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
       .run("select * from " + replicatedDbName + ".t2")
       .verifyResults(new String[] {"4"});
   }
-
-
 }

@@ -34,10 +34,12 @@ import java.time.format.DateTimeParseException;
 import java.time.format.TextStyle;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalQueries;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hive.common.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +54,7 @@ public class TimestampTZUtil {
   static {
     DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
     // Date part
-    builder.append(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    builder.append(DateTimeFormatter.ofPattern("uuuu-MM-dd"));
     // Time part
     builder.optionalStart().appendLiteral(" ").append(DateTimeFormatter.ofPattern("HH:mm:ss")).
         optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true).
@@ -71,33 +73,24 @@ public class TimestampTZUtil {
   public static TimestampTZ parse(String s, ZoneId defaultTimeZone) {
     // need to handle offset with single digital hour, see JDK-8066806
     s = handleSingleDigitHourOffset(s);
-    ZonedDateTime zonedDateTime;
-    try {
-      zonedDateTime = ZonedDateTime.parse(s, FORMATTER);
-    } catch (DateTimeParseException e) {
-      // try to be more tolerant
-      // if the input is invalid instead of incomplete, we'll hit exception here again
-      TemporalAccessor accessor = FORMATTER.parse(s);
-      // LocalDate must be present
-      LocalDate localDate = LocalDate.from(accessor);
-      LocalTime localTime;
-      ZoneId zoneId;
-      try {
-        localTime = LocalTime.from(accessor);
-      } catch (DateTimeException e1) {
-        localTime = DEFAULT_LOCAL_TIME;
-      }
-      try {
-        zoneId = ZoneId.from(accessor);
-      } catch (DateTimeException e2) {
-        if (defaultTimeZone == null) {
-          throw new DateTimeException("Time Zone not available");
-        }
-        zoneId = defaultTimeZone;
-      }
-      zonedDateTime = ZonedDateTime.of(localDate, localTime, zoneId);
+    TemporalAccessor accessor = FORMATTER.parse(s);
+
+    LocalDate localDate = accessor.query(TemporalQueries.localDate());
+
+    LocalTime localTime = accessor.query(TemporalQueries.localTime());
+    if (localTime == null) {
+      localTime = DEFAULT_LOCAL_TIME;
     }
 
+    ZoneId zoneId = accessor.query(TemporalQueries.zone());
+    if (zoneId == null) {
+      zoneId = defaultTimeZone;
+      if (zoneId == null) {
+        throw new DateTimeException("Time Zone not available");
+      }
+    }
+
+    ZonedDateTime zonedDateTime = ZonedDateTime.of(localDate, localTime, zoneId);
     if (defaultTimeZone == null) {
       return new TimestampTZ(zonedDateTime);
     }
@@ -118,21 +111,22 @@ public class TimestampTZUtil {
     try {
       return parse(s, defaultTimeZone);
     } catch (DateTimeParseException e) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Invalid string " + s + " for TIMESTAMP WITH TIME ZONE", e);
-      }
+      LOG.debug("Invalid string '{}' for TIMESTAMP WITH TIME ZONE", s, e);
       return null;
     }
   }
 
   // Converts Date to TimestampTZ.
   public static TimestampTZ convert(Date date, ZoneId defaultTimeZone) {
-    return parse(date.toString(), defaultTimeZone);
+    return new TimestampTZ(ZonedDateTime.ofInstant(Instant.ofEpochMilli(date.toEpochMilli()), ZoneOffset.UTC)
+        .withZoneSameLocal(defaultTimeZone));
   }
 
   // Converts Timestamp to TimestampTZ.
   public static TimestampTZ convert(Timestamp ts, ZoneId defaultTimeZone) {
-    return parse(ts.toString(), defaultTimeZone);
+    return new TimestampTZ(
+        ZonedDateTime.ofInstant(Instant.ofEpochSecond(ts.toEpochSecond(), ts.getNanos()), ZoneOffset.UTC)
+            .withZoneSameLocal(defaultTimeZone));
   }
 
   public static ZoneId parseTimeZone(String timeZoneStr) {
@@ -192,5 +186,9 @@ public class TimestampTZUtil {
     // get nanos between [epoch at toZone] and [local time at toZone]
     return Timestamp.ofEpochSecond(localDateTimeAtToZone.toEpochSecond(ZoneOffset.UTC),
         localDateTimeAtToZone.getNano());
+  }
+
+  public static double convertTimestampTZToDouble(TimestampTZ timestampTZ) {
+    return timestampTZ.getEpochSecond() + timestampTZ.getNanos() / DateUtils.NANOS_PER_SEC;
   }
 }

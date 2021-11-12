@@ -64,8 +64,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0, 2, 3, 4]
-                          selectExpressions: VectorUDFStructField(col 0:struct<a:int,b:string,c:string>, col 0:int) -> 2:int, VectorUDFStructField(col 0:struct<a:int,b:string,c:string>, col 1:int) -> 3:string, VectorUDFStructField(col 0:struct<a:int,b:string,c:string>, col 2:int) -> 4:string
+                          projectedOutputColumnNums: [0, 3, 4, 5]
+                          selectExpressions: VectorUDFStructField(col 0:struct<a:int,b:string,c:string>, col 0:int) -> 3:int, VectorUDFStructField(col 0:struct<a:int,b:string,c:string>, col 1:int) -> 4:string, VectorUDFStructField(col 0:struct<a:int,b:string,c:string>, col 2:int) -> 5:string
                       Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -179,8 +179,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0, 2, 3, 4]
-                          selectExpressions: VectorUDFStructField(col 0:struct<a:int,b:char(10),c:char(10)>, col 0:int) -> 2:int, VectorUDFStructField(col 0:struct<a:int,b:char(10),c:char(10)>, col 1:int) -> 3:char(10), VectorUDFStructField(col 0:struct<a:int,b:char(10),c:char(10)>, col 2:int) -> 4:char(10)
+                          projectedOutputColumnNums: [0, 3, 4, 5]
+                          selectExpressions: VectorUDFStructField(col 0:struct<a:int,b:char(10),c:char(10)>, col 0:int) -> 3:int, VectorUDFStructField(col 0:struct<a:int,b:char(10),c:char(10)>, col 1:int) -> 4:char(10), VectorUDFStructField(col 0:struct<a:int,b:char(10),c:char(10)>, col 2:int) -> 5:char(10)
                       Statistics: Num rows: 1 Data size: 248 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -294,8 +294,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0, 2, 3, 4]
-                          selectExpressions: VectorUDFStructField(col 0:struct<a:int,b:varchar(5),c:varchar(5)>, col 0:int) -> 2:int, VectorUDFStructField(col 0:struct<a:int,b:varchar(5),c:varchar(5)>, col 1:int) -> 3:varchar(5), VectorUDFStructField(col 0:struct<a:int,b:varchar(5),c:varchar(5)>, col 2:int) -> 4:varchar(5)
+                          projectedOutputColumnNums: [0, 3, 4, 5]
+                          selectExpressions: VectorUDFStructField(col 0:struct<a:int,b:varchar(5),c:varchar(5)>, col 0:int) -> 3:int, VectorUDFStructField(col 0:struct<a:int,b:varchar(5),c:varchar(5)>, col 1:int) -> 4:varchar(5), VectorUDFStructField(col 0:struct<a:int,b:varchar(5),c:varchar(5)>, col 2:int) -> 5:varchar(5)
                       Statistics: Num rows: 1 Data size: 238 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false

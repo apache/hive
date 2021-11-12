@@ -138,7 +138,7 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
     String srcCluster = ReplUtils.getNonEmpty(HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, conf, errorFormat);
     String tgtCluster = ReplUtils.getNonEmpty(HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, conf, errorFormat);
     AtlasReplInfo atlasReplInfo = new AtlasReplInfo(endpoint, work.getSrcDB(), tgtDB, srcCluster,
-            tgtCluster, work.getStagingDir(), conf);
+            tgtCluster, work.getStagingDir(), work.getTableListPath(), conf);
     atlasReplInfo.setSrcFsUri(conf.get(ReplUtils.DEFAULT_FS_CONFIG));
     long lastTimeStamp = work.isBootstrap() ? 0L : lastStoredTimeStamp();
     atlasReplInfo.setTimeStamp(lastTimeStamp);
@@ -195,8 +195,7 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
     InputStream inputStream = null;
     long numBytesWritten = 0L;
     try {
-      AtlasExportRequest exportRequest = atlasRequestBuilder.createExportRequest(atlasReplInfo,
-              atlasReplInfo.getSrcCluster());
+      AtlasExportRequest exportRequest = atlasRequestBuilder.createExportRequest(atlasReplInfo);
       inputStream = atlasRestClient.exportData(exportRequest);
       if (inputStream == null) {
         LOG.info("There is no Atlas metadata to be exported");

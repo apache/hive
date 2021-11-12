@@ -19,17 +19,13 @@ package org.apache.hadoop.hive.kudu;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.kudu.KuduOutputFormat.KuduRecordWriter;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -50,7 +46,6 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.kudu.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,36 +132,10 @@ public class KuduStorageHandler extends DefaultStorageHandler implements HiveSto
       jobConf.set(HiveConf.ConfVars.HIVE_AM_SPLIT_GENERATION.toString(), Boolean.FALSE.toString());
     }
     try {
-      addDependencyJars(jobConf, KuduStorageHandler.class);
+      Utilities.addDependencyJars(jobConf, KuduStorageHandler.class);
     } catch (IOException e) {
       Throwables.propagate(e);
     }
-  }
-
-  // Copied from the DruidStorageHandler.
-  private static void addDependencyJars(Configuration conf, Class<?>... classes)
-      throws IOException {
-    FileSystem localFs = FileSystem.getLocal(conf);
-    Set<String> jars = new HashSet<>(conf.getStringCollection("tmpjars"));
-    for (Class<?> clazz : classes) {
-      if (clazz == null) {
-        continue;
-      }
-      final String path = Utilities.jarFinderGetJar(clazz);
-      if (path == null) {
-        throw new RuntimeException("Could not find jar for class " + clazz +
-            " in order to ship it to the cluster.");
-      }
-      if (!localFs.exists(new Path(path))) {
-        throw new RuntimeException("Could not validate jar file " + path + " for class " + clazz);
-      }
-      jars.add(path);
-    }
-    if (jars.isEmpty()) {
-      return;
-    }
-    //noinspection ToArrayCallWithZeroLengthArrayArgument
-    conf.set("tmpjars", StringUtils.arrayToString(jars.toArray(new String[jars.size()])));
   }
 
   private void configureJobProperties(TableDesc tableDesc,

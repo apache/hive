@@ -210,22 +210,6 @@ public class ReplicationSpec {
     return allowReplacement(getLastReplicatedStateFromParameters(params), getReplicationState());
   }
 
-  /**
-   * Returns a predicate filter to filter an Iterable&lt;Partition&gt; to return all partitions
-   * that the current replication event specification is allowed to replicate-replace-into
-   */
-  public Predicate<Partition> allowEventReplacementInto() {
-    return new Predicate<Partition>() {
-      @Override
-      public boolean apply(@Nullable Partition partition) {
-        if (partition == null){
-          return false;
-        }
-        return (allowEventReplacementInto(partition.getParameters()));
-      }
-    };
-  }
-
   private void init(ASTNode node){
     // -> ^(TOK_REPLICATION $replId $isMetadataOnly)
     setInReplicationScope(true);

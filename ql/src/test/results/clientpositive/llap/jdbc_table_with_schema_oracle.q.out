@@ -1,0 +1,169 @@
+PREHOOK: query: CREATE EXTERNAL TABLE country_0 (id int, name varchar(20))
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "ORACLE",
+    "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
+    "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/XEPDB1",
+    "hive.sql.dbcp.username" = "bob",
+    "hive.sql.dbcp.password" = "bobpass",
+    "hive.sql.schema" = "BOB",
+    "hive.sql.table" = "COUNTRY"
+    )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@country_0
+POSTHOOK: query: CREATE EXTERNAL TABLE country_0 (id int, name varchar(20))
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "ORACLE",
+    "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
+    "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/XEPDB1",
+    "hive.sql.dbcp.username" = "bob",
+    "hive.sql.dbcp.password" = "bobpass",
+    "hive.sql.schema" = "BOB",
+    "hive.sql.table" = "COUNTRY"
+    )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@country_0
+PREHOOK: query: EXPLAIN CBO SELECT COUNT(*) FROM country_0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@country_0
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT COUNT(*) FROM country_0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@country_0
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJdbcConverter(convention=[JDBC.ORACLE])
+  JdbcAggregate(group=[{}], agg#0=[count()])
+    JdbcHiveTableScan(table=[[default, country_0]], table:alias=[country_0])
+
+PREHOOK: query: SELECT COUNT(*) FROM country_0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@country_0
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM country_0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@country_0
+#### A masked pattern was here ####
+3
+PREHOOK: query: CREATE EXTERNAL TABLE country_1 (id int, name varchar(20))
+    STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+    TBLPROPERTIES (
+        "hive.sql.database.type" = "ORACLE",
+        "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
+        "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/XEPDB1",
+        "hive.sql.dbcp.username" = "bob",
+        "hive.sql.dbcp.password" = "bobpass",
+        "hive.sql.table" = "COUNTRY"
+        )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@country_1
+POSTHOOK: query: CREATE EXTERNAL TABLE country_1 (id int, name varchar(20))
+    STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+    TBLPROPERTIES (
+        "hive.sql.database.type" = "ORACLE",
+        "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
+        "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/XEPDB1",
+        "hive.sql.dbcp.username" = "bob",
+        "hive.sql.dbcp.password" = "bobpass",
+        "hive.sql.table" = "COUNTRY"
+        )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@country_1
+PREHOOK: query: EXPLAIN CBO SELECT COUNT(*) FROM country_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@country_1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT COUNT(*) FROM country_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@country_1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJdbcConverter(convention=[JDBC.ORACLE])
+  JdbcAggregate(group=[{}], agg#0=[count()])
+    JdbcHiveTableScan(table=[[default, country_1]], table:alias=[country_1])
+
+PREHOOK: query: SELECT COUNT(*) FROM country_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@country_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM country_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@country_1
+#### A masked pattern was here ####
+3
+PREHOOK: query: CREATE EXTERNAL TABLE country_2 (id int, name varchar(20))
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "ORACLE",
+    "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
+    "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/XEPDB1",
+    "hive.sql.dbcp.username" = "bob",
+    "hive.sql.dbcp.password" = "bobpass",
+    "hive.sql.schema" = "ALICE",
+    "hive.sql.table" = "COUNTRY"
+    )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@country_2
+POSTHOOK: query: CREATE EXTERNAL TABLE country_2 (id int, name varchar(20))
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "ORACLE",
+    "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
+    "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/XEPDB1",
+    "hive.sql.dbcp.username" = "bob",
+    "hive.sql.dbcp.password" = "bobpass",
+    "hive.sql.schema" = "ALICE",
+    "hive.sql.table" = "COUNTRY"
+    )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@country_2
+PREHOOK: query: EXPLAIN CBO SELECT COUNT(*) FROM country_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@country_2
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT COUNT(*) FROM country_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@country_2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJdbcConverter(convention=[JDBC.ORACLE])
+  JdbcAggregate(group=[{}], agg#0=[count()])
+    JdbcHiveTableScan(table=[[default, country_2]], table:alias=[country_2])
+
+PREHOOK: query: SELECT COUNT(*) FROM country_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@country_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM country_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@country_2
+#### A masked pattern was here ####
+4
+PREHOOK: query: INSERT INTO country_2 VALUES (8, 'Hungary')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@country_2
+POSTHOOK: query: INSERT INTO country_2 VALUES (8, 'Hungary')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@country_2
+PREHOOK: query: SELECT * FROM country_2 ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@country_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM country_2 ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@country_2
+#### A masked pattern was here ####
+4	Italy
+5	Greece
+6	China
+7	Japan
+8	Hungary

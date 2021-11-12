@@ -64,6 +64,7 @@ STAGE PLANS:
                 TableScan
                   alias: y
                   filterExpr: value is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_33_container, bigKeyColName:value, smallTablePos:0, keyRatio:0.038
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: value is not null (type: boolean)

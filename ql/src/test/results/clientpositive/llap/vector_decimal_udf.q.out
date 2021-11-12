@@ -88,15 +88,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (key + key) (type: decimal(21,10))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
-                        selectExpressions: DecimalColAddDecimalColumn(col 0:decimal(20,10), col 0:decimal(20,10)) -> 3:decimal(21,10)
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: DecimalColAddDecimalColumn(col 0:decimal(20,10), col 0:decimal(20,10)) -> 4:decimal(21,10)
                     Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -209,15 +209,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (key + CAST( value AS decimal(10,0))) (type: decimal(21,10))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: DecimalColAddDecimalColumn(col 0:decimal(20,10), col 3:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 3:decimal(10,0)) -> 4:decimal(21,10)
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: DecimalColAddDecimalColumn(col 0:decimal(20,10), col 4:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 4:decimal(10,0)) -> 5:decimal(21,10)
                     Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -330,15 +330,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (UDFToDouble(key) + (UDFToDouble(value) / 2.0D)) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [6]
-                        selectExpressions: DoubleColAddDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 6:double
+                        projectedOutputColumnNums: [7]
+                        selectExpressions: DoubleColAddDoubleColumn(col 4:double, col 6:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 4:double, DoubleColDivideDoubleScalar(col 5:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 5:double) -> 6:double) -> 7:double
                     Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -451,15 +451,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (UDFToDouble(key) + 1.0D) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: DoubleColAddDoubleScalar(col 3:double, val 1.0)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double) -> 4:double
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: DoubleColAddDoubleScalar(col 4:double, val 1.0)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 4:double) -> 5:double
                     Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -572,15 +572,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (key - key) (type: decimal(21,10))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
-                        selectExpressions: DecimalColSubtractDecimalColumn(col 0:decimal(20,10), col 0:decimal(20,10)) -> 3:decimal(21,10)
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: DecimalColSubtractDecimalColumn(col 0:decimal(20,10), col 0:decimal(20,10)) -> 4:decimal(21,10)
                     Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -693,15 +693,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (key - CAST( value AS decimal(10,0))) (type: decimal(21,10))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: DecimalColSubtractDecimalColumn(col 0:decimal(20,10), col 3:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 3:decimal(10,0)) -> 4:decimal(21,10)
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: DecimalColSubtractDecimalColumn(col 0:decimal(20,10), col 4:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 4:decimal(10,0)) -> 5:decimal(21,10)
                     Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -814,15 +814,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (UDFToDouble(key) - (UDFToDouble(value) / 2.0D)) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [6]
-                        selectExpressions: DoubleColSubtractDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 6:double
+                        projectedOutputColumnNums: [7]
+                        selectExpressions: DoubleColSubtractDoubleColumn(col 4:double, col 6:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 4:double, DoubleColDivideDoubleScalar(col 5:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 5:double) -> 6:double) -> 7:double
                     Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -935,15 +935,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (UDFToDouble(key) - 1.0D) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: DoubleColSubtractDoubleScalar(col 3:double, val 1.0)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double) -> 4:double
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: DoubleColSubtractDoubleScalar(col 4:double, val 1.0)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 4:double) -> 5:double
                     Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -1056,15 +1056,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (key * key) (type: decimal(38,17))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
-                        selectExpressions: DecimalColMultiplyDecimalColumn(col 0:decimal(20,10), col 0:decimal(20,10)) -> 3:decimal(38,17)
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: DecimalColMultiplyDecimalColumn(col 0:decimal(20,10), col 0:decimal(20,10)) -> 4:decimal(38,17)
                     Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -1178,12 +1178,12 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDecimalColGreaterDecimalScalar(col 4:decimal(31,10), val 0)(children: DecimalColMultiplyDecimalColumn(col 0:decimal(20,10), col 3:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 3:decimal(10,0)) -> 4:decimal(31,10))
+                        predicateExpression: FilterDecimalColGreaterDecimalScalar(col 5:decimal(31,10), val 0)(children: DecimalColMultiplyDecimalColumn(col 0:decimal(20,10), col 4:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 4:decimal(10,0)) -> 5:decimal(31,10))
                     predicate: ((key * CAST( value AS decimal(10,0))) > 0) (type: boolean)
                     Statistics: Num rows: 13 Data size: 1508 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1289,15 +1289,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (key * CAST( value AS decimal(10,0))) (type: decimal(31,10))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: DecimalColMultiplyDecimalColumn(col 0:decimal(20,10), col 3:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 3:decimal(10,0)) -> 4:decimal(31,10)
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: DecimalColMultiplyDecimalColumn(col 0:decimal(20,10), col 4:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 4:decimal(10,0)) -> 5:decimal(31,10)
                     Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -1410,15 +1410,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (UDFToDouble(key) * (UDFToDouble(value) / 2.0D)) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [6]
-                        selectExpressions: DoubleColMultiplyDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 6:double
+                        projectedOutputColumnNums: [7]
+                        selectExpressions: DoubleColMultiplyDoubleColumn(col 4:double, col 6:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 4:double, DoubleColDivideDoubleScalar(col 5:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 5:double) -> 6:double) -> 7:double
                     Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -1531,15 +1531,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (UDFToDouble(key) * 2.0D) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: DoubleColMultiplyDoubleScalar(col 3:double, val 2.0)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double) -> 4:double
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: DoubleColMultiplyDoubleScalar(col 4:double, val 2.0)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 4:double) -> 5:double
                     Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -1652,15 +1652,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (key / 0) (type: decimal(22,12))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
-                        selectExpressions: DecimalColDivideDecimalScalar(col 0:decimal(20,10), val 0) -> 3:decimal(22,12)
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: DecimalColDivideDecimalScalar(col 0:decimal(20,10), val 0) -> 4:decimal(22,12)
                     Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -1774,7 +1774,7 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1788,8 +1788,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [3]
-                          selectExpressions: DecimalColDivideDecimalColumn(col 0:decimal(20,10), col 0:decimal(20,10)) -> 3:decimal(38,18)
+                          projectedOutputColumnNums: [4]
+                          selectExpressions: DecimalColDivideDecimalColumn(col 0:decimal(20,10), col 0:decimal(20,10)) -> 4:decimal(38,18)
                       Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -1898,7 +1898,7 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -1912,8 +1912,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [4]
-                          selectExpressions: DecimalColDivideDecimalColumn(col 0:decimal(20,10), col 3:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 3:decimal(10,0)) -> 4:decimal(31,21)
+                          projectedOutputColumnNums: [5]
+                          selectExpressions: DecimalColDivideDecimalColumn(col 0:decimal(20,10), col 4:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 4:decimal(10,0)) -> 5:decimal(31,21)
                       Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -2012,7 +2012,7 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -2026,8 +2026,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [6]
-                          selectExpressions: DoubleColDivideDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 6:double
+                          projectedOutputColumnNums: [7]
+                          selectExpressions: DoubleColDivideDoubleColumn(col 4:double, col 6:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 4:double, DoubleColDivideDoubleScalar(col 5:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 5:double) -> 6:double) -> 7:double
                       Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -2125,15 +2125,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (1.0D + (UDFToDouble(key) / 2.0D)) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: DoubleScalarAddDoubleColumn(val 1.0, col 4:double)(children: DoubleColDivideDoubleScalar(col 3:double, val 2.0)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double) -> 4:double) -> 5:double
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: DoubleScalarAddDoubleColumn(val 1.0, col 5:double)(children: DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 4:double) -> 5:double) -> 6:double
                     Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -2246,15 +2246,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: abs(key) (type: decimal(20,10))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
-                        selectExpressions: FuncAbsDecimalToDecimal(col 0:decimal(20,10)) -> 3:decimal(20,10)
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: FuncAbsDecimalToDecimal(col 0:decimal(20,10)) -> 4:decimal(20,10)
                     Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -2371,7 +2371,7 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: decimal(20,10)), value (type: int)
                     outputColumnNames: key, value
@@ -2573,15 +2573,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (- key) (type: decimal(20,10))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
-                        selectExpressions: FuncNegateDecimalToDecimal(col 0:decimal(20,10)) -> 3:decimal(20,10)
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: FuncNegateDecimalToDecimal(col 0:decimal(20,10)) -> 4:decimal(20,10)
                     Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -2859,15 +2859,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: floor(key) (type: decimal(11,0))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
-                        selectExpressions: FuncFloorDecimalToDecimal(col 0:decimal(20,10)) -> 3:decimal(11,0)
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: FuncFloorDecimalToDecimal(col 0:decimal(20,10)) -> 4:decimal(11,0)
                     Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -2980,15 +2980,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: round(key, 2) (type: decimal(13,2))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
-                        selectExpressions: FuncRoundWithNumDigitsDecimalToDecimal(col 0:decimal(20,10), decimalPlaces 2) -> 3:decimal(13,2)
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: FuncRoundWithNumDigitsDecimalToDecimal(col 0:decimal(20,10), decimalPlaces 2) -> 4:decimal(13,2)
                     Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -3101,15 +3101,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: power(key, 2) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
-                        selectExpressions: VectorUDFAdaptor(power(key, 2)) -> 3:double
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: VectorUDFAdaptor(power(key, 2)) -> 4:double
                     Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -3222,15 +3222,15 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: ((key + 1) % (key / 2)) (type: decimal(22,12))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: DecimalColModuloDecimalColumn(col 3:decimal(21,10), col 4:decimal(22,12))(children: DecimalColAddDecimalScalar(col 0:decimal(20,10), val 1) -> 3:decimal(21,10), DecimalColDivideDecimalScalar(col 0:decimal(20,10), val 2) -> 4:decimal(22,12)) -> 5:decimal(22,12)
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: DecimalColModuloDecimalColumn(col 4:decimal(21,10), col 5:decimal(22,12))(children: DecimalColAddDecimalScalar(col 0:decimal(20,10), val 1) -> 4:decimal(21,10), DecimalColDivideDecimalScalar(col 0:decimal(20,10), val 2) -> 5:decimal(22,12)) -> 6:decimal(22,12)
                     Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -3346,20 +3346,20 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: value (type: int), key (type: decimal(20,10)), UDFToDouble(key) (type: double), (UDFToDouble(key) * UDFToDouble(key)) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [1, 0, 3, 6]
-                        selectExpressions: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColMultiplyDoubleColumn(col 4:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 4:double, CastDecimalToDouble(col 0:decimal(20,10)) -> 5:double) -> 6:double
+                        projectedOutputColumnNums: [1, 0, 4, 7]
+                        selectExpressions: CastDecimalToDouble(col 0:decimal(20,10)) -> 4:double, DoubleColMultiplyDoubleColumn(col 5:double, col 6:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 5:double, CastDecimalToDouble(col 0:decimal(20,10)) -> 6:double) -> 7:double
                     Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col3), sum(_col2), count(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDouble(col 6:double) -> double, VectorUDAFSumDouble(col 3:double) -> double, VectorUDAFCount(col 0:decimal(20,10)) -> bigint
+                          aggregators: VectorUDAFSumDouble(col 7:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 0:decimal(20,10)) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 1:int
@@ -3516,20 +3516,20 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: value (type: int), key (type: decimal(20,10)), UDFToDouble(key) (type: double), (UDFToDouble(key) * UDFToDouble(key)) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [1, 0, 3, 6]
-                        selectExpressions: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColMultiplyDoubleColumn(col 4:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 4:double, CastDecimalToDouble(col 0:decimal(20,10)) -> 5:double) -> 6:double
+                        projectedOutputColumnNums: [1, 0, 4, 7]
+                        selectExpressions: CastDecimalToDouble(col 0:decimal(20,10)) -> 4:double, DoubleColMultiplyDoubleColumn(col 5:double, col 6:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 5:double, CastDecimalToDouble(col 0:decimal(20,10)) -> 6:double) -> 7:double
                     Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col3), sum(_col2), count(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDouble(col 6:double) -> double, VectorUDAFSumDouble(col 3:double) -> double, VectorUDAFCount(col 0:decimal(20,10)) -> bigint
+                          aggregators: VectorUDAFSumDouble(col 7:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 0:decimal(20,10)) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 1:int
@@ -3776,7 +3776,7 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: decimal(20,10))
                     outputColumnNames: key
@@ -3912,7 +3912,7 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: decimal(20,10))
                     outputColumnNames: key
@@ -4048,7 +4048,7 @@ STAGE PLANS:
                   Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: decimal(20,10))
                     outputColumnNames: key
@@ -4213,15 +4213,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (key + key) (type: decimal(16,3))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
-                        selectExpressions: Decimal64ColAddDecimal64Column(col 0:decimal(15,3)/DECIMAL_64, col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(16,3)/DECIMAL_64
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: Decimal64ColAddDecimal64Column(col 0:decimal(15,3)/DECIMAL_64, col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(16,3)/DECIMAL_64
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -4334,15 +4334,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (key + CAST( value AS decimal(10,0))) (type: decimal(16,3))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: Decimal64ColAddDecimal64Column(col 0:decimal(15,3)/DECIMAL_64, col 4:decimal(13,3)/DECIMAL_64)(children: Decimal64ColScaleUp(col 3:decimal(10,0)/DECIMAL_64, decimal64Val 1000, decimalVal 1000)(children: CastLongToDecimal64(col 1:int) -> 3:decimal(10,0)/DECIMAL_64) -> 4:decimal(13,3)/DECIMAL_64) -> 5:decimal(16,3)/DECIMAL_64
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: Decimal64ColAddDecimal64Column(col 0:decimal(15,3)/DECIMAL_64, col 5:decimal(13,3)/DECIMAL_64)(children: Decimal64ColScaleUp(col 4:decimal(10,0)/DECIMAL_64, decimal64Val 1000, decimalVal 1000)(children: CastLongToDecimal64(col 1:int) -> 4:decimal(10,0)/DECIMAL_64) -> 5:decimal(13,3)/DECIMAL_64) -> 6:decimal(16,3)/DECIMAL_64
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -4455,15 +4455,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (UDFToDouble(key) + (UDFToDouble(value) / 2.0D)) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [7]
-                        selectExpressions: DoubleColAddDoubleColumn(col 4:double, col 6:double)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double, DoubleColDivideDoubleScalar(col 5:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 5:double) -> 6:double) -> 7:double
+                        projectedOutputColumnNums: [8]
+                        selectExpressions: DoubleColAddDoubleColumn(col 5:double, col 7:double)(children: CastDecimalToDouble(col 4:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3)) -> 5:double, DoubleColDivideDoubleScalar(col 6:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 6:double) -> 7:double) -> 8:double
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -4576,15 +4576,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (UDFToDouble(key) + 1.0D) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: DoubleColAddDoubleScalar(col 4:double, val 1.0)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double) -> 5:double
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: DoubleColAddDoubleScalar(col 5:double, val 1.0)(children: CastDecimalToDouble(col 4:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3)) -> 5:double) -> 6:double
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -4697,15 +4697,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (key - key) (type: decimal(16,3))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
-                        selectExpressions: Decimal64ColSubtractDecimal64Column(col 0:decimal(15,3)/DECIMAL_64, col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(16,3)/DECIMAL_64
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: Decimal64ColSubtractDecimal64Column(col 0:decimal(15,3)/DECIMAL_64, col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(16,3)/DECIMAL_64
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -4818,15 +4818,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (key - CAST( value AS decimal(10,0))) (type: decimal(16,3))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: Decimal64ColSubtractDecimal64Column(col 0:decimal(15,3)/DECIMAL_64, col 4:decimal(13,3)/DECIMAL_64)(children: Decimal64ColScaleUp(col 3:decimal(10,0)/DECIMAL_64, decimal64Val 1000, decimalVal 1000)(children: CastLongToDecimal64(col 1:int) -> 3:decimal(10,0)/DECIMAL_64) -> 4:decimal(13,3)/DECIMAL_64) -> 5:decimal(16,3)/DECIMAL_64
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: Decimal64ColSubtractDecimal64Column(col 0:decimal(15,3)/DECIMAL_64, col 5:decimal(13,3)/DECIMAL_64)(children: Decimal64ColScaleUp(col 4:decimal(10,0)/DECIMAL_64, decimal64Val 1000, decimalVal 1000)(children: CastLongToDecimal64(col 1:int) -> 4:decimal(10,0)/DECIMAL_64) -> 5:decimal(13,3)/DECIMAL_64) -> 6:decimal(16,3)/DECIMAL_64
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -4939,15 +4939,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (UDFToDouble(key) - (UDFToDouble(value) / 2.0D)) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [7]
-                        selectExpressions: DoubleColSubtractDoubleColumn(col 4:double, col 6:double)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double, DoubleColDivideDoubleScalar(col 5:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 5:double) -> 6:double) -> 7:double
+                        projectedOutputColumnNums: [8]
+                        selectExpressions: DoubleColSubtractDoubleColumn(col 5:double, col 7:double)(children: CastDecimalToDouble(col 4:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3)) -> 5:double, DoubleColDivideDoubleScalar(col 6:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 6:double) -> 7:double) -> 8:double
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -5060,15 +5060,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (UDFToDouble(key) - 1.0D) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: DoubleColSubtractDoubleScalar(col 4:double, val 1.0)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double) -> 5:double
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: DoubleColSubtractDoubleScalar(col 5:double, val 1.0)(children: CastDecimalToDouble(col 4:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3)) -> 5:double) -> 6:double
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -5181,15 +5181,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (key * key) (type: decimal(31,6))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: DecimalColMultiplyDecimalColumn(col 3:decimal(15,3), col 4:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3), ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3)) -> 5:decimal(31,6)
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: DecimalColMultiplyDecimalColumn(col 4:decimal(15,3), col 5:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3), ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 5:decimal(15,3)) -> 6:decimal(31,6)
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -5303,12 +5303,12 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDecimalColGreaterDecimalScalar(col 5:decimal(26,3), val 0)(children: DecimalColMultiplyDecimalColumn(col 3:decimal(15,3), col 4:decimal(10,0))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3), CastLongToDecimal(col 1:int) -> 4:decimal(10,0)) -> 5:decimal(26,3))
+                        predicateExpression: FilterDecimalColGreaterDecimalScalar(col 6:decimal(26,3), val 0)(children: DecimalColMultiplyDecimalColumn(col 4:decimal(15,3), col 5:decimal(10,0))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3), CastLongToDecimal(col 1:int) -> 5:decimal(10,0)) -> 6:decimal(26,3))
                     predicate: ((key * CAST( value AS decimal(10,0))) > 0) (type: boolean)
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
@@ -5414,15 +5414,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (key * CAST( value AS decimal(10,0))) (type: decimal(26,3))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: DecimalColMultiplyDecimalColumn(col 3:decimal(15,3), col 4:decimal(10,0))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3), CastLongToDecimal(col 1:int) -> 4:decimal(10,0)) -> 5:decimal(26,3)
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: DecimalColMultiplyDecimalColumn(col 4:decimal(15,3), col 5:decimal(10,0))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3), CastLongToDecimal(col 1:int) -> 5:decimal(10,0)) -> 6:decimal(26,3)
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -5535,15 +5535,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (UDFToDouble(key) * (UDFToDouble(value) / 2.0D)) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [7]
-                        selectExpressions: DoubleColMultiplyDoubleColumn(col 4:double, col 6:double)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double, DoubleColDivideDoubleScalar(col 5:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 5:double) -> 6:double) -> 7:double
+                        projectedOutputColumnNums: [8]
+                        selectExpressions: DoubleColMultiplyDoubleColumn(col 5:double, col 7:double)(children: CastDecimalToDouble(col 4:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3)) -> 5:double, DoubleColDivideDoubleScalar(col 6:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 6:double) -> 7:double) -> 8:double
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -5656,15 +5656,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (UDFToDouble(key) * 2.0D) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: DoubleColMultiplyDoubleScalar(col 4:double, val 2.0)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double) -> 5:double
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: DoubleColMultiplyDoubleScalar(col 5:double, val 2.0)(children: CastDecimalToDouble(col 4:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3)) -> 5:double) -> 6:double
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -5777,15 +5777,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (key / 0) (type: decimal(18,6))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: DecimalColDivideDecimalScalar(col 3:decimal(15,3), val 0)(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:decimal(18,6)
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: DecimalColDivideDecimalScalar(col 4:decimal(15,3), val 0)(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3)) -> 5:decimal(18,6)
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -5899,7 +5899,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -5913,8 +5913,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [5]
-                          selectExpressions: DecimalColDivideDecimalColumn(col 3:decimal(15,3), col 4:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3), ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3)) -> 5:decimal(34,19)
+                          projectedOutputColumnNums: [6]
+                          selectExpressions: DecimalColDivideDecimalColumn(col 4:decimal(15,3), col 5:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3), ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 5:decimal(15,3)) -> 6:decimal(34,19)
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -6023,7 +6023,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -6037,8 +6037,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [5]
-                          selectExpressions: DecimalColDivideDecimalColumn(col 3:decimal(15,3), col 4:decimal(10,0))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3), CastLongToDecimal(col 1:int) -> 4:decimal(10,0)) -> 5:decimal(26,14)
+                          projectedOutputColumnNums: [6]
+                          selectExpressions: DecimalColDivideDecimalColumn(col 4:decimal(15,3), col 5:decimal(10,0))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3), CastLongToDecimal(col 1:int) -> 5:decimal(10,0)) -> 6:decimal(26,14)
                       Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -6137,7 +6137,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -6151,8 +6151,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [7]
-                          selectExpressions: DoubleColDivideDoubleColumn(col 4:double, col 6:double)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double, DoubleColDivideDoubleScalar(col 5:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 5:double) -> 6:double) -> 7:double
+                          projectedOutputColumnNums: [8]
+                          selectExpressions: DoubleColDivideDoubleColumn(col 5:double, col 7:double)(children: CastDecimalToDouble(col 4:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3)) -> 5:double, DoubleColDivideDoubleScalar(col 6:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 6:double) -> 7:double) -> 8:double
                       Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -6250,15 +6250,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (1.0D + (UDFToDouble(key) / 2.0D)) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [6]
-                        selectExpressions: DoubleScalarAddDoubleColumn(val 1.0, col 5:double)(children: DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double) -> 5:double) -> 6:double
+                        projectedOutputColumnNums: [7]
+                        selectExpressions: DoubleScalarAddDoubleColumn(val 1.0, col 6:double)(children: DoubleColDivideDoubleScalar(col 5:double, val 2.0)(children: CastDecimalToDouble(col 4:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3)) -> 5:double) -> 6:double) -> 7:double
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -6371,15 +6371,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: abs(key) (type: decimal(15,3))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: FuncAbsDecimalToDecimal(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:decimal(15,3)
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: FuncAbsDecimalToDecimal(col 4:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3)) -> 5:decimal(15,3)
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -6496,7 +6496,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: decimal(15,3)), value (type: int)
                     outputColumnNames: key, value
@@ -6698,15 +6698,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (- key) (type: decimal(15,3))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: FuncNegateDecimalToDecimal(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:decimal(15,3)
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: FuncNegateDecimalToDecimal(col 4:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3)) -> 5:decimal(15,3)
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -6984,15 +6984,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: floor(key) (type: decimal(13,0))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: FuncFloorDecimalToDecimal(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:decimal(13,0)
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: FuncFloorDecimalToDecimal(col 4:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3)) -> 5:decimal(13,0)
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -7105,15 +7105,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: round(key, 2) (type: decimal(15,2))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: FuncRoundWithNumDigitsDecimalToDecimal(col 3:decimal(15,3), decimalPlaces 2)(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:decimal(15,2)
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: FuncRoundWithNumDigitsDecimalToDecimal(col 4:decimal(15,3), decimalPlaces 2)(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3)) -> 5:decimal(15,2)
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -7226,15 +7226,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: power(key, 2) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
-                        selectExpressions: VectorUDFAdaptor(power(key, 2)) -> 3:double
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: VectorUDFAdaptor(power(key, 2)) -> 4:double
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -7347,15 +7347,15 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: ((key + 1) % (key / 2)) (type: decimal(18,6))
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [6]
-                        selectExpressions: DecimalColModuloDecimalColumn(col 7:decimal(16,3), col 5:decimal(18,6))(children: ConvertDecimal64ToDecimal(col 3:decimal(16,3)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 0:decimal(15,3)/DECIMAL_64, decimal64Val 1000, decimalVal 1) -> 3:decimal(16,3)/DECIMAL_64) -> 7:decimal(16,3), DecimalColDivideDecimalScalar(col 4:decimal(15,3), val 2)(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3)) -> 5:decimal(18,6)) -> 6:decimal(18,6)
+                        projectedOutputColumnNums: [7]
+                        selectExpressions: DecimalColModuloDecimalColumn(col 8:decimal(16,3), col 6:decimal(18,6))(children: ConvertDecimal64ToDecimal(col 4:decimal(16,3)/DECIMAL_64)(children: Decimal64ColAddDecimal64Scalar(col 0:decimal(15,3)/DECIMAL_64, decimal64Val 1000, decimalVal 1) -> 4:decimal(16,3)/DECIMAL_64) -> 8:decimal(16,3), DecimalColDivideDecimalScalar(col 5:decimal(15,3), val 2)(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 5:decimal(15,3)) -> 6:decimal(18,6)) -> 7:decimal(18,6)
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -7471,20 +7471,20 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: value (type: int), key (type: decimal(15,3)), UDFToDouble(key) (type: double), (UDFToDouble(key) * UDFToDouble(key)) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [1, 0, 4, 9]
-                        selectExpressions: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double, DoubleColMultiplyDoubleColumn(col 6:double, col 8:double)(children: CastDecimalToDouble(col 5:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 5:decimal(15,3)) -> 6:double, CastDecimalToDouble(col 7:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 7:decimal(15,3)) -> 8:double) -> 9:double
+                        projectedOutputColumnNums: [1, 0, 5, 10]
+                        selectExpressions: CastDecimalToDouble(col 4:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3)) -> 5:double, DoubleColMultiplyDoubleColumn(col 7:double, col 9:double)(children: CastDecimalToDouble(col 6:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 6:decimal(15,3)) -> 7:double, CastDecimalToDouble(col 8:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 8:decimal(15,3)) -> 9:double) -> 10:double
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(_col3), sum(_col2), count(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDouble(col 9:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 0:decimal(15,3)/DECIMAL_64) -> bigint
+                          aggregators: VectorUDAFSumDouble(col 10:double) -> double, VectorUDAFSumDouble(col 5:double) -> double, VectorUDAFCount(col 0:decimal(15,3)/DECIMAL_64) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 1:int
@@ -7641,20 +7641,20 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: value (type: int), key (type: decimal(15,3)), UDFToDouble(key) (type: double), (UDFToDouble(key) * UDFToDouble(key)) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [1, 0, 4, 9]
-                        selectExpressions: CastDecimalToDouble(col 3:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 3:decimal(15,3)) -> 4:double, DoubleColMultiplyDoubleColumn(col 6:double, col 8:double)(children: CastDecimalToDouble(col 5:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 5:decimal(15,3)) -> 6:double, CastDecimalToDouble(col 7:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 7:decimal(15,3)) -> 8:double) -> 9:double
+                        projectedOutputColumnNums: [1, 0, 5, 10]
+                        selectExpressions: CastDecimalToDouble(col 4:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 4:decimal(15,3)) -> 5:double, DoubleColMultiplyDoubleColumn(col 7:double, col 9:double)(children: CastDecimalToDouble(col 6:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 6:decimal(15,3)) -> 7:double, CastDecimalToDouble(col 8:decimal(15,3))(children: ConvertDecimal64ToDecimal(col 0:decimal(15,3)/DECIMAL_64) -> 8:decimal(15,3)) -> 9:double) -> 10:double
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(_col3), sum(_col2), count(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumDouble(col 9:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 0:decimal(15,3)/DECIMAL_64) -> bigint
+                          aggregators: VectorUDAFSumDouble(col 10:double) -> double, VectorUDAFSumDouble(col 5:double) -> double, VectorUDAFCount(col 0:decimal(15,3)/DECIMAL_64) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 1:int
@@ -7901,7 +7901,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: decimal(15,3))
                     outputColumnNames: key
@@ -8037,7 +8037,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: decimal(15,3))
                     outputColumnNames: key
@@ -8173,7 +8173,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:key:decimal(15,3)/DECIMAL_64, 1:value:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: key (type: decimal(15,3))
                     outputColumnNames: key

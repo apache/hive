@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PATTERN;
 import static org.apache.hadoop.hive.ql.TestTxnCommands2.runCleaner;
 import static org.apache.hadoop.hive.ql.TestTxnCommands2.runInitiator;
 import static org.apache.hadoop.hive.ql.TestTxnCommands2.runWorker;
@@ -379,15 +380,17 @@ public class TestCompactor {
 
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     CompactionInfo ci = new CompactionInfo("default", tblName, "bkt=0", CompactionType.MAJOR);
+    Table table = msClient.getTable("default", tblName);
     LOG.debug("List of stats columns before analyze Part1: " + txnHandler.findColumnsWithStats(ci));
     Worker.StatsUpdater su = Worker.StatsUpdater.init(ci, colNames, conf,
-      System.getProperty("user.name"));
+      System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
     su.gatherStats();//compute stats before compaction
     LOG.debug("List of stats columns after analyze Part1: " + txnHandler.findColumnsWithStats(ci));
 
     CompactionInfo ciPart2 = new CompactionInfo("default", tblName, "bkt=1", CompactionType.MAJOR);
     LOG.debug("List of stats columns before analyze Part2: " + txnHandler.findColumnsWithStats(ci));
-    su = Worker.StatsUpdater.init(ciPart2, colNames, conf, System.getProperty("user.name"));
+    su = Worker.StatsUpdater.init(ciPart2, colNames, conf, System.getProperty("user.name"),
+        CompactorUtil.getCompactorJobQueueName(conf, ciPart2, table));
     su.gatherStats();//compute stats before compaction
     LOG.debug("List of stats columns after analyze Part2: " + txnHandler.findColumnsWithStats(ci));
 
@@ -782,6 +785,67 @@ public class TestCompactor {
   }
 
   @Test
+  public void testNoDataLossWhenMaxNumDeltaIsUsed() throws Exception {
+    String dbName = "default";
+    String tblName = "cws";
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+      " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values (1, 'a')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values (3, 'b')", driver);
+
+    runMajorCompaction(dbName, tblName);
+    runCleaner(conf);
+
+    for (int i = 0; i < 3; i++) {
+      executeStatementOnDriver("MERGE INTO " + tblName + " AS T USING (" +
+        "select * from " + tblName + " union all select a+1, b from " + tblName + ") AS S " +
+        "ON T.a=s.a " +
+        "WHEN MATCHED THEN DELETE " +
+        "WHEN not MATCHED THEN INSERT values (s.a, s.b)", driver);
+    }
+
+    driver.run("select a from " + tblName);
+    List<String> res = new ArrayList<>();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals(res, Arrays.asList("4", "6"));
+
+    conf.setIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA, 5);
+    runMajorCompaction(dbName, tblName);
+
+    List<String> matchesNotFound = new ArrayList<>(5);
+    matchesNotFound.add(AcidUtils.deleteDeltaSubdir(3, 4) + VISIBILITY_PATTERN);
+    matchesNotFound.add(AcidUtils.deltaSubdir(3, 4) + VISIBILITY_PATTERN);
+    matchesNotFound.add(AcidUtils.deleteDeltaSubdir(5, 5, 0));
+    matchesNotFound.add(AcidUtils.deltaSubdir(5, 5, 1));
+    matchesNotFound.add(AcidUtils.baseDir(5) + VISIBILITY_PATTERN);
+
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    Table table = msClient.getTable(dbName, tblName);
+    msClient.close();
+
+    FileSystem fs = FileSystem.get(conf);
+    FileStatus[] stat = fs.listStatus(new Path(table.getSd().getLocation()));
+
+    for (FileStatus f : stat) {
+      for (int j = 0; j < matchesNotFound.size(); j++) {
+        if (f.getPath().getName().matches(matchesNotFound.get(j))) {
+          matchesNotFound.remove(j);
+          break;
+        }
+      }
+    }
+    Assert.assertEquals("Matches Not Found: " + matchesNotFound, 0, matchesNotFound.size());
+    runCleaner(conf);
+
+    driver.run("select a from " + tblName);
+    res = new ArrayList<>();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals(res, Arrays.asList("4", "6"));
+  }
+
+  @Test
   public void minorCompactAfterAbort() throws Exception {
     String dbName = "default";
     String tblName = "cws";
@@ -1088,6 +1152,61 @@ public class TestCompactor {
     // After commit the row should have been deleted
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='i'");
     Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 0, count);
+  }
+
+
+
+  @Test
+  public void testCleanDynPartAbortNoDataLoss() throws Exception {
+    String dbName = "default";
+    String tblName = "cws";
+
+    HiveStreamingConnection connection = prepareTableAndConnection(dbName, tblName, 1);
+
+    executeStatementOnDriver("insert into " + tblName + " partition (a) values (1, '1')", driver);
+    executeStatementOnDriver("update " + tblName + " set b='2' where a=1", driver);
+
+    executeStatementOnDriver("insert into " + tblName + " partition (a) values (2, '2')", driver);
+    executeStatementOnDriver("update " + tblName + " set b='3' where a=2", driver);
+
+    connection.beginTransaction();
+    connection.write("1,1".getBytes());
+    connection.write("2,2".getBytes());
+    connection.abortTransaction();
+
+    executeStatementOnDriver("insert into " + tblName + " partition (a) values (3, '3')", driver);
+    executeStatementOnDriver("update " + tblName + " set b='4' where a=3", driver);
+
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 0);
+    runInitiator(conf);
+
+    int count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 4, count);
+
+    runWorker(conf);
+    runWorker(conf);
+    runWorker(conf);
+    runWorker(conf);
+
+    // Cleaning should happen in threads concurrently for the minor compaction and the clean abort one.
+    runCleaner(conf);
+
+    count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS");
+    Assert.assertEquals(TestTxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 0, count);
+
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    Partition p1 = msClient.getPartition(dbName, tblName, "a=1"),
+      p2 = msClient.getPartition(dbName, tblName, "a=2"),
+      p3 = msClient.getPartition(dbName, tblName, "a=3");
+    msClient.close();
+
+    FileSystem fs = FileSystem.get(conf);
+    verifyDeltaCount(p1.getSd(), fs, 0);
+    verifyHasBase(p1.getSd(), fs, "base_0000002_v0000010");
+    verifyDeltaCount(p2.getSd(), fs, 0);
+    verifyHasBase(p2.getSd(), fs, "base_0000004_v0000011");
+    verifyDeltaCount(p3.getSd(), fs, 0);
+    verifyHasBase(p3.getSd(), fs, "base_0000007_v0000012");
   }
 
   @Test
@@ -2315,7 +2434,7 @@ public class TestCompactor {
   /**
    * convenience method to execute a select stmt and dump results to log file
    */
-  private static List<String> execSelectAndDumpData(String selectStmt, IDriver driver, String msg)
+  static List<String> execSelectAndDumpData(String selectStmt, IDriver driver, String msg)
     throws Exception {
     executeStatementOnDriver(selectStmt, driver);
     ArrayList<String> valuesReadFromHiveDriver = new ArrayList<String>();
@@ -2326,6 +2445,20 @@ public class TestCompactor {
       LOG.debug(" rowIdx=" + rowIdx++ + ":" + row);
     }
     return valuesReadFromHiveDriver;
+  }
+
+  /**
+   * Execute Hive CLI statement and ignore any exception thrown.
+   *
+   * @param cmd arbitrary statement to execute
+   */
+  static void executeStatementOnDriverSilently(String cmd, IDriver driver) {
+    try {
+      executeStatementOnDriver(cmd, driver);
+    }
+    catch (Exception ex) {
+      LOG.warn("Error while executing query: " + cmd, ex);
+    }
   }
 
   /**

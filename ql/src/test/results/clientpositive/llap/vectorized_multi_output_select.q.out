@@ -103,10 +103,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
-                  filterExpr: (((value = 'val_278') and key is not null) or ((value = 'val_255') and key is not null)) (type: boolean)
+                  filterExpr: (((value = 'val_255') and key is not null) or ((value = 'val_278') and key is not null)) (type: boolean)
                   Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((value = 'val_278') and key is not null) (type: boolean)
+                    predicate: ((value = 'val_255') and key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 175 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -119,7 +119,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 86 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((value = 'val_255') and key is not null) (type: boolean)
+                    predicate: ((value = 'val_278') and key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 175 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)

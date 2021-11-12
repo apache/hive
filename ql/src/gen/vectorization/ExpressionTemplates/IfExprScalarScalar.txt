@@ -36,14 +36,12 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  protected final int arg1Column;
   protected final <OperandType2> arg2Scalar;
   protected final <OperandType3> arg3Scalar;
 
   public <ClassName>(int arg1Column, <OperandType2> arg2Scalar, <OperandType3> arg3Scalar,
       int outputColumnNum) {
-    super(outputColumnNum);
-    this.arg1Column = arg1Column;
+    super(arg1Column, outputColumnNum);
     this.arg2Scalar = arg2Scalar;
     this.arg3Scalar = arg3Scalar;
   }
@@ -52,7 +50,6 @@ public class <ClassName> extends VectorExpression {
     super();
 
     // Dummy final assignments.
-    arg1Column = -1;
     arg2Scalar = 0;
     arg3Scalar = 0;
   }
@@ -70,7 +67,7 @@ public class <ClassName> extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
+    LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[inputColumnNum[0]];
     <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
@@ -164,7 +161,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, arg1Column) + ", val "+ arg2Scalar + ", val "+ arg3Scalar;
+    return getColumnParamString(0, inputColumnNum[0]) + ", val "+ arg2Scalar + ", val "+ arg3Scalar;
   }
 
   @Override

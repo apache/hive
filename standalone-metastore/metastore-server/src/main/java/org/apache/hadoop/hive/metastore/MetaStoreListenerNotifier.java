@@ -34,17 +34,21 @@ import org.apache.hadoop.hive.metastore.events.AddSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.AlterDataConnectorEvent;
 import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.BatchAcidWriteEvent;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
+import org.apache.hadoop.hive.metastore.events.CreateDataConnectorEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropCatalogEvent;
+import org.apache.hadoop.hive.metastore.events.DropDataConnectorEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.DropISchemaEvent;
@@ -58,6 +62,7 @@ import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
+import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEventBatch;
 import org.apache.hadoop.hive.metastore.events.UpdateTableColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.DeleteTableColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
@@ -94,6 +99,19 @@ public class MetaStoreListenerNotifier {
               listener.onDropDatabase((DropDatabaseEvent)event);
             }
           })
+          .put(EventType.CREATE_DATACONNECTOR, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener,
+                ListenerEvent event) throws MetaException {
+              listener.onCreateDataConnector((CreateDataConnectorEvent)event);
+            }
+          })
+          .put(EventType.DROP_DATACONNECTOR, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+              listener.onDropDataConnector((DropDataConnectorEvent)event);
+            }
+          })
           .put(EventType.CREATE_TABLE, new EventNotifier() {
             @Override
             public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
@@ -123,6 +141,13 @@ public class MetaStoreListenerNotifier {
             public void notify(MetaStoreEventListener listener,
                                ListenerEvent event) throws MetaException {
               listener.onAlterDatabase((AlterDatabaseEvent)event);
+            }
+          })
+          .put(EventType.ALTER_DATACONNECTOR, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener,
+                ListenerEvent event) throws MetaException {
+              listener.onAlterDataConnector((AlterDataConnectorEvent)event);
             }
           })
           .put(EventType.ALTER_TABLE, new EventNotifier() {
@@ -243,6 +268,8 @@ public class MetaStoreListenerNotifier {
               (listener, event) -> listener.onAllocWriteId((AllocWriteIdEvent) event, null, null))
           .put(EventType.ACID_WRITE,
                   (listener, event) -> listener.onAcidWrite((AcidWriteEvent) event, null, null))
+          .put(EventType.BATCH_ACID_WRITE,
+                  (listener, event) -> listener.onBatchAcidWrite((BatchAcidWriteEvent) event, null, null))
           .put(EventType.UPDATE_TABLE_COLUMN_STAT,
                       (listener, event) -> listener.onUpdateTableColumnStat((UpdateTableColumnStatEvent) event))
           .put(EventType.DELETE_TABLE_COLUMN_STAT,
@@ -276,9 +303,16 @@ public class MetaStoreListenerNotifier {
       .put(EventType.ACID_WRITE,
         (listener, event, dbConn, sqlGenerator) ->
                 listener.onAcidWrite((AcidWriteEvent) event, dbConn, sqlGenerator))
+      .put(EventType.BATCH_ACID_WRITE,
+              (listener, event, dbConn, sqlGenerator) ->
+                      listener.onBatchAcidWrite((BatchAcidWriteEvent) event, dbConn, sqlGenerator))
       .put(EventType.COMMIT_COMPACTION,
         (listener, event, dbConn, sqlGenerator) -> listener
             .onCommitCompaction((CommitCompactionEvent) event, dbConn, sqlGenerator))
+      .put(EventType.UPDATE_PARTITION_COLUMN_STAT_BATCH,
+              (listener, event, dbConn, sqlGenerator) ->
+                      listener.onUpdatePartitionColumnStatInBatch((UpdatePartitionColumnStatEventBatch) event,
+                            dbConn, sqlGenerator))
       .build()
   );
 

@@ -194,10 +194,9 @@ final class CommandAuthorizerV1 {
     // for a select or create-as-select query, populate the partition to column (par2Cols) or
     // table to columns mapping (tab2Cols)
     if (op.equals(HiveOperation.CREATETABLE_AS_SELECT) || op.equals(HiveOperation.QUERY)) {
-      SemanticAnalyzer querySem = (SemanticAnalyzer) sem;
-      ParseContext parseCtx = querySem.getParseContext();
+      ParseContext parseCtx = sem.getParseContext();
 
-      for (Map.Entry<String, TableScanOperator> topOpMap : querySem.getParseContext().getTopOps().entrySet()) {
+      for (Map.Entry<String, TableScanOperator> topOpMap : parseCtx.getTopOps().entrySet()) {
         TableScanOperator tableScanOp = topOpMap.getValue();
         if (!tableScanOp.isInsideView()) {
           Table tbl = tableScanOp.getConf().getTableMetadata();

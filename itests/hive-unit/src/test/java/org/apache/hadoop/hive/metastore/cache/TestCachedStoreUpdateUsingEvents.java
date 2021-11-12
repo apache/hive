@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
+import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +48,7 @@ public class TestCachedStoreUpdateUsingEvents {
   private RawStore rawStore;
   private SharedCache sharedCache;
   private Configuration conf;
-  private HiveMetaStore.HMSHandler hmsHandler;
+  private HMSHandler hmsHandler;
   private String[] colType = new String[] {"double", "string"};
 
   @Before
@@ -67,7 +68,7 @@ public class TestCachedStoreUpdateUsingEvents {
 
     TestTxnDbUtil.prepDb(conf);
 
-    hmsHandler = new HiveMetaStore.HMSHandler("testCachedStore", conf, true);
+    hmsHandler = new HMSHandler("testCachedStore", conf, true);
 
     rawStore = new ObjectStore();
     rawStore.setConf(hmsHandler.getConf());
@@ -81,7 +82,7 @@ public class TestCachedStoreUpdateUsingEvents {
     CachedStore.stopCacheUpdateService(1);
 
     // Create the 'hive' catalog with new warehouse directory
-    HiveMetaStore.HMSHandler.createDefaultCatalog(rawStore, new Warehouse(conf));
+    HMSHandler.createDefaultCatalog(rawStore, new Warehouse(conf));
   }
 
   private Database createTestDb(String dbName, String dbOwner) throws IOException {
@@ -264,6 +265,8 @@ public class TestCachedStoreUpdateUsingEvents {
     Table newTable = new Table(tbl);
     newTable.setOwner(tblOwner);
     newTable.setOwnerType(PrincipalType.ROLE);
+    Deadline.registerIfNot(100_000);
+    Deadline.startTimer("alter_table");
     hmsHandler.alter_table(dbName, tblName, newTable);
     newTable = rawStore.getTable(DEFAULT_CATALOG_NAME, dbName, tblName);
 
@@ -308,6 +311,8 @@ public class TestCachedStoreUpdateUsingEvents {
     String dbName = "Test_Table_Ops";
     String dbOwner = "user1";
     Database db = createTestDb(dbName, dbOwner);
+    Deadline.registerIfNot(100_000);
+    Deadline.startTimer("create_database");
     hmsHandler.create_database(db);
     db = rawStore.getDatabase(DEFAULT_CATALOG_NAME, dbName);
 
@@ -365,10 +370,10 @@ public class TestCachedStoreUpdateUsingEvents {
     compareTables(parentTableRead, parentTable);
 
     // Validating constraint values from CachedStore with rawStore for table
-    assertRawStoreAndCachedStoreConstraint(DEFAULT_CATALOG_NAME, dbName, tblName);
+    assertRawStoreAndCachedStoreConstraint(new AllTableConstraintsRequest(DEFAULT_CATALOG_NAME, dbName, tblName));
 
     // Validating constraint values from CachedStore with rawStore for parent table
-    assertRawStoreAndCachedStoreConstraint(DEFAULT_CATALOG_NAME, dbName, parentTableName);
+    assertRawStoreAndCachedStoreConstraint(new AllTableConstraintsRequest(DEFAULT_CATALOG_NAME, dbName, parentTableName));
 
     // Dropping all the constraint
     DropConstraintRequest dropConstraintRequest =
@@ -387,11 +392,14 @@ public class TestCachedStoreUpdateUsingEvents {
     dropConstraintRequest = new DropConstraintRequest(dbName, parentTableName, parentPkBase.get(0).getPk_name());
     hmsHandler.drop_constraint(dropConstraintRequest);
 
-    // Validate cache store constraint is dropped
-    assertRawStoreAndCachedStoreConstraint(DEFAULT_CATALOG_NAME, dbName, tblName);
+    sharedCache.refreshAllTableConstraintsInCache(DEFAULT_CATALOG_NAME, dbName, tblName, new SQLAllTableConstraints());
+    sharedCache.refreshAllTableConstraintsInCache(DEFAULT_CATALOG_NAME, dbName, parentTableName, new SQLAllTableConstraints());
 
     // Validate cache store constraint is dropped
-    assertRawStoreAndCachedStoreConstraint(DEFAULT_CATALOG_NAME, dbName, parentTableName);
+    assertRawStoreAndCachedStoreConstraint(new AllTableConstraintsRequest(DEFAULT_CATALOG_NAME, dbName, tblName));
+
+    // Validate cache store constraint is dropped
+    assertRawStoreAndCachedStoreConstraint(new AllTableConstraintsRequest(DEFAULT_CATALOG_NAME, dbName, parentTableName));
 
     // Adding keys back
     hmsHandler.add_primary_key(new AddPrimaryKeyRequest(parentPkBase));
@@ -402,28 +410,36 @@ public class TestCachedStoreUpdateUsingEvents {
     hmsHandler.add_default_constraint(new AddDefaultConstraintRequest(dcBase));
     hmsHandler.add_check_constraint(new AddCheckConstraintRequest(ccBase));
 
-    // Validating constraint values from Cache with rawStore
-    assertRawStoreAndCachedStoreConstraint(DEFAULT_CATALOG_NAME, dbName, tblName);
+    SQLAllTableConstraints constraints = new SQLAllTableConstraints();
+    constraints.setPrimaryKeys(pkBase);
+    constraints.setForeignKeys(fkBase);
+    constraints.setCheckConstraints(ccBase);
+    constraints.setDefaultConstraints(dcBase);
+    constraints.setNotNullConstraints(nnBase);
+    constraints.setUniqueConstraints(ucBase);
+
+    SQLAllTableConstraints constraintsParent = new SQLAllTableConstraints();
+    constraintsParent.setPrimaryKeys(parentPkBase);
+
+    sharedCache.refreshAllTableConstraintsInCache(DEFAULT_CATALOG_NAME, dbName, tblName, constraints);
+    sharedCache.refreshAllTableConstraintsInCache(DEFAULT_CATALOG_NAME, dbName, parentTableName, constraintsParent);
 
     // Validating constraint values from Cache with rawStore
-    assertRawStoreAndCachedStoreConstraint(DEFAULT_CATALOG_NAME, dbName, parentTableName);
+    assertRawStoreAndCachedStoreConstraint(new AllTableConstraintsRequest(DEFAULT_CATALOG_NAME, dbName, tblName));
+
+    // Validating constraint values from Cache with rawStore
+    assertRawStoreAndCachedStoreConstraint(new AllTableConstraintsRequest(DEFAULT_CATALOG_NAME, dbName, parentTableName));
 
     sharedCache.getDatabaseCache().clear();
     sharedCache.clearTableCache();
     sharedCache.getSdCache().clear();
   }
 
-  public void assertRawStoreAndCachedStoreConstraint(String catName, String dbName, String tblName)
-      throws MetaException, NoSuchObjectException {
-    SQLAllTableConstraints rawStoreConstraints = rawStore.getAllTableConstraints(catName, dbName, tblName);
-    SQLAllTableConstraints cachedStoreConstraints = new SQLAllTableConstraints();
-    cachedStoreConstraints.setPrimaryKeys(sharedCache.listCachedPrimaryKeys(catName, dbName, tblName));
-    cachedStoreConstraints.setForeignKeys(sharedCache.listCachedForeignKeys(catName, dbName, tblName, null, null));
-    cachedStoreConstraints.setNotNullConstraints(sharedCache.listCachedNotNullConstraints(catName, dbName, tblName));
-    cachedStoreConstraints.setDefaultConstraints(sharedCache.listCachedDefaultConstraint(catName, dbName, tblName));
-    cachedStoreConstraints.setCheckConstraints(sharedCache.listCachedCheckConstraint(catName, dbName, tblName));
-    cachedStoreConstraints.setUniqueConstraints(sharedCache.listCachedUniqueConstraint(catName, dbName, tblName));
-    Assert.assertEquals(rawStoreConstraints, cachedStoreConstraints);
+  public void assertRawStoreAndCachedStoreConstraint(AllTableConstraintsRequest request) throws TException {
+    SQLAllTableConstraints rawStoreConstraints = rawStore.getAllTableConstraints(request);
+    AllTableConstraintsResponse
+        constraints = hmsHandler.get_all_table_constraints(request);
+    Assert.assertEquals(rawStoreConstraints, constraints.getAllTableConstraints());
   }
 
   @Test

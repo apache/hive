@@ -70,12 +70,11 @@ public class TestCleanupService {
     testDeleteManyFiles(SyncCleanupService.INSTANCE, 10);
   }
 
-  @Ignore("HIVE-24345")
   @Test
   public void testEventualCleanupService_finishesCleanupBeforeExit() throws IOException, InterruptedException {
-    EventualCleanupService cleanupService = new EventualCleanupService(4, 1000);
-    testDeleteManyFiles(cleanupService, 1000, true);
-    assertTrue(cleanupService.await(1, TimeUnit.SECONDS));
+    EventualCleanupService cleanupService = new EventualCleanupService(4, 400);
+    testDeleteManyFiles(cleanupService, 400, true);
+    assertTrue(cleanupService.await(1, TimeUnit.MINUTES));
   }
 
   private void testDeleteManyFiles(CleanupService cleanupService, int n) throws IOException, InterruptedException {

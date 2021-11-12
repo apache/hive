@@ -20,8 +20,6 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.PreDropPartitionEvent;
@@ -30,6 +28,8 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizableEvent;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthzInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ import java.util.List;
  */
 
 public class DropPartitionEvent extends HiveMetaStoreAuthorizableEvent {
-  private static final Log LOG = LogFactory.getLog(DropPartitionEvent.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DropPartitionEvent.class);
 
   private String COMMAND_STR = "alter table %s drop partition %s";
 
@@ -55,9 +55,7 @@ public class DropPartitionEvent extends HiveMetaStoreAuthorizableEvent {
   }
 
   private List<HivePrivilegeObject> getInputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> DropPartitionEvent.getInputHObjs()");
-    }
+    LOG.debug("==> DropPartitionEvent.getInputHObjs()");
 
     List<HivePrivilegeObject> ret   = new ArrayList<>();
     PreDropPartitionEvent     event = (PreDropPartitionEvent) preEventContext;
@@ -67,9 +65,7 @@ public class DropPartitionEvent extends HiveMetaStoreAuthorizableEvent {
 
     COMMAND_STR = buildCommandString(COMMAND_STR,table);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("<== DropPartitionEvent.getInputHObjs(): ret=" + ret);
-    }
+    LOG.debug("<== DropPartitionEvent.getInputHObjs(): ret={}", ret);
 
     return ret;
   }

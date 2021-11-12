@@ -67,7 +67,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
-import org.apache.hive.common.util.TxnIdUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -139,7 +138,7 @@ class DriverTxnHandler {
   void cleanupTxnList() {
     driverContext.getConf().unset(ValidTxnList.VALID_TXNS_KEY);
   }
-  
+
   void acquireLocksIfNeeded() throws CommandProcessorException {
     if (requiresLock()) {
       acquireLocks();
@@ -154,6 +153,11 @@ class DriverTxnHandler {
 
     // Lock operations themselves don't require the lock.
     if (isExplicitLockOperation()) {
+      return false;
+    }
+
+    // no execution is going to be attempted, skip acquiring locks
+    if (context.isExplainSkipExecution()) {
       return false;
     }
 
@@ -264,6 +268,7 @@ class DriverTxnHandler {
         acidSinks.sort((FileSinkDesc fsd1, FileSinkDesc fsd2) -> fsd1.getMoveTaskId().compareTo(fsd2.getMoveTaskId()));
       }
 
+      int maxStmtId = -1;
       for (FileSinkDesc acidSink : acidSinks) {
         TableDesc tableInfo = acidSink.getTableInfo();
         TableName tableName = HiveTableName.of(tableInfo.getTableName());
@@ -277,11 +282,17 @@ class DriverTxnHandler {
          * {@link org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator#UNION_SUDBIR_PREFIX}
          */
         acidSink.setStatementId(driverContext.getTxnManager().getStmtIdAndIncrement());
+        maxStmtId = Math.max(acidSink.getStatementId(), maxStmtId);
         String unionAllSubdir = "/" + AbstractFileMergeOperator.UNION_SUDBIR_PREFIX;
         if (acidSink.getInsertOverwrite() && acidSink.getDirName().toString().contains(unionAllSubdir) &&
             acidSink.isFullAcidTable()) {
           throw new UnsupportedOperationException("QueryId=" + driverContext.getPlan().getQueryId() +
               " is not supported due to OVERWRITE and UNION ALL.  Please use truncate + insert");
+        }
+      }
+      if (HiveConf.getBoolVar(driverContext.getConf(), ConfVars.HIVE_EXTEND_BUCKET_ID_RANGE)) {
+        for (FileSinkDesc each : acidSinks) {
+          each.setMaxStmtId(maxStmtId);
         }
       }
     }
@@ -495,7 +506,7 @@ class DriverTxnHandler {
   void handleTransactionAfterExecution() throws CommandProcessorException {
     try {
       //since set autocommit starts an implicit txn, close it
-      if (driverContext.getTxnManager().isImplicitTransactionOpen() ||
+      if (driverContext.getTxnManager().isImplicitTransactionOpen(context) ||
           driverContext.getPlan().getOperation() == HiveOperation.COMMIT) {
         endTransactionAndCleanup(true);
       } else if (driverContext.getPlan().getOperation() == HiveOperation.ROLLBACK) {
@@ -559,7 +570,7 @@ class DriverTxnHandler {
   void endTransactionAndCleanup(boolean commit, HiveTxnManager txnManager) throws LockException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
-    
+
     // If we've opened a transaction we need to commit or rollback rather than explicitly releasing the locks.
     driverContext.getConf().unset(ValidTxnList.VALID_TXNS_KEY);
     driverContext.getConf().unset(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);

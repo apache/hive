@@ -216,3 +216,6 @@ explain select key from b_n3;
 explain select value from c_n1;
 explain select key from c_n1;
 
+describe formatted a_n3 PARTITION (ds='2010-03-11', hr) key;
+describe formatted a_n3 PARTITION (ds='2010-03-11', hr) value;
+

@@ -189,7 +189,7 @@ public class LoadTable {
     }
     Task<?> createTableTask =
         tblDesc.getCreateTableTask(new HashSet<>(), new HashSet<>(), context.hiveConf, true,
-                (new Path(context.dumpDirectory)).getParent().toString(), metricCollector);
+                (new Path(context.dumpDirectory)).getParent().toString(), metricCollector, true);
     if (tblRootTask == null) {
       tblRootTask = createTableTask;
     } else {
@@ -286,7 +286,6 @@ public class LoadTable {
     boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
     Task<?> copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, tmpPath, context.hiveConf,
             copyAtLoad, false, (new Path(context.dumpDirectory)).getParent().toString(), metricCollector);
-
     MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false,
                                      (new Path(context.dumpDirectory)).getParent().toString(), metricCollector,
                                       true);

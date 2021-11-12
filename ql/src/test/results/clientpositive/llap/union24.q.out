@@ -130,7 +130,7 @@ STAGE PLANS:
                         GlobalTableId: 0
 #### A masked pattern was here ####
                         NumFilesPerFileSink: 1
-                        Statistics: Num rows: 360 Data size: 34200 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 412 Data size: 39140 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -208,7 +208,7 @@ STAGE PLANS:
                         GlobalTableId: 0
 #### A masked pattern was here ####
                         NumFilesPerFileSink: 1
-                        Statistics: Num rows: 360 Data size: 34200 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 412 Data size: 39140 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -286,7 +286,7 @@ STAGE PLANS:
                         GlobalTableId: 0
 #### A masked pattern was here ####
                         NumFilesPerFileSink: 1
-                        Statistics: Num rows: 360 Data size: 34200 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 412 Data size: 39140 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -357,10 +357,10 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count()
                       keys: key (type: string)
-                      minReductionHashAggr: 0.5048544
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 51 Data size: 4845 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         bucketingVersion: 2
                         key expressions: _col0 (type: string)
@@ -368,7 +368,7 @@ STAGE PLANS:
                         numBuckets: -1
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 51 Data size: 4845 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: -1
                         value expressions: _col1 (type: bigint)
                         auto parallelism: true
@@ -420,14 +420,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 51 Data size: 4845 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 360 Data size: 34200 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 412 Data size: 39140 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1024,7 +1024,7 @@ STAGE PLANS:
                         GlobalTableId: 0
 #### A masked pattern was here ####
                         NumFilesPerFileSink: 1
-                        Statistics: Num rows: 257 Data size: 24415 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1102,7 +1102,7 @@ STAGE PLANS:
                         GlobalTableId: 0
 #### A masked pattern was here ####
                         NumFilesPerFileSink: 1
-                        Statistics: Num rows: 257 Data size: 24415 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1303,10 +1303,10 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count()
                   keys: _col0 (type: string)
-                  minReductionHashAggr: 0.5048544
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 51 Data size: 4845 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     bucketingVersion: 2
                     key expressions: _col0 (type: string)
@@ -1314,7 +1314,7 @@ STAGE PLANS:
                     numBuckets: -1
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 51 Data size: 4845 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                     tag: -1
                     value expressions: _col1 (type: bigint)
                     auto parallelism: true
@@ -1327,14 +1327,14 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 51 Data size: 4845 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 257 Data size: 24415 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 309 Data size: 29355 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat

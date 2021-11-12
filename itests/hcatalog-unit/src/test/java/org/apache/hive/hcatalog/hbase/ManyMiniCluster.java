@@ -254,8 +254,9 @@ public class ManyMiniCluster {
       hbaseDir = hbaseDir.replaceAll("\\\\", "/");
       hbaseRoot = "file:///" + hbaseDir;
 
-      if (hbaseConf == null)
+      if (hbaseConf == null) {
         hbaseConf = HBaseConfiguration.create();
+      }
 
       hbaseConf.set("hbase.rootdir", hbaseRoot);
       hbaseConf.set("hbase.master", "local");
@@ -265,6 +266,7 @@ public class ManyMiniCluster {
       hbaseConf.setInt("hbase.master.info.port", -1);
       hbaseConf.setInt("hbase.regionserver.port", findFreePort());
       hbaseConf.setInt("hbase.regionserver.info.port", -1);
+      hbaseConf.setBoolean("hbase.unsafe.stream.capability.enforce", false);
 
       hbaseCluster = new MiniHBaseCluster(hbaseConf, numRegionServers);
       hbaseConf.set("hbase.master", hbaseCluster.getMaster().getServerName().getHostAndPort());

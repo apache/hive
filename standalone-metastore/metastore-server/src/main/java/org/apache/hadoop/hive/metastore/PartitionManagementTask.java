@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,12 +32,12 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.TimeValidator;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,11 +89,6 @@ public class PartitionManagementTask implements MetastoreTaskThread {
             params.get(DISCOVER_PARTITIONS_TBLPROPERTY).equalsIgnoreCase("true");
   }
 
-  private static boolean tblBeingReplicatedInto(Map<String, String> params) {
-    return params != null && params.containsKey(ReplConst.REPL_TARGET_TABLE_PROPERTY) &&
-            !params.get(ReplConst.REPL_TARGET_TABLE_PROPERTY).trim().isEmpty();
-  }
-
   @Override
   public void run() {
     if (lock.tryLock()) {
@@ -127,10 +123,21 @@ public class PartitionManagementTask implements MetastoreTaskThread {
         LOG.info("Looking for tables using catalog: {} dbPattern: {} tablePattern: {} found: {}", catalogName,
           dbPattern, tablePattern, foundTableMetas.size());
 
+        Map<String, Boolean> databasesToSkip = new HashMap<>();
+
         for (TableMeta tableMeta : foundTableMetas) {
           try {
+            String dbName = MetaStoreUtils.prependCatalogToDbName(tableMeta.getCatName(), tableMeta.getDbName(), conf);
+            if (!databasesToSkip.containsKey(dbName)) {
+              databasesToSkip.put(dbName, MetaStoreUtils.checkIfDbNeedsToBeSkipped(
+                              msc.getDatabase(tableMeta.getCatName(), tableMeta.getDbName())));
+            }
+            if (databasesToSkip.get(dbName)) {
+              LOG.debug("Skipping table : {}", tableMeta.getTableName());
+              continue;
+            }
             Table table = msc.getTable(tableMeta.getCatName(), tableMeta.getDbName(), tableMeta.getTableName());
-            if (partitionDiscoveryEnabled(table.getParameters()) && !tblBeingReplicatedInto(table.getParameters())) {
+            if (partitionDiscoveryEnabled(table.getParameters())) {
               candidateTables.add(table);
             }
           } catch (NoSuchObjectException e) {
@@ -141,7 +148,6 @@ public class PartitionManagementTask implements MetastoreTaskThread {
         if (candidateTables.isEmpty()) {
           return;
         }
-
         // TODO: Msck creates MetastoreClient (MSC) on its own. MSC creation is expensive. Sharing MSC also
         // will not be safe unless synchronized MSC is used. Using synchronized MSC in multi-threaded context also
         // defeats the purpose of thread pooled msck repair.
@@ -225,7 +231,13 @@ public class PartitionManagementTask implements MetastoreTaskThread {
 
     @Override
     public void run() {
+      IMetaStoreClient msc = null;
       try {
+        msc = new HiveMetaStoreClient(conf);
+        if (MetaStoreUtils.isDbBeingFailedOver((msc.getDatabase(msckInfo.getCatalogName(), msckInfo.getDbName())))) {
+          LOG.info("Skipping table: {} as it belongs to database being failed over." + msckInfo.getTableName());
+          return;
+        }
         Msck msck = new Msck( true, true);
         msck.init(conf);
         msck.repair(msckInfo);
@@ -234,6 +246,9 @@ public class PartitionManagementTask implements MetastoreTaskThread {
       } finally {
         // there is no recovery from exception, so we always count down and retry in next attempt
         countDownLatch.countDown();
+        if (msc != null) {
+          msc.close();
+        }
       }
     }
   }

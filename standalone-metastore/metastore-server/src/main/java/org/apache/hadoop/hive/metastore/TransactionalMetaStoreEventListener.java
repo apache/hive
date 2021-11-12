@@ -19,6 +19,13 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.api.HiveObjectType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.events.CreateDataConnectorEvent;
+import org.apache.hadoop.hive.metastore.events.DropDataConnectorEvent;
+import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.DropTableEvent;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 
 /**
  * Special type of MetaStoreEventListener which should only be called in a transactional context
@@ -36,4 +43,11 @@ public abstract class TransactionalMetaStoreEventListener extends MetaStoreEvent
     super(config);
   }
 
+  @Override
+  public void onDropDataConnector(DropDataConnectorEvent connectorEvent) throws MetaException {
+  }
+
+  @Override
+  public void onCreateDataConnector(CreateDataConnectorEvent connectorEvent)  throws MetaException {
+  }
 }

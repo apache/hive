@@ -72,13 +72,13 @@ STAGE PLANS:
                           Select Vectorization:
                               className: VectorSelectOperator
                               native: true
-                              projectedOutputColumnNums: [2, 2, 13]
-                              selectExpressions: LongColAddLongColumn(col 2:int, col 2:int) -> 13:int
+                              projectedOutputColumnNums: [2, 2, 14]
+                              selectExpressions: LongColAddLongColumn(col 2:int, col 2:int) -> 14:int
                           Statistics: Num rows: 13785 Data size: 91688 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: count(_col0), max(_col1), min(_col0), sum(_col2), count(_col2)
                             Group By Vectorization:
-                                aggregators: VectorUDAFCount(col 2:int) -> bigint, VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFMinLong(col 2:int) -> int, VectorUDAFSumLong(col 13:int) -> bigint, VectorUDAFCount(col 13:int) -> bigint
+                                aggregators: VectorUDAFCount(col 2:int) -> bigint, VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFMinLong(col 2:int) -> int, VectorUDAFSumLong(col 14:int) -> bigint, VectorUDAFCount(col 14:int) -> bigint
                                 className: VectorGroupByOperator
                                 groupByMode: HASH
                                 native: false

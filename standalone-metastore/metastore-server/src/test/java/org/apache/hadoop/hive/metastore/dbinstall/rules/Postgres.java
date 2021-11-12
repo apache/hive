@@ -17,22 +17,13 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * JUnit TestRule for Postgres.
  */
 public class Postgres extends DatabaseRule {
-  private static final Logger LOG = LoggerFactory.getLogger(Postgres.class);
-
   @Override
   public String getDockerImageName() {
-    return "postgres:9.3";
+    return "postgres:11.6";
   }
 
   @Override
@@ -71,17 +62,9 @@ public class Postgres extends DatabaseRule {
   }
 
   @Override
-  public boolean isContainerReady(String logOutput) {
-    if (logOutput.contains("PostgreSQL init process complete; ready for start up")) {
-      try (Socket socket = new Socket()) {
-        socket.connect(new InetSocketAddress(getContainerHostAddress(), 5432), 1000);
-        return true;
-      } catch (IOException e) {
-        LOG.info("cant connect to postgres; {}", e.getMessage());
-        return false;
-      }
-    }
-    return false;
+  public boolean isContainerReady(ProcessResults pr) {
+    return pr.stdout.contains("database system is ready to accept connections") &&
+        pr.stderr.contains("database system is ready to accept connections");
   }
 
   @Override

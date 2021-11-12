@@ -320,9 +320,7 @@ public class AccumuloPredicateHandler {
         itrs.add(toSetting(mapping, sc, binaryEncodedRow));
       }
     }
-    if (LOG.isInfoEnabled()) {
-      LOG.info("num iterators = " + itrs.size());
-    }
+    LOG.info("num iterators = " + itrs.size());
     return itrs;
   }
 

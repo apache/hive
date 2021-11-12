@@ -178,7 +178,8 @@ public class RetryingHMSHandler implements InvocationHandler {
         } else if (e.getCause() instanceof NoSuchObjectException || e.getTargetException().getCause() instanceof NoSuchObjectException) {
           String methodName = method.getName();
           if (!methodName.startsWith("get_database") && !methodName.startsWith("get_table")
-              && !methodName.startsWith("get_partition") && !methodName.startsWith("get_function")) {
+              && !methodName.startsWith("get_partition") && !methodName.startsWith("get_function")
+              && !methodName.startsWith("get_stored_procedure") && !methodName.startsWith("find_package")) {
             LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
           }
           throw e.getCause();
@@ -205,7 +206,7 @@ public class RetryingHMSHandler implements InvocationHandler {
 
       if (retryCount >= retryLimit) {
         LOG.error("HMSHandler Fatal error: " + ExceptionUtils.getStackTrace(caughtException));
-        MetaException me = new MetaException(caughtException.getMessage());
+        MetaException me = new MetaException(caughtException.toString());
         me.initCause(caughtException);
         throw me;
       }

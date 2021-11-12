@@ -20,8 +20,6 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.events.PreCreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
@@ -29,6 +27,8 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizableEvent;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthzInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,7 +39,7 @@ import java.util.List;
  */
 
 public class CreateDatabaseEvent extends HiveMetaStoreAuthorizableEvent {
-  private static final Log LOG = LogFactory.getLog(CreateDatabaseEvent.class);
+  private static final Logger LOG = LoggerFactory.getLogger(CreateDatabaseEvent.class);
 
   private String COMMAND_STR = "create database";
 
@@ -57,9 +57,7 @@ public class CreateDatabaseEvent extends HiveMetaStoreAuthorizableEvent {
   private List<HivePrivilegeObject> getInputHObjs() { return Collections.emptyList(); }
 
   private List<HivePrivilegeObject> getOutputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> CreateDatabaseEvent.getOutputHObjs()");
-    }
+    LOG.debug("==> CreateDatabaseEvent.getOutputHObjs()");
 
     List<HivePrivilegeObject> ret      = new ArrayList<>();
     PreCreateDatabaseEvent    event    = (PreCreateDatabaseEvent) preEventContext;
@@ -74,9 +72,7 @@ public class CreateDatabaseEvent extends HiveMetaStoreAuthorizableEvent {
 
       COMMAND_STR = buildCommandString(COMMAND_STR, database);
 
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("<== CreateDatabaseEvent.getOutputHObjs(): ret=" + ret);
-      }
+      LOG.debug("<== CreateDatabaseEvent.getOutputHObjs(): ret={}", ret);
     }
 
     return ret;

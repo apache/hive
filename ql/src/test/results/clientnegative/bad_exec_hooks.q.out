@@ -5,4 +5,6 @@ java.lang.RuntimeException: Error loading hooks(hive.exec.pre.hooks): java.lang.
 #### A masked pattern was here ####
 
 #### A masked pattern was here ####
+Caused by: java.lang.ClassNotFoundException: "org.this.is.a.bad.class"
+#### A masked pattern was here ####
 

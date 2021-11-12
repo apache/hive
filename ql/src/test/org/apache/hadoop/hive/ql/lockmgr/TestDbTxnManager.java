@@ -27,6 +27,10 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -52,6 +56,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import static junit.framework.Assert.assertEquals;
@@ -423,6 +428,7 @@ public class TestDbTxnManager {
 
   @Test
   public void testHeartbeater() throws Exception {
+    MetastoreConf.ConfVars timeThresholdConfVar = MetastoreConf.ConfVars.TXN_TIMEOUT;
     Assert.assertTrue(txnMgr instanceof DbTxnManager);
 
     addTableInput();
@@ -430,7 +436,7 @@ public class TestDbTxnManager {
     QueryPlan qp = new MockQueryPlan(this, HiveOperation.QUERY);
 
     // Case 1: If there's no delay for the heartbeat, txn should be able to commit
-    txnMgr.openTxn(ctx, "fred");
+    txnMgr.openTxn(ctx, "fred", TxnType.DEFAULT);
     txnMgr.acquireLocks(qp, ctx, "fred"); // heartbeat started..
     runReaper();
     try {
@@ -443,9 +449,9 @@ public class TestDbTxnManager {
 
     // Case 2: If there's delay for the heartbeat, but the delay is within the reaper's tolerance,
     //         then txt should be able to commit
-    // Start the heartbeat after a delay, which is shorter than  the HIVE_TXN_TIMEOUT
+    // Start the heartbeat after a delay, which is shorter than the timeout threshold (e.g. TXN_TIMEOUT)
     ((DbTxnManager) txnMgr).openTxn(ctx, "tom", TxnType.DEFAULT,
-        HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS) / 2);
+            MetastoreConf.getTimeVar(conf, timeThresholdConfVar, TimeUnit.MILLISECONDS) / 2);
     txnMgr.acquireLocks(qp, ctx, "tom");
     runReaper();
     try {
@@ -459,11 +465,11 @@ public class TestDbTxnManager {
     // Case 3: If there's delay for the heartbeat, and the delay is long enough to trigger the reaper,
     //         then the txn will time out and be aborted.
     //         Here we just don't send the heartbeat at all - an infinite delay.
-    // Start the heartbeat after a delay, which exceeds the HIVE_TXN_TIMEOUT
+    // Start the heartbeat after a delay, which exceeds the timeout threshold (e.g. TXN_TIMEOUT)
     ((DbTxnManager) txnMgr).openTxn(ctx, "jerry", TxnType.DEFAULT,
-        HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS) * 2);
+            MetastoreConf.getTimeVar(conf, timeThresholdConfVar, TimeUnit.MILLISECONDS) * 2);
     txnMgr.acquireLocks(qp, ctx, "jerry");
-    Thread.sleep(HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS));
+    Thread.sleep(MetastoreConf.getTimeVar(conf, timeThresholdConfVar, TimeUnit.MILLISECONDS));
     runReaper();
     try {
       txnMgr.commitTxn();
@@ -472,21 +478,72 @@ public class TestDbTxnManager {
     }
     Assert.assertNotNull("Txn should have been aborted", exception);
     Assert.assertEquals(ErrorMsg.TXN_ABORTED, exception.getCanonicalErrorMsg());
+    Assert.assertEquals(1, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_TIMED_OUT_TXNS).getCount());
+  }
+
+  /**
+   * Same as testHeartbeater, but testing cleanup of replication txns (TxnType.REPL_CREATED)
+   * Note: in TestDbTxnManager metastore.repl.txn.timeout is set to 30s for testing purposes.
+   */
+  @Test
+  public void testHeartbeaterReplicationTxn() throws Exception {
+    MetastoreConf.ConfVars timeThresholdConfVar = MetastoreConf.ConfVars.REPL_TXN_TIMEOUT;
+    Assert.assertTrue(txnMgr instanceof DbTxnManager);
+
+    addTableInput();
+    LockException exception = null;
+    String replPolicy = "default.*";
+    // Case 1: If there's no delay for the heartbeat, txn should be able to commit
+    txnMgr.replOpenTxn(replPolicy, Arrays.asList(1L), "fred");
+    runReaper();
+    try {
+      CommitTxnRequest commitTxnRequest = new CommitTxnRequest(1);
+      commitTxnRequest.setReplPolicy(replPolicy);
+      commitTxnRequest.setTxn_type(TxnType.REPL_CREATED);
+      txnMgr.replCommitTxn(commitTxnRequest);
+    } catch (LockException e) {
+      exception = e;
+    }
+    Assert.assertNull("Txn commit should be successful", exception);
+    txnMgr.replOpenTxn(replPolicy, Arrays.asList(1L), "jerry");
+    Thread.sleep(MetastoreConf.getTimeVar(conf, timeThresholdConfVar, TimeUnit.MILLISECONDS));
+    runReaper();
+    try {
+      CommitTxnRequest commitTxnRequest = new CommitTxnRequest(1);
+      commitTxnRequest.setReplPolicy(replPolicy);
+      commitTxnRequest.setTxn_type(TxnType.REPL_CREATED);
+      txnMgr.replCommitTxn(commitTxnRequest);
+    } catch (LockException e) {
+      exception = e;
+    }
+    Assert.assertNull("This CommitTxnRequest is no op since transaction is already aborted by reaper.", exception);
+    try {
+      txnMgr.replRollbackTxn(replPolicy, 1L);
+    } catch (LockException e) {
+      exception = e;
+    }
+    Assert.assertNull("This AbortTxnRequest is no op since transaction is already aborted by reaper.", exception);
+    Assert.assertEquals(1, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_TIMED_OUT_TXNS).getCount());
   }
 
   @Before
   public void setUp() throws Exception {
     TestTxnDbUtil.prepDb(conf);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     txnMgr.getLockManager();//init lock manager
     Assert.assertTrue(txnMgr instanceof DbTxnManager);
     nextInput = 1;
     readEntities = new HashSet<ReadEntity>();
     writeEntities = new HashSet<WriteEntity>();
-    conf.setTimeVar(HiveConf.ConfVars.HIVE_TIMEDOUT_TXN_REAPER_START, 0, TimeUnit.SECONDS);
-    conf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 10, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.ACID_HOUSEKEEPER_SERVICE_START, 0, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, 10, TimeUnit.SECONDS);
     houseKeeperService = new AcidHouseKeeperService();
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.REPL_TXN_TIMEOUT, 30, TimeUnit.SECONDS);
     houseKeeperService.setConf(conf);
+    // re-initialize metrics
+    Metrics.shutdown();
+    Metrics.initialize(conf);
   }
 
   @After

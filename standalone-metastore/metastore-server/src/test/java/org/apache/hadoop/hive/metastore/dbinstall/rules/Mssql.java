@@ -24,7 +24,7 @@ public class Mssql extends DatabaseRule {
 
   @Override
   public String getDockerImageName() {
-    return "microsoft/mssql-server-linux:2017-GA";
+    return "mcr.microsoft.com/mssql/server:2019-latest";
   }
 
   @Override
@@ -72,8 +72,9 @@ public class Mssql extends DatabaseRule {
   }
 
   @Override
-  public boolean isContainerReady(String logOutput) {
-    return logOutput.contains(
+  public boolean isContainerReady(ProcessResults pr) {
+    return pr.stdout
+        .contains(
         "Recovery is complete. This is an informational message only. No user action is required.");
   }
 

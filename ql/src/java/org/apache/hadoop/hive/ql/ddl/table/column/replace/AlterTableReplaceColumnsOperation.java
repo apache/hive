@@ -48,7 +48,7 @@ public class AlterTableReplaceColumnsOperation extends AbstractAlterTableOperati
 
   private static final Set<String> VALID_SERIALIZATION_LIBS = ImmutableSet.of(
       MetadataTypedColumnsetSerDe.class.getName(), LazySimpleSerDe.class.getName(), ColumnarSerDe.class.getName(),
-      ParquetHiveSerDe.class.getName(), OrcSerde.class.getName());
+      ParquetHiveSerDe.class.getName(), OrcSerde.class.getName(), "org.apache.iceberg.mr.hive.HiveIcebergSerDe");
 
   @Override
   protected void doAlteration(Table table, Partition partition) throws HiveException {

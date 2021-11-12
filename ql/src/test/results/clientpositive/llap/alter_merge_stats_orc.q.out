@@ -92,7 +92,7 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	3                   
 	numRows             	1500                
-	rawDataSize         	141000              
+	rawDataSize         	147000              
 	totalSize           	7596                
 #### A masked pattern was here ####
 	 	 
@@ -143,7 +143,7 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	1500                
-	rawDataSize         	141000              
+	rawDataSize         	147000              
 	totalSize           	7216                
 #### A masked pattern was here ####
 	 	 
@@ -289,7 +289,7 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	numFiles            	3                   
 	numRows             	1500                
-	rawDataSize         	141000              
+	rawDataSize         	147000              
 	totalSize           	7596                
 #### A masked pattern was here ####
 	 	 
@@ -344,7 +344,7 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
 	numRows             	1500                
-	rawDataSize         	141000              
+	rawDataSize         	147000              
 	totalSize           	7216                
 #### A masked pattern was here ####
 	 	 

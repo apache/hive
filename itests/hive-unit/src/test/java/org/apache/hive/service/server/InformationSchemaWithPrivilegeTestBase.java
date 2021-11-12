@@ -210,6 +210,7 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
     confOverlay.put(MetastoreConf.ConfVars.AUTO_CREATE_ALL.getVarname(), "true");
     confOverlay.put(ConfVars.HIVE_AUTHENTICATOR_MANAGER.varname, FakeGroupAuthenticator.class.getName());
     confOverlay.put(ConfVars.HIVE_AUTHORIZATION_ENABLED.varname, "true");
+    confOverlay.put(ConfVars.HIVE_PRIVILEGE_SYNCHRONIZER.varname, "true");
     confOverlay.put(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST.varname, ".*");
 
     if(zookeeperSSLEnabled) {

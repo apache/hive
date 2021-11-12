@@ -54,7 +54,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Shell;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkEnv;
 import org.apache.spark.SparkFiles;
@@ -299,10 +298,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   }
 
   void displayBrokenPipeInfo() {
-    if (LOG.isInfoEnabled()) {
-      LOG.info("The script did not consume all input data. This is considered as an error.");
-      LOG.info("set " + HiveConf.ConfVars.ALLOWPARTIALCONSUMP.toString() + "=true; to ignore it.");
-    }
+    LOG.info("The script did not consume all input data. This is considered as an error.");
+    LOG.info("set " + HiveConf.ConfVars.ALLOWPARTIALCONSUMP.toString() + "=true; to ignore it.");
     return;
   }
 
@@ -345,12 +342,10 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         }
 
         String[] wrappedCmdArgs = addWrapper(cmdArgs);
-        if (LOG.isInfoEnabled()) {
-          LOG.info("Executing " + Arrays.asList(wrappedCmdArgs));
-          LOG.info("tablename=" + tableName);
-          LOG.info("partname=" + partitionName);
-          LOG.info("alias=" + alias);
-        }
+        LOG.info("Executing " + Arrays.asList(wrappedCmdArgs));
+        LOG.info("tablename=" + tableName);
+        LOG.info("partname=" + partitionName);
+        LOG.info("alias=" + alias);
 
         ProcessBuilder pb = new ProcessBuilder(wrappedCmdArgs);
         Map<String, String> env = pb.environment();
@@ -449,8 +444,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
             outThread.join(0);
           }
         } catch (Exception e2) {
-          LOG.warn("Exception in closing outThread: "
-              + StringUtils.stringifyException(e2));
+          LOG.warn("Exception in closing outThread", e2);
         }
         setDone(true);
         LOG.warn("Got broken pipe during write: ignoring exception and setting operator to done");
@@ -538,8 +532,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         outThread.join(0);
       }
     } catch (Exception e) {
-      LOG.warn("Exception in closing outThread: "
-          + StringUtils.stringifyException(e));
+      LOG.warn("Exception in closing outThread", e);
     }
 
     try {
@@ -547,8 +540,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         errThread.join(0);
       }
     } catch (Exception e) {
-      LOG.warn("Exception in closing errThread: "
-          + StringUtils.stringifyException(e));
+      LOG.warn("Exception in closing errThread", e);
     }
 
     try {
@@ -556,8 +548,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         scriptPid.destroy();
       }
     } catch (Exception e) {
-      LOG.warn("Exception in destroying scriptPid: "
-          + StringUtils.stringifyException(e));
+      LOG.warn("Exception in destroying scriptPid", e);
     }
 
     super.close(new_abort);
@@ -678,9 +669,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
       long now = System.currentTimeMillis();
       // reporter is a member variable of the Operator class.
       if (now - lastReportTime > 60 * 1000 && reporter != null) {
-        if (LOG.isInfoEnabled()) {
-          LOG.info("ErrorStreamProcessor calling reporter.progress()");
-        }
+        LOG.info("ErrorStreamProcessor calling reporter.progress()");
         lastReportTime = now;
         reporter.progress();
       }
@@ -736,23 +725,18 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
           }
           proc.processLine(row);
         }
-        if (LOG.isInfoEnabled()) {
-          LOG.info("StreamThread " + name + " done");
-        }
+        LOG.info("StreamThread " + name + " done");
 
       } catch (Throwable th) {
         scriptError = th;
-        LOG.warn("Exception in StreamThread.run(): " + th.getMessage() +
-            "\nCause: " + th.getCause());
-        LOG.warn(StringUtils.stringifyException(th));
+        LOG.warn("Exception in StreamThread.run()", th);
       } finally {
         try {
           if (in != null) {
             in.close();
           }
         } catch (Exception e) {
-          LOG.warn(name + ": error in closing ..");
-          LOG.warn(StringUtils.stringifyException(e));
+          LOG.warn(name + ": error in closing ..", e);
         }
         try
         {
@@ -760,7 +744,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
             proc.close();
           }
         }catch (Exception e) {
-          LOG.warn(": error in closing .."+StringUtils.stringifyException(e));
+          LOG.warn(": error in closing ..", e);
         }
       }
     }

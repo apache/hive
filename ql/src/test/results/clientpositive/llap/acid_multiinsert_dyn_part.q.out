@@ -649,14 +649,8 @@ POSTHOOK: Output: default@multiinsert_test_mm@c=2222
 POSTHOOK: Output: default@multiinsert_test_mm@c=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=1111).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=1111).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=1111).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=1111).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=2222).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=2222).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=2222).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=2222).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
 PREHOOK: query: select * from multiinsert_test_mm

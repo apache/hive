@@ -9031,13 +9031,13 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 10 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 7 (CONTAINS)
+        Reducer 10 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 5 (CONTAINS)
         Reducer 12 <- Map 11 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
         Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
         Reducer 4 <- Union 3 (SIMPLE_EDGE), Union 5 (CONTAINS)
         Reducer 6 <- Union 5 (SIMPLE_EDGE), Union 7 (CONTAINS)
         Reducer 8 <- Union 7 (SIMPLE_EDGE)
-        Reducer 9 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 5 (CONTAINS)
+        Reducer 9 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 7 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -9089,7 +9089,7 @@ STAGE PLANS:
                 Number of rows: 1
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: 4 (type: int)
+                  expressions: 3 (type: int)
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
@@ -9100,7 +9100,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
@@ -9213,7 +9213,7 @@ STAGE PLANS:
                 Number of rows: 1
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: 3 (type: int)
+                  expressions: 4 (type: int)
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
@@ -9224,7 +9224,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
-                      null sort order: z
+                      null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE

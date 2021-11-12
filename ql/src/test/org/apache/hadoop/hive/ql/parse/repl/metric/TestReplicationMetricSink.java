@@ -19,15 +19,22 @@
 package org.apache.hadoop.hive.ql.parse.repl.metric;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetrics;
+import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.metric.BootstrapDumpMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.dump.metric.IncrementalDumpMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.load.FailoverMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Stage;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Progress;
@@ -37,11 +44,13 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.ProgressMapper;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.StageMapper;
 
+import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
@@ -49,13 +58,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * Unit Test class for In Memory Replication Metric Collection.
  */
 @RunWith(MockitoJUnitRunner.class)
 public class TestReplicationMetricSink {
 
+  //Deserializer to decode and decompress the input string.
+  MessageDeserializer deserializer;
   HiveConf conf;
+
+  @Mock
+  private FailoverMetaData fmd;
 
   @Before
   public void setup() throws Exception {
@@ -65,6 +81,11 @@ public class TestReplicationMetricSink {
     MetricSink metricSinkSpy = Mockito.spy(MetricSink.getInstance());
     Mockito.doReturn(1L).when(metricSinkSpy).getFrequencyInSecs();
     metricSinkSpy.init(conf);
+    deserializer = MessageFactory.getDefaultInstanceForReplMetrics(conf).getDeserializer();
+  }
+
+  private String deSerialize(String msg) {
+    return deserializer.deSerializeGenericString(msg);
   }
 
   @Test
@@ -80,13 +101,13 @@ public class TestReplicationMetricSink {
     bootstrapDumpMetricCollector.reportStageProgress("dump", ReplUtils.MetricName.TABLES.name(), 1);
     bootstrapDumpMetricCollector.reportStageProgress("dump", ReplUtils.MetricName.TABLES.name(), 2);
     bootstrapDumpMetricCollector.reportStageProgress("dump", ReplUtils.MetricName.FUNCTIONS.name(), 1);
-    bootstrapDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10);
+    bootstrapDumpMetricCollector
+        .reportStageEnd("dump", Status.SUCCESS, 10, new SnapshotUtils.ReplSnapshotCount(),
+            new ReplStatsTracker(0));
     bootstrapDumpMetricCollector.reportEnd(Status.SUCCESS);
 
     Metadata expectedMetadata = new Metadata("testAcidTablesReplLoadBootstrapIncr_1592205875387",
-      Metadata.ReplicationType.BOOTSTRAP, "hdfs://localhost:65158/tmp/org_apache_hadoop_hive_ql_"
-      + "parse_TestReplicationScenarios_245261428230295/hrepl0/dGVzdGFjaWR0YWJsZXNyZXBsbG9hZGJvb3RzdHJhcGlu"
-      + "Y3JfMTU5MjIwNTg3NTM4Nw==/0/hive");
+      Metadata.ReplicationType.BOOTSTRAP, "dummyDir");
     expectedMetadata.setLastReplId(10);
     Progress expectedProgress = new Progress();
     expectedProgress.setStatus(Status.SUCCESS);
@@ -111,7 +132,8 @@ public class TestReplicationMetricSink {
     ReplicationMetric actualMetric = new ReplicationMetric(actualThriftMetric.getScheduledExecutionId(),
         actualThriftMetric.getPolicy(), actualThriftMetric.getDumpExecutionId(),
         mapper.readValue(actualThriftMetric.getMetadata(), Metadata.class));
-    ProgressMapper progressMapper = mapper.readValue(actualThriftMetric.getProgress(), ProgressMapper.class);
+    actualMetric.setMessageFormat(actualThriftMetric.getMessageFormat());
+    ProgressMapper progressMapper = mapper.readValue(deSerialize(actualThriftMetric.getProgress()), ProgressMapper.class);
     Progress progress = new Progress();
     progress.setStatus(progressMapper.getStatus());
     for (StageMapper stageMapper : progressMapper.getStages()) {
@@ -139,13 +161,12 @@ public class TestReplicationMetricSink {
     metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) 10);
     incrementDumpMetricCollector.reportStageStart("dump", metricMap);
     incrementDumpMetricCollector.reportStageProgress("dump", ReplUtils.MetricName.EVENTS.name(), 10);
-    incrementDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10);
+    incrementDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10, new SnapshotUtils.ReplSnapshotCount(),
+        new ReplStatsTracker(0));
     incrementDumpMetricCollector.reportEnd(Status.SUCCESS);
 
     expectedMetadata = new Metadata("testAcidTablesReplLoadBootstrapIncr_1592205875387",
-      Metadata.ReplicationType.INCREMENTAL, "hdfs://localhost:65158/tmp/org_apache_hadoop_hive_ql_"
-      + "parse_TestReplicationScenarios_245261428230295/hrepl0/dGVzdGFjaWR0YWJsZXNyZXBsbG9hZGJvb3RzdHJhcGlu"
-      + "Y3JfMTU5MjIwNTg3NTM4Nw==/0/hive");
+      Metadata.ReplicationType.INCREMENTAL, "dummyDir");
     expectedMetadata.setLastReplId(10);
     expectedProgress = new Progress();
     expectedProgress.setStatus(Status.SUCCESS);
@@ -168,7 +189,8 @@ public class TestReplicationMetricSink {
     actualMetric = new ReplicationMetric(actualThriftMetric.getScheduledExecutionId(),
       actualThriftMetric.getPolicy(), actualThriftMetric.getDumpExecutionId(),
       mapper.readValue(actualThriftMetric.getMetadata(), Metadata.class));
-    progressMapper = mapper.readValue(actualThriftMetric.getProgress(), ProgressMapper.class);
+    actualMetric.setMessageFormat(actualThriftMetric.getMessageFormat());
+    progressMapper = mapper.readValue(deSerialize(actualThriftMetric.getProgress()), ProgressMapper.class);
     progress = new Progress();
     progress.setStatus(progressMapper.getStatus());
     for (StageMapper stageMapper : progressMapper.getStages()) {
@@ -185,6 +207,68 @@ public class TestReplicationMetricSink {
     actualMetric.setProgress(progress);
     checkSuccessIncremental(actualMetric, expectedMetric, "dump",
       Arrays.asList(ReplUtils.MetricName.EVENTS.name()));
+
+    //Failover Metrics Sink
+    Mockito.when(fmd.getFailoverEventId()).thenReturn(100L);
+    Mockito.when(fmd.getFilePath()).thenReturn("hdfs://localhost:65158/tmp/org_apache_hadoop_hive_ql_parse_TestReplicationScenarios_245261428230295"
+            + "/hrepl0/dGVzdGFjaWR0YWJsZXNyZXBsbG9hZGJvb3RzdHJhcGluY3JfMTU5MjIwNTg3NTM4Nw==/0/hive/");
+    conf.set(Constants.SCHEDULED_QUERY_EXECUTIONID, "3");
+    String stagingDir = "hdfs://localhost:65158/tmp/org_apache_hadoop_hive_ql_parse_TestReplicationScenarios_245261428230295"
+            + "/hrepl0/dGVzdGFjaWR0YWJsZXNyZXBsbG9hZGJvb3RzdHJhcGluY3JfMTU5MjIwNTg3NTM4Nw==/0/hive/";
+    ReplicationMetricCollector failoverDumpMetricCollector = new IncrementalDumpMetricCollector(
+            "testAcidTablesReplLoadBootstrapIncr_1592205875387", stagingDir, conf);
+    metricMap = new HashMap<String, Long>(){{put(ReplUtils.MetricName.EVENTS.name(), (long) 10);}};
+
+    failoverDumpMetricCollector.reportFailoverStart("dump", metricMap, fmd);
+    failoverDumpMetricCollector.reportStageProgress("dump", ReplUtils.MetricName.EVENTS.name(), 10);
+    failoverDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10, new SnapshotUtils.ReplSnapshotCount(),
+            new ReplStatsTracker(0));
+    failoverDumpMetricCollector.reportEnd(Status.FAILOVER_READY);
+
+    expectedMetadata = new Metadata("testAcidTablesReplLoadBootstrapIncr_1592205875387",
+            Metadata.ReplicationType.INCREMENTAL, "dummyDir");
+    expectedMetadata.setLastReplId(10);
+    expectedMetadata.setFailoverEventId(100);
+    expectedMetadata.setFailoverMetadataLoc(stagingDir + FailoverMetaData.FAILOVER_METADATA);
+    expectedProgress = new Progress();
+    expectedProgress.setStatus(Status.FAILOVER_READY);
+    dumpStage = new Stage("dump", Status.SUCCESS, 0);
+    dumpStage.setEndTime(0);
+    expectedEventsMetric = new Metric(ReplUtils.MetricName.EVENTS.name(), 10);
+    expectedEventsMetric.setCurrentCount(10);
+    dumpStage.addMetric(expectedEventsMetric);
+    expectedProgress.addStage(dumpStage);
+    expectedMetric = new ReplicationMetric(3, "repl", 0,
+            expectedMetadata);
+    expectedMetric.setProgress(expectedProgress);
+    Thread.sleep(1000 * 20);
+    metricsRequest = new GetReplicationMetricsRequest();
+    metricsRequest.setPolicy("repl");
+    actualReplicationMetrics = Hive.get(conf).getMSC().getReplicationMetrics(metricsRequest);
+    Assert.assertEquals(3, actualReplicationMetrics.getReplicationMetricListSize());
+    actualThriftMetric = actualReplicationMetrics.getReplicationMetricList().get(0);
+    mapper = new ObjectMapper();
+    actualMetric = new ReplicationMetric(actualThriftMetric.getScheduledExecutionId(),
+            actualThriftMetric.getPolicy(), actualThriftMetric.getDumpExecutionId(),
+            mapper.readValue(actualThriftMetric.getMetadata(), Metadata.class));
+    actualMetric.setMessageFormat(actualThriftMetric.getMessageFormat());
+    progressMapper = mapper.readValue(deSerialize(actualThriftMetric.getProgress()), ProgressMapper.class);
+    progress = new Progress();
+    progress.setStatus(progressMapper.getStatus());
+    for (StageMapper stageMapper : progressMapper.getStages()) {
+      Stage stage = new Stage();
+      stage.setName(stageMapper.getName());
+      stage.setStatus(stageMapper.getStatus());
+      stage.setStartTime(stageMapper.getStartTime());
+      stage.setEndTime(stageMapper.getEndTime());
+      for (Metric metric : stageMapper.getMetrics()) {
+        stage.addMetric(metric);
+      }
+      progress.addStage(stage);
+    }
+    actualMetric.setProgress(progress);
+    checkSuccessIncremental(actualMetric, expectedMetric, "dump",
+            Arrays.asList(ReplUtils.MetricName.EVENTS.name()));
   }
 
   private void checkSuccess(ReplicationMetric actual, ReplicationMetric expected, String stageName,
@@ -229,4 +313,33 @@ public class TestReplicationMetricSink {
     }
   }
 
+  @Test
+  public void testReplStatsInMetrics() throws HiveException, InterruptedException, TException {
+    int origRMProgress = ReplStatsTracker.RM_PROGRESS_LENGTH;
+    ReplStatsTracker.RM_PROGRESS_LENGTH = 10;
+    ReplicationMetricCollector incrementDumpMetricCollector =
+        new IncrementalDumpMetricCollector("testAcidTablesReplLoadBootstrapIncr_1592205875387",
+            "hdfs://localhost:65158/tmp/org_apache_hadoop_hive_ql_parse_TestReplicationScenarios_245261428230295"
+                + "/hrepl0/dGVzdGFjaWR0YWJsZXNyZXBsbG9hZGJvb3RzdHJhcGluY3JfMTU5MjIwNTg3NTM4Nw==/0/hive", conf);
+    Map<String, Long> metricMap = new HashMap<>();
+    ReplStatsTracker repl = Mockito.mock(ReplStatsTracker.class);
+
+    Mockito.when(repl.toString()).thenReturn(RandomStringUtils.randomAlphabetic(1000));
+    metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) 10);
+    incrementDumpMetricCollector.reportStageStart("dump", metricMap);
+    incrementDumpMetricCollector.reportStageProgress("dump", ReplUtils.MetricName.EVENTS.name(), 10);
+    incrementDumpMetricCollector
+        .reportStageEnd("dump", Status.SUCCESS, 10, new SnapshotUtils.ReplSnapshotCount(), repl);
+    Thread.sleep(1000 * 20);
+    GetReplicationMetricsRequest metricsRequest = new GetReplicationMetricsRequest();
+    metricsRequest.setPolicy("repl");
+    ReplicationMetricList actualReplicationMetrics = Hive.get(conf).getMSC().getReplicationMetrics(metricsRequest);
+    String progress = deSerialize(actualReplicationMetrics.getReplicationMetricList().get(0).getProgress());
+    assertTrue(progress, progress.contains("ERROR: RM_PROGRESS LIMIT EXCEEDED."));
+    ReplStatsTracker.RM_PROGRESS_LENGTH = origRMProgress;
+
+    //Testing K_MAX
+    repl = new ReplStatsTracker(15);
+    Assert.assertEquals(ReplStatsTracker.TOP_K_MAX, repl.getK());
+  }
 }

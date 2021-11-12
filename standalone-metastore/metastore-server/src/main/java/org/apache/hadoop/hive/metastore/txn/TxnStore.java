@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
+import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -306,6 +307,21 @@ public interface TxnStore extends Configurable {
   ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException;
 
   /**
+   * Get one latest record of SUCCEEDED or READY_FOR_CLEANING compaction for a table/partition.
+   * No checking is done on the dbname, tablename, or partitionname to make sure they refer to valid objects.
+   * Is is assumed to be done by the caller.
+   * Note that partition names should be supplied with the request for a partitioned table; otherwise,
+   * no records will be returned.
+   * @param rqst info on which compaction to retrieve
+   * @return one latest compaction record for a non partitioned table or one latest record for each
+   * partition specified by the request.
+   * @throws MetaException
+   */
+  @RetrySemantics.ReadOnly
+  GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(
+      GetLatestCommittedCompactionInfoRequest rqst) throws MetaException;
+
+  /**
    * Add information on a set of dynamic partitions that participated in a transaction.
    * @param rqst dynamic partition info.
    * @throws NoSuchTxnException
@@ -369,11 +385,22 @@ public interface TxnStore extends Configurable {
   /**
    * This will grab the next compaction request off of
    * the queue, and assign it to the worker.
+   * @deprecated Replaced by
+   *     {@link TxnStore#findNextToCompact(org.apache.hadoop.hive.metastore.api.FindNextCompactRequest)}
    * @param workerId id of the worker calling this, will be recorded in the db
    * @return an info element for this compaction request, or null if there is no work to do now.
    */
+  @Deprecated
   @RetrySemantics.ReadOnly
   CompactionInfo findNextToCompact(String workerId) throws MetaException;
+
+  /**
+   * This will grab the next compaction request off of the queue, and assign it to the worker.
+   * @param rqst request to find next compaction to run
+   * @return an info element for next compaction in the queue, or null if there is no work to do now.
+   */
+  @RetrySemantics.ReadOnly
+  CompactionInfo findNextToCompact(FindNextCompactRequest rqst) throws MetaException;
 
   /**
    * This will mark an entry in the queue as compacted
@@ -396,7 +423,7 @@ public interface TxnStore extends Configurable {
   /**
    * This will remove an entry from the queue after
    * it has been compacted.
-   * 
+   *
    * @param info info on the compaction entry to remove
    */
   @RetrySemantics.CannotRetry
@@ -418,6 +445,12 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.SafeToRetry
   void cleanTxnToWriteIdTable() throws MetaException;
+
+  /**
+   * De-duplicate entries from COMPLETED_TXN_COMPONENTS table.
+   */
+  @RetrySemantics.SafeToRetry
+  void removeDuplicateCompletedTxnComponents() throws MetaException;
 
   /**
    * Clean up aborted or committed transactions from txns that have no components in txn_components.  The reason such
@@ -473,8 +506,8 @@ public interface TxnStore extends Configurable {
   void purgeCompactionHistory() throws MetaException;
 
   /**
-   * WriteSet tracking is used to ensure proper transaction isolation.  This method deletes the 
-   * transaction metadata once it becomes unnecessary.  
+   * WriteSet tracking is used to ensure proper transaction isolation.  This method deletes the
+   * transaction metadata once it becomes unnecessary.
    */
   @RetrySemantics.SafeToRetry
   void performWriteSetGC() throws MetaException;
@@ -507,9 +540,9 @@ public interface TxnStore extends Configurable {
 
   /**
    * This is primarily designed to provide coarse grained mutex support to operations running
-   * inside the Metastore (of which there could be several instances).  The initial goal is to 
+   * inside the Metastore (of which there could be several instances).  The initial goal is to
    * ensure that various sub-processes of the Compactor don't step on each other.
-   * 
+   *
    * In RDMBS world each {@code LockHandle} uses a java.sql.Connection so use it sparingly.
    */
   interface MutexAPI {
@@ -520,7 +553,7 @@ public interface TxnStore extends Configurable {
     LockHandle acquireLock(String key) throws MetaException;
 
     /**
-     * Same as {@link #acquireLock(String)} but takes an already existing handle as input.  This 
+     * Same as {@link #acquireLock(String)} but takes an already existing handle as input.  This
      * will associate the lock on {@code key} with the same handle.  All locks associated with
      * the same handle will be released together.
      * @param handle not NULL
@@ -547,7 +580,7 @@ public interface TxnStore extends Configurable {
    * @param acidWriteEvent
    */
   @RetrySemantics.Idempotent
-  void addWriteNotificationLog(AcidWriteEvent acidWriteEvent) throws MetaException;
+  void addWriteNotificationLog(ListenerEvent acidWriteEvent) throws MetaException;
 
   /**
    * Return the currently seen minimum open transaction ID.
@@ -575,4 +608,11 @@ public interface TxnStore extends Configurable {
   @RetrySemantics.ReadOnly
   @Deprecated
   long findMinTxnIdSeenOpen() throws MetaException;
+
+  /**
+   * Returns ACID metadata related metrics info.
+   * @return metrics info object
+   */
+  @RetrySemantics.ReadOnly
+  MetricsInfo getMetricsInfo() throws MetaException;
 }

@@ -39,11 +39,10 @@ POSTHOOK: Output: default@dest_j1_n21
 OPTIMIZED SQL: SELECT `t4`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `value`
 FROM `default`.`srcpart`
-WHERE `ds` = '2008-04-08' AND `hr` = 11 AND `value` IS NOT NULL) AS `t0`
+WHERE `ds` = '2008-04-08' AND (`hr` = 11 AND `value` IS NOT NULL)) AS `t0`
 INNER JOIN ((SELECT `key`, `value`
 FROM `default`.`src`
-WHERE `key` IS NOT NULL) AS `t2`
-INNER JOIN (SELECT `key`, `value`
+WHERE `key` IS NOT NULL) AS `t2` INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
 WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t4` ON `t2`.`key` = `t4`.`key`) ON `t0`.`value` = `t4`.`value`
 STAGE DEPENDENCIES:
@@ -67,6 +66,7 @@ STAGE PLANS:
                 TableScan
                   alias: y
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_52_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.078
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -209,6 +209,7 @@ STAGE PLANS:
                 TableScan
                   alias: z
                   filterExpr: value is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_53_container, bigKeyColName:value, smallTablePos:0, keyRatio:0.126
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -538,11 +539,9 @@ FROM `default`.`src`
 WHERE `value` IS NOT NULL) AS `t0`
 INNER JOIN ((SELECT `key`, `value`
 FROM `default`.`src`
-WHERE `key` IS NOT NULL) AS `t2`
-INNER JOIN ((SELECT `key`, `value`
+WHERE `key` IS NOT NULL) AS `t2` INNER JOIN ((SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE `value` IS NOT NULL AND `key` IS NOT NULL) AS `t4`
-INNER JOIN (SELECT `key`, `value`
+WHERE `value` IS NOT NULL AND `key` IS NOT NULL) AS `t4` INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
 WHERE `key` IS NOT NULL) AS `t6` ON `t4`.`key` = `t6`.`key`) ON `t2`.`key` = `t4`.`key`) ON `t0`.`value` = `t4`.`value`
 STAGE DEPENDENCIES:
@@ -567,6 +566,7 @@ STAGE PLANS:
                 TableScan
                   alias: x
                   filterExpr: (value is not null and key is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_76_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.64
                   Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -709,6 +709,7 @@ STAGE PLANS:
                 TableScan
                   alias: y
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_77_container, bigKeyColName:key, smallTablePos:0, keyRatio:0.032
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -786,6 +787,7 @@ STAGE PLANS:
                 TableScan
                   alias: w
                   filterExpr: value is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_78_container, bigKeyColName:value, smallTablePos:0, keyRatio:0.198
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -1107,11 +1109,10 @@ POSTHOOK: Output: default@dest_j2_n1
 OPTIMIZED SQL: SELECT `t4`.`key`, `t0`.`value`, `t4`.`value` AS `value1`
 FROM (SELECT `value`
 FROM `default`.`srcpart`
-WHERE `ds` = '2008-04-08' AND `hr` = 11 AND `value` IS NOT NULL) AS `t0`
+WHERE `ds` = '2008-04-08' AND (`hr` = 11 AND `value` IS NOT NULL)) AS `t0`
 INNER JOIN ((SELECT `key`
 FROM `default`.`src`
-WHERE `key` IS NOT NULL) AS `t2`
-INNER JOIN (SELECT `key`, `value`
+WHERE `key` IS NOT NULL) AS `t2` INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
 WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t4` ON `t2`.`key` = `t4`.`key`) ON `t0`.`value` = `t4`.`value`
 STAGE DEPENDENCIES:
@@ -1135,6 +1136,7 @@ STAGE PLANS:
                 TableScan
                   alias: y
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_52_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.078
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -1277,6 +1279,7 @@ STAGE PLANS:
                 TableScan
                   alias: z
                   filterExpr: value is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_53_container, bigKeyColName:value, smallTablePos:0, keyRatio:0.038
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -1605,11 +1608,10 @@ POSTHOOK: Output: default@dest_j2_n1
 OPTIMIZED SQL: SELECT `t2`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
 FROM (SELECT `value`
 FROM `default`.`srcpart`
-WHERE `ds` = '2008-04-08' AND `hr` = 11 AND `value` IS NOT NULL) AS `t0`
+WHERE `ds` = '2008-04-08' AND (`hr` = 11 AND `value` IS NOT NULL)) AS `t0`
 INNER JOIN ((SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE `value` IS NOT NULL) AS `t2`
-LEFT JOIN (SELECT `key`
+WHERE `value` IS NOT NULL) AS `t2` LEFT JOIN (SELECT `key`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t4` ON `t2`.`key` = `t4`.`key`) ON `t0`.`value` = `t2`.`value`
 STAGE DEPENDENCIES:
@@ -1762,6 +1764,7 @@ STAGE PLANS:
                 TableScan
                   alias: z
                   filterExpr: value is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_47_container, bigKeyColName:value, smallTablePos:0, keyRatio:0.038
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -2144,6 +2147,7 @@ STAGE PLANS:
                 TableScan
                   alias: y
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_52_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.078
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2198,6 +2202,7 @@ STAGE PLANS:
                 TableScan
                   alias: x
                   filterExpr: value is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_53_container, bigKeyColName:value, smallTablePos:0, keyRatio:0.038
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: value is not null (type: boolean)
@@ -2445,6 +2450,7 @@ STAGE PLANS:
                 TableScan
                   alias: y
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_52_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.078
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -2499,6 +2505,7 @@ STAGE PLANS:
                 TableScan
                   alias: y
                   filterExpr: value is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_53_container, bigKeyColName:value, smallTablePos:0, keyRatio:0.038
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: value is not null (type: boolean)

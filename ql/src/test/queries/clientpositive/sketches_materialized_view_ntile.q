@@ -1,5 +1,6 @@
 --! qt:transactional
 set hive.fetch.task.conversion=none;
+set hive.strict.checks.type.safety=false;
 
 create table sketch_input (id int, category char(1))
 STORED AS ORC

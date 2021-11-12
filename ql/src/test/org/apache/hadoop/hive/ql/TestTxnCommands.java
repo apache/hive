@@ -34,6 +34,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import groovy.transform.builder.InitializerStrategy.SET;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -107,6 +108,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     //TestTxnCommandsWithSplitUpdateAndVectorization has the vectorized version
     //of these tests.
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE, true);
   }
 
 
@@ -428,6 +430,146 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     runStatementOnDriver(String.format("alter table %s CHANGE COLUMN b b STRING", tableName));
     validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
     Assert.assertEquals("default.constraints_table:9:9223372036854775807::", validWriteIds);
+
+  }
+
+  /**
+   * If you are disabling or removing this test case, it probably means now we support exchange partition for
+   * transactional tables. If that is the case, we also have to make sure we advance the Write IDs during exchange
+   * partition DDL for transactional tables. You can look at https://github.com/apache/hive/pull/2465 as an example.
+   * @throws Exception
+   */
+  @Test
+  public void exchangePartitionShouldNotWorkForTransactionalTables() throws Exception {
+    runStatementOnDriver("create database IF NOT EXISTS db1");
+    runStatementOnDriver("create database IF NOT EXISTS db2");
+
+    runStatementOnDriver("CREATE TABLE db1.exchange_part_test1 (f1 string) PARTITIONED BY (ds STRING)");
+
+    String tableName = "db2.exchange_part_test2";
+    runStatementOnDriver(String.format("CREATE TABLE %s (f1 string) PARTITIONED BY (ds STRING) " +
+    "TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')"
+    ,tableName));
+
+    runStatementOnDriver("ALTER TABLE db2.exchange_part_test2 ADD PARTITION (ds='2013-04-05')");
+
+    try {
+      runStatementOnDriver("ALTER TABLE db1.exchange_part_test1 EXCHANGE PARTITION (ds='2013-04-05') " +
+              "WITH TABLE db2.exchange_part_test2");
+      Assert.fail("Exchange partition should not be allowed for transaction tables" );
+    }catch(Exception e) {
+      Assert.assertTrue(e.getMessage().contains("Exchange partition is not allowed with transactional tables"));
+    }
+  }
+
+  @Test
+  public void truncateTableAdvancingWriteId() throws Exception {
+    runStatementOnDriver("create database IF NOT EXISTS trunc_db");
+
+    String tableName = "trunc_db.trunc_table";
+    IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
+
+    runStatementOnDriver(String.format("CREATE TABLE %s (f1 string) PARTITIONED BY (ds STRING) " +
+                    "TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')"
+            , tableName));
+
+    String validWriteIds = msClient.getValidWriteIds(tableName).toString();
+    LOG.info("ValidWriteIds before truncate table::" + validWriteIds);
+    Assert.assertEquals("trunc_db.trunc_table:0:9223372036854775807::", validWriteIds);
+
+    runStatementOnDriver("TRUNCATE TABLE trunc_db.trunc_table");
+    validWriteIds = msClient.getValidWriteIds(tableName).toString();
+    LOG.info("ValidWriteIds after truncate table::" + validWriteIds);
+    Assert.assertEquals("trunc_db.trunc_table:1:9223372036854775807::", validWriteIds);
+
+  }
+
+  @Test
+  public void testAddAndDropPartitionAdvancingWriteIds() throws Exception {
+    runStatementOnDriver("create database IF NOT EXISTS db1");
+
+    String tableName = "db1.add_drop_partition";
+    IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
+
+    runStatementOnDriver(String.format("CREATE TABLE %s (f1 string) PARTITIONED BY (ds STRING) " +
+    "TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')"
+    ,tableName));
+
+    String validWriteIds = msClient.getValidWriteIds(tableName).toString();
+    LOG.info("ValidWriteIds before add partition::"+ validWriteIds);
+    Assert.assertEquals("db1.add_drop_partition:0:9223372036854775807::", validWriteIds);
+    validWriteIds = msClient.getValidWriteIds(tableName).toString();
+    runStatementOnDriver("ALTER TABLE db1.add_drop_partition ADD PARTITION (ds='2013-04-05')");
+    validWriteIds = msClient.getValidWriteIds(tableName).toString();
+    LOG.info("ValidWriteIds after add partition::"+ validWriteIds);
+    Assert.assertEquals("db1.add_drop_partition:1:9223372036854775807::", validWriteIds);
+    runStatementOnDriver("ALTER TABLE db1.add_drop_partition DROP PARTITION (ds='2013-04-05')");
+    validWriteIds = msClient.getValidWriteIds(tableName).toString();
+    LOG.info("ValidWriteIds after drop partition::"+ validWriteIds);
+    Assert.assertEquals("db1.add_drop_partition:2:9223372036854775807::", validWriteIds);
+
+  }
+
+  @Test
+  public void testDDLsAdvancingWriteIds() throws Exception {
+
+    String tableName = "alter_table";
+    runStatementOnDriver("drop table if exists " + tableName);
+    runStatementOnDriver(String.format("create table %s (a int, b string, c BIGINT, d INT) " +
+        "PARTITIONED BY (ds STRING)" +
+        "TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')",
+        tableName));
+    runStatementOnDriver(String.format("insert into %s (a) values (0)", tableName));
+    IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
+    String validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:1:9223372036854775807::", validWriteIds);
+
+    runStatementOnDriver(String.format("alter table %s SET OWNER USER user_name", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:2:9223372036854775807::", validWriteIds);
+
+    runStatementOnDriver(String.format("alter table %s CLUSTERED BY(c) SORTED BY(d) INTO 32 BUCKETS", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:3:9223372036854775807::", validWriteIds);
+
+    runStatementOnDriver(String.format("ALTER TABLE %s ADD PARTITION (ds='2013-04-05')", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:4:9223372036854775807::", validWriteIds);
+
+    runStatementOnDriver(String.format("ALTER TABLE %s SET SERDEPROPERTIES ('field.delim'='\\u0001')", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:5:9223372036854775807::", validWriteIds);
+
+    runStatementOnDriver(String.format("ALTER TABLE %s PARTITION (ds='2013-04-05') SET FILEFORMAT PARQUET", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:6:9223372036854775807::", validWriteIds);
+
+    // We should not advance the Write ID during compaction, since it affects the performance of
+    // materialized views. So, below assertion ensures that we do not advance the write during compaction.
+    runStatementOnDriver(String.format("ALTER TABLE %s PARTITION (ds='2013-04-05') COMPACT 'minor'", tableName));
+    validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:6:9223372036854775807::", validWriteIds);
+
+    runStatementOnDriver(String.format("ALTER TABLE %s PARTITION (ds='2013-04-05') CONCATENATE", tableName));
+    validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:7:9223372036854775807::", validWriteIds);
+
+    runStatementOnDriver(String.format("ALTER TABLE %s SKEWED BY (a) ON (1,2)", tableName));
+    validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:8:9223372036854775807::", validWriteIds);
+
+    runStatementOnDriver(String.format("ALTER TABLE %s SET SKEWED LOCATION (1='hdfs://127.0.0.1:8020/abcd/1')",
+      tableName));
+    validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:9:9223372036854775807::", validWriteIds);
+
+    runStatementOnDriver(String.format("ALTER TABLE %s NOT SKEWED", tableName));
+    validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:10:9223372036854775807::", validWriteIds);
+
+    runStatementOnDriver(String.format("ALTER TABLE %s UNSET SERDEPROPERTIES ('field.delim')", tableName));
+    validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.alter_table:11:9223372036854775807::", validWriteIds);
 
   }
 

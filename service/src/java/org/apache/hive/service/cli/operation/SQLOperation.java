@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -80,7 +81,6 @@ import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.server.ThreadWithGarbageCleanup;
-import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  * SQLOperation.
@@ -220,7 +220,7 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   private void runQuery() throws HiveSQLException {
     try {
-      OperationState opState = getStatus().getState();
+      OperationState opState = getState();
       // Operation may have been cancelled by another thread
       if (opState.isTerminal()) {
         log.info("Not running the query. Operation is already in terminal state: " + opState
@@ -237,8 +237,8 @@ public class SQLOperation extends ExecuteStatementOperation {
        * may return a non-zero response code. We will simply return if the operation state is
        * CANCELED, TIMEDOUT, CLOSED or FINISHED, otherwise throw an exception
        */
-      if (getStatus().getState().isTerminal()) {
-        log.warn("Ignore exception in terminal state: {}", getStatus().getState(), e);
+      if (getState().isTerminal()) {
+        log.warn("Ignore exception in terminal state: {}", getState(), e);
         return;
       }
       setState(OperationState.ERROR);
@@ -316,7 +316,11 @@ public class SQLOperation extends ExecuteStatementOperation {
         @Override
         public Object run() throws HiveSQLException {
           assert (!parentHive.allowClose());
-          Hive.set(parentHive);
+          try {
+            Hive.set(parentSessionState.getHiveDb());
+          } catch (HiveException e) {
+            throw new HiveSQLException(e);
+          }
           // TODO: can this result in cross-thread reuse of session state?
           SessionState.setCurrentSessionState(parentSessionState);
           PerfLogger.setPerfLogger(SessionState.getPerfLogger());
@@ -395,8 +399,8 @@ public class SQLOperation extends ExecuteStatementOperation {
         String queryId = queryState.getQueryId();
         if (success) {
           log.info("The running operation has been successfully interrupted: {}", queryId);
-        } else {
-          log.info("The running operation could not be cancelled, typically because it has already completed normally: {}", queryId);
+        } else if (log.isDebugEnabled()) {
+          log.debug("The running operation could not be cancelled, typically because it has already completed normally: {}", queryId);
         }
       }
     }
@@ -490,7 +494,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
       return rowSet;
     } catch (Exception e) {
-      throw new HiveSQLException("Unable to get the next row set", e);
+      throw new HiveSQLException("Unable to get the next row set with exception: " + e.getMessage(), e);
     } finally {
       convey.clear();
     }
@@ -502,7 +506,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       List<QueryDisplay.TaskDisplay> statuses = driver.getQueryDisplay().getTaskDisplays();
       if (statuses != null) {
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-          new ObjectMapper().writeValue(out, statuses);
+          QueryDisplay.OBJECT_MAPPER.writeValue(out, statuses);
           return out.toString(StandardCharsets.UTF_8.name());
         } catch (Exception e) {
           throw new HiveSQLException(e);

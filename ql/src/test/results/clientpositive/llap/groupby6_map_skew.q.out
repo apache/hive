@@ -45,16 +45,16 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string)
-                      minReductionHashAggr: 0.5
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 21250 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 307 Data size: 26095 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: rand() (type: double)
-                        Statistics: Num rows: 250 Data size: 21250 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 307 Data size: 26095 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -64,13 +64,13 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: partials
                 outputColumnNames: _col0
-                Statistics: Num rows: 250 Data size: 21250 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 307 Data size: 26095 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 250 Data size: 21250 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 307 Data size: 26095 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -78,10 +78,10 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: final
                 outputColumnNames: _col0
-                Statistics: Num rows: 250 Data size: 21250 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 307 Data size: 26095 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 250 Data size: 21250 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 307 Data size: 26095 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -90,7 +90,7 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: string)
                   outputColumnNames: c1
-                  Statistics: Num rows: 250 Data size: 21250 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 307 Data size: 26095 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: max(length(c1)), avg(COALESCE(length(c1),0)), count(1), count(c1), compute_bit_vector_hll(c1)
                     minReductionHashAggr: 0.99

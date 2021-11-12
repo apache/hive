@@ -44,6 +44,7 @@ import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.github.joshelser.dropwizard.metrics.hadoop.HadoopMetrics2Reporter;
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
@@ -56,11 +57,14 @@ public class Metrics {
   private static Metrics self;
   private static final AtomicInteger singletonAtomicInteger = new AtomicInteger();
   private static final Counter dummyCounter = new Counter();
+  private static final Pair<AtomicInteger, AtomicInteger> dummyRatio =
+          Pair.of(singletonAtomicInteger, singletonAtomicInteger);
 
   private final MetricRegistry registry;
   private List<Reporter> reporters;
   private List<ScheduledReporter> scheduledReporters;
   private Map<String, AtomicInteger> gaugeAtomics;
+  private Map<String, Pair<AtomicInteger, AtomicInteger>> gaugeRatio;
   private boolean hadoopMetricsStarted;
 
   public static synchronized Metrics initialize(Configuration conf) {
@@ -263,6 +267,7 @@ public class Metrics {
 
     // Create map for tracking gauges
     gaugeAtomics = new HashMap<>();
+    gaugeRatio = new HashMap<>();
   }
 
   private void registerAll(String prefix, MetricSet metricSet) {

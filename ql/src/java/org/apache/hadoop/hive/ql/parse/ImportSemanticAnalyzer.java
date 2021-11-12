@@ -519,7 +519,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static Task<?> createTableTask(ImportTableDesc tableDesc, EximUtil.SemanticAnalyzerWrapperContext x,
                                          String dumpRoot, ReplicationMetricCollector metricCollector) {
     return tableDesc.getCreateTableTask(x.getInputs(), x.getOutputs(), x.getConf(), true,
-                                        dumpRoot, metricCollector);
+                                        dumpRoot, metricCollector, false);
   }
 
   private static Task<?> dropTableTask(Table table, EximUtil.SemanticAnalyzerWrapperContext x,
@@ -555,7 +555,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       tableDesc.setReplicationSpec(replicationSpec);
     }
     return tableDesc.getCreateTableTask(x.getInputs(), x.getOutputs(), x.getConf(), isReplication,
-                                        dumpRoot, metricCollector);
+                                        dumpRoot, metricCollector, false);
   }
 
   private static Task<?> alterSinglePartition(
@@ -1176,7 +1176,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (table != null) {
-      if (!replicationSpec.allowReplacementInto(table.getParameters())) {
+      if (!replicationSpec.allowReplacementInto(parentDb.getParameters())) {
         // If the target table exists and is newer or same as current update based on repl.last.id, then just noop it.
         x.getLOG().info("Table {}.{} is not replaced as it is newer than the update",
                 tblDesc.getDatabaseName(), tblDesc.getTableName());
@@ -1217,12 +1217,15 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (tblDesc.getLocation() == null) {
-      if (!waitOnPrecursor) {
+      if (parentDb != null && !tblDesc.isExternal() && org.apache.commons.lang.StringUtils.isNotBlank(parentDb.getManagedLocationUri())) {
+        tblDesc.setLocation(new Path(parentDb.getManagedLocationUri(), tblDesc.getTableName()).toString());
+        LOG.info("Setting the location for table {} as {}", tblDesc.getTableName(), tblDesc.getLocation());
+      } else if (!waitOnPrecursor) {
         tblDesc.setLocation(wh.getDefaultTablePath(parentDb, tblDesc.getTableName(), tblDesc.isExternal()).toString());
       } else {
         tblDesc.setLocation(
-          wh.getDnsPath(wh.getDefaultTablePath(tblDesc.getDatabaseName(), tblDesc.getTableName(), tblDesc.isExternal())
-          ).toString());
+                wh.getDnsPath(wh.getDefaultTablePath(tblDesc.getDatabaseName(), tblDesc.getTableName(),
+                        tblDesc.isExternal())).toString());
       }
     }
 
@@ -1346,7 +1349,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           } else {
             // If replicating, then the partition already existing means we need to replace, maybe, if
             // the destination ptn's repl.last.id is older than the replacement's.
-            if (replicationSpec.allowReplacementInto(ptn.getParameters())){
+            if (replicationSpec.allowReplacementInto(parentDb.getParameters())){
               if (!replicationSpec.isMetadataOnly()){
                 x.getTasks().add(addSinglePartition(tblDesc, table, wh, addPartitionDesc, replicationSpec, x,
                                                     writeId, stmtId, true, dumpRoot, metricCollector));
@@ -1371,9 +1374,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         }
       } else {
-        if (table != null && table.getTableType() != TableType.EXTERNAL_TABLE && table.getSd().getLocation() != null) {
-          tblDesc.setLocation(table.getSd().getLocation());
-        }
         x.getLOG().debug("table non-partitioned");
         if (!replicationSpec.isMetadataOnly()) {
           // repl-imports are replace-into unless the event is insert-into

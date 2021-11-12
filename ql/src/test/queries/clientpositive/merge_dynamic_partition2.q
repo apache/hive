@@ -21,7 +21,6 @@ set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=true;
 set hive.merge.smallfiles.avgsize=3000;
 set hive.exec.compress.output=false;
-set hive.optimize.sort.dynamic.partition=false;
 
 explain
 insert overwrite table merge_dynamic_part_n0 partition (ds='2008-04-08', hr) select key, value, hr from srcpart_merge_dp_n0 where ds='2008-04-08';

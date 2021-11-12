@@ -521,7 +521,7 @@ public final class GenMapRedUtils {
         aliasPartnDesc = Utilities.getPartitionDesc(parts.iterator().next(), tableSpec);
       }
     } catch (HiveException e) {
-      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      LOG.error("Failed getPartitionDesc", e);
       throw new SemanticException(e.getMessage(), e);
     }
 
@@ -678,10 +678,7 @@ public final class GenMapRedUtils {
         if (p == null) {
           continue;
         }
-        String path = p.toString();
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Adding " + path + " of table " + alias_id);
-        }
+        LOG.debug("Adding {} of table {}", p, alias_id);
 
         partDir.add(p);
         try {
@@ -692,7 +689,7 @@ public final class GenMapRedUtils {
             partDesc.add(Utilities.getPartitionDescFromTableDesc(tblDesc, part, false));
           }
         } catch (HiveException e) {
-          LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+          LOG.error("Failed to add partition description", e);
           throw new SemanticException(e.getMessage(), e);
         }
       }

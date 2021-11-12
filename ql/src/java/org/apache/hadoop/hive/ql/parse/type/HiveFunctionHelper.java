@@ -412,7 +412,7 @@ public class HiveFunctionHelper implements FunctionHelper {
         if (aggregateName.toLowerCase().equals(FunctionRegistry.LEAD_FUNC_NAME)
             || aggregateName.toLowerCase().equals(FunctionRegistry.LAG_FUNC_NAME)) {
           GenericUDAFEvaluator genericUDAFEvaluator = FunctionRegistry.getGenericWindowingEvaluator(aggregateName,
-              aggParameterOIs, isDistinct, isAllColumns);
+              aggParameterOIs, isDistinct, isAllColumns, true);
           GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo2(
               genericUDAFEvaluator, udafMode, aggParameterOIs);
           returnType = ((ListTypeInfo) udaf.returnType).getListElementTypeInfo();

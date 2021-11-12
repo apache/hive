@@ -414,27 +414,6 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     return HiveUtils.unparseIdentifier(getSimpleTableNameBase(n), this.conf);
   }
 
-  protected String getSimpleTableNameBase(ASTNode n) throws SemanticException {
-    switch (n.getType()) {
-    case HiveParser.TOK_TABREF:
-      int aliasIndex = findTabRefIdxs(n)[0];
-      if (aliasIndex != 0) {
-        return n.getChild(aliasIndex).getText(); //the alias
-      }
-      return getSimpleTableNameBase((ASTNode) n.getChild(0));
-    case HiveParser.TOK_TABNAME:
-      if (n.getChildCount() == 2) {
-        //db.table -> return table
-        return n.getChild(1).getText();
-      }
-      return n.getChild(0).getText();
-    case HiveParser.TOK_SUBQUERY:
-      return n.getChild(1).getText(); //the alias
-    default:
-      throw raiseWrongType("TOK_TABREF|TOK_TABNAME|TOK_SUBQUERY", n);
-    }
-  }
-
   protected static final class ReparseResult {
     final ASTNode rewrittenTree;
     final Context rewrittenCtx;

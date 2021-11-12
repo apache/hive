@@ -306,16 +306,16 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(c1)
                       keys: c1 (type: decimal(15,2)), c2 (type: decimal(15,2))
-                      minReductionHashAggr: 0.5
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
                         null sort order: zz
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
-                        Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: decimal(25,2))
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -327,13 +327,13 @@ STAGE PLANS:
                 keys: KEY._col0 (type: decimal(15,2)), KEY._col1 (type: decimal(15,2))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: decimal(15,2)), _col0 (type: decimal(15,2))
                   null sort order: az
                   sort order: ++
                   Map-reduce partition columns: _col1 (type: decimal(15,2))
-                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: decimal(25,2))
         Reducer 3 
             Execution mode: vectorized, llap
@@ -341,7 +341,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: decimal(15,2)), KEY.reducesinkkey0 (type: decimal(15,2)), VALUE._col0 (type: decimal(25,2))
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -361,14 +361,14 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumHiveDecimal
                               window frame: RANGE PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_0 (type: decimal(35,2))
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -487,16 +487,16 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: sum(_col0)
                   keys: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
-                  minReductionHashAggr: 0.5
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
                     null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
-                    Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col2 (type: decimal(25,2))
         Reducer 3 
             Execution mode: vectorized, llap
@@ -506,13 +506,13 @@ STAGE PLANS:
                 keys: KEY._col0 (type: decimal(15,2)), KEY._col1 (type: decimal(15,2))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: decimal(15,2)), _col0 (type: decimal(15,2))
                   null sort order: az
                   sort order: ++
                   Map-reduce partition columns: _col1 (type: decimal(15,2))
-                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: decimal(25,2))
         Reducer 4 
             Execution mode: vectorized, llap
@@ -520,7 +520,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: decimal(15,2)), KEY.reducesinkkey0 (type: decimal(15,2)), VALUE._col0 (type: decimal(25,2))
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -540,14 +540,14 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumHiveDecimal
                               window frame: RANGE PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_0 (type: decimal(35,2))
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -670,16 +670,16 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: sum(_col0)
                   keys: _col1 (type: decimal(15,2)), _col2 (type: decimal(15,2))
-                  minReductionHashAggr: 0.5
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
                     null sort order: zz
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
-                    Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col2 (type: decimal(25,2))
         Reducer 3 
             Execution mode: vectorized, llap
@@ -689,13 +689,13 @@ STAGE PLANS:
                 keys: KEY._col0 (type: decimal(15,2)), KEY._col1 (type: decimal(15,2))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: decimal(15,2)), _col0 (type: decimal(15,2))
                   null sort order: az
                   sort order: ++
                   Map-reduce partition columns: _col1 (type: decimal(15,2))
-                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: decimal(25,2))
         Reducer 4 
             Execution mode: vectorized, llap
@@ -703,7 +703,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: decimal(15,2)), KEY.reducesinkkey0 (type: decimal(15,2)), VALUE._col0 (type: decimal(25,2))
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -723,14 +723,14 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumHiveDecimal
                               window frame: RANGE PRECEDING(MAX)~CURRENT
-                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: sum_window_0 (type: decimal(35,2))
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -853,16 +853,16 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: corr(_col0, _col2)
                   keys: _col1 (type: decimal(15,2)), _col3 (type: decimal(15,2))
-                  minReductionHashAggr: 0.5
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 2 Data size: 704 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4 Data size: 1408 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
                     null sort order: az
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: decimal(15,2))
-                    Statistics: Num rows: 2 Data size: 704 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4 Data size: 1408 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col2 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>)
         Reducer 3 
             Execution mode: llap
@@ -872,7 +872,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: decimal(15,2)), KEY._col1 (type: decimal(15,2))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 4 Data size: 928 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2)), _col2 (type: double)
                   outputColumnNames: _col0, _col1, _col2
@@ -895,14 +895,14 @@ STAGE PLANS:
                                 name: sum
                                 window function: GenericUDAFSumDouble
                                 window frame: RANGE PRECEDING(MAX)~CURRENT
-                    Statistics: Num rows: 2 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 4 Data size: 928 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: sum_window_0 (type: double)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

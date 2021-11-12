@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.serde2.io;
 
 import org.apache.hadoop.hive.common.type.HiveBaseChar;
 import org.apache.hadoop.hive.common.type.HiveChar;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hive.common.util.HiveStringUtils;
@@ -82,9 +81,7 @@ public class HiveCharWritable extends HiveBaseCharWritable
     if (value.charAt(value.getLength() - 1) != ' ') {
       return value;
     }
-    // A lot of these methods could be done more efficiently by operating on the Text value
-    // directly, rather than converting to HiveChar.
-    return new Text(getHiveChar().getStrippedValue());
+    return new Text(HiveCharWritable.stripTrailingWhitespace(value));
   }
 
   public Text getPaddedValue() {
@@ -120,5 +117,16 @@ public class HiveCharWritable extends HiveBaseCharWritable
   @Override
   public String toString() {
     return getPaddedValue().toString();
+  }
+
+  public static byte[] stripTrailingWhitespace(Text valueToStrip) {
+    byte[] input = valueToStrip.getBytes();
+    int i = input.length;
+    // iterate from end while we see space or 0x character
+    while (i-- > 0 && (input[i] == 32 || input[i] == 0)) {
+    }
+    byte[] output = new byte[i + 1];
+    System.arraycopy(input, 0, output, 0, i + 1);
+    return output;
   }
 }

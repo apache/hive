@@ -79,8 +79,8 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
-                outputColumnNames: value, key
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string)
+                outputColumnNames: key, value
                 Reduce Output Operator
                   key expressions: key (type: string)
                   null sort order: z

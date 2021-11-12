@@ -311,6 +311,13 @@ public class SharedCache {
     private Map<String, SQLUniqueConstraint> uniqueConstraintCache = new ConcurrentHashMap<>();
     private Map<String, SQLDefaultConstraint> defaultConstraintCache = new ConcurrentHashMap<>();
     private Map<String, SQLCheckConstraint> checkConstraintCache = new ConcurrentHashMap<>();
+    /**
+     * this flag is used to validate/invalidate cached constraints snapshot.
+     * All table constraints are update successfully either via updater thread or
+     * while create_table_with_constraint api then it is set to true else
+     * false and redirect all the call to raw metastore.
+     */
+    private boolean isConstraintsValid = false;
 
     TableWrapper(Table t, byte[] sdHash, String location, Map<String, String> parameters) {
       this.t = t;
@@ -322,6 +329,14 @@ public class SharedCache {
         this.memberCacheUpdated[mn.ordinal()] = new AtomicBoolean(false);
       }
       this.otherSize = getTableWrapperSizeWithoutMaps();
+    }
+
+    public boolean isConstraintsValid() {
+      return isConstraintsValid;
+    }
+
+    public void setConstraintsValid(boolean constraintsValid) {
+      isConstraintsValid = constraintsValid;
     }
 
     public boolean compareAndSetMemberCacheUpdated(MemberName mn, boolean oldValue, boolean newValue) {
@@ -482,31 +497,33 @@ public class SharedCache {
       }
     }
 
-    boolean cachePrimaryKeys(List<SQLPrimaryKey> primaryKeys, boolean fromPrewarm) {
-      return cacheConstraints(primaryKeys, fromPrewarm, MemberName.PRIMARY_KEY_CACHE);
+
+    boolean cacheConstraints(SQLAllTableConstraints constraints, boolean fromPrewarm) {
+      try {
+        tableLock.writeLock().lock();
+        this.isConstraintsValid =
+            cacheConstraints(constraints.getPrimaryKeys(), fromPrewarm, MemberName.PRIMARY_KEY_CACHE) && cacheConstraints(
+                constraints.getForeignKeys(), fromPrewarm, MemberName.FOREIGN_KEY_CACHE) && cacheConstraints(
+                constraints.getDefaultConstraints(), fromPrewarm, MemberName.DEFAULT_CONSTRAINT_CACHE)
+                && cacheConstraints(constraints.getUniqueConstraints(), fromPrewarm, MemberName.UNIQUE_CONSTRAINT_CACHE)
+                && cacheConstraints(constraints.getNotNullConstraints(), fromPrewarm, MemberName.NOTNULL_CONSTRAINT_CACHE)
+                && cacheConstraints(constraints.getCheckConstraints(), fromPrewarm, MemberName.CHECK_CONSTRAINT_CACHE);
+        tableToUpdateSize.add(getTblKey());
+        return this.isConstraintsValid;
+      } finally {
+        tableLock.writeLock().unlock();
+      }
+
     }
 
-    boolean cacheForeignKeys(List<SQLForeignKey> foreignKeys, boolean fromPrewarm) {
-      return cacheConstraints(foreignKeys, fromPrewarm, MemberName.FOREIGN_KEY_CACHE);
-    }
-
-    boolean cacheUniqueConstraints(List<SQLUniqueConstraint> uniqueConstraints, boolean fromPrewarm) {
-      return cacheConstraints(uniqueConstraints, fromPrewarm, MemberName.UNIQUE_CONSTRAINT_CACHE);
-    }
-
-    boolean cacheNotNullConstraints(List<SQLNotNullConstraint> notNullConstraints, boolean fromPrewarm) {
-      return cacheConstraints(notNullConstraints, fromPrewarm, MemberName.NOTNULL_CONSTRAINT_CACHE);
-    }
-
-    boolean cacheDefaultConstraints(List<SQLDefaultConstraint> defaultConstraints, boolean fromPrewarm) {
-      return cacheConstraints(defaultConstraints, fromPrewarm, MemberName.DEFAULT_CONSTRAINT_CACHE);
-    }
-
-    boolean cacheCheckConstraints(List<SQLCheckConstraint> checkConstraints, boolean fromPrewarm) {
-      return cacheConstraints(checkConstraints, fromPrewarm, MemberName.CHECK_CONSTRAINT_CACHE);
-    }
-
-    // Common method to cache constraints
+    /**
+     * Common method to cache constraints
+     * @param constraintsList list of constraints to add to cache
+     * @param fromPrewarm is this method called as part of perwarm phase
+     * @param mn Constraint type
+     * @return memory constraint is handled by cache eviction policy hence this method will always return true
+     * if correct constraint type is provided.
+     */
     private boolean cacheConstraints(List constraintsList,
                              boolean fromPrewarm,
                              MemberName mn) {
@@ -565,8 +582,18 @@ public class SharedCache {
           setMemberCacheUpdated(mn, true);
         }
 
-        updateMemberSize(mn, totalSize, SizeMode.Delta);
+        updateMemberSize(mn, totalSize, SizeMode.Snapshot);
         return true;
+      } finally {
+        tableLock.writeLock().unlock();
+      }
+    }
+
+    public void invalidateConstraintsCache() {
+      try {
+        tableLock.writeLock().lock();
+        this.setConstraintsValid(false);
+        tableToUpdateSize.add(getTblKey());
       } finally {
         tableLock.writeLock().unlock();
       }
@@ -576,6 +603,24 @@ public class SharedCache {
       try {
         tableLock.readLock().lock();
         return new ArrayList<>(this.primaryKeyCache.values());
+      } finally {
+        tableLock.readLock().unlock();
+      }
+    }
+
+    public SQLAllTableConstraints getAllTableConstraints() {
+      try {
+        tableLock.readLock().lock();
+        SQLAllTableConstraints constraints = new SQLAllTableConstraints();
+        if (isConstraintsValid) {
+          constraints.setPrimaryKeys(new ArrayList<>(this.primaryKeyCache.values()));
+          constraints.setForeignKeys(new ArrayList<>(this.foreignKeyCache.values()));
+          constraints.setNotNullConstraints(new ArrayList<>(this.notNullConstraintCache.values()));
+          constraints.setUniqueConstraints(new ArrayList<>(this.uniqueConstraintCache.values()));
+          constraints.setDefaultConstraints(new ArrayList<>(this.defaultConstraintCache.values()));
+          constraints.setCheckConstraints(new ArrayList<>(this.checkConstraintCache.values()));
+        }
+        return constraints;
       } finally {
         tableLock.readLock().unlock();
       }
@@ -676,7 +721,7 @@ public class SharedCache {
         Object constraint = null;
         MemberName mn = null;
         Class constraintClass = null;
-        name = name.toLowerCase();
+        name = StringUtils.normalizeIdentifier(name);
         if (this.primaryKeyCache.containsKey(name)) {
           constraint = this.primaryKeyCache.remove(name);
           mn = MemberName.PRIMARY_KEY_CACHE;
@@ -703,7 +748,7 @@ public class SharedCache {
           constraintClass = SQLCheckConstraint.class;
         }
 
-        if(constraint == null) {
+        if (constraint == null) {
           LOG.debug("Constraint: " + name + " does not exist in cache.");
           return;
         }
@@ -715,154 +760,113 @@ public class SharedCache {
       }
     }
 
-    public void refreshPrimaryKeys(List<SQLPrimaryKey> keys) {
-      Map<String, SQLPrimaryKey> newKeys = new ConcurrentHashMap<>();
+    public void refreshAllTableConstraints(SQLAllTableConstraints constraints) {
       try {
         tableLock.writeLock().lock();
-        int size = 0;
-        for (SQLPrimaryKey key : keys) {
-          if (compareAndSetMemberCacheUpdated(MemberName.PRIMARY_KEY_CACHE, true, false)) {
-            LOG.debug("Skipping primary key cache update for table: " + getTable().getTableName()
-                    + "; the primary keys are already refreshed.");
-            return;
-          }
-          String pkName = StringUtils.normalizeIdentifier(key.getPk_name());
-          key.setPk_name(pkName);
-          newKeys.put(pkName, key);
-          size += getObjectSize(SQLPrimaryKey.class, key);
-        }
-        primaryKeyCache = newKeys;
-        updateMemberSize(MemberName.PRIMARY_KEY_CACHE, size, SizeMode.Snapshot);
-        LOG.debug("Primary keys refresh in cache was successful for {}.{}.{}",
-            this.getTable().getCatName(), this.getTable().getDbName(), this.getTable().getTableName());
+        this.isConstraintsValid =
+            refreshConstraint(constraints.getPrimaryKeys(), MemberName.PRIMARY_KEY_CACHE) && refreshConstraint(
+                constraints.getForeignKeys(), MemberName.FOREIGN_KEY_CACHE) && refreshConstraint(
+                constraints.getUniqueConstraints(), MemberName.UNIQUE_CONSTRAINT_CACHE) && refreshConstraint(
+                constraints.getDefaultConstraints(), MemberName.DEFAULT_CONSTRAINT_CACHE) && refreshConstraint(
+                constraints.getNotNullConstraints(), MemberName.NOTNULL_CONSTRAINT_CACHE) && refreshConstraint(
+                constraints.getCheckConstraints(), MemberName.CHECK_CONSTRAINT_CACHE);
+        tableToUpdateSize.add(getTblKey());
       } finally {
         tableLock.writeLock().unlock();
       }
     }
 
-    public void refreshForeignKeys(List<SQLForeignKey> keys) {
-      Map<String, SQLForeignKey> newKeys = new ConcurrentHashMap<>();
-      try {
-        tableLock.writeLock().lock();
-        int size = 0;
-        for (SQLForeignKey key : keys) {
-          if (compareAndSetMemberCacheUpdated(MemberName.FOREIGN_KEY_CACHE, true, false)) {
-            LOG.debug("Skipping foreign key cache update for table: " + getTable().getTableName()
-                    + "; the foreign keys are already refreshed.");
-            return;
-          }
-          String fkName = StringUtils.normalizeIdentifier(key.getFk_name());
-          key.setFk_name(fkName);
-          newKeys.put(fkName, key);
-          size += getObjectSize(SQLForeignKey.class, key);
-        }
-        foreignKeyCache = newKeys;
-        updateMemberSize(MemberName.FOREIGN_KEY_CACHE, size, SizeMode.Snapshot);
-        LOG.debug("Foreign keys refresh in cache was successful for {}.{}.{}",
-            this.getTable().getCatName(), this.getTable().getDbName(), this.getTable().getTableName());
-      } finally {
-        tableLock.writeLock().unlock();
-      }
-    }
+    /**
+     * Common method to refresh cache constraint
+     * @param constraints list of constraints to update
+     * @param mn Constraint type
+     * @return Since memory constraint is handled by cache eviction policy.
+     * Hence this method will always return true if correct constraint type passed.
+     */
+    private boolean refreshConstraint(List constraints, MemberName mn) {
 
-    public void refreshNotNullConstraints(List<SQLNotNullConstraint> constraints) {
-      Map<String, SQLNotNullConstraint> newConstraints = new ConcurrentHashMap<>();
-      try {
-        tableLock.writeLock().lock();
-        int size = 0;
-        for (SQLNotNullConstraint constraint : constraints) {
-          if (compareAndSetMemberCacheUpdated(MemberName.NOTNULL_CONSTRAINT_CACHE, true, false)) {
-            LOG.debug("Skipping not null constraints cache update for table: " + getTable().getTableName()
-                    + "; the not null constraints are already refreshed.");
-            return;
+      int size = 0;
+      switch (mn) {
+      case PRIMARY_KEY_CACHE:
+        Map<String, SQLPrimaryKey> newPk = new ConcurrentHashMap<>();
+        if (!CollectionUtils.isEmpty(constraints)) {
+          for (SQLPrimaryKey key : (List<SQLPrimaryKey>) constraints) {
+            String pkName = StringUtils.normalizeIdentifier(key.getPk_name());
+            key.setPk_name(pkName);
+            newPk.put(pkName, key);
+            size += getObjectSize(SQLPrimaryKey.class, key);
           }
-          String nnName = StringUtils.normalizeIdentifier(constraint.getNn_name());
-          constraint.setNn_name(nnName);
-          newConstraints.put(nnName, constraint);
-          size += getObjectSize(SQLNotNullConstraint.class, constraint);
         }
-        notNullConstraintCache = newConstraints;
-        updateMemberSize(MemberName.NOTNULL_CONSTRAINT_CACHE, size, SizeMode.Snapshot);
-        LOG.debug("Not null constraints refresh in cache was successful for {}.{}.{}",
-            this.getTable().getCatName(), this.getTable().getDbName(), this.getTable().getTableName());
-      } finally {
-        tableLock.writeLock().unlock();
-      }
-    }
-
-    public void refreshUniqueConstraints(List<SQLUniqueConstraint> constraints) {
-      Map<String, SQLUniqueConstraint> newConstraints = new ConcurrentHashMap<>();
-      try {
-        tableLock.writeLock().lock();
-        int size = 0;
-        for (SQLUniqueConstraint constraint : constraints) {
-          if (compareAndSetMemberCacheUpdated(MemberName.UNIQUE_CONSTRAINT_CACHE, true, false)) {
-            LOG.debug("Skipping unique constraints cache update for table: " + getTable().getTableName()
-                    + "; the unique constraints are already refreshed.");
-            return;
+        primaryKeyCache = newPk;
+        break;
+      case FOREIGN_KEY_CACHE:
+        Map<String, SQLForeignKey> newFk = new ConcurrentHashMap<>();
+        if (!CollectionUtils.isEmpty(constraints)) {
+          for (SQLForeignKey key : (List<SQLForeignKey>) constraints) {
+            String fkName = StringUtils.normalizeIdentifier(key.getFk_name());
+            key.setFk_name(fkName);
+            newFk.put(fkName, key);
+            size += getObjectSize(SQLForeignKey.class, key);
           }
-          String ucName = StringUtils.normalizeIdentifier(constraint.getUk_name());
-          constraint.setUk_name(ucName);
-          newConstraints.put(ucName, constraint);
-          size += getObjectSize(SQLUniqueConstraint.class, constraint);
         }
-        uniqueConstraintCache = newConstraints;
-        updateMemberSize(MemberName.UNIQUE_CONSTRAINT_CACHE, size, SizeMode.Snapshot);
-        LOG.debug("Unique constraints refresh in cache was successful for {}.{}.{}",
-            this.getTable().getCatName(), this.getTable().getDbName(), this.getTable().getTableName());
-      } finally {
-        tableLock.writeLock().unlock();
-      }
-    }
-
-    public void refreshDefaultConstraints(List<SQLDefaultConstraint> constraints) {
-      Map<String, SQLDefaultConstraint> newConstraints = new ConcurrentHashMap<>();
-      try {
-        tableLock.writeLock().lock();
-        int size = 0;
-        for (SQLDefaultConstraint constraint : constraints) {
-          if (compareAndSetMemberCacheUpdated(MemberName.DEFAULT_CONSTRAINT_CACHE, true, false)) {
-            LOG.debug("Skipping default constraint cache update for table: " + getTable().getTableName()
-                + "; the default constraint are already refreshed.");
-            return;
+        foreignKeyCache = newFk;
+        break;
+      case UNIQUE_CONSTRAINT_CACHE:
+        Map<String, SQLUniqueConstraint> newUc = new ConcurrentHashMap<>();
+        if (!CollectionUtils.isEmpty(constraints)) {
+          for (SQLUniqueConstraint constraint : (List<SQLUniqueConstraint>) constraints) {
+            String ucName = StringUtils.normalizeIdentifier(constraint.getUk_name());
+            constraint.setUk_name(ucName);
+            newUc.put(ucName, constraint);
+            size += getObjectSize(SQLUniqueConstraint.class, constraint);
           }
-          String dcName = StringUtils.normalizeIdentifier(constraint.getDc_name());
-          constraint.setDc_name(dcName);
-          newConstraints.put(dcName, constraint);
-          size += getObjectSize(SQLDefaultConstraint.class, constraint);
         }
-        defaultConstraintCache = newConstraints;
-        updateMemberSize(MemberName.DEFAULT_CONSTRAINT_CACHE, size, SizeMode.Snapshot);
-        LOG.debug("Default constraints refresh in cache was successful for {}.{}.{}", this.getTable().getCatName(),
-            this.getTable().getDbName(), this.getTable().getTableName());
-      } finally {
-        tableLock.writeLock().unlock();
-      }
-    }
-
-    public void refreshCheckConstraints(List<SQLCheckConstraint> constraints) {
-      Map<String, SQLCheckConstraint> newConstraints = new ConcurrentHashMap<>();
-      try {
-        tableLock.writeLock().lock();
-        int size = 0;
-        for (SQLCheckConstraint constraint : constraints) {
-          if (compareAndSetMemberCacheUpdated(MemberName.CHECK_CONSTRAINT_CACHE, true, false)) {
-            LOG.debug("Skipping check constraint cache update for table: " + getTable().getTableName()
-                + "; the check constraint are already refreshed.");
-            return;
+        uniqueConstraintCache = newUc;
+        break;
+      case NOTNULL_CONSTRAINT_CACHE:
+        Map<String, SQLNotNullConstraint> newNn = new ConcurrentHashMap<>();
+        if (!CollectionUtils.isEmpty(constraints)) {
+          for (SQLNotNullConstraint constraint : (List<SQLNotNullConstraint>) constraints) {
+            String nnName = StringUtils.normalizeIdentifier(constraint.getNn_name());
+            constraint.setNn_name(nnName);
+            newNn.put(nnName, constraint);
+            size += getObjectSize(SQLNotNullConstraint.class, constraint);
           }
-          String ccName = StringUtils.normalizeIdentifier(constraint.getDc_name());
-          constraint.setDc_name(ccName);
-          newConstraints.put(ccName, constraint);
-          size += getObjectSize(SQLCheckConstraint.class, constraint);
         }
-        checkConstraintCache = newConstraints;
-        updateMemberSize(MemberName.CHECK_CONSTRAINT_CACHE, size, SizeMode.Snapshot);
-        LOG.debug("check constraints refresh in cache was successful for {}.{}.{}", this.getTable().getCatName(),
-            this.getTable().getDbName(), this.getTable().getTableName());
-      } finally {
-        tableLock.writeLock().unlock();
+        notNullConstraintCache = newNn;
+        break;
+      case DEFAULT_CONSTRAINT_CACHE:
+        Map<String, SQLDefaultConstraint> newDc = new ConcurrentHashMap<>();
+        if (!CollectionUtils.isEmpty(constraints)) {
+          for (SQLDefaultConstraint constraint : (List<SQLDefaultConstraint>) constraints) {
+            String dcName = StringUtils.normalizeIdentifier(constraint.getDc_name());
+            constraint.setDc_name(dcName);
+            newDc.put(dcName, constraint);
+            size += getObjectSize(SQLDefaultConstraint.class, constraint);
+          }
+        }
+        defaultConstraintCache = newDc;
+        break;
+      case CHECK_CONSTRAINT_CACHE:
+        Map<String, SQLCheckConstraint> newCc = new ConcurrentHashMap<>();
+        if (!CollectionUtils.isEmpty(constraints)) {
+          for (SQLCheckConstraint constraint : (List<SQLCheckConstraint>) constraints) {
+            String ccName = StringUtils.normalizeIdentifier(constraint.getDc_name());
+            constraint.setDc_name(ccName);
+            newCc.put(ccName, constraint);
+            size += getObjectSize(SQLCheckConstraint.class, constraint);
+          }
+        }
+        checkConstraintCache = newCc;
+        break;
+      default:
+        LOG.error("Should not reach here");
+        return false;
       }
+      updateMemberSize(mn, size, SizeMode.Snapshot);
+      LOG.debug("{}  refresh was successful for {}.{}.{}", mn, this.getTable().getCatName(),
+          this.getTable().getDbName(), this.getTable().getTableName());
+      return true;
     }
 
     public Partition removePartition(List<String> partVal, SharedCache sharedCache) {
@@ -1788,47 +1792,16 @@ public class SharedCache {
     tblWrapper.setMemberCacheUpdated(MemberName.PARTITION_COL_STATS_CACHE, false);
     tblWrapper.setMemberCacheUpdated(MemberName.AGGR_COL_STATS_CACHE, false);
 
-    if (CollectionUtils.isNotEmpty(constraints.getPrimaryKeys())) {
-      if (!tblWrapper.cachePrimaryKeys(constraints.getPrimaryKeys(), true)) {
-        return false;
-      }
+    if (tblWrapper.cacheConstraints(constraints, true)) {
+      tblWrapper.setMemberCacheUpdated(MemberName.PRIMARY_KEY_CACHE, false);
+      tblWrapper.setMemberCacheUpdated(MemberName.FOREIGN_KEY_CACHE, false);
+      tblWrapper.setMemberCacheUpdated(MemberName.NOTNULL_CONSTRAINT_CACHE, false);
+      tblWrapper.setMemberCacheUpdated(MemberName.UNIQUE_CONSTRAINT_CACHE, false);
+      tblWrapper.setMemberCacheUpdated(MemberName.DEFAULT_CONSTRAINT_CACHE, false);
+      tblWrapper.setMemberCacheUpdated(MemberName.CHECK_CONSTRAINT_CACHE, false);
+    } else {
+      return false;
     }
-    tblWrapper.setMemberCacheUpdated(MemberName.PRIMARY_KEY_CACHE, false);
-
-    if (CollectionUtils.isNotEmpty(constraints.getForeignKeys())) {
-      if (!tblWrapper.cacheForeignKeys(constraints.getForeignKeys(), true)) {
-        return false;
-      }
-    }
-    tblWrapper.setMemberCacheUpdated(MemberName.FOREIGN_KEY_CACHE, false);
-
-    if (CollectionUtils.isNotEmpty(constraints.getNotNullConstraints())) {
-      if (!tblWrapper.cacheNotNullConstraints(constraints.getNotNullConstraints(), true)) {
-        return false;
-      }
-    }
-    tblWrapper.setMemberCacheUpdated(MemberName.NOTNULL_CONSTRAINT_CACHE, false);
-
-    if (CollectionUtils.isNotEmpty(constraints.getUniqueConstraints())) {
-      if (!tblWrapper.cacheUniqueConstraints(constraints.getUniqueConstraints(), true)) {
-        return false;
-      }
-    }
-    tblWrapper.setMemberCacheUpdated(MemberName.UNIQUE_CONSTRAINT_CACHE, false);
-
-    if (CollectionUtils.isNotEmpty(constraints.getDefaultConstraints())) {
-      if (!tblWrapper.cacheDefaultConstraints(constraints.getDefaultConstraints(), true)) {
-        return false;
-      }
-    }
-    tblWrapper.setMemberCacheUpdated(MemberName.DEFAULT_CONSTRAINT_CACHE, false);
-
-    if (CollectionUtils.isNotEmpty(constraints.getCheckConstraints())) {
-      if (!tblWrapper.cacheCheckConstraints(constraints.getCheckConstraints(), true)) {
-        return false;
-      }
-    }
-    tblWrapper.setMemberCacheUpdated(MemberName.CHECK_CONSTRAINT_CACHE, false);
 
     try {
       cacheLock.writeLock().lock();
@@ -2187,8 +2160,10 @@ public class SharedCache {
       cacheLock.readLock().lock();
       String tblKey = CacheUtils.buildTableKey(catName, dbName, tblName);
       TableWrapper tblWrapper = tableCache.getIfPresent(tblKey);
-      if (tblWrapper != null) {
-        tblWrapper.cachePrimaryKeys(keys, false);
+      if ((tblWrapper != null) && tblWrapper.isConstraintsValid()) {
+        // Because lake of snapshot freshness validation.
+        // For now disabling cached constraint snapshot addition in parts by invalidating constraint snapshot.
+        tblWrapper.invalidateConstraintsCache();
       }
     } finally {
       cacheLock.readLock().unlock();
@@ -2200,8 +2175,10 @@ public class SharedCache {
       cacheLock.readLock().lock();
       String tblKey = CacheUtils.buildTableKey(catName, dbName, tblName);
       TableWrapper tblWrapper = tableCache.getIfPresent(tblKey);
-      if (tblWrapper != null) {
-        tblWrapper.cacheForeignKeys(keys, false);
+      if ((tblWrapper != null) && tblWrapper.isConstraintsValid()) {
+        // Because lake of snapshot freshness validation.
+        // For now disabling cached constraint snapshot addition in parts by invalidating constraint snapshot.
+        tblWrapper.invalidateConstraintsCache();
       }
     } finally {
       cacheLock.readLock().unlock();
@@ -2213,8 +2190,10 @@ public class SharedCache {
       cacheLock.readLock().lock();
       String tblKey = CacheUtils.buildTableKey(catName, dbName, tblName);
       TableWrapper tblWrapper = tableCache.getIfPresent(tblKey);
-      if (tblWrapper != null) {
-        tblWrapper.cacheUniqueConstraints(keys, false);
+      if ((tblWrapper != null) && tblWrapper.isConstraintsValid()) {
+        // Because lake of snapshot freshness validation.
+        // For now disabling cached constraint snapshot addition in parts by invalidating constraint snapshot.
+        tblWrapper.invalidateConstraintsCache();
       }
     } finally {
       cacheLock.readLock().unlock();
@@ -2226,8 +2205,10 @@ public class SharedCache {
       cacheLock.readLock().lock();
       String tblKey = CacheUtils.buildTableKey(catName, dbName, tblName);
       TableWrapper tblWrapper = tableCache.getIfPresent(tblKey);
-      if (tblWrapper != null) {
-        tblWrapper.cacheNotNullConstraints(keys, false);
+      if ((tblWrapper != null) && tblWrapper.isConstraintsValid()) {
+        // Because lake of snapshot freshness validation.
+        // For now disabling cached constraint snapshot addition in parts by invalidating constraint snapshot.
+        tblWrapper.invalidateConstraintsCache();
       }
     } finally {
       cacheLock.readLock().unlock();
@@ -2239,8 +2220,10 @@ public class SharedCache {
       cacheLock.readLock().lock();
       String tblKey = CacheUtils.buildTableKey(catName, dbName, tblName);
       TableWrapper tblWrapper = tableCache.getIfPresent(tblKey);
-      if (tblWrapper != null) {
-        tblWrapper.cacheDefaultConstraints(keys, false);
+      if ((tblWrapper != null) && tblWrapper.isConstraintsValid()) {
+        // Because lake of snapshot freshness validation.
+        // For now disabling cached constraint snapshot addition in parts by invalidating constraint snapshot.
+        tblWrapper.invalidateConstraintsCache();
       }
     } finally {
       cacheLock.readLock().unlock();
@@ -2252,8 +2235,23 @@ public class SharedCache {
       cacheLock.readLock().lock();
       String tblKey = CacheUtils.buildTableKey(catName, dbName, tblName);
       TableWrapper tblWrapper = tableCache.getIfPresent(tblKey);
+      if ((tblWrapper != null) && tblWrapper.isConstraintsValid()) {
+        // Because lake of snapshot freshness validation.
+        // For now disabling cached constraint snapshot addition in parts by invalidating constraint snapshot.
+        tblWrapper.invalidateConstraintsCache();
+      }
+    } finally {
+      cacheLock.readLock().unlock();
+    }
+  }
+
+  public void addTableConstraintsToCache(String catName, String dbName, String tblName, SQLAllTableConstraints constraints){
+    try {
+      cacheLock.readLock().lock();
+      String tblKey = CacheUtils.buildTableKey(catName, dbName, tblName);
+      TableWrapper tblWrapper = tableCache.getIfPresent(tblKey);
       if (tblWrapper != null) {
-        tblWrapper.cacheCheckConstraints(keys, false);
+        tblWrapper.cacheConstraints(constraints, false);
       }
     } finally {
       cacheLock.readLock().unlock();
@@ -2304,8 +2302,10 @@ public class SharedCache {
     try {
       cacheLock.readLock().lock();
       TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
-      if (tblWrapper != null) {
-        tblWrapper.removeConstraint(constraintName);
+      if ((tblWrapper != null) && tblWrapper.isConstraintsValid()) {
+        // Because lake of snapshot freshness validation.
+        // For now disabling cached constraint snapshot deletion in parts by invalidating constraint snapshot.
+        tblWrapper.invalidateConstraintsCache();
       }
     } finally {
       cacheLock.readLock().unlock();
@@ -2359,7 +2359,7 @@ public class SharedCache {
     try {
       cacheLock.readLock().lock();
       TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
-      if (tblWrapper != null) {
+      if ((tblWrapper != null) && tblWrapper.isConstraintsValid()) {
         keys = tblWrapper.getPrimaryKeys();
       }
     } finally {
@@ -2368,13 +2368,27 @@ public class SharedCache {
     return keys;
   }
 
+  public SQLAllTableConstraints listCachedAllTableConstraints(String catName, String dbName, String tblName) {
+    SQLAllTableConstraints constraints = new SQLAllTableConstraints();
+    try {
+      cacheLock.readLock().lock();
+      TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
+      if ((tblWrapper != null) && tblWrapper.isConstraintsValid()) {
+        constraints = tblWrapper.getAllTableConstraints();
+      }
+    } finally {
+      cacheLock.readLock().unlock();
+    }
+    return constraints;
+  }
+
   public List<SQLForeignKey> listCachedForeignKeys(String catName, String foreignDbName, String foreignTblName,
                                                    String parentDbName, String parentTblName) {
     List<SQLForeignKey> keys = new ArrayList<>();
     try {
       cacheLock.readLock().lock();
       TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, foreignDbName, foreignTblName));
-      if (tblWrapper != null) {
+      if ((tblWrapper != null) && tblWrapper.isConstraintsValid()) {
         keys = tblWrapper.getForeignKeys();
       }
     } finally {
@@ -2397,7 +2411,7 @@ public class SharedCache {
     try {
       cacheLock.readLock().lock();
       TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
-      if (tblWrapper != null) {
+      if ((tblWrapper != null) && tblWrapper.isConstraintsValid()) {
         keys = tblWrapper.getUniqueConstraints();
       }
     } finally {
@@ -2411,7 +2425,7 @@ public class SharedCache {
     try {
       cacheLock.readLock().lock();
       TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
-      if (tblWrapper != null) {
+      if ((tblWrapper != null) && tblWrapper.isConstraintsValid()) {
         keys = tblWrapper.getDefaultConstraints();
       }
     } finally {
@@ -2425,7 +2439,7 @@ public class SharedCache {
     try {
       cacheLock.readLock().lock();
       TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
-      if (tblWrapper != null) {
+      if ((tblWrapper != null) && tblWrapper.isConstraintsValid()) {
         keys = tblWrapper.getCheckConstraints();
       }
     } finally {
@@ -2439,7 +2453,7 @@ public class SharedCache {
     try {
       cacheLock.readLock().lock();
       TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
-      if (tblWrapper != null) {
+      if ((tblWrapper != null) && tblWrapper.isConstraintsValid()) {
         keys = tblWrapper.getNotNullConstraints();
       }
     } finally {
@@ -2448,74 +2462,27 @@ public class SharedCache {
     return keys;
   }
 
-  public void refreshPrimaryKeysInCache(String catName, String dbName, String tblName, List<SQLPrimaryKey> pks) {
+  public boolean isTableConstraintValid(String catName, String dbName, String tblName){
+    boolean isValid = false;
     try {
       cacheLock.readLock().lock();
       TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
       if (tblWrapper != null) {
-        tblWrapper.refreshPrimaryKeys(pks);
+        isValid = tblWrapper.isConstraintsValid();
       }
     } finally {
       cacheLock.readLock().unlock();
     }
+    return isValid;
   }
 
-  public void refreshForeignKeysInCache(String catName, String dbName, String tblName, List<SQLForeignKey> fks) {
+  public void refreshAllTableConstraintsInCache(String catName, String dbName, String tblName,
+      SQLAllTableConstraints constraints) {
     try {
       cacheLock.readLock().lock();
       TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
       if (tblWrapper != null) {
-        tblWrapper.refreshForeignKeys(fks);
-      }
-    } finally {
-      cacheLock.readLock().unlock();
-    }
-  }
-
-  public void refreshNotNullConstraintsInCache(String catName, String dbName, String tblName,
-                                               List<SQLNotNullConstraint> nnc) {
-    try {
-      cacheLock.readLock().lock();
-      TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
-      if (tblWrapper != null) {
-        tblWrapper.refreshNotNullConstraints(nnc);
-      }
-    } finally {
-      cacheLock.readLock().unlock();
-    }
-  }
-
-  public void refreshUniqueConstraintsInCache(String catName, String dbName, String tblName,
-                                              List<SQLUniqueConstraint> uc) {
-    try {
-      cacheLock.readLock().lock();
-      TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
-      if (tblWrapper != null) {
-        tblWrapper.refreshUniqueConstraints(uc);
-      }
-    } finally {
-      cacheLock.readLock().unlock();
-    }
-  }
-  public void refreshDefaultConstraintsInCache(String catName, String dbName, String tblName,
-      List<SQLDefaultConstraint> dc) {
-    try {
-      cacheLock.readLock().lock();
-      TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
-      if (tblWrapper != null) {
-        tblWrapper.refreshDefaultConstraints(dc);
-      }
-    } finally {
-      cacheLock.readLock().unlock();
-    }
-  }
-  public void refreshCheckConstraintsInCache(String catName, String dbName, String tblName,
-      List<SQLCheckConstraint> cc) {
-    try {
-      cacheLock.readLock().lock();
-      TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
-      if (tblWrapper != null) {
-        tblWrapper.refreshCheckConstraints(cc);
+        tblWrapper.refreshAllTableConstraints(constraints);
       }
     } finally {
       cacheLock.readLock().unlock();
@@ -2767,4 +2734,6 @@ public class SharedCache {
   public void incrementUpdateCount() {
     cacheUpdateCount.incrementAndGet();
   }
+
+
 }

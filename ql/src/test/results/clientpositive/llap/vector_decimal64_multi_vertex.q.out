@@ -119,7 +119,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ss_item_sk:int, 1:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ss_item_sk:int, 1:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -149,8 +149,8 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
                             nonOuterSmallTableKeyMapping: []
-                            projectedOutput: 1:decimal(7,2), 3:string, 4:string, 5:string, 6:int
-                            smallTableValueMapping: 3:string, 4:string, 5:string, 6:int
+                            projectedOutput: 1:decimal(7,2), 4:string, 5:string, 6:string, 7:int
+                            smallTableValueMapping: 4:string, 5:string, 6:string, 7:int
                             hashTableImplementationType: OPTIMIZED
                         outputColumnNames: _col1, _col3, _col4, _col5, _col6
                         input vertices:
@@ -162,7 +162,7 @@ STAGE PLANS:
                               aggregators: VectorUDAFSumDecimal64(col 1:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
                               className: VectorGroupByOperator
                               groupByMode: HASH
-                              keyExpressions: col 3:string, col 4:string, col 5:string, col 6:int
+                              keyExpressions: col 4:string, col 5:string, col 6:string, col 7:int
                               native: false
                               vectorProcessingMode: HASH
                               projectedOutputColumnNums: [0]
@@ -209,7 +209,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 278 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:s_store_sk:int, 1:s_store_id:string, 2:s_rec_start_date:string, 3:s_rec_end_date:string, 4:s_closed_date_sk:int, 5:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:s_store_sk:int, 1:s_store_id:string, 2:s_rec_start_date:string, 3:s_rec_end_date:string, 4:s_closed_date_sk:int, 5:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 6:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator

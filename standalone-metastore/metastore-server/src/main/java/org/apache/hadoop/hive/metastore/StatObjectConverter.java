@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore;
 
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
@@ -230,6 +232,98 @@ public class StatObjectConverter {
       oldStatsObj.setNumNulls(mStatsObj.getNumNulls());
     }
     oldStatsObj.setEngine(mStatsObj.getEngine());
+  }
+
+  public static String getUpdatedColumnSql(MPartitionColumnStatistics mStatsObj) {
+    StringBuilder setStmt = new StringBuilder();
+    if (mStatsObj.getAvgColLen() != null) {
+      setStmt.append("\"AVG_COL_LEN\" = ? ,");
+    }
+    if (mStatsObj.getLongHighValue() != null) {
+      setStmt.append("\"LONG_HIGH_VALUE\" = ? ,");
+    }
+    if (mStatsObj.getDoubleHighValue() != null) {
+      setStmt.append("\"DOUBLE_HIGH_VALUE\" = ? ,");
+    }
+    setStmt.append("\"LAST_ANALYZED\" = ? ,");
+    if (mStatsObj.getLongLowValue() != null) {
+      setStmt.append("\"LONG_LOW_VALUE\" = ? ,");
+    }
+    if (mStatsObj.getDoubleLowValue() != null) {
+      setStmt.append("\"DOUBLE_LOW_VALUE\" = ? ,");
+    }
+    if (mStatsObj.getDecimalLowValue() != null) {
+      setStmt.append("\"BIG_DECIMAL_LOW_VALUE\" = ? ,");
+    }
+    if (mStatsObj.getDecimalHighValue() != null) {
+      setStmt.append("\"BIG_DECIMAL_HIGH_VALUE\" = ? ,");
+    }
+    if (mStatsObj.getMaxColLen() != null) {
+      setStmt.append("\"MAX_COL_LEN\" = ? ,");
+    }
+    if (mStatsObj.getNumDVs() != null) {
+      setStmt.append("\"NUM_DISTINCTS\" = ? ,");
+    }
+    if (mStatsObj.getBitVector() != null) {
+      setStmt.append("\"BIT_VECTOR\" = ? ,");
+    }
+    if (mStatsObj.getNumFalses() != null) {
+      setStmt.append("\"NUM_FALSES\" = ? ,");
+    }
+    if (mStatsObj.getNumTrues() != null) {
+      setStmt.append(" \"NUM_TRUES\" = ? ,");
+    }
+    if (mStatsObj.getNumNulls() != null) {
+      setStmt.append("\"NUM_NULLS\" = ? ,");
+    }
+    setStmt.append("\"ENGINE\" = ? ");
+    return setStmt.toString();
+  }
+
+  public static void initUpdatedColumnStatement(MPartitionColumnStatistics mStatsObj,
+                                                      PreparedStatement pst) throws SQLException {
+    int colIdx = 1;
+    if (mStatsObj.getAvgColLen() != null) {
+      pst.setObject(colIdx++, mStatsObj.getAvgColLen());
+    }
+    if (mStatsObj.getLongHighValue() != null) {
+      pst.setObject(colIdx++, mStatsObj.getLongHighValue());
+    }
+    if (mStatsObj.getDoubleHighValue() != null) {
+      pst.setObject(colIdx++, mStatsObj.getDoubleHighValue());
+    }
+    pst.setLong(colIdx++, mStatsObj.getLastAnalyzed());
+    if (mStatsObj.getLongLowValue() != null) {
+      pst.setObject(colIdx++, mStatsObj.getLongLowValue());
+    }
+    if (mStatsObj.getDoubleLowValue() != null) {
+      pst.setObject(colIdx++, mStatsObj.getDoubleLowValue());
+    }
+    if (mStatsObj.getDecimalLowValue() != null) {
+      pst.setObject(colIdx++, mStatsObj.getDecimalLowValue());
+    }
+    if (mStatsObj.getDecimalHighValue() != null) {
+      pst.setObject(colIdx++, mStatsObj.getDecimalHighValue());
+    }
+    if (mStatsObj.getMaxColLen() != null) {
+      pst.setObject(colIdx++, mStatsObj.getMaxColLen());
+    }
+    if (mStatsObj.getNumDVs() != null) {
+      pst.setObject(colIdx++, mStatsObj.getNumDVs());
+    }
+    if (mStatsObj.getBitVector() != null) {
+      pst.setObject(colIdx++, mStatsObj.getBitVector());
+    }
+    if (mStatsObj.getNumFalses() != null) {
+      pst.setObject(colIdx++, mStatsObj.getNumFalses());
+    }
+    if (mStatsObj.getNumTrues() != null) {
+      pst.setObject(colIdx++, mStatsObj.getNumTrues());
+    }
+    if (mStatsObj.getNumNulls() != null) {
+      pst.setObject(colIdx++, mStatsObj.getNumNulls());
+    }
+    pst.setString(colIdx++, mStatsObj.getEngine());
   }
 
   public static ColumnStatisticsObj getTableColumnStatisticsObj(
@@ -542,6 +636,16 @@ public class StatObjectConverter {
     return statsDesc;
   }
 
+  public static byte[] getBitVector(byte[] bytes) {
+    // workaround for DN bug in persisting nulls in pg bytea column
+    // instead set empty bit vector with header.
+    // https://issues.apache.org/jira/browse/HIVE-17836
+    if (bytes != null && bytes.length == 2 && bytes[0] == 'H' && bytes[1] == 'L') {
+      return null;
+    }
+    return bytes;
+  }
+
   // JAVA
   public static void fillColumnStatisticsData(String colType, ColumnStatisticsData data,
       Object llow, Object lhigh, Object dlow, Object dhigh, Object declow, Object dechigh,
@@ -560,7 +664,7 @@ public class StatObjectConverter {
       stringStats.setAvgColLen(MetastoreDirectSqlUtils.extractSqlDouble(avglen));
       stringStats.setMaxColLen(MetastoreDirectSqlUtils.extractSqlLong(maxlen));
       stringStats.setNumDVs(MetastoreDirectSqlUtils.extractSqlLong(dist));
-      stringStats.setBitVectors(MetastoreDirectSqlUtils.extractSqlBlob(bitVector));
+      stringStats.setBitVectors(getBitVector(MetastoreDirectSqlUtils.extractSqlBlob(bitVector)));
       data.setStringStats(stringStats);
     } else if (colType.equals("binary")) {
       BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
@@ -579,7 +683,7 @@ public class StatObjectConverter {
         longStats.setLowValue(MetastoreDirectSqlUtils.extractSqlLong(llow));
       }
       longStats.setNumDVs(MetastoreDirectSqlUtils.extractSqlLong(dist));
-      longStats.setBitVectors(MetastoreDirectSqlUtils.extractSqlBlob(bitVector));
+      longStats.setBitVectors(getBitVector(MetastoreDirectSqlUtils.extractSqlBlob(bitVector)));
       data.setLongStats(longStats);
     } else if (colType.equals("double") || colType.equals("float")) {
       DoubleColumnStatsDataInspector doubleStats = new DoubleColumnStatsDataInspector();
@@ -591,7 +695,7 @@ public class StatObjectConverter {
         doubleStats.setLowValue(MetastoreDirectSqlUtils.extractSqlDouble(dlow));
       }
       doubleStats.setNumDVs(MetastoreDirectSqlUtils.extractSqlLong(dist));
-      doubleStats.setBitVectors(MetastoreDirectSqlUtils.extractSqlBlob(bitVector));
+      doubleStats.setBitVectors(getBitVector(MetastoreDirectSqlUtils.extractSqlBlob(bitVector)));
       data.setDoubleStats(doubleStats);
     } else if (colType.startsWith("decimal")) {
       DecimalColumnStatsDataInspector decimalStats = new DecimalColumnStatsDataInspector();
@@ -603,7 +707,7 @@ public class StatObjectConverter {
         decimalStats.setLowValue(DecimalUtils.createThriftDecimal((String)declow));
       }
       decimalStats.setNumDVs(MetastoreDirectSqlUtils.extractSqlLong(dist));
-      decimalStats.setBitVectors(MetastoreDirectSqlUtils.extractSqlBlob(bitVector));
+      decimalStats.setBitVectors(getBitVector(MetastoreDirectSqlUtils.extractSqlBlob(bitVector)));
       data.setDecimalStats(decimalStats);
     } else if (colType.equals("date")) {
       DateColumnStatsDataInspector dateStats = new DateColumnStatsDataInspector();
@@ -615,7 +719,7 @@ public class StatObjectConverter {
         dateStats.setLowValue(new Date(MetastoreDirectSqlUtils.extractSqlLong(llow)));
       }
       dateStats.setNumDVs(MetastoreDirectSqlUtils.extractSqlLong(dist));
-      dateStats.setBitVectors(MetastoreDirectSqlUtils.extractSqlBlob(bitVector));
+      dateStats.setBitVectors(getBitVector(MetastoreDirectSqlUtils.extractSqlBlob(bitVector)));
       data.setDateStats(dateStats);
     } else if (colType.equals("timestamp")) {
       TimestampColumnStatsDataInspector timestampStats = new TimestampColumnStatsDataInspector();
@@ -627,7 +731,7 @@ public class StatObjectConverter {
         timestampStats.setLowValue(new Timestamp(MetastoreDirectSqlUtils.extractSqlLong(llow)));
       }
       timestampStats.setNumDVs(MetastoreDirectSqlUtils.extractSqlLong(dist));
-      timestampStats.setBitVectors(MetastoreDirectSqlUtils.extractSqlBlob(bitVector));
+      timestampStats.setBitVectors(getBitVector(MetastoreDirectSqlUtils.extractSqlBlob(bitVector)));
       data.setTimestampStats(timestampStats);
     }
   }

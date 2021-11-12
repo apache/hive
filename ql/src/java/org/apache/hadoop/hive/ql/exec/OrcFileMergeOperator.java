@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -109,9 +110,7 @@ public class OrcFileMergeOperator extends
       if (prevPath == null) {
         prevPath = k.getInputPath();
         reader = OrcFile.createReader(fs, k.getInputPath());
-        if (LOG.isInfoEnabled()) {
-          LOG.info("ORC merge file input path: " + k.getInputPath());
-        }
+        LOG.info("ORC merge file input path: " + k.getInputPath());
       }
 
       // store the orc configuration from the first file. All other files should
@@ -145,9 +144,7 @@ public class OrcFileMergeOperator extends
           outPath = getOutPath(bucketId);
         }
         outWriters.put(bucketId, OrcFile.createWriter(outPath, options));
-        if (LOG.isDebugEnabled()) {
-          LOG.info("ORC merge file output path: " + outPath);
-        }
+        LOG.info("ORC merge file output path: {}", outPath);
       }
 
       if (!checkCompatibility(k)) {
@@ -179,7 +176,9 @@ public class OrcFileMergeOperator extends
 
       // add user metadata to footer in case of any
       if (v.isLastStripeInFile()) {
-        outWriters.get(bucketId).appendUserMetadata(v.getUserMetadata());
+        for (Map.Entry<String, ByteBuffer> entry: v.getUserMetadata().entrySet()) {
+          outWriters.get(bucketId).addUserMetadata(entry.getKey(), entry.getValue());
+        }
       }
     } catch (Throwable e) {
       exception = true;

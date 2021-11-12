@@ -62,7 +62,7 @@ public class ReplicationMetricsMaintTask implements MetastoreTaskThread {
       if (!MetastoreConf.getBoolVar(conf, ConfVars.SCHEDULED_QUERIES_ENABLED)) {
         return;
       }
-      RawStore ms = HiveMetaStore.HMSHandler.getMSForConf(conf);
+      RawStore ms = HMSHandler.getMSForConf(conf);
       int maxRetainSecs = (int) MetastoreConf.getTimeVar(conf, ConfVars.REPL_METRICS_MAX_AGE, TimeUnit.SECONDS);
       LOG.info("Cleaning up Metrics older than {} ", maxRetainSecs);
       int deleteCnt = ms.deleteReplicationMetrics(maxRetainSecs);

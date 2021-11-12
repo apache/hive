@@ -1,3 +1,4 @@
+--! qt:disabled:HIVE-24680
 --! qt:dataset:srcpart
 --! qt:dataset:srcbucket
 --! qt:dataset:src1

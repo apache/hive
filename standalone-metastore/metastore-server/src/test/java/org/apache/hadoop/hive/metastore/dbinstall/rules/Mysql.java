@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * JUnit TestRule for MySql.
  */
@@ -24,7 +27,7 @@ public class Mysql extends DatabaseRule {
 
   @Override
   public String getDockerImageName() {
-    return "mariadb:5.5";
+    return "mysql:5.7";
   }
 
   @Override
@@ -49,7 +52,7 @@ public class Mysql extends DatabaseRule {
 
   @Override
   public String getJdbcDriver() {
-    return "org.mariadb.jdbc.Driver";
+    return "com.mysql.jdbc.Driver";
   }
 
   @Override
@@ -63,8 +66,10 @@ public class Mysql extends DatabaseRule {
   }
 
   @Override
-  public boolean isContainerReady(String logOutput) {
-    return logOutput.contains("MySQL init process done. Ready for start up.");
+  public boolean isContainerReady(ProcessResults pr) {
+    Pattern pat = Pattern.compile("ready for connections");
+    Matcher m = pat.matcher(pr.stderr);
+    return m.find() && m.find();
   }
 
   @Override

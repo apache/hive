@@ -94,7 +94,7 @@ public class Utils {
     return modifiedURI;
   }
 
-  private static String replaceHost(String originalURIStr, String newHost) throws SemanticException {
+  public static String replaceHost(String originalURIStr, String newHost) throws SemanticException {
     if (StringUtils.isEmpty(originalURIStr)) {
       return originalURIStr;
     }

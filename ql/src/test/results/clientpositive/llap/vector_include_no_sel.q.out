@@ -261,10 +261,10 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col2, _col16
+                outputColumnNames: _col0, _col2, _col17
                 Statistics: Num rows: 200000 Data size: 18599796 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (((_col0 = _col16) and (_col2 = 'M')) or ((_col0 = _col16) and (_col2 = 'U'))) (type: boolean)
+                  predicate: (((_col0 = _col17) and (_col2 = 'M')) or ((_col0 = _col17) and (_col2 = 'U'))) (type: boolean)
                   Statistics: Num rows: 40000 Data size: 3719964 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 40000 Data size: 3719964 Basic stats: COMPLETE Column stats: COMPLETE

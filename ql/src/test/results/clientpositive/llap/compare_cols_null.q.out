@@ -34,8 +34,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: ccn_table
+          filterExpr: (key > '123a') (type: boolean)
           Filter Operator
-            predicate: false (type: boolean)
+            predicate: (key > '123a') (type: boolean)
             Select Operator
               expressions: key (type: int), value (type: string)
               outputColumnNames: _col0, _col1
@@ -112,6 +113,11 @@ POSTHOOK: query: explain cbo select * from ccn_table where key <=> '123a'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ccn_table
 #### A masked pattern was here ####
+CBO PLAN:
+HiveProject(key=[$0], value=[$1])
+  HiveFilter(condition=[IS NOT DISTINCT FROM(CAST($0):DOUBLE, null)])
+    HiveTableScan(table=[[default, ccn_table]], table:alias=[ccn_table])
+
 PREHOOK: query: select * from ccn_table where key <=> '123a'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ccn_table
@@ -120,6 +126,7 @@ POSTHOOK: query: select * from ccn_table where key <=> '123a'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ccn_table
 #### A masked pattern was here ####
+NULL	t1
 PREHOOK: query: drop table ccn_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ccn_table

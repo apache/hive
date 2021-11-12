@@ -95,22 +95,22 @@ public abstract class DatabaseRule extends ExternalResource {
   public abstract String getInitialJdbcUrl(String hostAddress);
 
   public final String getInitialJdbcUrl() {
-    return getJdbcUrl(getContainerHostAddress());
+    return getInitialJdbcUrl(getContainerHostAddress());
   }
 
   /**
    * Determine if the docker container is ready to use.
    *
-   * @param logOutput output of docker logs command
+   * @param pr output of docker logs command
    * @return true if ready, false otherwise
    */
-  public abstract boolean isContainerReady(String logOutput);
+  public abstract boolean isContainerReady(ProcessResults pr);
 
   protected String[] buildArray(String... strs) {
     return strs;
   }
 
-  private static class ProcessResults {
+  public static class ProcessResults {
     final String stdout;
     final String stderr;
     final int rc;
@@ -136,7 +136,7 @@ public abstract class DatabaseRule extends ExternalResource {
       if (pr.rc != 0) {
         throw new RuntimeException("Failed to get docker logs");
       }
-    } while (startTime + MAX_STARTUP_WAIT >= System.currentTimeMillis() && !isContainerReady(pr.stdout));
+    } while (startTime + MAX_STARTUP_WAIT >= System.currentTimeMillis() && !isContainerReady(pr));
     if (startTime + MAX_STARTUP_WAIT < System.currentTimeMillis()) {
       throw new RuntimeException("Container failed to be ready in " + MAX_STARTUP_WAIT/1000 +
           " seconds");
@@ -264,7 +264,8 @@ public abstract class DatabaseRule extends ExternalResource {
         "-url",
         getJdbcUrl(),
         "-driver",
-        getJdbcDriver()
+        getJdbcDriver(),
+        "-verbose"
     ));
   }
 

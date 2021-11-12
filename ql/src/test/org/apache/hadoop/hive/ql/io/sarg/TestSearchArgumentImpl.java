@@ -63,8 +63,12 @@ public class TestSearchArgumentImpl {
     return new ExpressionTree(ExpressionTree.Operator.OR, arg);
   }
 
-  private ExpressionTree leaf(int leaf) {
-    return new ExpressionTree(leaf);
+  private static ExpressionTree leaf(int id) {
+    PredicateLeafImpl result = new PredicateLeafImpl(PredicateLeaf.Operator.EQUALS,
+        PredicateLeaf.Type.LONG,
+        "x", (long) id, null);
+    result.setId(id);
+    return new ExpressionTree(result);
   }
 
   private ExpressionTree constant(TruthValue val) {
@@ -86,100 +90,100 @@ public class TestSearchArgumentImpl {
   @Test
   public void testNotPushdown() throws Exception {
     assertEquals("leaf-1", SearchArgumentImpl.BuilderImpl.pushDownNot(leaf(1))
-        .toString());
+        .toOldString());
     assertEquals("(not leaf-1)",
-        SearchArgumentImpl.BuilderImpl.pushDownNot(not(leaf(1))).toString());
+        SearchArgumentImpl.BuilderImpl.pushDownNot(not(leaf(1))).toOldString());
     assertEquals("leaf-1",
         SearchArgumentImpl.BuilderImpl.pushDownNot(not(not(leaf(1))))
-            .toString());
+            .toOldString());
     assertEquals("(not leaf-1)",
         SearchArgumentImpl.BuilderImpl.pushDownNot(not(not(not(leaf(1))))).
-            toString());
+            toOldString());
     assertEquals("(or leaf-1 (not leaf-2))",
         SearchArgumentImpl.BuilderImpl.pushDownNot(not(and(not(leaf(1)),
-            leaf(2)))).toString());
+            leaf(2)))).toOldString());
     assertEquals("(and (not leaf-1) leaf-2)",
         SearchArgumentImpl.BuilderImpl.pushDownNot(not(or(leaf(1),
-            not(leaf(2))))).toString());
+            not(leaf(2))))).toOldString());
     assertEquals("(or (or (not leaf-1) leaf-2) leaf-3)",
         SearchArgumentImpl.BuilderImpl.pushDownNot(or(not(and(leaf(1),
                 not(leaf(2)))),
-            not(not(leaf(3))))).toString());
+            not(not(leaf(3))))).toOldString());
     assertEquals("NO", SearchArgumentImpl.BuilderImpl.pushDownNot(
-        not(constant(TruthValue.YES))).toString());
+        not(constant(TruthValue.YES))).toOldString());
     assertEquals("YES", SearchArgumentImpl.BuilderImpl.pushDownNot(
-        not(constant(TruthValue.NO))).toString());
+        not(constant(TruthValue.NO))).toOldString());
     assertEquals("NULL", SearchArgumentImpl.BuilderImpl.pushDownNot(
-        not(constant(TruthValue.NULL))).toString());
+        not(constant(TruthValue.NULL))).toOldString());
     assertEquals("YES_NO", SearchArgumentImpl.BuilderImpl.pushDownNot(
-        not(constant(TruthValue.YES_NO))).toString());
+        not(constant(TruthValue.YES_NO))).toOldString());
     assertEquals("YES_NULL", SearchArgumentImpl.BuilderImpl.pushDownNot(
-        not(constant(TruthValue.NO_NULL))).toString());
+        not(constant(TruthValue.NO_NULL))).toOldString());
     assertEquals("NO_NULL", SearchArgumentImpl.BuilderImpl.pushDownNot(
-        not(constant(TruthValue.YES_NULL))).toString());
+        not(constant(TruthValue.YES_NULL))).toOldString());
     assertEquals("YES_NO_NULL", SearchArgumentImpl.BuilderImpl.pushDownNot(
-        not(constant(TruthValue.YES_NO_NULL))).toString());
+        not(constant(TruthValue.YES_NO_NULL))).toOldString());
   }
 
   @Test
   public void testFlatten() throws Exception {
-    assertEquals("leaf-1", SearchArgumentImpl.BuilderImpl.flatten(leaf(1)).toString());
+    assertEquals("leaf-1", SearchArgumentImpl.BuilderImpl.flatten(leaf(1)).toOldString());
     assertEquals("NO",
         SearchArgumentImpl.BuilderImpl.flatten(constant(TruthValue.NO)).toString());
     assertEquals("(not (not leaf-1))",
-        SearchArgumentImpl.BuilderImpl.flatten(not(not(leaf(1)))).toString());
+        SearchArgumentImpl.BuilderImpl.flatten(not(not(leaf(1)))).toOldString());
     assertEquals("(and leaf-1 leaf-2)",
-        SearchArgumentImpl.BuilderImpl.flatten(and(leaf(1), leaf(2))).toString());
+        SearchArgumentImpl.BuilderImpl.flatten(and(leaf(1), leaf(2))).toOldString());
     assertEquals("(and (or leaf-1 leaf-2) leaf-3)",
         SearchArgumentImpl.BuilderImpl.flatten(and(or(leaf(1), leaf(2)), leaf(3))
-        ).toString());
+        ).toOldString());
     assertEquals("(and leaf-1 leaf-2 leaf-3 leaf-4)",
         SearchArgumentImpl.BuilderImpl.flatten(and(and(leaf(1), leaf(2)),
-            and(leaf(3), leaf(4)))).toString());
+            and(leaf(3), leaf(4)))).toOldString());
     assertEquals("(or leaf-1 leaf-2 leaf-3 leaf-4)",
         SearchArgumentImpl.BuilderImpl.flatten(or(leaf(1), or(leaf(2), or(leaf(3),
-            leaf(4))))).toString());
+            leaf(4))))).toOldString());
     assertEquals("(or leaf-1 leaf-2 leaf-3 leaf-4)",
         SearchArgumentImpl.BuilderImpl.flatten(or(or(or(leaf(1), leaf(2)), leaf(3)),
-            leaf(4))).toString());
+            leaf(4))).toOldString());
     assertEquals("(or leaf-1 leaf-2 leaf-3 leaf-4 leaf-5 leaf-6)",
         SearchArgumentImpl.BuilderImpl.flatten(or(or(leaf(1), or(leaf(2), leaf(3))),
-            or(or(leaf(4), leaf(5)), leaf(6)))).toString());
+            or(or(leaf(4), leaf(5)), leaf(6)))).toOldString());
     assertEquals("(and (not leaf-1) leaf-2 (not leaf-3) leaf-4 (not leaf-5) leaf-6)",
         SearchArgumentImpl.BuilderImpl.flatten(and(and(not(leaf(1)), and(leaf(2),
                 not(leaf(3)))), and(and(leaf(4), not(leaf(5))), leaf(6)))
-        ).toString());
+        ).toOldString());
     assertEquals("(not (and leaf-1 leaf-2 leaf-3))",
         SearchArgumentImpl.BuilderImpl.flatten(not(and(leaf(1), and(leaf(2), leaf(3))))
-        ).toString());
+        ).toOldString());
   }
 
   @Test
   public void testFoldMaybe() throws Exception {
     assertEquals("(and leaf-1)",
         SearchArgumentImpl.BuilderImpl.foldMaybe(and(leaf(1),
-            constant(TruthValue.YES_NO_NULL))).toString());
+            constant(TruthValue.YES_NO_NULL))).toOldString());
     assertEquals("(and leaf-1 leaf-2)",
         SearchArgumentImpl.BuilderImpl.foldMaybe(and(leaf(1),
-            constant(TruthValue.YES_NO_NULL), leaf(2))).toString());
+            constant(TruthValue.YES_NO_NULL), leaf(2))).toOldString());
     assertEquals("(and leaf-1 leaf-2)",
         SearchArgumentImpl.BuilderImpl.
             foldMaybe(and(constant(TruthValue.YES_NO_NULL),
-                leaf(1), leaf(2), constant(TruthValue.YES_NO_NULL))).toString());
+                leaf(1), leaf(2), constant(TruthValue.YES_NO_NULL))).toOldString());
     assertEquals("YES_NO_NULL",
         SearchArgumentImpl.BuilderImpl.
             foldMaybe(and(constant(TruthValue.YES_NO_NULL),
-                constant(TruthValue.YES_NO_NULL))).toString());
+                constant(TruthValue.YES_NO_NULL))).toOldString());
     assertEquals("YES_NO_NULL",
         SearchArgumentImpl.BuilderImpl.
             foldMaybe(or(leaf(1),
-                constant(TruthValue.YES_NO_NULL))).toString());
+                constant(TruthValue.YES_NO_NULL))).toOldString());
     assertEquals("(or leaf-1 (and leaf-2))",
         SearchArgumentImpl.BuilderImpl.foldMaybe(or(leaf(1),
-            and(leaf(2), constant(TruthValue.YES_NO_NULL)))).toString());
+            and(leaf(2), constant(TruthValue.YES_NO_NULL)))).toOldString());
     assertEquals("(and leaf-1)",
         SearchArgumentImpl.BuilderImpl.foldMaybe(and(or(leaf(2),
-            constant(TruthValue.YES_NO_NULL)), leaf(1))).toString());
+            constant(TruthValue.YES_NO_NULL)), leaf(1))).toOldString());
     assertEquals("(and leaf-100)", SearchArgumentImpl.BuilderImpl.foldMaybe(
         SearchArgumentImpl.BuilderImpl.convertToCNF(and(leaf(100),
             or(and(leaf(0), leaf(1)),
@@ -190,30 +194,30 @@ public class TestSearchArgumentImpl {
                 and(leaf(10), leaf(11)),
                 and(leaf(12), leaf(13)),
                 and(leaf(14), leaf(15)),
-                and(leaf(16), leaf(17)))))).toString());
+                and(leaf(16), leaf(17)))))).toOldString());
   }
 
   @Test
   public void testCNF() throws Exception {
     assertEquals("leaf-1", SearchArgumentImpl.BuilderImpl.convertToCNF(leaf(1)).
-        toString());
+        toOldString());
     assertEquals("NO", SearchArgumentImpl.BuilderImpl.convertToCNF(
         constant(TruthValue.NO)).toString());
     assertEquals("(not leaf-1)", SearchArgumentImpl.BuilderImpl.convertToCNF(
-        not(leaf(1))).toString());
+        not(leaf(1))).toOldString());
     assertEquals("(and leaf-1 leaf-2)", SearchArgumentImpl.BuilderImpl.
         convertToCNF(
-            and(leaf(1), leaf(2))).toString());
+            and(leaf(1), leaf(2))).toOldString());
     assertEquals("(or (not leaf-1) leaf-2)", SearchArgumentImpl.BuilderImpl.
         convertToCNF(
-            or(not(leaf(1)), leaf(2))).toString());
+            or(not(leaf(1)), leaf(2))).toOldString());
     assertEquals("(and (or leaf-1 leaf-2) (not leaf-3))",
         SearchArgumentImpl.BuilderImpl.convertToCNF(
-            and(or(leaf(1), leaf(2)), not(leaf(3)))).toString());
+            and(or(leaf(1), leaf(2)), not(leaf(3)))).toOldString());
     assertEquals("(and (or leaf-1 leaf-3) (or leaf-2 leaf-3)" +
         " (or leaf-1 leaf-4) (or leaf-2 leaf-4))",
         SearchArgumentImpl.BuilderImpl.convertToCNF(
-            or(and(leaf(1), leaf(2)), and(leaf(3), leaf(4)))).toString());
+            or(and(leaf(1), leaf(2)), and(leaf(3), leaf(4)))).toOldString());
     assertEquals("(and" +
         " (or leaf-1 leaf-5) (or leaf-2 leaf-5)" +
         " (or leaf-3 leaf-5) (or leaf-4 leaf-5)" +
@@ -221,7 +225,7 @@ public class TestSearchArgumentImpl {
         " (or leaf-3 leaf-6) (or leaf-4 leaf-6))",
         SearchArgumentImpl.BuilderImpl.convertToCNF(
             or(and(leaf(1), leaf(2), leaf(3), leaf(4)),
-                and(leaf(5), leaf(6)))).toString());
+                and(leaf(5), leaf(6)))).toOldString());
     assertEquals("(and" +
         " (or leaf-5 leaf-6 (not leaf-7) leaf-1 leaf-3)" +
         " (or leaf-5 leaf-6 (not leaf-7) leaf-2 leaf-3)" +
@@ -231,7 +235,7 @@ public class TestSearchArgumentImpl {
             or(and(leaf(1), leaf(2)),
                 and(leaf(3), leaf(4)),
                 or(leaf(5), leaf(6)),
-                not(leaf(7)))).toString());
+                not(leaf(7)))).toOldString());
     assertEquals("(and" +
         " (or leaf-8 leaf-0 leaf-3 leaf-6)" +
         " (or leaf-8 leaf-1 leaf-3 leaf-6)" +
@@ -255,7 +259,7 @@ public class TestSearchArgumentImpl {
                 leaf(2)),
             and(leaf(3), leaf(4), leaf(5)),
             and(leaf(6), leaf(7)),
-            leaf(8))).toString());
+            leaf(8))).toOldString());
     assertEquals("YES_NO_NULL", SearchArgumentImpl.BuilderImpl.
         convertToCNF(or(and(leaf(0), leaf(1)),
             and(leaf(2), leaf(3)),
@@ -276,7 +280,7 @@ public class TestSearchArgumentImpl {
                 and(leaf(10), leaf(11)),
                 and(leaf(12), leaf(13)),
                 and(leaf(14), leaf(15)),
-                and(leaf(16), leaf(17))))).toString());
+                and(leaf(16), leaf(17))))).toOldString());
     assertNoSharedNodes(SearchArgumentImpl.BuilderImpl.
         convertToCNF(or(and(leaf(0), leaf(1), leaf(2)),
             and(leaf(3), leaf(4), leaf(5)),
@@ -301,7 +305,7 @@ public class TestSearchArgumentImpl {
 
   @Test
   public void testBuilder() throws Exception {
-    SearchArgument sarg =
+    SearchArgumentImpl sarg = (SearchArgumentImpl)
         SearchArgumentFactory.newBuilder()
             .startAnd()
             .lessThan("x", PredicateLeaf.Type.LONG, 10L)
@@ -312,8 +316,8 @@ public class TestSearchArgumentImpl {
     assertEquals("leaf-0 = (LESS_THAN x 10), " +
         "leaf-1 = (LESS_THAN_EQUALS y hi), " +
         "leaf-2 = (EQUALS z 1.0), " +
-        "expr = (and leaf-0 leaf-1 leaf-2)", sarg.toString());
-    sarg = SearchArgumentFactory.newBuilder()
+        "expr = (and leaf-0 leaf-1 leaf-2)", sarg.toOldString());
+    sarg = (SearchArgumentImpl) SearchArgumentFactory.newBuilder()
         .startNot()
         .startOr()
         .isNull("x", PredicateLeaf.Type.LONG)
@@ -327,12 +331,13 @@ public class TestSearchArgumentImpl {
         "leaf-1 = (BETWEEN y 10 20), " +
         "leaf-2 = (IN z 1 2 3), " +
         "leaf-3 = (NULL_SAFE_EQUALS a stinger), " +
-        "expr = (and (not leaf-0) (not leaf-1) (not leaf-2) (not leaf-3))", sarg.toString());
+        "expr = (and (not leaf-0) (not leaf-1) (not leaf-2) (not leaf-3))",
+        sarg.toOldString());
   }
 
   @Test
   public void testBuilderComplexTypes() throws Exception {
-    SearchArgument sarg =
+    SearchArgumentImpl sarg = (SearchArgumentImpl)
         SearchArgumentFactory.newBuilder()
             .startAnd()
             .lessThan("x", PredicateLeaf.Type.DATE,
@@ -345,9 +350,9 @@ public class TestSearchArgumentImpl {
     assertEquals("leaf-0 = (LESS_THAN x 1970-01-11), " +
         "leaf-1 = (LESS_THAN_EQUALS y hi        ), " +
         "leaf-2 = (EQUALS z 1), " +
-        "expr = (and leaf-0 leaf-1 leaf-2)", sarg.toString());
+        "expr = (and leaf-0 leaf-1 leaf-2)", sarg.toOldString());
 
-    sarg = SearchArgumentFactory.newBuilder()
+    sarg = (SearchArgumentImpl) SearchArgumentFactory.newBuilder()
         .startNot()
         .startOr()
         .isNull("x", PredicateLeaf.Type.LONG)
@@ -364,12 +369,12 @@ public class TestSearchArgumentImpl {
         "leaf-2 = (IN z 1 2 3), " +
         "leaf-3 = (NULL_SAFE_EQUALS a stinger), " +
         "expr = (and (not leaf-0) (not leaf-1) (not leaf-2) (not leaf-3))",
-        sarg.toString());
+        sarg.toOldString());
   }
 
   @Test
   public void testBuilderComplexTypes2() throws Exception {
-    SearchArgument sarg =
+    SearchArgumentImpl sarg = (SearchArgumentImpl)
         SearchArgumentFactory.newBuilder()
             .startAnd()
             .lessThan("x", PredicateLeaf.Type.DATE, Date.valueOf("2005-3-12"))
@@ -382,9 +387,9 @@ public class TestSearchArgumentImpl {
     assertEquals("leaf-0 = (LESS_THAN x 2005-03-12), " +
         "leaf-1 = (LESS_THAN_EQUALS y hi        ), " +
         "leaf-2 = (EQUALS z 1), " +
-        "expr = (and leaf-0 leaf-1 leaf-2)", sarg.toString());
+        "expr = (and leaf-0 leaf-1 leaf-2)", sarg.toOldString());
 
-    sarg = SearchArgumentFactory.newBuilder()
+    sarg = (SearchArgumentImpl) SearchArgumentFactory.newBuilder()
         .startNot()
         .startOr()
         .isNull("x", PredicateLeaf.Type.LONG)
@@ -401,12 +406,12 @@ public class TestSearchArgumentImpl {
         "leaf-2 = (IN z 1 2 3), " +
         "leaf-3 = (NULL_SAFE_EQUALS a stinger), " +
         "expr = (and (not leaf-0) (not leaf-1) (not leaf-2) (not leaf-3))",
-        sarg.toString());
+        sarg.toOldString());
   }
 
   @Test
   public void testBuilderFloat() throws Exception {
-    SearchArgument sarg =
+    SearchArgumentImpl sarg = (SearchArgumentImpl)
         SearchArgumentFactory.newBuilder()
             .startAnd()
             .lessThan("x", PredicateLeaf.Type.LONG, 22L)
@@ -422,7 +427,7 @@ public class TestSearchArgumentImpl {
         "leaf-2 = (LESS_THAN_EQUALS y hi        ), " +
         "leaf-3 = (EQUALS z 0.22), " +
         "leaf-4 = (EQUALS z1 0.22), " +
-        "expr = (and leaf-0 leaf-1 leaf-2 leaf-3 leaf-4)", sarg.toString());
+        "expr = (and leaf-0 leaf-1 leaf-2 leaf-3 leaf-4)", sarg.toOldString());
   }
 
   @Test

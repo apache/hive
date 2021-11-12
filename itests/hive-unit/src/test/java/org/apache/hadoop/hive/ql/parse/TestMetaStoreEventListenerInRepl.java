@@ -66,7 +66,7 @@ public class TestMetaStoreEventListenerInRepl {
     TestMetaStoreEventListenerInRepl.conf.set("dfs.client.use.datanode.hostname", "true");
     TestMetaStoreEventListenerInRepl.conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
-        new MiniDFSCluster.Builder(TestMetaStoreEventListenerInRepl.conf).numDataNodes(1).format(true).build();
+        new MiniDFSCluster.Builder(TestMetaStoreEventListenerInRepl.conf).numDataNodes(2).format(true).build();
 
     Map<String, String> conf = new HashMap<String, String>() {{
 	      put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());

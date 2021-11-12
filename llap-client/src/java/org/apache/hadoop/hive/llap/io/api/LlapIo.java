@@ -31,6 +31,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.orc.impl.OrcTail;
 
 import javax.annotation.Nullable;
@@ -86,5 +87,16 @@ public interface LlapIo<T> {
    * @throws IOException
    */
   RecordReader<NullWritable, VectorizedRowBatch> llapVectorizedOrcReaderForPath(Object fileKey, Path path, CacheTag tag,
-      List<Integer> tableIncludedCols, JobConf conf, long offset, long length) throws IOException;
+      List<Integer> tableIncludedCols, JobConf conf, long offset, long length, Reporter reporter) throws IOException;
+
+  /**
+   * Extract and return the cache content metadata.
+   */
+  LlapDaemonProtocolProtos.CacheEntryList fetchCachedContentInfo();
+
+  /**
+   * Load the actual data into the cache based on the provided metadata.
+   */
+  void loadDataIntoCache(LlapDaemonProtocolProtos.CacheEntryList metadata);
+
 }

@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
@@ -58,6 +59,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -159,6 +161,7 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.secrets.URISecretSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
@@ -167,7 +170,6 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -208,6 +210,7 @@ import org.slf4j.LoggerFactory;
 import com.esotericsoftware.kryo.Kryo;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -579,7 +582,7 @@ public final class Utilities {
   }
 
   private static Path setBaseWork(Configuration conf, BaseWork w, Path hiveScratchDir, String name, boolean useCache) {
-    Kryo kryo = SerializationUtilities.borrowKryo();
+    Kryo kryo = SerializationUtilities.borrowKryo(conf);
     try {
       setPlanPath(conf, hiveScratchDir);
 
@@ -768,6 +771,9 @@ public final class Utilities {
   public static TableDesc getTableDesc(Table tbl) {
     Properties props = tbl.getMetadata();
     props.put(serdeConstants.SERIALIZATION_LIB, tbl.getDeserializer().getClass().getName());
+    if (tbl.getMetaTable() != null) {
+      props.put("metaTable", tbl.getMetaTable());
+    }
     return (new TableDesc(tbl.getInputFormatClass(), tbl
         .getOutputFormatClass(), props));
   }
@@ -1092,7 +1098,7 @@ public final class Utilities {
     }
   }
 
-  private static void moveFile(FileSystem fs, FileStatus file, Path dst) throws IOException,
+  private static void moveFileOrDir(FileSystem fs, FileStatus file, Path dst) throws IOException,
       HiveException {
     Path srcFilePath = file.getPath();
     String fileName = srcFilePath.getName();
@@ -1100,32 +1106,61 @@ public final class Utilities {
     if (file.isDir()) {
       renameOrMoveFiles(fs, srcFilePath, dstFilePath);
     } else {
-      if (fs.exists(dstFilePath)) {
-        int suffix = 0;
-        do {
-          suffix++;
-          dstFilePath = new Path(dst, fileName + "_" + suffix);
-        } while (fs.exists(dstFilePath));
-      }
-
-      if (!fs.rename(srcFilePath, dstFilePath)) {
-        throw new HiveException("Unable to move: " + srcFilePath + " to: " + dst);
-      }
+      moveFile(fs, srcFilePath, dst, fileName);
     }
   }
 
   /**
    * Rename src to dst, or in the case dst already exists, move files in src to dst. If there is an
-   * existing file with the same name, the new file's name will be appended with "_1", "_2", etc.
-   *
+   * existing file with the same name, the new file's name will be generated based on the file name.
+   * If the file name confirms to hive managed file NNNNNN_Y(_copy_YY) then it will create NNNNN_Y_copy_XX
+   * else it will append _1, _2, ....
    * @param fs
    *          the FileSystem where src and dst are on.
-   * @param src
-   *          the src directory
-   * @param dst
+   * @param srcFile
+   *          the src file
+   * @param destDir
    *          the target directory
-   * @throws IOException
+   * @param destFileName
+   *          the target filename
+   * @return The final path the file was moved to.
+   * @throws IOException, HiveException
    */
+  public static Path moveFile(FileSystem fs, Path srcFile, Path destDir, String destFileName)
+      throws IOException, HiveException {
+    Path dstFilePath = new Path(destDir, destFileName);
+    if (fs.exists(dstFilePath)) {
+      ParsedOutputFileName parsedFileName = ParsedOutputFileName.parse(destFileName);
+      int suffix = 0;
+      do {
+        suffix++;
+        if (parsedFileName.matches()) {
+          dstFilePath = new Path(destDir, parsedFileName.makeFilenameWithCopyIndex(suffix));
+        } else {
+          dstFilePath = new Path(destDir, destFileName + "_" + suffix);
+        }
+      } while (fs.exists(dstFilePath));
+    }
+    if (!fs.rename(srcFile, dstFilePath)) {
+      throw new HiveException("Unable to move: " + srcFile + " to: " + dstFilePath);
+    }
+    return dstFilePath;
+  }
+
+    /**
+     * Rename src to dst, or in the case dst already exists, move files in src to dst. If there is an
+     * existing file with the same name, the new file's name will be generated based on the file name.
+     * If the file name confirms to hive managed file NNNNNN_Y(_copy_YY) then it will create NNNNN_Y_copy_XX
+     * else it will append _1, _2, ....
+     *
+     * @param fs
+     *          the FileSystem where src and dst are on.
+     * @param src
+     *          the src directory
+     * @param dst
+     *          the target directory
+     * @throws IOException
+     */
   public static void renameOrMoveFiles(FileSystem fs, Path src, Path dst) throws IOException,
       HiveException {
     if (!fs.exists(dst)) {
@@ -1136,7 +1171,7 @@ public final class Utilities {
       // move file by file
       FileStatus[] files = fs.listStatus(src);
       for (FileStatus file : files) {
-        Utilities.moveFile(fs, file, dst);
+        Utilities.moveFileOrDir(fs, file, dst);
       }
     }
   }
@@ -1174,7 +1209,7 @@ public final class Utilities {
           @Override
           public Void call() throws HiveException {
             try {
-              Utilities.moveFile(fs, file, dst);
+              Utilities.moveFileOrDir(fs, file, dst);
             } catch (Exception e) {
               throw new HiveException(e);
             }
@@ -1188,39 +1223,7 @@ public final class Utilities {
     }
   }
 
-  /**
-   * The first group will contain the task id. The second group is the optional extension. The file
-   * name looks like: "0_0" or "0_0.gz". There may be a leading prefix (tmp_). Since getTaskId() can
-   * return an integer only - this should match a pure integer as well. {1,6} is used to limit
-   * matching for attempts #'s 0-999999.
-   */
-  private static final Pattern FILE_NAME_TO_TASK_ID_REGEX =
-      Pattern.compile("^.*?([0-9]+)(_[0-9]{1,6})?(\\..*)?$");
-
-  /**
-   * Some jobs like "INSERT INTO" jobs create copies of files like 0000001_0_copy_2.
-   * For such files,
-   * Group 1: 00000001 [taskId]
-   * Group 3: 0        [task attempId]
-   * Group 4: _copy_2  [copy suffix]
-   * Group 6: copy     [copy keyword]
-   * Group 8: 2        [copy file index]
-   */
   public static final String COPY_KEYWORD = "_copy_"; // copy keyword
-  private static final Pattern COPY_FILE_NAME_TO_TASK_ID_REGEX =
-      Pattern.compile("^.*?"+ // any prefix
-                      "([0-9]+)"+ // taskId
-                      "(_)"+ // separator
-                      "([0-9]{1,6})?"+ // attemptId (limited to 6 digits)
-                      "((_)(\\Bcopy\\B)(_)" +
-                      "([0-9]{1,6})$)?"+ // copy file index
-                      "(\\..*)?$"); // any suffix/file extension
-
-  /**
-   * This retruns prefix part + taskID for bucket join for partitioned table
-   */
-  private static final Pattern FILE_NAME_PREFIXED_TASK_ID_REGEX =
-      Pattern.compile("^.*?((\\(.*\\))?[0-9]+)(_[0-9]{1,6})?(\\..*)?$");
 
   /**
    * This breaks a prefixed bucket number into the prefix and the taskID
@@ -1241,7 +1244,7 @@ public final class Utilities {
    *          filename to extract taskid from
    */
   public static String getTaskIdFromFilename(String filename) {
-    return getTaskIdFromFilename(filename, FILE_NAME_TO_TASK_ID_REGEX);
+    return getIdFromFilename(filename, false, false);
   }
 
   /**
@@ -1252,33 +1255,38 @@ public final class Utilities {
    *          filename to extract taskid from
    */
   private static String getPrefixedTaskIdFromFilename(String filename) {
-    return getTaskIdFromFilename(filename, FILE_NAME_PREFIXED_TASK_ID_REGEX);
-  }
-
-  private static String getTaskIdFromFilename(String filename, Pattern pattern) {
-    return getIdFromFilename(filename, pattern, 1);
+    return getIdFromFilename(filename, true, false);
   }
 
   private static int getAttemptIdFromFilename(String filename) {
-    String attemptStr = getIdFromFilename(filename, FILE_NAME_PREFIXED_TASK_ID_REGEX, 3);
-    return Integer.parseInt(attemptStr.substring(1));
+    return Integer.parseInt(getIdFromFilename(filename, true, true));
   }
 
-  private static String getIdFromFilename(String filename, Pattern pattern, int group) {
-    String taskId = filename;
-    int dirEnd = filename.lastIndexOf(Path.SEPARATOR);
+  private static String getIdFromFilename(String filepath, boolean isPrefixed, boolean isTaskAttempt) {
+    String filename = filepath;
+    int dirEnd = filepath.lastIndexOf(Path.SEPARATOR);
     if (dirEnd != -1) {
-      taskId = filename.substring(dirEnd + 1);
+      filename = filepath.substring(dirEnd + 1);
     }
 
-    Matcher m = pattern.matcher(taskId);
-    if (!m.matches()) {
-      LOG.warn("Unable to get task id from file name: {}. Using last component {}"
-          + " as task id.", filename, taskId);
+    ParsedOutputFileName parsedOutputFileName = ParsedOutputFileName.parse(filename);
+    String taskId;
+    if (parsedOutputFileName.matches()) {
+      if (isTaskAttempt) {
+        taskId = parsedOutputFileName.getAttemptId();
+      } else {
+        taskId = isPrefixed ? parsedOutputFileName.getPrefixedTaskId() : parsedOutputFileName.getTaskId();
+      }
     } else {
-      taskId = m.group(group);
+      taskId = filename;
+      LOG.warn("Unable to get task id from file name: {}. Using last component {}"
+          + " as task id.", filepath, taskId);
     }
-    LOG.debug("TaskId for {} = {}", filename, taskId);
+    if (isTaskAttempt) {
+      LOG.debug("TaskAttemptId for {} = {}", filepath, taskId);
+    } else {
+      LOG.debug("TaskId for {} = {}", filepath, taskId);
+    }
     return taskId;
   }
 
@@ -1564,7 +1572,7 @@ public final class Utilities {
           public Void call() throws HiveException {
             try {
               LOG.debug("Moving from {} to {} ", fileStatus.getPath(), dst);
-              Utilities.moveFile(fs, fileStatus, dst);
+              Utilities.moveFileOrDir(fs, fileStatus, dst);
             } catch (Exception e) {
               throw new HiveException(e);
             }
@@ -2023,27 +2031,17 @@ public final class Utilities {
     return toRetain;
   }
 
-  public static boolean isCopyFile(String filename) {
-    String taskId = filename;
-    String copyFileSuffix = null;
-    int dirEnd = filename.lastIndexOf(Path.SEPARATOR);
+  public static boolean isCopyFile(String filepath) {
+    String filename = filepath;
+    int dirEnd = filepath.lastIndexOf(Path.SEPARATOR);
     if (dirEnd != -1) {
-      taskId = filename.substring(dirEnd + 1);
+      filename = filepath.substring(dirEnd + 1);
     }
-    Matcher m = COPY_FILE_NAME_TO_TASK_ID_REGEX.matcher(taskId);
-    if (!m.matches()) {
-      LOG.warn("Unable to verify if file name {} has _copy_ suffix.", filename);
-    } else {
-      taskId = m.group(1);
-      copyFileSuffix = m.group(4);
+    ParsedOutputFileName parsedFileName = ParsedOutputFileName.parse(filename);
+    if (!parsedFileName.matches()) {
+      LOG.warn("Unable to verify if file name {} has _copy_ suffix.", filepath);
     }
-
-    LOG.debug("Filename: {} TaskId: {} CopySuffix: {}", filename, taskId, copyFileSuffix);
-    if (taskId != null && copyFileSuffix != null) {
-      return true;
-    }
-
-    return false;
+    return parsedFileName.isCopyFile();
   }
 
   public static String getBucketFileNameFromPathSubString(String bucketName) {
@@ -2327,6 +2325,7 @@ public final class Utilities {
     }
     String[] names =  dbtable.split("\\.");
     switch (names.length) {
+      case 3:
       case 2:
         return names;
       case 1:
@@ -2544,9 +2543,6 @@ public final class Utilities {
     final long[] summary = {0L, 0L, 0L};
     final Set<Path> pathNeedProcess = new HashSet<>();
 
-    // Since multiple threads could call this method concurrently, locking
-    // this method will avoid number of threads out of control.
-    synchronized (INPUT_SUMMARY_LOCK) {
       // For each input path, calculate the total size.
       for (final Path path : work.getPathToAliases().keySet()) {
         if (path == null) {
@@ -2571,18 +2567,24 @@ public final class Utilities {
 
       int numExecutors = getMaxExecutorsForInputListing(ctx.getConf(), pathNeedProcess.size());
       if (numExecutors > 1) {
-        LOG.info("Using {} threads for getContentSummary", numExecutors);
-        executor = Executors.newFixedThreadPool(numExecutors,
-                new ThreadFactoryBuilder().setDaemon(true)
-                        .setNameFormat("Get-Input-Summary-%d").build());
+        // Since multiple threads could call this method concurrently, locking
+        // this method will avoid number of threads out of control.
+        synchronized (INPUT_SUMMARY_LOCK) {
+          LOG.info("Using {} threads for getContentSummary", numExecutors);
+          executor = Executors.newFixedThreadPool(numExecutors,
+              new ThreadFactoryBuilder().setDaemon(true)
+                  .setNameFormat("Get-Input-Summary-%d").build());
+          getInputSummaryWithPool(ctx, Collections.unmodifiableSet(pathNeedProcess),
+              work, summary, executor);
+        }
       } else {
         LOG.info("Not using thread pool for getContentSummary");
         executor = MoreExecutors.newDirectExecutorService();
+        getInputSummaryWithPool(ctx, Collections.unmodifiableSet(pathNeedProcess),
+            work, summary, executor);
       }
-      getInputSummaryWithPool(ctx, Collections.unmodifiableSet(pathNeedProcess),
-          work, summary, executor);
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
-    }
+
     return new ContentSummary.Builder().length(summary[0])
         .fileCount(summary[1]).directoryCount(summary[2]).build();
   }
@@ -2679,9 +2681,9 @@ public final class Utilities {
                   total += estimator.estimate(jobConf, scanOp, -1).getTotalLength();
                 }
                 recordSummary(path, new ContentSummary(total, -1, -1));
-              } else {
-                // todo: should nullify summary for non-native tables,
-                // not to be selected as a mapjoin target
+              } else if (handler == null) {
+                // Nullify summary for non-native tables,
+                // in order not to be selected as a mapjoin target
                 FileSystem fs = path.getFileSystem(myConf);
                 recordSummary(path, fs.getContentSummary(path));
               }
@@ -2847,71 +2849,89 @@ public final class Utilities {
     return function.getTasks();
   }
 
+
+  public static final class PartitionDetails {
+    public Map<String, String> fullSpec;
+    public Partition partition;
+    public List<FileStatus> newFiles;
+    public boolean hasOldPartition = false;
+    public AcidUtils.TableSnapshot tableSnapshot;
+  }
+
   /**
    * Construct a list of full partition spec from Dynamic Partition Context and the directory names
    * corresponding to these dynamic partitions.
    */
-  public static List<LinkedHashMap<String, String>> getFullDPSpecs(Configuration conf, DynamicPartitionCtx dpCtx,
-      long writeId, boolean isMmTable, boolean isDirectInsert, boolean isInsertOverwrite, AcidUtils.Operation acidOperation, Set<String> dynamiPartitionSpecs) throws HiveException {
+  public static Map<Path, PartitionDetails> getFullDPSpecs(Configuration conf, DynamicPartitionCtx dpCtx,
+      Map<String, List<Path>> dynamicPartitionSpecs) throws HiveException {
 
     try {
       Path loadPath = dpCtx.getRootPath();
       FileSystem fs = loadPath.getFileSystem(conf);
       int numDPCols = dpCtx.getNumDPCols();
-      List<Path> path = new ArrayList<>();
-      if (isMmTable || isDirectInsert) {
-        Path[] leafStatus = Utilities.getDirectInsertDirectoryCandidates(fs, loadPath, numDPCols, null, writeId, -1,
-            conf, isInsertOverwrite, acidOperation);
-        for (Path p : leafStatus) {
-          Path dpPath = p.getParent();
-          String partitionSpec = dpPath.toString().substring(loadPath.toString().length() + 1);
-          if (!path.contains(dpPath)) {
-            if (isInsertOverwrite) {
-              if (dynamiPartitionSpecs == null || dynamiPartitionSpecs.contains(partitionSpec)) {
-                path.add(dpPath);
-              }
-            }
-            else {
-              path.add(dpPath);
-            }
-          }
+      Map<Path, Optional<List<Path>>> allPartition = new HashMap<>();
+      if (dynamicPartitionSpecs != null) {
+        for (Map.Entry<String, List<Path>> partSpec : dynamicPartitionSpecs.entrySet()) {
+          allPartition.put(new Path(loadPath, partSpec.getKey()), Optional.of(partSpec.getValue()));
         }
       } else {
         List<FileStatus> status = HiveStatsUtils.getFileStatusRecurse(loadPath, numDPCols, fs);
         for (FileStatus fileStatus : status) {
-          path.add(fileStatus.getPath());
+          allPartition.put(fileStatus.getPath(), Optional.empty());
         }
       }
 
-      if (path.isEmpty()) {
+      if (allPartition.isEmpty()) {
         LOG.warn("No partition is generated by dynamic partitioning");
-        return null;
+        return Collections.synchronizedMap(new LinkedHashMap<>());
       }
+      validateDynPartitionCount(conf, allPartition.keySet());
 
       // partial partition specification
       Map<String, String> partSpec = dpCtx.getPartSpec();
 
       // list of full partition specification
-      List<LinkedHashMap<String, String>> fullPartSpecs = new ArrayList<LinkedHashMap<String, String>>();
+      Map<Path, PartitionDetails> partitionDetailsMap =
+          Collections.synchronizedMap(new LinkedHashMap<>());
 
-      // for each dynamically created DP directory, construct a full partition spec
-      // and load the partition based on that
-      for (Path partPath : path) {
-        assert fs.getFileStatus(partPath).isDir() : "partitions " + partPath
-            + " is not a directory !";
-
-        // generate a full partition specification
-        LinkedHashMap<String, String> fullPartSpec = new LinkedHashMap<String, String>(partSpec);
-        if (!Warehouse.makeSpecFromName(fullPartSpec, partPath, new HashSet<String>(partSpec.keySet()))) {
-          Utilities.FILE_OP_LOGGER.warn("Ignoring invalid DP directory {}", partPath);
-          continue;
+      // calculate full path spec for each valid partition path
+      for (Map.Entry<Path, Optional<List<Path>>> partEntry : allPartition.entrySet()) {
+        Path partPath = partEntry.getKey();
+        Map<String, String> fullPartSpec = Maps.newLinkedHashMap(partSpec);
+        String staticParts =  Warehouse.makeDynamicPartName(partSpec);
+        Path computedPath = partPath;
+        if (!staticParts.isEmpty() ) {
+          computedPath = new Path(new Path(partPath.getParent(), staticParts), partPath.getName());
         }
-        Utilities.FILE_OP_LOGGER.trace("Adding partition spec from {}: {}", partPath, fullPartSpec);
-        fullPartSpecs.add(fullPartSpec);
+        if (!Warehouse.makeSpecFromName(fullPartSpec, computedPath, new HashSet<>(partSpec.keySet()))) {
+          Utilities.FILE_OP_LOGGER.warn("Ignoring invalid DP directory " + partPath);
+        } else {
+          PartitionDetails details = new PartitionDetails();
+          details.fullSpec = fullPartSpec;
+          if (partEntry.getValue().isPresent()) {
+            details.newFiles = new ArrayList<>();
+            for (Path filePath : partEntry.getValue().get()) {
+              details.newFiles.add(fs.getFileStatus(filePath));
+            }
+          }
+          partitionDetailsMap.put(partPath, details);
+        }
       }
-      return fullPartSpecs;
+      return partitionDetailsMap;
     } catch (IOException e) {
       throw new HiveException(e);
+    }
+  }
+
+  private static void validateDynPartitionCount(Configuration conf, Collection<Path> partitions) throws HiveException {
+    int partsToLoad = partitions.size();
+    int maxPartition = HiveConf.getIntVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS);
+    if (partsToLoad > maxPartition) {
+      throw new HiveException("Number of dynamic partitions created is " + partsToLoad
+          + ", which is more than "
+          + maxPartition
+          +". To solve this try to set " + HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS.varname
+          + " to at least " + partsToLoad + '.');
     }
   }
 
@@ -3995,7 +4015,8 @@ public final class Utilities {
   public static int getHeaderCount(TableDesc table) throws IOException {
     int headerCount;
     try {
-      headerCount = Integer.parseInt(table.getProperties().getProperty(serdeConstants.HEADER_COUNT, "0"));
+      headerCount =
+          getHeaderOrFooterCount(table, serdeConstants.HEADER_COUNT);
     } catch (NumberFormatException nfe) {
       throw new IOException(nfe);
     }
@@ -4014,7 +4035,8 @@ public final class Utilities {
   public static int getFooterCount(TableDesc table, JobConf job) throws IOException {
     int footerCount;
     try {
-      footerCount = Integer.parseInt(table.getProperties().getProperty(serdeConstants.FOOTER_COUNT, "0"));
+      footerCount =
+          getHeaderOrFooterCount(table, serdeConstants.FOOTER_COUNT);
       if (footerCount > HiveConf.getIntVar(job, HiveConf.ConfVars.HIVE_FILE_MAX_FOOTER)) {
         throw new IOException("footer number exceeds the limit defined in hive.file.max.footer");
       }
@@ -4024,6 +4046,20 @@ public final class Utilities {
       throw new IOException(nfe);
     }
     return footerCount;
+  }
+
+  private static int getHeaderOrFooterCount(TableDesc table,
+      String propertyName) {
+    int count =
+        Integer.parseInt(table.getProperties().getProperty(propertyName, "0"));
+    if (count > 0 && table.getInputFileFormatClass() != null
+        && !TextInputFormat.class
+        .isAssignableFrom(table.getInputFileFormatClass())) {
+      LOG.warn(propertyName
+          + "  is only valid for TextInputFormat, ignoring the value.");
+      count = 0;
+    }
+    return count;
   }
 
   /**
@@ -4094,6 +4130,37 @@ public final class Utilities {
       }
     }
     return null;
+  }
+
+  /**
+   * Sets up the job so that all necessary jars ar passed that contain classes from the given argument of this method.
+   * @param conf jobConf instance to setup
+   * @param classes the classes to look in jars for
+   * @throws IOException
+   */
+  public static void addDependencyJars(Configuration conf, Class<?>... classes)
+      throws IOException {
+    FileSystem localFs = FileSystem.getLocal(conf);
+    Set<String> jars = new HashSet<>(conf.getStringCollection("tmpjars"));
+    for (Class<?> clazz : classes) {
+      if (clazz == null) {
+        continue;
+      }
+      final String path = Utilities.jarFinderGetJar(clazz);
+      if (path == null) {
+        throw new RuntimeException("Could not find jar for class " + clazz +
+            " in order to ship it to the cluster.");
+      }
+      if (!localFs.exists(new Path(path))) {
+        throw new RuntimeException("Could not validate jar file " + path + " for class " + clazz);
+      }
+      jars.add(path);
+    }
+    if (jars.isEmpty()) {
+      return;
+    }
+    //noinspection ToArrayCallWithZeroLengthArrayArgument
+    conf.set("tmpjars", org.apache.hadoop.util.StringUtils.arrayToString(jars.toArray(new String[jars.size()])));
   }
 
   public static int getDPColOffset(FileSinkDesc conf) {
@@ -4401,7 +4468,7 @@ public final class Utilities {
     // a manifest file will still be written, otherwise the missing manifest file
     // would result a clean-up on table level which could delete the data written by
     // the other FileSinkOperators. (For further details please see HIVE-23114.)
-    boolean writeDynamicPartitionsToManifest = isInsertOverwrite && hasDynamicPartitions;
+    boolean writeDynamicPartitionsToManifest = hasDynamicPartitions;
     if (commitPaths.isEmpty() && !writeDynamicPartitionsToManifest) {
       return;
     }
@@ -4486,25 +4553,32 @@ public final class Utilities {
 
     Utilities.FILE_OP_LOGGER.debug("Looking for manifests in: {} ({})", manifestDir, writeId);
     List<Path> manifests = new ArrayList<>();
-    if (fs.exists(manifestDir)) {
+    try {
       FileStatus[] manifestFiles = fs.listStatus(manifestDir);
       manifests = selectManifestFiles(manifestFiles);
-    } else {
+    } catch (FileNotFoundException ex) {
       Utilities.FILE_OP_LOGGER.info("No manifests found in directory {} - query produced no output", manifestDir);
       manifestDir = null;
+      if (!fs.exists(specPath)) {
+        // Empty insert to new partition
+        fs.mkdirs(specPath);
+      }
     }
 
-    Set<String> dynamicPartitionSpecs = new HashSet<>();
+    Map<String, List<Path>> dynamicPartitionSpecs = new HashMap<>();
     Set<Path> committed = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    Set<Path> directInsertDirectories = new HashSet<>();
     for (Path mfp : manifests) {
       Utilities.FILE_OP_LOGGER.info("Looking at manifest file: {}", mfp);
       try (FSDataInputStream mdis = fs.open(mfp)) {
-        if (isInsertOverwrite && dpLevels > 0) {
+        if (dpLevels > 0) {
           int partitionCount = mdis.readInt();
           for (int i = 0; i < partitionCount; ++i) {
             String nextPart = mdis.readUTF();
             Utilities.FILE_OP_LOGGER.debug("Looking at dynamic partition {}", nextPart);
-            dynamicPartitionSpecs.add(nextPart);
+            if (!dynamicPartitionSpecs.containsKey(nextPart)) {
+              dynamicPartitionSpecs.put(nextPart, new ArrayList<>());
+            }
           }
         }
 
@@ -4516,29 +4590,20 @@ public final class Utilities {
           if (!committed.add(path)) {
             throw new HiveException(nextFile + " was specified in multiple manifests");
           }
+          dynamicPartitionSpecs.entrySet()
+              .stream()
+              .filter(dynpath -> path.toString().contains(dynpath.getKey()))
+              .findAny()
+              .ifPresent(dynPath -> dynPath.getValue().add(path));
+
+          Path parentDirPath = path.getParent();
+          while (AcidUtils.isChildOfDelta(parentDirPath, specPath)) {
+            // Some cases there are other directory layers between the delta and the datafiles
+            // (export-import mm table, insert with union all to mm table, skewed tables).
+            parentDirPath = parentDirPath.getParent();
+          }
+          directInsertDirectories.add(parentDirPath);
         }
-      }
-    }
-
-    Utilities.FILE_OP_LOGGER.debug("Looking for files in: {}", specPath);
-    AcidUtils.IdPathFilter filter =
-        new AcidUtils.IdPathFilter(writeId, stmtId, dynamicPartitionSpecs, dpLevels);
-    if (!fs.exists(specPath)) {
-      Utilities.FILE_OP_LOGGER.info("Creating directory with no output at {}", specPath);
-      FileUtils.mkdir(fs, specPath, hconf);
-    }
-
-    Path[] files = null;
-    if (!isInsertOverwrite || dpLevels == 0 || !dynamicPartitionSpecs.isEmpty()) {
-      files = getDirectInsertDirectoryCandidates(
-          fs, specPath, dpLevels, filter, writeId, stmtId, hconf, isInsertOverwrite, acidOperation);
-    }
-
-    ArrayList<Path> directInsertDirectories = new ArrayList<>();
-    if (files != null) {
-      for (Path path : files) {
-        Utilities.FILE_OP_LOGGER.info("Looking at path: {}", path);
-        directInsertDirectories.add(path);
       }
     }
 
@@ -4579,10 +4644,9 @@ public final class Utilities {
     if (!isDirectInsert) {
       // Create fake file statuses to avoid querying the file system. removeTempOrDuplicateFiles
       // doesn't need to check anything except path and directory status for MM directories.
-      FileStatus[] finalResults = new FileStatus[directInsertDirectories.size()];
-      for (int i = 0; i < directInsertDirectories.size(); ++i) {
-        finalResults[i] = new PathOnlyFileStatus(directInsertDirectories.get(i));
-      }
+      FileStatus[] finalResults = directInsertDirectories.stream()
+          .map(PathOnlyFileStatus::new)
+          .toArray(FileStatus[]::new);
       List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(fs, finalResults,
           unionSuffix, dpLevels, mbc == null ? 0 : mbc.numBuckets, hconf, writeId, stmtId,
             isMmTable, null, isInsertOverwrite);
@@ -4656,7 +4720,7 @@ public final class Utilities {
   }
 
   private static void cleanDirectInsertDirectoriesConcurrently(
-          List<Path> directInsertDirectories, Set<Path> committed, FileSystem fs, Configuration hconf, String unionSuffix, int lbLevels)
+          Set<Path> directInsertDirectories, Set<Path> committed, FileSystem fs, Configuration hconf, String unionSuffix, int lbLevels)
           throws IOException, HiveException {
 
     ExecutorService executor = createCleanTaskExecutor(hconf, directInsertDirectories.size());
@@ -4671,7 +4735,7 @@ public final class Utilities {
             new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Clean-Direct-Insert-Dirs-Thread-%d").build());
   }
 
-  private static List<Future<Void>> submitCleanTasksForExecution(ExecutorService executor, List<Path> directInsertDirectories,
+  private static List<Future<Void>> submitCleanTasksForExecution(ExecutorService executor, Set<Path> directInsertDirectories,
                                                                     Set<Path> committed, FileSystem fs, String unionSuffix, int lbLevels) {
     List<Future<Void>> cleanTaskFutures = new ArrayList<>(directInsertDirectories.size());
     for (Path directory : directInsertDirectories) {
@@ -4886,25 +4950,18 @@ public final class Utilities {
   }
 
   /**
-   * Logs the class paths of the job class loader and the thread context class loader to the passed logger.
-   * Checks both loaders if getURLs method is available; if not, prints a message about this (instead of the class path)
-   *
-   * Note: all messages will always be logged with INFO log level.
+   * Load password from the given uri.
+   * @param uriString The URI which is used to load the password.
+   * @return null if the uri is empty or null, else the password represented by the URI.
+   * @throws IOException
+   * @throws URISyntaxException
+   * @throws HiveException
    */
-  public static void tryLoggingClassPaths(JobConf job, Logger logger) {
-    if (logger != null && logger.isInfoEnabled()) {
-      tryToLogClassPath("conf", job.getClassLoader(), logger);
-      tryToLogClassPath("thread", Thread.currentThread().getContextClassLoader(), logger);
+  public static String getPasswdFromUri(String uriString) throws IOException, URISyntaxException, HiveException {
+    if (uriString == null || uriString.isEmpty()) {
+      return null;
     }
-  }
-
-  private static void tryToLogClassPath(String prefix, ClassLoader loader, Logger logger) {
-    if(loader instanceof URLClassLoader) {
-      logger.info("{} class path = {}", prefix, Arrays.asList(((URLClassLoader) loader).getURLs()).toString());
-    } else {
-      logger.info("{} class path = unavailable for {}", prefix,
-          loader == null ? "null" : loader.getClass().getSimpleName());
-    }
+    return URISecretSource.getInstance().getPasswordFromUri(new URI(uriString));
   }
 
   public static String encodeColumnNames(List<String> colNames) throws SemanticException {
@@ -4920,6 +4977,28 @@ public final class Utilities {
       return JSON_MAPPER.readValue(colNamesStr, List.class);
     } catch (IOException e) {
       throw new SemanticException(e);
+    }
+  }
+
+  /**
+   * Logs the class paths of the job class loader and the thread context class loader to the passed logger.
+   * Checks both loaders if getURLs method is available; if not, prints a message about this (instead of the class path)
+   *
+   * Note: all messages will always be logged with DEBUG log level.
+   */
+  public static void tryLoggingClassPaths(JobConf job, Logger logger) {
+    if (logger != null && logger.isDebugEnabled()) {
+      tryToLogClassPath("conf", job.getClassLoader(), logger);
+      tryToLogClassPath("thread", Thread.currentThread().getContextClassLoader(), logger);
+    }
+  }
+
+  private static void tryToLogClassPath(String prefix, ClassLoader loader, Logger logger) {
+    if(loader instanceof URLClassLoader) {
+      logger.debug("{} class path = {}", prefix, Arrays.asList(((URLClassLoader) loader).getURLs()).toString());
+    } else {
+      logger.debug("{} class path = unavailable for {}", prefix,
+          loader == null ? "null" : loader.getClass().getSimpleName());
     }
   }
 

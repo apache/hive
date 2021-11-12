@@ -179,6 +179,9 @@ public class PartitionPruner extends Transform {
     }
 
     String key = tab.getFullyQualifiedName() + ";";
+    if (tab.getMetaTable() != null) {
+      key = tab.getFullyQualifiedName() + "." + tab.getMetaTable() + ";";
+    }
 
     if (!tab.isPartitioned()) {
       // If the table is not partitioned, return empty list.
@@ -215,10 +218,7 @@ public class PartitionPruner extends Transform {
     }
 
     String compactExprString = compactExpr.getExprString(true);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Filter w/ compacting: " + compactExprString
-          + "; filter w/o compacting: " + oldFilter);
-    }
+    LOG.debug("Filter w/ compacting: {}; filter w/o compacting: {}", compactExprString, oldFilter);
     key = key + compactExprString;
     PrunedPartitionList ppList = prunedPartitionsMap.get(key);
     if (ppList != null) {
@@ -598,16 +598,13 @@ public class PartitionPruner extends Transform {
       if (isUnknown && values.contains(defaultPartitionName)) {
         // Reject default partitions if we couldn't determine whether we should include it or not.
         // Note that predicate would only contains partition column parts of original predicate.
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("skipping default/bad partition: " + partName);
-        }
+        LOG.debug("skipping default/bad partition: {}", partName);
         partIter.remove();
         continue;
       }
       hasUnknownPartitions |= isUnknown;
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("retained " + (isUnknown ? "unknown " : "") + "partition: " + partName);
-      }
+      LOG.debug("retained unknown:[{}] partition: {}", isUnknown, partName);
+
     }
     if (!inPlace) {
       partNames.clear();

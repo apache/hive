@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 
+import java.util.List;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.ParserRuleReturnScope;
 import org.antlr.runtime.RecognitionException;
@@ -28,6 +29,7 @@ import org.antlr.runtime.TokenStream;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.CommonTreeAdaptor;
 import org.antlr.runtime.tree.TreeAdaptor;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,9 +111,7 @@ public class ParseDriver {
    */
   public ParseResult parse(String command, Configuration configuration)
       throws ParseException {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Parsing command: " + command);
-    }
+    LOG.debug("Parsing command: {}", command);
 
     GenericHiveLexer lexer = GenericHiveLexer.of(command, configuration);
     TokenRewriteStream tokens = new TokenRewriteStream(lexer);
@@ -135,7 +135,7 @@ public class ParseDriver {
 
     ASTNode tree = (ASTNode) r.getTree();
     tree.setUnknownTokenBoundaries();
-    return new ParseResult(tree, tokens);
+    return new ParseResult(tree, tokens, parser.gFromClauseParser.tables);
   }
 
   /*
@@ -202,7 +202,7 @@ public class ParseDriver {
       throw new ParseException(parser.errors);
     }
 
-    return new ParseResult((ASTNode) r.getTree(), tokens);
+    return new ParseResult((ASTNode) r.getTree(), tokens, parser.gFromClauseParser.tables);
   }
   public ASTNode parseExpression(String command) throws ParseException {
     LOG.debug("Parsing expression: {}", command);

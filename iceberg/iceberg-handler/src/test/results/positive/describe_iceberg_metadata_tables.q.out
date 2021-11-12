@@ -1,0 +1,423 @@
+PREHOOK: query: drop table if exists ice_meta_desc
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists ice_meta_desc
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table ice_meta_desc (id int, value string) stored by iceberg stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_meta_desc
+POSTHOOK: query: create external table ice_meta_desc (id int, value string) stored by iceberg stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_meta_desc
+PREHOOK: query: insert into ice_meta_desc values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_meta_desc
+POSTHOOK: query: insert into ice_meta_desc values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_meta_desc
+PREHOOK: query: insert into ice_meta_desc values (3,'three'),(4,'four'),(5,'five')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_meta_desc
+POSTHOOK: query: insert into ice_meta_desc values (3,'three'),(4,'four'),(5,'five')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_meta_desc
+PREHOOK: query: describe default.ice_meta_desc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe default.ice_meta_desc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+id                  	int                 	from deserializer   
+value               	string              	from deserializer   
+PREHOOK: query: describe default.ice_meta_desc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe default.ice_meta_desc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+id                  	int                 	from deserializer   
+value               	string              	from deserializer   
+PREHOOK: query: describe default.ice_meta_desc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe default.ice_meta_desc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+id                  	int                 	from deserializer   
+value               	string              	from deserializer   
+PREHOOK: query: describe default.ice_meta_desc.files
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe default.ice_meta_desc.files
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+#### A masked pattern was here ####
+file_format         	string              	File format name: avro, orc, or parquet
+record_count        	bigint              	Number of records in the file
+file_size_in_bytes  	bigint              	Total file size in bytes
+column_sizes        	map<int,bigint>     	Map of column id to total size on disk
+value_counts        	map<int,bigint>     	Map of column id to total count, including null and NaN
+null_value_counts   	map<int,bigint>     	Map of column id to null value count
+nan_value_counts    	map<int,bigint>     	Map of column id to number of NaN values in the column
+lower_bounds        	map<int,binary>     	Map of column id to lower bound
+upper_bounds        	map<int,binary>     	Map of column id to upper bound
+key_metadata        	binary              	Encryption key metadata blob
+split_offsets       	array<bigint>       	Splittable offsets  
+equality_ids        	array<int>          	Equality comparison field IDs
+sort_order_id       	int                 	Sort order ID       
+PREHOOK: query: describe default.ice_meta_desc.entries
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe default.ice_meta_desc.entries
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+status              	int                 	from deserializer   
+snapshot_id         	bigint              	from deserializer   
+sequence_number     	bigint              	from deserializer   
+data_file           	struct<content:int,file_path:string,file_format:string,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	from deserializer   
+PREHOOK: query: describe default.ice_meta_desc.history
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe default.ice_meta_desc.history
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+made_current_at     	timestamp with local time zone	from deserializer   
+snapshot_id         	bigint              	from deserializer   
+parent_id           	bigint              	from deserializer   
+is_current_ancestor 	boolean             	from deserializer   
+PREHOOK: query: describe default.ice_meta_desc.manifests
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe default.ice_meta_desc.manifests
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+path                	string              	from deserializer   
+length              	bigint              	from deserializer   
+partition_spec_id   	int                 	from deserializer   
+added_snapshot_id   	bigint              	from deserializer   
+added_data_files_count	int                 	from deserializer   
+existing_data_files_count	int                 	from deserializer   
+deleted_data_files_count	int                 	from deserializer   
+partition_summaries 	array<struct<contains_null:boolean,contains_nan:boolean,lower_bound:string,upper_bound:string>>	from deserializer   
+PREHOOK: query: describe default.ice_meta_desc.snapshots
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe default.ice_meta_desc.snapshots
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+committed_at        	timestamp with local time zone	from deserializer   
+snapshot_id         	bigint              	from deserializer   
+parent_id           	bigint              	from deserializer   
+operation           	string              	from deserializer   
+manifest_list       	string              	from deserializer   
+summary             	map<string,string>  	from deserializer   
+PREHOOK: query: describe default.ice_meta_desc.partitions
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe default.ice_meta_desc.partitions
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+record_count        	bigint              	from deserializer   
+file_count          	int                 	from deserializer   
+PREHOOK: query: describe default.ice_meta_desc.all_manifests
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe default.ice_meta_desc.all_manifests
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+path                	string              	from deserializer   
+length              	bigint              	from deserializer   
+partition_spec_id   	int                 	from deserializer   
+added_snapshot_id   	bigint              	from deserializer   
+added_data_files_count	int                 	from deserializer   
+existing_data_files_count	int                 	from deserializer   
+deleted_data_files_count	int                 	from deserializer   
+partition_summaries 	array<struct<contains_null:boolean,contains_nan:boolean,lower_bound:string,upper_bound:string>>	from deserializer   
+PREHOOK: query: describe default.ice_meta_desc.all_data_files
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe default.ice_meta_desc.all_data_files
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+#### A masked pattern was here ####
+file_format         	string              	File format name: avro, orc, or parquet
+record_count        	bigint              	Number of records in the file
+file_size_in_bytes  	bigint              	Total file size in bytes
+column_sizes        	map<int,bigint>     	Map of column id to total size on disk
+value_counts        	map<int,bigint>     	Map of column id to total count, including null and NaN
+null_value_counts   	map<int,bigint>     	Map of column id to null value count
+nan_value_counts    	map<int,bigint>     	Map of column id to number of NaN values in the column
+lower_bounds        	map<int,binary>     	Map of column id to lower bound
+upper_bounds        	map<int,binary>     	Map of column id to upper bound
+key_metadata        	binary              	Encryption key metadata blob
+split_offsets       	array<bigint>       	Splittable offsets  
+equality_ids        	array<int>          	Equality comparison field IDs
+sort_order_id       	int                 	Sort order ID       
+PREHOOK: query: describe default.ice_meta_desc.all_entries
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe default.ice_meta_desc.all_entries
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+status              	int                 	from deserializer   
+snapshot_id         	bigint              	from deserializer   
+sequence_number     	bigint              	from deserializer   
+data_file           	struct<content:int,file_path:string,file_format:string,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	from deserializer   
+PREHOOK: query: describe formatted default.ice_meta_desc.files
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.files
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+#### A masked pattern was here ####
+file_format         	string              	File format name: avro, orc, or parquet
+record_count        	bigint              	Number of records in the file
+file_size_in_bytes  	bigint              	Total file size in bytes
+column_sizes        	map<int,bigint>     	Map of column id to total size on disk
+value_counts        	map<int,bigint>     	Map of column id to total count, including null and NaN
+null_value_counts   	map<int,bigint>     	Map of column id to null value count
+nan_value_counts    	map<int,bigint>     	Map of column id to number of NaN values in the column
+lower_bounds        	map<int,binary>     	Map of column id to lower bound
+upper_bounds        	map<int,binary>     	Map of column id to upper bound
+key_metadata        	binary              	Encryption key metadata blob
+split_offsets       	array<bigint>       	Splittable offsets  
+equality_ids        	array<int>          	Equality comparison field IDs
+sort_order_id       	int                 	Sort order ID       
+PREHOOK: query: describe formatted default.ice_meta_desc.entries
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.entries
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+status              	int                 	from deserializer   
+snapshot_id         	bigint              	from deserializer   
+sequence_number     	bigint              	from deserializer   
+data_file           	struct<content:int,file_path:string,file_format:string,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	from deserializer   
+PREHOOK: query: describe formatted default.ice_meta_desc.history
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.history
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+made_current_at     	timestamp with local time zone	from deserializer   
+snapshot_id         	bigint              	from deserializer   
+parent_id           	bigint              	from deserializer   
+is_current_ancestor 	boolean             	from deserializer   
+PREHOOK: query: describe formatted default.ice_meta_desc.manifests
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.manifests
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+path                	string              	from deserializer   
+length              	bigint              	from deserializer   
+partition_spec_id   	int                 	from deserializer   
+added_snapshot_id   	bigint              	from deserializer   
+added_data_files_count	int                 	from deserializer   
+existing_data_files_count	int                 	from deserializer   
+deleted_data_files_count	int                 	from deserializer   
+partition_summaries 	array<struct<contains_null:boolean,contains_nan:boolean,lower_bound:string,upper_bound:string>>	from deserializer   
+PREHOOK: query: describe formatted default.ice_meta_desc.snapshots
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.snapshots
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+committed_at        	timestamp with local time zone	from deserializer   
+snapshot_id         	bigint              	from deserializer   
+parent_id           	bigint              	from deserializer   
+operation           	string              	from deserializer   
+manifest_list       	string              	from deserializer   
+summary             	map<string,string>  	from deserializer   
+PREHOOK: query: describe formatted default.ice_meta_desc.partitions
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.partitions
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+record_count        	bigint              	from deserializer   
+file_count          	int                 	from deserializer   
+PREHOOK: query: describe formatted default.ice_meta_desc.all_manifests
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.all_manifests
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+path                	string              	from deserializer   
+length              	bigint              	from deserializer   
+partition_spec_id   	int                 	from deserializer   
+added_snapshot_id   	bigint              	from deserializer   
+added_data_files_count	int                 	from deserializer   
+existing_data_files_count	int                 	from deserializer   
+deleted_data_files_count	int                 	from deserializer   
+partition_summaries 	array<struct<contains_null:boolean,contains_nan:boolean,lower_bound:string,upper_bound:string>>	from deserializer   
+PREHOOK: query: describe formatted default.ice_meta_desc.all_data_files
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.all_data_files
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+#### A masked pattern was here ####
+file_format         	string              	File format name: avro, orc, or parquet
+record_count        	bigint              	Number of records in the file
+file_size_in_bytes  	bigint              	Total file size in bytes
+column_sizes        	map<int,bigint>     	Map of column id to total size on disk
+value_counts        	map<int,bigint>     	Map of column id to total count, including null and NaN
+null_value_counts   	map<int,bigint>     	Map of column id to null value count
+nan_value_counts    	map<int,bigint>     	Map of column id to number of NaN values in the column
+lower_bounds        	map<int,binary>     	Map of column id to lower bound
+upper_bounds        	map<int,binary>     	Map of column id to upper bound
+key_metadata        	binary              	Encryption key metadata blob
+split_offsets       	array<bigint>       	Splittable offsets  
+equality_ids        	array<int>          	Equality comparison field IDs
+sort_order_id       	int                 	Sort order ID       
+PREHOOK: query: describe formatted default.ice_meta_desc.all_entries
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe formatted default.ice_meta_desc.all_entries
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+# col_name            	data_type           	comment             
+status              	int                 	from deserializer   
+snapshot_id         	bigint              	from deserializer   
+sequence_number     	bigint              	from deserializer   
+data_file           	struct<content:int,file_path:string,file_format:string,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	from deserializer   
+PREHOOK: query: describe extended default.ice_meta_desc.files
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe extended default.ice_meta_desc.files
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+#### A masked pattern was here ####
+file_format         	string              	File format name: avro, orc, or parquet
+record_count        	bigint              	Number of records in the file
+file_size_in_bytes  	bigint              	Total file size in bytes
+column_sizes        	map<int,bigint>     	Map of column id to total size on disk
+value_counts        	map<int,bigint>     	Map of column id to total count, including null and NaN
+null_value_counts   	map<int,bigint>     	Map of column id to null value count
+nan_value_counts    	map<int,bigint>     	Map of column id to number of NaN values in the column
+lower_bounds        	map<int,binary>     	Map of column id to lower bound
+upper_bounds        	map<int,binary>     	Map of column id to upper bound
+key_metadata        	binary              	Encryption key metadata blob
+split_offsets       	array<bigint>       	Splittable offsets  
+equality_ids        	array<int>          	Equality comparison field IDs
+sort_order_id       	int                 	Sort order ID       
+PREHOOK: query: describe extended default.ice_meta_desc.entries
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe extended default.ice_meta_desc.entries
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+status              	int                 	from deserializer   
+snapshot_id         	bigint              	from deserializer   
+sequence_number     	bigint              	from deserializer   
+data_file           	struct<content:int,file_path:string,file_format:string,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	from deserializer   
+PREHOOK: query: describe extended default.ice_meta_desc.history
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe extended default.ice_meta_desc.history
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+made_current_at     	timestamp with local time zone	from deserializer   
+snapshot_id         	bigint              	from deserializer   
+parent_id           	bigint              	from deserializer   
+is_current_ancestor 	boolean             	from deserializer   
+PREHOOK: query: describe extended default.ice_meta_desc.manifests
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe extended default.ice_meta_desc.manifests
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+path                	string              	from deserializer   
+length              	bigint              	from deserializer   
+partition_spec_id   	int                 	from deserializer   
+added_snapshot_id   	bigint              	from deserializer   
+added_data_files_count	int                 	from deserializer   
+existing_data_files_count	int                 	from deserializer   
+deleted_data_files_count	int                 	from deserializer   
+partition_summaries 	array<struct<contains_null:boolean,contains_nan:boolean,lower_bound:string,upper_bound:string>>	from deserializer   
+PREHOOK: query: describe extended default.ice_meta_desc.snapshots
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe extended default.ice_meta_desc.snapshots
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+committed_at        	timestamp with local time zone	from deserializer   
+snapshot_id         	bigint              	from deserializer   
+parent_id           	bigint              	from deserializer   
+operation           	string              	from deserializer   
+manifest_list       	string              	from deserializer   
+summary             	map<string,string>  	from deserializer   
+PREHOOK: query: describe extended default.ice_meta_desc.partitions
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe extended default.ice_meta_desc.partitions
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+record_count        	bigint              	from deserializer   
+file_count          	int                 	from deserializer   
+PREHOOK: query: describe extended default.ice_meta_desc.all_manifests
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe extended default.ice_meta_desc.all_manifests
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+path                	string              	from deserializer   
+length              	bigint              	from deserializer   
+partition_spec_id   	int                 	from deserializer   
+added_snapshot_id   	bigint              	from deserializer   
+added_data_files_count	int                 	from deserializer   
+existing_data_files_count	int                 	from deserializer   
+deleted_data_files_count	int                 	from deserializer   
+partition_summaries 	array<struct<contains_null:boolean,contains_nan:boolean,lower_bound:string,upper_bound:string>>	from deserializer   
+PREHOOK: query: describe extended default.ice_meta_desc.all_data_files
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe extended default.ice_meta_desc.all_data_files
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+#### A masked pattern was here ####
+file_format         	string              	File format name: avro, orc, or parquet
+record_count        	bigint              	Number of records in the file
+file_size_in_bytes  	bigint              	Total file size in bytes
+column_sizes        	map<int,bigint>     	Map of column id to total size on disk
+value_counts        	map<int,bigint>     	Map of column id to total count, including null and NaN
+null_value_counts   	map<int,bigint>     	Map of column id to null value count
+nan_value_counts    	map<int,bigint>     	Map of column id to number of NaN values in the column
+lower_bounds        	map<int,binary>     	Map of column id to lower bound
+upper_bounds        	map<int,binary>     	Map of column id to upper bound
+key_metadata        	binary              	Encryption key metadata blob
+split_offsets       	array<bigint>       	Splittable offsets  
+equality_ids        	array<int>          	Equality comparison field IDs
+sort_order_id       	int                 	Sort order ID       
+PREHOOK: query: describe extended default.ice_meta_desc.all_entries
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_meta_desc
+POSTHOOK: query: describe extended default.ice_meta_desc.all_entries
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_meta_desc
+status              	int                 	from deserializer   
+snapshot_id         	bigint              	from deserializer   
+sequence_number     	bigint              	from deserializer   
+data_file           	struct<content:int,file_path:string,file_format:string,record_count:bigint,file_size_in_bytes:bigint,column_sizes:map<int,bigint>,value_counts:map<int,bigint>,null_value_counts:map<int,bigint>,nan_value_counts:map<int,bigint>,lower_bounds:map<int,binary>,upper_bounds:map<int,binary>,key_metadata:binary,split_offsets:array<bigint>,equality_ids:array<int>,sort_order_id:int>	from deserializer   
+PREHOOK: query: drop table ice_meta_desc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_meta_desc
+PREHOOK: Output: default@ice_meta_desc
+POSTHOOK: query: drop table ice_meta_desc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_meta_desc
+POSTHOOK: Output: default@ice_meta_desc

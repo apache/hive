@@ -219,12 +219,16 @@ public abstract class HadoopThriftAuthBridge {
       case DIGEST:
         Token<DelegationTokenIdentifier> t= new Token<>();
         t.decodeFromUrlString(tokenStrForm);
-        saslTransport = new TSaslClientTransport(
-            method.getMechanismName(),
-            null,
-            null, SaslRpcServer.SASL_DEFAULT_REALM,
-            saslProps, new SaslClientCallbackHandler(t),
-            underlyingTransport);
+        try {
+          saslTransport = new TSaslClientTransport(
+              method.getMechanismName(),
+              null,
+              null, SaslRpcServer.SASL_DEFAULT_REALM,
+              saslProps, new SaslClientCallbackHandler(t),
+              underlyingTransport);
+        } catch (TTransportException e) {
+          e.printStackTrace();
+        }
         return new TUGIAssumingTransport(saslTransport, UserGroupInformation.getCurrentUser());
 
       case KERBEROS:
@@ -239,7 +243,7 @@ public abstract class HadoopThriftAuthBridge {
           return UserGroupInformation.getCurrentUser().doAs(
               new PrivilegedExceptionAction<TUGIAssumingTransport>() {
                 @Override
-                public TUGIAssumingTransport run() throws IOException {
+                public TUGIAssumingTransport run() throws IOException, TTransportException {
                   TTransport saslTransport = new TSaslClientTransport(
                     method.getMechanismName(),
                     null,
@@ -688,6 +692,7 @@ public abstract class HadoopThriftAuthBridge {
     static class TUGIAssumingTransportFactory extends TTransportFactory {
       private final UserGroupInformation ugi;
       private final TTransportFactory wrapped;
+      private Throwable cause = null;
 
       public TUGIAssumingTransportFactory(TTransportFactory wrapped, UserGroupInformation ugi) {
         assert wrapped != null;
@@ -696,15 +701,34 @@ public abstract class HadoopThriftAuthBridge {
         this.ugi = ugi;
       }
 
-
       @Override
-      public TTransport getTransport(final TTransport trans) {
-        return ugi.doAs(new PrivilegedAction<TTransport>() {
+      public TTransport getTransport(final TTransport trans) throws TTransportException {
+        // We use the null return result to work around no Exception throws clause for UserGroupInformation doAs method.
+        TTransport result = ugi.doAs(new PrivilegedAction<TTransport>() {
           @Override
           public TTransport run() {
-            return wrapped.getTransport(trans);
+            try {
+              return wrapped.getTransport(trans);
+            } catch (TTransportException e) {
+              cause = e;
+              return null;
+            } catch (RuntimeException re) {
+              /*
+               * One cause can be:
+               *    org.apache.thrift.transport.TSaslTransportException: No data or no sasl data in the stream
+               * Others are possible.
+               *
+               * Get rid of RuntimeException.
+               */
+              cause = re.getCause();
+              return null;
+            }
           }
         });
+        if (result == null) {
+          throw new TTransportException(cause);
+        }
+        return result;
       }
     }
   }

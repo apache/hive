@@ -72,6 +72,7 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     private boolean temporary = false;
 
     private final boolean writeVersionFile;
+    private int maxStmtId = -1;
 
     /**
      * Create the options object.
@@ -345,6 +346,15 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
 
     public boolean isTemporary() {
       return temporary;
+    }
+
+    public Options maxStmtId(int maxStmtId) {
+      this.maxStmtId = maxStmtId;
+      return this;
+    }
+
+    public int getMaxStmtId() {
+      return maxStmtId;
     }
   }
 

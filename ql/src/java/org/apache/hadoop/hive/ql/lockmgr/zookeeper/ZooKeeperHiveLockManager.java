@@ -419,6 +419,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
 
     String exLock = getLockName(lastName, HiveLockMode.EXCLUSIVE);
     String shLock = getLockName(lastName, HiveLockMode.SHARED);
+    String semiLock = getLockName(lastName, HiveLockMode.SEMI_SHARED);
 
     for (String child : children) {
       child = lastName + "/" + child;
@@ -431,6 +432,9 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       }
       if ((mode == HiveLockMode.EXCLUSIVE) && child.startsWith(shLock)) {
         childSeq = getSequenceNumber(child, shLock);
+      }
+      if ((mode == HiveLockMode.SEMI_SHARED || mode == HiveLockMode.EXCLUSIVE) && child.startsWith(semiLock)) {
+        childSeq = getSequenceNumber(child, semiLock);
       }
 
       if ((childSeq >= 0) && (childSeq < seqNo)) {

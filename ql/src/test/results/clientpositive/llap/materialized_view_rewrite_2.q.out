@@ -110,28 +110,52 @@ POSTHOOK: Lineage: locations_n0.locationid SCRIPT []
 POSTHOOK: Lineage: locations_n0.name SCRIPT []
 PREHOOK: query: alter table emps_n0 add constraint pk1 primary key (empid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@emps_n0
+PREHOOK: Output: default@emps_n0
 POSTHOOK: query: alter table emps_n0 add constraint pk1 primary key (empid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@emps_n0
+POSTHOOK: Output: default@emps_n0
 PREHOOK: query: alter table depts_n0 add constraint pk2 primary key (deptno) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@depts_n0
+PREHOOK: Output: default@depts_n0
 POSTHOOK: query: alter table depts_n0 add constraint pk2 primary key (deptno) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@depts_n0
+POSTHOOK: Output: default@depts_n0
 PREHOOK: query: alter table dependents_n0 add constraint pk3 primary key (empid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@dependents_n0
+PREHOOK: Output: default@dependents_n0
 POSTHOOK: query: alter table dependents_n0 add constraint pk3 primary key (empid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@dependents_n0
+POSTHOOK: Output: default@dependents_n0
 PREHOOK: query: alter table locations_n0 add constraint pk4 primary key (locationid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@locations_n0
+PREHOOK: Output: default@locations_n0
 POSTHOOK: query: alter table locations_n0 add constraint pk4 primary key (locationid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@locations_n0
+POSTHOOK: Output: default@locations_n0
 PREHOOK: query: alter table emps_n0 add constraint fk1 foreign key (deptno) references depts_n0(deptno) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@emps_n0
+PREHOOK: Output: default@emps_n0
 POSTHOOK: query: alter table emps_n0 add constraint fk1 foreign key (deptno) references depts_n0(deptno) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@emps_n0
+POSTHOOK: Output: default@emps_n0
 PREHOOK: query: alter table depts_n0 add constraint fk2 foreign key (locationid) references locations_n0(locationid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@depts_n0
+PREHOOK: Output: default@depts_n0
 POSTHOOK: query: alter table depts_n0 add constraint fk2 foreign key (locationid) references locations_n0(locationid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@depts_n0
+POSTHOOK: Output: default@depts_n0
 PREHOOK: query: create materialized view mv1_n0 as
 select empid, depts_n0.deptno from emps_n0
 join depts_n0 using (deptno) where depts_n0.deptno > 10
@@ -150,6 +174,8 @@ POSTHOOK: Input: default@depts_n0
 POSTHOOK: Input: default@emps_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n0
+POSTHOOK: Lineage: mv1_n0.deptno SIMPLE [(depts_n0)depts_n0.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n0.empid SIMPLE [(emps_n0)emps_n0.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select empid from emps_n0
 join depts_n0 using (deptno) where depts_n0.deptno > 20
@@ -228,6 +254,8 @@ POSTHOOK: Input: default@depts_n0
 POSTHOOK: Input: default@emps_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n0
+POSTHOOK: Lineage: mv1_n0.deptno SIMPLE [(depts_n0)depts_n0.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n0.empid SIMPLE [(emps_n0)emps_n0.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select empid from emps_n0
 join depts_n0 using (deptno) where depts_n0.deptno > 20
@@ -306,6 +334,8 @@ POSTHOOK: Input: default@depts_n0
 POSTHOOK: Input: default@emps_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n0
+POSTHOOK: Lineage: mv1_n0.deptno SIMPLE [(depts_n0)depts_n0.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n0.empid SIMPLE [(emps_n0)emps_n0.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select empid from emps_n0
 join depts_n0 using (deptno) where depts_n0.deptno > 20
@@ -384,6 +414,8 @@ POSTHOOK: Input: default@depts_n0
 POSTHOOK: Input: default@emps_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n0
+POSTHOOK: Lineage: mv1_n0.deptno SIMPLE [(emps_n0)emps_n0.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n0.empid SIMPLE [(emps_n0)emps_n0.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select depts_n0.deptno from depts_n0
 join emps_n0 using (deptno) where emps_n0.empid > 15
@@ -467,6 +499,8 @@ POSTHOOK: Input: default@depts_n0
 POSTHOOK: Input: default@emps_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n0
+POSTHOOK: Lineage: mv1_n0.deptno SIMPLE [(emps_n0)emps_n0.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n0.empid SIMPLE [(emps_n0)emps_n0.FieldSchema(name:empid, type:int, comment:null), ]
 PREHOOK: query: explain
 select depts_n0.deptno from depts_n0
 join emps_n0 using (deptno) where emps_n0.empid > 15
@@ -616,6 +650,11 @@ POSTHOOK: Input: default@depts_n0
 POSTHOOK: Input: default@emps_n0
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1_n0
+POSTHOOK: Lineage: mv1_n0.deptno SIMPLE [(emps_n0)emps_n0.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n0.deptno2 SIMPLE [(depts_n0)depts_n0.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n0.empid SIMPLE [(dependents_n0)dependents_n0.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1_n0.name SIMPLE [(depts_n0)depts_n0.FieldSchema(name:name, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1_n0.name2 SIMPLE [(dependents_n0)dependents_n0.FieldSchema(name:name, type:varchar(256), comment:null), ]
 PREHOOK: query: explain
 select dependents_n0.empid
 from depts_n0

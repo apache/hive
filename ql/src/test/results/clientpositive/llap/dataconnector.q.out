@@ -1,0 +1,219 @@
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS
+PREHOOK: query: CREATE CONNECTOR mysql_test
+TYPE 'mysql'
+URL 'jdbc:mysql://nightly1.apache.org:3306/hive1'
+COMMENT 'test connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="hive1",
+"hive.sql.dbcp.password"="hive1")
+PREHOOK: type: CREATEDATACONNECTOR
+PREHOOK: Output: connector:mysql_test
+POSTHOOK: query: CREATE CONNECTOR mysql_test
+TYPE 'mysql'
+URL 'jdbc:mysql://nightly1.apache.org:3306/hive1'
+COMMENT 'test connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="hive1",
+"hive.sql.dbcp.password"="hive1")
+POSTHOOK: type: CREATEDATACONNECTOR
+POSTHOOK: Output: connector:mysql_test
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS
+mysql_test
+PREHOOK: query: CREATE CONNECTOR IF NOT EXISTS mysql_test
+TYPE 'mysql'
+URL 'jdbc:mysql://nightly1.apache.org:3306/hive1'
+COMMENT 'test connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="hive1",
+"hive.sql.dbcp.password"="hive1")
+PREHOOK: type: CREATEDATACONNECTOR
+PREHOOK: Output: connector:mysql_test
+POSTHOOK: query: CREATE CONNECTOR IF NOT EXISTS mysql_test
+TYPE 'mysql'
+URL 'jdbc:mysql://nightly1.apache.org:3306/hive1'
+COMMENT 'test connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="hive1",
+"hive.sql.dbcp.password"="hive1")
+POSTHOOK: type: CREATEDATACONNECTOR
+POSTHOOK: Output: connector:mysql_test
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS
+mysql_test
+PREHOOK: query: CREATE CONNECTOR IF NOT EXISTS derby_test
+TYPE 'derby'
+URL 'jdbc:derby:./target/db_for_connectortest.db;create=true'
+COMMENT 'test derby connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="APP",
+"hive.sql.dbcp.password"="mine")
+PREHOOK: type: CREATEDATACONNECTOR
+PREHOOK: Output: connector:derby_test
+POSTHOOK: query: CREATE CONNECTOR IF NOT EXISTS derby_test
+TYPE 'derby'
+URL 'jdbc:derby:./target/db_for_connectortest.db;create=true'
+COMMENT 'test derby connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="APP",
+"hive.sql.dbcp.password"="mine")
+POSTHOOK: type: CREATEDATACONNECTOR
+POSTHOOK: Output: connector:derby_test
+PREHOOK: query: DROP CONNECTOR mysql_test
+PREHOOK: type: DROPDATACONNECTOR
+PREHOOK: Input: connector:mysql_test
+PREHOOK: Output: connector:mysql_test
+POSTHOOK: query: DROP CONNECTOR mysql_test
+POSTHOOK: type: DROPDATACONNECTOR
+POSTHOOK: Input: connector:mysql_test
+POSTHOOK: Output: connector:mysql_test
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS
+derby_test
+PREHOOK: query: DROP CONNECTOR IF EXISTS mysql_test
+PREHOOK: type: DROPDATACONNECTOR
+POSTHOOK: query: DROP CONNECTOR IF EXISTS mysql_test
+POSTHOOK: type: DROPDATACONNECTOR
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS
+derby_test
+PREHOOK: query: CREATE CONNECTOR mysql_test
+TYPE 'mysql'
+URL 'jdbc:mysql://nightly1.apache.org:3306/hive1'
+COMMENT 'test connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="hive1",
+"hive.sql.dbcp.password"="hive1")
+PREHOOK: type: CREATEDATACONNECTOR
+PREHOOK: Output: connector:mysql_test
+POSTHOOK: query: CREATE CONNECTOR mysql_test
+TYPE 'mysql'
+URL 'jdbc:mysql://nightly1.apache.org:3306/hive1'
+COMMENT 'test connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="hive1",
+"hive.sql.dbcp.password"="hive1")
+POSTHOOK: type: CREATEDATACONNECTOR
+POSTHOOK: Output: connector:mysql_test
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS
+derby_test
+mysql_test
+PREHOOK: query: CREATE REMOTE DATABASE db_derby USING derby_test with DBPROPERTIES("connector.remoteDbName"="APP")
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Input: connector:derby_test
+PREHOOK: Output: database:db_derby
+POSTHOOK: query: CREATE REMOTE DATABASE db_derby USING derby_test with DBPROPERTIES("connector.remoteDbName"="APP")
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Input: connector:derby_test
+POSTHOOK: Output: database:db_derby
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+db_derby
+default
+PREHOOK: query: USE db_derby
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db_derby
+POSTHOOK: query: USE db_derby
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db_derby
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:db_derby
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:db_derby
+TESTTABLE1
+TESTTABLE2
+PREHOOK: query: alter connector mysql_test set URL 'jdbc:mysql://nightly1.apache.org:3306/hive2'
+PREHOOK: type: ALTERDATACONNECTOR_
+PREHOOK: Output: connector:mysql_test
+POSTHOOK: query: alter connector mysql_test set URL 'jdbc:mysql://nightly1.apache.org:3306/hive2'
+POSTHOOK: type: ALTERDATACONNECTOR_
+POSTHOOK: Output: connector:mysql_test
+PREHOOK: query: DESCRIBE CONNECTOR extended mysql_test
+PREHOOK: type: DESCDATACONNECTOR
+PREHOOK: Input: connector:mysql_test
+POSTHOOK: query: DESCRIBE CONNECTOR extended mysql_test
+POSTHOOK: type: DESCDATACONNECTOR
+POSTHOOK: Input: connector:mysql_test
+mysql_test	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	hive_test_user	USER	test connector	{hive.sql.dbcp.password=hive1, hive.sql.dbcp.username=hive1}
+PREHOOK: query: alter connector mysql_test set DCPROPERTIES("hive.sql.dbcp.username"="hive2","hive.sql.dbcp.password"="hive2")
+PREHOOK: type: ALTERDATACONNECTOR
+PREHOOK: Output: connector:mysql_test
+POSTHOOK: query: alter connector mysql_test set DCPROPERTIES("hive.sql.dbcp.username"="hive2","hive.sql.dbcp.password"="hive2")
+POSTHOOK: type: ALTERDATACONNECTOR
+POSTHOOK: Output: connector:mysql_test
+PREHOOK: query: DESCRIBE CONNECTOR extended mysql_test
+PREHOOK: type: DESCDATACONNECTOR
+PREHOOK: Input: connector:mysql_test
+POSTHOOK: query: DESCRIBE CONNECTOR extended mysql_test
+POSTHOOK: type: DESCDATACONNECTOR
+POSTHOOK: Input: connector:mysql_test
+mysql_test	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	hive_test_user	USER	test connector	{hive.sql.dbcp.password=hive2, hive.sql.dbcp.username=hive2}
+PREHOOK: query: alter connector mysql_test set OWNER USER newuser
+PREHOOK: type: ALTERDATABASE_OWNER
+PREHOOK: Output: connector:mysql_test
+POSTHOOK: query: alter connector mysql_test set OWNER USER newuser
+POSTHOOK: type: ALTERDATABASE_OWNER
+POSTHOOK: Output: connector:mysql_test
+PREHOOK: query: DESCRIBE CONNECTOR extended mysql_test
+PREHOOK: type: DESCDATACONNECTOR
+PREHOOK: Input: connector:mysql_test
+POSTHOOK: query: DESCRIBE CONNECTOR extended mysql_test
+POSTHOOK: type: DESCDATACONNECTOR
+POSTHOOK: Input: connector:mysql_test
+mysql_test	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	newuser	USER	test connector	{hive.sql.dbcp.password=hive2, hive.sql.dbcp.username=hive2}
+PREHOOK: query: DROP DATABASE db_derby
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:db_derby
+PREHOOK: Output: database:db_derby
+POSTHOOK: query: DROP DATABASE db_derby
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:db_derby
+POSTHOOK: Output: database:db_derby
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: DROP CONNECTOR mysql_test
+PREHOOK: type: DROPDATACONNECTOR
+PREHOOK: Input: connector:mysql_test
+PREHOOK: Output: connector:mysql_test
+POSTHOOK: query: DROP CONNECTOR mysql_test
+POSTHOOK: type: DROPDATACONNECTOR
+POSTHOOK: Input: connector:mysql_test
+POSTHOOK: Output: connector:mysql_test
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS
+derby_test
+PREHOOK: query: DROP CONNECTOR derby_test
+PREHOOK: type: DROPDATACONNECTOR
+PREHOOK: Input: connector:derby_test
+PREHOOK: Output: connector:derby_test
+POSTHOOK: query: DROP CONNECTOR derby_test
+POSTHOOK: type: DROPDATACONNECTOR
+POSTHOOK: Input: connector:derby_test
+POSTHOOK: Output: connector:derby_test
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS

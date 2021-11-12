@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.security.authorization.command.CommandAuthorizer;
@@ -207,8 +208,7 @@ public class Compiler {
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(driverContext.getQueryState(), tree);
 
     if (!driverContext.isRetrial()) {
-      if ((driverContext.getQueryState().getHiveOperation() != null) &&
-          driverContext.getQueryState().getHiveOperation().equals(HiveOperation.REPLDUMP)) {
+      if (HiveOperation.REPLDUMP.equals(driverContext.getQueryState().getHiveOperation())) {
         setLastReplIdForDump(driverContext.getQueryState().getConf());
       }
       driverContext.setTxnType(AcidUtils.getTxnType(driverContext.getConf(), tree));
@@ -265,6 +265,10 @@ public class Compiler {
     if (DriverUtils.checkConcurrency(driverContext) && startImplicitTxn(driverContext.getTxnManager()) &&
         !driverContext.getTxnManager().isTxnOpen() && txnType != TxnType.COMPACTION) {
       String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
+      if (HiveOperation.REPLDUMP.equals(driverContext.getQueryState().getHiveOperation())
+         || HiveOperation.REPLLOAD.equals(driverContext.getQueryState().getHiveOperation())) {
+        context.setReplPolicy(PlanUtils.stripQuotes(tree.getChild(0).getText()));
+      }
       driverContext.getTxnManager().openTxn(context, userFromUGI, txnType);
     }
   }
@@ -286,6 +290,8 @@ public class Compiler {
        */
     case SHOWDATABASES:
     case SHOWTABLES:
+    case SHOW_TABLESTATUS:
+    case SHOW_TBLPROPERTIES:
     case SHOWCOLUMNS:
     case SHOWFUNCTIONS:
     case SHOWPARTITIONS:
@@ -395,7 +401,7 @@ public class Compiler {
         try {
           lst = HiveMetaStoreUtils.getFieldsFromDeserializer(tableName, td.getDeserializer(driverContext.getConf()));
         } catch (Exception e) {
-          LOG.warn("Error getting schema: " + StringUtils.stringifyException(e));
+          LOG.warn("Error getting schema", e);
         }
         if (lst != null) {
           schema = new Schema(lst, null);
@@ -409,9 +415,7 @@ public class Compiler {
 
   private void authorize(BaseSemanticAnalyzer sem) throws HiveException, CommandProcessorException {
     // do the authorization check
-    if (!sem.skipAuthorization() &&
-        HiveConf.getBoolVar(driverContext.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
-
+    if (!sem.skipAuthorization()) {
       try {
         perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
         // Authorization check for kill query will be in KillQueryImpl

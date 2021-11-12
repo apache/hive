@@ -66,7 +66,7 @@ POSTHOOK: Input: default@sketch_input
 13	b	9	9
 14	b	10	10
 15	b	11	11
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: explain
 select id,'rewrite',rank() over (partition by category order by id) from sketch_input order by category,id
 PREHOOK: type: QUERY
@@ -190,7 +190,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-WARNING: Comparing a bigint and a double may result in a loss of precision.
+WARNING: Comparing bigint and double may result in loss of information.
 PREHOOK: query: select id,'rewrite',rank() over (partition by category order by id) from sketch_input order by category,id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sketch_input

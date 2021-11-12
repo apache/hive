@@ -700,13 +700,28 @@ public class DagUtils {
    * container size isn't set.
    */
   public static Resource getContainerResource(Configuration conf) {
-    int memory = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) > 0 ?
-      HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) :
-      conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
-    int cpus = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCPUVCORES) > 0 ?
-      HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCPUVCORES) :
-      conf.getInt(MRJobConfig.MAP_CPU_VCORES, MRJobConfig.DEFAULT_MAP_CPU_VCORES);
-    return Resource.newInstance(memory, cpus);
+    int memorySizeMb = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE);
+    if (memorySizeMb <= 0) {
+      LOG.warn("No Tez container size specified by {}. Falling back to MapReduce container MB {}",
+          HiveConf.ConfVars.HIVETEZCONTAINERSIZE,  MRJobConfig.MAP_MEMORY_MB);
+      memorySizeMb = conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
+      // When config is explicitly set to "-1" defaultValue does not work!
+      if (memorySizeMb <= 0) {
+        LOG.warn("Falling back to default container MB {}", MRJobConfig.DEFAULT_MAP_MEMORY_MB);
+        memorySizeMb = MRJobConfig.DEFAULT_MAP_MEMORY_MB;
+      }
+    }
+    int cpuCores = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCPUVCORES);
+    if (cpuCores <= 0) {
+      LOG.warn("No Tez VCore size specified by {}. Falling back to MapReduce container VCores {}",
+          HiveConf.ConfVars.HIVETEZCPUVCORES,  MRJobConfig.MAP_CPU_VCORES);
+      cpuCores = conf.getInt(MRJobConfig.MAP_CPU_VCORES, MRJobConfig.DEFAULT_MAP_CPU_VCORES);
+      if (cpuCores <= 0) {
+        LOG.warn("Falling back to default container VCores {}", MRJobConfig.DEFAULT_MAP_CPU_VCORES);
+        cpuCores = MRJobConfig.DEFAULT_MAP_CPU_VCORES;
+      }
+    }
+    return Resource.newInstance(memorySizeMb, cpuCores);
   }
 
   /*
@@ -1600,12 +1615,16 @@ public class DagUtils {
     } else {
       outputKlass = MROutput.class;
     }
+
+    // If there is a fileSink add a DataSink to the vertex
+    boolean hasFileSink = workUnit.getAllOperators().stream().anyMatch(o -> o instanceof FileSinkOperator);
     // final vertices need to have at least one output
     boolean endVertex = tezWork.getLeaves().contains(workUnit);
-    if (endVertex) {
+    if (endVertex || hasFileSink) {
       OutputCommitterDescriptor ocd = null;
-      if (HiveConf.getVar(conf, ConfVars.TEZ_MAPREDUCE_OUTPUT_COMMITTER) != null) {
-        ocd = OutputCommitterDescriptor.create(HiveConf.getVar(conf, ConfVars.TEZ_MAPREDUCE_OUTPUT_COMMITTER));
+      String committer = HiveConf.getVar(conf, ConfVars.TEZ_MAPREDUCE_OUTPUT_COMMITTER);
+      if (committer != null && !committer.isEmpty()) {
+        ocd = OutputCommitterDescriptor.create(committer);
       }
       vertex.addDataSink("out_"+workUnit.getName(), new DataSinkDescriptor(
           OutputDescriptor.create(outputKlass.getName())

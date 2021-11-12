@@ -82,7 +82,7 @@ public class HiveProjectFilterPullUpConstantsRule extends RelOptRule {
     final Filter filter = call.rel(1);
     final RelBuilder builder = call.builder();
 
-    List<RexNode> projects = project.getChildExps();
+    List<RexNode> projects = project.getProjects();
     List<RexNode> newProjects = rewriteProjects(projects, filter.getCondition(), builder);
     if (newProjects == null) {
       return;

@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hive.hplsql.Arguments;
 import org.apache.hive.hplsql.Exec;
 import org.apache.hive.hplsql.Var;
 import org.junit.Assert;
@@ -45,7 +46,10 @@ public class TestHplsqlUdf {
     DeferredObject queryObj = new DeferredJavaObject("hello(:1)");
     DeferredObject argObj = new DeferredJavaObject("name");
     DeferredObject[] argumentsObj = {queryObj, argObj};
-    udf.exec.init(new String[]{"-e", "null"});
+    Arguments args = new Arguments();
+    args.parse(new String[]{"-e", "null"});
+    udf.exec.init();
+    udf.exec.parseAndEval(args);
     udf.exec.enterGlobalScope();
     // init exec and set parameters, included
     udf.setParameters(argumentsObj);

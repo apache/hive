@@ -66,19 +66,19 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDoubleColEqualDoubleScalar(col 4:double, val 5.0)(children: CastStringToDouble(col 0:string) -> 4:double)
+                        predicateExpression: FilterDoubleColEqualDoubleScalar(col 5:double, val 5.0)(children: CastStringToDouble(col 0:string) -> 5:double)
                     predicate: (UDFToDouble(a) = 5.0D) (type: boolean)
                     Statistics: Num rows: 3 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 5:bigint
+                          keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 6:bigint
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
@@ -215,19 +215,19 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDoubleColEqualDoubleScalar(col 4:double, val 5.0)(children: CastStringToDouble(col 0:string) -> 4:double)
+                        predicateExpression: FilterDoubleColEqualDoubleScalar(col 5:double, val 5.0)(children: CastStringToDouble(col 0:string) -> 5:double)
                     predicate: (UDFToDouble(a) = 5.0D) (type: boolean)
                     Statistics: Num rows: 3 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       Group By Vectorization:
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 5:bigint
+                          keyExpressions: col 0:string, col 1:string, ConstantVectorExpression(val 0) -> 6:bigint
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []

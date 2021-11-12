@@ -57,8 +57,9 @@ public class BaseReplicationAcrossInstances {
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     conf.set("hive.repl.cmrootdir", "/tmp/");
+    conf.set("dfs.namenode.acls.enabled", "true");
     MiniDFSCluster miniDFSCluster =
-        new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
+        new MiniDFSCluster.Builder(conf).numDataNodes(2).format(true).build();
     Map<String, String> localOverrides = new HashMap<String, String>() {{
       put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
       put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
@@ -66,6 +67,12 @@ public class BaseReplicationAcrossInstances {
     localOverrides.putAll(overrides);
     setFullyQualifiedReplicaExternalTableBase(miniDFSCluster.getFileSystem());
     localOverrides.put(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
+     /* When 'hive.repl.retain.custom.db.locations.on.target' is enabled and a custom path for database is used on
+       source i.e. non-default database path, on target the same path must be retained. Since in this constructor both
+       source and target warehouse will be backed by same HDFS, essentially trying to create the same path on target
+       would fail. Hence disabling this config to not to retain custom path on target.
+     */
+    localOverrides.put(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET.varname, "false");
     primary = new WarehouseInstance(LOG, miniDFSCluster, localOverrides);
     localOverrides.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replica = new WarehouseInstance(LOG, miniDFSCluster, localOverrides);
@@ -82,7 +89,7 @@ public class BaseReplicationAcrossInstances {
     replicaConf.set("dfs.client.use.datanode.hostname", "true");
     replicaConf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniReplicaDFSCluster =
-            new MiniDFSCluster.Builder(replicaConf).numDataNodes(1).format(true).build();
+            new MiniDFSCluster.Builder(replicaConf).numDataNodes(2).format(true).build();
 
     // Setup primary HDFS.
     String primaryBaseDir = Files.createTempDirectory("base").toFile().getAbsolutePath();
@@ -90,7 +97,7 @@ public class BaseReplicationAcrossInstances {
     conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, primaryBaseDir);
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
-    MiniDFSCluster miniPrimaryDFSCluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
+    MiniDFSCluster miniPrimaryDFSCluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).format(true).build();
 
     // Setup primary warehouse.
     setFullyQualifiedReplicaExternalTableBase(miniReplicaDFSCluster.getFileSystem());

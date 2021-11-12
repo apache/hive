@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -38,8 +39,9 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.ReplLoadOpType;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,6 +55,7 @@ public class LoadDatabase {
   private final DatabaseEvent event;
   private final String dbNameToLoadIn;
   transient ReplicationMetricCollector metricCollector;
+  protected static transient Logger LOG = LoggerFactory.getLogger(LoadDatabase.class);
 
   public LoadDatabase(Context context, DatabaseEvent event, String dbNameToLoadIn, TaskTracker loadTaskTracker) {
     this.context = context;
@@ -96,6 +99,26 @@ public class LoadDatabase {
     return event.dbInMetadata(dbNameToLoadIn);
   }
 
+  String getDbLocation(Database dbInMetadata) {
+    if (context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET)
+            && Boolean.parseBoolean(dbInMetadata.getParameters().get(ReplUtils.REPL_IS_CUSTOM_DB_LOC))) {
+      String locOnTarget = new Path(dbInMetadata.getLocationUri()).toUri().getPath().toString();
+      LOG.info("Using the custom location {} on the target", locOnTarget);
+      return locOnTarget;
+    }
+    return null;
+  }
+
+  String getDbManagedLocation(Database dbInMetadata) {
+    if (context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET)
+            && Boolean.parseBoolean(dbInMetadata.getParameters().get(ReplUtils.REPL_IS_CUSTOM_DB_MANAGEDLOC))) {
+      String locOnTarget = new Path(dbInMetadata.getManagedLocationUri()).toUri().getPath().toString();
+      LOG.info("Using the custom managed location {} on the target", locOnTarget);
+      return locOnTarget;
+    }
+    return null;
+  }
+
   private ReplLoadOpType getLoadDbType(String dbName) throws InvalidOperationException, HiveException {
     Database db = context.hiveDb.getDatabase(dbName);
     if (db == null) {
@@ -123,15 +146,13 @@ public class LoadDatabase {
   }
 
   private boolean isDbEmpty(String dbName) throws HiveException {
-    List<String> allTables = context.hiveDb.getAllTables(dbName);
-    List<String> allFunctions = context.hiveDb.getFunctions(dbName, "*");
-    return allTables.isEmpty() && allFunctions.isEmpty();
+    return context.hiveDb.getAllTables(dbName).isEmpty() && context.hiveDb.getFunctions(dbName, "*").isEmpty();
   }
 
   private Task<?> createDbTask(Database dbObj) throws MetaException {
     // note that we do not set location - for repl load, we want that auto-created.
-    CreateDatabaseDesc createDbDesc = new CreateDatabaseDesc(dbObj.getName(), dbObj.getDescription(), null, null, false,
-        updateDbProps(dbObj, context.dumpDirectory));
+    CreateDatabaseDesc createDbDesc = new CreateDatabaseDesc(dbObj.getName(), dbObj.getDescription(),
+            getDbLocation(dbObj), getDbManagedLocation(dbObj), false, updateDbProps(dbObj, context.dumpDirectory));
     // If it exists, we want this to be an error condition. Repl Load is not intended to replace a
     // db.
     // TODO: we might revisit this in create-drop-recreate cases, needs some thinking on.
@@ -162,6 +183,10 @@ public class LoadDatabase {
     Map<String, String> parameters = new HashMap<>(dbObj.getParameters());
     parameters.remove(ReplicationSpec.KEY.CURR_STATE_ID.toString());
 
+    parameters.remove(ReplUtils.REPL_IS_CUSTOM_DB_LOC);
+
+    parameters.remove(ReplUtils.REPL_IS_CUSTOM_DB_MANAGEDLOC);
+
     // Add the checkpoint key to the Database binding it to current dump directory.
     // So, if retry using same dump, we shall skip Database object update.
     parameters.put(ReplUtils.REPL_CHECKPOINT_KEY, dumpDirectory);
@@ -173,7 +198,7 @@ public class LoadDatabase {
     parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, "true");
     //This flag will be set to identify its a target of replication. Repl dump won't be allowed on a database
     //which is a target of replication.
-    parameters.put(ReplUtils.TARGET_OF_REPLICATION, "true");
+    parameters.put(ReplConst.TARGET_OF_REPLICATION, "true");
 
     return parameters;
   }

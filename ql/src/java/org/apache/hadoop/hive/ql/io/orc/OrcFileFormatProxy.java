@@ -28,9 +28,9 @@ import org.apache.hadoop.hive.metastore.FileFormatProxy;
 import org.apache.hadoop.hive.metastore.Metastore.SplitInfo;
 import org.apache.hadoop.hive.metastore.Metastore.SplitInfos;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.orc.OrcConf;
 import org.apache.orc.OrcProto;
 import org.apache.orc.StripeInformation;
+import org.apache.orc.StripeStatistics;
 import org.apache.orc.impl.OrcTail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,12 +47,14 @@ public class OrcFileFormatProxy implements FileFormatProxy {
     OrcTail orcTail = ReaderImpl.extractFileTail(fileMetadata);
     OrcProto.Footer footer = orcTail.getFooter();
     int stripeCount = footer.getStripesCount();
-    boolean writerUsedProlepticGregorian = footer.hasCalendar()
-        ? footer.getCalendar() == OrcProto.CalendarKind.PROLEPTIC_GREGORIAN
-        : OrcConf.PROLEPTIC_GREGORIAN_DEFAULT.getBoolean(conf);
+    // Always convert To PROLEPTIC_GREGORIAN
+    org.apache.orc.Reader dummyReader = new org.apache.orc.impl.ReaderImpl(null,
+        org.apache.orc.OrcFile.readerOptions(org.apache.orc.OrcFile.readerOptions(conf).getConfiguration())
+            .useUTCTimestamp(true).convertToProlepticGregorian(true).orcTail(orcTail));
+    List<StripeStatistics> stripeStats = dummyReader.getVariantStripeStatistics(null);
     boolean[] result = OrcInputFormat.pickStripesViaTranslatedSarg(
         sarg, orcTail.getWriterVersion(),
-        footer.getTypesList(), orcTail.getStripeStatistics(writerUsedProlepticGregorian, true),
+        footer.getTypesList(), stripeStats,
         stripeCount);
     // For ORC case, send the boundaries of the stripes so we don't have to send the footer.
     SplitInfos.Builder sb = SplitInfos.newBuilder();

@@ -663,38 +663,19 @@ public class OperatorUtils {
   }
 
   /**
-   * Given an operator and an internalColName look for the original Table columnName
-   * that this internal column maps to. This method finds the original columnName
-   * by checking column Expr mappings and schemas of the start operator and its parents.
-   *
-   * @param start
-   * @param internalColName
+   * Given start, end operators and a colName, look for the original TS colExpr
+   * that it originates from. This method checks column Expr mappings (aliases)
+   * from the start operator and its parents up to the end operator.
+   * It then returns the unwrapped Expr found within a ExprNodeGenericFuncDesc (if any).
+   * @param colName colName to backtrack
+   * @param start start backtracking from this Op
+   * @param end end backtracking at this Op
    * @return the original column name or null if not found
    */
-  public static String findTableColNameOf(Operator<?> start, String internalColName) {
-    // Look for internalCoName alias in current OR Parent RowSchemas
-    Stack<Operator<?>> parentOps = new Stack<>();
-    ColumnInfo keyColInfo = null;
-    parentOps.add(start);
-    while (!parentOps.isEmpty()) {
-      Operator<?> currentOp = parentOps.pop();
-      if (currentOp instanceof ReduceSinkOperator) {
-        // Dont want to follow that parent path
-        continue;
-      }
-      // If columnName is the output of a ColumnExpr get the original columnName from the Expr Map
-      if (currentOp.getColumnExprMap() != null && currentOp.getColumnExprMap().containsKey(internalColName)
-              && currentOp.getColumnExprMap().get(internalColName) instanceof ExprNodeColumnDesc) {
-        internalColName = ((ExprNodeColumnDesc) currentOp.getColumnExprMap().get(internalColName)).getColumn();
-      }
-      keyColInfo = currentOp.getSchema().getColumnInfo(internalColName);
-      if (keyColInfo != null) {
-        // Get original colName alias (or fallback to internal colName)
-        return keyColInfo.getAlias() != null ? keyColInfo.getAlias() : keyColInfo.getInternalName();
-      }
-      parentOps.addAll(currentOp.getParentOperators());
-    }
-    return null;
+  public static ExprNodeColumnDesc findTableOriginColExpr(ExprNodeColumnDesc colName, Operator<?> start, Operator<?> end)
+      throws SemanticException {
+    ExprNodeDesc res = ExprNodeDescUtils.backtrack(colName, start, end, false, true);
+    return (res != null) ? ExprNodeDescUtils.getColumnExpr(res) : null;
   }
 
   public static Set<Operator<?>> getAllOperatorsForSimpleFetch(Set<Operator<?>> opSet) {

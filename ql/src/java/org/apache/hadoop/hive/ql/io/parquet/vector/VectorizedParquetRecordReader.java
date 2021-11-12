@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.io.BucketIdentifier;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.ParquetRecordReaderBase;
@@ -135,6 +136,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
    */
   protected long totalRowCount = 0;
   private ZoneId writerTimezone;
+  private final BucketIdentifier bucketIdentifier;
 
   public VectorizedParquetRecordReader(
       org.apache.hadoop.mapred.InputSplit oldInputSplit, JobConf conf) {
@@ -159,7 +161,9 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       if (inputSplit != null) {
         initialize(inputSplit, conf);
       }
-      initPartitionValues((FileSplit) oldInputSplit, conf);
+      FileSplit fileSplit = (FileSplit) oldInputSplit;
+      initPartitionValues(fileSplit, conf);
+      bucketIdentifier = BucketIdentifier.from(conf, fileSplit.getPath());
     } catch (Throwable e) {
       LOG.error("Failed to create the vectorized reader due to exception " + e);
       throw new RuntimeException(e);
@@ -312,9 +316,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     MemoryBufferOrBuffers footerData = (cacheKey == null || metadataCache == null) ? null
         : metadataCache.getFileMetadata(cacheKey);
     if (footerData != null) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Found the footer in cache for " + cacheKey);
-      }
+      LOG.info("Found the footer in cache for " + cacheKey);
       try {
         return ParquetFileReader.readFooter(new ParquetFooterInputFromCache(footerData), filter);
       } finally {
@@ -337,9 +339,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       stream.seek(footerLengthIndex);
       int footerLength = BytesUtils.readIntLittleEndian(stream);
       stream.seek(footerLengthIndex - footerLength);
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Caching the footer of length " + footerLength + " for " + cacheKey);
-      }
+      LOG.info("Caching the footer of length " + footerLength + " for " + cacheKey);
       // Note: we don't pass in isStopped here - this is not on an IO thread.
       footerData = metadataCache.putFileMetadata(cacheKey, footerLength, stream, tag, null);
       try {
@@ -374,7 +374,11 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   public boolean next(
     NullWritable nullWritable,
     VectorizedRowBatch vectorizedRowBatch) throws IOException {
-    return nextBatch(vectorizedRowBatch);
+    boolean hasMore = nextBatch(vectorizedRowBatch);
+    if (bucketIdentifier != null) {
+      rbCtx.setBucketAndWriteIdOf(vectorizedRowBatch, bucketIdentifier);
+    }
+    return hasMore;
   }
 
   @Override

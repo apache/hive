@@ -117,6 +117,9 @@ public class Driver implements IDriver {
     driverContext = new DriverContext(queryState, queryInfo, new HookRunner(queryState.getConf(), CONSOLE),
         txnManager);
     driverTxnHandler = new DriverTxnHandler(driverContext, driverState);
+    if (SessionState.get() != null) {
+      SessionState.get().addQueryState(getConf().get(HiveConf.ConfVars.HIVEQUERYID.varname), queryState);
+    }
   }
 
   @Override
@@ -213,6 +216,11 @@ public class Driver implements IDriver {
         releaseResources();
       }
 
+      if (SessionState.get() != null) {
+        // Remove any query state reference from the session state
+        SessionState.get().removeQueryState(getConf().get(HiveConf.ConfVars.HIVEQUERYID.varname));
+      }
+      
       driverState.executionFinishedWithLocking(isFinishedWithError);
     }
 
@@ -447,7 +455,7 @@ public class Driver implements IDriver {
         try {
           driverTxnHandler.endTransactionAndCleanup(false);
         } catch (LockException e) {
-          LOG.warn("Exception in releasing locks. " + StringUtils.stringifyException(e));
+          LOG.warn("Exception in releasing locks", e);
         }
         throw cpe;
       }
