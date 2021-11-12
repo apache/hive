@@ -56,16 +56,8 @@ STAGE PLANS:
                             1 _col0 (type: tinyint)
                           outputColumnNames: _col3
                           input vertices:
-<<<<<<< HEAD
-                            1 Map 4
-<<<<<<< HEAD
-                          Statistics: Num rows: 1433691 Data size: 11455656 Basic stats: COMPLETE Column stats: COMPLETE
-=======
-=======
                             1 Map 3
->>>>>>> apache/master
                           Statistics: Num rows: 782315 Data size: 6244648 Basic stats: COMPLETE Column stats: COMPLETE
->>>>>>> apache/master
                           Group By Operator
                             aggregations: sum(_col3)
                             minReductionHashAggr: 0.99
