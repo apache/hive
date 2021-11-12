@@ -3467,6 +3467,9 @@ public class HiveConf extends Configuration {
         "hive.test.authz.sstd.hs2.mode", false, "test hs2 mode from .q tests", true),
     HIVE_AUTHORIZATION_ENABLED("hive.security.authorization.enabled", false,
         "enable or disable the Hive client authorization"),
+    HIVE_AUTHORIZATION_ENABLED_ON_SPARK_VIEWS("hive.security.authorization.enabled.on.spark.views",true,
+            "The configuration is gives the flexibility to admin to user whether to turn on/off the authorization model" +
+                    "introduced in HIVE-24026"),
     HIVE_AUTHORIZATION_KERBEROS_USE_SHORTNAME("hive.security.authorization.kerberos.use.shortname", true,
         "use short name in Kerberos cluster"),
     HIVE_AUTHORIZATION_MANAGER("hive.security.authorization.manager",
