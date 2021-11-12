@@ -2496,8 +2496,7 @@ public class AcidUtils {
     }
 
     public static boolean isRawFormatFile(Path dataFile, FileSystem fs) throws IOException {
-      try {
-        Reader reader = OrcFile.createReader(dataFile, OrcFile.readerOptions(fs.getConf()));
+      try (Reader reader = OrcFile.createReader(dataFile, OrcFile.readerOptions(fs.getConf()))) {
         /*
           acid file would have schema like <op, owid, writerId, rowid, cwid, <f1, ... fn>> so could
           check it this way once/if OrcRecordUpdater.ACID_KEY_INDEX_NAME is removed

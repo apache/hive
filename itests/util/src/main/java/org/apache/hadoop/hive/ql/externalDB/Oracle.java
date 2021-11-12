@@ -15,29 +15,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.externalDB;
 
-package org.apache.hadoop.hive.util;
-
-import java.util.concurrent.TimeUnit;
-
-import com.google.common.base.Stopwatch;
-import org.slf4j.Logger;
-
-public abstract class ElapsedTimeLoggingWrapper<T> {
-
-  public abstract T invokeInternal() throws Exception;
-
-  public T invoke(String message, Logger LOG, boolean toStdErr) throws Exception {
-    Stopwatch sw = Stopwatch.createStarted();
-    try {
-      T retVal = invokeInternal();
-      return retVal;
-    } finally {
-      String logMessage = message + " ElapsedTime(ms)=" + sw.stop().elapsed(TimeUnit.MILLISECONDS);
-      LOG.info(logMessage);
-      if (toStdErr) {
-        System.err.println(logMessage);
-      }
-    }
+public class Oracle extends AbstractExternalDB {
+  @Override
+  public String getRootUser() {
+    return "SYS as SYSDBA";
   }
+
+  @Override
+  public String getRootPassword() {
+    return "oracle";
+  }
+
+  @Override
+  public String getJdbcUrl() {
+    return "jdbc:oracle:thin:@//" + getContainerHostAddress() + ":1521/xe";
+  }
+
+  @Override
+  public String getJdbcDriver() {
+    return "oracle.jdbc.OracleDriver";
+  }
+
+  @Override
+  protected String getDockerImageName() {
+    return "pvargacl/oracle-xe-18.4.0";
+  }
+
+  @Override
+  protected String[] getDockerAdditionalArgs() {
+    return new String[] { "-p", "1521:1521", "-d" };
+  }
+
+  @Override
+  public boolean isContainerReady(ProcessResults pr) {
+    return pr.stdout.contains("DATABASE IS READY TO USE!");
+  }
+
 }

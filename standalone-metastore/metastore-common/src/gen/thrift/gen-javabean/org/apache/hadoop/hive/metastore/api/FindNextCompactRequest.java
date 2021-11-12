@@ -17,8 +17,8 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new FindNextCompactRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new FindNextCompactRequestTupleSchemeFactory();
 
-  private @org.apache.thrift.annotation.Nullable java.lang.String workerId; // required
-  private @org.apache.thrift.annotation.Nullable java.lang.String workerVersion; // required
+  private @org.apache.thrift.annotation.Nullable java.lang.String workerId; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String workerVersion; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -84,27 +84,19 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
+  private static final _Fields optionals[] = {_Fields.WORKER_ID,_Fields.WORKER_VERSION};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.WORKER_ID, new org.apache.thrift.meta_data.FieldMetaData("workerId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.WORKER_ID, new org.apache.thrift.meta_data.FieldMetaData("workerId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.WORKER_VERSION, new org.apache.thrift.meta_data.FieldMetaData("workerVersion", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.WORKER_VERSION, new org.apache.thrift.meta_data.FieldMetaData("workerVersion", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(FindNextCompactRequest.class, metaDataMap);
   }
 
   public FindNextCompactRequest() {
-  }
-
-  public FindNextCompactRequest(
-    java.lang.String workerId,
-    java.lang.String workerVersion)
-  {
-    this();
-    this.workerId = workerId;
-    this.workerVersion = workerVersion;
   }
 
   /**
@@ -324,35 +316,31 @@ package org.apache.hadoop.hive.metastore.api;
     java.lang.StringBuilder sb = new java.lang.StringBuilder("FindNextCompactRequest(");
     boolean first = true;
 
-    sb.append("workerId:");
-    if (this.workerId == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.workerId);
+    if (isSetWorkerId()) {
+      sb.append("workerId:");
+      if (this.workerId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.workerId);
+      }
+      first = false;
     }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("workerVersion:");
-    if (this.workerVersion == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.workerVersion);
+    if (isSetWorkerVersion()) {
+      if (!first) sb.append(", ");
+      sb.append("workerVersion:");
+      if (this.workerVersion == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.workerVersion);
+      }
+      first = false;
     }
-    first = false;
     sb.append(")");
     return sb.toString();
   }
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetWorkerId()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'workerId' is unset! Struct:" + toString());
-    }
-
-    if (!isSetWorkerVersion()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'workerVersion' is unset! Struct:" + toString());
-    }
-
     // check for sub-struct validity
   }
 
@@ -420,14 +408,18 @@ package org.apache.hadoop.hive.metastore.api;
 
       oprot.writeStructBegin(STRUCT_DESC);
       if (struct.workerId != null) {
-        oprot.writeFieldBegin(WORKER_ID_FIELD_DESC);
-        oprot.writeString(struct.workerId);
-        oprot.writeFieldEnd();
+        if (struct.isSetWorkerId()) {
+          oprot.writeFieldBegin(WORKER_ID_FIELD_DESC);
+          oprot.writeString(struct.workerId);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.workerVersion != null) {
-        oprot.writeFieldBegin(WORKER_VERSION_FIELD_DESC);
-        oprot.writeString(struct.workerVersion);
-        oprot.writeFieldEnd();
+        if (struct.isSetWorkerVersion()) {
+          oprot.writeFieldBegin(WORKER_VERSION_FIELD_DESC);
+          oprot.writeString(struct.workerVersion);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -446,17 +438,34 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, FindNextCompactRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      oprot.writeString(struct.workerId);
-      oprot.writeString(struct.workerVersion);
+      java.util.BitSet optionals = new java.util.BitSet();
+      if (struct.isSetWorkerId()) {
+        optionals.set(0);
+      }
+      if (struct.isSetWorkerVersion()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetWorkerId()) {
+        oprot.writeString(struct.workerId);
+      }
+      if (struct.isSetWorkerVersion()) {
+        oprot.writeString(struct.workerVersion);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, FindNextCompactRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      struct.workerId = iprot.readString();
-      struct.setWorkerIdIsSet(true);
-      struct.workerVersion = iprot.readString();
-      struct.setWorkerVersionIsSet(true);
+      java.util.BitSet incoming = iprot.readBitSet(2);
+      if (incoming.get(0)) {
+        struct.workerId = iprot.readString();
+        struct.setWorkerIdIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.workerVersion = iprot.readString();
+        struct.setWorkerVersionIsSet(true);
+      }
     }
   }
 

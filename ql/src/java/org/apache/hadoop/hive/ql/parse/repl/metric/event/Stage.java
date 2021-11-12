@@ -24,8 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker.RM_PROGRESS_LENGTH;
-
 /**
  * Class for defining the different stages of replication.
  */
@@ -129,12 +127,7 @@ public class Stage {
   }
 
   public void setReplStats(String replStats) {
-    // Check the stat string doesn't surpass the RM_PROGRESS column length.
-    if (replStats.length() >= RM_PROGRESS_LENGTH - 2000) {
-      this.replStats = "RM_PROGRESS LIMIT EXCEEDED TO " + replStats.length();
-    } else {
-      this.replStats = replStats;
-    }
+    this.replStats = replStats;
   }
 
 }

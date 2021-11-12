@@ -35,8 +35,6 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.log.LogDivertAppender;
-import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -304,10 +302,6 @@ public abstract class Operation {
   }
 
   protected synchronized void cleanupOperationLog(final long operationLogCleanupDelayMs) {
-    // stop the appenders for the operation log
-    String queryId = queryState.getQueryId();
-    LogUtils.stopQueryAppender(LogDivertAppender.QUERY_ROUTING_APPENDER, queryId);
-    LogUtils.stopQueryAppender(LogDivertAppenderForTest.TEST_QUERY_ROUTING_APPENDER, queryId);
     if (isOperationLogEnabled) {
       if (opHandle == null) {
         log.warn("Operation seems to be in invalid state, opHandle is null");

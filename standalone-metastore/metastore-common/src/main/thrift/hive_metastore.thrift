@@ -1331,8 +1331,8 @@ struct GetLatestCommittedCompactionInfoResponse {
 }
 
 struct FindNextCompactRequest {
-    1: required string workerId,
-    2: required string workerVersion
+    1: optional string workerId,
+    2: optional string workerVersion
 }
 
 struct AddDynamicPartitions {
@@ -2200,7 +2200,8 @@ struct ReplicationMetrics{
   2: required string policy,
   3: required i64 dumpExecutionId,
   4: optional string metadata,
-  5: optional string progress
+  5: optional string progress,
+  6: optional string messageFormat
 }
 
 struct ReplicationMetricList{

@@ -1367,7 +1367,8 @@ CREATE TABLE "REPLICATION_METRICS" (
   "RM_DUMP_EXECUTION_ID" bigint NOT NULL,
   "RM_METADATA" varchar(max),
   "RM_PROGRESS" varchar(max),
-  "RM_START_TIME" integer NOT NULL
+  "RM_START_TIME" integer NOT NULL,
+  "MESSAGE_FORMAT" nvarchar(16),
 );
 
 -- Create indexes for the replication metrics table
