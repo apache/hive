@@ -21,12 +21,11 @@ package org.apache.hadoop.hive.common.ndv.hll;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import it.unimi.dsi.fastutil.ints.Int2ByteMap;
-import it.unimi.dsi.fastutil.ints.Int2ByteOpenHashMap;
+import java.util.HashMap;
 
 public class HLLSparseRegister implements HLLRegister {
 
-  private Int2ByteMap sparseMap;
+  private Map<Integer, Byte> sparseMap;
 
   // number of register bits
   private final int p;
@@ -44,7 +43,7 @@ public class HLLSparseRegister implements HLLRegister {
 
   public HLLSparseRegister(int p, int pp, int qp) {
     this.p = p;
-    this.sparseMap = new Int2ByteOpenHashMap();
+    this.sparseMap = new HashMap<>();
     this.pPrime = pp;
     this.qPrime = qp;
     this.mask = ((1 << pPrime) - 1) ^ ((1 << p) - 1);
