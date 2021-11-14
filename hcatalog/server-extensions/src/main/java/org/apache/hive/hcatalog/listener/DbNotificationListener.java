@@ -142,6 +142,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL;
 
 /**
  * An implementation of {@link org.apache.hadoop.hive.metastore.MetaStoreEventListener} that
@@ -253,6 +254,13 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
               TimeUnit.SECONDS);
       cleaner.setCleanupInterval(MetastoreConf.getTimeVar(getConf(),
               MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, TimeUnit.MILLISECONDS));
+    }
+
+    if (key.equals(EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL.toString()) || key
+        .equals(EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL.getHiveName())) {
+      cleaner.setWaitInterval(MetastoreConf
+          .getTimeVar(getConf(), EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL,
+              TimeUnit.MILLISECONDS));
     }
   }
 
@@ -1406,6 +1414,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     private final RawStore rs;
     private int ttl;
     private long sleepTime;
+    private long waitInterval;
 
     CleanerThread(Configuration conf, RawStore rs) {
       super("DB-Notification-Cleaner");
@@ -1417,10 +1426,27 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       setTimeToLive(MetastoreConf.getTimeVar(conf, ttlConf, TimeUnit.SECONDS));
       setCleanupInterval(
           MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, TimeUnit.MILLISECONDS));
+      setWaitInterval(MetastoreConf
+          .getTimeVar(conf, EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL, TimeUnit.MILLISECONDS));
     }
 
     @Override
     public void run() {
+      LOG.info("Wait interval is {}", waitInterval);
+      if (waitInterval > 0) {
+        try {
+          LOG.info("Cleaner Thread Restarted and {} or {} is configured. So cleaner thread will startup post waiting "
+                  + "{} ms", EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL,
+              EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL.getHiveName(), waitInterval);
+          Thread.sleep(waitInterval);
+        } catch (InterruptedException e) {
+          LOG.error("Failed during the initial wait before start.", e);
+          Thread.currentThread().interrupt();
+          return;
+        }
+        LOG.info("Completed Cleaner thread initial wait. Starting normal processing.");
+      }
+
       while (true) {
         LOG.debug("Cleaner thread running");
         try {
@@ -1447,6 +1473,10 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
     public void setCleanupInterval(long configInterval) {
       sleepTime = configInterval;
+    }
+
+    public void setWaitInterval(long waitInterval) {
+      this.waitInterval = waitInterval;
     }
   }
 }
