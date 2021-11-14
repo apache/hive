@@ -56,15 +56,13 @@ public class FileHelpers {
       throws IOException {
     return writeDeleteFile(table, out, null, deletes);
   }
-
   public static Pair<DeleteFile, CharSequenceSet> writeDeleteFile(Table table, OutputFile out, StructLike partition,
                                                                   List<Pair<CharSequence, Long>> deletes)
       throws IOException {
     FileFormat format = defaultFormat(table.properties());
     FileAppenderFactory<Record> factory = new GenericAppenderFactory(table.schema(), table.spec());
 
-    PositionDeleteWriter<Record> writer =
-        factory.newPosDeleteWriter(encrypt(out), format, partition);
+    PositionDeleteWriter<?> writer = factory.newPosDeleteWriter(encrypt(out), format, partition);
     try (Closeable toClose = writer) {
       for (Pair<CharSequence, Long> delete : deletes) {
         PositionDelete<Record> posDelete = PositionDelete.create();
