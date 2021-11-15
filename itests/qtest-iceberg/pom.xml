@@ -382,18 +382,12 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <dependency>
-            <!-- Note, this is LGPL.  But we're only using it in a test and not changing it, so I
-            believe we are fine. -->
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
-            <version>${mariadb.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>${postgres.version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

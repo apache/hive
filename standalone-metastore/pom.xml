@@ -75,7 +75,11 @@
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
     <datanucleus-rdbms.version>5.2.4</datanucleus-rdbms.version>
     <derby.version>10.14.1.0</derby.version>
+    <mariadb.version>2.5.0</mariadb.version>
+    <mssql.version>6.2.1.jre8</mssql.version>
+    <mysql.version>8.0.27</mysql.version>
     <postgres.version>42.2.14</postgres.version>
+    <oracle.version>21.3.0.0</oracle.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2
     </dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
@@ -190,6 +194,8 @@
         <groupId>org.apache.derby</groupId>
         <artifactId>derby</artifactId>
         <version>${derby.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
@@ -331,14 +337,29 @@
         <artifactId>slf4j-api</artifactId>
         <version>${slf4j.version}</version>
       </dependency>
-
+      <!-- JDBC drivers -->
+      <dependency>
+        <groupId>com.oracle.database.jdbc</groupId>
+        <artifactId>ojdbc8</artifactId>
+        <version>${oracle.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>${mysql.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
       <!-- test scope dependencies -->
 
       <dependency>
         <groupId>com.microsoft.sqlserver</groupId>
         <artifactId>mssql-jdbc</artifactId>
-        <version>6.2.1.jre8</version>
-        <scope>test</scope>
+        <version>${mssql.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
       </dependency>
       <dependency>
         <groupId>junit</groupId>
@@ -381,7 +402,8 @@
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
         <version>${postgres.version}</version>
-        <scope>test</scope>
+        <scope>runtime</scope>
+        <optional>true</optional>
       </dependency>
       <!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest-all -->
       <dependency>
