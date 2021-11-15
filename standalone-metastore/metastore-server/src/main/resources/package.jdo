@@ -263,11 +263,11 @@
     </class>
 
     <class name="MMVSource" identity-type="application" table="MV_TABLES_USED" detachable="true" objectid-class="MMVSource$PK">
-      <field name="creationMetadata" primary-key="true">
-        <column name="MV_CREATION_METADATA_ID"/>
-      </field>
       <field name="table" primary-key="true">
         <column name="TBL_ID"/>
+      </field>
+      <field name="creationMetadata" primary-key="true">
+        <column name="MV_CREATION_METADATA_ID"/>
       </field>
       <field name="insertedCount">
         <column name="INSERTED_COUNT"/>
