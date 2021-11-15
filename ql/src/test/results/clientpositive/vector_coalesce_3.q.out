@@ -88,20 +88,6 @@ STAGE PLANS:
             alias: n
             filterExpr: member is not null (type: boolean)
             Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-<<<<<<< HEAD
-            Select Operator
-<<<<<<< HEAD
-              expressions: member (type: bigint), if(if(attr is not null, (attr > 1L), true), attr, null) (type: bigint)
-=======
-              expressions: member (type: bigint), CASE WHEN (((attr > 1L) or attr is null)) THEN (attr) ELSE (null) END (type: bigint)
->>>>>>> asf/master
-              outputColumnNames: _col0, _col1
-              Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
-              HashTable Sink Operator
-                keys:
-                  0 _col0 (type: bigint)
-                  1 _col0 (type: bigint)
-=======
             Filter Operator
               predicate: member is not null (type: boolean)
               Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
@@ -113,7 +99,6 @@ STAGE PLANS:
                   keys:
                     0 _col0 (type: bigint)
                     1 _col0 (type: bigint)
->>>>>>> asf/master
 
   Stage: Stage-3
     Map Reduce
